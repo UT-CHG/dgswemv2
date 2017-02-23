@@ -1,6 +1,6 @@
 dependencies:
   pre:
-    - sudo update-alternatices --install /usr/bin/g++ g++ /usr/bin/g++-6.20
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6.20
 
 compile:
   override:
