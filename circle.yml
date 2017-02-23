@@ -8,4 +8,4 @@ compile:
 
 test:
   override:
-    -exe/dg_hyper.o2
+    - exe/dg_hyper.o2
