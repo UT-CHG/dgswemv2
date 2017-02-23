@@ -1,7 +1,3 @@
-dependencies:
-  pre:
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 20
-
 compile:
   override:
     - make exe/dg_hyper.o2
