@@ -2,8 +2,8 @@
 using namespace std;
 
 #include "integration.h"
-#include "Integration rules/integration_rules_area.h"
-#include "Integration rules/integration_rules_line.h"
+#include "integration_rules/integration_rules_area.h"
+#include "integration_rules/integration_rules_line.h"
 
 AREA_INTEGRATION::AREA_INTEGRATION(int p){
 	this->p = p;

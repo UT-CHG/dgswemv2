@@ -1,4 +1,6 @@
+#include <cmath>
 # include <iostream>
+
 using namespace std;
 
 # include "integration_rules_area.h"

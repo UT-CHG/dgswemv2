@@ -2,7 +2,7 @@
 using namespace std;
 
 #include "basis.h"
-#include "Basis functions/basis_functions.h"
+#include "basis_functions/basis_functions.h"
 
 BASIS_TRI::BASIS_TRI(int p){
 	this->p = p;
