@@ -1,0 +1,11 @@
+dependencies:
+  pre:
+    - sudo update-alternatices --install /usr/bin/g++ g++ /usr/bin/g++-6.20
+
+compile:
+  override:
+    - make exe/dg_hyper.o2
+
+test:
+  override:
+    -exe/dg_hyper.o2
