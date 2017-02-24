@@ -10,8 +10,6 @@ BASIS_TRI::BASIS_TRI(int p){
 	AREA_INTEGRATION area_rule(2*p);
 	LINE_INTEGRATION line_rule(2*p);
 
-	double i;
-	 
 	this->integration_rule_area = &area_rule;
 	this->integration_rule_line = &line_rule;
 
