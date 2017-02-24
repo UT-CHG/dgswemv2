@@ -10,6 +10,8 @@ BASIS_TRI::BASIS_TRI(int p){
 	AREA_INTEGRATION area_rule(2*p);
 	LINE_INTEGRATION line_rule(2*p);
 
+	double i;
+	 
 	this->integration_rule_area = &area_rule;
 	this->integration_rule_line = &line_rule;
 
@@ -18,7 +20,7 @@ BASIS_TRI::BASIS_TRI(int p){
 
 BASIS_TRI::~BASIS_TRI(){
 	for (int i=0; i<this->number_bf; i++){
-		delete [] phi_area[i];
+		delete [] phi_area[i]; 
 	}
 	delete [] phi_area;
 }
