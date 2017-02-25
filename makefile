@@ -28,7 +28,8 @@ srcs = \
   source/basis_functions/basis_polynomials.cpp \
   source/class_integration.cpp \
   source/integration_rules/integration_area_dunavant.cpp \
-  source/integration_rules/integration_line_gausslegendre.cpp
+  source/integration_rules/integration_line_gausslegendre.cpp \
+  source/mesh_processor/read_adcirc_mesh.cpp
 
 exe/%.o2:  flags += -O2 -DDEBUG=1
 exe/%.o3:  flags += -O3 -DDEBUG=0
