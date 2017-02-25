@@ -1,5 +1,4 @@
 #include <iostream>
-using namespace std;
 
 #include "class_integration.h"
 #include "integration_rules/integration_rules_area.h"

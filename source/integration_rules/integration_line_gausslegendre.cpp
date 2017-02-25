@@ -1,20 +1,20 @@
-# include <iostream>
-using namespace std;
+#include <cmath>
+#include <iostream>
 
-# include "integration_rules_line.h"
+#include "integration_rules_line.h"
 
 int gausslegendre_degree(int p) {
-	if (1 <= p && p <= 65)
-	{
-		return p;
-	}
-	else
-	{
-		cout << "\n";
-		cout << "GAUSSLEGENDRE_DEGREE - Fatal error!\n";
-		cout << "  Illegal P = " << p << "\n";
-		exit(1);
-	}
+  if (1 <= p && p <= 65)
+    {
+      return p;
+    }
+  else
+    {
+      std::cout << "\n";
+      std::cout << "GAUSSLEGENDRE_DEGREE - Fatal error!\n";
+      std::cout << "  Illegal P = " << p << "\n";
+      exit(1);
+    }
 }
 
 int gausslegendre_number_gp(int p) {
@@ -1257,15 +1257,15 @@ void gausslegendre_rule_test(int p, int number_gp, double z[], double w[]) {
 
 	if (err < pow(10.0, -10.0))
 	{
-		cout << "\n";
-		cout << "GAUSSLEGENDRE_RULE - Test success!\n";
-		cout << "  err = " << err << "\n";
+	  std::cout << "\n";
+	  std::cout << "GAUSSLEGENDRE_RULE - Test success!\n";
+	  std::cout << "  err = " << err << "\n";
 	}
 	else
 	{
-		cout << "\n";
-		cout << "GAUSSLEGENDRE_RULE - Test fail!\n";
-		cout << "  err = " << err << "\n";
-		exit(1);
+	  std::cout << "\n";
+	  std::cout << "GAUSSLEGENDRE_RULE - Test fail!\n";
+	  std::cout << "  err = " << err << "\n";
+	  exit(1);
 	}
 }

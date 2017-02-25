@@ -1,7 +1,7 @@
-# include <iostream>
-using namespace std;
+#include <cmath>
+#include <iostream>
 
-# include "integration_rules_area.h"
+#include "integration_rules_area.h"
 
 int dunavant_degree(int p) {
 	if (1 <= p && p <= 20)
@@ -10,10 +10,10 @@ int dunavant_degree(int p) {
 	}
 	else
 	{
-		cout << "\n";
-		cout << "DUNAVANT_DEGREE - Fatal error!\n";
-		cout << "  Illegal P = " << p << "\n";
-		exit(1);
+	  std::cout << "\n";
+	  std::cout << "DUNAVANT_DEGREE - Fatal error!\n";
+	  std::cout << "  Illegal P = " << p << "\n";
+	  exit(1);
 	}
 }
 
@@ -1471,25 +1471,25 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 }
 
 void dunavant_rule_test(int p, int number_gp, double z1[], double z2[], double w[]) {
-	double exact_integration = 1 / ((double)p + 1)*((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p)); // S(x^p)dxdy over triangle
+  double exact_integration = 1 / ((double)p + 1)*((1 - std::pow(-1.0, p)) / ((double)p + 2) + 2 * std::pow(-1.0, p)); // S(x^p)dxdy over triangle
 
 	double num_integration = 0;
-	for (int i = 0; i < number_gp; i++) { num_integration = num_integration + pow(z1[i], p)*w[i]; }
+	for (int i = 0; i < number_gp; i++) { num_integration = num_integration + std::pow(z1[i], p)*w[i]; }
 
 	double err = abs((num_integration - exact_integration) / exact_integration);
 
-	if (err < pow(10.0, -10.0))
+	if (err < std::pow(10.0, -10.0))
 	{
-		cout << "\n";
-		cout << "DUNAVANT_RULE - Test success!\n";
-		cout << "  err = " << err << "\n";
+	  std::cout << "\n";
+	  std::cout << "DUNAVANT_RULE - Test success!\n";
+	  std::cout << "  err = " << err << "\n";
 	}
 	else
 	{
-		cout << "\n";
-		cout << "DUNAVANT_RULE - Test fail!\n";
-		cout << "  err = " << err << "\n";
-		exit(1);
+	  std::cout << "\n";
+	  std::cout << "DUNAVANT_RULE - Test fail!\n";
+	  std::cout << "  err = " << err << "\n";
+	  exit(1);
 	}
 }
 

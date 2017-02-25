@@ -1,5 +1,5 @@
+#include <cmath>
 #include <iostream>
-using namespace std;
 
 #include "basis_functions.h"
 
@@ -11,7 +11,7 @@ void dubiner_phi(int p, int q, int number_gp, double n1[], double n2[], double p
 	jacobi_polynomial(q, 2 * p + 1, 0, number_gp, n2, psi_pq);
 
 	for (int i = 0; i < number_gp; i++) {
-		phi_pq[i] = psi_p[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i];
+	  phi_pq[i] = psi_p[i] * std::pow((1 - n2[i]) / 2, p)*psi_pq[i];
 	}
 
 	delete[] psi_p;
@@ -32,10 +32,10 @@ void dubiner_dphi(int p, int q, int number_gp, double n1[], double n2[], double 
 	jacobi_polynomial_derivative(q, 2 * p + 1, 0, number_gp, n2, dpsi_pq_dn2);
 
 	for (int i = 0; i < number_gp; i++) {
-		dphi_dz1[i] = (2.0 / (1 - n2[i])) * dpsi_p_dn1[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i];
+	  dphi_dz1[i] = (2.0 / (1 - n2[i])) * dpsi_p_dn1[i] * std::pow((1 - n2[i]) / 2, p)*psi_pq[i];
 
-		dphi_dz2[i] = (2 * (1 + n1[i]) / (1 - n2[i])) * dpsi_p_dn1[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i] +
-			psi_p[i] * (pow((1 - n2[i]) / 2, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1 - n2[i]) / 2, p - 1)*psi_pq[i]);
+	  dphi_dz2[i] = (2 * (1 + n1[i]) / (1 - n2[i])) * dpsi_p_dn1[i] * std::pow((1 - n2[i]) / 2, p)*psi_pq[i] +
+	    psi_p[i] * (std::pow((1 - n2[i]) / 2, p)*dpsi_pq_dn2[i] - (p / 2.0)*std::pow((1 - n2[i]) / 2, p - 1)*psi_pq[i]);
 	}
 
 	delete[] psi_p;
@@ -72,18 +72,18 @@ void dubiner_test(int p, int number_gp, double** phi_area, double* w) {
 
 	for (int i = 0; i < number_bf; i++) {
 		for (int j = 0; j < number_bf; j++) {
-			if (abs(M[i][j]) > pow(10.0, -10.0))
+		    if (abs(M[i][j]) > std::pow(10.0, -10.0))
 			{
-				cout << "\n";
-				cout << "DUBINER_BASIS - Test fail!\n";
-				cout << "  (i,j) = " << i << " , " << j << "\n";
+			  std::cout << "\n";
+			  std::cout << "DUBINER_BASIS - Test fail!\n";
+			  std::cout << "  (i,j) = " << i << " , " << j << "\n";
 				exit(1);
 			}
 		}
 	}
 
-	cout << "\n";
-	cout << "DUBINER_BASIS - Test success!\n";
+	std::cout << "\n";
+	std::cout << "DUBINER_BASIS - Test success!\n";
 
 	for (int i = 0; i < number_bf; i++) {
 		delete[] M[i];

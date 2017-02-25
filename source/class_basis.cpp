@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-using namespace std;
 
 #include "class_basis.h"
 #include "basis_functions/basis_functions.h"
