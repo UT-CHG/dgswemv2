@@ -1,12 +1,10 @@
-#include <cmath>
 # include <iostream>
-
 using namespace std;
 
 # include "integration_rules_area.h"
 
-int dunavant_degree(int p){
-	if ( 1 <= p && p <= 20 )
+int dunavant_degree(int p) {
+	if (1 <= p && p <= 20)
 	{
 		return p;
 	}
@@ -15,25 +13,25 @@ int dunavant_degree(int p){
 		cout << "\n";
 		cout << "DUNAVANT_DEGREE - Fatal error!\n";
 		cout << "  Illegal P = " << p << "\n";
-		exit ( 1 );
+		exit(1);
 	}
 }
 
-int dunavant_number_gp(int p){
+int dunavant_number_gp(int p) {
 	int num_permutations;
 	int* permutations;
-  	
+
 	dunavant_permutation_data(p, &num_permutations, permutations);
 
 	int number_gp = 0;
-	for (int i=0; i<num_permutations; i++){number_gp = number_gp + permutations[i];}
+	for (int i = 0; i < num_permutations; i++) { number_gp = number_gp + permutations[i]; }
 
-	delete [] permutations;
+	delete[] permutations;
 
 	return number_gp;
 }
 
-void dunavant_rule(int p, double x[], double y[], double weight[]){
+void dunavant_rule(int p, double x[], double y[], double weight[]) {
 	double* l1;
 	double* l2;
 	double* l3;
@@ -41,388 +39,368 @@ void dunavant_rule(int p, double x[], double y[], double weight[]){
 
 	int num_permutations;
 	int* permutations;
-  	
+
 	dunavant_permutation_data(p, &num_permutations, permutations);
 	dunavant_gp_data(p, l1, l2, l3, w);
 
 	int gp_number = 0;
-	for (int i = 0; i<num_permutations; i++){
-		if (permutations[i] == 1){
+	for (int i = 0; i < num_permutations; i++) {
+		if (permutations[i] == 1) {
 			x[gp_number] = l1[i];
 			y[gp_number] = l2[i];
 			weight[gp_number] = w[i];
 
 			gp_number = gp_number + 1;
 		}
-		else if (permutations[i] == 3){
+		else if (permutations[i] == 3) {
 			x[gp_number] = l1[i];
 			y[gp_number] = l2[i];
 			weight[gp_number] = w[i];
 
-			x[gp_number+1] = l2[i];
-			y[gp_number+1] = l3[i];
-		    weight[gp_number+1] = w[i];
+			x[gp_number + 1] = l2[i];
+			y[gp_number + 1] = l3[i];
+			weight[gp_number + 1] = w[i];
 
-			x[gp_number+2] = l3[i];
-			y[gp_number+2] = l1[i];
-		    weight[gp_number+2] = w[i];
+			x[gp_number + 2] = l3[i];
+			y[gp_number + 2] = l1[i];
+			weight[gp_number + 2] = w[i];
 
 			gp_number = gp_number + 3;
 		}
-		else if (permutations[i] == 6){
+		else if (permutations[i] == 6) {
 			x[gp_number] = l1[i];
 			y[gp_number] = l2[i];
-		    weight[gp_number] = w[i];
+			weight[gp_number] = w[i];
 
-			x[gp_number+1] = l2[i];
-			y[gp_number+1] = l3[i];
-		    weight[gp_number+1] = w[i];
+			x[gp_number + 1] = l2[i];
+			y[gp_number + 1] = l3[i];
+			weight[gp_number + 1] = w[i];
 
-			x[gp_number+2] = l3[i];
-			y[gp_number+2] = l1[i];
-		    weight[gp_number+2] = w[i];
+			x[gp_number + 2] = l3[i];
+			y[gp_number + 2] = l1[i];
+			weight[gp_number + 2] = w[i];
 
-			x[gp_number+3] = l2[i];
-			y[gp_number+3] = l1[i];
-		    weight[gp_number+3] = w[i];
+			x[gp_number + 3] = l2[i];
+			y[gp_number + 3] = l1[i];
+			weight[gp_number + 3] = w[i];
 
-			x[gp_number+4] = l3[i];
-			y[gp_number+4] = l2[i];
-		    weight[gp_number+4] = w[i];
+			x[gp_number + 4] = l3[i];
+			y[gp_number + 4] = l2[i];
+			weight[gp_number + 4] = w[i];
 
-			x[gp_number+5] = l1[i];
-			y[gp_number+5] = l3[i];
-		    weight[gp_number+5] = w[i];
+			x[gp_number + 5] = l1[i];
+			y[gp_number + 5] = l3[i];
+			weight[gp_number + 5] = w[i];
 
 			gp_number = gp_number + 6;
 		}
 	}
 
-	delete [] l1;
-	delete [] l2;
-	delete [] l3;
-	delete [] w;
-	
-	delete [] permutations;
+	delete[] l1;
+	delete[] l2;
+	delete[] l3;
+	delete[] w;
+
+	delete[] permutations;
 }
 
-void dunavant_permutation_data(int p, int* num_permutations, int* &permutations){
-  if ( p == 1 )
-  {
-    *num_permutations = 1;
-	permutations = new int [*num_permutations];
+void dunavant_permutation_data(int p, int* num_permutations, int* &permutations) {
+	if (p == 1) {
+		*num_permutations = 1;
+		permutations = new int[*num_permutations];
 
-	permutations[0] = 1;
-  }
-  else if ( p == 2 )
-  {
-	*num_permutations = 1;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+	}
+	else if (p == 2) {
+		*num_permutations = 1;
+		permutations = new int[*num_permutations];
 
-	permutations[0] = 3;
-  }
-  else if ( p == 3 )
-  {
-    *num_permutations = 2;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+	}
+	else if (p == 3) {
+		*num_permutations = 2;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-  }
-  else if ( p == 4 )
-  {
-    *num_permutations = 2;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+	}
+	else if (p == 4) {
+		*num_permutations = 2;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 3;
-    permutations[1] = 3;
-  }
-  else if ( p == 5 )
-  { 
-	*num_permutations = 3;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+		permutations[1] = 3;
+	}
+	else if (p == 5) {
+		*num_permutations = 3;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-  }
-  else if ( p == 6 )
-  {
-	*num_permutations = 3;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+	}
+	else if (p == 6) {
+		*num_permutations = 3;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 3;
-    permutations[1] = 3;
-    permutations[2] = 6;
-  }
-  else if ( p == 7 )
-  {
-	*num_permutations = 4;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+		permutations[1] = 3;
+		permutations[2] = 6;
+	}
+	else if (p == 7) {
+		*num_permutations = 4;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 6;
-  }
-  else if ( p == 8 )
-  {
-	*num_permutations = 5;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 6;
+	}
+	else if (p == 8) {
+		*num_permutations = 5;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 6;
-  }
-  else if ( p == 9 )
-  {
-	*num_permutations = 6;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 6;
+	}
+	else if (p == 9) {
+		*num_permutations = 6;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 6;
-  }
-  else if ( p == 10 )
-  { 
-	*num_permutations = 6;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 6;
+	}
+	else if (p == 10) {
+		*num_permutations = 6;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 6;
-    permutations[4] = 6;
-    permutations[5] = 6;
-  }
-  else if ( p == 11 )
-  {
-	*num_permutations = 7;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 6;
+		permutations[4] = 6;
+		permutations[5] = 6;
+	}
+	else if (p == 11) {
+		*num_permutations = 7;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 3;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 6;
-    permutations[6] = 6;
-  }
-  else if ( p == 12 )
-  {
-	*num_permutations = 8;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 6;
+		permutations[6] = 6;
+	}
+	else if (p == 12) {
+		*num_permutations = 8;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 3;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 6;
-    permutations[6] = 6;
-    permutations[7] = 6;
-  }
-  else if ( p == 13 )
-  {    
-	*num_permutations = 10;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 6;
+		permutations[6] = 6;
+		permutations[7] = 6;
+	}
+	else if (p == 13) {
+		*num_permutations = 10;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 3;
-    permutations[7] = 6;
-    permutations[8] = 6;
-    permutations[9] = 6;
-  }
-  else if ( p == 14 )
-  {   
-	*num_permutations = 10;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 3;
+		permutations[7] = 6;
+		permutations[8] = 6;
+		permutations[9] = 6;
+	}
+	else if (p == 14) {
+		*num_permutations = 10;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 3;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 6;
-    permutations[7] = 6;
-    permutations[8] = 6;
-    permutations[9] = 6;
-  }
-  else if ( p == 15 )
-  {    
-	*num_permutations = 11;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 6;
+		permutations[7] = 6;
+		permutations[8] = 6;
+		permutations[9] = 6;
+	}
+	else if (p == 15) {
+		*num_permutations = 11;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 3;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 6;
-    permutations[7] = 6;
-    permutations[8] = 6;
-    permutations[9] = 6;
-    permutations[10] = 6;
-  }
-  else if ( p == 16 )
-  {    
-	*num_permutations = 13;
-	permutations = new int [*num_permutations];
+		permutations[0] = 3;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 6;
+		permutations[7] = 6;
+		permutations[8] = 6;
+		permutations[9] = 6;
+		permutations[10] = 6;
+	}
+	else if (p == 16) {
+		*num_permutations = 13;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 3;
-    permutations[7] = 3;
-    permutations[8] = 6;
-    permutations[9] = 6;
-    permutations[10] = 6;
-    permutations[11] = 6;
-    permutations[12] = 6;
-  }
-  else if ( p == 17 )
-  {    
-	*num_permutations = 15;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 3;
+		permutations[7] = 3;
+		permutations[8] = 6;
+		permutations[9] = 6;
+		permutations[10] = 6;
+		permutations[11] = 6;
+		permutations[12] = 6;
+	}
+	else if (p == 17) {
+		*num_permutations = 15;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 3;
-    permutations[7] = 3;
-    permutations[8] = 3;
-    permutations[9] = 6;
-    permutations[10] = 6;
-    permutations[11] = 6;
-    permutations[12] = 6;
-    permutations[13] = 6;
-    permutations[14] = 6;
-  }
-  else if ( p == 18 )
-  { 
-	*num_permutations = 17;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 3;
+		permutations[7] = 3;
+		permutations[8] = 3;
+		permutations[9] = 6;
+		permutations[10] = 6;
+		permutations[11] = 6;
+		permutations[12] = 6;
+		permutations[13] = 6;
+		permutations[14] = 6;
+	}
+	else if (p == 18) {
+		*num_permutations = 17;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 3;
-    permutations[7] = 3;
-    permutations[8] = 3;
-    permutations[9] = 3;
-    permutations[10] = 6;
-    permutations[11] = 6;
-    permutations[12] = 6;
-    permutations[13] = 6;
-    permutations[14] = 6;
-    permutations[15] = 6;
-    permutations[16] = 6;
-  }
-  else if ( p == 19 )
-  {
-	*num_permutations = 17;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 3;
+		permutations[7] = 3;
+		permutations[8] = 3;
+		permutations[9] = 3;
+		permutations[10] = 6;
+		permutations[11] = 6;
+		permutations[12] = 6;
+		permutations[13] = 6;
+		permutations[14] = 6;
+		permutations[15] = 6;
+		permutations[16] = 6;
+	}
+	else if (p == 19) {
+		*num_permutations = 17;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 3;
-    permutations[7] = 3;
-    permutations[8] = 3;
-    permutations[9] = 6;
-    permutations[10] = 6;
-    permutations[11] = 6;
-    permutations[12] = 6;
-    permutations[13] = 6;
-    permutations[14] = 6;
-    permutations[15] = 6;
-    permutations[16] = 6;
-  }
-  else if ( p == 20 )
-  {
-	*num_permutations = 19;
-	permutations = new int [*num_permutations];
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 3;
+		permutations[7] = 3;
+		permutations[8] = 3;
+		permutations[9] = 6;
+		permutations[10] = 6;
+		permutations[11] = 6;
+		permutations[12] = 6;
+		permutations[13] = 6;
+		permutations[14] = 6;
+		permutations[15] = 6;
+		permutations[16] = 6;
+	}
+	else if (p == 20) {
+		*num_permutations = 19;
+		permutations = new int[*num_permutations];
 
-    permutations[0] = 1;
-    permutations[1] = 3;
-    permutations[2] = 3;
-    permutations[3] = 3;
-    permutations[4] = 3;
-    permutations[5] = 3;
-    permutations[6] = 3;
-    permutations[7] = 3;
-    permutations[8] = 3;
-    permutations[9] = 3;
-    permutations[10] = 3;
-    permutations[11] = 6;
-    permutations[12] = 6;
-    permutations[13] = 6;
-    permutations[14] = 6;
-    permutations[15] = 6;
-    permutations[16] = 6;
-    permutations[17] = 6;
-    permutations[18] = 6;
-  }
+		permutations[0] = 1;
+		permutations[1] = 3;
+		permutations[2] = 3;
+		permutations[3] = 3;
+		permutations[4] = 3;
+		permutations[5] = 3;
+		permutations[6] = 3;
+		permutations[7] = 3;
+		permutations[8] = 3;
+		permutations[9] = 3;
+		permutations[10] = 3;
+		permutations[11] = 6;
+		permutations[12] = 6;
+		permutations[13] = 6;
+		permutations[14] = 6;
+		permutations[15] = 6;
+		permutations[16] = 6;
+		permutations[17] = 6;
+		permutations[18] = 6;
+	}
 }
 
 void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
-	if ( p == 1 ){
-		l1 = new double [1]; 
-		l2 = new double [1]; 
-		l3 = new double [1]; 
-	
-		w = new double [1];
-	
+	if (p == 1) {
+		l1 = new double[1];
+		l2 = new double[1];
+		l3 = new double[1];
+
+		w = new double[1];
+
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
 		l3[0] = 0.333333333333333;
 
 		w[0] = 1.000000000000000;
 	}
-	else if ( p == 2 ){
-		l1 = new double [1]; 
-		l2 = new double [1]; 
-		l3 = new double [1]; 
-	
-		w = new double [1];
-	
+	else if (p == 2) {
+		l1 = new double[1];
+		l2 = new double[1];
+		l3 = new double[1];
+
+		w = new double[1];
+
 		l1[0] = 0.666666666666667;
 		l2[0] = 0.166666666666667;
 		l3[0] = 0.166666666666667;
 
 		w[0] = 0.333333333333333;
 	}
-	else if ( p == 3 ){
-		l1 = new double [2]; 
-		l2 = new double [2]; 
-		l3 = new double [2]; 
-	
-		w = new double [2];
-	
+	else if (p == 3) {
+		l1 = new double[2];
+		l2 = new double[2];
+		l3 = new double[2];
+
+		w = new double[2];
+
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
 		l3[0] = 0.333333333333333;
@@ -435,13 +413,13 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[1] = 0.520833333333333;
 	}
-	else if ( p == 4 ){
-		l1 = new double [2]; 
-		l2 = new double [2]; 
-		l3 = new double [2]; 
-	
-		w = new double [2];
-	
+	else if (p == 4) {
+		l1 = new double[2];
+		l2 = new double[2];
+		l3 = new double[2];
+
+		w = new double[2];
+
 		l1[0] = 0.108103018168070;
 		l2[0] = 0.445948490915965;
 		l3[0] = 0.445948490915965;
@@ -454,13 +432,13 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[1] = 0.109951743655322;
 	}
-	else if ( p == 5 ){
-		l1 = new double [3]; 
-		l2 = new double [3]; 
-		l3 = new double [3]; 
-	
-		w = new double [3];
-	
+	else if (p == 5) {
+		l1 = new double[3];
+		l2 = new double[3];
+		l3 = new double[3];
+
+		w = new double[3];
+
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
 		l3[0] = 0.333333333333333;
@@ -476,16 +454,16 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 		w[0] = 0.225000000000000;
 
 		w[1] = 0.132394152788506;
-	
+
 		w[2] = 0.125939180544827;
 	}
-	else if ( p == 6 ){
-		l1 = new double [3]; 
-		l2 = new double [3]; 
-		l3 = new double [3]; 
-	
-		w = new double [3];
-	
+	else if (p == 6) {
+		l1 = new double[3];
+		l2 = new double[3];
+		l3 = new double[3];
+
+		w = new double[3];
+
 		l1[0] = 0.501426509658179;
 		l2[0] = 0.249286745170910;
 		l3[0] = 0.249286745170910;
@@ -493,7 +471,7 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 		l1[1] = 0.873821971016996;
 		l2[1] = 0.063089014491502;
 		l3[1] = 0.063089014491502;
-	
+
 		l1[2] = 0.053145049844817;
 		l2[2] = 0.310352451033784;
 		l3[2] = 0.636502499121399;
@@ -504,13 +482,13 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[2] = 0.082851075618374;
 	}
-	else if ( p == 7 ){
-		l1 = new double [4]; 
-		l2 = new double [4]; 
-		l3 = new double [4]; 
-	
-		w = new double [4];
-	
+	else if (p == 7) {
+		l1 = new double[4];
+		l2 = new double[4];
+		l3 = new double[4];
+
+		w = new double[4];
+
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
 		l3[0] = 0.333333333333333;
@@ -518,7 +496,7 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 		l1[1] = 0.479308067841920;
 		l2[1] = 0.260345966079040;
 		l3[1] = 0.260345966079040;
-	
+
 		l1[2] = 0.869739794195568;
 		l2[2] = 0.065130102902216;
 		l3[2] = 0.065130102902216;
@@ -535,49 +513,49 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[3] = 0.077113760890257;
 	}
-	else if ( p == 8 ){
-		l1 = new double [5]; 
-		l2 = new double [5]; 
-		l3 = new double [5]; 
-	
-		w = new double [5];
+	else if (p == 8) {
+		l1 = new double[5];
+		l2 = new double[5];
+		l3 = new double[5];
+
+		w = new double[5];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
 		l3[0] = 0.333333333333333;
-		
+
 		l1[1] = 0.081414823414554;
 		l2[1] = 0.459292588292723;
 		l3[1] = 0.459292588292723;
-		
+
 		l1[2] = 0.658861384496480;
 		l2[2] = 0.170569307751760;
 		l3[2] = 0.170569307751760;
-		
+
 		l1[3] = 0.898905543365938;
 		l2[3] = 0.050547228317031;
 		l3[3] = 0.050547228317031;
-		
+
 		l1[4] = 0.008394777409958;
 		l2[4] = 0.263112829634638;
 		l3[4] = 0.728492392955404;
 
 		w[0] = 0.144315607677787;
-    
+
 		w[1] = 0.095091634267285;
-      
+
 		w[2] = 0.103217370534718;
-      
+
 		w[3] = 0.032458497623198;
-      
+
 		w[4] = 0.027230314174435;
 	}
-	else if ( p == 9 ){
-		l1 = new double [6]; 
-		l2 = new double [6]; 
-		l3 = new double [6]; 
-	
-		w = new double [6];
+	else if (p == 9) {
+		l1 = new double[6];
+		l2 = new double[6];
+		l3 = new double[6];
+
+		w = new double[6];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -604,115 +582,115 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 		l3[5] = 0.741198598784498;
 
 		w[0] = 0.097135796282799;
-		
+
 		w[1] = 0.031334700227139;
-      
+
 		w[2] = 0.077827541004774;
-      
+
 		w[3] = 0.079647738927210;
-      
+
 		w[4] = 0.025577675658698;
-      
+
 		w[5] = 0.043283539377289;
 	}
-	else if ( p == 10 ){ 
-		l1 = new double [6]; 
-		l2 = new double [6]; 
-		l3 = new double [6]; 
-	
-		w = new double [6];
+	else if (p == 10) {
+		l1 = new double[6];
+		l2 = new double[6];
+		l3 = new double[6];
+
+		w = new double[6];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
 		l3[0] = 0.333333333333333;
-      
+
 		l1[1] = 0.028844733232685;
 		l2[1] = 0.485577633383657;
 		l3[1] = 0.485577633383657;
-      
+
 		l1[2] = 0.781036849029926;
 		l2[2] = 0.109481575485037;
 		l3[2] = 0.109481575485037;
-      
+
 		l1[3] = 0.141707219414880;
 		l2[3] = 0.307939838764121;
 		l3[3] = 0.550352941820999;
-      
+
 		l1[4] = 0.025003534762686;
 		l2[4] = 0.246672560639903;
 		l3[4] = 0.728323904597411;
-      
+
 		l1[5] = 0.009540815400299;
 		l2[5] = 0.066803251012200;
 		l3[5] = 0.923655933587500;
-		
+
 		w[0] = 0.090817990382754;
-		
+
 		w[1] = 0.036725957756467;
-		
+
 		w[2] = 0.045321059435528;
-		
+
 		w[3] = 0.072757916845420;
-		
+
 		w[4] = 0.028327242531057;
-		
+
 		w[5] = 0.009421666963733;
 	}
-	else if ( p == 11 ){
-		l1 = new double [7]; 
-		l2 = new double [7]; 
-		l3 = new double [7]; 
-	
-		w = new double [7];
-		
-		l1[0] = -0.069222096541517; 
-		l2[0] = 0.534611048270758; 
+	else if (p == 11) {
+		l1 = new double[7];
+		l2 = new double[7];
+		l3 = new double[7];
+
+		w = new double[7];
+
+		l1[0] = -0.069222096541517;
+		l2[0] = 0.534611048270758;
 		l3[0] = 0.534611048270758;
-      
-		l1[1] = 0.202061394068290; 
-		l2[1] = 0.398969302965855; 
+
+		l1[1] = 0.202061394068290;
+		l2[1] = 0.398969302965855;
 		l3[1] = 0.398969302965855;
-      
-		l1[2] = 0.593380199137435; 
-		l2[2] = 0.203309900431282; 
+
+		l1[2] = 0.593380199137435;
+		l2[2] = 0.203309900431282;
 		l3[2] = 0.203309900431282;
-		
-		l1[3] = 0.761298175434837; 
-		l2[3] = 0.119350912282581; 
+
+		l1[3] = 0.761298175434837;
+		l2[3] = 0.119350912282581;
 		l3[3] = 0.119350912282581;
-		
-		l1[4] = 0.935270103777448; 
-		l2[4] = 0.032364948111276; 
+
+		l1[4] = 0.935270103777448;
+		l2[4] = 0.032364948111276;
 		l3[4] = 0.032364948111276;
-		
-		l1[5] = 0.050178138310495; 
-		l2[5] = 0.356620648261293; 
+
+		l1[5] = 0.050178138310495;
+		l2[5] = 0.356620648261293;
 		l3[5] = 0.593201213428213;
-		
-		l1[6] = 0.021022016536166; 
-		l2[6] = 0.171488980304042; 
+
+		l1[6] = 0.021022016536166;
+		l2[6] = 0.171488980304042;
 		l3[6] = 0.807489003159792;
-  
+
 		w[0] = 0.000927006328961;
-    
+
 		w[1] = 0.077149534914813;
-      
+
 		w[2] = 0.059322977380774;
-      
+
 		w[3] = 0.036184540503418;
-     
+
 		w[4] = 0.013659731002678;
-      
+
 		w[5] = 0.052337111962204;
-    
+
 		w[6] = 0.020707659639141;
 	}
-	else if ( p == 12 ){
-		l1 = new double [8];
-		l2 = new double [8];
-		l3 = new double [8];
+	else if (p == 12) {
+		l1 = new double[8];
+		l2 = new double[8];
+		l3 = new double[8];
 
-		w = new double [8];
+		w = new double[8];
 
 		l1[0] = 0.02356522045239;
 		l2[0] = 0.488217389773805;
@@ -760,14 +738,14 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[6] = 0.022356773202303;
 
-		w[7] = 0.017316231108659; 
+		w[7] = 0.017316231108659;
 	}
-	else if ( p == 13 ){    
-		l1 = new double [10];
-		l2 = new double [10];
-		l3 = new double [10];
+	else if (p == 13) {
+		l1 = new double[10];
+		l2 = new double[10];
+		l3 = new double[10];
 
-		w = new double [10];
+		w = new double[10];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -829,12 +807,12 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[9] = 0.015521786839045;
 	}
-	else if ( p == 14 ){   
-		l1 = new double [10];
-		l2 = new double [10];
-		l3 = new double [10];
+	else if (p == 14) {
+		l1 = new double[10];
+		l2 = new double[10];
+		l3 = new double[10];
 
-		w = new double [10];
+		w = new double[10];
 
 		l1[0] = 0.022072179275643;
 		l2[0] = 0.488963910362179;
@@ -896,12 +874,12 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[9] = 0.005010228838501;
 	}
-	else if ( p == 15 ){    
-		l1 = new double [11];
-		l2 = new double [11];
-		l3 = new double [11];
+	else if (p == 15) {
+		l1 = new double[11];
+		l2 = new double[11];
+		l3 = new double[11];
 
-		w = new double [11];
+		w = new double[11];
 
 		l1[0] = -0.013945833716486;
 		l2[0] = 0.506972916858243;
@@ -969,12 +947,12 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[10] = 0.007673942631049;
 	}
-	else if ( p == 16 ){    
-		l1 = new double [13];
-		l2 = new double [13];
-		l3 = new double [13];
+	else if (p == 16) {
+		l1 = new double[13];
+		l2 = new double[13];
+		l3 = new double[13];
 
-		w = new double [13];
+		w = new double[13];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -1054,12 +1032,12 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[12] = 0.006850054546542;
 	}
-	else if ( p == 17 ){    
-		l1 = new double [15];
-		l2 = new double [15];
-		l3 = new double [15];
+	else if (p == 17) {
+		l1 = new double[15];
+		l2 = new double[15];
+		l3 = new double[15];
 
-		w = new double [15];
+		w = new double[15];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -1151,12 +1129,12 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[14] = 0.006665632004165;
 	}
-	else if ( p == 18 ){ 
-		l1 = new double [17];
-		l2 = new double [17];
-		l3 = new double [17];
+	else if (p == 18) {
+		l1 = new double[17];
+		l2 = new double[17];
+		l3 = new double[17];
 
-		w = new double [17];
+		w = new double[17];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -1260,12 +1238,12 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[16] = 0.000046187660794;
 	}
-	else if ( p == 19 ){
-		l1 = new double [17];
-		l2 = new double [17];
-		l3 = new double [17];
+	else if (p == 19) {
+		l1 = new double[17];
+		l2 = new double[17];
+		l3 = new double[17];
 
-		w = new double [17];
+		w = new double[17];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -1367,14 +1345,14 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 
 		w[15] = 0.010258563736199;
 
-		w[16] = 0.003799928855302; 
+		w[16] = 0.003799928855302;
 	}
-	else if ( p == 20 ){
-		l1 = new double [19];
-		l2 = new double [19];
-		l3 = new double [19];
+	else if (p == 20) {
+		l1 = new double[19];
+		l2 = new double[19];
+		l3 = new double[19];
 
-		w = new double [19];
+		w = new double[19];
 
 		l1[0] = 0.333333333333333;
 		l2[0] = 0.333333333333333;
@@ -1492,15 +1470,15 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
 	}
 }
 
-void dunavant_rule_test(int p, int number_gp, double z1[], double z2[], double w[]){
-	double exact_integration = 1/((double)p+1)*((1-pow(-1.0,p))/((double)p+2)+2*pow(-1.0,p)); // S(x^p)dxdy over triangle
+void dunavant_rule_test(int p, int number_gp, double z1[], double z2[], double w[]) {
+	double exact_integration = 1 / ((double)p + 1)*((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p)); // S(x^p)dxdy over triangle
 
 	double num_integration = 0;
-	for (int i=0; i<number_gp; i++){ num_integration = num_integration + pow(z1[i],p)*w[i]; }
-	
-	double err = abs((num_integration-exact_integration)/exact_integration);
+	for (int i = 0; i < number_gp; i++) { num_integration = num_integration + pow(z1[i], p)*w[i]; }
 
-	if ( err < pow(10.0,-10.0))
+	double err = abs((num_integration - exact_integration) / exact_integration);
+
+	if (err < pow(10.0, -10.0))
 	{
 		cout << "\n";
 		cout << "DUNAVANT_RULE - Test success!\n";
@@ -1511,7 +1489,7 @@ void dunavant_rule_test(int p, int number_gp, double z1[], double z2[], double w
 		cout << "\n";
 		cout << "DUNAVANT_RULE - Test fail!\n";
 		cout << "  err = " << err << "\n";
-		exit ( 1 );
+		exit(1);
 	}
 }
 
