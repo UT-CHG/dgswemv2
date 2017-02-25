@@ -12,17 +12,21 @@ cxx = $(shell (which CC > /dev/null && echo CC) || echo $(cxx_default))
   source/integration_rules
 
 hdrs = \
-  source/basis.h \
-  source/integration.h \
+  source/class_basis.h \
+  source/class_basis_geometry.h \
+  source/class_integration.h \
+  source/class_element.h \
   source/basis_functions/basis_functions.h \
   source/integration_rules/integration_rules_area.h \
   source/integration_rules/integration_rules_line.h
 
 srcs = \
-  source/basis.cpp \
+  source/class_basis.cpp \
+  source/class_basis_geometry.cpp \
+  source/class_element.cpp \
   source/basis_functions/basis_triangle_dubiner.cpp \
   source/basis_functions/basis_polynomials.cpp \
-  source/integration.cpp \
+  source/class_integration.cpp \
   source/integration_rules/integration_area_dunavant.cpp \
   source/integration_rules/integration_line_gausslegendre.cpp
 
