@@ -1,6 +1,6 @@
-# include <iostream>
-
-# include "integration_rules_area.h"
+#include <iostream>
+#include <cmath>
+#include "integration_rules_area.h"
 
 int dunavant_degree(int p) {
     if (1 <= p && p <= 20) {

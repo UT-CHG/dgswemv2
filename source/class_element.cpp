@@ -1,6 +1,7 @@
-#include "class_element.h"
 #include <iostream>
 #include <cmath>
+
+#include "class_element.h"
 
 ELEMENT_TRI::ELEMENT_TRI(int ID, int p, int p_geom, double nodal_coordinates_x[],
     double nodal_coordinates_y[], BASIS_TRI* basis, BASIS_GEOM_TRI* basis_geom) {

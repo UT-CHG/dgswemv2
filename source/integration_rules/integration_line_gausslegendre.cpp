@@ -1,6 +1,7 @@
-# include <iostream>
+#include <iostream>
+#include <cmath>
 
-# include "integration_rules_line.h"
+#include "integration_rules_line.h"
 
 int gausslegendre_degree(int p) {
     if (1 <= p && p <= 65)
