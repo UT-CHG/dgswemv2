@@ -16,6 +16,7 @@ hdrs = \
   source/class_basis_geometry.h \
   source/class_integration.h \
   source/class_element.h \
+  source/namespace_swe.h \
   source/basis_functions/basis_functions.h \
   source/integration_rules/integration_rules_area.h \
   source/integration_rules/integration_rules_line.h
