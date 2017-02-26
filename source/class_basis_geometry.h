@@ -5,21 +5,21 @@
 
 class BASIS_GEOM_TRI {
 private:
-	int p_geom;
+    int p_geom;
 
-	AREA_INTEGRATION* integration_rule_area;
-	LINE_INTEGRATION* integration_rule_line;
+    AREA_INTEGRATION* integration_rule_area;
+    LINE_INTEGRATION* integration_rule_line;
 
-	int number_bf_geom;
+    int number_bf_geom;
 
-	double** dN_dz1_area;
-	double** dN_dz2_area;
-	double*** dN_dz1_edge;
-	double*** dN_dz2_edge;
+    double** dN_dz1_area;
+    double** dN_dz2_area;
+    double*** dN_dz1_edge;
+    double*** dN_dz2_edge;
 
 public:
-	BASIS_GEOM_TRI(int, AREA_INTEGRATION*, LINE_INTEGRATION*);
-	~BASIS_GEOM_TRI();
+    BASIS_GEOM_TRI(int, AREA_INTEGRATION*, LINE_INTEGRATION*);
+    ~BASIS_GEOM_TRI();
 };
 
 #endif

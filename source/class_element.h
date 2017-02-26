@@ -3,34 +3,37 @@
 
 class ELEMENT_TRI {
 private:
-	int ID;
+    int ID;
 
-	int p;
-	int p_geom;
+    int p;
+    int p_geom;
 
-	double* nodal_coordinates_x;
-	double* nodal_coordinates_y;
+    double* nodal_coordinates_x;
+    double* nodal_coordinates_y;
 
-	BASIS_TRI* basis;
-	BASIS_GEOM_TRI* basis_geom;
+    BASIS_TRI* basis;
+    
+    BASIS_GEOM_TRI* basis_geom = nullptr;
+    double** M_inv = nullptr;
 
-	double*** J_2D_inv_area;
-	double* det_J_2D_area;
+    double*** J_inv_t_area;
+    double* det_J_area;
 
-	double** surface_J_edge;
-	double** normal_edge;
+    double** surface_J_edge;
+    double** normal_edge_x;
+    double** normal_edge_y;
 
-	double** area_int_fac_phi;
-	double** area_int_fac_dphidx;
-	double** area_int_fac_dphidy;
-	double*** edge_int_fac_x;
-	double*** edge_int_fac_y;
+    double** area_int_fac_phi;
+    double** area_int_fac_dphidx;
+    double** area_int_fac_dphidy;
+    double*** edge_int_fac_x;
+    double*** edge_int_fac_y;
 
 public:
-	ELEMENT_TRI(int, int, int, double[], double[], BASIS_TRI*, BASIS_GEOM_TRI*);
-	~ELEMENT_TRI();
+    ELEMENT_TRI(int, int, int, double[], double[], BASIS_TRI*, BASIS_GEOM_TRI* basis_geom = nullptr);
+    ~ELEMENT_TRI();
 
 private:
-	void compute_geometry();
-	void compute_integration_factors();
+    void ComputeGeometry();
+    void ComputeIntegrationFactors();
 };
