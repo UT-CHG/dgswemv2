@@ -1,44 +1,21 @@
 #ifndef CLASS_ELEMENT_H
 #define CLASS_ELEMENT_H
 
-#include "class_basis.h"
-#include "class_basis_geometry.h"
-
-class ELEMENT_TRI {
-private:
-    int ID;
-
-    int p;
-    int p_geom;
-
-    double* nodal_coordinates_x;
-    double* nodal_coordinates_y;
-
-    BASIS_TRI* basis;
-    
-    BASIS_GEOM_TRI* basis_geom = nullptr;
-    double** M_inv = nullptr;
-
-    double*** J_inv_t_area;
-    double* det_J_area;
-
-    double** surface_J_edge;
-    double** normal_edge_x;
-    double** normal_edge_y;
-
-    double** area_int_fac_phi;
-    double** area_int_fac_dphidx;
-    double** area_int_fac_dphidy;
-    double*** edge_int_fac_x;
-    double*** edge_int_fac_y;
+class ELEMENT {
+protected:
+  int ID;
+  int p;
 
 public:
-    ELEMENT_TRI(int, int, int, double[], double[], BASIS_TRI*, BASIS_GEOM_TRI* basis_geom = nullptr);
-    ~ELEMENT_TRI();
+ ELEMENT(int ID, int p) : ID(ID), p(p) {}
 
-private:
-    void ComputeGeometry();
-    void ComputeIntegrationFactors();
-};
+  virtual double* get_f_at_gp(double[] f_bf_coeffs);
+
+  virtual void test_against_phi(double[] f_at_gp);
+  virtual void test_against_dphidx(double[] f_at_gp);
+  virtual void test_against_dphidy(double[] f_at_gp);
+
+  virtual void invert_mass_matrix(double[] f_bf);
+}
 
 #endif
