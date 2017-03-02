@@ -1,3 +1,6 @@
+#ifndef CLASS_ELEMENT_H
+#define CLASS_ELEMENT_H
+
 #include "class_basis.h"
 #include "class_basis_geometry.h"
 
@@ -37,3 +40,5 @@ private:
     void ComputeGeometry();
     void ComputeIntegrationFactors();
 };
+
+#endif
