@@ -1,6 +1,7 @@
 #ifndef CLASS_ELEMENT_TRI_H
 #define CLASS_ELEMENT_TRI_H
 
+#include "class_element.h"
 #include "class_basis.h"
 #include "class_basis_geometry.h"
 
@@ -33,11 +34,15 @@ public:
     ELEMENT_TRI(int, int, int, double[], double[], BASIS_TRI*, BASIS_GEOM_TRI* basis_geom = nullptr);
     ~ELEMENT_TRI();
 
-  double* get_f_at_gp(double[] f_bf_coeffs);
+
+    //todo: implement inherited functions
+    double* get_f_at_gp(double f_bf_coeffs[]){ return nullptr;};
   
-  void test_against_phi(double[] f_at_gp);
-  void test_against_dphidx(double[] f_at_gp);
-  void test_against_dphidy(double[] f_at_gp);
+    double test_against_phi(double f_at_gp[]){return 0;};
+    double test_against_dphidx(double f_at_gp[]){return 0;};
+    double test_against_dphidy(double f_at_gp[]){return 0;};
+
+    double* invert_mass_matrix(double f_bf[]){ return nullptr;};
 
 private:
     void ComputeGeometry();

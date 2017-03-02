@@ -8,14 +8,15 @@ protected:
 
 public:
  ELEMENT(int ID, int p) : ID(ID), p(p) {}
+  ~ELEMENT()=default;
 
-  virtual double* get_f_at_gp(double[] f_bf_coeffs);
+  virtual double* get_f_at_gp(double f_bf_coeffs[])=0;
 
-  virtual void test_against_phi(double[] f_at_gp);
-  virtual void test_against_dphidx(double[] f_at_gp);
-  virtual void test_against_dphidy(double[] f_at_gp);
+  virtual double test_against_phi(double f_at_gp[])=0;
+  virtual double test_against_dphidx(double f_at_gp[])=0;
+  virtual double test_against_dphidy(double f_at_gp[])=0;
 
-  virtual void invert_mass_matrix(double[] f_bf);
-}
+  virtual double* invert_mass_matrix(double f_bf[])=0;
+};
 
 #endif

@@ -1,11 +1,11 @@
 #include <iostream>
 #include <cmath>
 
-#include "class_element.h"
+#include "class_element_tri.h"
 
 ELEMENT_TRI::ELEMENT_TRI(int ID, int p, int p_geom, double nodal_coordinates_x[],
     double nodal_coordinates_y[], BASIS_TRI* basis, BASIS_GEOM_TRI* basis_geom)
-  : ELEMENT(ID.p), p_geom(p_geom), nodal_coordinates_x(nodal_coordinates_x),
+  : ELEMENT(ID,p), p_geom(p_geom), nodal_coordinates_x(nodal_coordinates_x),
     nodal_coordinates_y(nodal_coordinates_y), basis(basis)
 {
     if (this->p_geom != 1) {

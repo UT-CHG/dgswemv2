@@ -16,6 +16,7 @@ hdrs = \
   source/class_basis_geometry.h \
   source/class_integration.h \
   source/class_element.h \
+  source/class_element_tri.h \
   source/namespace_swe.h \
   source/basis_functions/basis_functions.h \
   source/integration_rules/integration_rules_area.h \
@@ -24,7 +25,7 @@ hdrs = \
 srcs = \
   source/class_basis.cpp \
   source/class_basis_geometry.cpp \
-  source/class_element.cpp \
+  source/class_element_tri.cpp \
   source/basis_functions/basis_triangle_dubiner.cpp \
   source/basis_functions/basis_polynomials.cpp \
   source/class_integration.cpp \

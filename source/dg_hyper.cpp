@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iomanip>
 
-#include "class_element.h"
+#include "class_element_tri.h"
 #include "class_basis.h"
 #include "class_basis_geometry.h"
 
