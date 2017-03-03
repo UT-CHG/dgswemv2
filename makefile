@@ -45,4 +45,4 @@ exe/%.gdb \
 exe/%.vg \
 exe/%.gp: $(srcs) $(hdrs) source/%.cpp
 	mkdir -p exe
-	$(cxx) -std=c++14  -Wall $(flags) -o $@ $(srcs) source/$*.cpp
+	$(cxx) -std=c++1y  -Wall $(flags) -o $@ $(srcs) source/$*.cpp
