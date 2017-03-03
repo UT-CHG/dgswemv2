@@ -17,6 +17,7 @@ hdrs = \
   source/class_integration.h \
   source/class_element.h \
   source/class_element_tri.h \
+  source/class_mesh.h \
   source/namespace_swe.h \
   source/basis_functions/basis_functions.h \
   source/integration_rules/integration_rules_area.h \
@@ -44,4 +45,4 @@ exe/%.gdb \
 exe/%.vg \
 exe/%.gp: $(srcs) $(hdrs) source/%.cpp
 	mkdir -p exe
-	$(cxx) -std=c++11  -Wall $(flags) -o $@ $(srcs) source/$*.cpp
+	$(cxx) -std=c++14  -Wall $(flags) -o $@ $(srcs) source/$*.cpp

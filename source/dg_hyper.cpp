@@ -5,7 +5,7 @@
 #include "class_element_tri.h"
 #include "class_basis.h"
 #include "class_basis_geometry.h"
-
+#include "class_mesh.h"
 
 int main( int argc, const char* argv[] )
 {
