@@ -3,13 +3,13 @@
 
 #include "class_integration.h"
 
-class BASIS_TRI {
+class BASIS_2D {
 private: 
     int p;
     bool orthogonal;
 
-    AREA_INTEGRATION* integration_rule_area;
-    LINE_INTEGRATION* integration_rule_line;
+    INTEGRATION_1D* integration_rule_line;
+    INTEGRATION_2D* integration_rule_area;
 
     int number_bf;
 
@@ -20,14 +20,14 @@ private:
     double** m_inv;
 
 public:
-    BASIS_TRI(int, AREA_INTEGRATION*, LINE_INTEGRATION*);
-    ~BASIS_TRI();
+    BASIS_2D(int, INTEGRATION_1D*, INTEGRATION_2D*);
+    ~BASIS_2D();
 
     int GetPolynomial();
     int GetNumberBasisFunctions();
 
-    AREA_INTEGRATION* GetIntegrationRuleArea();
-    LINE_INTEGRATION* GetIntegrationRuleLine();
+    INTEGRATION_1D* GetIntegrationRuleLine();
+    INTEGRATION_2D* GetIntegrationRuleArea();
     
     double** GetPhiArea();
     double** GetDPhiDZ1Area();

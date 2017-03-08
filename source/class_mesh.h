@@ -14,8 +14,8 @@ private:
 public:
   MESH();
 
-  uint number_of_elements() { return elements.size(); }
-  uint number_of_edges() { return edges.size(); }
+  int number_of_elements() { return elements.size(); }
+  int number_of_edges() { return edges.size(); }
 
   const ELEMENT* get_elt(int i) { return elements.at(i); }
   const EDGE*    get_edg(int i) { return edges.at(i); }

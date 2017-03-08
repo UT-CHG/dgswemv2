@@ -2,26 +2,29 @@
 #include <fstream>
 #include <iomanip>
 
-#include "class_element_tri.h"
+#include "elements/class_element_tri.h"
 #include "class_basis.h"
 #include "class_basis_geometry.h"
-#include "class_mesh.h"
+//#include "class_mesh.h"
 
-int main( int argc, const char* argv[] )
+int main(int argc, const char* argv[])
 {
-    printf( "\nHello World\n\n" );
+    printf("\nHello World\n\n");
 
     int ID = 0;
-    int p = 5;
+    int p = 2;
     int p_geom = 1;
 
     double x[3] = { -1, 0, -1 };
     double y[3] = { -1, 0, 1 };
 
-    AREA_INTEGRATION area_rule(2 * p);
-    LINE_INTEGRATION line_rule(2 * p);
-    BASIS_TRI basis(p, &area_rule, &line_rule);
-    BASIS_GEOM_TRI basis_geom(p_geom, &area_rule, &line_rule);
+    INTEGRATION_2D area_rule(2 * p);
+    INTEGRATION_1D line_rule(2 * p);
+    BASIS_2D basis(p, &line_rule, &area_rule);
+    BASIS_GEOM_2D basis_geom(p_geom, &line_rule, &area_rule);
 
-    ELEMENT_TRI element(ID, p, p_geom, x, y, &basis);
+    ELEMENT_TRI* element = new ELEMENT_TRI(ID, x, y, &basis);
+    element->CreateInterfaces();
+
+    element->~ELEMENT_TRI();
 }

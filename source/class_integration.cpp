@@ -4,80 +4,80 @@
 #include "integration_rules/integration_rules_area.h"
 #include "integration_rules/integration_rules_line.h"
 
-AREA_INTEGRATION::AREA_INTEGRATION(int p) {
-    this->p = p;
-    this->Dunavant();
-}
-
-AREA_INTEGRATION::~AREA_INTEGRATION() {
-    delete[] w;
-    delete[] z1;
-    delete[] z2;
-}
-
-int AREA_INTEGRATION::GetPolynomial() { return this->p; }
-
-int AREA_INTEGRATION::GetNumberGP() { return this->number_gp; }
-
-double* AREA_INTEGRATION::GetWeight() { return this->w; }
-
-double* AREA_INTEGRATION::GetZ1() { return this->z1; }
-
-double* AREA_INTEGRATION::GetZ2() { return this->z2; }
-
-void AREA_INTEGRATION::Dunavant() {
-    int polynomial = dunavant_degree(this->p);
-
-    this->number_gp = dunavant_number_gp(polynomial);
-    double* x = new double[number_gp];
-    double* y = new double[number_gp];
-    double* weight = new double[number_gp];
-
-    dunavant_rule(polynomial, x, y, weight);
-
-    this->w = new double[number_gp];
-    this->z1 = new double[number_gp];
-    this->z2 = new double[number_gp];
-
-    for (int i = 0; i < number_gp; i++) {
-        w[i] = 2 * weight[i];
-        z1[i] = 2 * x[i] - 1;
-        z2[i] = 2 * y[i] - 1;
-    }
-
-    dunavant_rule_test(polynomial, number_gp, z1, z2, w);
-
-    delete[] x;
-    delete[] y;
-    delete[] weight;
-}
-
-LINE_INTEGRATION::LINE_INTEGRATION(int p) {
+INTEGRATION_1D::INTEGRATION_1D(int p) {
     this->p = p;
     this->GaussLegendre();
 }
 
-LINE_INTEGRATION::~LINE_INTEGRATION() {
-    delete[] w;
-    delete[] z;
+INTEGRATION_1D::~INTEGRATION_1D() {
+    delete[] this->w;
+    delete[] this->z;
 }
 
-int LINE_INTEGRATION::GetPolynomial() { return this->p; }
+int INTEGRATION_1D::GetPolynomial() { return this->p; }
 
-int LINE_INTEGRATION::GetNumberGP() { return this->number_gp; }
+int INTEGRATION_1D::GetNumberGP() { return this->number_gp; }
 
-double* LINE_INTEGRATION::GetWeight() { return this->w; }
+double* INTEGRATION_1D::GetWeight() { return this->w; }
 
-double* LINE_INTEGRATION::GetZ() { return this->z; }
+double* INTEGRATION_1D::GetZ() { return this->z; }
 
-void LINE_INTEGRATION::GaussLegendre() {
+void INTEGRATION_1D::GaussLegendre() {
     int polynomial = gausslegendre_degree(this->p);
 
     this->number_gp = gausslegendre_number_gp(polynomial);
-    this->z = new double[number_gp];
-    this->w = new double[number_gp];
+    this->z = new double[this->number_gp];
+    this->w = new double[this->number_gp];
 
-    gausslegendre_rule(number_gp, z, w);
+    gausslegendre_rule(this->number_gp, this->z, this->w);
 
-    gausslegendre_rule_test(polynomial, number_gp, z, w);
+    gausslegendre_rule_test(polynomial, this->number_gp, this->z, this->w);
+}
+
+INTEGRATION_2D::INTEGRATION_2D(int p) {
+    this->p = p;
+    this->Dunavant();
+}
+
+INTEGRATION_2D::~INTEGRATION_2D() {
+    delete[] this->w;
+    delete[] this->z1;
+    delete[] this->z2;
+}
+
+int INTEGRATION_2D::GetPolynomial() { return this->p; }
+
+int INTEGRATION_2D::GetNumberGP() { return this->number_gp; }
+
+double* INTEGRATION_2D::GetWeight() { return this->w; }
+
+double* INTEGRATION_2D::GetZ1() { return this->z1; }
+
+double* INTEGRATION_2D::GetZ2() { return this->z2; }
+
+void INTEGRATION_2D::Dunavant() {
+    int polynomial = dunavant_degree(this->p);
+
+    this->number_gp = dunavant_number_gp(polynomial);
+    double* x = new double[this->number_gp];
+    double* y = new double[this->number_gp];
+    double* weight = new double[this->number_gp];
+
+    dunavant_rule(polynomial, x, y, weight);
+
+    this->w = new double[this->number_gp];
+    this->z1 = new double[this->number_gp];
+    this->z2 = new double[this->number_gp];
+
+    for (int i = 0; i < this->number_gp; i++) {
+        this->w[i] = 2 * weight[i];
+        this->z1[i] = 2 * x[i] - 1;
+        this->z2[i] = 2 * y[i] - 1;
+    }
+
+    dunavant_rule_test(polynomial, this->number_gp, this->z1, this->z2, this->w);
+
+    delete[] x;
+    delete[] y;
+    delete[] weight;
 }

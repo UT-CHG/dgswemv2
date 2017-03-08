@@ -4,16 +4,16 @@
 #include "class_basis.h"
 #include "basis_functions/basis_functions.h"
 
-BASIS_TRI::BASIS_TRI(int p, AREA_INTEGRATION* area_rule, LINE_INTEGRATION* line_rule) {
+BASIS_2D::BASIS_2D(int p, INTEGRATION_1D* line_rule, INTEGRATION_2D* area_rule) {
     this->p = p;
 
-    this->integration_rule_area = area_rule;
     this->integration_rule_line = line_rule;
-
+    this->integration_rule_area = area_rule;
+    
     this->Dubiner();
 }
 
-BASIS_TRI::~BASIS_TRI(){
+BASIS_2D::~BASIS_2D(){
     for (int i = 0; i < this->number_bf; i++) {
         delete[] this->phi_area[i];
         delete[] this->dphi_dz1_area[i];
@@ -29,26 +29,26 @@ BASIS_TRI::~BASIS_TRI(){
         }
         delete[] this->phi_edge[i];
     }
-    delete[] phi_edge;
+    delete[] this->phi_edge;
 }
 
-int BASIS_TRI::GetPolynomial() { return this->p; }
+int BASIS_2D::GetPolynomial() { return this->p; }
 
-int BASIS_TRI::GetNumberBasisFunctions() { return this->number_bf; }
+int BASIS_2D::GetNumberBasisFunctions() { return this->number_bf; }
 
-AREA_INTEGRATION* BASIS_TRI::GetIntegrationRuleArea() { return this->integration_rule_area; }
+INTEGRATION_1D* BASIS_2D::GetIntegrationRuleLine() { return this->integration_rule_line; }
 
-LINE_INTEGRATION* BASIS_TRI::GetIntegrationRuleLine() { return this->integration_rule_line; }
+INTEGRATION_2D* BASIS_2D::GetIntegrationRuleArea() { return this->integration_rule_area; }
 
-double** BASIS_TRI::GetPhiArea() { return this->phi_area; };
+double** BASIS_2D::GetPhiArea() { return this->phi_area; };
 
-double** BASIS_TRI::GetDPhiDZ1Area() { return this->dphi_dz1_area; };
+double** BASIS_2D::GetDPhiDZ1Area() { return this->dphi_dz1_area; };
 
-double** BASIS_TRI::GetDPhiDZ2Area() { return this->dphi_dz2_area; };
+double** BASIS_2D::GetDPhiDZ2Area() { return this->dphi_dz2_area; };
 
-double*** BASIS_TRI::GetPhiEdge() { return this->phi_edge; };
+double*** BASIS_2D::GetPhiEdge() { return this->phi_edge; };
 
-void BASIS_TRI::Dubiner() {
+void BASIS_2D::Dubiner() {
     int number_gp_area = this->integration_rule_area->GetNumberGP();
     int number_gp_edge = this->integration_rule_line->GetNumberGP();
     
@@ -121,54 +121,7 @@ void BASIS_TRI::Dubiner() {
         }
     }
 
-    /*
-    ofstream myfile;
-    ofstream myfile_d;
-
-    myfile.open("plot.txt");
-    myfile_d.open("plot_d.txt");
-
-    for (int i = 0; i < number_gp_area; i++) {
-        myfile_d << this->integration_rule_area->GetZ1()[i] << '\t';
-        myfile_d << this->integration_rule_area->GetZ2()[i] << '\t';
-        myfile_d << this->dphi_dz2_area[20][i] << '\n';
-    }
-
-    for (int i = 0; i < number_gp_area; i++) {
-        myfile << this->integration_rule_area->GetZ1()[i] << '\t';
-        myfile << this->integration_rule_area->GetZ2()[i] << '\t';
-        myfile << this->phi_area[20][i] << '\n';
-    }
-
-    for (int i = 0; i < 3; i++) {
-        if (i == 0) {
-            for (int j = 0; j < number_gp_edge; j++) {
-                myfile << -this->integration_rule_line->GetZ()[j] << '\t';
-                myfile << this->integration_rule_line->GetZ()[j] << '\t';
-                myfile << this->phi_edge[i][20][j] << '\n';
-            }
-        }
-        else if (i == 1) {
-            for (int j = 0; j < number_gp_edge; j++) {
-                myfile << -1 << '\t';
-                myfile << -this->integration_rule_line->GetZ()[j] << '\t';
-                myfile << this->phi_edge[i][20][j] << '\n';
-            }
-        }
-        else if (i == 2) {
-            for (int j = 0; j < number_gp_edge; j++) {
-                myfile << this->integration_rule_line->GetZ()[j] << '\t';
-                myfile << -1 << '\t';
-                myfile << this->phi_edge[i][20][j] << '\n';
-            }
-        }
-    }
-
-    myfile.close();
-    myfile_d.close();
-    */
-
-    dubiner_test(this->p, number_gp_area, phi_area, this->integration_rule_area->GetWeight());
+    dubiner_test(this->p, number_gp_area, this->phi_area, this->integration_rule_area->GetWeight());
 
     delete[] n1;
     delete[] n2;
