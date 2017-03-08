@@ -10,17 +10,17 @@ ELEMENT_TRI::ELEMENT_TRI(int ID, double nodal_coordinates_x[], double nodal_coor
 
     this->basis = basis;
 
-    int number_bf_geom = 3;
+    this->number_bf_geom = 3;
 
     if (basis_geom != nullptr) {
         this->basis_geom = basis_geom;
-        number_bf_geom = this->basis_geom->GetNumberBasisFunctions();
+        this->number_bf_geom = this->basis_geom->GetNumberBasisFunctions();
     }
 
-    this->nodal_coordinates_x = new double[number_bf_geom];
-    this->nodal_coordinates_y = new double[number_bf_geom];
+    this->nodal_coordinates_x = new double[this->number_bf_geom];
+    this->nodal_coordinates_y = new double[this->number_bf_geom];
 
-    for (int i = 0; i < number_bf_geom; i++) {
+    for (int i = 0; i < this->number_bf_geom; i++) {
         this->nodal_coordinates_x[i] = nodal_coordinates_x[i];
         this->nodal_coordinates_y[i] = nodal_coordinates_y[i];
     }
@@ -31,9 +31,9 @@ ELEMENT_TRI::ELEMENT_TRI(int ID, double nodal_coordinates_x[], double nodal_coor
         interfaces[i] = nullptr;
     }
 
-    int number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
-    int number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
-    int number_bf = this->basis->GetNumberBasisFunctions();
+    this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
+    this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
+    this->number_bf = this->basis->GetNumberBasisFunctions();
 
     this->U = new double*[SIZE_U];
     this->U_area = new double*[SIZE_U];
@@ -44,11 +44,11 @@ ELEMENT_TRI::ELEMENT_TRI(int ID, double nodal_coordinates_x[], double nodal_coor
     }
 
     for (int i = 0; i < SIZE_U; i++) {
-        this->U[i] = new double[number_bf];
-        this->U_area[i] = new double[number_gp_area];
+        this->U[i] = new double[this->number_bf];
+        this->U_area[i] = new double[this->number_gp_area];
 
         for (int j = 0; j < 3; j++) {
-            this->U_edge[j][i] = new double[number_gp_edge];
+            this->U_edge[j][i] = new double[this->number_gp_edge];
         }
     }
 
@@ -112,8 +112,8 @@ ELEMENT_TRI::~ELEMENT_TRI() {
         delete[] this->area_int_fac_dphidy[i];
 
         for (int j = 0; j < 3; j++) {
-            delete[] this->edge_int_fac_x[j][i];
-            delete[] this->edge_int_fac_y[j][i];
+            delete[] this->edge_int_fac_nx[j][i];
+            delete[] this->edge_int_fac_ny[j][i];
         }
     }
 
@@ -122,12 +122,12 @@ ELEMENT_TRI::~ELEMENT_TRI() {
     delete[] this->area_int_fac_dphidy;
 
     for (int i = 0; i < 3; i++) {
-        delete[] this->edge_int_fac_x[i];
-        delete[] this->edge_int_fac_y[i];
+        delete[] this->edge_int_fac_nx[i];
+        delete[] this->edge_int_fac_ny[i];
     }
     
-    delete[] this->edge_int_fac_x;
-    delete[] this->edge_int_fac_y;
+    delete[] this->edge_int_fac_nx;
+    delete[] this->edge_int_fac_ny;
 }
 
 void ELEMENT_TRI::ComputeGeometry() {
@@ -193,29 +193,29 @@ void ELEMENT_TRI::ComputeGeometry() {
 }
 
 void ELEMENT_TRI::ComputeIntegrationFactors() {
-    int number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
-    int number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
-    int number_bf = this->basis->GetNumberBasisFunctions();
+    this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
+    this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
+    this->number_bf = this->basis->GetNumberBasisFunctions();
 
-    this->area_int_fac_phi = new double*[number_bf];
-    this->area_int_fac_dphidx = new double*[number_bf];
-    this->area_int_fac_dphidy = new double*[number_bf];
+    this->area_int_fac_phi = new double*[this->number_bf];
+    this->area_int_fac_dphidx = new double*[this->number_bf];
+    this->area_int_fac_dphidy = new double*[this->number_bf];
     
-    this->edge_int_fac_x = new double**[3];
-    this->edge_int_fac_y = new double**[3];
+    this->edge_int_fac_nx = new double**[3];
+    this->edge_int_fac_ny = new double**[3];
 
     for (int i = 0; i < 3; i++) {
-        this->edge_int_fac_x[i] = new double*[number_bf];
-        this->edge_int_fac_y[i] = new double*[number_bf];
+        this->edge_int_fac_nx[i] = new double*[this->number_bf];
+        this->edge_int_fac_ny[i] = new double*[this->number_bf];
     }
 
     if (this->basis_geom == nullptr) {
-        for (int i = 0; i < number_bf; i++) {
-            this->area_int_fac_phi[i] = new double[number_gp_area];
-            this->area_int_fac_dphidx[i] = new double[number_gp_area];
-            this->area_int_fac_dphidy[i] = new double[number_gp_area];
+        for (int i = 0; i < this->number_bf; i++) {
+            this->area_int_fac_phi[i] = new double[this->number_gp_area];
+            this->area_int_fac_dphidx[i] = new double[this->number_gp_area];
+            this->area_int_fac_dphidy[i] = new double[this->number_gp_area];
 
-            for (int j = 0; j < number_gp_area; j++) {
+            for (int j = 0; j < this->number_gp_area; j++) {
                 this->area_int_fac_phi[i][j] = this->basis->GetPhiArea()[i][j] *
                     this->basis->GetIntegrationRuleArea()->GetWeight()[j];
 
@@ -230,16 +230,16 @@ void ELEMENT_TRI::ComputeIntegrationFactors() {
         }
 
         for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < number_bf; j++) {
-                this->edge_int_fac_x[i][j] = new double[number_gp_edge];
-                this->edge_int_fac_y[i][j] = new double[number_gp_edge];
+            for (int j = 0; j < this->number_bf; j++) {
+                this->edge_int_fac_nx[i][j] = new double[this->number_gp_edge];
+                this->edge_int_fac_ny[i][j] = new double[this->number_gp_edge];
                 
-                for (int k = 0; k < number_gp_edge; k++) {
-                    this->edge_int_fac_x[i][j][k] = this->basis->GetPhiEdge()[i][j][k] * this->normal_edge_x[i][0] *
+                for (int k = 0; k < this->number_gp_edge; k++) {
+                    this->edge_int_fac_nx[i][j][k] = this->basis->GetPhiEdge()[i][j][k] * this->normal_edge_x[i][0] *
                         this->basis->GetIntegrationRuleLine()->GetWeight()[k] *
                         this->surface_J_edge[i][0] / this->det_J_area[0];
                     
-                    this->edge_int_fac_y[i][j][k] = this->basis->GetPhiEdge()[i][j][k] * this->normal_edge_y[i][0] *
+                    this->edge_int_fac_ny[i][j][k] = this->basis->GetPhiEdge()[i][j][k] * this->normal_edge_y[i][0] *
                         this->basis->GetIntegrationRuleLine()->GetWeight()[k] *
                         this->surface_J_edge[i][0] / this->det_J_area[0];
                 }
@@ -261,47 +261,87 @@ void ELEMENT_TRI::CreateInterfaces() {
 }
 
 void ELEMENT_TRI::ComputeInternalU(int u_flag) {
-    int number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
-    int number_bf = this->basis->GetNumberBasisFunctions();
+    this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
+    this->number_bf = this->basis->GetNumberBasisFunctions();
 
-    for (int i = 0; i < number_gp_area; i++) {
+    for (int i = 0; i < this->number_gp_area; i++) {
         this->U_area[u_flag][i] = 0.0;
     }
 
-    for (int i = 0; i < number_bf; i++) {
-        for (int j = 0; j < number_gp_area; j++) {
+    for (int i = 0; i < this->number_bf; i++) {
+        for (int j = 0; j < this->number_gp_area; j++) {
             this->U_area[u_flag][j] += this->U[u_flag][i] * this->basis->GetPhiArea()[i][j];
         }
     }
 }
 
 void ELEMENT_TRI::ComputeBoundaryU(int u_flag) {
-    int number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
-    int number_bf = this->basis->GetNumberBasisFunctions();
+    this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
+    this->number_bf = this->basis->GetNumberBasisFunctions();
 
-    for (int i = 0; i < number_bf; i++) {
+    for (int i = 0; i < this->number_bf; i++) {
         U[u_flag][i] = i;
     }
 
     for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < number_gp_edge; j++) {
+        for (int j = 0; j < this->number_gp_edge; j++) {
             this->U_edge[i][u_flag][j] = 0.0;
         }
         
-        for (int j = 0; j < number_bf; j++) {
-            for (int k = 0; k < number_gp_edge; k++) {
+        for (int j = 0; j < this->number_bf; j++) {
+            for (int k = 0; k < this->number_gp_edge; k++) {
                 this->U_edge[i][u_flag][k] += this->U[u_flag][j] * this->basis->GetPhiEdge()[i][j][k];
             }
         }
     }
 }
 
-double ELEMENT_TRI::PerformNumericalIntegration(int number_gp, double u[], double int_fac[]) {
+double ELEMENT_TRI::IntegrationInternalPhi(int u_flag, int phi_n) {
     double integral = 0;
 
-    for (int i = 0; i < number_gp; i++) {
-        integral += u[i] * int_fac[i];
+    for (int i = 0; i < this->number_gp_area; i++) {
+        integral += this->U_area[u_flag][i] * this->area_int_fac_phi[phi_n][i];
     }
 
     return integral;
+}
+
+double ELEMENT_TRI::IntegrationInternalDPhiDX(int u_flag, int phi_n) {
+    double integral = 0;
+
+    for (int i = 0; i < this->number_gp_area; i++) {
+        integral += this->U_area[u_flag][i] * this->area_int_fac_dphidx[phi_n][i];
+    }
+
+    return integral;
+}
+
+double ELEMENT_TRI::IntegrationInternalDPhiDY(int u_flag, int phi_n) {
+    double integral = 0;
+
+    for (int i = 0; i < this->number_gp_area; i++) {
+        integral += this->U_area[u_flag][i] * this->area_int_fac_dphidy[phi_n][i];
+    }
+
+    return integral;
+}
+
+double ELEMENT_TRI::IntegrationBoundaryNX(int edge_n, int u_flag, int phi_n) {
+    double integral = 0;
+
+    for (int i = 0; i < this->number_gp_edge; i++) {
+        integral += this->U_edge[edge_n][u_flag][i] * this->edge_int_fac_nx[edge_n][phi_n][i];
+    }
+
+    return integral;
+}
+
+double ELEMENT_TRI::IntegrationBoundaryNY(int edge_n, int u_flag, int phi_n) {
+	double integral = 0;
+
+	for (int i = 0; i < this->number_gp_edge; i++) {
+		integral += this->U_edge[edge_n][u_flag][i] * this->edge_int_fac_ny[edge_n][phi_n][i];
+	}
+
+	return integral;
 }

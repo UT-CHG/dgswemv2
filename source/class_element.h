@@ -14,6 +14,13 @@ public:
 
     virtual void CreateInterfaces() {};
 
+    virtual double IntegrationInternalPhi(int, int) {};
+    virtual double IntegrationInternalDPhiDX(int, int) {};
+    virtual double IntegrationInternalDPhiDY(int, int) {};
+
+    virtual double IntegrationBoundaryNX(int, int, int) {};
+    virtual double IntegrationBoundaryNY(int, int, int) {};
+
     virtual double test_against_phi(double f_at_gp[]) = 0;
     virtual double test_against_dphidx(double f_at_gp[]) = 0;
     virtual double test_against_dphidy(double f_at_gp[]) = 0;
