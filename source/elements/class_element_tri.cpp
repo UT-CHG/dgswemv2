@@ -10,7 +10,10 @@ ELEMENT_TRI::ELEMENT_TRI(int ID, double nodal_coordinates_x[], double nodal_coor
 
     this->basis = basis;
 
-    this->number_bf_geom = 3;
+	this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
+	this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
+	this->number_bf = this->basis->GetNumberBasisFunctions();
+	this->number_bf_geom = 3;
 
     if (basis_geom != nullptr) {
         this->basis_geom = basis_geom;
@@ -30,10 +33,6 @@ ELEMENT_TRI::ELEMENT_TRI(int ID, double nodal_coordinates_x[], double nodal_coor
     for (int i = 0; i < 3; i++) {
         interfaces[i] = nullptr;
     }
-
-    this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
-    this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
-    this->number_bf = this->basis->GetNumberBasisFunctions();
 
     this->U = new double*[SIZE_U];
     this->U_area = new double*[SIZE_U];
@@ -61,8 +60,8 @@ ELEMENT_TRI::~ELEMENT_TRI() {
     delete[] this->nodal_coordinates_x;
     delete[] this->nodal_coordinates_y;
 
-    for (int i = 0; i < 1; i++) {
-        this->interfaces[i]->~INTERFACE_2D();
+    for (int i = 0; i < 3; i++) {
+        delete this->interfaces[i];
     }
 
     delete[] this->interfaces;
@@ -106,7 +105,7 @@ ELEMENT_TRI::~ELEMENT_TRI() {
     delete[] this->normal_edge_x;
     delete[] this->normal_edge_y;
 
-    for (int i = 0; i < this->basis->GetNumberBasisFunctions(); i++) {
+    for (int i = 0; i < this->number_bf; i++) {
         delete[] this->area_int_fac_phi[i];
         delete[] this->area_int_fac_dphidx[i];
         delete[] this->area_int_fac_dphidy[i];
@@ -193,10 +192,6 @@ void ELEMENT_TRI::ComputeGeometry() {
 }
 
 void ELEMENT_TRI::ComputeIntegrationFactors() {
-    this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
-    this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
-    this->number_bf = this->basis->GetNumberBasisFunctions();
-
     this->area_int_fac_phi = new double*[this->number_bf];
     this->area_int_fac_dphidx = new double*[this->number_bf];
     this->area_int_fac_dphidy = new double*[this->number_bf];
@@ -261,9 +256,6 @@ void ELEMENT_TRI::CreateInterfaces() {
 }
 
 void ELEMENT_TRI::ComputeInternalU(int u_flag) {
-    this->number_gp_area = this->basis->GetIntegrationRuleArea()->GetNumberGP();
-    this->number_bf = this->basis->GetNumberBasisFunctions();
-
     for (int i = 0; i < this->number_gp_area; i++) {
         this->U_area[u_flag][i] = 0.0;
     }
@@ -276,9 +268,6 @@ void ELEMENT_TRI::ComputeInternalU(int u_flag) {
 }
 
 void ELEMENT_TRI::ComputeBoundaryU(int u_flag) {
-    this->number_gp_edge = this->basis->GetIntegrationRuleLine()->GetNumberGP();
-    this->number_bf = this->basis->GetNumberBasisFunctions();
-
     for (int i = 0; i < this->number_bf; i++) {
         U[u_flag][i] = i;
     }

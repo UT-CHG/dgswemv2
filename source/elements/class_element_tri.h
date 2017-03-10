@@ -3,15 +3,17 @@
 
 #include <vector>
 
-#include "..\class_element.h"
-#include "..\class_interface.h"
-#include "..\class_basis.h"
-#include "..\class_basis_geometry.h"
+#include "../class_element.h"
+#include "../class_interface.h"
+#include "../class_basis.h"
+#include "../class_basis_geometry.h"
 
 class ELEMENT_TRI : public ELEMENT {
 private:
     double* nodal_coordinates_x;
     double* nodal_coordinates_y;
+
+	INTERFACE_2D** interfaces;
 
     BASIS_2D* basis;
     BASIS_GEOM_2D* basis_geom = nullptr;
@@ -20,7 +22,8 @@ private:
     int number_bf;
     int number_bf_geom;
 
-    INTERFACE_2D** interfaces;
+	int number_gp_area;
+	int number_gp_edge;
 
     double*** J_inv_t_area;
     double* det_J_area;
@@ -29,13 +32,11 @@ private:
     double** normal_edge_x;
     double** normal_edge_y;
 
-    int number_gp_area;
-    int number_gp_edge;
-
-    double** area_int_fac_phi;
+	double** area_int_fac_phi;
     double** area_int_fac_dphidx;
     double** area_int_fac_dphidy;
-    double*** edge_int_fac_nx;
+    
+	double*** edge_int_fac_nx;
     double*** edge_int_fac_ny;
 
     double** U; 
