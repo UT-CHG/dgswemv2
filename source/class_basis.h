@@ -1,6 +1,9 @@
 #ifndef CLASS_BASIS_H
 #define CLASS_BASIS_H
 
+#include "general_definitions.h"
+#include "basis_functions/basis_functions.h"
+
 #include "class_integration.h"
 
 class BASIS_2D {
@@ -20,7 +23,7 @@ private:
     double** m_inv;
 
 public:
-    BASIS_2D(int, INTEGRATION_1D*, INTEGRATION_2D*);
+	BASIS_2D(int, int, INTEGRATION_1D*, INTEGRATION_2D*);
     ~BASIS_2D();
 
     int GetPolynomial();

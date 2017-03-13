@@ -1,12 +1,18 @@
 #include <iostream>
 
 #include "class_integration.h"
-#include "integration_rules/integration_rules_area.h"
-#include "integration_rules/integration_rules_line.h"
 
-INTEGRATION_1D::INTEGRATION_1D(int p) {
+INTEGRATION_1D::INTEGRATION_1D(int type, int p) {
     this->p = p;
-    this->GaussLegendre();
+
+	switch (type) {
+	case GAUSS_LEGENDRE: this->GaussLegendre(); break;
+	default:
+		printf("\n");
+		printf("INTEGRATION_1D - Fatal error!\n");
+		printf("Undefined line integraton type = %d\n", type);
+		exit(1);
+	}
 }
 
 INTEGRATION_1D::~INTEGRATION_1D() {
@@ -34,9 +40,17 @@ void INTEGRATION_1D::GaussLegendre() {
     gausslegendre_rule_test(polynomial, this->number_gp, this->z, this->w);
 }
 
-INTEGRATION_2D::INTEGRATION_2D(int p) {
+INTEGRATION_2D::INTEGRATION_2D(int type, int p) {
     this->p = p;
-    this->Dunavant();
+
+	switch (type) {
+	case DUNAVANT: this->Dunavant(); break;
+	default:
+		printf("\n");
+		printf("INTEGRATION_2D - Fatal error!\n");
+		printf("Undefined area integraton type = %d\n", type);
+		exit(1);
+	}
 }
 
 INTEGRATION_2D::~INTEGRATION_2D() {

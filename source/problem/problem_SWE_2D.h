@@ -1,24 +1,26 @@
-#ifndef SWE_2D_H
-#define SWE_2D_H
+#ifndef SWE_2D
+#define SWE_2D
 
-#define SIZE_U 15
+#define SIZE_U 15U
 
-#define UA 0
-#define VA 1
-#define A 2
-#define H 3
-#define SP 4
+#define UA 0U
+#define VA 1U
+#define A 2U
+#define H 3U
+#define SP 4U
 
-#define TXX 5
-#define TXY 6
-#define TYX 7
-#define TYY 8
+#define TXX 5U
+#define TXY 6U
+#define TYX 7U
+#define TYY 8U
 
-#define F11 9
-#define F12 10
-#define F21 11
-#define F22 12
-#define F31 13
-#define F32 14
+#define F11 9U
+#define F12 10U
+#define F21 11U
+#define F22 12U
+#define F31 13U
+#define F32 14U
+
+#define INTERNAL 0U
 
 #endif

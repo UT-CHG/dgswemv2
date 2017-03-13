@@ -2,15 +2,21 @@
 #include <fstream>
 
 #include "class_basis.h"
-#include "basis_functions/basis_functions.h"
 
-BASIS_2D::BASIS_2D(int p, INTEGRATION_1D* line_rule, INTEGRATION_2D* area_rule) {
-    this->p = p;
+BASIS_2D::BASIS_2D(int type, int p, INTEGRATION_1D* line_rule, INTEGRATION_2D* area_rule) {
+	this->p = p;
 
-    this->integration_rule_line = line_rule;
-    this->integration_rule_area = area_rule;
-    
-    this->Dubiner();
+	this->integration_rule_line = line_rule;
+	this->integration_rule_area = area_rule;
+
+	switch (type) {
+	case DUBINER: this->Dubiner(); break;
+	default:
+		printf("\n");
+		printf("BASIS_2D - Fatal error!\n");
+		printf("Undefined basis type = %d\n", type);
+		exit(1);
+	}
 }
 
 BASIS_2D::~BASIS_2D(){
@@ -49,7 +55,9 @@ double** BASIS_2D::GetDPhiDZ2Area() { return this->dphi_dz2_area; };
 double*** BASIS_2D::GetPhiEdge() { return this->phi_edge; };
 
 void BASIS_2D::Dubiner() {
-    int number_gp_area = this->integration_rule_area->GetNumberGP();
+	this->orthogonal = true;
+
+	int number_gp_area = this->integration_rule_area->GetNumberGP();
     int number_gp_edge = this->integration_rule_line->GetNumberGP();
     
     this->number_bf = (this->p + 1)*(this->p + 2) / 2;

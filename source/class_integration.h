@@ -1,6 +1,10 @@
 #ifndef CLASS_INTEGRATION_H
 #define CLASS_INTEGRATION_H
 
+#include "general_definitions.h"
+#include "integration_rules/integration_rules_area.h"
+#include "integration_rules/integration_rules_line.h"
+
 class INTEGRATION_1D {
 
 private:
@@ -10,7 +14,7 @@ private:
     double* z;
 
 public:
-    INTEGRATION_1D(int);
+    INTEGRATION_1D(int, int);
     ~INTEGRATION_1D();
 
     int GetPolynomial();
@@ -31,7 +35,7 @@ private:
     double* z2;
 
 public:
-    INTEGRATION_2D(int);
+    INTEGRATION_2D(int, int);
     ~INTEGRATION_2D();
 
     int GetPolynomial();
