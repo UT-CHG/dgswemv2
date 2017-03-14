@@ -21,6 +21,6 @@
 #define F31 13U
 #define F32 14U
 
-#define INTERNAL 0U
+#define INTERNAL_BOUNDARY 0U
 
 #endif

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../class_element.h"
-#include "../class_interface.h"
+#include "../interfaces/class_interface_2D.h"
 #include "../class_basis.h"
 #include "../class_basis_geometry.h"
 
@@ -56,12 +56,6 @@ public:
 
     double IntegrationBoundaryNX(int, int, int);
     double IntegrationBoundaryNY(int, int, int);
-
-	virtual void CreateInterfaces() = 0;
-
-protected:
-	virtual void ComputeGeometry() = 0;
-	virtual void ComputeIntegrationFactors() = 0;
 };
 
 #endif

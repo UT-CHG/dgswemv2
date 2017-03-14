@@ -63,11 +63,12 @@ ELEMENT_TRI::~ELEMENT_TRI() {
 	delete[] this->nodal_coordinates_x;
 	delete[] this->nodal_coordinates_y;
 
-	for (int i = 0; i < 3; i++) {
+	/*for (int i = 0; i < 3; i++) {
 		if (this->interface_owner[i]) {
 			delete this->interfaces[i];
 		}
-	}
+	}*///at present it deletes all interfaces, however it should keep some for its neighbors
+	//delete through mesh class
 
 	delete[] this->interfaces;
 	delete[] this->interface_owner;
@@ -253,12 +254,43 @@ void ELEMENT_TRI::ComputeIntegrationFactors() {
 	delete[] this->normal_edge_y;
 }
 
-void ELEMENT_TRI::CreateInterfaces() {
+std::map<unsigned int, INTERFACE*> ELEMENT_TRI::CreateInterfaces() {
+	std::map<unsigned int, INTERFACE*> internal_interfaces;
+	
 	for (int i = 0; i < 3; i++) {
 		if (this->interfaces[i] == nullptr) {
 			this->interfaces[i] = new INTERFACE_2D(this->U_edge[i]);
 			this->interface_owner[i] = true;
-			// send this pointer to the corresponding neighbor
+
+			if (this->neighbor_ID[i] != DEFAULT_ID) {
+				internal_interfaces[this->neighbor_ID[i]] = this->interfaces[i];
+			}
 		}
 	}
+
+	return internal_interfaces;
+}
+
+void ELEMENT_TRI::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
+	for (int i = 0; i < 3; i++) {
+		if (this->neighbor_ID[i] == neighbor_ID) {
+			this->interfaces[i] = (INTERFACE_2D*)interface_ptr;
+		}
+	}
+}
+
+std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT_TRI::GetOwnInterfaces() {
+	std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces;
+
+	for (int i = 0; i < 3; i++) {
+		if (this->interface_owner[i]) {
+			std::pair<unsigned char, INTERFACE*> own_interface;
+
+			own_interface.first = this->boundary_type[i];
+			own_interface.second = this->interfaces[i];
+			own_interfaces.push_back(own_interface);
+		}
+	}
+
+	return own_interfaces;
 }

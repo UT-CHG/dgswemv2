@@ -1,6 +1,10 @@
 #ifndef CLASS_ELEMENT_H
 #define CLASS_ELEMENT_H
 
+#include <map>
+
+#include "class_interface.h"
+
 class ELEMENT {
 protected:
     unsigned int ID;
@@ -15,10 +19,13 @@ public:
 	ELEMENT(int ID) : ID(ID) {}
 	virtual ~ELEMENT() = default;
 
+	virtual std::map<unsigned int, INTERFACE*> CreateInterfaces() = 0;
+	virtual void AppendInterface(unsigned int, INTERFACE*) = 0;
+
+	virtual std::vector<std::pair<unsigned char, INTERFACE*>> GetOwnInterfaces() = 0;
+
 	virtual void ComputeInternalU(int) = 0;
 	virtual void ComputeBoundaryU(int, int) = 0;
-
-	virtual void CreateInterfaces() = 0;
 
 	virtual double IntegrationInternalPhi(int, int) = 0;
 	virtual double IntegrationInternalDPhiDX(int, int) = 0;

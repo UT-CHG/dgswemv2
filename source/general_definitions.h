@@ -3,8 +3,8 @@
 
 #include "problem\problem_SWE_2D.h"
 
-const unsigned int DEFAULT_ID = 4294967295; 
-const int DEFAULT_BOUNDARY = 255;
+#define DEFAULT_ID 4294967295
+#define DEFAULT_BOUNDARY 255
 
 // 2D bases
 #define DUBINER 0

@@ -1,14 +1,10 @@
-#ifndef CLASS_INTERFACE_2D_H
-#define CLASS_INTERFACE_2D_H
+#ifndef CLASS_INTERFACE_H
+#define CLASS_INTERFACE_H
 
-class INTERFACE_2D {	
-private:
-    double** U_edge_IN;
-    double** U_edge_EX;
-
+class INTERFACE {	
 public:
-    INTERFACE_2D(double**);
-    ~INTERFACE_2D();
+	INTERFACE() {};
+    virtual ~INTERFACE() = default;
 };
 
 #endif

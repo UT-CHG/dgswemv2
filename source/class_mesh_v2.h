@@ -19,7 +19,8 @@ protected:
 	int p_geom;
 
 	std::map<unsigned int, ELEMENT*> elements;
-
+	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
+    
 	std::map<unsigned char, INTEGRATION_1D*> line_rules;
 	std::map<unsigned char, INTEGRATION_2D*> area_rules;
 	
@@ -29,6 +30,10 @@ protected:
 public:
 	MESH(int, int);
 	~MESH();
+
+protected:
+	void InitializeElements();
+	void InitializeInterfaces();
 };
 
 #endif
