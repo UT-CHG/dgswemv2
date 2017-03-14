@@ -11,6 +11,8 @@ private:
 public:
 	INTERFACE_2D(double**);
 	~INTERFACE_2D() = default;
+
+	void SetPointerEX(double**);
 };
 
 #endif

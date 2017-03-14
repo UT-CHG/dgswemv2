@@ -15,5 +15,4 @@
 // line integration rules
 #define GAUSS_LEGENDRE 0
 
-
 #endif

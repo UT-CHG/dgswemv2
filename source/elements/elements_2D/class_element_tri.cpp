@@ -275,6 +275,8 @@ void ELEMENT_TRI::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface
 	for (int i = 0; i < 3; i++) {
 		if (this->neighbor_ID[i] == neighbor_ID) {
 			this->interfaces[i] = (INTERFACE_2D*)interface_ptr;
+
+			this->interfaces[i]->SetPointerEX(this->U_edge[i]);
 		}
 	}
 }
