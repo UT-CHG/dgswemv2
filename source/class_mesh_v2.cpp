@@ -1,5 +1,3 @@
-#include <fstream>
-
 #include "class_mesh_v2.h"
 
 MESH::MESH(int p, int p_geom) {
@@ -118,3 +116,6 @@ void MESH::InitializeInterfaces() {
 		}
 	}
 }
+
+//void MESH::solve() {
+//}

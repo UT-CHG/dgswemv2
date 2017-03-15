@@ -1,13 +1,19 @@
 #ifndef SWE_2D
 #define SWE_2D
 
+#define GRAVITY 9.81
+
 #define SIZE_U 15U
 
 #define UA 0U
 #define VA 1U
-#define A 2U
-#define H 3U
+#define H 2U
+#define ZB 3U
 #define SP 4U
+
+#define UA_AVG 5U
+#define VA_AVG 6U
+#define H_AVG 7U
 
 #define TXX 5U
 #define TXY 6U
@@ -22,5 +28,7 @@
 #define F32 14U
 
 #define INTERNAL_BOUNDARY 0U
+
+void problem_compute_f(int number_gp, double** U);
 
 #endif

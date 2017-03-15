@@ -11,12 +11,7 @@ public:
 		double[], double[], BASIS_2D*, BASIS_GEOM_2D* basis_geom = nullptr);
 	~ELEMENT_TRI();
 
-	std::map<unsigned int, INTERFACE*> CreateInterfaces();
-	void AppendInterface(unsigned int, INTERFACE*);
-
-	std::vector<std::pair<unsigned char, INTERFACE*>> GetOwnInterfaces();
-
-protected:
+private:
 	void ComputeGeometry();
 	void ComputeIntegrationFactors();
 };

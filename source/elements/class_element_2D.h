@@ -10,6 +10,8 @@
 
 class ELEMENT_2D : public ELEMENT {
 protected:
+	unsigned char number_edges;
+
 	INTERFACE_2D** interfaces;
 	bool* interface_owner;
 
@@ -37,7 +39,7 @@ protected:
 	double*** edge_int_fac_nx;
     double*** edge_int_fac_ny;
 
-    double** U; 
+	double** U; 
     std::vector<double**> U_substep;
 
     double** U_area;
@@ -47,15 +49,22 @@ public:
 	ELEMENT_2D(unsigned int, BASIS_2D*, BASIS_GEOM_2D* basis_geom = nullptr);
 	~ELEMENT_2D() = default;
 
-    void ComputeInternalU(int);
-	void ComputeBoundaryU(int, int);
+	std::map<unsigned int, INTERFACE*> CreateInterfaces();
+	void AppendInterface(unsigned int, INTERFACE*);
 
+	std::vector<std::pair<unsigned char, INTERFACE*>> GetOwnInterfaces();
+
+	void ComputeInternalU(int);
+	void ComputeBoundaryU(int);
+
+	void ComputeF();
+	
     double IntegrationInternalPhi(int, int);
     double IntegrationInternalDPhiDX(int, int);
     double IntegrationInternalDPhiDY(int, int);
 
-    double IntegrationBoundaryNX(int, int, int);
-    double IntegrationBoundaryNY(int, int, int);
+    double IntegrationBoundaryNX(int, int);
+    double IntegrationBoundaryNY(int, int);
 };
 
 #endif

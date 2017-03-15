@@ -70,9 +70,12 @@ void BASIS_2D::Dubiner() {
     double* n1 = new double[number_gp_area];
     double* n2 = new double[number_gp_area];
 
+	double* z1 = this->integration_rule_area->GetZ1();
+	double* z2 = this->integration_rule_area->GetZ2();
+
     for (int i = 0; i < number_gp_area; i++) {
-        n1[i] = 2 * (1 + this->integration_rule_area->GetZ1()[i]) / (1 - this->integration_rule_area->GetZ2()[i]) - 1;
-        n2[i] = this->integration_rule_area->GetZ2()[i];
+        n1[i] = 2 * (1 + z1[i]) / (1 - z2[i]) - 1;
+        n2[i] = z2[i];
     }
 
     int m = 0;
@@ -95,22 +98,24 @@ void BASIS_2D::Dubiner() {
     n1 = new double[number_gp_edge];
     n2 = new double[number_gp_edge];
     
+	double* z = this->integration_rule_line->GetZ();
+
     for (int i = 0; i < 3; i++) {
         if (i == 0) {
-            for (int j = 0; j < number_gp_edge; j++) {
+			for (int j = 0; j < number_gp_edge; j++) {
                 n1[j] = 1;
-                n2[j] = this->integration_rule_line->GetZ()[j];
+                n2[j] = z[j];
             }
         }
         else if (i == 1) {
-            for (int j = 0; j < number_gp_edge; j++) {
+			for (int j = 0; j < number_gp_edge; j++) {
                 n1[j] = -1;
-                n2[j] = -this->integration_rule_line->GetZ()[j];
+                n2[j] = -z[j];
             }
         }
         else if (i == 2) {
-            for (int j = 0; j < number_gp_edge; j++) {
-                n1[j] = this->integration_rule_line->GetZ()[j];
+			for (int j = 0; j < number_gp_edge; j++) {
+                n1[j] = z[j];
                 n2[j] = -1;
             }
         }

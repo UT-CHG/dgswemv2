@@ -5,12 +5,14 @@
 #include <vector>
 
 #include "general_definitions.h"
-#include "class_element.h"
-#include "elements\class_element_2D.h"
-#include "elements\elements_2D\class_element_tri.h"
+
 #include "class_integration.h"
 #include "class_basis.h"
 #include "class_basis_geometry.h"
+
+#include "class_element.h"
+#include "elements\class_element_2D.h"
+#include "elements\elements_2D\class_element_tri.h"
 
 
 class MESH {
@@ -30,6 +32,9 @@ protected:
 public:
 	MESH(int, int);
 	~MESH();
+
+	//void solve();
+	friend void problem_timestep(MESH* mesh);
 
 protected:
 	void InitializeElements();

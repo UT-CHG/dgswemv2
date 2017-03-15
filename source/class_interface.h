@@ -1,10 +1,12 @@
 #ifndef CLASS_INTERFACE_H
 #define CLASS_INTERFACE_H
 
-class INTERFACE {	
+class INTERFACE {
 public:
 	INTERFACE() {};
     virtual ~INTERFACE() = default;
+
+	virtual void ComputeAverageU(int, int) = 0;
 };
 
 #endif
