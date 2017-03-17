@@ -1,10 +1,13 @@
 #ifndef CLASS_INTERFACE_H
 #define CLASS_INTERFACE_H
 
+#include "general_definitions.h"
+
 class INTERFACE {
 	friend class PROBLEM;
 
 protected:
+	bool boundary;
 	int number_gp;
 
 	double* normal_x;

@@ -56,6 +56,7 @@
 #define NUM_FLUX_VA 12U
 #define NUM_FLUX_H 13U
 
-#define INTERNAL_BOUNDARY 0U
+#define INTERNAL 0U
+#define LAND 1U
 
 #endif

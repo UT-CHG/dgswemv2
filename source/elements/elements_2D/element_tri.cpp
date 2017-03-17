@@ -38,19 +38,21 @@ void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_typ
 	this->RHS = new double[this->number_bf];
 
 	this->u = new double*[SIZE_U];
-	this->u_internal = new double*[SIZE_U];
+	this->u_internal = new double*[SIZE_U_INTERNAL];
 	this->u_boundary = new double**[this->number_interfaces];
-
-	for (int i = 0; i < this->number_interfaces; i++) {
-		this->u_boundary[i] = new double*[SIZE_U];
-	}
 
 	for (int i = 0; i < SIZE_U; i++) {
 		this->u[i] = new double[this->number_bf];
-		this->u_internal[i] = new double[this->number_gp_internal];
+	}
 
-		for (int j = 0; j < this->number_interfaces; j++) {
-			this->u_boundary[j][i] = new double[this->number_gp_boundary];
+	for (int i = 0; i < SIZE_U_INTERNAL; i++) {
+		this->u_internal[i] = new double[this->number_gp_internal];
+	}
+
+	for (int i = 0; i < this->number_interfaces; i++) {
+		this->u_boundary[i] = new double*[SIZE_U_BOUNDARY];
+		for (int j = 0; j < SIZE_U_BOUNDARY; j++) {
+			this->u_boundary[i][j] = new double[this->number_gp_boundary];
 		}
 	}
 

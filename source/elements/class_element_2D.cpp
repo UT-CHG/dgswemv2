@@ -35,14 +35,16 @@ ELEMENT_2D::~ELEMENT_2D() {
 
 	for (int i = 0; i < SIZE_U; i++) {
 		delete[] this->u[i];
-		delete[] this->u_internal[i];
+	}
 
-		for (int j = 0; j < this->number_interfaces; j++) {
-			delete[] this->u_boundary[j][i];
-		}
+	for (int i = 0; i < SIZE_U_INTERNAL; i++) {
+		delete[] this->u_internal[i];
 	}
 
 	for (int i = 0; i < this->number_interfaces; i++) {
+		for (int j = 0; j < SIZE_U_BOUNDARY; j++) {
+			delete[] this->u_boundary[i][j];
+		}
 		delete[] this->u_boundary[i];
 	}
 
@@ -169,12 +171,15 @@ std::map<unsigned int, INTERFACE*> ELEMENT_2D::CreateInterfaces() {
 	for (int i = 0; i < this->number_interfaces; i++) {
 		if (this->interfaces[i] == nullptr) {
 			bool straight;
-
 			if (this->basis_geom == nullptr) straight = true;
 			else if (this->basis_geom != nullptr) straight = false;
 
+			bool boundary;
+			if (this->neighbor_ID[i] == DEFAULT_ID) boundary = true;
+			else if (this->neighbor_ID[i] != DEFAULT_ID) boundary = false;
+
 			this->interfaces[i] = new INTERFACE_2D(this->number_gp_boundary, this->u_boundary[i],
-				this->normal_edge_x[i], this->normal_edge_y[i], straight);
+				this->normal_edge_x[i], this->normal_edge_y[i], straight, boundary);
 			
 			this->interface_owner[i] = true;
 
