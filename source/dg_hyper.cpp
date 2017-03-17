@@ -6,13 +6,14 @@
 #include <fstream>
 #include <iomanip>
 
-#include "class_mesh_v2.h"
+#include "general_definitions.h"
+#include "class_problem.h"
 
 int main(int argc, const char* argv[])
 {
-	MESH* mesh = new MESH(2, 0);
-	
-	delete mesh;
+	PROBLEM* problem = new PROBLEM();
+
+	delete problem;
 
 	_CrtDumpMemoryLeaks();
 }

@@ -1,6 +1,6 @@
 #include "basis_functions.h"
 
-void jacobi_polynomial(int n, int a, int b, int number_gp, double x[], double P[]) {
+void jacobi_polynomial(int n, int a, int b, int number_gp, double* x, double* P) {
     if (n == 0) {
         for (int i = 0; i < number_gp; i++) { P[i] = 1; }
     }
@@ -47,7 +47,7 @@ void jacobi_polynomial(int n, int a, int b, int number_gp, double x[], double P[
     }
 }
 
-void jacobi_polynomial_derivative(int n, int a, int b, int number_gp, double x[], double dP[]) {
+void jacobi_polynomial_derivative(int n, int a, int b, int number_gp, double* x, double* dP) {
     if (n == 0) {
         for (int i = 0; i < number_gp; i++) { dP[i] = 0; }
     }

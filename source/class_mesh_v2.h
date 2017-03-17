@@ -12,10 +12,10 @@
 
 #include "class_element.h"
 #include "elements\class_element_2D.h"
-#include "elements\elements_2D\class_element_tri.h"
-
 
 class MESH {
+	friend class PROBLEM;
+
 protected:
 	int p;
 	int p_geom;
@@ -34,7 +34,6 @@ public:
 	~MESH();
 
 	//void solve();
-	friend void problem_timestep(MESH* mesh);
 
 protected:
 	void InitializeElements();

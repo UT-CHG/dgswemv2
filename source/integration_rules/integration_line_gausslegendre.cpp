@@ -23,7 +23,7 @@ int gausslegendre_number_gp(int p) {
     return number_gp;
 }
 
-void gausslegendre_rule(int number_gp, double z[], double w[]){
+void gausslegendre_rule(int number_gp, double* z, double* w){
     if (number_gp == 1) {
         z[0] = 0.000000000000000000000000000000;
 
@@ -1247,7 +1247,7 @@ void gausslegendre_rule(int number_gp, double z[], double w[]){
     }
 }
 
-void gausslegendre_rule_test(int p, int number_gp, double z[], double w[]) {
+void gausslegendre_rule_test(int p, int number_gp, double* z, double* w) {
     double exact_integration = 2 - 1 / ((double)p + 1)*(1 + pow(-1.0, p)); // S(1-x^p)dx from -1 to 1 
 
     double num_integration = 0;

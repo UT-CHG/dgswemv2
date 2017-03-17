@@ -36,6 +36,16 @@ BASIS_2D::~BASIS_2D(){
         delete[] this->phi_edge[i];
     }
     delete[] this->phi_edge;
+
+	if (this->orthogonal) {
+		delete[] this->m_inv[0];
+	}
+	else if (!(this->orthogonal)) {
+		for (int i = 0; i < this->number_bf; i++) {
+			delete[] this->m_inv[i];
+		}
+	}
+	delete[] this->m_inv;
 }
 
 int BASIS_2D::GetPolynomial() { return this->p; }
@@ -54,6 +64,10 @@ double** BASIS_2D::GetDPhiDZ2Area() { return this->dphi_dz2_area; };
 
 double*** BASIS_2D::GetPhiEdge() { return this->phi_edge; };
 
+bool BASIS_2D::GetOrthogonal() { return this->orthogonal; };
+
+double** BASIS_2D::GetMInv() { return this->m_inv; };
+
 void BASIS_2D::Dubiner() {
 	this->orthogonal = true;
 
@@ -66,6 +80,9 @@ void BASIS_2D::Dubiner() {
     this->dphi_dz1_area = new double*[this->number_bf];
     this->dphi_dz2_area = new double*[this->number_bf];
     this->phi_edge = new double**[3];
+	
+	this->m_inv = new double*[1];
+	this->m_inv[0] = new double[this->number_bf];
 
     double* n1 = new double[number_gp_area];
     double* n2 = new double[number_gp_area];
@@ -87,6 +104,8 @@ void BASIS_2D::Dubiner() {
 
             dubiner_phi(i, j, number_gp_area, n1, n2, this->phi_area[m]);
             dubiner_dphi(i, j, number_gp_area, n1, n2, this->dphi_dz1_area[m], this->dphi_dz2_area[m]);
+
+			this->m_inv[0][m] = (2 * i + 1)*(i + j + 1) / 2.0;
 
             m = m + 1;
         }
@@ -133,6 +152,8 @@ void BASIS_2D::Dubiner() {
             }
         }
     }
+
+
 
     dubiner_test(this->p, number_gp_area, this->phi_area, this->integration_rule_area->GetWeight());
 

@@ -36,6 +36,8 @@ public:
     double** GetDPhiDZ1Area();
     double** GetDPhiDZ2Area();
     double*** GetPhiEdge();
+	bool GetOrthogonal();
+	double** GetMInv();
 
 private:
     void Dubiner();

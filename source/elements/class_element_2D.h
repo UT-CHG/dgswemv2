@@ -10,20 +10,14 @@
 
 class ELEMENT_2D : public ELEMENT {
 protected:
-	unsigned char number_edges;
-
 	INTERFACE_2D** interfaces;
 	bool* interface_owner;
 
 	BASIS_2D* basis;
     BASIS_GEOM_2D* basis_geom = nullptr;
-    double** M_inv = nullptr;
-
-    int number_bf;
-    int number_bf_geom;
-
-	int number_gp_area;
-	int number_gp_edge;
+    
+	bool orthogonal;
+	double** m_inv;
 
     double*** J_inv_t_area;
     double* det_J_area;
@@ -36,18 +30,19 @@ protected:
     double** area_int_fac_dphidx;
     double** area_int_fac_dphidy;
     
+	double*** edge_int_fac_phi;
 	double*** edge_int_fac_nx;
     double*** edge_int_fac_ny;
 
-	double** U; 
-    std::vector<double**> U_substep;
-
-    double** U_area;
-    double*** U_edge;
 
 public:
-	ELEMENT_2D(unsigned int, BASIS_2D*, BASIS_GEOM_2D* basis_geom = nullptr);
-	~ELEMENT_2D() = default;
+	ELEMENT_2D(unsigned int, unsigned int*, unsigned char*,
+		double*, double*, BASIS_2D*, BASIS_GEOM_2D* basis_geom = nullptr);
+	~ELEMENT_2D();
+
+	void Triangle(unsigned int*, unsigned char*, double*, double*);
+
+	void ComputeIntegrationFactors();
 
 	std::map<unsigned int, INTERFACE*> CreateInterfaces();
 	void AppendInterface(unsigned int, INTERFACE*);
@@ -56,15 +51,16 @@ public:
 
 	void ComputeInternalU(int);
 	void ComputeBoundaryU(int);
-
-	void ComputeF();
 	
     double IntegrationInternalPhi(int, int);
     double IntegrationInternalDPhiDX(int, int);
     double IntegrationInternalDPhiDY(int, int);
 
+	double IntegrationBoundaryPhi(int, int);
     double IntegrationBoundaryNX(int, int);
     double IntegrationBoundaryNY(int, int);
+
+	void SolveLSE(int);
 };
 
 #endif

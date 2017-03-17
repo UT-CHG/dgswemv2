@@ -29,7 +29,7 @@ int dunavant_number_gp(int p) {
     return number_gp;
 }
 
-void dunavant_rule(int p, double x[], double y[], double weight[]) {
+void dunavant_rule(int p, double* x, double* y, double* weight) {
     double* l1;
     double* l2;
     double* l3;
@@ -1468,7 +1468,7 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
     }
 }
 
-void dunavant_rule_test(int p, int number_gp, double z1[], double z2[], double w[]) {
+void dunavant_rule_test(int p, int number_gp, double* z1, double* z2, double* w) {
     double exact_integration = 1 / ((double)p + 1)*((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p)); // S(x^p)dxdy over triangle
 
     double num_integration = 0;

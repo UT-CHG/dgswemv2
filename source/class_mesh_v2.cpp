@@ -88,14 +88,14 @@ void MESH::InitializeElements() {
 	unsigned int neighbors[3] = { 1, DEFAULT_ID, DEFAULT_ID };
 	unsigned char boundaries[3] = { INTERNAL_BOUNDARY, DEFAULT_BOUNDARY, DEFAULT_BOUNDARY };
 
-	this->elements[ID] = new ELEMENT_TRI(ID, neighbors, boundaries, x, y, basis);
+	this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
 
 	ID = 1;
 	x[0] = 1;
 	y[0] = 1;
 	neighbors[0] = 0;
 
-	this->elements[ID] = new ELEMENT_TRI(ID, neighbors, boundaries, x, y, basis);
+	this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
 }
 
 void MESH::InitializeInterfaces() {

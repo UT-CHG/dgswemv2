@@ -3,7 +3,7 @@
 
 #include "basis_functions.h"
 
-void dubiner_phi(int p, int q, int number_gp, double n1[], double n2[], double phi_pq[]) {
+void dubiner_phi(int p, int q, int number_gp, double* n1, double* n2, double* phi_pq) {
     double* psi_p = new double[number_gp];
     double* psi_pq = new double[number_gp];
 
@@ -18,7 +18,7 @@ void dubiner_phi(int p, int q, int number_gp, double n1[], double n2[], double p
     delete[] psi_pq;
 }
 
-void dubiner_dphi(int p, int q, int number_gp, double n1[], double n2[], double dphi_dz1[], double dphi_dz2[]) {
+void dubiner_dphi(int p, int q, int number_gp, double* n1, double* n2, double* dphi_dz1, double* dphi_dz2) {
     double* psi_p = new double[number_gp];
     double* psi_pq = new double[number_gp];
 
@@ -46,7 +46,7 @@ void dubiner_dphi(int p, int q, int number_gp, double n1[], double n2[], double 
 }
 
 void dubiner_test(int p, int number_gp, double** phi_area, double* w) {
-    int number_bf = (p + 1)*(p + 2) / 2;
+	int number_bf = (p + 1)*(p + 2) / 2;
 
     double** M = new double*[number_bf];
 
