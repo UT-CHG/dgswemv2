@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "../class_element_2D.h"
 
 void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_type,
@@ -99,17 +101,22 @@ void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_typ
 		this->J_inv_t_area[1][0][0] = -J[0][1] / (this->det_J_area[0]);
 		this->J_inv_t_area[1][1][0] = J[0][0] / (this->det_J_area[0]);
 
+		//printf("%f %f\n%f %f\n\n", this->J_inv_t_area[0][0][0], this->J_inv_t_area[0][1][0],
+		//	this->J_inv_t_area[1][0][0], this->J_inv_t_area[1][1][0]);
+
 		this->surface_J_edge[0][0] = sqrt(pow((J[0][0] - J[0][1]), 2.0) + pow((J[1][0] - J[1][1]), 2.0));
 		this->surface_J_edge[1][0] = sqrt(pow(J[0][1], 2.0) + pow(J[1][1], 2.0));
 		this->surface_J_edge[2][0] = sqrt(pow(J[0][0], 2.0) + pow(J[1][0], 2.0));
 
-		this->normal_edge_x[0][0] = -(J[1][0] - J[1][1]) / this->surface_J_edge[0][0];
-		this->normal_edge_x[1][0] = -J[1][1] / this->surface_J_edge[1][0];
-		this->normal_edge_x[2][0] = J[1][0] / this->surface_J_edge[2][0];
+		double cw = this->det_J_area[0] / abs(this->det_J_area[0]); //CW or CCW
 
-		this->normal_edge_y[0][0] = (J[0][0] - J[0][1]) / this->surface_J_edge[0][0];
-		this->normal_edge_y[1][0] = J[0][1] / this->surface_J_edge[1][0];
-		this->normal_edge_y[2][0] = -J[0][0] / this->surface_J_edge[2][0];
+		this->normal_edge_x[0][0] = (J[1][1] - J[1][0]) / this->surface_J_edge[0][0] * cw;
+		this->normal_edge_x[1][0] = -J[1][1] / this->surface_J_edge[1][0] * cw;
+		this->normal_edge_x[2][0] = J[1][0] / this->surface_J_edge[2][0] *cw;
+
+		this->normal_edge_y[0][0] = (J[0][0] - J[0][1]) / this->surface_J_edge[0][0] * cw;
+		this->normal_edge_y[1][0] = J[0][1] / this->surface_J_edge[1][0] * cw;
+		this->normal_edge_y[2][0] = -J[0][0] / this->surface_J_edge[2][0] * cw;
 
 		delete[] J[0];
 		delete[] J[1];

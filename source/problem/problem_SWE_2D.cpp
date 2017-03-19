@@ -8,7 +8,7 @@ PROBLEM::PROBLEM() {
 	this->mesh = new MESH(2,0);
 
 	this->internal_interfaces = this->mesh->interfaces.find(INTERNAL)->second;
-	//this->land_interfaces = this->mesh->interfaces.find(LAND)->second;
+	this->land_interfaces = this->mesh->interfaces.find(LAND)->second;
 }
 
 PROBLEM::~PROBLEM() {
@@ -26,6 +26,7 @@ void PROBLEM::Timestep() {
 		it->second->ComputeInternalU(H);
 		it->second->ComputeBoundaryU(H);
 	}
+
 
 	for (auto it = this->internal_interfaces.begin(); it != this->internal_interfaces.end(); it++) {
 		this->InterfaceFlowAverage(*it);
@@ -46,7 +47,7 @@ void PROBLEM::Timestep() {
 
 		//COMPUTING TXX
 		for (int i = 0; i < number_bf; i++) {
-			RHS[i] = (it->second->IntegrationInternalDPhiDX(UA, i) +
+			RHS[i] = (-it->second->IntegrationInternalDPhiDX(UA, i) +
 				it->second->IntegrationBoundaryNX(UA_AVG, i))*
 				pow(it->second->u[SP][i], 2);
 		}
@@ -57,7 +58,7 @@ void PROBLEM::Timestep() {
 
 		//COMPUTING TXY
 		for (int i = 0; i < number_bf; i++) {
-			RHS[i] = it->second->IntegrationInternalDPhiDY(UA, i) +
+			RHS[i] = -it->second->IntegrationInternalDPhiDY(UA, i) +
 				it->second->IntegrationBoundaryNY(UA_AVG, i);
 		}
 		it->second->SolveLSE(TXY);
@@ -67,7 +68,7 @@ void PROBLEM::Timestep() {
 
 		//COMPUTING TYX
 		for (int i = 0; i < number_bf; i++) {
-			RHS[i] = (it->second->IntegrationInternalDPhiDX(VA, i) +
+			RHS[i] = (-it->second->IntegrationInternalDPhiDX(VA, i) +
 				it->second->IntegrationBoundaryNX(VA_AVG, i))*
 				pow(it->second->u[SP][i], 2);
 		}
@@ -78,7 +79,7 @@ void PROBLEM::Timestep() {
 
 		//COMPUTING TYY
 		for (int i = 0; i < number_bf; i++) {
-			RHS[i] = it->second->IntegrationInternalDPhiDY(VA, i) +
+			RHS[i] = -it->second->IntegrationInternalDPhiDY(VA, i) +
 				it->second->IntegrationBoundaryNY(VA_AVG, i);
 		}
 		it->second->SolveLSE(TYY);
@@ -101,7 +102,6 @@ void PROBLEM::Timestep() {
 		this->LLFNumericalFlux(*it);
 	}
 
-
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		number_bf = it->second->number_bf;
 		RHS = it->second->RHS;
@@ -110,7 +110,7 @@ void PROBLEM::Timestep() {
 		for (int i = 0; i < number_bf; i++) {
 			RHS[i] = it->second->IntegrationInternalDPhiDX(F11, i) +
 				it->second->IntegrationInternalDPhiDY(F12, i) -
-				it->second->IntegrationInternalPhi(NUM_FLUX_UA, i);
+				it->second->IntegrationBoundaryPhi(NUM_FLUX_UA, i);
 		}
 		it->second->SolveLSE(D_UA);
 
@@ -118,19 +118,19 @@ void PROBLEM::Timestep() {
 		for (int i = 0; i < number_bf; i++) {
 			RHS[i] = it->second->IntegrationInternalDPhiDX(F21, i) +
 				it->second->IntegrationInternalDPhiDY(F22, i) -
-				it->second->IntegrationInternalPhi(NUM_FLUX_VA, i);
+				it->second->IntegrationBoundaryPhi(NUM_FLUX_VA, i);
 		}
+
 		it->second->SolveLSE(D_VA);
 
 		//COMPUTING H
 		for (int i = 0; i < number_bf; i++) {
 			RHS[i] = it->second->IntegrationInternalDPhiDX(F31, i) +
 				it->second->IntegrationInternalDPhiDY(F32, i) -
-				it->second->IntegrationInternalPhi(NUM_FLUX_H, i);
+				it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i);
 		}
 		it->second->SolveLSE(D_H);
 	}
-
 }
 
 void PROBLEM::InterfaceFlowAverage(INTERFACE* intface) {
@@ -283,7 +283,11 @@ void PROBLEM::LandInterfaceSetBC(INTERFACE* intface) {
 	double** u_in = intface->u_boundary_in;
 	double** u_ex = intface->u_boundary_ex;
 
+	int i_ex;
+
 	for (int i = 0; i < intface->number_gp; i++) {
+		i_ex = intface->number_gp - 1 - i;
+
 		n_x = intface->normal_x[i];
 		n_y = intface->normal_y[i];
 		t_x = -n_y;
@@ -295,11 +299,11 @@ void PROBLEM::LandInterfaceSetBC(INTERFACE* intface) {
 		qn_ex = -qn_in;
 		qt_ex = qt_in;
 
-		u_ex[UA][i] = qn_ex*n_x + qt_ex*t_x;
-		u_ex[VA][i] = qn_ex*n_x + qt_ex*t_x;
-		u_ex[H][i] = u_in[H][i];
-		u_ex[ZB][i] = u_in[ZB][i];
-		u_ex[SP][i] = u_in[SP][i];
+		u_ex[UA][i_ex] = qn_ex*n_x + qt_ex*t_x;
+		u_ex[VA][i_ex] = qn_ex*n_x + qt_ex*t_x;
+		u_ex[H][i_ex] = u_in[H][i];
+		u_ex[ZB][i_ex] = u_in[ZB][i];
+		u_ex[SP][i_ex] = u_in[SP][i];
 	}
 }
 
@@ -307,17 +311,21 @@ void PROBLEM::ComputeBoundaryInterfaceF(INTERFACE* intface) {
 	double** u_in = intface->u_boundary_in;
 	double** u_ex = intface->u_boundary_ex;
 
+	int i_in;
+
 	for (int i = 0; i < intface->number_gp; i++) {
+		i_in = intface->number_gp - 1 - i;
+
 		u_ex[A][i] = u_ex[ZB][i] + u_ex[H][i];
 		u_ex[U][i] = u_ex[UA][i] / u_ex[A][i];
 		u_ex[V][i] = u_ex[VA][i] / u_ex[A][i];
 
-		u_ex[F11][i] = u_ex[SP][i] * (u_ex[UA][i] * u_ex[U][i] + 0.5*GRAVITY*pow(u_ex[A][i], 2)) - VISCOSITY*u_in[TXX][i];
-		u_ex[F21][i] = u_ex[SP][i] * u_ex[UA][i] * u_ex[V][i] - VISCOSITY*u_in[TYX][i];
+		u_ex[F11][i] = u_ex[SP][i] * (u_ex[UA][i] * u_ex[U][i] + 0.5*GRAVITY*pow(u_ex[A][i], 2)) - VISCOSITY*u_in[TXX][i_in];
+		u_ex[F21][i] = u_ex[SP][i] * u_ex[UA][i] * u_ex[V][i] - VISCOSITY*u_in[TYX][i_in];
 		u_ex[F31][i] = u_ex[SP][i] * u_ex[UA][i];
 
-		u_ex[F12][i] = u_ex[UA][i] * u_ex[V][i] - VISCOSITY*u_in[TXY][i];
-		u_ex[F22][i] = u_ex[VA][i] * u_ex[V][i] + 0.5*GRAVITY*pow(u_ex[A][i], 2) - VISCOSITY*u_in[TYY][i];
+		u_ex[F12][i] = u_ex[UA][i] * u_ex[V][i] - VISCOSITY*u_in[TXY][i_in];
+		u_ex[F22][i] = u_ex[VA][i] * u_ex[V][i] + 0.5*GRAVITY*pow(u_ex[A][i], 2) - VISCOSITY*u_in[TYY][i_in];
 		u_ex[F32][i] = u_ex[VA][i];
 	}
 }

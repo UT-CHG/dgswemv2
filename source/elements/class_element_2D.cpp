@@ -12,6 +12,27 @@ ELEMENT_2D::ELEMENT_2D(unsigned int ID, unsigned int* neighbor_ID, unsigned char
 	//CREATE TRI ELEMENT
 	this->Triangle(neighbor_ID, boundary_type, nodal_coordinates_x, nodal_coordinates_y);
 
+	//SET DEFAULT INITIAL CONDITIONS
+	this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
+	this->u[H][0] = 1; //FLAT SURFACE
+	this->u[ZB][0] = 0; //FLAT BED
+	this->u[UA][0] = 0;
+	this->u[VA][0] = 0;
+
+	for (int i = 1; i < this->number_bf; i++) {
+		this->u[SP][i] = 0;
+		this->u[H][i] = 0;
+		this->u[ZB][i] = 0; //FLAT BED
+		this->u[UA][i] = 0;
+		this->u[VA][i] = 0;
+	}
+
+	//INITIALIZE SP AND ZB AT GPs
+	this->ComputeBoundaryU(SP);
+	this->ComputeInternalU(SP);
+	this->ComputeBoundaryU(ZB);
+	this->ComputeInternalU(ZB);
+
 	//COMPUTE NUMERICAL INTEGRATION FACTORS
 	this->ComputeIntegrationFactors();
 }
@@ -130,13 +151,13 @@ void ELEMENT_2D::ComputeIntegrationFactors() {
 
 				for (int k = 0; k < this->number_gp_boundary; k++) {
 					this->edge_int_fac_phi[i][j][k] = phi_edge[i][j][k] *
-						w_line[k] * this->surface_J_edge[i][0] / this->det_J_area[0];
+						w_line[k] * this->surface_J_edge[i][0] / abs(this->det_J_area[0]);
 
 					this->edge_int_fac_nx[i][j][k] = phi_edge[i][j][k] * this->normal_edge_x[i][0] *
-						w_line[k] * this->surface_J_edge[i][0] / this->det_J_area[0];
+						w_line[k] * this->surface_J_edge[i][0] / abs(this->det_J_area[0]);
 
 					this->edge_int_fac_ny[i][j][k] = phi_edge[i][j][k] * this->normal_edge_y[i][0] *
-						w_line[k] * this->surface_J_edge[i][0] / this->det_J_area[0];
+						w_line[k] * this->surface_J_edge[i][0] / abs(this->det_J_area[0]);
 				}
 			}
 		}

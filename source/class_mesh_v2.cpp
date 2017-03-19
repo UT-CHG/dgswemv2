@@ -86,7 +86,7 @@ void MESH::InitializeElements() {
 	double y[3] = { -1, -1,  1 };
 
 	unsigned int neighbors[3] = { 1, DEFAULT_ID, DEFAULT_ID };
-	unsigned char boundaries[3] = { INTERNAL, DEFAULT_BOUNDARY, DEFAULT_BOUNDARY };
+	unsigned char boundaries[3] = { INTERNAL, LAND, LAND };
 
 	this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
 
@@ -100,7 +100,7 @@ void MESH::InitializeElements() {
 
 void MESH::InitializeInterfaces() {
 	this->interfaces[INTERNAL] = std::vector<INTERFACE*>();
-	this->interfaces[DEFAULT_BOUNDARY] = std::vector<INTERFACE*>();
+	this->interfaces[LAND] = std::vector<INTERFACE*>();
 
 	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
 		std::map<unsigned int, INTERFACE*> internal_interfaces(it->second->CreateInterfaces());

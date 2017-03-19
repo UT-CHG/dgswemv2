@@ -2,7 +2,7 @@
 #define SWE_2D
 
 #define GRAVITY 9.81
-#define VISCOSITY 1
+#define VISCOSITY 0
 
 #define SIZE_U 9U
 //VARIABLES TO STORE IN U

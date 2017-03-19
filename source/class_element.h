@@ -9,7 +9,8 @@ class ELEMENT {
 	friend class PROBLEM;
 
 protected:
-    unsigned int ID;
+	double** area_int_fac_dphidx;
+	unsigned int ID;
 
 	unsigned char number_interfaces;
 
@@ -50,6 +51,7 @@ public:
 	virtual double IntegrationInternalDPhiDX(int, int) = 0;
 	virtual double IntegrationInternalDPhiDY(int, int) = 0;
 
+	virtual double IntegrationBoundaryPhi(int, int) = 0;
 	virtual double IntegrationBoundaryNX(int, int) = 0;
 	virtual double IntegrationBoundaryNY(int, int) = 0;
 

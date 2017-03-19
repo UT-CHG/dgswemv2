@@ -13,6 +13,8 @@ int main(int argc, const char* argv[])
 {
 	PROBLEM* problem = new PROBLEM();
 
+	problem->Timestep();
+
 	delete problem;
 
 	_CrtDumpMemoryLeaks();
