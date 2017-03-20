@@ -5,7 +5,6 @@ MESH::MESH(int p, int p_geom) {
 	this->p_geom = p_geom;
 
 	this->InitializeElements();
-
 	this->InitializeInterfaces();
 }
 

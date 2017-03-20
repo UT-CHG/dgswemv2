@@ -9,7 +9,6 @@ class ELEMENT {
 	friend class PROBLEM;
 
 protected:
-	double** area_int_fac_dphidx;
 	unsigned int ID;
 
 	unsigned char number_interfaces;

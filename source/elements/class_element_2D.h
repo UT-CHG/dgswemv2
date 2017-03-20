@@ -27,7 +27,7 @@ protected:
     double** normal_edge_y;
 
 	double** area_int_fac_phi;
-//    double** area_int_fac_dphidx;
+    double** area_int_fac_dphidx;
     double** area_int_fac_dphidy;
     
 	double*** edge_int_fac_phi;
