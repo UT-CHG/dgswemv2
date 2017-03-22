@@ -123,7 +123,7 @@ void BASIS_2D::Dubiner() {
         if (i == 0) {
 			for (int j = 0; j < number_gp_edge; j++) {
                 n1[j] = 1;
-                n2[j] = z[j]; //THE MISTAKE IS HERE!
+                n2[j] = z[j];
             }
         }
         else if (i == 1) {
