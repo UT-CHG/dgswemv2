@@ -1,4 +1,4 @@
-#include "class_mesh_v2.h"
+#include "class_mesh.h"
 
 MESH::MESH(int p, int p_geom) {
 	this->p = p;
@@ -16,11 +16,6 @@ MESH::~MESH() {
 		it->second.clear();
 	}
 	this->interfaces.clear();
-
-	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
-		delete it->second;
-	}
-	this->elements.clear();
 
 	for (auto it = this->bases_2D.begin(); it != this->bases_2D.end(); it++) {
 		delete it->second;
@@ -87,14 +82,14 @@ void MESH::InitializeElements() {
 	unsigned int neighbors[3] = { 1, DEFAULT_ID, DEFAULT_ID };
 	unsigned char boundaries[3] = { INTERNAL, LAND, LAND };
 
-	this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
+	this->elements[ID] = create_elt(element_type::_2d, ID, neighbors, boundaries, x, y, basis);
 
 	ID = 1;
 	x[0] = 1;
 	y[0] = 1;
 	neighbors[0] = 0;
 
-	this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
+	this->elements[ID] = create_elt(element_type::_2d, ID, neighbors, boundaries, x, y, basis);
 }
 
 void MESH::InitializeInterfaces() {
