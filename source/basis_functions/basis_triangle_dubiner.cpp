@@ -34,8 +34,8 @@ void dubiner_dphi(int p, int q, int number_gp, double* n1, double* n2, double* d
     for (int i = 0; i < number_gp; i++) {
         dphi_dz1[i] = (2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i];
 
-        dphi_dz2[i] = (2.0 * (1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
-            psi_p[i] * (pow((1.0 - n2[i]) / 2.0, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, p - 1)*psi_pq[i]); //THE MISTAKE IS ACTUALLY HERE!!!
+		dphi_dz2[i] = ((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
+			psi_p[i] * (pow((1.0 - n2[i]) / 2.0, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, p - 1)*psi_pq[i]);
     }
 
     delete[] psi_p;
