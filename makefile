@@ -16,6 +16,7 @@ hdrs = \
   source/class_problem.h \
   source/problem/problem_SWE_2D.h \
   source/class_mesh.h \
+  source/mesh/shape_factory.h \
   source/class_integration.h \
   source/class_basis.h \
   source/integration_rules/integration_rules_area.h \

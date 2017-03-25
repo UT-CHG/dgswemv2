@@ -7,8 +7,8 @@ class PROBLEM {
 private:
 	MESH* mesh;
 
-	std::vector <INTERFACE*> internal_interfaces;
-	std::vector <INTERFACE*> land_interfaces;
+  std::vector <INTERFACE*> internal_interfaces;
+  std::vector <INTERFACE*> land_interfaces;
 
 public:
 	PROBLEM();
@@ -18,8 +18,8 @@ public:
 
 private:
 	void InterfaceFlowAverage(INTERFACE*);
-	void ComputeUVA(ELEMENT*);
-	void ComputeF(ELEMENT*);
+        void ComputeUVA(std::unique_ptr<ELEMENT>&);
+        void ComputeF(std::unique_ptr<ELEMENT>&);
 	void LLFNumericalFlux(INTERFACE*);
 
 	void LandInterfaceSetBC(INTERFACE*);
