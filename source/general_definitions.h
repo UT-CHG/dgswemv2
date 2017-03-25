@@ -1,7 +1,7 @@
 #ifndef GENERAL_DEFINITIONS
 #define GENERAL_DEFINITIONS
 
-#include "problem\problem_SWE_2D.h"
+#include "problem/problem_SWE_2D.h"
 
 #define DEFAULT_ID 4294967295
 #define DEFAULT_BOUNDARY 255

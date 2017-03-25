@@ -11,7 +11,7 @@
 #include "class_basis_geometry.h"
 
 #include "class_element.h"
-#include "elements\class_element_2D.h"
+#include "elements/class_element_2D.h"
 
 class MESH {
 	friend class PROBLEM;

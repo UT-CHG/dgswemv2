@@ -1,6 +1,6 @@
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
-#include <crtdbg.h>
+//#include <crtdbg.h>
 
 #include <iostream>
 #include <fstream>
@@ -17,5 +17,5 @@ int main(int argc, const char* argv[])
 
 	delete problem;
 
-	_CrtDumpMemoryLeaks();
+	//	_CrtDumpMemoryLeaks();
 }
