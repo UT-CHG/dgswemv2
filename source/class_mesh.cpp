@@ -1,4 +1,4 @@
-#include "class_mesh_v2.h"
+#include "class_mesh.h"
 
 MESH::MESH(int p, int p_geom) {
 	this->p = p;

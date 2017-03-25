@@ -1,7 +1,7 @@
 #ifndef CLASS_PROBLEM_H
 #define CLASS_PROBLEM_H
 
-#include "class_mesh_v2.h"
+#include "class_mesh.h"
 
 class PROBLEM {
 private:

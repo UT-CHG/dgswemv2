@@ -15,7 +15,7 @@ hdrs = \
   source/general_definitions.h \
   source/class_problem.h \
   source/problem/problem_SWE_2D.h \
-  source/class_mesh_v2.h \
+  source/class_mesh.h \
   source/class_integration.h \
   source/class_basis.h \
   source/integration_rules/integration_rules_area.h \
@@ -29,7 +29,7 @@ hdrs = \
 
 srcs = \
   source/problem/problem_SWE_2D.cpp \
-  source/class_mesh_v2.cpp \
+  source/class_mesh.cpp \
   source/class_integration.cpp \
   source/integration_rules/integration_area_dunavant.cpp \
   source/integration_rules/integration_line_gausslegendre.cpp \
