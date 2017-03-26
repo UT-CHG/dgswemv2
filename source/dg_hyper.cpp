@@ -7,13 +7,13 @@
 #include <iomanip>
 
 #include "general_definitions.h"
-#include "class_problem.h"
+#include "problem\class_problem_SWE_2D.h"
 
 int main(int argc, const char* argv[])
 {
 	PROBLEM* problem = new PROBLEM();
 
-	problem->Timestep();
+	problem->EETimeStepper(5);
 
 	delete problem;
 

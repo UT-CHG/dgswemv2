@@ -2,20 +2,12 @@
 #include <algorithm> 
 
 #include "../general_definitions.h"
-#include "../class_problem.h"
-
-PROBLEM::PROBLEM() {
-	this->mesh = new MESH(2,0);
-
-	this->internal_interfaces = this->mesh->interfaces.find(INTERNAL)->second;
-	this->land_interfaces = this->mesh->interfaces.find(LAND)->second;
-}
-
-PROBLEM::~PROBLEM() {
-	delete this->mesh;
-}
+#include "class_problem_SWE_2D.h"
 
 void PROBLEM::Timestep() {
+	int number_bf;
+	double* RHS;
+
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		it->second->ComputeInternalU(UA);
 		it->second->ComputeBoundaryU(UA);
@@ -32,14 +24,20 @@ void PROBLEM::Timestep() {
 		this->InterfaceFlowAverage(*it);
 	}
 
+	for (auto it = this->ocean_interfaces.begin(); it != this->ocean_interfaces.end(); it++) {
+		this->OceanInterfaceSetBC(*it);
+		this->InterfaceFlowAverage(*it);
+	}
+
 	for (auto it = this->land_interfaces.begin(); it != this->land_interfaces.end(); it++) {
 		this->LandInterfaceSetBC(*it);
 		this->InterfaceFlowAverage(*it);
 	}
 
-
-	int number_bf;
-	double* RHS;
+	for (auto it = this->flow_interfaces.begin(); it != this->flow_interfaces.end(); it++) {
+		this->FlowInterfaceSetBC(*it);
+		this->InterfaceFlowAverage(*it);
+	}
 
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		number_bf = it->second->number_bf;
@@ -97,7 +95,17 @@ void PROBLEM::Timestep() {
 		this->LLFNumericalFlux(*it);
 	}
 
+	for (auto it = this->ocean_interfaces.begin(); it != this->ocean_interfaces.end(); it++) {
+		this->ComputeBoundaryInterfaceF(*it);
+		this->LLFNumericalFlux(*it);
+	}
+
 	for (auto it = this->land_interfaces.begin(); it != this->land_interfaces.end(); it++) {
+		this->ComputeBoundaryInterfaceF(*it);
+		this->LLFNumericalFlux(*it);
+	}
+
+	for (auto it = this->flow_interfaces.begin(); it != this->flow_interfaces.end(); it++) {
 		this->ComputeBoundaryInterfaceF(*it);
 		this->LLFNumericalFlux(*it);
 	}
@@ -105,7 +113,7 @@ void PROBLEM::Timestep() {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		number_bf = it->second->number_bf;
 		RHS = it->second->RHS;
-		
+
 		//COMPUTING UA
 		for (int i = 0; i < number_bf; i++) {
 			RHS[i] = it->second->IntegrationInternalDPhiDX(F11, i) +
@@ -130,6 +138,12 @@ void PROBLEM::Timestep() {
 				it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i);
 		}
 		it->second->SolveLSE(D_H);
+
+		for (int i = 0; i < number_bf; i++) {
+			printf("%f ", it->second->u[D_UA][i]);
+			printf("%f ", it->second->u[D_VA][i]);
+			printf("%f\n", it->second->u[D_H][i]);
+		}
 	}
 }
 
@@ -152,7 +166,7 @@ void PROBLEM::InterfaceFlowAverage(INTERFACE* intface) {
 
 void PROBLEM::ComputeUVA(ELEMENT* element) {
 	double** u = element->u_internal;
-	
+
 	for (int i = 0; i < element->number_gp_internal; i++) {
 		u[A][i] = u[ZB][i] + u[H][i];
 		u[U][i] = u[UA][i] / u[A][i];
@@ -269,6 +283,27 @@ void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {
 	}
 }
 
+void PROBLEM::OceanInterfaceSetBC(INTERFACE* intface) {
+	double H_ocean;
+
+	double** u_in = intface->u_boundary_in;
+	double** u_ex = intface->u_boundary_ex;
+
+	int i_ex;
+
+	for (int i = 0; i < intface->number_gp; i++) {
+		i_ex = intface->number_gp - 1 - i;
+
+		H_ocean = u_in[H][i]; //NEED TO COMPUTE OCEAN ELEVATION
+
+		u_ex[ZB][i_ex] = u_in[ZB][i];
+		u_ex[SP][i_ex] = u_in[SP][i];
+		u_ex[UA][i_ex] = u_in[UA][i];
+		u_ex[VA][i_ex] = u_in[VA][i];
+		u_ex[H][i_ex] = H_ocean; //BOUNDARY CONDITION SET
+	}
+}
+
 void PROBLEM::LandInterfaceSetBC(INTERFACE* intface) {
 	double n_x;
 	double n_y;
@@ -299,11 +334,42 @@ void PROBLEM::LandInterfaceSetBC(INTERFACE* intface) {
 		qn_ex = -qn_in;
 		qt_ex = qt_in;
 
-		u_ex[UA][i_ex] = qn_ex*n_x + qt_ex*t_x;
-		u_ex[VA][i_ex] = qn_ex*n_x + qt_ex*t_x;
-		u_ex[H][i_ex] = u_in[H][i];
 		u_ex[ZB][i_ex] = u_in[ZB][i];
 		u_ex[SP][i_ex] = u_in[SP][i];
+		u_ex[UA][i_ex] = qn_ex*n_x + qt_ex*t_x;
+		u_ex[VA][i_ex] = qn_ex*n_y + qt_ex*t_y;
+		u_ex[H][i_ex] = u_in[H][i];
+	}
+}
+
+void PROBLEM::FlowInterfaceSetBC(INTERFACE* intface) {
+	double n_x;
+	double n_y;
+	double t_x;
+	double t_y;
+
+	double qn_ex;
+
+	double** u_in = intface->u_boundary_in;
+	double** u_ex = intface->u_boundary_ex;
+
+	int i_ex;
+
+	for (int i = 0; i < intface->number_gp; i++) {
+		i_ex = intface->number_gp - 1 - i;
+
+		n_x = intface->normal_x[i];
+		n_y = intface->normal_y[i];
+		t_x = -n_y;
+		t_y = n_x;
+
+		qn_ex = 0; //NEED TO COMPUTE QN_EX
+
+		u_ex[ZB][i_ex] = u_in[ZB][i];
+		u_ex[SP][i_ex] = u_in[SP][i];
+		u_ex[UA][i_ex] = qn_ex*n_x;
+		u_ex[VA][i_ex] = qn_ex*n_y;
+		u_ex[H][i_ex] = u_in[H][i];
 	}
 }
 

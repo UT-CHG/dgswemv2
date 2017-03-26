@@ -1,4 +1,4 @@
-#include "class_mesh_v2.h"
+#include "class_mesh.h"
 
 MESH::MESH(int p, int p_geom) {
 	this->p = p;
@@ -98,9 +98,6 @@ void MESH::InitializeElements() {
 }
 
 void MESH::InitializeInterfaces() {
-	this->interfaces[INTERNAL] = std::vector<INTERFACE*>();
-	this->interfaces[LAND] = std::vector<INTERFACE*>();
-
 	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
 		std::map<unsigned int, INTERFACE*> internal_interfaces(it->second->CreateInterfaces());
 
@@ -111,7 +108,12 @@ void MESH::InitializeInterfaces() {
 		std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces(it->second->GetOwnInterfaces());
 
 		for (auto itt = own_interfaces.begin(); itt != own_interfaces.end(); itt++) {
-			this->interfaces.find(itt->first)->second.push_back(itt->second);
+			if (this->interfaces.find(itt->first) != this->interfaces.end()) {
+				this->interfaces.find(itt->first)->second.push_back(itt->second);
+			}
+			else {
+				this->interfaces[itt->first] = std::vector<INTERFACE*>{ itt->second };
+			}
 		}
 	}
 }

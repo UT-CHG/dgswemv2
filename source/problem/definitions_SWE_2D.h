@@ -57,6 +57,15 @@
 #define NUM_FLUX_H 13U
 
 #define INTERNAL 0U
-#define LAND 1U
+#define OCEAN 1U
+#define LAND 2U
+#define FLOW 3U
+
+//TIMESTEPPING
+#define U0 0U
+#define K1 1U
+#define K2 2U
+#define K3 3U
+#define K4 4U
 
 #endif
