@@ -2,6 +2,7 @@
 #define CLASS_MESH_H
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "general_definitions.h"
@@ -11,7 +12,7 @@
 #include "class_basis_geometry.h"
 
 #include "class_element.h"
-#include "elements\class_element_2D.h"
+#include "mesh/shape_factory.h"
 
 class MESH {
 	friend class PROBLEM;
@@ -20,7 +21,7 @@ protected:
 	int p;
 	int p_geom;
 
-	std::map<unsigned int, ELEMENT*> elements;
+  std::map<unsigned int, std::unique_ptr<ELEMENT> > elements;
 	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
     
 	std::map<unsigned char, INTEGRATION_1D*> line_rules;

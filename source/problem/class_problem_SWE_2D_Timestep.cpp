@@ -164,7 +164,7 @@ void PROBLEM::InterfaceFlowAverage(INTERFACE* intface) {
 	}
 }
 
-void PROBLEM::ComputeUVA(ELEMENT* element) {
+void PROBLEM::ComputeUVA(std::unique_ptr<ELEMENT>& element) {
 	double** u = element->u_internal;
 
 	for (int i = 0; i < element->number_gp_internal; i++) {
@@ -184,7 +184,7 @@ void PROBLEM::ComputeUVA(ELEMENT* element) {
 	}
 }
 
-void PROBLEM::ComputeF(ELEMENT* element) {
+void PROBLEM::ComputeF(std::unique_ptr<ELEMENT>& element) {
 	double** u = element->u_internal;
 
 	for (int i = 0; i < element->number_gp_internal; i++) {
