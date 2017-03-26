@@ -1,6 +1,7 @@
-machine:
+dependencies:
   pre:
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 20
+    - sudo apt-get install -y gcc-6 g++-6 gfortran-6 
+    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 20
 
 compile:
   override:
