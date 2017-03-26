@@ -5,14 +5,14 @@
 INTEGRATION_1D::INTEGRATION_1D(int type, int p) {
     this->p = p;
 
-	switch (type) {
-	case GAUSS_LEGENDRE: this->GaussLegendre(); break;
-	default:
-		printf("\n");
-		printf("INTEGRATION_1D - Fatal error!\n");
-		printf("Undefined line integraton type = %d\n", type);
-		exit(1);
-	}
+    switch (type) {
+    case GAUSS_LEGENDRE: this->GaussLegendre(); break;
+    default:
+        printf("\n");
+        printf("INTEGRATION_1D - Fatal error!\n");
+        printf("Undefined line integraton type = %d\n", type);
+        exit(1);
+    }
 }
 
 INTEGRATION_1D::~INTEGRATION_1D() {
@@ -43,14 +43,14 @@ void INTEGRATION_1D::GaussLegendre() {
 INTEGRATION_2D::INTEGRATION_2D(int type, int p) {
     this->p = p;
 
-	switch (type) {
-	case DUNAVANT: this->Dunavant(); break;
-	default:
-		printf("\n");
-		printf("INTEGRATION_2D - Fatal error!\n");
-		printf("Undefined area integraton type = %d\n", type);
-		exit(1);
-	}
+    switch (type) {
+    case DUNAVANT: this->Dunavant(); break;
+    default:
+        printf("\n");
+        printf("INTEGRATION_2D - Fatal error!\n");
+        printf("Undefined area integraton type = %d\n", type);
+        exit(1);
+    }
 }
 
 INTEGRATION_2D::~INTEGRATION_2D() {

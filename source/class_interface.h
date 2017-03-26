@@ -4,24 +4,24 @@
 #include "general_definitions.h"
 
 class INTERFACE {
-	friend class PROBLEM;
+    friend class PROBLEM;
 
 protected:
-	bool boundary;
-	int number_gp;
+    bool boundary;
+    int number_gp;
 
-	double* normal_x;
-	double* normal_y;
+    double* normal_x;
+    double* normal_y;
 
-	double** u_boundary_in;
-	double** u_boundary_ex;
+    double** u_boundary_in;
+    double** u_boundary_ex;
 
 public:
-	INTERFACE(int number_gp, double** u_boundary)
-		: number_gp(number_gp), u_boundary_in(u_boundary) {};
+    INTERFACE(int number_gp, double** u_boundary)
+        : number_gp(number_gp), u_boundary_in(u_boundary) {};
     virtual ~INTERFACE() = default;
 
-	void SetPointerEX(double** u_boundary) { this->u_boundary_ex = u_boundary; };
+    void SetPointerEX(double** u_boundary) { this->u_boundary_ex = u_boundary; };
 };
 
 #endif

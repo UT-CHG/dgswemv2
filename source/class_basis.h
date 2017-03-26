@@ -23,7 +23,7 @@ private:
     double** m_inv;
 
 public:
-	BASIS_2D(int, int, INTEGRATION_1D*, INTEGRATION_2D*);
+    BASIS_2D(int, int, INTEGRATION_1D*, INTEGRATION_2D*);
     ~BASIS_2D();
 
     int GetPolynomial();
@@ -36,8 +36,8 @@ public:
     double** GetDPhiDZ1Area();
     double** GetDPhiDZ2Area();
     double*** GetPhiEdge();
-	bool GetOrthogonal();
-	double** GetMInv();
+    bool GetOrthogonal();
+    double** GetMInv();
 
 private:
     void Dubiner();

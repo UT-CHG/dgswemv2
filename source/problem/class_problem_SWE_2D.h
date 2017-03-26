@@ -5,41 +5,41 @@
 
 class PROBLEM {
 private:
-	MESH* mesh;
-	
-	double dt = 0.001;
+    MESH* mesh;
+    
+    double dt = 0.001;
 
-	std::vector <INTERFACE*> internal_interfaces;
-	std::vector <INTERFACE*> ocean_interfaces;
-	std::vector <INTERFACE*> land_interfaces;
-	std::vector <INTERFACE*> flow_interfaces;
+    std::vector <INTERFACE*> internal_interfaces;
+    std::vector <INTERFACE*> ocean_interfaces;
+    std::vector <INTERFACE*> land_interfaces;
+    std::vector <INTERFACE*> flow_interfaces;
 
 public:
-	PROBLEM();
-	~PROBLEM();
+    PROBLEM();
+    ~PROBLEM();
 
-	void EETimeStepper(int);
-	void RK2TimeStepper(int);
-	void RK3TimeStepper(int);
-	void RK4TimeStepper(int);
+    void EETimeStepper(int);
+    void RK2TimeStepper(int);
+    void RK3TimeStepper(int);
+    void RK4TimeStepper(int);
 
 private:
-	void Timestep();
+    void Timestep();
 
-	void InterfaceFlowAverage(INTERFACE*);
-	void ComputeUVA(ELEMENT*);
-	void ComputeF(ELEMENT*);
-	void LLFNumericalFlux(INTERFACE*);
+    void InterfaceFlowAverage(INTERFACE*);
+    void ComputeUVA(ELEMENT*);
+    void ComputeF(ELEMENT*);
+    void LLFNumericalFlux(INTERFACE*);
 
-	void OceanInterfaceSetBC(INTERFACE*);	
-	void LandInterfaceSetBC(INTERFACE*);
-	void FlowInterfaceSetBC(INTERFACE*);
+    void OceanInterfaceSetBC(INTERFACE*);	
+    void LandInterfaceSetBC(INTERFACE*);
+    void FlowInterfaceSetBC(INTERFACE*);
 //	void RadiationInterfaceSetBC(INTERFACE*);
 
 //  void NodeInterfaceReceiveData(INTERFACE*);
 //  void NodeInterfaceSendData(INTERFACE*);
-	
-	void ComputeBoundaryInterfaceF(INTERFACE*);
+    
+    void ComputeBoundaryInterfaceF(INTERFACE*);
 };
 
 #endif

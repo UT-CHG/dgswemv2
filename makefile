@@ -13,34 +13,39 @@ cxx = $(shell (which CC > /dev/null && echo CC) || echo $(cxx_default))
 
 hdrs = \
   source/general_definitions.h \
-  source/class_problem.h \
-  source/problem/problem_SWE_2D.h \
-  source/class_mesh.h \
-  source/mesh/shape_factory.h \
-  source/class_integration.h \
+
   source/class_basis.h \
-  source/integration_rules/integration_rules_area.h \
-  source/integration_rules/integration_rules_line.h \
-  source/basis_functions/basis_functions.h \
   source/class_basis_geometry.h \
   source/class_element.h \
+  source/class_integration.h \
   source/class_interface.h \
+  source/class_mesh.h \
+
+  source/basis_functions/basis_functions.h \
   source/elements/class_element_2D.h \
-  source/interfaces/class_interface_2D.h
+  source/integration_rules/integration_rules_area.h \
+  source/integration_rules/integration_rules_line.h \
+  source/interfaces/class_interface_2D.h \
+  source/mesh/shape_factory.h \  
+
+  source/problem/definitions_SWE_2D.h \
+  source/problem/class_problem_SWE_2D.h \
 
 srcs = \
-  source/problem/problem_SWE_2D.cpp \
-  source/class_mesh.cpp \
-  source/class_integration.cpp \
-  source/integration_rules/integration_area_dunavant.cpp \
-  source/integration_rules/integration_line_gausslegendre.cpp \
   source/class_basis.cpp \
+  source/class_basis_geometry.cpp \
+  source/class_integration.cpp \
+  source/class_mesh.cpp \
+
   source/basis_functions/basis_polynomials.cpp \
   source/basis_functions/basis_triangle_dubiner.cpp \
-  source/class_basis_geometry.cpp \
   source/elements/class_element_2D.cpp \
   source/elements/elements_2D/element_tri.cpp \
-  source/interfaces/class_interface_2D.cpp 
+  source/integration_rules/integration_area_dunavant.cpp \
+  source/integration_rules/integration_line_gausslegendre.cpp \
+  source/interfaces/class_interface_2D.cpp \
+  source/problem/class_problem_SWE_2D.cpp \
+  source/problem/class_problem_SWE_2D_timestep.cpp \
 #  source/mesh_processor/read_adcirc_mesh.cpp
 
 exe/%.o2:  flags += -O2 -DDEBUG=1

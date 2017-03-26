@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
 #include <crtdbg.h>
@@ -12,34 +11,11 @@
 
 int main(int argc, const char* argv[])
 {
-	PROBLEM* problem = new PROBLEM();
+    PROBLEM* problem = new PROBLEM();
 
-	problem->EETimeStepper(5);
+    problem->EETimeStepper(5);
 
-	delete problem;
+    delete problem;
 
-	_CrtDumpMemoryLeaks();
+    _CrtDumpMemoryLeaks();
 }
-=======
-#define _CRTDBG_MAP_ALLOC
-#include <cstdlib>
-//#include <crtdbg.h>
-
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-
-#include "general_definitions.h"
-#include "class_problem.h"
-
-int main(int argc, const char* argv[])
-{
-	PROBLEM* problem = new PROBLEM();
-
-	problem->Timestep();
-
-	delete problem;
-
-	//	_CrtDumpMemoryLeaks();
-}
->>>>>>> origin/master

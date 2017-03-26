@@ -5,8 +5,8 @@
 
 class INTERFACE_2D : public INTERFACE {
 public:
-	INTERFACE_2D(int, double**, double*, double*, bool, bool boundary = false);
-	~INTERFACE_2D();
+    INTERFACE_2D(int, double**, double*, double*, bool, bool boundary = false);
+    ~INTERFACE_2D();
 };
 
 #endif

@@ -4,19 +4,19 @@
 #include "class_basis.h"
 
 BASIS_2D::BASIS_2D(int type, int p, INTEGRATION_1D* line_rule, INTEGRATION_2D* area_rule) {
-	this->p = p;
+    this->p = p;
 
-	this->integration_rule_line = line_rule;
-	this->integration_rule_area = area_rule;
+    this->integration_rule_line = line_rule;
+    this->integration_rule_area = area_rule;
 
-	switch (type) {
-	case DUBINER: this->Dubiner(); break;
-	default:
-		printf("\n");
-		printf("BASIS_2D - Fatal error!\n");
-		printf("Undefined basis type = %d\n", type);
-		exit(1);
-	}
+    switch (type) {
+    case DUBINER: this->Dubiner(); break;
+    default:
+        printf("\n");
+        printf("BASIS_2D - Fatal error!\n");
+        printf("Undefined basis type = %d\n", type);
+        exit(1);
+    }
 }
 
 BASIS_2D::~BASIS_2D(){
@@ -37,15 +37,15 @@ BASIS_2D::~BASIS_2D(){
     }
     delete[] this->phi_edge;
 
-	if (this->orthogonal) {
-		delete[] this->m_inv[0];
-	}
-	else if (!(this->orthogonal)) {
-		for (int i = 0; i < this->number_bf; i++) {
-			delete[] this->m_inv[i];
-		}
-	}
-	delete[] this->m_inv;
+    if (this->orthogonal) {
+        delete[] this->m_inv[0];
+    }
+    else if (!(this->orthogonal)) {
+        for (int i = 0; i < this->number_bf; i++) {
+            delete[] this->m_inv[i];
+        }
+    }
+    delete[] this->m_inv;
 }
 
 int BASIS_2D::GetPolynomial() { return this->p; }
@@ -69,9 +69,9 @@ bool BASIS_2D::GetOrthogonal() { return this->orthogonal; };
 double** BASIS_2D::GetMInv() { return this->m_inv; };
 
 void BASIS_2D::Dubiner() {
-	this->orthogonal = true;
+    this->orthogonal = true;
 
-	int number_gp_area = this->integration_rule_area->GetNumberGP();
+    int number_gp_area = this->integration_rule_area->GetNumberGP();
     int number_gp_edge = this->integration_rule_line->GetNumberGP();
     
     this->number_bf = (this->p + 1)*(this->p + 2) / 2;
@@ -80,15 +80,15 @@ void BASIS_2D::Dubiner() {
     this->dphi_dz1_area = new double*[this->number_bf];
     this->dphi_dz2_area = new double*[this->number_bf];
     this->phi_edge = new double**[3];
-	
-	this->m_inv = new double*[1];
-	this->m_inv[0] = new double[this->number_bf];
+    
+    this->m_inv = new double*[1];
+    this->m_inv[0] = new double[this->number_bf];
 
     double* n1 = new double[number_gp_area];
     double* n2 = new double[number_gp_area];
 
-	double* z1 = this->integration_rule_area->GetZ1();
-	double* z2 = this->integration_rule_area->GetZ2();
+    double* z1 = this->integration_rule_area->GetZ1();
+    double* z2 = this->integration_rule_area->GetZ2();
 
     for (int i = 0; i < number_gp_area; i++) {
         n1[i] = 2 * (1 + z1[i]) / (1 - z2[i]) - 1;
@@ -105,7 +105,7 @@ void BASIS_2D::Dubiner() {
             dubiner_phi(i, j, number_gp_area, n1, n2, this->phi_area[m]);
             dubiner_dphi(i, j, number_gp_area, n1, n2, this->dphi_dz1_area[m], this->dphi_dz2_area[m]);
 
-			this->m_inv[0][m] = (2 * i + 1)*(i + j + 1) / 2.0;
+            this->m_inv[0][m] = (2 * i + 1)*(i + j + 1) / 2.0;
 
             m = m + 1;
         }
@@ -117,23 +117,23 @@ void BASIS_2D::Dubiner() {
     n1 = new double[number_gp_edge];
     n2 = new double[number_gp_edge];
     
-	double* z = this->integration_rule_line->GetZ();
+    double* z = this->integration_rule_line->GetZ();
 
     for (int i = 0; i < 3; i++) {
         if (i == 0) {
-			for (int j = 0; j < number_gp_edge; j++) {
+            for (int j = 0; j < number_gp_edge; j++) {
                 n1[j] = 1;
                 n2[j] = z[j];
             }
         }
         else if (i == 1) {
-			for (int j = 0; j < number_gp_edge; j++) {
+            for (int j = 0; j < number_gp_edge; j++) {
                 n1[j] = -1;
                 n2[j] = -z[j];
             }
         }
         else if (i == 2) {
-			for (int j = 0; j < number_gp_edge; j++) {
+            for (int j = 0; j < number_gp_edge; j++) {
                 n1[j] = z[j];
                 n2[j] = -1;
             }
