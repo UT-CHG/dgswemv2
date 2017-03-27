@@ -22,6 +22,8 @@ private:
     double*** phi_edge;
     double** m_inv;
 
+    double** phi_postprocessor;
+
 public:
     BASIS_2D(int, int, INTEGRATION_1D*, INTEGRATION_2D*);
     ~BASIS_2D();
@@ -38,6 +40,8 @@ public:
     double*** GetPhiEdge();
     bool GetOrthogonal();
     double** GetMInv();
+
+    double** GetPhiPostProcessor();
 
 private:
     void Dubiner();

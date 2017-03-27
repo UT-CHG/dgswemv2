@@ -138,12 +138,6 @@ void PROBLEM::Timestep() {
                 it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i);
         }
         it->second->SolveLSE(D_H);
-
-        for (int i = 0; i < number_bf; i++) {
-            printf("%f ", it->second->u[D_UA][i]);
-            printf("%f ", it->second->u[D_VA][i]);
-            printf("%f\n", it->second->u[D_H][i]);
-        }
     }
 }
 

@@ -40,6 +40,8 @@ void PROBLEM::EETimeStepper(int n_steps) {
                 it->second->u[VA][i] += dt*it->second->u[D_VA][i];
                 it->second->u[H][i] += dt*it->second->u[D_H][i];
             }
+
+            it->second->VTKWriteData(); //for testing
         }
     }
 }

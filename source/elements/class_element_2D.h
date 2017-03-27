@@ -2,6 +2,8 @@
 #define CLASS_ELEMENT_2D_H
 
 #include <vector>
+#include <fstream>
+#include <string>
 
 #include "../class_element.h"
 #include "../interfaces/class_interface_2D.h"
@@ -61,6 +63,10 @@ public:
     double IntegrationBoundaryNY(int, int);
 
     void SolveLSE(int);
+
+    void VTKWriteData();
+    void VTKInitializeTriangle();
+    
 };
 
 #endif

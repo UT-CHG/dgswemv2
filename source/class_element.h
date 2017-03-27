@@ -56,6 +56,8 @@ public:
 
     virtual void SolveLSE(int) = 0;
 
+    virtual void VTKWriteData() = 0;
+
     //virtual double test_against_phi(double f_at_gp[]) = 0;
     //virtual double test_against_dphidx(double f_at_gp[]) = 0;
     //virtual double test_against_dphidy(double f_at_gp[]) = 0;
