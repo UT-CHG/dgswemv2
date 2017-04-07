@@ -360,20 +360,13 @@ void ELEMENT_2D::SolveLSE(int u_flag) {
     }
 }
 
-void ELEMENT_2D::VTKWriteData() {
-    int u_flag = ZB;
+void ELEMENT_2D::InitializeVTK(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
+    this->InitializeVTKTriangle(points, cells);
+}
 
-    this->u[ZB][5] = 1;
+void ELEMENT_2D::WriteDataVTK(std::vector<double>& cell_data, int u_flag) {
+    this->u[u_flag][u_flag] = 1; //FOR TESTING
 
-    this->VTKInitializeTriangle();
-
-    std::string file_name = "data_element_ID_" + std::to_string(this->ID) + ".vtk";
-    std::ofstream file(file_name);
-
-    file << "CELL_DATA " << N_DIV*N_DIV << '\n';
-    file << "SCALARS " << u_flag << " float 1\n";
-    file << "LOOKUP_TABLE default\n";
-    
     double** phi = this->basis->GetPhiPostProcessor();
     double* u_post = new double[N_DIV*N_DIV];
 
@@ -388,22 +381,8 @@ void ELEMENT_2D::VTKWriteData() {
     }
 
     for (int i = 0; i < N_DIV*N_DIV; i++) {
-        file << u_post[i] << '\n';
+        cell_data.push_back(u_post[i]);
     }
 
     delete[] u_post;
-
-    file.close();
-    
-    std::string file_name_geom = "geometry_element_ID_" + std::to_string(this->ID) + ".vtk";
-    std::string file_name_data = "data_element_ID_" + std::to_string(this->ID) + ".vtk";
-
-    std::ifstream file_geom(file_name_geom, std::ios_base::binary);
-    std::ifstream file_data(file_name_data, std::ios_base::binary);
-
-    std::string file_name_merge = "element_ID_" + std::to_string(this->ID) + ".vtk";
-    std::ofstream file_merge(file_name_merge, std::ios_base::binary);
-
-    file_merge << file_geom.rdbuf() << file_data.rdbuf();
-    file_merge.close();
 }

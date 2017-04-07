@@ -6,6 +6,7 @@ MESH::MESH(int p, int p_geom) {
 
     this->InitializeElements();
     this->InitializeInterfaces();
+    this->InitializeVTK();
 }
 
 MESH::~MESH() {
@@ -116,4 +117,70 @@ void MESH::InitializeInterfaces() {
             }
         }
     }
+}
+
+void MESH::InitializeVTK() {
+    std::vector<double*> points;
+    std::vector<unsigned int*> cells;
+
+    for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+        it->second->InitializeVTK(points, cells);
+    }
+
+    std::string file_name = "geometry.vtk";
+    std::ofstream file(file_name);
+
+    file << "# vtk DataFile Version 3.0\n";
+    file << "OUTPUT DATA\n";
+    file << "ASCII\n";
+    file << "DATASET UNSTRUCTURED_GRID\n";
+    file << "POINTS " << points.size() << " float\n";
+
+    for (auto it = points.begin(); it != points.end(); it++) {
+        file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
+    }
+
+    int n_cell_entries = 0;
+    for (auto it = cells.begin(); it != cells.end(); it++) {
+        switch ((*it)[0]) {
+        case 5: n_cell_entries += 4; break;
+        default:
+            printf("\n");
+            printf("MESH VTK - Fatal error!\n");
+            printf("Undefined cell type = %d\n", (*it)[0]);
+            exit(1);
+        }
+    }
+
+    file << "CELLS " << cells.size() << ' ' << n_cell_entries << '\n';
+    
+    int n_nodes;
+
+    for (auto it = cells.begin(); it != cells.end(); it++) {
+        switch ((*it)[0]) {
+        case 5: file << 3 << '\t'; n_nodes = 3; break;
+        default:
+            printf("\n");
+            printf("MESH VTK - Fatal error!\n");
+            printf("Undefined cell type = %d\n", (*it)[0]);
+            exit(1);
+        }
+
+        for (int i = 1; i <= n_nodes; i++) {
+            file << (*it)[i] << '\t';
+        }
+        file << '\n';
+    }
+
+    file << "CELL_TYPES " << cells.size() << '\n';
+
+    for (auto it = cells.begin(); it != cells.end(); it++) {
+        file << (*it)[0] << '\n';
+    }
+    
+    for (auto it = cells.begin(); it != cells.end(); it++) delete[] *it;
+    for (auto it = points.begin(); it != points.end(); it++) delete[] *it;
+
+    points.clear();
+    cells.clear();
 }

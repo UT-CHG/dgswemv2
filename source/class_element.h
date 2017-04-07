@@ -2,6 +2,9 @@
 #define CLASS_ELEMENT_H
 
 #include <map>
+#include <vector>
+#include <fstream>
+#include <string>
 
 #include "class_interface.h"
 
@@ -56,7 +59,8 @@ public:
 
     virtual void SolveLSE(int) = 0;
 
-    virtual void VTKWriteData() = 0;
+    virtual void InitializeVTK(std::vector<double*>&, std::vector<unsigned int*>&) = 0;
+    virtual void WriteDataVTK(std::vector<double>&, int) = 0;
 
     //virtual double test_against_phi(double f_at_gp[]) = 0;
     //virtual double test_against_dphidx(double f_at_gp[]) = 0;

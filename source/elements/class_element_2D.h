@@ -1,10 +1,6 @@
 #ifndef CLASS_ELEMENT_2D_H
 #define CLASS_ELEMENT_2D_H
 
-#include <vector>
-#include <fstream>
-#include <string>
-
 #include "../class_element.h"
 #include "../interfaces/class_interface_2D.h"
 #include "../class_basis.h"
@@ -64,8 +60,10 @@ public:
 
     void SolveLSE(int);
 
-    void VTKWriteData();
-    void VTKInitializeTriangle();
+    void InitializeVTK(std::vector<double*>&, std::vector<unsigned int*>&);
+    void WriteDataVTK(std::vector<double>&, int);
+
+    void InitializeVTKTriangle(std::vector<double*>&, std::vector<unsigned int*>&);
     
 };
 

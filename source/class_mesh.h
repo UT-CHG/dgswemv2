@@ -38,6 +38,7 @@ public:
 protected:
     void InitializeElements();
     void InitializeInterfaces();
+    void InitializeVTK();
 };
 
 #endif

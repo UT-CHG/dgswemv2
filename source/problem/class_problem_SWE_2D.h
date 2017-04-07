@@ -23,6 +23,8 @@ public:
     void RK3TimeStepper(int);
     void RK4TimeStepper(int);
 
+    void WriteDataVTK();
+
 private:
     void Timestep();
 

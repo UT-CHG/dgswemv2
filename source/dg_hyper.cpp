@@ -14,6 +14,7 @@ int main(int argc, const char* argv[])
     PROBLEM* problem = new PROBLEM();
 
     problem->EETimeStepper(5);
+    problem->WriteDataVTK();
 
     delete problem;
 

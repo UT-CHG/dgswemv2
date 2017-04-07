@@ -128,16 +128,9 @@ void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_typ
     }
 }
 
-void ELEMENT_2D::VTKInitializeTriangle() {
-    std::string file_name = "geometry_element_ID_" + std::to_string(this->ID) + ".vtk";
-    std::ofstream file(file_name);
-
-    file << "# vtk DataFile Version 3.0\n";
-    file << "ELEMENT " << this->ID << " DATA\n";
-    file << "ASCII\n";
-    file << "DATASET UNSTRUCTURED_GRID\n";
-    file << "POINTS " << (N_DIV + 1)*(N_DIV + 2) / 2 << " float\n";
-
+void ELEMENT_2D::InitializeVTKTriangle(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
+    unsigned int number_pt = points.size();
+    
     if (this->basis_geom == nullptr) {
         double z1;
         double z2;
@@ -145,18 +138,20 @@ void ELEMENT_2D::VTKInitializeTriangle() {
 
         for (int i = 0; i <= N_DIV; i++) {
             for (int j = 0; j <= N_DIV - i; j++) {
+                points.push_back(new double[3]);
+
                 z1 = -1.0 + dz*j;
                 z2 = -1.0 + dz*i;
 
-                file << this->nodal_coordinates_x[0] * (-(z1 + z2) / 2.0) +
+                points.back()[0] = this->nodal_coordinates_x[0] * (-(z1 + z2) / 2.0) +
                     this->nodal_coordinates_x[1] * ((1 + z1) / 2.0) +
-                    this->nodal_coordinates_x[2] * ((1 + z2) / 2.0) << " ";
+                    this->nodal_coordinates_x[2] * ((1 + z2) / 2.0);
 
-                file << this->nodal_coordinates_y[0] * (-(z1 + z2) / 2.0) +
+                points.back()[1] = this->nodal_coordinates_y[0] * (-(z1 + z2) / 2.0) +
                     this->nodal_coordinates_y[1] * ((1 + z1) / 2.0) +
-                    this->nodal_coordinates_y[2] * ((1 + z2) / 2.0) << " ";
+                    this->nodal_coordinates_y[2] * ((1 + z2) / 2.0);
 
-                file << 0 << '\n';
+                points.back()[2] = 0;
             }
         }
     }
@@ -164,42 +159,31 @@ void ELEMENT_2D::VTKInitializeTriangle() {
         //Placeholder for cases p_geom > 1
     }
 
-    file << "CELLS " << N_DIV*N_DIV << " " << 4 * N_DIV*N_DIV << '\n';
-
-    int pt_ID;
-
-    int pt_0;
-    int pt_1;
-    int pt_2;
+    unsigned int pt_ID;
 
     for (int i = 0; i < N_DIV; i++) {
         for (int j = 0; j < N_DIV - i; j++) {
-            pt_ID = (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
+            cells.push_back(new unsigned int[4]);
 
-            pt_0 = pt_ID;
-            pt_1 = pt_ID + 1;
-            pt_2 = pt_ID + (N_DIV + 1 - i);
+            pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 
-            file << 3 << ' ' << pt_0 << ' ' << pt_1 << ' ' << pt_2 << '\n';
+            cells.back()[0] = 5;
+            cells.back()[1] = pt_ID;
+            cells.back()[2] = pt_ID + 1;
+            cells.back()[3] = pt_ID + (N_DIV + 1 - i);
         }
     }
 
     for (int i = 1; i < N_DIV; i++) {
         for (int j = 0; j < N_DIV - i; j++) {
-            pt_ID = (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
-            pt_0 = pt_ID;
-            pt_1 = pt_ID + 1;
-            pt_2 = pt_ID - (N_DIV + 2 - i) + 1;
+            cells.push_back(new unsigned int[4]);
 
-            file << 3 << ' ' << pt_0 << ' ' << pt_1 << ' ' << pt_2 << '\n';
+            pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
+
+            cells.back()[0] = 5;
+            cells.back()[1] = pt_ID;
+            cells.back()[2] = pt_ID + 1;
+            cells.back()[3] = pt_ID - (N_DIV + 2 - i) + 1;
         }
     }
-
-    file << "CELL_TYPES " << N_DIV*N_DIV << '\n';
-
-    for (int i = 0; i < N_DIV*N_DIV; i++) {
-        file << 5 << '\n';
-    }
-
-    file.close();
 }

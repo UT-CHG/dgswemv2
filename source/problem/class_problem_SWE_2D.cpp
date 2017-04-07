@@ -40,8 +40,6 @@ void PROBLEM::EETimeStepper(int n_steps) {
                 it->second->u[VA][i] += dt*it->second->u[D_VA][i];
                 it->second->u[H][i] += dt*it->second->u[D_H][i];
             }
-
-            it->second->VTKWriteData(); //for testing
         }
     }
 }
@@ -250,4 +248,78 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
         }
         it->second->u_substep.clear();
     }
+}
+
+void PROBLEM::WriteDataVTK() {
+    std::vector<double> cell_data;
+
+    std::string file_name = "data.vtk";
+    std::ofstream file(file_name);
+
+    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+        it->second->WriteDataVTK(cell_data, ZB);
+    }
+
+    file << "CELL_DATA " << cell_data.size() << '\n';
+    file << "SCALARS zb float 1\n";
+    file << "LOOKUP_TABLE default\n";
+
+    for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+        file << *it << '\n';
+    }
+
+    cell_data.clear();
+
+    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+        it->second->WriteDataVTK(cell_data, UA);
+    }
+
+    file << "SCALARS ua float 1\n";
+    file << "LOOKUP_TABLE default\n";
+
+    for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+        file << *it << '\n';
+    }
+
+    cell_data.clear();
+
+    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+        it->second->WriteDataVTK(cell_data, VA);
+    }
+
+    file << "SCALARS va float 1\n";
+    file << "LOOKUP_TABLE default\n";
+
+    for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+        file << *it << '\n';
+    }
+
+    cell_data.clear();
+
+    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+        it->second->WriteDataVTK(cell_data, H);
+    }
+
+    file << "SCALARS h float 1\n";
+    file << "LOOKUP_TABLE default\n";
+
+    for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+        file << *it << '\n';
+    }
+
+    cell_data.clear();
+
+    file.close();
+
+    std::string file_name_geom = "geometry.vtk";
+    std::string file_name_data = "data.vtk";
+
+    std::ifstream file_geom(file_name_geom, std::ios_base::binary);
+    std::ifstream file_data(file_name_data, std::ios_base::binary);
+
+    std::string file_name_merge = "mesh_data.vtk";
+    std::ofstream file_merge(file_name_merge, std::ios_base::binary);
+
+    file_merge << file_geom.rdbuf() << file_data.rdbuf();
+    file_merge.close();
 }
