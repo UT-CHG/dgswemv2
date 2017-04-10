@@ -1,12 +1,16 @@
 #include "class_mesh.h"
 
 MESH::MESH(int p, int p_geom) {
-    this->p = p;
-    this->p_geom = p_geom;
+	this->p = p;
+	this->p_geom = p_geom;
 
-    this->InitializeElements();
-    this->InitializeInterfaces();
-    this->InitializeVTK();
+	INTEGRATION_1D* line_rule = new INTEGRATION_1D(GAUSS_LEGENDRE, 2 * this->p);
+	this->line_rules[TRIANGLE] = line_rule;
+
+	INTEGRATION_2D* area_rule = new INTEGRATION_2D(DUNAVANT, 2 * this->p);
+	this->area_rules[TRIANGLE] = area_rule;
+	
+	this->bases_2D[TRIANGLE] = new BASIS_2D(DUBINER, p, line_rule, area_rule);
 }
 
 MESH::~MESH() {
@@ -44,58 +48,97 @@ MESH::~MESH() {
     this->area_rules.clear();
 }
 
-void MESH::InitializeElements() {
-    this->line_rules[GAUSS_LEGENDRE] = new INTEGRATION_1D(GAUSS_LEGENDRE, 2 * this->p);
-    this->area_rules[DUNAVANT] = new INTEGRATION_2D(DUNAVANT, 2 * this->p);
+void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_type) {
+	double dx = L / m;
+	double dy = W / n;
 
-    INTEGRATION_1D* line_rule;
+	unsigned int ID;
+	
+	switch (element_type) {
+	case TRIANGLE:
+		unsigned char boundaries[3];
+		unsigned int neighbors[3];
+		double x[3];
+		double y[3];
+		BASIS_2D* basis;
 
-    if (this->line_rules.find(GAUSS_LEGENDRE)->first == GAUSS_LEGENDRE) {
-        line_rule = this->line_rules.find(GAUSS_LEGENDRE)->second;
-    }
-    else {
-        this->line_rules[GAUSS_LEGENDRE] = new INTEGRATION_1D(GAUSS_LEGENDRE, 2 * p);
-        line_rule = this->line_rules.find(GAUSS_LEGENDRE)->second;
-    }
+		if (!(this->bases_2D.empty()) && (this->bases_2D.find(TRIANGLE)->first == TRIANGLE)) {
+			basis = this->bases_2D.find(TRIANGLE)->second;
+		}
+		else {
+			printf("\n");
+			printf("MESH RectangularDomain - Fatal error!\n");
+			printf("Triangular basis not defined");
+			exit(1);
+		}
 
-    INTEGRATION_2D* area_rule;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++) {
+				ID = 2 * j + 2 * m * i;
 
-    if (this->area_rules.find(DUNAVANT)->first == DUNAVANT) {
-        area_rule = this->area_rules.find(DUNAVANT)->second;
-    }
-    else {
-        this->area_rules[DUNAVANT] = new INTEGRATION_2D(DUNAVANT, 2 * p);
-        area_rule = this->area_rules.find(DUNAVANT)->second;
-    }
+				neighbors[0] = ID + 1;
+				neighbors[1] = ID + 1 + 2 * m;
+				neighbors[2] = ID - 1;
 
-    this->bases_2D[DUBINER] = new BASIS_2D(DUBINER, p, line_rule, area_rule);
+				boundaries[0] = INTERNAL;
+				boundaries[1] = INTERNAL;
+				boundaries[2] = INTERNAL;
 
-    BASIS_2D* basis;
+				if (i == n - 1) {
+					neighbors[1] = DEFAULT_ID;
+					boundaries[1] = LAND;
+				}
+				if (j == 0) {
+					neighbors[2] = DEFAULT_ID;
+					boundaries[2] = LAND;
+				}
 
-    if (this->bases_2D.find(DUBINER)->first == DUBINER) {
-        basis = this->bases_2D.find(DUBINER)->second;
-    }
-    else {
-        this->bases_2D[DUBINER] = new BASIS_2D(DUBINER, p, line_rule, area_rule);
-        basis = this->bases_2D.find(DUBINER)->second;
-    }
+				x[0] = j*dx;
+				x[1] = x[0];
+				x[2] = x[0] + dx;
 
-    unsigned int ID = 0;
+				y[0] = (i + 1)*dy;
+				y[1] = y[0] - dy;
+				y[2] = y[0];
 
-    double x[3] = { -1,  1, -1 };
-    double y[3] = { -1, -1,  1 };
+				this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
 
-    unsigned int neighbors[3] = { 1, DEFAULT_ID, DEFAULT_ID };
-    unsigned char boundaries[3] = { INTERNAL, LAND, LAND };
+				ID = ID + 1;
 
-    this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
+				neighbors[0] = ID - 1;
+				neighbors[1] = ID + 1;
+				neighbors[2] = ID - 1 - 2 * m;
 
-    ID = 1;
-    x[0] = 1;
-    y[0] = 1;
-    neighbors[0] = 0;
+				boundaries[0] = INTERNAL;
+				boundaries[1] = INTERNAL;
+				boundaries[2] = INTERNAL;
+				
+				if (i == 0) {
+					neighbors[2] = DEFAULT_ID;
+					boundaries[2] = LAND;
+				}
+				if (j == m - 1) {
+					neighbors[1] = DEFAULT_ID;
+					boundaries[1] = OCEAN;
+				}
 
-    this->elements[ID] = new ELEMENT_2D(ID, neighbors, boundaries, x, y, basis);
+				x[0] = x[0] + dx;
+				y[0] = y[0] - dy;
+
+				this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
+			}
+		}
+		break;
+	default:
+		printf("\n");
+		printf("MESH RectangularDomain - Fatal error!\n");
+		printf("Undefined element type = %d\n", element_type);
+		exit(1);
+	}
+
+	this->InitializeInterfaces();
+	
+	this->InitializeVTK();
 }
 
 void MESH::InitializeInterfaces() {
@@ -143,10 +186,10 @@ void MESH::InitializeVTK() {
     int n_cell_entries = 0;
     for (auto it = cells.begin(); it != cells.end(); it++) {
         switch ((*it)[0]) {
-        case 5: n_cell_entries += 4; break;
+        case TRIANGLE: n_cell_entries += 4; break;
         default:
             printf("\n");
-            printf("MESH VTK - Fatal error!\n");
+            printf("MESH InitializeVTK - Fatal error!\n");
             printf("Undefined cell type = %d\n", (*it)[0]);
             exit(1);
         }
@@ -158,10 +201,10 @@ void MESH::InitializeVTK() {
 
     for (auto it = cells.begin(); it != cells.end(); it++) {
         switch ((*it)[0]) {
-        case 5: file << 3 << '\t'; n_nodes = 3; break;
+        case TRIANGLE: file << 3 << '\t'; n_nodes = 3; break;
         default:
             printf("\n");
-            printf("MESH VTK - Fatal error!\n");
+            printf("MESH InitializeVTK - Fatal error!\n");
             printf("Undefined cell type = %d\n", (*it)[0]);
             exit(1);
         }

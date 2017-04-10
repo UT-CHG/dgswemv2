@@ -13,7 +13,7 @@ int main(int argc, const char* argv[])
 {
     PROBLEM* problem = new PROBLEM();
 
-    problem->EETimeStepper(5);
+    problem->EETimeStepper(10000);
     problem->WriteDataVTK();
 
     delete problem;

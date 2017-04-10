@@ -60,7 +60,8 @@ public:
     virtual void SolveLSE(int) = 0;
 
     virtual void InitializeVTK(std::vector<double*>&, std::vector<unsigned int*>&) = 0;
-    virtual void WriteDataVTK(std::vector<double>&, int) = 0;
+    virtual void WriteCellDataVTK(std::vector<double>&, int) = 0;
+	virtual void WritePointDataVTK(std::vector<double>&, int) = 0;
 
     //virtual double test_against_phi(double f_at_gp[]) = 0;
     //virtual double test_against_dphidx(double f_at_gp[]) = 0;

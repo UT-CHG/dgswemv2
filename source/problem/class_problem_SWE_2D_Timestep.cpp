@@ -5,113 +5,130 @@
 #include "class_problem_SWE_2D.h"
 
 void PROBLEM::Timestep() {
-    int number_bf;
-    double* RHS;
+	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+		it->second->ComputeInternalU(UA);
+		it->second->ComputeBoundaryU(UA);
 
-    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
-        it->second->ComputeInternalU(UA);
-        it->second->ComputeBoundaryU(UA);
+		it->second->ComputeInternalU(VA);
+		it->second->ComputeBoundaryU(VA);
 
-        it->second->ComputeInternalU(VA);
-        it->second->ComputeBoundaryU(VA);
+		it->second->ComputeInternalU(H);
+		it->second->ComputeBoundaryU(H);
+	}
 
-        it->second->ComputeInternalU(H);
-        it->second->ComputeBoundaryU(H);
-    }
+	for (auto it = this->mesh->interfaces.begin(); it != this->mesh->interfaces.end(); it++) {
+		switch (it->first) {
+		case INTERNAL:
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				this->InterfaceFlowAverage(*(itt));
+			}
+			break;
+		case OCEAN:
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				this->OceanInterfaceSetBC(*(itt));
+				this->InterfaceFlowAverage(*(itt));
+			}
+			break;
+		case LAND:
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				this->LandInterfaceSetBC(*(itt));
+				this->InterfaceFlowAverage(*(itt));
+			}
+			break;
+		case FLOW:
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				this->FlowInterfaceSetBC(*(itt));
+				this->InterfaceFlowAverage(*(itt));
+			}
+			break;
+		default:
+			printf("\n");
+			printf("PROBLEM Timestep - Fatal error!\n");
+			printf("Undefined interface type = %d\n", it->first);
+			exit(1);
+		}
+	}
 
+	int number_bf;
+	double* RHS;
 
-    for (auto it = this->internal_interfaces.begin(); it != this->internal_interfaces.end(); it++) {
-        this->InterfaceFlowAverage(*it);
-    }
+	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+		number_bf = it->second->number_bf;
+		RHS = it->second->RHS;
 
-    for (auto it = this->ocean_interfaces.begin(); it != this->ocean_interfaces.end(); it++) {
-        this->OceanInterfaceSetBC(*it);
-        this->InterfaceFlowAverage(*it);
-    }
+		//COMPUTING TXX
+		for (int i = 0; i < number_bf; i++) {
+			RHS[i] = (-it->second->IntegrationInternalDPhiDX(UA, i) +
+				it->second->IntegrationBoundaryNX(UA_AVG, i))*
+				pow(it->second->u[SP][i], 2);
+		}
+		it->second->SolveLSE(TXX);
 
-    for (auto it = this->land_interfaces.begin(); it != this->land_interfaces.end(); it++) {
-        this->LandInterfaceSetBC(*it);
-        this->InterfaceFlowAverage(*it);
-    }
+		it->second->ComputeInternalU(TXX);
+		it->second->ComputeBoundaryU(TXX);
 
-    for (auto it = this->flow_interfaces.begin(); it != this->flow_interfaces.end(); it++) {
-        this->FlowInterfaceSetBC(*it);
-        this->InterfaceFlowAverage(*it);
-    }
+		//COMPUTING TXY
+		for (int i = 0; i < number_bf; i++) {
+			RHS[i] = -it->second->IntegrationInternalDPhiDY(UA, i) +
+				it->second->IntegrationBoundaryNY(UA_AVG, i);
+		}
+		it->second->SolveLSE(TXY);
 
-    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
-        number_bf = it->second->number_bf;
-        RHS = it->second->RHS;
+		it->second->ComputeInternalU(TXY);
+		it->second->ComputeBoundaryU(TXY);
 
-        //COMPUTING TXX
-        for (int i = 0; i < number_bf; i++) {
-            RHS[i] = (-it->second->IntegrationInternalDPhiDX(UA, i) +
-                it->second->IntegrationBoundaryNX(UA_AVG, i))*
-                pow(it->second->u[SP][i], 2);
-        }
-        it->second->SolveLSE(TXX);
+		//COMPUTING TYX
+		for (int i = 0; i < number_bf; i++) {
+			RHS[i] = (-it->second->IntegrationInternalDPhiDX(VA, i) +
+				it->second->IntegrationBoundaryNX(VA_AVG, i))*
+				pow(it->second->u[SP][i], 2);
+		}
+		it->second->SolveLSE(TYX);
 
-        it->second->ComputeInternalU(TXX);
-        it->second->ComputeBoundaryU(TXX);
+		it->second->ComputeInternalU(TYX);
+		it->second->ComputeBoundaryU(TYX);
 
-        //COMPUTING TXY
-        for (int i = 0; i < number_bf; i++) {
-            RHS[i] = -it->second->IntegrationInternalDPhiDY(UA, i) +
-                it->second->IntegrationBoundaryNY(UA_AVG, i);
-        }
-        it->second->SolveLSE(TXY);
+		//COMPUTING TYY
+		for (int i = 0; i < number_bf; i++) {
+			RHS[i] = -it->second->IntegrationInternalDPhiDY(VA, i) +
+				it->second->IntegrationBoundaryNY(VA_AVG, i);
+		}
+		it->second->SolveLSE(TYY);
 
-        it->second->ComputeInternalU(TXY);
-        it->second->ComputeBoundaryU(TXY);
+		it->second->ComputeInternalU(TYY);
+		it->second->ComputeBoundaryU(TYY);
+	}
 
-        //COMPUTING TYX
-        for (int i = 0; i < number_bf; i++) {
-            RHS[i] = (-it->second->IntegrationInternalDPhiDX(VA, i) +
-                it->second->IntegrationBoundaryNX(VA_AVG, i))*
-                pow(it->second->u[SP][i], 2);
-        }
-        it->second->SolveLSE(TYX);
+	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+		this->ComputeUVA(it->second);
+		this->ComputeF(it->second);
+	}
 
-        it->second->ComputeInternalU(TYX);
-        it->second->ComputeBoundaryU(TYX);
+	for (auto it = this->mesh->interfaces.begin(); it != this->mesh->interfaces.end(); it++) {
+		switch (it->first) {
+		case INTERNAL:
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				this->LLFNumericalFlux(*(itt));
+			}
+			break;
+		case OCEAN:
+		case LAND:
+		case FLOW:
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				this->ComputeBoundaryInterfaceF(*(itt));
+				this->LLFNumericalFlux(*(itt));
+			}
+			break;
+		default:
+			printf("\n");
+			printf("PROBLEM Timestep - Fatal error!\n");
+			printf("Undefined interface type = %d\n", it->first);
+			exit(1);
+		}
+	}
 
-        //COMPUTING TYY
-        for (int i = 0; i < number_bf; i++) {
-            RHS[i] = -it->second->IntegrationInternalDPhiDY(VA, i) +
-                it->second->IntegrationBoundaryNY(VA_AVG, i);
-        }
-        it->second->SolveLSE(TYY);
-
-        it->second->ComputeInternalU(TYY);
-        it->second->ComputeBoundaryU(TYY);
-    }
-
-    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
-        this->ComputeUVA(it->second);
-        this->ComputeF(it->second);
-    }
-
-    for (auto it = this->internal_interfaces.begin(); it != this->internal_interfaces.end(); it++) {
-        this->LLFNumericalFlux(*it);
-    }
-
-    for (auto it = this->ocean_interfaces.begin(); it != this->ocean_interfaces.end(); it++) {
-        this->ComputeBoundaryInterfaceF(*it);
-        this->LLFNumericalFlux(*it);
-    }
-
-    for (auto it = this->land_interfaces.begin(); it != this->land_interfaces.end(); it++) {
-        this->ComputeBoundaryInterfaceF(*it);
-        this->LLFNumericalFlux(*it);
-    }
-
-    for (auto it = this->flow_interfaces.begin(); it != this->flow_interfaces.end(); it++) {
-        this->ComputeBoundaryInterfaceF(*it);
-        this->LLFNumericalFlux(*it);
-    }
-
-    for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
-        number_bf = it->second->number_bf;
+	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
+		number_bf = it->second->number_bf;
         RHS = it->second->RHS;
 
         //COMPUTING UA
@@ -278,7 +295,7 @@ void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {
 }
 
 void PROBLEM::OceanInterfaceSetBC(INTERFACE* intface) {
-    double H_ocean;
+	double H_ocean = 1 + 0.5*sin(628.0*this->t); //FOR TESTING
 
     double** u_in = intface->u_boundary_in;
     double** u_ex = intface->u_boundary_ex;
@@ -288,7 +305,7 @@ void PROBLEM::OceanInterfaceSetBC(INTERFACE* intface) {
     for (int i = 0; i < intface->number_gp; i++) {
         i_ex = intface->number_gp - 1 - i;
 
-        H_ocean = u_in[H][i]; //NEED TO COMPUTE OCEAN ELEVATION
+        //H_ocean = u_in[H][i]; //NEED TO COMPUTE OCEAN ELEVATION
 
         u_ex[ZB][i_ex] = u_in[ZB][i];
         u_ex[SP][i_ex] = u_in[SP][i];

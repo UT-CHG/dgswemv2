@@ -131,11 +131,11 @@ void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_typ
 void ELEMENT_2D::InitializeVTKTriangle(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
     unsigned int number_pt = points.size();
     
-    if (this->basis_geom == nullptr) {
-        double z1;
-        double z2;
-        double dz = 2.0 / N_DIV;
+	double z1;
+	double z2;
+	double dz = 2.0 / N_DIV;
 
+    if (this->basis_geom == nullptr) {
         for (int i = 0; i <= N_DIV; i++) {
             for (int j = 0; j <= N_DIV - i; j++) {
                 points.push_back(new double[3]);

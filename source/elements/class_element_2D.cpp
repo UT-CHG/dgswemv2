@@ -1,6 +1,6 @@
 #include "class_element_2D.h"
 
-ELEMENT_2D::ELEMENT_2D(unsigned int ID, unsigned int* neighbor_ID, unsigned char* boundary_type,
+ELEMENT_2D::ELEMENT_2D(int element_type, unsigned int ID, unsigned int* neighbor_ID, unsigned char* boundary_type,
     double* nodal_coordinates_x, double* nodal_coordinates_y,
     BASIS_2D* basis, BASIS_GEOM_2D* basis_geom) : ELEMENT(ID) {
     this->basis = basis;
@@ -9,32 +9,38 @@ ELEMENT_2D::ELEMENT_2D(unsigned int ID, unsigned int* neighbor_ID, unsigned char
         this->basis_geom = basis_geom;
     }
 
-    //CREATE TRI ELEMENT
-    this->Triangle(neighbor_ID, boundary_type, nodal_coordinates_x, nodal_coordinates_y);
-
-    //SET DEFAULT INITIAL CONDITIONS
-    this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
-    this->u[H][0] = 1; //FLAT SURFACE
-    this->u[ZB][0] = 0; //FLAT BED
-    this->u[UA][0] = 0;
-    this->u[VA][0] = 0;
-
-    for (int i = 1; i < this->number_bf; i++) {
-        this->u[SP][i] = 0;
-        this->u[H][i] = 0;
-        this->u[ZB][i] = 0; //FLAT BED
-        this->u[UA][i] = 0;
-        this->u[VA][i] = 0;
-    }
-
-    //INITIALIZE SP AND ZB AT GPs
-    this->ComputeBoundaryU(SP);
-    this->ComputeInternalU(SP);
-    this->ComputeBoundaryU(ZB);
-    this->ComputeInternalU(ZB);
+	switch (element_type){
+	case TRIANGLE: this->Triangle(neighbor_ID, boundary_type, nodal_coordinates_x, nodal_coordinates_y); break;
+	default:
+		printf("\n");
+		printf("ELEMENT_2D - Fatal error!\n");
+		printf("Undefined element type = %d\n", element_type);
+		exit(1);
+	}
 
     //COMPUTE NUMERICAL INTEGRATION FACTORS
     this->ComputeIntegrationFactors();
+
+	//SET INITIAL CONDITIONS FOR TESTING
+	this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
+	this->u[H][0] = 1; //FLAT SURFACE
+	this->u[ZB][0] = 0; //FLAT BED
+	this->u[UA][0] = 0;
+	this->u[VA][0] = 0;
+
+	for (int i = 1; i < this->number_bf; i++) {
+		this->u[SP][i] = 0;
+		this->u[H][i] = 0;
+		this->u[ZB][i] = 0; //FLAT BED
+		this->u[UA][i] = 0;
+		this->u[VA][i] = 0;
+	}
+
+	//INITIALIZE SP AND ZB AT GPs
+	this->ComputeBoundaryU(SP);
+	this->ComputeInternalU(SP);
+	this->ComputeBoundaryU(ZB);
+	this->ComputeInternalU(ZB);
 }
 
 ELEMENT_2D::~ELEMENT_2D() {
@@ -118,10 +124,10 @@ void ELEMENT_2D::ComputeIntegrationFactors() {
         this->edge_int_fac_ny[i] = new double*[this->number_bf];
     }
 
-    double** phi_area = this->basis->GetPhiArea();
+	this->phi_area = this->basis->GetPhiArea();
+	this->phi_edge = this->basis->GetPhiEdge();
     double** dphi_dz1_area = this->basis->GetDPhiDZ1Area();
     double** dphi_dz2_area = this->basis->GetDPhiDZ2Area();
-    double*** phi_edge = this->basis->GetPhiEdge();
 
     double* w_area = this->basis->GetIntegrationRuleArea()->GetWeight();
     double* w_line = this->basis->GetIntegrationRuleLine()->GetWeight();
@@ -133,7 +139,7 @@ void ELEMENT_2D::ComputeIntegrationFactors() {
             this->area_int_fac_dphidy[i] = new double[this->number_gp_internal];
 
             for (int j = 0; j < this->number_gp_internal; j++) {
-                this->area_int_fac_phi[i][j] = phi_area[i][j] * w_area[j];
+                this->area_int_fac_phi[i][j] = this->phi_area[i][j] * w_area[j];
 
                 this->area_int_fac_dphidx[i][j] = (dphi_dz1_area[i][j] * this->J_inv_t_area[0][0][0] +
                     dphi_dz2_area[i][j] * this->J_inv_t_area[0][1][0]) * w_area[j];
@@ -150,13 +156,13 @@ void ELEMENT_2D::ComputeIntegrationFactors() {
                 this->edge_int_fac_ny[i][j] = new double[this->number_gp_boundary];
 
                 for (int k = 0; k < this->number_gp_boundary; k++) {
-                    this->edge_int_fac_phi[i][j][k] = phi_edge[i][j][k] *
+                    this->edge_int_fac_phi[i][j][k] = this->phi_edge[i][j][k] *
                         w_line[k] * this->surface_J_edge[i][0] / abs(this->det_J_area[0]);
 
-                    this->edge_int_fac_nx[i][j][k] = phi_edge[i][j][k] * this->normal_edge_x[i][0] *
+                    this->edge_int_fac_nx[i][j][k] = this->phi_edge[i][j][k] * this->normal_edge_x[i][0] *
                         w_line[k] * this->surface_J_edge[i][0] / abs(this->det_J_area[0]);
 
-                    this->edge_int_fac_ny[i][j][k] = phi_edge[i][j][k] * this->normal_edge_y[i][0] *
+                    this->edge_int_fac_ny[i][j][k] = this->phi_edge[i][j][k] * this->normal_edge_y[i][0] *
                         w_line[k] * this->surface_J_edge[i][0] / abs(this->det_J_area[0]);
                 }
             }
@@ -249,22 +255,18 @@ std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT_2D::GetOwnInterfaces()
 }
 
 void ELEMENT_2D::ComputeInternalU(int u_flag) {
-    double** phi_area = this->basis->GetPhiArea();
-
     for (int i = 0; i < this->number_gp_internal; i++) {
         this->u_internal[u_flag][i] = 0.0;
     }
 
     for (int i = 0; i < this->number_bf; i++) {
         for (int j = 0; j < this->number_gp_internal; j++) {
-            this->u_internal[u_flag][j] += this->u[u_flag][i] * phi_area[i][j];
+            this->u_internal[u_flag][j] += this->u[u_flag][i] * this->phi_area[i][j];
         }
     }
 }
 
 void ELEMENT_2D::ComputeBoundaryU(int u_flag) {
-    double*** phi_edge = this->basis->GetPhiEdge();
-
     for (int k = 0; k < this->number_interfaces; k++) {
         for (int i = 0; i < this->number_gp_boundary; i++) {
             this->u_boundary[k][u_flag][i] = 0.0;
@@ -272,7 +274,7 @@ void ELEMENT_2D::ComputeBoundaryU(int u_flag) {
 
         for (int i = 0; i < this->number_bf; i++) {
             for (int j = 0; j < this->number_gp_boundary; j++) {
-                this->u_boundary[k][u_flag][j] += this->u[u_flag][i] * phi_edge[k][i][j];
+                this->u_boundary[k][u_flag][j] += this->u[u_flag][i] * this->phi_edge[k][i][j];
             }
         }
     }
@@ -361,13 +363,11 @@ void ELEMENT_2D::SolveLSE(int u_flag) {
 }
 
 void ELEMENT_2D::InitializeVTK(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
-    this->InitializeVTKTriangle(points, cells);
+	if (this->number_interfaces == 3) this->InitializeVTKTriangle(points, cells);
 }
 
-void ELEMENT_2D::WriteDataVTK(std::vector<double>& cell_data, int u_flag) {
-    this->u[u_flag][u_flag] = 1; //FOR TESTING
-
-    double** phi = this->basis->GetPhiPostProcessor();
+void ELEMENT_2D::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
+    double** phi = this->basis->GetPhiPostProcessorCell();
     double* u_post = new double[N_DIV*N_DIV];
 
     for (int i = 0; i < N_DIV*N_DIV; i++) {
@@ -385,4 +385,25 @@ void ELEMENT_2D::WriteDataVTK(std::vector<double>& cell_data, int u_flag) {
     }
 
     delete[] u_post;
+}
+
+void ELEMENT_2D::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
+	double** phi = this->basis->GetPhiPostProcessorPoint();
+	double* u_post = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+
+	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
+		u_post[i] = 0.0;
+	}
+
+	for (int i = 0; i < this->number_bf; i++) {
+		for (int j = 0; j < (N_DIV + 1)*(N_DIV + 2) / 2; j++) {
+			u_post[j] += this->u[u_flag][i] * phi[i][j];
+		}
+	}
+
+	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
+		point_data.push_back(u_post[i]);
+	}
+
+	delete[] u_post;
 }

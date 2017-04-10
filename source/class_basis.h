@@ -22,26 +22,29 @@ private:
     double*** phi_edge;
     double** m_inv;
 
-    double** phi_postprocessor;
+    double** phi_postprocessor_cell;
+	double** phi_postprocessor_point;
 
 public:
     BASIS_2D(int, int, INTEGRATION_1D*, INTEGRATION_2D*);
     ~BASIS_2D();
 
-    int GetPolynomial();
-    int GetNumberBasisFunctions();
+	int GetPolynomial() { return this->p; }
+	int GetNumberBasisFunctions() { return this->number_bf; }
 
-    INTEGRATION_1D* GetIntegrationRuleLine();
-    INTEGRATION_2D* GetIntegrationRuleArea();
-    
-    double** GetPhiArea();
-    double** GetDPhiDZ1Area();
-    double** GetDPhiDZ2Area();
-    double*** GetPhiEdge();
-    bool GetOrthogonal();
-    double** GetMInv();
+	INTEGRATION_1D* GetIntegrationRuleLine() { return this->integration_rule_line; }
+	INTEGRATION_2D* GetIntegrationRuleArea() { return this->integration_rule_area; }
 
-    double** GetPhiPostProcessor();
+	double** GetPhiArea() { return this->phi_area; };
+	double** GetDPhiDZ1Area() { return this->dphi_dz1_area; };
+	double** GetDPhiDZ2Area() { return this->dphi_dz2_area; };
+	double*** GetPhiEdge() { return this->phi_edge; };
+
+	bool GetOrthogonal() { return this->orthogonal; };
+	double** GetMInv() { return this->m_inv; };
+
+	double** GetPhiPostProcessorCell() { return this->phi_postprocessor_cell; };
+	double** GetPhiPostProcessorPoint() { return this->phi_postprocessor_point; };
 
 private:
     void Dubiner();

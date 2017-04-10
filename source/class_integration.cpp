@@ -20,14 +20,6 @@ INTEGRATION_1D::~INTEGRATION_1D() {
     delete[] this->z;
 }
 
-int INTEGRATION_1D::GetPolynomial() { return this->p; }
-
-int INTEGRATION_1D::GetNumberGP() { return this->number_gp; }
-
-double* INTEGRATION_1D::GetWeight() { return this->w; }
-
-double* INTEGRATION_1D::GetZ() { return this->z; }
-
 void INTEGRATION_1D::GaussLegendre() {
     int polynomial = gausslegendre_degree(this->p);
 
@@ -58,16 +50,6 @@ INTEGRATION_2D::~INTEGRATION_2D() {
     delete[] this->z1;
     delete[] this->z2;
 }
-
-int INTEGRATION_2D::GetPolynomial() { return this->p; }
-
-int INTEGRATION_2D::GetNumberGP() { return this->number_gp; }
-
-double* INTEGRATION_2D::GetWeight() { return this->w; }
-
-double* INTEGRATION_2D::GetZ1() { return this->z1; }
-
-double* INTEGRATION_2D::GetZ2() { return this->z2; }
 
 void INTEGRATION_2D::Dunavant() {
     int polynomial = dunavant_degree(this->p);

@@ -7,12 +7,8 @@ class PROBLEM {
 private:
     MESH* mesh;
     
-    double dt = 0.001;
-
-    std::vector <INTERFACE*> internal_interfaces;
-    std::vector <INTERFACE*> ocean_interfaces;
-    std::vector <INTERFACE*> land_interfaces;
-    std::vector <INTERFACE*> flow_interfaces;
+	double t = 0;
+    double dt = 0.0001;
 
 public:
     PROBLEM();

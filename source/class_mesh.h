@@ -22,7 +22,7 @@ protected:
 
     std::map<unsigned int, ELEMENT*> elements;
     std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
-    
+
     std::map<unsigned char, INTEGRATION_1D*> line_rules;
     std::map<unsigned char, INTEGRATION_2D*> area_rules;
     
@@ -33,10 +33,9 @@ public:
     MESH(int, int);
     ~MESH();
 
-    //void solve();
+	void RectangularDomainTest(double, double, int, int, int);
 
 protected:
-    void InitializeElements();
     void InitializeInterfaces();
     void InitializeVTK();
 };

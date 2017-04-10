@@ -17,10 +17,10 @@ public:
     INTEGRATION_1D(int, int);
     ~INTEGRATION_1D();
 
-    int GetPolynomial();
-    int GetNumberGP();
-    double* GetWeight();
-    double* GetZ();
+	int GetPolynomial() { return this->p; }
+	int GetNumberGP() { return this->number_gp; }
+	double* GetWeight() { return this->w; }
+	double* GetZ() { return this->z; }
 
 private:
     void GaussLegendre();
@@ -38,11 +38,11 @@ public:
     INTEGRATION_2D(int, int);
     ~INTEGRATION_2D();
 
-    int GetPolynomial();
-    int GetNumberGP();
-    double* GetWeight();
-    double* GetZ1();
-    double* GetZ2();
+	int GetPolynomial() { return this->p; }
+	int GetNumberGP() { return this->number_gp; }
+	double* GetWeight() { return this->w; }
+	double* GetZ1() { return this->z1; }
+	double* GetZ2() { return this->z2; }
 
 private:	
     void Dunavant();

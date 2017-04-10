@@ -24,12 +24,14 @@ BASIS_2D::~BASIS_2D(){
         delete[] this->phi_area[i];
         delete[] this->dphi_dz1_area[i];
         delete[] this->dphi_dz2_area[i];
-        delete[] this->phi_postprocessor[i];
-    }
+        delete[] this->phi_postprocessor_cell[i];
+		delete[] this->phi_postprocessor_point[i];
+	}
     delete[] this->phi_area;
     delete[] this->dphi_dz1_area;
     delete[] this->dphi_dz2_area;
-    delete[] this->phi_postprocessor;
+    delete[] this->phi_postprocessor_cell;
+	delete[] this->phi_postprocessor_point;
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < this->number_bf; j++) {
@@ -50,28 +52,6 @@ BASIS_2D::~BASIS_2D(){
     delete[] this->m_inv;
 }
 
-int BASIS_2D::GetPolynomial() { return this->p; }
-
-int BASIS_2D::GetNumberBasisFunctions() { return this->number_bf; }
-
-INTEGRATION_1D* BASIS_2D::GetIntegrationRuleLine() { return this->integration_rule_line; }
-
-INTEGRATION_2D* BASIS_2D::GetIntegrationRuleArea() { return this->integration_rule_area; }
-
-double** BASIS_2D::GetPhiArea() { return this->phi_area; };
-
-double** BASIS_2D::GetDPhiDZ1Area() { return this->dphi_dz1_area; };
-
-double** BASIS_2D::GetDPhiDZ2Area() { return this->dphi_dz2_area; };
-
-double*** BASIS_2D::GetPhiEdge() { return this->phi_edge; };
-
-bool BASIS_2D::GetOrthogonal() { return this->orthogonal; };
-
-double** BASIS_2D::GetMInv() { return this->m_inv; };
-
-double** BASIS_2D::GetPhiPostProcessor() { return this->phi_postprocessor; };
-
 void BASIS_2D::Dubiner() {
     this->orthogonal = true;
 
@@ -88,8 +68,9 @@ void BASIS_2D::Dubiner() {
     this->m_inv = new double*[1];
     this->m_inv[0] = new double[this->number_bf];
 
-    this->phi_postprocessor = new double*[this->number_bf];
-    
+    this->phi_postprocessor_cell = new double*[this->number_bf];
+	this->phi_postprocessor_point = new double*[this->number_bf];
+
     double* n1 = new double[number_gp_area];
     double* n2 = new double[number_gp_area];
 
@@ -198,19 +179,80 @@ void BASIS_2D::Dubiner() {
     m = 0;
     for (int i = 0; i <= this->p; i++) {
         for (int j = 0; j <= this->p - i; j++) {
-            this->phi_postprocessor[m] = new double[N_DIV*N_DIV];
+            this->phi_postprocessor_cell[m] = new double[N_DIV*N_DIV];
 
-            dubiner_phi(i, j, N_DIV*N_DIV, n1, n2, this->phi_postprocessor[m]);
+            dubiner_phi(i, j, N_DIV*N_DIV, n1, n2, this->phi_postprocessor_cell[m]);
 
             m = m + 1;
         }
     }
 
-    dubiner_test(this->p, number_gp_area, this->phi_area, this->integration_rule_area->GetWeight());
-
     delete[] n1;
     delete[] n2;
 
+	delete[] z1;
+	delete[] z2;
+
+	n1 = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+	n2 = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+
+	z1 = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+	z2 = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+
+	n_pt = 0;
+	for (int i = 0; i < N_DIV; i++) {
+		for (int j = 0; j <= N_DIV - i; j++) {
+			z1[n_pt] = -1.0 + dz*j;
+			z2[n_pt] = -1.0 + dz*i;
+
+			n1[n_pt] = 2 * (1 + z1[n_pt]) / (1 - z2[n_pt]) - 1;
+			n2[n_pt] = z2[n_pt];
+
+			n_pt = n_pt + 1;
+		}
+	}
+
+	m = 0;
+	for (int i = 0; i <= this->p; i++) {
+		for (int j = 0; j <= this->p - i; j++) {
+			this->phi_postprocessor_point[m] = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+
+			dubiner_phi(i, j, (N_DIV + 1)*(N_DIV + 2) / 2 - 1, n1, n2, this->phi_postprocessor_point[m]);
+
+			m = m + 1;
+		}
+	}
+
+	//SINGULAR POINT
+
+	double phi_singular[11][11] = {
+		{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	};
+
+	m = 0;
+	for (int i = 0; i <= this->p; i++) {
+		for (int j = 0; j <= this->p - i; j++) {
+			this->phi_postprocessor_point[m][(N_DIV + 1)*(N_DIV + 2) / 2 - 1] = phi_singular[i][j];
+
+			m = m + 1;
+		}
+	}
+
+	delete[] n1;
+	delete[] n2;
+
     delete[] z1;
     delete[] z2;
+
+	dubiner_test(this->p, number_gp_area, this->phi_area, this->integration_rule_area->GetWeight());
 }

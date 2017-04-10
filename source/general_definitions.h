@@ -6,8 +6,11 @@
 #define DEFAULT_ID 4294967295
 #define DEFAULT_BOUNDARY 255
 
+// element types (as VTK cell types)
+#define TRIANGLE 5
+
 // postprocessor element divisions
-#define N_DIV 10
+#define N_DIV 3
 
 // 2D bases
 #define DUBINER 0
