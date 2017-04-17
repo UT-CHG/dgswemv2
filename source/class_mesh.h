@@ -35,7 +35,7 @@ public:
 
 	void RectangularDomainTest(double, double, int, int, int);
 
-protected:
+private:
     void InitializeInterfaces();
     void InitializeVTK();
 };

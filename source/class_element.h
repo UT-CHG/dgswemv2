@@ -14,19 +14,20 @@ class ELEMENT {
 protected:
     unsigned int ID;
 
+	unsigned char element_type;
     unsigned char number_interfaces;
 
-    int number_bf;
+	unsigned int* neighbor_ID;
+	unsigned char* boundary_type;
+
+	double* nodal_coordinates_x;
+	double* nodal_coordinates_y;
+
+	int number_bf;
     int number_bf_geom;
 
     int number_gp_internal;
     int number_gp_boundary;
-
-    unsigned int* neighbor_ID;
-    unsigned char* boundary_type;
-
-    double* nodal_coordinates_x;
-    double* nodal_coordinates_y;
 
     double** u;
 
@@ -48,6 +49,9 @@ public:
 
     virtual void ComputeInternalU(int) = 0;
     virtual void ComputeBoundaryU(int) = 0;
+
+	virtual void ComputeInternalDUDX(int, int) = 0;
+	virtual void ComputeInternalDUDY(int, int) = 0;
 
     virtual double IntegrationInternalPhi(int, int) = 0;
     virtual double IntegrationInternalDPhiDX(int, int) = 0;

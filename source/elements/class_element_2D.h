@@ -27,6 +27,9 @@ protected:
 	double** phi_area;
 	double*** phi_edge;
 
+	double** dphi_dx_area;
+	double** dphi_dy_area;
+
     double** area_int_fac_phi;
     double** area_int_fac_dphidx;
     double** area_int_fac_dphidy;
@@ -43,7 +46,8 @@ public:
 
     void Triangle(unsigned int*, unsigned char*, double*, double*);
 
-    void ComputeIntegrationFactors();
+	void ComputeDPhi();
+	void ComputeIntegrationFactors();
 
     std::map<unsigned int, INTERFACE*> CreateInterfaces();
     void AppendInterface(unsigned int, INTERFACE*);
@@ -52,6 +56,10 @@ public:
 
     void ComputeInternalU(int);
     void ComputeBoundaryU(int);
+
+	void ComputeInternalDUDX(int,int);
+	void ComputeInternalDUDY(int,int);
+
     
     double IntegrationInternalPhi(int, int);
     double IntegrationInternalDPhiDX(int, int);
@@ -68,7 +76,9 @@ public:
 	void WritePointDataVTK(std::vector<double>&, int);
 
     void InitializeVTKTriangle(std::vector<double*>&, std::vector<unsigned int*>&);
-    
+	void WriteCellDataVTKTriangle(std::vector<double>&, int);
+	void WritePointDataVTKTriangle(std::vector<double>&, int);
+
 };
 
 #endif

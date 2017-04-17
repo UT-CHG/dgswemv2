@@ -5,6 +5,7 @@
 void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_type,
     double* nodal_coordinates_x, double* nodal_coordinates_y)
 {
+	this->element_type = TRIANGLE;
     this->number_interfaces = 3;
 
     this->number_gp_internal = this->basis->GetIntegrationRuleArea()->GetNumberGP();
@@ -186,4 +187,46 @@ void ELEMENT_2D::InitializeVTKTriangle(std::vector<double*>& points, std::vector
             cells.back()[3] = pt_ID - (N_DIV + 2 - i) + 1;
         }
     }
+}
+
+void ELEMENT_2D::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_flag) {
+	double** phi = this->basis->GetPhiPostProcessorCell();
+	double* u_post = new double[N_DIV*N_DIV];
+
+	for (int i = 0; i < N_DIV*N_DIV; i++) {
+		u_post[i] = 0.0;
+	}
+
+	for (int i = 0; i < this->number_bf; i++) {
+		for (int j = 0; j < N_DIV*N_DIV; j++) {
+			u_post[j] += this->u[u_flag][i] * phi[i][j];
+		}
+	}
+
+	for (int i = 0; i < N_DIV*N_DIV; i++) {
+		cell_data.push_back(u_post[i]);
+	}
+
+	delete[] u_post;
+}
+
+void ELEMENT_2D::WritePointDataVTKTriangle(std::vector<double>& point_data, int u_flag) {
+	double** phi = this->basis->GetPhiPostProcessorPoint();
+	double* u_post = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
+
+	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
+		u_post[i] = 0.0;
+	}
+
+	for (int i = 0; i < this->number_bf; i++) {
+		for (int j = 0; j < (N_DIV + 1)*(N_DIV + 2) / 2; j++) {
+			u_post[j] += this->u[u_flag][i] * phi[i][j];
+		}
+	}
+
+	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
+		point_data.push_back(u_post[i]);
+	}
+
+	delete[] u_post;
 }

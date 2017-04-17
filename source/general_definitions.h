@@ -6,6 +6,12 @@
 #define DEFAULT_ID 4294967295
 #define DEFAULT_BOUNDARY 255
 
+// timestepper types
+#define EEULER 0
+#define RK2 1
+#define RK3 2
+#define RK4 3
+
 // element types (as VTK cell types)
 #define TRIANGLE 5
 

@@ -102,6 +102,7 @@ void PROBLEM::Timestep() {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		this->ComputeUVA(it->second);
 		this->ComputeF(it->second);
+		this->ComputeS(it->second);
 	}
 
 	for (auto it = this->mesh->interfaces.begin(); it != this->mesh->interfaces.end(); it++) {
@@ -133,9 +134,10 @@ void PROBLEM::Timestep() {
 
         //COMPUTING UA
         for (int i = 0; i < number_bf; i++) {
-            RHS[i] = it->second->IntegrationInternalDPhiDX(F11, i) +
-                it->second->IntegrationInternalDPhiDY(F12, i) -
-                it->second->IntegrationBoundaryPhi(NUM_FLUX_UA, i);
+			RHS[i] = it->second->IntegrationInternalDPhiDX(F11, i) +
+				it->second->IntegrationInternalDPhiDY(F12, i) -
+				it->second->IntegrationBoundaryPhi(NUM_FLUX_UA, i) -
+				it->second->IntegrationInternalPhi(S1, i);
         }
         it->second->SolveLSE(D_UA);
 
@@ -143,7 +145,8 @@ void PROBLEM::Timestep() {
         for (int i = 0; i < number_bf; i++) {
             RHS[i] = it->second->IntegrationInternalDPhiDX(F21, i) +
                 it->second->IntegrationInternalDPhiDY(F22, i) -
-                it->second->IntegrationBoundaryPhi(NUM_FLUX_VA, i);
+                it->second->IntegrationBoundaryPhi(NUM_FLUX_VA, i) -
+				it->second->IntegrationInternalPhi(S2, i);;
         }
 
         it->second->SolveLSE(D_VA);
@@ -152,7 +155,8 @@ void PROBLEM::Timestep() {
         for (int i = 0; i < number_bf; i++) {
             RHS[i] = it->second->IntegrationInternalDPhiDX(F31, i) +
                 it->second->IntegrationInternalDPhiDY(F32, i) -
-                it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i);
+                it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i) - 
+				it->second->IntegrationInternalPhi(S3, i);
         }
         it->second->SolveLSE(D_H);
     }
@@ -219,8 +223,38 @@ void PROBLEM::ComputeF(ELEMENT* element) {
             u[F12][i] = u[UA][i] * u[V][i] - VISCOSITY*u[TXY][i];
             u[F22][i] = u[VA][i] * u[V][i] + 0.5*GRAVITY*pow(u[A][i], 2) - VISCOSITY*u[TYY][i];
             u[F32][i] = u[VA][i];
-        }
+		
+			//printf("%f %f\n%f %f\n%f %f\n\n", u[F11][i], u[F12][i], u[F21][i], u[F22][i], u[F31][i], u[F32][i]);
+		}
     }
+}
+
+void PROBLEM::ComputeS(ELEMENT* element) {
+	double** u = element->u_internal;
+
+	double cf = 0; // FOR TESTING NO BOTTOM FRICTION 
+	double tau_b;
+	
+	double f = 0; // FOR TESTING NO CORIOLIS
+	
+	element->ComputeInternalDUDX(ZB, DZBDX);
+	element->ComputeInternalDUDY(ZB, DZBDY);
+
+	for (int i = 0; i < element->number_gp_internal; i++) {
+		tau_b = 0;//cf / sqrt(pow(u[U][i], 2) + pow(u[V][i], 2));
+
+		u[S1][i] = f*u[V][i] * u[A][i]
+			- u[SP][i] * GRAVITY*u[A][i] * u[DZBDX][i]
+			- tau_b*u[U][i];
+
+		u[S2][i] = -f*u[U][i] * u[A][i]
+			- GRAVITY*u[A][i] * u[DZBDY][i]
+			- tau_b*u[V][i];
+		
+		u[S3][i] = 0;
+
+		//printf("%f\n%f\n%f\n\n", u[S1][i], u[S2][i], u[S3][i]);
+	}
 }
 
 void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {

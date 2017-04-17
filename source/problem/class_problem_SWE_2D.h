@@ -8,36 +8,39 @@ private:
     MESH* mesh;
     
 	double t = 0;
-    double dt = 0.0001;
+    double dt;
 
 public:
     PROBLEM();
     ~PROBLEM();
 
-    void EETimeStepper(int);
-    void RK2TimeStepper(int);
-    void RK3TimeStepper(int);
-    void RK4TimeStepper(int);
-
-    void WriteDataVTK();
+	void Solve(int, double, double, double);
 
 private:
-    void Timestep();
+	void WriteDataVTK();
 
-    void InterfaceFlowAverage(INTERFACE*);
+	void EETimeStepper(int);
+	void RK2TimeStepper(int);
+	void RK3TimeStepper(int);
+	void RK4TimeStepper(int);
+
+	void Timestep();
+
     void ComputeUVA(ELEMENT*);
     void ComputeF(ELEMENT*);
-    void LLFNumericalFlux(INTERFACE*);
+	void ComputeS(ELEMENT*);
+
+	void InterfaceFlowAverage(INTERFACE*);
+	void ComputeBoundaryInterfaceF(INTERFACE*);
+	void LLFNumericalFlux(INTERFACE*);
 
     void OceanInterfaceSetBC(INTERFACE*);	
     void LandInterfaceSetBC(INTERFACE*);
     void FlowInterfaceSetBC(INTERFACE*);
 //	void RadiationInterfaceSetBC(INTERFACE*);
-
 //  void NodeInterfaceReceiveData(INTERFACE*);
 //  void NodeInterfaceSendData(INTERFACE*);
-    
-    void ComputeBoundaryInterfaceF(INTERFACE*);
+
 };
 
 #endif

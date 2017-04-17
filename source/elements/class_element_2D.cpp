@@ -13,12 +13,13 @@ ELEMENT_2D::ELEMENT_2D(int element_type, unsigned int ID, unsigned int* neighbor
 	case TRIANGLE: this->Triangle(neighbor_ID, boundary_type, nodal_coordinates_x, nodal_coordinates_y); break;
 	default:
 		printf("\n");
-		printf("ELEMENT_2D - Fatal error!\n");
+		printf("ELEMENT_2D CONSTRUCTOR - Fatal error!\n");
 		printf("Undefined element type = %d\n", element_type);
 		exit(1);
 	}
 
-    //COMPUTE NUMERICAL INTEGRATION FACTORS
+    //COMPUTE DIFFERENTIATION AND NUMERICAL INTEGRATION FACTORS
+	this->ComputeDPhi();
     this->ComputeIntegrationFactors();
 
 	//SET INITIAL CONDITIONS FOR TESTING
@@ -82,7 +83,9 @@ ELEMENT_2D::~ELEMENT_2D() {
     delete[] this->RHS;
 
     for (int i = 0; i < this->number_bf; i++) {
-        delete[] this->area_int_fac_phi[i];
+		delete[] this->dphi_dx_area[i];
+		delete[] this->dphi_dy_area[i];
+		delete[] this->area_int_fac_phi[i];
         delete[] this->area_int_fac_dphidx[i];
         delete[] this->area_int_fac_dphidy[i];
 
@@ -93,7 +96,9 @@ ELEMENT_2D::~ELEMENT_2D() {
         }
     }
 
-    delete[] this->area_int_fac_phi;
+	delete[] this->dphi_dx_area;
+	delete[] this->dphi_dy_area;
+	delete[] this->area_int_fac_phi;
     delete[] this->area_int_fac_dphidx;
     delete[] this->area_int_fac_dphidy;
 
@@ -106,6 +111,32 @@ ELEMENT_2D::~ELEMENT_2D() {
     delete[] this->edge_int_fac_phi;
     delete[] this->edge_int_fac_nx;
     delete[] this->edge_int_fac_ny;
+}
+
+void ELEMENT_2D::ComputeDPhi() {
+	this->dphi_dx_area = new double*[this->number_bf];
+	this->dphi_dy_area = new double*[this->number_bf];
+
+	double** dphi_dz1_area = this->basis->GetDPhiDZ1Area();
+	double** dphi_dz2_area = this->basis->GetDPhiDZ2Area();
+
+	if (this->basis_geom == nullptr) {
+		for (int i = 0; i < this->number_bf; i++) {
+			this->dphi_dx_area[i] = new double[this->number_gp_internal];
+			this->dphi_dy_area[i] = new double[this->number_gp_internal];
+
+			for (int j = 0; j < this->number_gp_internal; j++) {
+				this->dphi_dx_area[i][j] = (dphi_dz1_area[i][j] * this->J_inv_t_area[0][0][0] +
+					dphi_dz2_area[i][j] * this->J_inv_t_area[0][1][0]);
+
+				this->dphi_dy_area[i][j] = (dphi_dz1_area[i][j] * this->J_inv_t_area[1][0][0] +
+					dphi_dz2_area[i][j] * this->J_inv_t_area[1][1][0]);
+			}
+		}
+	}
+	else {
+		//Placeholder for cases p_geom > 1
+	}
 }
 
 void ELEMENT_2D::ComputeIntegrationFactors() {
@@ -280,6 +311,30 @@ void ELEMENT_2D::ComputeBoundaryU(int u_flag) {
     }
 }
 
+void ELEMENT_2D::ComputeInternalDUDX(int u_flag, int u_flag_store) {
+	for (int i = 0; i < this->number_gp_internal; i++) {
+		this->u_internal[u_flag_store][i] = 0.0;
+	}
+
+	for (int i = 0; i < this->number_bf; i++) {
+		for (int j = 0; j < this->number_gp_internal; j++) {
+			this->u_internal[u_flag_store][j] += this->u[u_flag][i] * this->dphi_dx_area[i][j];
+		}
+	}
+}
+
+void ELEMENT_2D::ComputeInternalDUDY(int u_flag, int u_flag_store) {
+	for (int i = 0; i < this->number_gp_internal; i++) {
+		this->u_internal[u_flag_store][i] = 0.0;
+	}
+
+	for (int i = 0; i < this->number_bf; i++) {
+		for (int j = 0; j < this->number_gp_internal; j++) {
+			this->u_internal[u_flag_store][j] += this->u[u_flag][i] * this->dphi_dy_area[i][j];
+		}
+	}
+}
+
 double ELEMENT_2D::IntegrationInternalPhi(int u_flag, int phi_n) {
     double integral = 0;
 
@@ -363,47 +418,34 @@ void ELEMENT_2D::SolveLSE(int u_flag) {
 }
 
 void ELEMENT_2D::InitializeVTK(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
-	if (this->number_interfaces == 3) this->InitializeVTKTriangle(points, cells);
+	switch (this->element_type) {
+	case TRIANGLE: this->InitializeVTKTriangle(points, cells); break;
+	default:
+		printf("\n");
+		printf("ELEMENT_2D InitializeVTK - Fatal error!\n");
+		printf("Undefined element type = %d\n", this->element_type);
+		exit(1);
+	}
 }
 
 void ELEMENT_2D::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
-    double** phi = this->basis->GetPhiPostProcessorCell();
-    double* u_post = new double[N_DIV*N_DIV];
-
-    for (int i = 0; i < N_DIV*N_DIV; i++) {
-        u_post[i] = 0.0;
-    }
-
-    for (int i = 0; i < this->number_bf; i++) {
-        for (int j = 0; j < N_DIV*N_DIV; j++) {
-            u_post[j] += this->u[u_flag][i] * phi[i][j];
-        }
-    }
-
-    for (int i = 0; i < N_DIV*N_DIV; i++) {
-        cell_data.push_back(u_post[i]);
-    }
-
-    delete[] u_post;
+	switch (this->element_type) {
+	case TRIANGLE: this->WriteCellDataVTKTriangle(cell_data, u_flag); break;
+	default:
+		printf("\n");
+		printf("ELEMENT_2D WriteCellDataVTK - Fatal error!\n");
+		printf("Undefined element type = %d\n", this->element_type);
+		exit(1);
+	}
 }
 
 void ELEMENT_2D::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
-	double** phi = this->basis->GetPhiPostProcessorPoint();
-	double* u_post = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
-
-	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
-		u_post[i] = 0.0;
+	switch (this->element_type) {
+	case TRIANGLE: this->WritePointDataVTKTriangle(point_data, u_flag); break;
+	default:
+		printf("\n");
+		printf("ELEMENT_2D WritePointDataVTK - Fatal error!\n");
+		printf("Undefined element type = %d\n", this->element_type);
+		exit(1);
 	}
-
-	for (int i = 0; i < this->number_bf; i++) {
-		for (int j = 0; j < (N_DIV + 1)*(N_DIV + 2) / 2; j++) {
-			u_post[j] += this->u[u_flag][i] * phi[i][j];
-		}
-	}
-
-	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
-		point_data.push_back(u_post[i]);
-	}
-
-	delete[] u_post;
 }

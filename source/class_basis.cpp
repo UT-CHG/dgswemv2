@@ -13,7 +13,7 @@ BASIS_2D::BASIS_2D(int type, int p, INTEGRATION_1D* line_rule, INTEGRATION_2D* a
     case DUBINER: this->Dubiner(); break;
     default:
         printf("\n");
-        printf("BASIS_2D - Fatal error!\n");
+        printf("BASIS_2D CONSTRUCTOR - Fatal error!\n");
         printf("Undefined basis type = %d\n", type);
         exit(1);
     }

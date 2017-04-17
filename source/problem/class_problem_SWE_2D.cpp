@@ -2,13 +2,68 @@
 #include "class_problem_SWE_2D.h"
 
 PROBLEM::PROBLEM() {
-    this->mesh = new MESH(2,0);
+    this->mesh = new MESH(1,0);
 
-	this->mesh->RectangularDomainTest(100.0, 1.0, 100, 1, TRIANGLE);
+	this->mesh->RectangularDomainTest(1.0, 1.0, 1, 1, TRIANGLE);
 }
 
 PROBLEM::~PROBLEM() {
     delete this->mesh;
+}
+
+void PROBLEM::Solve(int timestepper, double dt, double T_end, double write_intervals) {
+	this->dt = dt;
+
+	int n_timesteps = (int)(T_end / this->dt);
+	int n_write = (int)(T_end / write_intervals);
+
+	switch (timestepper) {
+	case EEULER:
+		this->WriteDataVTK();
+
+		for (int i = 0; i < n_write; i++) {
+			this->EETimeStepper(n_timesteps / n_write);
+			printf("%d steps complete!\nWriting data.\n", (i + 1)*n_timesteps / n_write);
+			this->WriteDataVTK();
+		}
+
+		break;
+	case RK2:
+		this->WriteDataVTK();
+
+		for (int i = 0; i < n_write; i++) {
+			this->RK2TimeStepper(n_timesteps / n_write);
+			printf("%d steps complete!\nWriting data.\n", (i + 1)*n_timesteps / n_write);
+			this->WriteDataVTK();
+		}
+
+		break;
+	case RK3:
+		this->WriteDataVTK();
+
+		for (int i = 0; i < n_write; i++) {
+			this->RK3TimeStepper(n_timesteps / n_write);
+			printf("%d steps complete!\nWriting data.\n", (i + 1)*n_timesteps / n_write);
+			this->WriteDataVTK();
+		}
+		
+		break;
+	case RK4:
+		this->WriteDataVTK();
+
+		for (int i = 0; i < n_write; i++) {
+			this->RK4TimeStepper(n_timesteps / n_write);
+			printf("%d steps complete!\nWriting data.\n", (i + 1)*n_timesteps / n_write);
+			this->WriteDataVTK();
+		}
+		
+		break;
+	default:
+		printf("\n");
+		printf("PROBLEM Solve - Fatal error!\n");
+		printf("Undefined timestepper type = %d\n", timestepper);
+		exit(1);
+	}
 }
 
 void PROBLEM::EETimeStepper(int n_steps) {
@@ -360,7 +415,7 @@ void PROBLEM::WriteDataVTK() {
 	std::ifstream file_geom(file_name_geom, std::ios_base::binary);
 	std::ifstream file_data(file_name_data, std::ios_base::binary);
 
-	std::string file_name_merge = "mesh_data.vtk";
+	std::string file_name_merge = "mesh_data_" + std::to_string(this->t) + ".vtk";
 	std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
 	file_merge << file_geom.rdbuf() << file_data.rdbuf();

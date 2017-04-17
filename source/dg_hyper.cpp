@@ -13,8 +13,8 @@ int main(int argc, const char* argv[])
 {
     PROBLEM* problem = new PROBLEM();
 
-    problem->EETimeStepper(10000);
-    problem->WriteDataVTK();
+	problem->Solve(EEULER, 0.0005, 0.0005, 0.0005);
+
 
     delete problem;
 

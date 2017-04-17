@@ -9,7 +9,7 @@ INTEGRATION_1D::INTEGRATION_1D(int type, int p) {
     case GAUSS_LEGENDRE: this->GaussLegendre(); break;
     default:
         printf("\n");
-        printf("INTEGRATION_1D - Fatal error!\n");
+        printf("INTEGRATION_1D CONSTRUCTOR - Fatal error!\n");
         printf("Undefined line integraton type = %d\n", type);
         exit(1);
     }
@@ -39,7 +39,7 @@ INTEGRATION_2D::INTEGRATION_2D(int type, int p) {
     case DUNAVANT: this->Dunavant(); break;
     default:
         printf("\n");
-        printf("INTEGRATION_2D - Fatal error!\n");
+        printf("INTEGRATION_2D CONSTRUCTOR - Fatal error!\n");
         printf("Undefined area integraton type = %d\n", type);
         exit(1);
     }
