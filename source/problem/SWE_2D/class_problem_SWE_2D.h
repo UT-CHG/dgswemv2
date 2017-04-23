@@ -1,7 +1,8 @@
 #ifndef CLASS_PROBLEM_H
 #define CLASS_PROBLEM_H
 
-#include "../class_mesh.h"
+#include "../../class_mesh.h"
+#include "../../general_definitions.h"
 
 class PROBLEM {
 private:

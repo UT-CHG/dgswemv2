@@ -1,7 +1,16 @@
 #ifndef GENERAL_DEFINITIONS
 #define GENERAL_DEFINITIONS
 
-#include "problem\definitions_SWE_2D.h"
+#define PROBLEM_SWE_2D_LINEAR
+
+#ifdef PROBLEM_SWE_2D
+#include "problem\SWE_2D\definitions_SWE_2D.h"
+#endif
+#ifdef PROBLEM_SWE_2D_LINEAR
+#include "problem\SWE_2D_LINEAR\definitions_SWE_2D_LINEAR.h"
+#endif
+
+#define PI 3.14159265359	
 
 #define DEFAULT_ID 4294967295
 #define DEFAULT_BOUNDARY 255
@@ -16,7 +25,7 @@
 #define TRIANGLE 5
 
 // postprocessor element divisions
-#define N_DIV 3
+#define N_DIV 1
 
 // 2D bases
 #define DUBINER 0

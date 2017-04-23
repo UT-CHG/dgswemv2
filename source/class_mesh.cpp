@@ -72,71 +72,13 @@ void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_t
 			exit(1);
 		}
 
-		// SIMPLE PATTERN
-		//for (int i = 0; i < n; i++) {
-		//	for (int j = 0; j < m; j++) {
-		//		ID = 2 * j + 2 * m * i;
-
-		//		neighbors[0] = ID + 1;
-		//		neighbors[1] = ID + 1 + 2 * m;
-		//		neighbors[2] = ID - 1;
-
-		//		boundaries[0] = INTERNAL;
-		//		boundaries[1] = INTERNAL;
-		//		boundaries[2] = INTERNAL;
-
-		//		if (i == n - 1) {
-		//			neighbors[1] = DEFAULT_ID;
-		//			boundaries[1] = LAND;
-		//		}
-		//		if (j == 0) {
-		//			neighbors[2] = DEFAULT_ID;
-		//			boundaries[2] = LAND;
-		//		}
-
-		//		x[0] = j*dx;
-		//		x[1] = x[0];
-		//		x[2] = x[0] + dx;
-
-		//		y[0] = (i + 1)*dy;
-		//		y[1] = y[0] - dy;
-		//		y[2] = y[0];
-
-		//		this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
-
-		//		ID = ID + 1;
-
-		//		neighbors[0] = ID - 1;
-		//		neighbors[1] = ID + 1;
-		//		neighbors[2] = ID - 1 - 2 * m;
-
-		//		boundaries[0] = INTERNAL;
-		//		boundaries[1] = INTERNAL;
-		//		boundaries[2] = INTERNAL;
-		//		
-		//		if (i == 0) {
-		//			neighbors[2] = DEFAULT_ID;
-		//			boundaries[2] = LAND;
-		//		}
-		//		if (j == m - 1) {
-		//			neighbors[1] = DEFAULT_ID;
-		//			boundaries[1] = OCEAN;
-		//		}
-
-		//		x[0] = x[0] + dx;
-		//		y[0] = y[0] - dy;
-
-		//		this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
-		//	}
-		//}
-
-		// CHECKERS PATTERN
+		//SIMPLE PATTERN
 		for (int i = 0; i < n; i++) {
-			for (int j = i % 2; j < m; j += 2) {
+			for (int j = 0; j < m; j++) {
 				ID = 2 * j + 2 * m * i;
 
 				neighbors[0] = ID + 1;
-				neighbors[1] = ID + 2 * m;
+				neighbors[1] = ID + 1 + 2 * m;
 				neighbors[2] = ID - 1;
 
 				boundaries[0] = INTERNAL;
@@ -166,19 +108,19 @@ void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_t
 
 				neighbors[0] = ID - 1;
 				neighbors[1] = ID + 1;
-				neighbors[2] = ID - 2 * m;
+				neighbors[2] = ID - 1 - 2 * m;
 
 				boundaries[0] = INTERNAL;
 				boundaries[1] = INTERNAL;
 				boundaries[2] = INTERNAL;
-
+				
 				if (i == 0) {
 					neighbors[2] = DEFAULT_ID;
 					boundaries[2] = LAND;
 				}
 				if (j == m - 1) {
 					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = LAND;
+					boundaries[1] = OCEAN;
 				}
 
 				x[0] = x[0] + dx;
@@ -188,62 +130,120 @@ void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_t
 			}
 		}
 
-		for (int i = 0; i < n; i++) {
-			for (int j = (i + 1) % 2; j < m; j += 2) {
-				ID = 2 * j + 2 * m * i;
+		//// CHECKERS PATTERN
+		//for (int i = 0; i < n; i++) {
+		//	for (int j = i % 2; j < m; j += 2) {
+		//		ID = 2 * j + 2 * m * i;
 
-				neighbors[0] = ID + 1;
-				neighbors[1] = ID - 1;
-				neighbors[2] = ID - 2 * m;
+		//		neighbors[0] = ID + 1;
+		//		neighbors[1] = ID + 2 * m;
+		//		neighbors[2] = ID - 1;
 
-				boundaries[0] = INTERNAL;
-				boundaries[1] = INTERNAL;
-				boundaries[2] = INTERNAL;
+		//		boundaries[0] = INTERNAL;
+		//		boundaries[1] = INTERNAL;
+		//		boundaries[2] = INTERNAL;
 
-				if (i == 0) {
-					neighbors[2] = DEFAULT_ID;
-					boundaries[2] = LAND;
-				}
-				if (j == 0) {
-					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = LAND;
-				}
+		//		if (i == n - 1) {
+		//			neighbors[1] = DEFAULT_ID;
+		//			boundaries[1] = LAND;
+		//		}
+		//		if (j == 0) {
+		//			neighbors[2] = DEFAULT_ID;
+		//			boundaries[2] = LAND;
+		//		}
 
-				x[0] = j*dx;
-				x[1] = x[0] + dx;
-				x[2] = x[0];
+		//		x[0] = j*dx;
+		//		x[1] = x[0];
+		//		x[2] = x[0] + dx;
 
-				y[0] = i*dy;
-				y[1] = y[0];
-				y[2] = y[0] + dy;
+		//		y[0] = (i + 1)*dy;
+		//		y[1] = y[0] - dy;
+		//		y[2] = y[0];
 
-				this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
+		//		this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
 
-				ID = ID + 1;
+		//		ID = ID + 1;
 
-				neighbors[0] = ID - 1;
-				neighbors[1] = ID + 2 * m;
-				neighbors[2] = ID + 1;
+		//		neighbors[0] = ID - 1;
+		//		neighbors[1] = ID + 1;
+		//		neighbors[2] = ID - 2 * m;
 
-				boundaries[0] = INTERNAL;
-				boundaries[1] = INTERNAL;
-				boundaries[2] = INTERNAL;
+		//		boundaries[0] = INTERNAL;
+		//		boundaries[1] = INTERNAL;
+		//		boundaries[2] = INTERNAL;
 
-				if (i == n - 1) {
-					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = LAND;
-				}
-				if (j == m - 1) {
-					neighbors[2] = DEFAULT_ID;
-					boundaries[2] = LAND;
-				}
+		//		if (i == 0) {
+		//			neighbors[2] = DEFAULT_ID;
+		//			boundaries[2] = LAND;
+		//		}
+		//		if (j == m - 1) {
+		//			neighbors[1] = DEFAULT_ID;
+		//			boundaries[1] = OCEAN;
+		//		}
 
-				x[0] = x[0] + dx;
-				y[0] = y[0] + dy;
+		//		x[0] = x[0] + dx;
+		//		y[0] = y[0] - dy;
 
-				this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
-			}
-		}
+		//		this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
+		//	}
+		//}
+
+		//for (int i = 0; i < n; i++) {
+		//	for (int j = (i + 1) % 2; j < m; j += 2) {
+		//		ID = 2 * j + 2 * m * i;
+
+		//		neighbors[0] = ID + 1;
+		//		neighbors[1] = ID - 1;
+		//		neighbors[2] = ID - 2 * m;
+
+		//		boundaries[0] = INTERNAL;
+		//		boundaries[1] = INTERNAL;
+		//		boundaries[2] = INTERNAL;
+
+		//		if (i == 0) {
+		//			neighbors[2] = DEFAULT_ID;
+		//			boundaries[2] = LAND;
+		//		}
+		//		if (j == 0) {
+		//			neighbors[1] = DEFAULT_ID;
+		//			boundaries[1] = LAND;
+		//		}
+
+		//		x[0] = j*dx;
+		//		x[1] = x[0] + dx;
+		//		x[2] = x[0];
+
+		//		y[0] = i*dy;
+		//		y[1] = y[0];
+		//		y[2] = y[0] + dy;
+
+		//		this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
+
+		//		ID = ID + 1;
+
+		//		neighbors[0] = ID - 1;
+		//		neighbors[1] = ID + 2 * m;
+		//		neighbors[2] = ID + 1;
+
+		//		boundaries[0] = INTERNAL;
+		//		boundaries[1] = INTERNAL;
+		//		boundaries[2] = INTERNAL;
+
+		//		if (i == n - 1) {
+		//			neighbors[1] = DEFAULT_ID;
+		//			boundaries[1] = LAND;
+		//		}
+		//		if (j == m - 1) {
+		//			neighbors[2] = DEFAULT_ID;
+		//			boundaries[2] = OCEAN;
+		//		}
+
+		//		x[0] = x[0] + dx;
+		//		y[0] = y[0] + dy;
+
+		//		this->elements[ID] = new ELEMENT_2D(TRIANGLE, ID, neighbors, boundaries, x, y, basis);
+		//	}
+		//}
 
 		break;
 	default:

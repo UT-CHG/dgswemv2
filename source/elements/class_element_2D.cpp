@@ -24,18 +24,32 @@ ELEMENT_2D::ELEMENT_2D(int element_type, unsigned int ID, unsigned int* neighbor
 
 	//SET INITIAL CONDITIONS FOR TESTING
 	this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
-	this->u[H][0] = 1; //FLAT SURFACE
-	this->u[ZB][0] = 0; //FLAT BED
-	this->u[UA][0] = 0;
-	this->u[VA][0] = 0;
+	this->u[ZB][0] = 3; //FLAT BED
+	this->u[2][0] = 0; // ZERO VELOCITY FIELD
+	this->u[3][0] = 0;
+	this->u[4][0] = 0; //FLAT SURFACE
 
 	for (int i = 1; i < this->number_bf; i++) {
 		this->u[SP][i] = 0;
-		this->u[H][i] = 0;
-		this->u[ZB][i] = 0; //FLAT BED
-		this->u[UA][i] = 0;
-		this->u[VA][i] = 0;
+		this->u[ZB][i] = 0; 
+		this->u[2][i] = 0;
+		this->u[3][i] = 0;
+		this->u[4][i] = 0;
 	}
+
+	//double L = 90000;
+	//double w = 2 * PI / 43200;
+	//double beta = w * sqrt(1 / (this->u[ZB][0] * GRAVITY));
+
+	//double h_true[3] = {
+	//	0.3*cos(beta * this->nodal_coordinates_x[0]) / cos(beta * L),
+	//	0.3*cos(beta * this->nodal_coordinates_x[1]) / cos(beta * L),
+	//	0.3*cos(beta * this->nodal_coordinates_x[2]) / cos(beta * L),
+	//};
+
+	//this->u[4][0] = h_true[0] / 3.0 + h_true[1] / 3.0 + h_true[2] / 3.0;
+	//this->u[4][1] = -h_true[0] / 6.0 - h_true[1] / 6.0 + h_true[2] / 3.0;
+	//this->u[4][2] = -h_true[0] / 2.0 + h_true[1] / 2.0;
 
 	//INITIALIZE SP AND ZB AT GPs
 	this->ComputeBoundaryU(SP);

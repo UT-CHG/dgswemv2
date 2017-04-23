@@ -1,7 +1,6 @@
 #include <cmath>
 #include <algorithm> 
 
-#include "../general_definitions.h"
 #include "class_problem_SWE_2D.h"
 
 void PROBLEM::Timestep() {
@@ -237,23 +236,29 @@ void PROBLEM::ComputeS(ELEMENT* element) {
 	
 	double f = 0; // FOR TESTING NO CORIOLIS
 	
-	element->ComputeInternalDUDX(ZB, DZBDX);
-	element->ComputeInternalDUDY(ZB, DZBDY);
-
 	for (int i = 0; i < element->number_gp_internal; i++) {
 		tau_b = 0;//cf / sqrt(pow(u[U][i], 2) + pow(u[V][i], 2));
 
 		u[S1][i] = f*u[V][i] * u[A][i]
-			- u[SP][i] * GRAVITY*u[A][i] * u[DZBDX][i]
 			- tau_b*u[U][i];
 
 		u[S2][i] = -f*u[U][i] * u[A][i]
-			- GRAVITY*u[A][i] * u[DZBDY][i]
 			- tau_b*u[V][i];
-		
-		u[S3][i] = 0;
 
-		//printf("%f\n%f\n%f\n\n", u[S1][i], u[S2][i], u[S3][i]);
+		u[S3][i] = 0;
+	}	
+	
+	element->ComputeInternalDUDX(ZB, DZBDX);
+	element->ComputeInternalDUDY(ZB, DZBDY);
+	
+	for (int i = 0; i < element->number_gp_internal; i++) {
+		tau_b = 0;//cf / sqrt(pow(u[U][i], 2) + pow(u[V][i], 2));
+
+		u[S1][i] = u[S1][i]
+			- u[SP][i] * GRAVITY*u[A][i] * u[DZBDX][i];
+
+		u[S2][i] = u[S2][i]
+			- GRAVITY*u[A][i] * u[DZBDY][i];
 	}
 }
 
@@ -329,7 +334,7 @@ void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {
 }
 
 void PROBLEM::OceanInterfaceSetBC(INTERFACE* intface) {
-	double H_ocean = 1 + 0.5*sin(628.0*this->t); //FOR TESTING
+	double H_ocean = 0.5*sin(628.0*this->t); //FOR TESTING
 
     double** u_in = intface->u_boundary_in;
     double** u_ex = intface->u_boundary_ex;

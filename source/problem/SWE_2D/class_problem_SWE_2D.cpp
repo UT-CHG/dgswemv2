@@ -1,10 +1,9 @@
-#include "../general_definitions.h"
 #include "class_problem_SWE_2D.h"
 
 PROBLEM::PROBLEM() {
     this->mesh = new MESH(1,0);
 
-	this->mesh->RectangularDomainTest(1.0, 1.0, 1, 1, TRIANGLE);
+	this->mesh->RectangularDomainTest(10.0, 1.0, 20, 2, TRIANGLE);
 }
 
 PROBLEM::~PROBLEM() {
