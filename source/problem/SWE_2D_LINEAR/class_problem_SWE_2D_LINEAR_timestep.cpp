@@ -204,9 +204,9 @@ void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {
 void PROBLEM::OceanInterfaceSetBC(INTERFACE* intface) {
 	double H_0 = 0.3;
 
-	if (this->t < 172800.0) H_0 = 0.3*this->t / 172800.0; //LINEAR RAMPING
+	//if (this->t < 172800.0) H_0 = 0.3*this->t / 172800.0; //LINEAR RAMPING
 
-	double H_ocean = H_0*cos(2*PI*this->t/43200); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.5m
+	double H_ocean = H_0*cos(2*PI*this->t/43200); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.3m
 
     double** u_in = intface->u_boundary_in;
     double** u_ex = intface->u_boundary_ex;

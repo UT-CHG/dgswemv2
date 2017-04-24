@@ -3,7 +3,7 @@
 PROBLEM::PROBLEM() {
     this->mesh = new MESH(1,0);
 
-	this->mesh->RectangularDomainTest(90000.0, 45000.0, 8, 4, TRIANGLE);
+	this->mesh->RectangularDomainTest(90000.0, 45000.0, 100, 2, TRIANGLE);
 }
 
 PROBLEM::~PROBLEM() {
@@ -67,6 +67,8 @@ void PROBLEM::Solve(int timestepper, double dt, double T_end, double write_inter
 
 void PROBLEM::EETimeStepper(int n_steps) {
 	for (int step = 0; step < n_steps; step++) {
+		this->t += dt;
+
 		this->Timestep();
 		
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
@@ -76,8 +78,6 @@ void PROBLEM::EETimeStepper(int n_steps) {
 				it->second->u[H][i] += dt*it->second->u[D_H][i];
 			}
 		}
-
-		this->t += dt;
 	}
 }
 
@@ -90,6 +90,8 @@ void PROBLEM::RK2TimeStepper(int n_steps) {
 	}
 
 	for (int step = 0; step < n_steps; step++) {
+		this->t += dt;
+
 		this->Timestep();
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
@@ -113,8 +115,6 @@ void PROBLEM::RK2TimeStepper(int n_steps) {
 				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + dt*it->second->u[D_H][i];
 			}
 		}
-
-		this->t += dt;
 	}
 
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
@@ -137,6 +137,8 @@ void PROBLEM::RK3TimeStepper(int n_steps) {
 	}
 
 	for (int step = 0; step < n_steps; step++) {
+		this->t += dt;
+
 		this->Timestep();
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
@@ -189,8 +191,6 @@ void PROBLEM::RK3TimeStepper(int n_steps) {
 						it->second->u[D_H][i]);
 			}
 		}
-
-		this->t += dt;
 	}
 
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
@@ -215,6 +215,8 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 	}
 
 	for (int step = 0; step < n_steps; step++) {
+		this->t += dt;
+
 		this->Timestep();
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
@@ -278,8 +280,6 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 						2 * it->second->u_substep.at(K3)[2][i] + it->second->u[D_H][i]);
 			}
 		}
-
-		this->t += dt;
 	}
 
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
