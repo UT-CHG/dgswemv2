@@ -2,78 +2,58 @@
 
 #include "class_integration.h"
 
-INTEGRATION_1D::INTEGRATION_1D(int type, int p) {
+INTEGRATION::INTEGRATION(int type, int p) {
     this->p = p;
 
     switch (type) {
-    case GAUSS_LEGENDRE: this->GaussLegendre(); break;
+    case GAUSS_LEGENDRE_1D: this->GaussLegendre1D(); break;
+	case DUNAVANT_2D: this->Dunavant2D(); break;
     default:
         printf("\n");
-        printf("INTEGRATION_1D CONSTRUCTOR - Fatal error!\n");
-        printf("Undefined line integraton type = %d\n", type);
+        printf("INTEGRATION CONSTRUCTOR - Fatal error!\n");
+		printf("Undefined numerical integraton rule = %d\n", type);
         exit(1);
     }
 }
 
-INTEGRATION_1D::~INTEGRATION_1D() {
-    delete[] this->w;
-    delete[] this->z;
+INTEGRATION::~INTEGRATION() {
+	for (int i = 0; i < this->dimension; i++)
+		delete[] this->z[i];
+
+	delete[] this->w;
+	delete[] this->z;
 }
 
-void INTEGRATION_1D::GaussLegendre() {
-    int polynomial = gausslegendre_degree(this->p);
+void INTEGRATION::allocate_memory() {
+	this->w = new double[this->number_gp];
+	this->z = new double*[this->dimension];
 
-    this->number_gp = gausslegendre_number_gp(polynomial);
-    this->z = new double[this->number_gp];
-    this->w = new double[this->number_gp];
-
-    gausslegendre_rule(this->number_gp, this->z, this->w);
-
-    gausslegendre_rule_test(polynomial, this->number_gp, this->z, this->w);
+	for (int i = 0; i < this->dimension; i++)
+		this->z[i] = new double[this->number_gp];
 }
 
-INTEGRATION_2D::INTEGRATION_2D(int type, int p) {
-    this->p = p;
+void INTEGRATION::GaussLegendre1D() {
+	this->dimension = 1;
+    this->p = gausslegendre_1d_degree(this->p);
 
-    switch (type) {
-    case DUNAVANT: this->Dunavant(); break;
-    default:
-        printf("\n");
-        printf("INTEGRATION_2D CONSTRUCTOR - Fatal error!\n");
-        printf("Undefined area integraton type = %d\n", type);
-        exit(1);
-    }
+    this->number_gp = gausslegendre_1d_number_gp(this->p);
+
+	this->allocate_memory();
+
+    gausslegendre_1d_rule(this->number_gp, this->z, this->w);
+
+    gausslegendre_1d_rule_test(this->p, this->number_gp, this->z, this->w);
 }
 
-INTEGRATION_2D::~INTEGRATION_2D() {
-    delete[] this->w;
-    delete[] this->z1;
-    delete[] this->z2;
-}
+void INTEGRATION::Dunavant2D() {
+	this->dimension = 2;
+	this->p = dunavant_2d_degree(this->p);
 
-void INTEGRATION_2D::Dunavant() {
-    int polynomial = dunavant_degree(this->p);
+    this->number_gp = dunavant_2d_number_gp(this->p);
 
-    this->number_gp = dunavant_number_gp(polynomial);
-    double* x = new double[this->number_gp];
-    double* y = new double[this->number_gp];
-    double* weight = new double[this->number_gp];
+	this->allocate_memory();
 
-    dunavant_rule(polynomial, x, y, weight);
+    dunavant_2d_rule(this->p, this->z, this->w);
 
-    this->w = new double[this->number_gp];
-    this->z1 = new double[this->number_gp];
-    this->z2 = new double[this->number_gp];
-
-    for (int i = 0; i < this->number_gp; i++) {
-        this->w[i] = 2 * weight[i];
-        this->z1[i] = 2 * x[i] - 1;
-        this->z2[i] = 2 * y[i] - 1;
-    }
-
-    dunavant_rule_test(polynomial, this->number_gp, this->z1, this->z2, this->w);
-
-    delete[] x;
-    delete[] y;
-    delete[] weight;
+    dunavant_2d_rule_test(this->p, this->number_gp, this->z, this->w);
 }

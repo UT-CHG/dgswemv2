@@ -2,50 +2,32 @@
 #define CLASS_INTEGRATION_H
 
 #include "general_definitions.h"
-#include "integration_rules/integration_rules_area.h"
-#include "integration_rules/integration_rules_line.h"
+#include "integration_rules/integration_rules_1D.h"
+#include "integration_rules/integration_rules_2D.h"
 
-class INTEGRATION_1D {
+class INTEGRATION {
 
 private:
+	int dimension;
     int p;
-    int number_gp;
+    
+	int number_gp;
     double* w;
-    double* z;
+    double** z;
 
 public:
-    INTEGRATION_1D(int, int);
-    ~INTEGRATION_1D();
+    INTEGRATION(int, int);
+    ~INTEGRATION();
 
 	int GetPolynomial() { return this->p; }
 	int GetNumberGP() { return this->number_gp; }
 	double* GetWeight() { return this->w; }
-	double* GetZ() { return this->z; }
+	double** GetZ() { return this->z; }
 
 private:
-    void GaussLegendre();
+	void allocate_memory();
+
+    void GaussLegendre1D();
+	void Dunavant2D();
 };
-
-class INTEGRATION_2D {
-private: 
-    int p;
-    int number_gp;
-    double* w;
-    double* z1;
-    double* z2;
-
-public:
-    INTEGRATION_2D(int, int);
-    ~INTEGRATION_2D();
-
-	int GetPolynomial() { return this->p; }
-	int GetNumberGP() { return this->number_gp; }
-	double* GetWeight() { return this->w; }
-	double* GetZ1() { return this->z1; }
-	double* GetZ2() { return this->z2; }
-
-private:	
-    void Dunavant();
-};
-
 #endif

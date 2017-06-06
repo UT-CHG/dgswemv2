@@ -6,39 +6,39 @@
 
 #include "class_integration.h"
 
-class BASIS_2D {
+class BASIS {
 private: 
-    int p;
-    bool orthogonal;
+	bool orthogonal;
+	int dimension;
+	int number_boundaries;
+	int p;
 
-    INTEGRATION_1D* integration_rule_line;
-    INTEGRATION_2D* integration_rule_area;
+    INTEGRATION* integration_rule_boundary;
+    INTEGRATION* integration_rule_internal;
 
     int number_bf;
 
-    double** phi_area;
-    double** dphi_dz1_area;
-    double** dphi_dz2_area;
-    double*** phi_edge;
+    double** phi_internal;
+    double*** dphi_dz_internal;
+	double*** phi_boundary;
     double** m_inv;
 
     double** phi_postprocessor_cell;
 	double** phi_postprocessor_point;
 
 public:
-    BASIS_2D(int, int, INTEGRATION_1D*, INTEGRATION_2D*);
-    ~BASIS_2D();
+    BASIS(int, int, INTEGRATION*, INTEGRATION*);
+    ~BASIS();
 
 	int GetPolynomial() { return this->p; }
 	int GetNumberBasisFunctions() { return this->number_bf; }
 
-	INTEGRATION_1D* GetIntegrationRuleLine() { return this->integration_rule_line; }
-	INTEGRATION_2D* GetIntegrationRuleArea() { return this->integration_rule_area; }
+	INTEGRATION* GetIntegrationRuleBoundary() { return this->integration_rule_boundary; }
+	INTEGRATION* GetIntegrationRuleInternal() { return this->integration_rule_internal; }
 
-	double** GetPhiArea() { return this->phi_area; };
-	double** GetDPhiDZ1Area() { return this->dphi_dz1_area; };
-	double** GetDPhiDZ2Area() { return this->dphi_dz2_area; };
-	double*** GetPhiEdge() { return this->phi_edge; };
+	double** GetPhiInternal() { return this->phi_internal; };
+	double*** GetDPhiDZInternal() { return this->dphi_dz_internal; };
+	double*** GetPhiBoundary() { return this->phi_boundary; };
 
 	bool GetOrthogonal() { return this->orthogonal; };
 	double** GetMInv() { return this->m_inv; };
@@ -47,7 +47,9 @@ public:
 	double** GetPhiPostProcessorPoint() { return this->phi_postprocessor_point; };
 
 private:
-    void Dubiner();
+	void allocate_memory(int, int);
+
+    void Dubiner2D();
 };
 
 #endif

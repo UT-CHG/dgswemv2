@@ -14,15 +14,15 @@ class ELEMENT {
 protected:
     unsigned int ID;
 
+	unsigned char dimension;
 	unsigned char element_type;
-    unsigned char number_interfaces;
+	unsigned char number_boundaries;
 
 	unsigned int* neighbor_ID;
 	unsigned char* boundary_type;
 
-	double* nodal_coordinates_x;
-	double* nodal_coordinates_y;
-
+	double** nodal_coordinates;
+	
 	int number_bf;
     int number_bf_geom;
 

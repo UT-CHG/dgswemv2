@@ -12,7 +12,7 @@ int main(int argc, const char* argv[])
 {
     PROBLEM* problem = new PROBLEM();
 
-	problem->Solve(EEULER, 0.005, 1.0, 0.01);
+	problem->Solve(EEULER, 1, 432000.0, 300.0);
 
 
     delete problem;

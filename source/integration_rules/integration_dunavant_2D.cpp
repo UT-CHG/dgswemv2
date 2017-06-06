@@ -1,9 +1,10 @@
 #include <iostream>
 #include <cmath>
 
-#include "integration_rules_area.h"
+#include "integration_rules_2D.h"
+#include "../general_definitions.h"
 
-int dunavant_degree(int p) {
+int dunavant_2d_degree(int p) {
     if (1 <= p && p <= 20) {
         return p;
     }
@@ -15,11 +16,11 @@ int dunavant_degree(int p) {
     }
 }
 
-int dunavant_number_gp(int p) {
+int dunavant_2d_number_gp(int p) {
     int num_permutations;
     int* permutations;
 
-    dunavant_permutation_data(p, &num_permutations, permutations);
+    dunavant_2d_permutation_data(p, num_permutations, permutations);
 
     int number_gp = 0;
     for (int i = 0; i < num_permutations; i++) { number_gp = number_gp + permutations[i]; }
@@ -29,7 +30,7 @@ int dunavant_number_gp(int p) {
     return number_gp;
 }
 
-void dunavant_rule(int p, double* x, double* y, double* weight) {
+void dunavant_2d_rule(int p, double** z, double* weight) {
     double* l1;
     double* l2;
     double* l3;
@@ -38,60 +39,60 @@ void dunavant_rule(int p, double* x, double* y, double* weight) {
     int num_permutations;
     int* permutations;
 
-    dunavant_permutation_data(p, &num_permutations, permutations);
-    dunavant_gp_data(p, l1, l2, l3, w);
+    dunavant_2d_permutation_data(p, num_permutations, permutations);
+    dunavant_2d_gp_data(p, l1, l2, l3, w);
 
     int gp_number = 0;
     for (int i = 0; i < num_permutations; i++) {
         if (permutations[i] == 1) {
-            x[gp_number] = l1[i];
-            y[gp_number] = l2[i];
-            weight[gp_number] = w[i];
+			z[X][gp_number] = 2 * l1[i] - 1;
+			z[Y][gp_number] = 2 * l2[i] - 1;
+            weight[gp_number] = 2 * w[i];
 
             gp_number = gp_number + 1;
         }
         else if (permutations[i] == 3) {
-            x[gp_number] = l1[i];
-            y[gp_number] = l2[i];
-            weight[gp_number] = w[i];
+			z[X][gp_number] = 2 * l1[i] - 1;
+            z[Y][gp_number] = 2 * l2[i] - 1;
+            weight[gp_number] = 2 * w[i];
 
-            x[gp_number + 1] = l2[i];
-            y[gp_number + 1] = l3[i];
-            weight[gp_number + 1] = w[i];
+            z[X][gp_number + 1] = 2 * l2[i] - 1;
+            z[Y][gp_number + 1] = 2 * l3[i] - 1;
+            weight[gp_number + 1] = 2 * w[i];
 
-            x[gp_number + 2] = l3[i];
-            y[gp_number + 2] = l1[i];
-            weight[gp_number + 2] = w[i];
+            z[X][gp_number + 2] = 2 * l3[i] - 1;
+            z[Y][gp_number + 2] = 2 * l1[i] - 1;
+            weight[gp_number + 2] = 2 * w[i];
 
             gp_number = gp_number + 3;
         }
-        else if (permutations[i] == 6) {
-            x[gp_number] = l1[i];
-            y[gp_number] = l2[i];
-            weight[gp_number] = w[i];
+		else if (permutations[i] == 6) {
+			z[X][gp_number] = 2 * l1[i] - 1;
+			z[Y][gp_number] = 2 * l2[i] - 1;
+			weight[gp_number] = 2 * w[i];
 
-            x[gp_number + 1] = l2[i];
-            y[gp_number + 1] = l3[i];
-            weight[gp_number + 1] = w[i];
+			z[X][gp_number + 1] = 2 * l2[i] - 1;
+			z[Y][gp_number + 1] = 2 * l3[i] - 1;
+			weight[gp_number + 1] = 2 * w[i];
 
-            x[gp_number + 2] = l3[i];
-            y[gp_number + 2] = l1[i];
-            weight[gp_number + 2] = w[i];
+			z[X][gp_number + 2] = 2 * l3[i] - 1;
+			z[Y][gp_number + 2] = 2 * l1[i] - 1;
+			weight[gp_number + 2] = 2 * w[i];
 
-            x[gp_number + 3] = l2[i];
-            y[gp_number + 3] = l1[i];
-            weight[gp_number + 3] = w[i];
+			z[X][gp_number + 3] = 2 * l2[i] - 1;
+			z[Y][gp_number + 3] = 2 * l1[i] - 1;
+			weight[gp_number + 3] = 2 * w[i];
 
-            x[gp_number + 4] = l3[i];
-            y[gp_number + 4] = l2[i];
-            weight[gp_number + 4] = w[i];
+			z[X][gp_number + 4] = 2 * l3[i] - 1;
+			z[Y][gp_number + 4] = 2 * l2[i] - 1;
+			weight[gp_number + 4] = 2 * w[i];
 
-            x[gp_number + 5] = l1[i];
-            y[gp_number + 5] = l3[i];
-            weight[gp_number + 5] = w[i];
+			z[X][gp_number + 5] = 2 * l1[i] - 1;
+			z[Y][gp_number + 5] = 2 * l3[i] - 1;
+			weight[gp_number + 5] = 2 * w[i];
 
-            gp_number = gp_number + 6;
-        }
+			gp_number = gp_number + 6;
+		}
     }
 
     delete[] l1;
@@ -102,52 +103,52 @@ void dunavant_rule(int p, double* x, double* y, double* weight) {
     delete[] permutations;
 }
 
-void dunavant_permutation_data(int p, int* num_permutations, int* &permutations) {
+void dunavant_2d_permutation_data(int p, int& num_permutations, int* &permutations) {
     if (p == 1) {
-        *num_permutations = 1;
-        permutations = new int[*num_permutations];
+        num_permutations = 1;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
     }
     else if (p == 2) {
-        *num_permutations = 1;
-        permutations = new int[*num_permutations];
+        num_permutations = 1;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
     }
     else if (p == 3) {
-        *num_permutations = 2;
-        permutations = new int[*num_permutations];
+        num_permutations = 2;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
     }
     else if (p == 4) {
-        *num_permutations = 2;
-        permutations = new int[*num_permutations];
+        num_permutations = 2;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
         permutations[1] = 3;
     }
     else if (p == 5) {
-        *num_permutations = 3;
-        permutations = new int[*num_permutations];
+        num_permutations = 3;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
         permutations[2] = 3;
     }
     else if (p == 6) {
-        *num_permutations = 3;
-        permutations = new int[*num_permutations];
+        num_permutations = 3;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
         permutations[1] = 3;
         permutations[2] = 6;
     }
     else if (p == 7) {
-        *num_permutations = 4;
-        permutations = new int[*num_permutations];
+        num_permutations = 4;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -155,8 +156,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[3] = 6;
     }
     else if (p == 8) {
-        *num_permutations = 5;
-        permutations = new int[*num_permutations];
+        num_permutations = 5;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -165,8 +166,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[4] = 6;
     }
     else if (p == 9) {
-        *num_permutations = 6;
-        permutations = new int[*num_permutations];
+        num_permutations = 6;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -176,8 +177,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[5] = 6;
     }
     else if (p == 10) {
-        *num_permutations = 6;
-        permutations = new int[*num_permutations];
+        num_permutations = 6;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -187,8 +188,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[5] = 6;
     }
     else if (p == 11) {
-        *num_permutations = 7;
-        permutations = new int[*num_permutations];
+        num_permutations = 7;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
         permutations[1] = 3;
@@ -199,8 +200,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[6] = 6;
     }
     else if (p == 12) {
-        *num_permutations = 8;
-        permutations = new int[*num_permutations];
+        num_permutations = 8;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
         permutations[1] = 3;
@@ -212,8 +213,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[7] = 6;
     }
     else if (p == 13) {
-        *num_permutations = 10;
-        permutations = new int[*num_permutations];
+        num_permutations = 10;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -227,8 +228,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[9] = 6;
     }
     else if (p == 14) {
-        *num_permutations = 10;
-        permutations = new int[*num_permutations];
+        num_permutations = 10;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
         permutations[1] = 3;
@@ -242,8 +243,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[9] = 6;
     }
     else if (p == 15) {
-        *num_permutations = 11;
-        permutations = new int[*num_permutations];
+        num_permutations = 11;
+        permutations = new int[num_permutations];
 
         permutations[0] = 3;
         permutations[1] = 3;
@@ -258,8 +259,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[10] = 6;
     }
     else if (p == 16) {
-        *num_permutations = 13;
-        permutations = new int[*num_permutations];
+        num_permutations = 13;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -276,8 +277,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[12] = 6;
     }
     else if (p == 17) {
-        *num_permutations = 15;
-        permutations = new int[*num_permutations];
+        num_permutations = 15;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -296,8 +297,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[14] = 6;
     }
     else if (p == 18) {
-        *num_permutations = 17;
-        permutations = new int[*num_permutations];
+        num_permutations = 17;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -318,8 +319,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[16] = 6;
     }
     else if (p == 19) {
-        *num_permutations = 17;
-        permutations = new int[*num_permutations];
+        num_permutations = 17;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -340,8 +341,8 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
         permutations[16] = 6;
     }
     else if (p == 20) {
-        *num_permutations = 19;
-        permutations = new int[*num_permutations];
+        num_permutations = 19;
+        permutations = new int[num_permutations];
 
         permutations[0] = 1;
         permutations[1] = 3;
@@ -365,7 +366,7 @@ void dunavant_permutation_data(int p, int* num_permutations, int* &permutations)
     }
 }
 
-void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
+void dunavant_2d_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
     if (p == 1) {
         l1 = new double[1];
         l2 = new double[1];
@@ -1468,11 +1469,11 @@ void dunavant_gp_data(int p, double* &l1, double* &l2, double* &l3, double* &w){
     }
 }
 
-void dunavant_rule_test(int p, int number_gp, double* z1, double* z2, double* w) {
+void dunavant_2d_rule_test(int p, int number_gp, const double* const* z, const double* w) {
     double exact_integration = 1 / ((double)p + 1)*((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p)); // S(x^p)dxdy over triangle
 
     double num_integration = 0;
-    for (int i = 0; i < number_gp; i++) { num_integration = num_integration + pow(z1[i], p)*w[i]; }
+    for (int i = 0; i < number_gp; i++) { num_integration = num_integration + pow(z[X][i], p)*w[i]; }
 
     double err = abs((num_integration - exact_integration) / exact_integration);
 

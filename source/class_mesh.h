@@ -23,11 +23,11 @@ protected:
     std::map<unsigned int, ELEMENT*> elements;
     std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
 
-    std::map<unsigned char, INTEGRATION_1D*> line_rules;
-    std::map<unsigned char, INTEGRATION_2D*> area_rules;
+    std::map<unsigned char, INTEGRATION*> line_rules;
+    std::map<unsigned char, INTEGRATION*> area_rules;
     
-    std::map<unsigned char, BASIS_2D*> bases_2D;
-    std::map<unsigned char, BASIS_GEOM_2D*> geometric_bases_2D;
+    std::map<unsigned char, BASIS*> bases_2D;
+    std::map<unsigned char, BASIS_GEOM*> geometric_bases_2D;
 
 public:
     MESH(int, int);

@@ -2,8 +2,9 @@
 #include <cmath>
 
 #include "basis_functions.h"
+#include "../general_definitions.h"
 
-void dubiner_phi(int p, int q, int number_gp, double* n1, double* n2, double* phi_pq) {
+void dubiner_2d_phi(int p, int q, int m, int number_gp, const double* n1, const double* n2, double** phi_pq) {
     double* psi_p = new double[number_gp];
     double* psi_pq = new double[number_gp];
 
@@ -11,14 +12,14 @@ void dubiner_phi(int p, int q, int number_gp, double* n1, double* n2, double* ph
     jacobi_polynomial(q, 2 * p + 1, 0, number_gp, n2, psi_pq);
 
     for (int i = 0; i < number_gp; i++) {
-        phi_pq[i] = psi_p[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i];
+        phi_pq[m][i] = psi_p[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i];
     }
 
     delete[] psi_p;
     delete[] psi_pq;
 }
 
-void dubiner_dphi(int p, int q, int number_gp, double* n1, double* n2, double* dphi_dz1, double* dphi_dz2) {
+void dubiner_2d_dphi(int p, int q, int m, int number_gp, const double* n1, const double* n2, double*** dphi_dz) {
     double* psi_p = new double[number_gp];
     double* psi_pq = new double[number_gp];
 
@@ -32,9 +33,9 @@ void dubiner_dphi(int p, int q, int number_gp, double* n1, double* n2, double* d
     jacobi_polynomial_derivative(q, 2 * p + 1, 0, number_gp, n2, dpsi_pq_dn2);
 
     for (int i = 0; i < number_gp; i++) {
-        dphi_dz1[i] = (2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i];
+        dphi_dz[X][m][i] = (2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i];
 
-        dphi_dz2[i] = ((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
+        dphi_dz[Y][m][i] = ((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
             psi_p[i] * (pow((1.0 - n2[i]) / 2.0, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, p - 1)*psi_pq[i]);
     }
 
@@ -45,7 +46,7 @@ void dubiner_dphi(int p, int q, int number_gp, double* n1, double* n2, double* d
     delete[] dpsi_pq_dn2;
 }
 
-void dubiner_test(int p, int number_gp, double** phi_area, double* w) {
+void dubiner_2d_test(int p, int number_gp, const double* const* phi_area, const double* w) {
     int number_bf = (p + 1)*(p + 2) / 2;
 
     double** M = new double*[number_bf];
@@ -75,7 +76,7 @@ void dubiner_test(int p, int number_gp, double** phi_area, double* w) {
             if (abs(M[i][j]) > pow(10.0, -10.0))
             {
                 printf("\n");
-                printf("DUBINER_BASIS - Test fail!\n");
+                printf("DUBINER_2D - Test fail!\n");
                 printf("(i,j) = (%d,%d)\n",i,j);
                 exit(1);
             }
@@ -83,7 +84,7 @@ void dubiner_test(int p, int number_gp, double** phi_area, double* w) {
     }
 
     printf("\n");
-    printf("DUBINER_BASIS - Test success!\n");
+    printf("DUBINER_2D - Test success!\n");
 
     for (int i = 0; i < number_bf; i++) {
         delete[] M[i];

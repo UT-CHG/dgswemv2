@@ -11,38 +11,36 @@ protected:
     INTERFACE_2D** interfaces;
     bool* interface_owner;
 
-    BASIS_2D* basis;
-    BASIS_GEOM_2D* basis_geom = nullptr;
+    BASIS* basis;
+    BASIS_GEOM* basis_geom = nullptr;
     
     bool orthogonal;
     double** m_inv;
 
-    double*** J_inv_t_area;
-    double* det_J_area;
+    double*** J_inv_t_internal;
+    double* det_J_internal;
 
-    double** surface_J_edge;
-    double** normal_edge_x;
-    double** normal_edge_y;
+    double** surface_J_boundary;
+    double*** normal_boundary;
 
-	double** phi_area;
-	double*** phi_edge;
+	double** phi_internal;
+	double*** phi_boundary;
 
-	double** dphi_dx_area;
-	double** dphi_dy_area;
-
-    double** area_int_fac_phi;
-    double** area_int_fac_dphidx;
-    double** area_int_fac_dphidy;
+	double*** dphi_internal;
+	
+    double** internal_int_fac_phi;
+    double*** internal_int_fac_dphi;
     
-    double*** edge_int_fac_phi;
-    double*** edge_int_fac_nx;
-    double*** edge_int_fac_ny;
-
+    double*** boundary_int_fac_phi;
+    double**** boundary_int_fac_n;
+    
 
 public:
 	ELEMENT_2D(int, unsigned int, unsigned int*, unsigned char*,
-		double*, double*, BASIS_2D*, BASIS_GEOM_2D* basis_geom = nullptr);
+		double*, double*, BASIS*, BASIS_GEOM* basis_geom = nullptr);
     ~ELEMENT_2D();
+
+	void allocate_memory();
 
     void Triangle(unsigned int*, unsigned char*, double*, double*);
 

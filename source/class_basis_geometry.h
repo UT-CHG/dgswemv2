@@ -3,26 +3,26 @@
 
 #include "class_integration.h"
 
-class BASIS_GEOM_2D {
+class BASIS_GEOM {
 private:
+	int dimension;
+	int number_boundaries;
     int p_geom;
 
-    INTEGRATION_1D* integration_rule_line;
-    INTEGRATION_2D* integration_rule_area;
+    INTEGRATION* integration_rule_boundary;
+    INTEGRATION* integration_rule_internal;
     
     int number_bf_geom;
 
-    double** dN_dz1_area;
-    double** dN_dz2_area;
-    double*** dN_dz1_edge;
-    double*** dN_dz2_edge;
+    double*** dN_dz_internal;
+    double**** dN_dz1_boundary;
 
 public:
-    BASIS_GEOM_2D(int, INTEGRATION_1D*, INTEGRATION_2D*);
-    ~BASIS_GEOM_2D();
+    BASIS_GEOM(int, INTEGRATION*, INTEGRATION*);
+    ~BASIS_GEOM();
 
-    int GetPolynomial();
-    int GetNumberBasisFunctions();
+	int GetPolynomial() { return this->p_geom; }
+	int GetNumberBasisFunctions() { return this->number_bf_geom; }
 };
 
 #endif

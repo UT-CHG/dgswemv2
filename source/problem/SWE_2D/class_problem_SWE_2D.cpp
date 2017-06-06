@@ -3,7 +3,7 @@
 PROBLEM::PROBLEM() {
     this->mesh = new MESH(1,0);
 
-	this->mesh->RectangularDomainTest(10.0, 1.0, 20, 2, TRIANGLE);
+	this->mesh->RectangularDomainTest(90000.0, 45000.0, 100, 2, TRIANGLE);
 }
 
 PROBLEM::~PROBLEM() {
@@ -414,7 +414,7 @@ void PROBLEM::WriteDataVTK() {
 	std::ifstream file_geom(file_name_geom, std::ios_base::binary);
 	std::ifstream file_data(file_name_data, std::ios_base::binary);
 
-	std::string file_name_merge = "mesh_data_" + std::to_string(this->t) + ".vtk";
+	std::string file_name_merge = "mesh_data_" + std::to_string(int(this->t) / 60) + ".vtk";
 	std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
 	file_merge << file_geom.rdbuf() << file_data.rdbuf();

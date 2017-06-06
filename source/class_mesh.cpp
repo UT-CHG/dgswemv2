@@ -4,13 +4,13 @@ MESH::MESH(int p, int p_geom) {
 	this->p = p;
 	this->p_geom = p_geom;
 
-	INTEGRATION_1D* line_rule = new INTEGRATION_1D(GAUSS_LEGENDRE, 2 * this->p);
+	INTEGRATION* line_rule = new INTEGRATION(GAUSS_LEGENDRE_1D, 2 * this->p);
 	this->line_rules[TRIANGLE] = line_rule;
 
-	INTEGRATION_2D* area_rule = new INTEGRATION_2D(DUNAVANT, 2 * this->p);
+	INTEGRATION* area_rule = new INTEGRATION(DUNAVANT_2D, 2 * this->p);
 	this->area_rules[TRIANGLE] = area_rule;
 	
-	this->bases_2D[TRIANGLE] = new BASIS_2D(DUBINER, p, line_rule, area_rule);
+	this->bases_2D[TRIANGLE] = new BASIS(DUBINER_2D, p, line_rule, area_rule);
 }
 
 MESH::~MESH() {
@@ -60,7 +60,7 @@ void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_t
 		unsigned int neighbors[3];
 		double x[3];
 		double y[3];
-		BASIS_2D* basis;
+		BASIS* basis;
 
 		if (!(this->bases_2D.empty()) && (this->bases_2D.find(TRIANGLE)->first == TRIANGLE)) {
 			basis = this->bases_2D.find(TRIANGLE)->second;

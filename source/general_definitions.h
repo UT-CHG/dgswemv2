@@ -15,6 +15,10 @@
 #define DEFAULT_ID 4294967295
 #define DEFAULT_BOUNDARY 255
 
+#define X 0
+#define Y 1
+#define Z 2
+
 // timestepper types
 #define EEULER 0
 #define RK2 1
@@ -28,12 +32,12 @@
 #define N_DIV 1
 
 // 2D bases
-#define DUBINER 0
+#define DUBINER_2D 16
 // 2D geometric Bases
 
-// area integration rules
-#define DUNAVANT 0
-// line integration rules
-#define GAUSS_LEGENDRE 0
+// 2D integration rules
+#define DUNAVANT_2D 16
+// 1D integration rules
+#define GAUSS_LEGENDRE_1D 0
 
 #endif

@@ -120,7 +120,7 @@ void PROBLEM::ComputeF(ELEMENT* element) {
 		u[F32][i] = u[V][i] * u[ZB][i];
 	}
 
-    for (int j = 0; j < element->number_interfaces; j++) {
+    for (int j = 0; j < element->number_boundaries; j++) {
         u = element->u_boundary[j];
 
         for (int i = 0; i < element->number_gp_boundary; i++) {

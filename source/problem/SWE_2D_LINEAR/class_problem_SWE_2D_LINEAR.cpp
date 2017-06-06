@@ -318,7 +318,7 @@ void PROBLEM::WriteDataVTK() {
 		it->second->WriteCellDataVTK(cell_data, U);
 	}
 
-	file << "SCALARS ua float 1\n";
+	file << "SCALARS u float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
@@ -331,7 +331,7 @@ void PROBLEM::WriteDataVTK() {
 		it->second->WriteCellDataVTK(cell_data, V);
 	}
 
-	file << "SCALARS va float 1\n";
+	file << "SCALARS v float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
@@ -371,7 +371,7 @@ void PROBLEM::WriteDataVTK() {
 		it->second->WritePointDataVTK(point_data, U);
 	}
 
-	file << "SCALARS ua float 1\n";
+	file << "SCALARS u float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = point_data.begin(); it != point_data.end(); it++) {
@@ -384,7 +384,7 @@ void PROBLEM::WriteDataVTK() {
 		it->second->WritePointDataVTK(point_data, V);
 	}
 
-	file << "SCALARS va float 1\n";
+	file << "SCALARS v float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = point_data.begin(); it != point_data.end(); it++) {
