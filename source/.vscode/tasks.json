@@ -1,32 +1,67 @@
 {
     "version": "0.1.0",
-    "command": "g++",
+    "command": "echo",
     "isShellCommand": true,
-
-    "args": ["-std=c++1y",
+    "args": [],
+    "showOutput": "always",
+    "echoCommand": true,
+    "suppressTaskName": true,
+    "tasks": [
+    {
+        "taskName": "SWE_2D_LINEAR",
+        "command": "g++",
+        "args": ["-std=c++1y",
     
-    "-o SWE_2D_LINEAR",
+        "-o SWE_2D_LINEAR",
+        
+        "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D_LINEAR/main_SWE_2D_LINEAR.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D_LINEAR/class_problem_SWE_2D_LINEAR.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D_LINEAR/class_problem_SWE_2D_LINEAR_timestep.cpp",
 
-    "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D_LINEAR/main_SWE_2D_LINEAR.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D_LINEAR/class_problem_SWE_2D_LINEAR.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D_LINEAR/class_problem_SWE_2D_LINEAR_timestep.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_mesh.cpp",
 
-    "/h2/kazbek/UT-CHG/dgswemv2/source/class_mesh.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_element.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/elements/elements_2D/element_tri.cpp",
 
-    "/h2/kazbek/UT-CHG/dgswemv2/source/class_element.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/elements/elements_2D/element_tri.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_interface.cpp",
 
-    "/h2/kazbek/UT-CHG/dgswemv2/source/class_interface.cpp",
-
-    "/h2/kazbek/UT-CHG/dgswemv2/source/class_basis.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/basis_functions/basis_dubiner_2D.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/basis_functions/basis_polynomials.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_basis.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/basis_functions/basis_dubiner_2D.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/basis_functions/basis_polynomials.cpp",
     
-    "/h2/kazbek/UT-CHG/dgswemv2/source/class_basis_geometry.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_basis_geometry.cpp",
 
-    "/h2/kazbek/UT-CHG/dgswemv2/source/class_integration.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/integration_rules/integration_dunavant_2D.cpp",
-    "/h2/kazbek/UT-CHG/dgswemv2/source/integration_rules/integration_gausslegendre_1D.cpp"],
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_integration.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/integration_rules/integration_dunavant_2D.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/integration_rules/integration_gausslegendre_1D.cpp"]
+    },
+    {
+       "taskName": "SWE_2D",
+        "command": "g++",
+        "args": ["-std=c++1y",
+    
+        "-o SWE_2D",
+        
+        "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D/main_SWE_2D.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D/class_problem_SWE_2D.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE_2D/class_problem_SWE_2D_timestep.cpp",
 
-    "showOutput": "always"
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_mesh.cpp",
+
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_element.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/elements/elements_2D/element_tri.cpp",
+
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_interface.cpp",
+
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_basis.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/basis_functions/basis_dubiner_2D.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/basis_functions/basis_polynomials.cpp",
+    
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_basis_geometry.cpp",
+
+        "/h2/kazbek/UT-CHG/dgswemv2/source/class_integration.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/integration_rules/integration_dunavant_2D.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/source/integration_rules/integration_gausslegendre_1D.cpp"]
+    }
+    ]
 }

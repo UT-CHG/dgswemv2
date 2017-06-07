@@ -38,7 +38,7 @@ ELEMENT::ELEMENT(int element_type, unsigned int ID, unsigned int* neighbor_ID, u
 		this->u[4][i] = 0;
 	}
 
-	double L = 90000;
+	/*double L = 90000;
 	double w = 2 * PI / 43200;
 	double beta = w * sqrt(1 / (this->u[ZB][0] * GRAVITY));
 
@@ -50,7 +50,7 @@ ELEMENT::ELEMENT(int element_type, unsigned int ID, unsigned int* neighbor_ID, u
 
 	this->u[4][0] = h_true[0] / 3.0 + h_true[1] / 3.0 + h_true[2] / 3.0;
 	this->u[4][1] = -h_true[0] / 6.0 - h_true[1] / 6.0 + h_true[2] / 3.0;
-	this->u[4][2] = -h_true[0] / 2.0 + h_true[1] / 2.0;
+	this->u[4][2] = -h_true[0] / 2.0 + h_true[1] / 2.0;*/
 
 	//INITIALIZE SP AND ZB AT GPs
 	this->ComputeBoundaryU(SP);

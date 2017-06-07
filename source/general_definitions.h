@@ -1,7 +1,7 @@
 #ifndef GENERAL_DEFINITIONS
 #define GENERAL_DEFINITIONS
 
-#define PROBLEM_SWE_2D_LINEAR
+#define PROBLEM_SWE_2D
 
 #ifdef PROBLEM_SWE_2D
 #include "problem/SWE_2D/definitions_SWE_2D.h"

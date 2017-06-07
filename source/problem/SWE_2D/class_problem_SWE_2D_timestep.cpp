@@ -133,8 +133,8 @@ void PROBLEM::Timestep() {
 
         //COMPUTING UA
         for (int i = 0; i < number_bf; i++) {
-			RHS[i] = it->second->IntegrationInternalDPhiDX(F11, i) +
-				it->second->IntegrationInternalDPhiDY(F12, i) -
+			RHS[i] = it->second->IntegrationInternalDPhi(X, F11, i) +
+				it->second->IntegrationInternalDPhi(Y, F12, i) -
 				it->second->IntegrationBoundaryPhi(NUM_FLUX_UA, i) -
 				it->second->IntegrationInternalPhi(S1, i);
         }
@@ -142,8 +142,8 @@ void PROBLEM::Timestep() {
 
         //COMPUTING VA
         for (int i = 0; i < number_bf; i++) {
-            RHS[i] = it->second->IntegrationInternalDPhiDX(F21, i) +
-                it->second->IntegrationInternalDPhiDY(F22, i) -
+            RHS[i] = it->second->IntegrationInternalDPhi(X, F21, i) +
+                it->second->IntegrationInternalDPhi(Y, F22, i) -
                 it->second->IntegrationBoundaryPhi(NUM_FLUX_VA, i) -
 				it->second->IntegrationInternalPhi(S2, i);;
         }
@@ -152,8 +152,8 @@ void PROBLEM::Timestep() {
 
         //COMPUTING H
         for (int i = 0; i < number_bf; i++) {
-            RHS[i] = it->second->IntegrationInternalDPhiDX(F31, i) +
-                it->second->IntegrationInternalDPhiDY(F32, i) -
+            RHS[i] = it->second->IntegrationInternalDPhi(X, F31, i) +
+                it->second->IntegrationInternalDPhi(Y, F32, i) -
                 it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i) - 
 				it->second->IntegrationInternalPhi(S3, i);
         }
@@ -187,7 +187,7 @@ void PROBLEM::ComputeUVA(ELEMENT* element) {
         u[V][i] = u[VA][i] / u[A][i];
     }
 
-    for (int j = 0; j < element->number_interfaces; j++) {
+    for (int j = 0; j < element->number_boundaries; j++) {
         u = element->u_boundary[j];
 
         for (int i = 0; i < element->number_gp_boundary; i++) {
@@ -211,7 +211,7 @@ void PROBLEM::ComputeF(ELEMENT* element) {
         u[F32][i] = u[VA][i];
     }
 
-    for (int j = 0; j < element->number_interfaces; j++) {
+    for (int j = 0; j < element->number_boundaries; j++) {
         u = element->u_boundary[j];
 
         for (int i = 0; i < element->number_gp_boundary; i++) {
@@ -280,8 +280,8 @@ void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {
 
     double** u_in = intface->u_boundary_in;
     double** u_ex = intface->u_boundary_ex;
-    double* n_x = intface->normal_x;
-    double* n_y = intface->normal_y;
+    double* n_x = intface->normal[X];
+    double* n_y = intface->normal[Y];
 
     int i_ex;
 
@@ -377,8 +377,8 @@ void PROBLEM::LandInterfaceSetBC(INTERFACE* intface) {
     for (int i = 0; i < intface->number_gp; i++) {
         i_ex = intface->number_gp - 1 - i;
 
-        n_x = intface->normal_x[i];
-        n_y = intface->normal_y[i];
+        n_x = intface->normal[X][i];
+        n_y = intface->normal[Y][i];
         t_x = -n_y;
         t_y = n_x;
 
@@ -412,8 +412,8 @@ void PROBLEM::FlowInterfaceSetBC(INTERFACE* intface) {
     for (int i = 0; i < intface->number_gp; i++) {
         i_ex = intface->number_gp - 1 - i;
 
-        n_x = intface->normal_x[i];
-        n_y = intface->normal_y[i];
+        n_x = intface->normal[X][i];
+        n_y = intface->normal[Y][i];
         t_x = -n_y;
         t_y = n_x;
 
