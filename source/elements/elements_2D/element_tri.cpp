@@ -1,10 +1,8 @@
 #include <cmath>
 
-#include "../class_element.h"
+#include "../../class_element.h"
 
-void ELEMENT::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_type,
-    double** nodal_coordinates)
-{
+void ELEMENT::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_type, double** nodal_coordinates) {
 	this->dimension = 2;
 	this->element_type = TRIANGLE;
 	this->number_boundaries = 3;

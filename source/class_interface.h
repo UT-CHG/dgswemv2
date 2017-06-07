@@ -1,7 +1,7 @@
 #ifndef CLASS_INTERFACE_2D_H
 #define CLASS_INTERFACE_2D_H
 
-#include "../general_definitions.h"
+#include "general_definitions.h"
 
 class INTERFACE{
     friend class PROBLEM;

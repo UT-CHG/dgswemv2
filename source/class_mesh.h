@@ -10,7 +10,7 @@
 #include "class_basis.h"
 #include "class_basis_geometry.h"
 
-#include "elements\class_element.h"
+#include "class_element.h"
 
 class MESH {
     friend class PROBLEM;
@@ -22,11 +22,11 @@ protected:
     std::map<unsigned int, ELEMENT*> elements;
     std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
 
-    std::map<unsigned char, INTEGRATION*> line_rules;
-    std::map<unsigned char, INTEGRATION*> area_rules;
+    std::map<unsigned char, INTEGRATION*> boundary_rules;
+    std::map<unsigned char, INTEGRATION*> internal_rules;
     
-    std::map<unsigned char, BASIS*> bases_2D;
-    std::map<unsigned char, BASIS_GEOM*> geometric_bases_2D;
+    std::map<unsigned char, BASIS*> bases;
+    std::map<unsigned char, BASIS_GEOM*> geometric_bases;
 
 public:
     MESH(int, int);

@@ -2,7 +2,7 @@
 #include <cmath>
 
 #include "integration_rules_1D.h"
-#include"..\general_definitions.h"
+#include"../general_definitions.h"
 
 int gausslegendre_1d_degree(int p) {
 	if (1 <= p && p <= 65) {

@@ -4,10 +4,10 @@
 #define PROBLEM_SWE_2D_LINEAR
 
 #ifdef PROBLEM_SWE_2D
-#include "problem\SWE_2D\definitions_SWE_2D.h"
+#include "problem/SWE_2D/definitions_SWE_2D.h"
 #endif
 #ifdef PROBLEM_SWE_2D_LINEAR
-#include "problem\SWE_2D_LINEAR\definitions_SWE_2D_LINEAR.h"
+#include "problem/SWE_2D_LINEAR/definitions_SWE_2D_LINEAR.h"
 #endif
 
 #define PI 3.14159265359	

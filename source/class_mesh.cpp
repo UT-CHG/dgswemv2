@@ -4,13 +4,11 @@ MESH::MESH(int p, int p_geom) {
 	this->p = p;
 	this->p_geom = p_geom;
 
-	INTEGRATION* line_rule = new INTEGRATION(GAUSS_LEGENDRE_1D, 2 * this->p);
-	this->line_rules[TRIANGLE] = line_rule;
+	this->boundary_rules[TRIANGLE] = new INTEGRATION(GAUSS_LEGENDRE_1D, 2 * this->p);
 
-	INTEGRATION* area_rule = new INTEGRATION(DUNAVANT_2D, 2 * this->p);
-	this->area_rules[TRIANGLE] = area_rule;
+	this->internal_rules[TRIANGLE] = new INTEGRATION(DUNAVANT_2D, 2 * this->p);
 	
-	this->bases_2D[TRIANGLE] = new BASIS(DUBINER_2D, p, line_rule, area_rule);
+	this->bases[TRIANGLE] = new BASIS(DUBINER_2D, p, this->boundary_rules.find(TRIANGLE)->second, this->internal_rules.find(TRIANGLE)->second);
 }
 
 MESH::~MESH() {
@@ -27,39 +25,38 @@ MESH::~MESH() {
     }
     this->elements.clear();
 
-    for (auto it = this->bases_2D.begin(); it != this->bases_2D.end(); it++) {
+    for (auto it = this->bases.begin(); it != this->bases.end(); it++) {
         delete it->second;
     }
-    this->bases_2D.clear();
+    this->bases.clear();
 
-    for (auto it = this->geometric_bases_2D.begin(); it != this->geometric_bases_2D.end(); it++) {
+    for (auto it = this->geometric_bases.begin(); it != this->geometric_bases.end(); it++) {
         delete it->second;
     }
-    this->geometric_bases_2D.clear();
+    this->geometric_bases.clear();
 
-    for (auto it = this->line_rules.begin(); it != this->line_rules.end(); it++) {
+    for (auto it = this->boundary_rules.begin(); it != this->boundary_rules.end(); it++) {
         delete it->second;
     }
-    this->line_rules.clear();
+    this->boundary_rules.clear();
 
-    for (auto it = this->area_rules.begin(); it != this->area_rules.end(); it++) {
+    for (auto it = this->internal_rules.begin(); it != this->internal_rules.end(); it++) {
         delete it->second;
     }
-    this->area_rules.clear();
+    this->internal_rules.clear();
 }
 
 void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_type) {
 	double dx = L / m;
 	double dy = W / n;
 
-	unsigned int ID;
-	
 	switch (element_type) {
 	case TRIANGLE:
+		unsigned int ID;
 		BASIS* basis;
 
-		if (!(this->bases_2D.empty()) && (this->bases_2D.find(TRIANGLE)->first == TRIANGLE)) {
-			basis = this->bases_2D.find(TRIANGLE)->second;
+		if (!(this->bases.empty()) && (this->bases.find(TRIANGLE)->first == TRIANGLE)) {
+			basis = this->bases.find(TRIANGLE)->second;
 		}
 		else {
 			printf("\n");
@@ -200,7 +197,6 @@ void MESH::RectangularDomainTest(double L, double W, int m, int n, int element_t
 				nodal_coordinates_2[1][0] = nodal_coordinates_1[1][0] - dy;
 				nodal_coordinates_2[1][1] = nodal_coordinates_1[1][1];
 				nodal_coordinates_2[1][2] = nodal_coordinates_1[1][2];
-
 
 				this->elements[ID] = new ELEMENT(TRIANGLE, ID, neighbors_2, boundaries_2, nodal_coordinates_2, basis);
 			}

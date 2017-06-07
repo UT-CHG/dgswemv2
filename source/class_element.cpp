@@ -14,13 +14,13 @@ ELEMENT::ELEMENT(int element_type, unsigned int ID, unsigned int* neighbor_ID, u
 	case TRIANGLE: this->Triangle(neighbor_ID, boundary_type, nodal_coordinates); break;
 	default:
 		printf("\n");
-		printf("ELEMENT_2D CONSTRUCTOR - Fatal error!\n");
+		printf("ELEMENT CONSTRUCTOR - Fatal error!\n");
 		printf("Undefined element type = %d\n", element_type);
 		exit(1);
 	}
 
     //COMPUTE DIFFERENTIATION AND NUMERICAL INTEGRATION FACTORS
-	this->ComputeDPhi();
+	this->ComputeDifferentiationFactors();
     this->ComputeIntegrationFactors();
 
 	//SET INITIAL CONDITIONS FOR TESTING
@@ -226,9 +226,11 @@ void ELEMENT::allocate_memory() {
 	}
 }
 
-void ELEMENT::ComputeDPhi() {
+void ELEMENT::ComputeDifferentiationFactors() {
 	double*** dphi_dz_internal = this->basis->GetDPhiDZInternal();
 
+	//This loop can be rearranged for better efficiency,
+	//however that will require two nested loops
 	if (this->basis_geom == nullptr) {
 		for (int i = 0; i < this->dimension; i++) {
 			for (int j = 0; j < this->number_bf; j++) {
@@ -293,7 +295,7 @@ void ELEMENT::ComputeIntegrationFactors() {
 	}
 }
 
-std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() { //Replace with referrence
+std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() {
 	std::map<unsigned int, INTERFACE*> internal_interfaces;
 
 	bool boundary;
@@ -370,7 +372,7 @@ void ELEMENT::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr
     }
 }
 
-std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT::GetOwnInterfaces() {// Replace with referrence
+std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT::GetOwnInterfaces() {
     std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces;
 
     for (int i = 0; i < this->number_boundaries; i++) {
@@ -411,14 +413,14 @@ void ELEMENT::ComputeInternalDU(int dim, int u_flag, int u_flag_store) {
 }
 
 void ELEMENT::ComputeBoundaryU(int u_flag) {
-	for (int k = 0; k < this->number_boundaries; k++) {
-		for (int i = 0; i < this->number_gp_boundary; i++) {
-			this->u_boundary[k][u_flag][i] = 0.0;
+	for (int i = 0; i < this->number_boundaries; i++) {
+		for (int j = 0; j < this->number_gp_boundary; j++) {
+			this->u_boundary[i][u_flag][j] = 0.0;
 		}
 
-		for (int i = 0; i < this->number_bf; i++) {
-			for (int j = 0; j < this->number_gp_boundary; j++) {
-				this->u_boundary[k][u_flag][j] += this->u[u_flag][i] * this->phi_boundary[k][i][j];
+		for (int j = 0; j < this->number_bf; j++) {
+			for (int k = 0; k < this->number_gp_boundary; k++) {
+				this->u_boundary[i][u_flag][k] += this->u[u_flag][j] * this->phi_boundary[i][j][k];
 			}
 		}
 	}

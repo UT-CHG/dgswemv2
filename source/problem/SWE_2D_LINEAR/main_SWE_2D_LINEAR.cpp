@@ -1,7 +1,3 @@
-#define _CRTDBG_MAP_ALLOC
-#include <cstdlib>
-#include <crtdbg.h>
-
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -14,8 +10,5 @@ int main(int argc, const char* argv[])
 
 	problem->Solve(EEULER, 1, 432000.0, 300.0);
 
-
     delete problem;
-
-    _CrtDumpMemoryLeaks();
 }

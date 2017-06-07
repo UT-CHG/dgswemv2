@@ -1,14 +1,15 @@
 #ifndef CLASS_ELEMENT_2D_H
 #define CLASS_ELEMENT_2D_H
 
+#include <cmath>
 #include <map>
 #include <vector>
 #include <fstream>
 #include <string>
 
-#include "../interfaces/class_interface.h"
-#include "../class_basis.h"
-#include "../class_basis_geometry.h"
+#include "class_interface.h"
+#include "class_basis.h"
+#include "class_basis_geometry.h"
 
 class ELEMENT{
     friend class PROBLEM;
@@ -37,8 +38,8 @@ private:
     int number_gp_internal;
     int number_gp_boundary;
 
-    double*** J_inv_t_internal;
     double* det_J_internal;
+    double*** J_inv_t_internal;
     double** surface_J_boundary;
     double*** normal_boundary;
 
@@ -91,7 +92,7 @@ public:
 private:
 	void allocate_memory();
     
-    void ComputeDPhi(); //rename ComputeDifferentiationFactors;
+    void ComputeDifferentiationFactors();
 	void ComputeIntegrationFactors();
     
     void Triangle(unsigned int*, unsigned char*, double**);
