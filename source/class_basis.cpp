@@ -239,8 +239,6 @@ void BASIS::Dubiner2D() {
 	m = 0;
 	for (int i = 0; i <= this->p; i++) {
 		for (int j = 0; j <= this->p - i; j++) {
-			this->phi_postprocessor_point[m] = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
-
 			dubiner_2d_phi(i, j, m, (N_DIV + 1)*(N_DIV + 2) / 2 - 1, n1, n2, this->phi_postprocessor_point);
 
 			m = m + 1;
