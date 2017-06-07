@@ -7,11 +7,11 @@ class BASIS_GEOM {
 private:
 	int dimension;
 	int number_boundaries;
-    int p_geom;
 
     INTEGRATION* integration_rule_boundary;
     INTEGRATION* integration_rule_internal;
     
+    int p_geom;
     int number_bf_geom;
 
     double*** dN_dz_internal;

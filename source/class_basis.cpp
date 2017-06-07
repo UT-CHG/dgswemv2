@@ -21,10 +21,12 @@ BASIS::BASIS(int type, int p, INTEGRATION* boundary_rule, INTEGRATION* internal_
 BASIS::~BASIS(){
     for (int i = 0; i < this->number_bf; i++) {
         delete[] this->phi_internal[i];
-		
 		delete[] this->phi_postprocessor_cell[i];
 		delete[] this->phi_postprocessor_point[i];
 	}
+    delete[] this->phi_internal;
+	delete[] this->phi_postprocessor_cell;
+	delete[] this->phi_postprocessor_point;
 
 	for (int i = 0; i < this->dimension; i++) {
 		for (int j = 0; j < this->number_bf; j++) {
@@ -32,6 +34,7 @@ BASIS::~BASIS(){
 		}
 		delete[] this->dphi_dz_internal[i];
 	}
+	delete[] this->dphi_dz_internal;
 
 	for (int i = 0; i < this->number_boundaries; i++) {
 		for (int j = 0; j < this->number_bf; j++) {
@@ -39,13 +42,7 @@ BASIS::~BASIS(){
 		}
 		delete[] this->phi_boundary[i];
 	}
-
-    delete[] this->phi_internal;
-	delete[] this->dphi_dz_internal;
 	delete[] this->phi_boundary;
-
-	delete[] this->phi_postprocessor_cell;
-	delete[] this->phi_postprocessor_point;
 
     if (this->orthogonal) {
         delete[] this->m_inv[0];
@@ -60,18 +57,15 @@ BASIS::~BASIS(){
 
 void BASIS::allocate_memory(int number_gp_internal, int number_gp_boundary) {
 	this->phi_internal = new double*[this->number_bf];
-	this->dphi_dz_internal = new double**[this->dimension];
-	this->phi_boundary = new double**[this->number_boundaries];
-
 	this->phi_postprocessor_cell = new double*[this->number_bf];
 	this->phi_postprocessor_point = new double*[this->number_bf];
-
 	for (int i = 0; i < this->number_bf; i++) {
 		this->phi_internal[i] = new double[number_gp_internal];
 		this->phi_postprocessor_cell[i] = new double[N_DIV*N_DIV];
 		this->phi_postprocessor_point[i] = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
 	}
 
+	this->dphi_dz_internal = new double**[this->dimension];
 	for (int i = 0; i < this->dimension; i++) {
 		this->dphi_dz_internal[i] = new double*[this->number_bf];
 		for (int j = 0; j < this->number_bf; j++) {
@@ -79,6 +73,7 @@ void BASIS::allocate_memory(int number_gp_internal, int number_gp_boundary) {
 		}
 	}
 
+	this->phi_boundary = new double**[this->number_boundaries];
 	for (int i = 0; i < this->number_boundaries; i++) {
 		this->phi_boundary[i] = new double*[this->number_bf];
 		for (int j = 0; j < this->number_bf; j++) {

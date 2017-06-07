@@ -1,16 +1,17 @@
-#include "class_element_2D.h"
+#include "class_element.h"
 
-ELEMENT_2D::ELEMENT_2D(int element_type, unsigned int ID, unsigned int* neighbor_ID, unsigned char* boundary_type,
-    double* nodal_coordinates_x, double* nodal_coordinates_y,
-    BASIS* basis, BASIS_GEOM* basis_geom) : ELEMENT(ID) {
+ELEMENT::ELEMENT(int element_type, unsigned int ID, unsigned int* neighbor_ID, unsigned char* boundary_type,
+    double** nodal_coordinates, BASIS* basis, BASIS_GEOM* basis_geom) {
+
+	this->ID = ID;	
+
     this->basis = basis;
-
     if (basis_geom != nullptr) {
         this->basis_geom = basis_geom;
     }
 
 	switch (element_type){
-	case TRIANGLE: this->Triangle(neighbor_ID, boundary_type, nodal_coordinates_x, nodal_coordinates_y); break;
+	case TRIANGLE: this->Triangle(neighbor_ID, boundary_type, nodal_coordinates); break;
 	default:
 		printf("\n");
 		printf("ELEMENT_2D CONSTRUCTOR - Fatal error!\n");
@@ -58,7 +59,7 @@ ELEMENT_2D::ELEMENT_2D(int element_type, unsigned int ID, unsigned int* neighbor
 	this->ComputeInternalU(ZB);
 }
 
-ELEMENT_2D::~ELEMENT_2D() {
+ELEMENT::~ELEMENT() {
 	for (int i = 0; i < this->dimension; i++) {
 		delete[] this->nodal_coordinates[i];
 	}
@@ -133,19 +134,11 @@ ELEMENT_2D::~ELEMENT_2D() {
     delete[] this->boundary_int_fac_n;
 }
 
-void ELEMENT_2D::allocate_memory() {
-	//INITIALIZE ARRAYS TO STORE ESSENTIAL ELEMENT DATA
-	this->nodal_coordinates = new double*[this->dimension];
-	for (int i = 0; i < this->dimension; i++) {
-		this->nodal_coordinates[i] = new double[this->number_bf_geom];
-	}
-
-	this->boundary_type = new unsigned char[this->number_boundaries];
-	this->neighbor_ID = new unsigned int[this->number_boundaries];
-	
-	this->interfaces = new INTERFACE_2D*[this->number_boundaries];
+void ELEMENT::allocate_memory() {
+	//INITIALIZE ARRAYS TO STORE INTERFACE DATA
+	this->interfaces = new INTERFACE*[this->number_boundaries];
 	this->interface_owner = new bool[this->number_boundaries];
-	
+
 	//INITIALIZE ARRAYS TO STORE Us and RHS
 	this->RHS = new double[this->number_bf];
 
@@ -167,7 +160,7 @@ void ELEMENT_2D::allocate_memory() {
 		}
 	}
 
-	//INITIALIZE ARRAYS TO STORE INTEGRATION AND DIFFERENTIATION FACTORS
+	//INITIALIZE ARRAYS TO STORE INTEGRATION AND DIFFERENTIATION FACORS
 	this->internal_int_fac_phi = new double*[this->number_bf];
 	for (int i = 0; i < this->number_bf; i++) {
 		this->internal_int_fac_phi[i] = new double[this->number_gp_internal];
@@ -202,6 +195,7 @@ void ELEMENT_2D::allocate_memory() {
 			}
 		}
 	}
+
 	//INITIALIZE ARRAYS TO STORE GEOMETRIC DATA
 	if (this->basis_geom == nullptr) {
 		this->det_J_internal = new double[1];
@@ -232,7 +226,7 @@ void ELEMENT_2D::allocate_memory() {
 	}
 }
 
-void ELEMENT_2D::ComputeDPhi() {
+void ELEMENT::ComputeDPhi() {
 	double*** dphi_dz_internal = this->basis->GetDPhiDZInternal();
 
 	if (this->basis_geom == nullptr) {
@@ -252,19 +246,19 @@ void ELEMENT_2D::ComputeDPhi() {
 	}
 }
 
-void ELEMENT_2D::ComputeIntegrationFactors() {
+void ELEMENT::ComputeIntegrationFactors() {
 	this->phi_internal = this->basis->GetPhiInternal();
 	this->phi_boundary = this->basis->GetPhiBoundary();
 
-    double* w_internal = this->basis->GetIntegrationRuleInternal()->GetWeight();
-    double* w_boundary = this->basis->GetIntegrationRuleBoundary()->GetWeight();
+	double* w_internal = this->basis->GetIntegrationRuleInternal()->GetWeight();
+	double* w_boundary = this->basis->GetIntegrationRuleBoundary()->GetWeight();
 
-    if (this->basis_geom == nullptr) {
-        for (int i = 0; i < this->number_bf; i++) {
-            for (int j = 0; j < this->number_gp_internal; j++) {
-                this->internal_int_fac_phi[i][j] = this->phi_internal[i][j] * w_internal[j];
-            }
-        }
+	if (this->basis_geom == nullptr) {
+		for (int i = 0; i < this->number_bf; i++) {
+			for (int j = 0; j < this->number_gp_internal; j++) {
+				this->internal_int_fac_phi[i][j] = this->phi_internal[i][j] * w_internal[j];
+			}
+		}
 
 		for (int i = 0; i < this->dimension; i++) {
 			for (int j = 0; j < this->number_bf; j++) {
@@ -274,14 +268,14 @@ void ELEMENT_2D::ComputeIntegrationFactors() {
 			}
 		}
 
-        for (int i = 0; i < this->number_boundaries; i++) {
-            for (int j = 0; j < this->number_bf; j++) {
-                for (int k = 0; k < this->number_gp_boundary; k++) {
-                    this->boundary_int_fac_phi[i][j][k] = this->phi_boundary[i][j][k] *
-                        w_boundary[k] * this->surface_J_boundary[i][0] / abs(this->det_J_internal[0]);
-                }
-            }
-        }
+		for (int i = 0; i < this->number_boundaries; i++) {
+			for (int j = 0; j < this->number_bf; j++) {
+				for (int k = 0; k < this->number_gp_boundary; k++) {
+					this->boundary_int_fac_phi[i][j][k] = this->phi_boundary[i][j][k] *
+						w_boundary[k] * this->surface_J_boundary[i][0] / abs(this->det_J_internal[0]);
+				}
+			}
+		}
 
 		for (int i = 0; i < this->dimension; i++) {
 			for (int j = 0; j < this->number_boundaries; j++) {
@@ -294,26 +288,42 @@ void ELEMENT_2D::ComputeIntegrationFactors() {
 			}
 		}
 	}
-    else {
-        //Placeholder for cases p_geom > 1
-    }
+	else {
+		//Placeholder for cases p_geom > 1
+	}
 }
 
-std::map<unsigned int, INTERFACE*> ELEMENT_2D::CreateInterfaces() {
+std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() { //Replace with referrence
 	std::map<unsigned int, INTERFACE*> internal_interfaces;
 
+	bool boundary;
 	for (int i = 0; i < this->number_boundaries; i++) {
 		if (this->interfaces[i] == nullptr) {
-			bool straight;
-			if (this->basis_geom == nullptr) straight = true;
-			else if (this->basis_geom != nullptr) straight = false;
-
-			bool boundary;
 			if (this->neighbor_ID[i] == DEFAULT_ID) boundary = true;
 			else if (this->neighbor_ID[i] != DEFAULT_ID) boundary = false;
+			
+			double** normal = new double*[this->dimension];
+			for (int j = 0; j < this->dimension; j++) {
+				normal[j] = new double[this->number_gp_boundary];
+			}
 
-			this->interfaces[i] = new INTERFACE_2D(this->number_gp_boundary, this->u_boundary[i],
-				this->normal_boundary[X][i], this->normal_boundary[Y][i], straight, boundary);
+			if (this->basis_geom == nullptr) {
+				for (int j = 0; j < this->dimension; j++) {
+					for (int k = 0; k < this->number_gp_boundary; k++) {
+						normal[j][k] = this->normal_boundary[j][i][0];
+					}
+				}
+			}
+			else {
+				for (int j = 0; j < this->dimension; j++) {
+					for (int k = 0; k < this->number_gp_boundary; k++) {
+						normal[j][k] = this->normal_boundary[j][i][k];
+					}
+				}
+			}
+
+			this->interfaces[i] = new INTERFACE(this->dimension, this->number_gp_boundary,
+				this->u_boundary[i], normal, boundary);
 
 			this->interface_owner[i] = true;
 
@@ -350,17 +360,17 @@ std::map<unsigned int, INTERFACE*> ELEMENT_2D::CreateInterfaces() {
 	return internal_interfaces;
 }
 
-void ELEMENT_2D::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
+void ELEMENT::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
     for (int i = 0; i < this->number_boundaries; i++) {
         if (this->neighbor_ID[i] == neighbor_ID) {
-            this->interfaces[i] = (INTERFACE_2D*)interface_ptr;
+            this->interfaces[i] = interface_ptr;
 
             this->interfaces[i]->SetPointerEX(this->u_boundary[i]);
         }
     }
 }
 
-std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT_2D::GetOwnInterfaces() {
+std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT::GetOwnInterfaces() {// Replace with referrence
     std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces;
 
     for (int i = 0; i < this->number_boundaries; i++) {
@@ -376,139 +386,105 @@ std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT_2D::GetOwnInterfaces()
     return own_interfaces;
 }
 
-void ELEMENT_2D::ComputeInternalU(int u_flag) {
-    for (int i = 0; i < this->number_gp_internal; i++) {
-        this->u_internal[u_flag][i] = 0.0;
-    }
-
-    for (int i = 0; i < this->number_bf; i++) {
-        for (int j = 0; j < this->number_gp_internal; j++) {
-            this->u_internal[u_flag][j] += this->u[u_flag][i] * this->phi_internal[i][j];
-        }
-    }
-}
-
-void ELEMENT_2D::ComputeBoundaryU(int u_flag) {
-    for (int k = 0; k < this->number_boundaries; k++) {
-        for (int i = 0; i < this->number_gp_boundary; i++) {
-            this->u_boundary[k][u_flag][i] = 0.0;
-        }
-
-        for (int i = 0; i < this->number_bf; i++) {
-            for (int j = 0; j < this->number_gp_boundary; j++) {
-                this->u_boundary[k][u_flag][j] += this->u[u_flag][i] * this->phi_boundary[k][i][j];
-            }
-        }
-    }
-}
-
-void ELEMENT_2D::ComputeInternalDUDX(int u_flag, int u_flag_store) {
+void ELEMENT::ComputeInternalU(int u_flag) {
 	for (int i = 0; i < this->number_gp_internal; i++) {
+		this->u_internal[u_flag][i] = 0.0;
+	}
+
+	for (int i = 0; i < this->number_bf; i++) {
+		for (int j = 0; j < this->number_gp_internal; j++) {
+			this->u_internal[u_flag][j] += this->u[u_flag][i] * this->phi_internal[i][j];
+		}
+	}
+}
+
+void ELEMENT::ComputeInternalDU(int dim, int u_flag, int u_flag_store) {
+	for (int i = 0; i < this->number_gp_boundary; i++) {
 		this->u_internal[u_flag_store][i] = 0.0;
 	}
 
 	for (int i = 0; i < this->number_bf; i++) {
 		for (int j = 0; j < this->number_gp_internal; j++) {
-			this->u_internal[u_flag_store][j] += this->u[u_flag][i] * this->dphi_internal[X][i][j];
+			this->u_internal[u_flag_store][j] += this->u[u_flag][i] * this->dphi_internal[dim][i][j];
 		}
 	}
 }
 
-void ELEMENT_2D::ComputeInternalDUDY(int u_flag, int u_flag_store) {
+void ELEMENT::ComputeBoundaryU(int u_flag) {
+	for (int k = 0; k < this->number_boundaries; k++) {
+		for (int i = 0; i < this->number_gp_boundary; i++) {
+			this->u_boundary[k][u_flag][i] = 0.0;
+		}
+
+		for (int i = 0; i < this->number_bf; i++) {
+			for (int j = 0; j < this->number_gp_boundary; j++) {
+				this->u_boundary[k][u_flag][j] += this->u[u_flag][i] * this->phi_boundary[k][i][j];
+			}
+		}
+	}
+}
+
+double ELEMENT::IntegrationInternalPhi(int u_flag, int phi_n) {
+	double integral = 0;
+
 	for (int i = 0; i < this->number_gp_internal; i++) {
-		this->u_internal[u_flag_store][i] = 0.0;
+		integral += this->u_internal[u_flag][i] * this->internal_int_fac_phi[phi_n][i];
 	}
 
-	for (int i = 0; i < this->number_bf; i++) {
-		for (int j = 0; j < this->number_gp_internal; j++) {
-			this->u_internal[u_flag_store][j] += this->u[u_flag][i] * this->dphi_internal[Y][i][j];
+	return integral;
+}
+
+double ELEMENT::IntegrationInternalDPhi(int dim, int u_flag, int phi_n) {
+	double integral = 0;
+
+	for (int i = 0; i < this->number_gp_internal; i++) {
+		integral += this->u_internal[u_flag][i] * this->internal_int_fac_dphi[dim][phi_n][i];
+	}
+
+	return integral;
+}
+
+double ELEMENT::IntegrationBoundaryPhi(int u_flag, int phi_n) {
+	double integral = 0;
+
+	for (int i = 0; i < this->number_boundaries; i++) {
+		for (int j = 0; j < this->number_gp_boundary; j++) {
+			integral += this->u_boundary[i][u_flag][j] * this->boundary_int_fac_phi[i][phi_n][j];
+		}
+	}
+
+	return integral;
+}
+
+double ELEMENT::IntegrationBoundaryN(int dim, int u_flag, int phi_n) {
+	double integral = 0;
+
+	for (int i = 0; i < this->number_boundaries; i++) {
+		for (int j = 0; j < this->number_gp_boundary; j++) {
+			integral += this->u_boundary[i][u_flag][j] * this->boundary_int_fac_n[dim][i][phi_n][j];
+		}
+	}
+
+	return integral;
+}
+
+void ELEMENT::SolveLSE(int u_flag) {
+	if (this->orthogonal) {
+		for (int i = 0; i < this->number_bf; i++) {
+			this->u[u_flag][i] = this->m_inv[0][i] * this->RHS[i];
+		}
+	}
+	else if (!(this->orthogonal)) {
+		for (int i = 0; i < this->number_bf; i++) {
+			this->u[u_flag][i] = 0;
+			for (int j = 0; j < this->number_bf; j++) {
+				this->u[u_flag][i] += this->m_inv[i][j] * this->RHS[j];
+			}
 		}
 	}
 }
 
-double ELEMENT_2D::IntegrationInternalPhi(int u_flag, int phi_n) {
-    double integral = 0;
-
-    for (int i = 0; i < this->number_gp_internal; i++) {
-        integral += this->u_internal[u_flag][i] * this->internal_int_fac_phi[phi_n][i];
-    }
-
-    return integral;
-}
-
-double ELEMENT_2D::IntegrationInternalDPhiDX(int u_flag, int phi_n) {
-    double integral = 0;
-
-    for (int i = 0; i < this->number_gp_internal; i++) {
-        integral += this->u_internal[u_flag][i] * this->internal_int_fac_dphi[X][phi_n][i];
-    }
-
-    return integral;
-}
-
-double ELEMENT_2D::IntegrationInternalDPhiDY(int u_flag, int phi_n) {
-    double integral = 0;
-
-    for (int i = 0; i < this->number_gp_internal; i++) {
-        integral += this->u_internal[u_flag][i] * this->internal_int_fac_dphi[Y][phi_n][i];
-    }
-
-    return integral;
-}
-
-double ELEMENT_2D::IntegrationBoundaryPhi(int u_flag, int phi_n) {
-    double integral = 0;
-
-    for (int i = 0; i < this->number_boundaries; i++) {
-        for (int j = 0; j < this->number_gp_boundary; j++) {
-            integral += this->u_boundary[i][u_flag][j] * this->boundary_int_fac_phi[i][phi_n][j];
-        }
-    }
-
-    return integral;
-}
-
-double ELEMENT_2D::IntegrationBoundaryNX(int u_flag, int phi_n) {
-    double integral = 0;
-
-    for (int i = 0; i < this->number_boundaries; i++) {
-        for (int j = 0; j < this->number_gp_boundary; j++) {
-            integral += this->u_boundary[i][u_flag][j] * this->boundary_int_fac_n[X][i][phi_n][j];
-        }
-    }
-
-    return integral;
-}
-
-double ELEMENT_2D::IntegrationBoundaryNY(int u_flag, int phi_n) {
-    double integral = 0;
-
-    for (int i = 0; i < this->number_boundaries; i++) {
-        for (int j = 0; j < this->number_gp_boundary; j++) {
-            integral += this->u_boundary[i][u_flag][j] * this->boundary_int_fac_n[Y][i][phi_n][j];
-        }
-    }
-
-    return integral;
-}
-
-void ELEMENT_2D::SolveLSE(int u_flag) {
-    if (this->orthogonal) {
-        for (int i = 0; i < this->number_bf; i++) {
-            this->u[u_flag][i] = this->m_inv[0][i] * this->RHS[i];
-        }
-    }
-    else if (!(this->orthogonal)) {
-        for (int i = 0; i < this->number_bf; i++) {
-            this->u[u_flag][i] = 0;
-            for (int j = 0; j < this->number_bf; j++) {
-                this->u[u_flag][i] += this->m_inv[i][j] * this->RHS[j];
-            }
-        }
-    }
-}
-
-void ELEMENT_2D::InitializeVTK(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
+void ELEMENT::InitializeVTK(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
 	switch (this->element_type) {
 	case TRIANGLE: this->InitializeVTKTriangle(points, cells); break;
 	default:
@@ -519,7 +495,7 @@ void ELEMENT_2D::InitializeVTK(std::vector<double*>& points, std::vector<unsigne
 	}
 }
 
-void ELEMENT_2D::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
+void ELEMENT::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
 	switch (this->element_type) {
 	case TRIANGLE: this->WriteCellDataVTKTriangle(cell_data, u_flag); break;
 	default:
@@ -530,7 +506,7 @@ void ELEMENT_2D::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
 	}
 }
 
-void ELEMENT_2D::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
+void ELEMENT::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
 	switch (this->element_type) {
 	case TRIANGLE: this->WritePointDataVTKTriangle(point_data, u_flag); break;
 	default:

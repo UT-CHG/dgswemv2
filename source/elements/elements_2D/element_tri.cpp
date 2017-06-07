@@ -1,36 +1,36 @@
 #include <cmath>
 
-#include "../class_element_2D.h"
+#include "../class_element.h"
 
-void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_type,
-    double* nodal_coordinates_x, double* nodal_coordinates_y)
+void ELEMENT::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_type,
+    double** nodal_coordinates)
 {
 	this->dimension = 2;
 	this->element_type = TRIANGLE;
 	this->number_boundaries = 3;
 
-    this->number_gp_internal = this->basis->GetIntegrationRuleInternal()->GetNumberGP();
-    this->number_gp_boundary = this->basis->GetIntegrationRuleBoundary()->GetNumberGP();
-    this->number_bf = this->basis->GetNumberBasisFunctions();
-    this->number_bf_geom = 3;
+    this->boundary_type = boundary_type;
+    this->neighbor_ID = neighbor_ID;
 
+    this->nodal_coordinates = nodal_coordinates;
+
+    this->number_bf = this->basis->GetNumberBasisFunctions();
     if (basis_geom != nullptr) {
         this->number_bf_geom = this->basis_geom->GetNumberBasisFunctions();
     }
-	
+    else {
+        this->number_bf_geom = 3;
+    }
+
+    this->number_gp_internal = this->basis->GetIntegrationRuleInternal()->GetNumberGP();
+    this->number_gp_boundary = this->basis->GetIntegrationRuleBoundary()->GetNumberGP();
+
 	this->allocate_memory();
 
-    for (int i = 0; i < this->number_bf_geom; i++) {
-        this->nodal_coordinates[X][i] = nodal_coordinates_x[i];
-        this->nodal_coordinates[Y][i] = nodal_coordinates_y[i];
-    }
-
-    for (int i = 0; i < this->number_boundaries; i++) {
-        this->neighbor_ID[i] = neighbor_ID[i];
-        this->boundary_type[i] = boundary_type[i];
-        this->interfaces[i] = nullptr;
-        this->interface_owner[i] = false;
-    }
+	for (int i = 0; i < this->number_boundaries; i++) {
+		this->interfaces[i] = nullptr;
+		this->interface_owner[i] = false;
+	}
 
     //COMPUTE GEOMETRY AND M_INV
     if (this->basis_geom == nullptr) {
@@ -80,7 +80,7 @@ void ELEMENT_2D::Triangle(unsigned int* neighbor_ID, unsigned char* boundary_typ
     }
 }
 
-void ELEMENT_2D::InitializeVTKTriangle(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
+void ELEMENT::InitializeVTKTriangle(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
     unsigned int number_pt = points.size();
     
 	double z1;
@@ -140,7 +140,7 @@ void ELEMENT_2D::InitializeVTKTriangle(std::vector<double*>& points, std::vector
     }
 }
 
-void ELEMENT_2D::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_flag) {
+void ELEMENT::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_flag) {
 	double** phi = this->basis->GetPhiPostProcessorCell();
 	double* u_post = new double[N_DIV*N_DIV];
 
@@ -161,7 +161,7 @@ void ELEMENT_2D::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_
 	delete[] u_post;
 }
 
-void ELEMENT_2D::WritePointDataVTKTriangle(std::vector<double>& point_data, int u_flag) {
+void ELEMENT::WritePointDataVTKTriangle(std::vector<double>& point_data, int u_flag) {
 	double** phi = this->basis->GetPhiPostProcessorPoint();
 	double* u_post = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
 

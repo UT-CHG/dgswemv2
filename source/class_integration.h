@@ -12,8 +12,8 @@ private:
     int p;
     
 	int number_gp;
-    double* w;
     double** z;
+    double* w;
 
 public:
     INTEGRATION(int, int);

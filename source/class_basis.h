@@ -11,11 +11,11 @@ private:
 	bool orthogonal;
 	int dimension;
 	int number_boundaries;
-	int p;
-
+	
     INTEGRATION* integration_rule_boundary;
     INTEGRATION* integration_rule_internal;
-
+	
+	int p;
     int number_bf;
 
     double** phi_internal;

@@ -70,7 +70,7 @@ void PROBLEM::EETimeStepper(int n_steps) {
 		this->t += dt;
 
 		this->Timestep();
-		
+
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
 				it->second->u[U][i] += dt*it->second->u[D_U][i];

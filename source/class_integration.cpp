@@ -19,17 +19,17 @@ INTEGRATION::INTEGRATION(int type, int p) {
 INTEGRATION::~INTEGRATION() {
 	for (int i = 0; i < this->dimension; i++)
 		delete[] this->z[i];
+	delete[] this->z;
 
 	delete[] this->w;
-	delete[] this->z;
 }
 
 void INTEGRATION::allocate_memory() {
-	this->w = new double[this->number_gp];
 	this->z = new double*[this->dimension];
-
 	for (int i = 0; i < this->dimension; i++)
 		this->z[i] = new double[this->number_gp];
+
+	this->w = new double[this->number_gp];
 }
 
 void INTEGRATION::GaussLegendre1D() {

@@ -24,12 +24,12 @@ void PROBLEM::Timestep() {
 				this->OceanInterfaceSetBC(*(itt));
 			}
 			break;
-		case LAND:
+		case LAND:	
 			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 				this->LandInterfaceSetBC(*(itt));
 			}
 			break;
-		case FLOW:
+		case FLOW:	
 			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 				this->FlowInterfaceSetBC(*(itt));
 			}
@@ -41,7 +41,7 @@ void PROBLEM::Timestep() {
 			exit(1);
 		}
 	}
-	
+
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		this->ComputeF(it->second);
 		this->ComputeS(it->second);
@@ -79,8 +79,8 @@ void PROBLEM::Timestep() {
 
         //COMPUTING U
         for (int i = 0; i < number_bf; i++) {
-			RHS[i] = it->second->IntegrationInternalDPhiDX(F11, i) +
-				it->second->IntegrationInternalDPhiDY(F12, i) -
+			RHS[i] = it->second->IntegrationInternalDPhi(X, F11, i) +
+				it->second->IntegrationInternalDPhi(Y, F12, i) -
 				it->second->IntegrationBoundaryPhi(NUM_FLUX_U, i) +
 				it->second->IntegrationInternalPhi(S1, i);
         }
@@ -88,8 +88,8 @@ void PROBLEM::Timestep() {
 
         //COMPUTING V
         for (int i = 0; i < number_bf; i++) {
-            RHS[i] = it->second->IntegrationInternalDPhiDX(F21, i) +
-                it->second->IntegrationInternalDPhiDY(F22, i) -
+            RHS[i] = it->second->IntegrationInternalDPhi(X, F21, i) +
+                it->second->IntegrationInternalDPhi(Y, F22, i) -
                 it->second->IntegrationBoundaryPhi(NUM_FLUX_V, i) +
 				it->second->IntegrationInternalPhi(S2, i);
         }
@@ -98,8 +98,8 @@ void PROBLEM::Timestep() {
 
         //COMPUTING H
         for (int i = 0; i < number_bf; i++) {
-            RHS[i] = it->second->IntegrationInternalDPhiDX(F31, i) +
-                it->second->IntegrationInternalDPhiDY(F32, i) -
+            RHS[i] = it->second->IntegrationInternalDPhi(X, F31, i) +
+                it->second->IntegrationInternalDPhi(Y, F32, i) -
                 it->second->IntegrationBoundaryPhi(NUM_FLUX_H, i) + 
 				it->second->IntegrationInternalPhi(S3, i);
         }
@@ -162,8 +162,8 @@ void PROBLEM::LLFNumericalFlux(INTERFACE* intface) {
 
     double** u_in = intface->u_boundary_in;
     double** u_ex = intface->u_boundary_ex;
-    double* n_x = intface->normal_x;
-    double* n_y = intface->normal_y;
+    double* n_x = intface->normal[X];
+    double* n_y = intface->normal[Y];
 
     int i_ex;
 
@@ -212,13 +212,11 @@ void PROBLEM::OceanInterfaceSetBC(INTERFACE* intface) {
     double** u_ex = intface->u_boundary_ex;
 
     int i_ex;
-
     for (int i = 0; i < intface->number_gp; i++) {
         i_ex = intface->number_gp - 1 - i;
 
         //H_ocean = u_in[H][i]; //NEED TO COMPUTE OCEAN ELEVATION
-
-        u_ex[ZB][i_ex] = u_in[ZB][i];
+		u_ex[ZB][i_ex] = u_in[ZB][i];
         u_ex[SP][i_ex] = u_in[SP][i];
         u_ex[U][i_ex] = u_in[U][i];
         u_ex[V][i_ex] = u_in[V][i];
@@ -245,8 +243,8 @@ void PROBLEM::LandInterfaceSetBC(INTERFACE* intface) {
     for (int i = 0; i < intface->number_gp; i++) {
         i_ex = intface->number_gp - 1 - i;
 
-        n_x = intface->normal_x[i];
-        n_y = intface->normal_y[i];
+        n_x = intface->normal[X][i];
+        n_y = intface->normal[Y][i];
         t_x = -n_y;
         t_y = n_x;
 
@@ -280,8 +278,8 @@ void PROBLEM::FlowInterfaceSetBC(INTERFACE* intface) {
     for (int i = 0; i < intface->number_gp; i++) {
         i_ex = intface->number_gp - 1 - i;
 
-        n_x = intface->normal_x[i];
-        n_y = intface->normal_y[i];
+        n_x = intface->normal[X][i];
+        n_y = intface->normal[Y][i];
         t_x = -n_y;
         t_y = n_x;
 
