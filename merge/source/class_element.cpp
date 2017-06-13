@@ -92,15 +92,45 @@ void ELEMENT::allocate_memory() {
 		}
 	}
 
+	//INITIALIZE ARRAYS TO STORE INTEGRATION AND DIFFERENTIATION FACORS
+	this->internal_dphi_fac.resize(this->number_bf);
+	for (int i = 0; i < this->number_bf; i++) {
+		this->internal_dphi_fac[i].resize(this->dimension);
+		for (int j = 0; j < this->dimension; j++) {
+			this->internal_dphi_fac[i][j].reserve(this->number_gp_internal);
+		}
+	}
+
+	this->internal_int_fac_phi.resize(this->number_bf);
+	for (int i = 0; i < this->number_bf; i++) {
+		this->internal_int_fac_phi[i].reserve(this->number_gp_internal);
+	}
+
+	this->internal_int_fac_dphi.resize(this->number_bf);
+	for (int i = 0; i < this->number_bf; i++) {
+		this->internal_int_fac_dphi[i].resize(this->dimension);
+		for (int j = 0; j < this->dimension; j++) {
+			this->internal_int_fac_dphi[i][j].reserve(this->number_gp_internal);
+		}
+	}
+
+	this->boundary_int_fac_phi.resize(this->number_boundaries);
+	for (int i = 0; i < this->number_boundaries; i++) {
+		this->boundary_int_fac_phi[i].resize(this->number_bf);
+		for (int j = 0; j < this->number_bf; j++) {
+			this->boundary_int_fac_phi[i][j].reserve(this->number_gp_boundary);
+		}
+	}
+
 	//INITIALIZE ARRAYS TO STORE GEOMETRIC DATA
 	if (this->basis_geom == nullptr) {
 		this->det_J_internal.reserve(1);
 
-		this->J_inv_t_internal.resize(this->dimension);
+		this->J_inv_internal.resize(this->dimension);
 		for (int i = 0; i < this->dimension; i++) {
-			this->J_inv_t_internal[i].resize(this->dimension);
+			this->J_inv_internal[i].resize(this->dimension);
 			for (int j = 0; j < this->dimension; j++) {
-				this->J_inv_t_internal[i][j].reserve(1);
+				this->J_inv_internal[i][j].reserve(1);
 			}
 		}
 
@@ -123,7 +153,6 @@ void ELEMENT::allocate_memory() {
 }
 
 void ELEMENT::ComputeDifferentiationFactors() {
-	this->internal_dphi_fac = this->master.dphi_internal;
 	//This loop can be rearranged for better efficiency,
 	//however that will require two nested loops
 	double d_phi;
@@ -133,7 +162,7 @@ void ELEMENT::ComputeDifferentiationFactors() {
 				for (int k = 0; k < this->number_gp_internal; k++) {
 					d_phi = 0;
 					for (int l = 0; l < this->dimension; l++) {
-						d_phi += this->internal_dphi_fac[i][l][k] * this->J_inv_t_internal[j][l][0];//FIX
+						d_phi += this->master.dphi_internal[i][l][k] * this->J_inv_internal[l][j][0];//FIX
 					}
 					this->internal_dphi_fac[i][j][k] = d_phi;
 				}
@@ -150,14 +179,13 @@ void ELEMENT::ComputeIntegrationFactors()
 	if (this->basis_geom == nullptr) {
 		this->internal_int_fac_phi = this->master.internal_int_fac_phi;
 
-		this->internal_int_fac_dphi = this->master.internal_int_fac_dphi;
 		double d_phi;
 		for (int i = 0; i < this->number_bf; i++) {
 			for (int j = 0; j < this->dimension; j++) {
 				for (int k = 0; k < this->number_gp_internal; k++) {
 					d_phi = 0;
 					for (int l = 0; l < this->dimension; l++) {
-						d_phi += this->internal_int_fac_dphi[i][l][k] * this->J_inv_t_internal[j][l][0];//FIX
+						d_phi += this->master.internal_int_fac_dphi[i][l][k] * this->J_inv_internal[l][j][0];//FIX
 					}
 					this->internal_int_fac_dphi[i][j][k] = d_phi;
 				}

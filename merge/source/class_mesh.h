@@ -13,7 +13,7 @@ protected:
     int p;
     int p_geom;
 
-	MasterElement triangle = MasterElement(2);
+	MasterElement triangle = MasterElement(1);
 
     std::map<unsigned int, ELEMENT*> elements;
 	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;

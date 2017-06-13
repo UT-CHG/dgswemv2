@@ -132,10 +132,10 @@ void ELEMENT::Triangle() {
 
 		this->det_J_internal.push_back(J[0][0] * J[1][1] - J[0][1] * J[1][0]);
 
-		this->J_inv_t_internal[0][0].push_back(J[1][1] / (this->det_J_internal[0]));
-		this->J_inv_t_internal[0][1].push_back(-J[1][0] / (this->det_J_internal[0]));
-		this->J_inv_t_internal[1][0].push_back(-J[0][1] / (this->det_J_internal[0]));
-		this->J_inv_t_internal[1][1].push_back(J[0][0] / (this->det_J_internal[0]));
+		this->J_inv_internal[0][0].push_back(J[1][1] / (this->det_J_internal[0]));
+		this->J_inv_internal[0][1].push_back(-J[0][1] / (this->det_J_internal[0]));
+		this->J_inv_internal[1][0].push_back(-J[1][0] / (this->det_J_internal[0]));
+		this->J_inv_internal[1][1].push_back(J[0][0] / (this->det_J_internal[0]));
 
 		//printf("%f %f\n%f %f\n\n", this->J_inv_t_area[0][0][0], this->J_inv_t_area[0][1][0],
 		//	this->J_inv_t_area[1][0][0], this->J_inv_t_area[1][1][0]);

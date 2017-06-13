@@ -43,7 +43,7 @@ private:
     int number_gp_boundary;
 
 	std::vector<double> det_J_internal;
-	Array3D<double> J_inv_t_internal;
+	Array3D<double> J_inv_internal;
 	Array2D<double> surface_J_boundary;
 	Array3D<double> normal_boundary;
 
