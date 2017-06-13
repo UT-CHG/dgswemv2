@@ -1,6 +1,16 @@
 #ifndef GENERAL_DEFINITIONS
 #define GENERAL_DEFINITIONS
 
+#include <iostream>
+#include <fstream>
+#include <string>
+
+#include <cmath>
+
+#include <array>
+#include <vector>
+#include <map>
+
 #define PROBLEM_SWE_2D_LINEAR
 
 #ifdef PROBLEM_SWE_2D
@@ -10,6 +20,18 @@
 #include "problem/SWE_2D_LINEAR/definitions_SWE_2D_LINEAR.h"
 #endif
 
+template<int DIM>
+using Point = std::array<double, DIM>;
+
+template<class type>
+using Array2D = std::vector<std::vector<type>>;
+
+template<class type>
+using Array3D = std::vector<std::vector<std::vector<type>>>;
+
+template<class type>
+using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
+
 #define PI 3.14159265359	
 
 #define DEFAULT_ID 4294967295
@@ -18,6 +40,14 @@
 #define X 0
 #define Y 1
 #define Z 2
+
+#define Z1 0
+#define Z2 1
+#define Z3 2
+
+#define N1 0
+#define N2 1
+#define N3 2
 
 // timestepper types
 #define EEULER 0

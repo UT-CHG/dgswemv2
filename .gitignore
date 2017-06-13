@@ -199,3 +199,13 @@
 /.vs/~$GitHubVSTemp$~/v15/.suo
 /.vs/~$GitHubVSTemp$~/v15/.suo
 /.vs/~$GitHubVSTemp$~/v15
+*.suo
+*.vtk
+/merge/DG_HYPER
+/merge/DG_HYPER
+*.ipch
+/merge/DG_HYPER/Debug
+/merge/DG_HYPER/.vs/DG_HYPER/v15/ipch/AutoPCH/DG_HYPER_SWE_2D_LINEAR-c169026e/BASIS_DUBINER_2D-444245df/BASIS_DUBINER_2D.ipch
+/merge/DG_HYPER
+/merge/DG_HYPER
+/merge/DG_HYPER
