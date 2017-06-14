@@ -23,6 +23,14 @@ void MESH::RectangularDomainTest
 	switch (element_type) {
 	case TRIANGLE: {
 		unsigned int ID;
+
+		Array2D<double> nodal_coordinates(2);
+		nodal_coordinates[0].resize(3);
+		nodal_coordinates[1].resize(3);
+
+		std::vector<unsigned char> boundaries(3);
+		std::vector<unsigned int> neighbors(3);
+
 		//SIMPLE PATTERN
 		//for (int i = 0; i < n; i++) {
 		//	for (int j = 0; j < m; j++) {
@@ -84,157 +92,117 @@ void MESH::RectangularDomainTest
 		//// CHECKERS PATTERN
 		for (int i = 0; i < n; i++) {
 			for (int j = i % 2; j < m; j += 2) {
-				unsigned char* boundaries_1 = new unsigned char[3];
-				unsigned int* neighbors_1 = new unsigned int[3];
-
-				double** nodal_coordinates_1 = new double*[2];
-
-				nodal_coordinates_1[0] = new double[3];
-				nodal_coordinates_1[1] = new double[3];
-
 				ID = 2 * j + 2 * m * i;
 
-				neighbors_1[0] = ID + 1;
-				neighbors_1[1] = ID + 2 * m;
-				neighbors_1[2] = ID - 1;
+				neighbors[0] = ID + 1;
+				neighbors[1] = ID + 2 * m;
+				neighbors[2] = ID - 1;
 
-				boundaries_1[0] = INTERNAL;
-				boundaries_1[1] = INTERNAL;
-				boundaries_1[2] = INTERNAL;
+				boundaries[0] = INTERNAL;
+				boundaries[1] = INTERNAL;
+				boundaries[2] = INTERNAL;
 
 				if (i == n - 1) {
-					neighbors_1[1] = DEFAULT_ID;
-					boundaries_1[1] = LAND;
+					neighbors[1] = DEFAULT_ID;
+					boundaries[1] = LAND;
 				}
 				if (j == 0) {
-					neighbors_1[2] = DEFAULT_ID;
-					boundaries_1[2] = LAND;
+					neighbors[2] = DEFAULT_ID;
+					boundaries[2] = LAND;
 				}
 
-				nodal_coordinates_1[0][0] = j*dx;
-				nodal_coordinates_1[0][1] = nodal_coordinates_1[0][0];
-				nodal_coordinates_1[0][2] = nodal_coordinates_1[0][0] + dx;
+				nodal_coordinates[0][0] = j*dx;
+				nodal_coordinates[0][1] = nodal_coordinates[0][0];
+				nodal_coordinates[0][2] = nodal_coordinates[0][0] + dx;
 
-				nodal_coordinates_1[1][0] = (i + 1)*dy;
-				nodal_coordinates_1[1][1] = nodal_coordinates_1[1][0] - dy;
-				nodal_coordinates_1[1][2] = nodal_coordinates_1[1][0];
+				nodal_coordinates[1][0] = (i + 1)*dy;
+				nodal_coordinates[1][1] = nodal_coordinates[1][0] - dy;
+				nodal_coordinates[1][2] = nodal_coordinates[1][0];
 
-				this->elements[ID] = new ELEMENT(triangle, ID, neighbors_1, boundaries_1, nodal_coordinates_1);
-
-				unsigned char* boundaries_2 = new unsigned char[3];
-				unsigned int* neighbors_2 = new unsigned int[3];
-
-				double** nodal_coordinates_2 = new double*[2];
-
-				nodal_coordinates_2[0] = new double[3];
-				nodal_coordinates_2[1] = new double[3];
+				this->elements[ID] = new ELEMENT(triangle, ID, neighbors, boundaries, nodal_coordinates);
 
 				ID = ID + 1;
 
-				neighbors_2[0] = ID - 1;
-				neighbors_2[1] = ID + 1;
-				neighbors_2[2] = ID - 2 * m;
+				neighbors[0] = ID - 1;
+				neighbors[1] = ID + 1;
+				neighbors[2] = ID - 2 * m;
 
-				boundaries_2[0] = INTERNAL;
-				boundaries_2[1] = INTERNAL;
-				boundaries_2[2] = INTERNAL;
+				boundaries[0] = INTERNAL;
+				boundaries[1] = INTERNAL;
+				boundaries[2] = INTERNAL;
 
 				if (i == 0) {
-					neighbors_2[2] = DEFAULT_ID;
-					boundaries_2[2] = LAND;
+					neighbors[2] = DEFAULT_ID;
+					boundaries[2] = LAND;
 				}
 				if (j == m - 1) {
-					neighbors_2[1] = DEFAULT_ID;
-					boundaries_2[1] = OCEAN;
+					neighbors[1] = DEFAULT_ID;
+					boundaries[1] = OCEAN;
 				}
 
-				nodal_coordinates_2[0][0] = nodal_coordinates_1[0][0] + dx;
-				nodal_coordinates_2[0][1] = nodal_coordinates_1[0][1];
-				nodal_coordinates_2[0][2] = nodal_coordinates_1[0][2];
+				nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
 
-				nodal_coordinates_2[1][0] = nodal_coordinates_1[1][0] - dy;
-				nodal_coordinates_2[1][1] = nodal_coordinates_1[1][1];
-				nodal_coordinates_2[1][2] = nodal_coordinates_1[1][2];
+				nodal_coordinates[1][0] = nodal_coordinates[1][0] - dy;
 
-				this->elements[ID] = new ELEMENT(triangle, ID, neighbors_2, boundaries_2, nodal_coordinates_2);
+				this->elements[ID] = new ELEMENT(triangle, ID, neighbors, boundaries, nodal_coordinates);
 			}
 		}
 
 		for (int i = 0; i < n; i++) {
 			for (int j = (i + 1) % 2; j < m; j += 2) {
-				unsigned char* boundaries_1 = new unsigned char[3];
-				unsigned int* neighbors_1 = new unsigned int[3];
-
-				double** nodal_coordinates_1 = new double*[2];
-
-				nodal_coordinates_1[0] = new double[3];
-				nodal_coordinates_1[1] = new double[3];
-
 				ID = 2 * j + 2 * m * i;
 
-				neighbors_1[0] = ID + 1;
-				neighbors_1[1] = ID - 1;
-				neighbors_1[2] = ID - 2 * m;
+				neighbors[0] = ID + 1;
+				neighbors[1] = ID - 1;
+				neighbors[2] = ID - 2 * m;
 
-				boundaries_1[0] = INTERNAL;
-				boundaries_1[1] = INTERNAL;
-				boundaries_1[2] = INTERNAL;
+				boundaries[0] = INTERNAL;
+				boundaries[1] = INTERNAL;
+				boundaries[2] = INTERNAL;
 
 				if (i == 0) {
-					neighbors_1[2] = DEFAULT_ID;
-					boundaries_1[2] = LAND;
+					neighbors[2] = DEFAULT_ID;
+					boundaries[2] = LAND;
 				}
 				if (j == 0) {
-					neighbors_1[1] = DEFAULT_ID;
-					boundaries_1[1] = LAND;
+					neighbors[1] = DEFAULT_ID;
+					boundaries[1] = LAND;
 				}
 
-				nodal_coordinates_1[0][0] = j*dx;
-				nodal_coordinates_1[0][1] = nodal_coordinates_1[0][0] + dx;
-				nodal_coordinates_1[0][2] = nodal_coordinates_1[0][0];
+				nodal_coordinates[0][0] = j*dx;
+				nodal_coordinates[0][1] = nodal_coordinates[0][0] + dx;
+				nodal_coordinates[0][2] = nodal_coordinates[0][0];
 
-				nodal_coordinates_1[1][0] = i*dy;
-				nodal_coordinates_1[1][1] = nodal_coordinates_1[1][0];
-				nodal_coordinates_1[1][2] = nodal_coordinates_1[1][0] + dy;
+				nodal_coordinates[1][0] = i*dy;
+				nodal_coordinates[1][1] = nodal_coordinates[1][0];
+				nodal_coordinates[1][2] = nodal_coordinates[1][0] + dy;
 
-				this->elements[ID] = new ELEMENT(triangle, ID, neighbors_1, boundaries_1, nodal_coordinates_1);
-
-				unsigned char* boundaries_2 = new unsigned char[3];
-				unsigned int* neighbors_2 = new unsigned int[3];
-
-				double** nodal_coordinates_2 = new double*[2];
-
-				nodal_coordinates_2[0] = new double[3];
-				nodal_coordinates_2[1] = new double[3];
+				this->elements[ID] = new ELEMENT(triangle, ID, neighbors, boundaries, nodal_coordinates);
 
 				ID = ID + 1;
 
-				neighbors_2[0] = ID - 1;
-				neighbors_2[1] = ID + 2 * m;
-				neighbors_2[2] = ID + 1;
+				neighbors[0] = ID - 1;
+				neighbors[1] = ID + 2 * m;
+				neighbors[2] = ID + 1;
 
-				boundaries_2[0] = INTERNAL;
-				boundaries_2[1] = INTERNAL;
-				boundaries_2[2] = INTERNAL;
+				boundaries[0] = INTERNAL;
+				boundaries[1] = INTERNAL;
+				boundaries[2] = INTERNAL;
 
 				if (i == n - 1) {
-					neighbors_2[1] = DEFAULT_ID;
-					boundaries_2[1] = LAND;
+					neighbors[1] = DEFAULT_ID;
+					boundaries[1] = LAND;
 				}
 				if (j == m - 1) {
-					neighbors_2[2] = DEFAULT_ID;
-					boundaries_2[2] = OCEAN;
+					neighbors[2] = DEFAULT_ID;
+					boundaries[2] = OCEAN;
 				}
 
-				nodal_coordinates_2[0][0] = nodal_coordinates_1[0][0] + dx;
-				nodal_coordinates_2[0][1] = nodal_coordinates_1[0][1];
-				nodal_coordinates_2[0][2] = nodal_coordinates_1[0][2];
+				nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
 
-				nodal_coordinates_2[1][0] = nodal_coordinates_1[1][0] + dy;
-				nodal_coordinates_2[1][1] = nodal_coordinates_1[1][1];
-				nodal_coordinates_2[1][2] = nodal_coordinates_1[1][2];
+				nodal_coordinates[1][0] = nodal_coordinates[1][0] + dy;
 
-				this->elements[ID] = new ELEMENT(triangle, ID, neighbors_2, boundaries_2, nodal_coordinates_2);
+				this->elements[ID] = new ELEMENT(triangle, ID, neighbors, boundaries, nodal_coordinates);
 			}
 		}
 	}
@@ -273,8 +241,8 @@ void MESH::InitializeInterfaces() {
 }
 
 void MESH::InitializeVTK() {
-    std::vector<double*> points;
-    std::vector<unsigned int*> cells;
+    std::vector<Point<3>> points;
+    Array2D<unsigned int> cells;
 
     for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
         it->second->InitializeVTK(points, cells);
@@ -330,10 +298,4 @@ void MESH::InitializeVTK() {
     for (auto it = cells.begin(); it != cells.end(); it++) {
         file << (*it)[0] << '\n';
     }
-    
-    for (auto it = cells.begin(); it != cells.end(); it++) delete[] *it;
-    for (auto it = points.begin(); it != points.end(); it++) delete[] *it;
-
-    points.clear();
-    cells.clear();
 }

@@ -8,14 +8,21 @@
 #include "integration_rules/integration_rules_1D.h"
 #include "integration_rules/integration_rules_2D.h"
 
-//template<int element_type = TRIANGLE, class Basis = Dubiner_2D, 
-//	class Integration_int = Dunavant_2D, class Integration_bound = GaussLegendre_1D>
+template<int element_type, class Basis, class Integration_int, class Integration_bound>
 class MasterElement {
 public:
-	Dubiner_2D basis;
+	unsigned char dimension;
+	unsigned char element_type;
+	unsigned char number_boundaries;	
+
+	Basis basis;
+	int number_bf;
+
+	Integration_bound integration_boundary;
+	int number_gp_boundary;
 	
-	GaussLegendre_1D integration_boundary;
-	Dunavant_2D integration_internal;
+	Integration_int integration_internal;
+	int number_gp_internal;
 
 	std::pair<bool, Array2D<double>> m_inv;
 

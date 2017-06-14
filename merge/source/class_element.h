@@ -11,22 +11,19 @@ class ELEMENT{
     friend class PROBLEM;
 
 private:
-	int element_type;
+	MasterElement& master;
+
     unsigned int ID;
 
 	unsigned char dimension;
+	unsigned char element_type;
 	unsigned char number_boundaries;
 
-   	unsigned char* boundary_type;
-	unsigned int* neighbor_ID;
+   	std::vector<unsigned char> boundary_type;
+	std::vector<unsigned int> neighbor_ID;
+	std::pair<std::vector<bool>, std::vector<INTERFACE*>> interfaces;
 
-    double** nodal_coordinates;
-
-	INTERFACE** interfaces;
-    bool* interface_owner;
-
-	MasterElement& master;
-
+	Array2D<double> nodal_coordinates;
 	std::pair<bool, Array2D<double>>& m_inv;
 
 	Array2D<double>& phi_internal;
@@ -52,17 +49,17 @@ private:
 	Array3D<double> internal_int_fac_dphi;
 	Array3D<double> boundary_int_fac_phi;
  
-	double** u;
-    std::vector<double**> u_substep;
+	Array2D<double> u;
+    Array3D<double> u_substep;
 
-    double** u_internal;
+    Array2D<double> u_internal;
     double*** u_boundary;
 
-    double* RHS;
+    std::vector<double> RHS;
 
 public:
 	ELEMENT(MasterElement&,
-		unsigned int, unsigned int*, unsigned char*, double**, BASIS_GEOM* basis_geom = nullptr);
+		unsigned int, std::vector<unsigned int>&, std::vector<unsigned char>&, Array2D<double>&, BASIS_GEOM* basis_geom = nullptr);
 
     std::map<unsigned int, INTERFACE*> CreateInterfaces();
     void AppendInterface(unsigned int, INTERFACE*);
@@ -79,7 +76,7 @@ public:
 
     void SolveLSE(int);
 
-    void InitializeVTK(std::vector<double*>&, std::vector<unsigned int*>&);
+    void InitializeVTK(std::vector<Point<3>>&, Array2D<unsigned int>&);
     void WriteCellDataVTK(std::vector<double>&, int);
 	void WritePointDataVTK(std::vector<double>&, int);
 
@@ -90,7 +87,7 @@ private:
 	void ComputeIntegrationFactors();
     
     void Triangle();
-    void InitializeVTKTriangle(std::vector<double*>&, std::vector<unsigned int*>&);
+    void InitializeVTKTriangle(std::vector<Point<3>>&, Array2D<unsigned int>&);
 	void WriteCellDataVTKTriangle(std::vector<double>&, int);
 	void WritePointDataVTKTriangle(std::vector<double>&, int);
 };

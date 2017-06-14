@@ -62,11 +62,4 @@
 #define LAND 2U
 #define FLOW 3U
 
-//TIMESTEPPING FLAGS FOR MULTISTEP METHODS
-#define U0 0U
-#define K1 1U
-#define K2 2U
-#define K3 3U
-#define K4 4U
-
 #endif

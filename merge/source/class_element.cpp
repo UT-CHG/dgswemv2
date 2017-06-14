@@ -1,13 +1,18 @@
 #include "class_element.h"
 
 ELEMENT::ELEMENT(MasterElement& master,
-	unsigned int ID, unsigned int* neighbor_ID, unsigned char* boundary_type, 
-	double** nodal_coordinates, BASIS_GEOM* basis_geom) :
+	unsigned int ID, std::vector<unsigned int>& neighbor_ID, std::vector<unsigned char>& boundary_type, 
+	Array2D<double>& nodal_coordinates, BASIS_GEOM* basis_geom) :
 
 	master(master), m_inv(master.m_inv),
 	phi_internal(master.phi_internal), phi_boundary(master.phi_boundary),
 	phi_postprocessor_cell(master.phi_postprocessor_cell),
 	phi_postprocessor_point(master.phi_postprocessor_point),
+
+	//these values are stored at element to avoid repeat access to the values from master element
+	dimension(master.dimension), element_type(master.element_type), 
+	number_boundaries(master.number_boundaries), number_bf(master.number_bf), 
+	number_gp_boundary(master.number_gp_boundary), number_gp_internal(master.number_gp_internal),
 
 	ID(ID), nodal_coordinates(nodal_coordinates),
 	neighbor_ID(neighbor_ID), boundary_type(boundary_type)
@@ -16,7 +21,13 @@ ELEMENT::ELEMENT(MasterElement& master,
         this->basis_geom = basis_geom;
     }
 
-	this->element_type = TRIANGLE; //TEST
+	this->allocate_memory();
+
+	for (int i = 0; i < this->number_boundaries; i++) {
+		this->interfaces.first[i] = false;
+		this->interfaces.second[i] = nullptr;
+	}
+
 	switch (element_type){
 	case TRIANGLE: this->Triangle(); break;
 	default:
@@ -68,20 +79,20 @@ ELEMENT::ELEMENT(MasterElement& master,
 
 void ELEMENT::allocate_memory() {
 	//INITIALIZE ARRAYS TO STORE INTERFACE DATA
-	this->interfaces = new INTERFACE*[this->number_boundaries];
-	this->interface_owner = new bool[this->number_boundaries];
+	this->interfaces.first.resize(this->number_boundaries);
+	this->interfaces.second.resize(this->number_boundaries);
 
 	//INITIALIZE ARRAYS TO STORE Us and RHS
-	this->RHS = new double[this->number_bf];
+	this->RHS.resize(this->number_bf);
 
-	this->u = new double*[SIZE_U];
+	this->u.resize(SIZE_U);
 	for (int i = 0; i < SIZE_U; i++) {
-		this->u[i] = new double[this->number_bf];
+		this->u[i].resize(this->number_bf);
 	}
 
-	this->u_internal = new double*[SIZE_U_INTERNAL];
+	this->u_internal.resize(SIZE_U_INTERNAL);
 	for (int i = 0; i < SIZE_U_INTERNAL; i++) {
-		this->u_internal[i] = new double[this->number_gp_internal];
+		this->u_internal[i].resize(this->number_gp_internal);
 	}
 
 	this->u_boundary = new double**[this->number_boundaries];
@@ -162,7 +173,7 @@ void ELEMENT::ComputeDifferentiationFactors() {
 				for (int k = 0; k < this->number_gp_internal; k++) {
 					d_phi = 0;
 					for (int l = 0; l < this->dimension; l++) {
-						d_phi += this->master.dphi_internal[i][l][k] * this->J_inv_internal[l][j][0];//FIX
+						d_phi += this->master.dphi_internal[i][l][k] * this->J_inv_internal[l][j][0];
 					}
 					this->internal_dphi_fac[i][j][k] = d_phi;
 				}
@@ -185,7 +196,7 @@ void ELEMENT::ComputeIntegrationFactors()
 				for (int k = 0; k < this->number_gp_internal; k++) {
 					d_phi = 0;
 					for (int l = 0; l < this->dimension; l++) {
-						d_phi += this->master.internal_int_fac_dphi[i][l][k] * this->J_inv_internal[l][j][0];//FIX
+						d_phi += this->master.internal_int_fac_dphi[i][l][k] * this->J_inv_internal[l][j][0];
 					}
 					this->internal_int_fac_dphi[i][j][k] = d_phi;
 				}
@@ -211,7 +222,7 @@ std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() {
 
 	bool boundary;
 	for (int i = 0; i < this->number_boundaries; i++) {
-		if (this->interfaces[i] == nullptr) {
+		if (this->interfaces.second[i] == nullptr) {
 			if (this->neighbor_ID[i] == DEFAULT_ID) boundary = true;
 			else if (this->neighbor_ID[i] != DEFAULT_ID) boundary = false;
 			
@@ -235,13 +246,13 @@ std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() {
 				}
 			}
 
-			this->interfaces[i] = new INTERFACE(this->dimension, this->number_gp_boundary,
+			this->interfaces.first[i] = true;
+
+			this->interfaces.second[i] = new INTERFACE(this->dimension, this->number_gp_boundary,
 				this->u_boundary[i], normal, boundary);
 
-			this->interface_owner[i] = true;
-
 			if (this->neighbor_ID[i] != DEFAULT_ID) {
-				internal_interfaces[this->neighbor_ID[i]] = this->interfaces[i];
+				internal_interfaces[this->neighbor_ID[i]] = this->interfaces.second[i];
 			}
 		}
 	}
@@ -252,9 +263,9 @@ std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() {
 void ELEMENT::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
     for (int i = 0; i < this->number_boundaries; i++) {
         if (this->neighbor_ID[i] == neighbor_ID) {
-            this->interfaces[i] = interface_ptr;
+            this->interfaces.second[i] = interface_ptr;
 
-            this->interfaces[i]->SetPointerEX(this->u_boundary[i]);
+            this->interfaces.second[i]->SetPointerEX(this->u_boundary[i]);
         }
     }
 }
@@ -263,11 +274,11 @@ std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT::GetOwnInterfaces() {
     std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces;
 
     for (int i = 0; i < this->number_boundaries; i++) {
-        if (this->interface_owner[i]) {
+        if (this->interfaces.first[i]) {
             std::pair<unsigned char, INTERFACE*> own_interface;
 
             own_interface.first = this->boundary_type[i];
-            own_interface.second = this->interfaces[i];
+            own_interface.second = this->interfaces.second[i];
             own_interfaces.push_back(own_interface);
         }
     }
@@ -362,7 +373,7 @@ void ELEMENT::SolveLSE(int u_flag) {
 	}
 }
 
-void ELEMENT::InitializeVTK(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
+void ELEMENT::InitializeVTK(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
 	switch (this->element_type) {
 	case TRIANGLE: this->InitializeVTKTriangle(points, cells); break;
 	default:

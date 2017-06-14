@@ -70,4 +70,11 @@ using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 // 1D integration rules
 #define GAUSS_LEGENDRE_1D 0
 
+//TIMESTEPPING FLAGS FOR MULTISTEP METHODS
+#define U0 0U
+#define K1 1U
+#define K2 2U
+#define K3 3U
+#define K4 4U
+
 #endif

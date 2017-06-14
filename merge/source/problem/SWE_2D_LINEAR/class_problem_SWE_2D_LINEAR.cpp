@@ -83,9 +83,9 @@ void PROBLEM::EETimeStepper(int n_steps) {
 
 void PROBLEM::RK2TimeStepper(int n_steps) {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
-		it->second->u_substep.push_back(new double*[3]);
+		it->second->u_substep.push_back(Array2D<double>(3));
 		for (int j = 0; j < 3; j++) {
-			it->second->u_substep.at(0)[j] = new double[it->second->number_bf];
+			it->second->u_substep[U0][j].resize(it->second->number_bf);
 		}
 	}
 
@@ -96,13 +96,13 @@ void PROBLEM::RK2TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u_substep.at(U0)[0][i] = it->second->u[U][i];
-				it->second->u_substep.at(U0)[1][i] = it->second->u[V][i];
-				it->second->u_substep.at(U0)[2][i] = it->second->u[H][i];
+				it->second->u_substep[U0][0][i] = it->second->u[U][i];
+				it->second->u_substep[U0][1][i] = it->second->u[V][i];
+				it->second->u_substep[U0][2][i] = it->second->u[H][i];
 
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + (dt / 2.0)*it->second->u[D_U][i];
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + (dt / 2.0)*it->second->u[D_V][i];
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + (dt / 2.0)*it->second->u[D_H][i];
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + (dt / 2.0)*it->second->u[D_U][i];
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + (dt / 2.0)*it->second->u[D_V][i];
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + (dt / 2.0)*it->second->u[D_H][i];
 			}
 		}
 
@@ -110,28 +110,32 @@ void PROBLEM::RK2TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + dt*it->second->u[D_U][i];
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + dt*it->second->u[D_V][i];
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + dt*it->second->u[D_H][i];
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + dt*it->second->u[D_U][i];
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + dt*it->second->u[D_V][i];
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + dt*it->second->u[D_H][i];
 			}
 		}
 	}
 
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		for (int j = 0; j < 3; j++) {
-			delete[] it->second->u_substep.at(0)[j];
+			it->second->u_substep[U0][j].clear();
+			it->second->u_substep[U0][j].shrink_to_fit();
 		}
-		delete[] it->second->u_substep.at(0);
+		it->second->u_substep[U0].clear();
+		it->second->u_substep[U0].shrink_to_fit();
+		
 		it->second->u_substep.clear();
+		it->second->u_substep.shrink_to_fit();
 	}
 }
 
 void PROBLEM::RK3TimeStepper(int n_steps) {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		for (int i = 0; i < 3; i++) {
-			it->second->u_substep.push_back(new double*[3]);
+			it->second->u_substep.push_back(Array2D<double>(3));
 			for (int j = 0; j < 3; j++) {
-				it->second->u_substep.at(i)[j] = new double[it->second->number_bf];
+				it->second->u_substep[i][j].resize(it->second->number_bf);
 			}
 		}
 	}
@@ -143,17 +147,17 @@ void PROBLEM::RK3TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u_substep.at(U0)[0][i] = it->second->u[U][i];
-				it->second->u_substep.at(U0)[1][i] = it->second->u[V][i];
-				it->second->u_substep.at(U0)[2][i] = it->second->u[H][i];
+				it->second->u_substep[U0][0][i] = it->second->u[U][i];
+				it->second->u_substep[U0][1][i] = it->second->u[V][i];
+				it->second->u_substep[U0][2][i] = it->second->u[H][i];
 
-				it->second->u_substep.at(K1)[0][i] = it->second->u[D_U][i];
-				it->second->u_substep.at(K1)[1][i] = it->second->u[D_V][i];
-				it->second->u_substep.at(K1)[2][i] = it->second->u[D_H][i];
+				it->second->u_substep[K1][0][i] = it->second->u[D_U][i];
+				it->second->u_substep[K1][1][i] = it->second->u[D_V][i];
+				it->second->u_substep[K1][2][i] = it->second->u[D_H][i];
 
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + (dt / 2.0)*it->second->u_substep.at(K1)[0][i];
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + (dt / 2.0)*it->second->u_substep.at(K1)[1][i];
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + (dt / 2.0)*it->second->u_substep.at(K1)[2][i];
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + (dt / 2.0)*it->second->u_substep[K1][0][i];
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + (dt / 2.0)*it->second->u_substep[K1][1][i];
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + (dt / 2.0)*it->second->u_substep[K1][2][i];
 			}
 		}
 
@@ -161,16 +165,16 @@ void PROBLEM::RK3TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u_substep.at(K2)[0][i] = it->second->u[D_U][i];
-				it->second->u_substep.at(K2)[1][i] = it->second->u[D_V][i];
-				it->second->u_substep.at(K2)[2][i] = it->second->u[D_H][i];
+				it->second->u_substep[K2][0][i] = it->second->u[D_U][i];
+				it->second->u_substep[K2][1][i] = it->second->u[D_V][i];
+				it->second->u_substep[K2][2][i] = it->second->u[D_H][i];
 
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + dt*
-					(-it->second->u_substep.at(K1)[0][i] + 2 * it->second->u_substep.at(K2)[0][i]);
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + dt*
-					(-it->second->u_substep.at(K1)[1][i] + 2 * it->second->u_substep.at(K2)[1][i]);
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + dt*
-					(-it->second->u_substep.at(K1)[2][i] + 2 * it->second->u_substep.at(K2)[2][i]);
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + dt*
+					(-it->second->u_substep[K1][0][i] + 2 * it->second->u_substep[K2][0][i]);
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + dt*
+					(-it->second->u_substep[K1][1][i] + 2 * it->second->u_substep[K2][1][i]);
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + dt*
+					(-it->second->u_substep[K1][2][i] + 2 * it->second->u_substep[K2][2][i]);
 			}
 		}
 
@@ -178,16 +182,16 @@ void PROBLEM::RK3TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + (dt / 6.0)*
-					(it->second->u_substep.at(K1)[0][i] + 4 * it->second->u_substep.at(K2)[0][i] +
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + (dt / 6.0)*
+					(it->second->u_substep[K1][0][i] + 4 * it->second->u_substep[K2][0][i] +
 						it->second->u[D_U][i]);
 
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + (dt / 6.0)*
-					(it->second->u_substep.at(K1)[1][i] + 4 * it->second->u_substep.at(K2)[1][i] +
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + (dt / 6.0)*
+					(it->second->u_substep[K1][1][i] + 4 * it->second->u_substep[K2][1][i] +
 						it->second->u[D_V][i]);
 
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + (dt / 6.0)*
-					(it->second->u_substep.at(K1)[2][i] + 2 * it->second->u_substep.at(K2)[2][i] +
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + (dt / 6.0)*
+					(it->second->u_substep[K1][2][i] + 2 * it->second->u_substep[K2][2][i] +
 						it->second->u[D_H][i]);
 			}
 		}
@@ -196,20 +200,23 @@ void PROBLEM::RK3TimeStepper(int n_steps) {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				delete[] it->second->u_substep.at(i)[j];
+				it->second->u_substep[i][j].clear();
+				it->second->u_substep[i][j].shrink_to_fit();
 			}
-			delete[] it->second->u_substep.at(i);
+			it->second->u_substep[i].clear();
+			it->second->u_substep[i].shrink_to_fit();
 		}
 		it->second->u_substep.clear();
+		it->second->u_substep.shrink_to_fit();
 	}
 }
 
 void PROBLEM::RK4TimeStepper(int n_steps) {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		for (int i = 0; i < 4; i++) {
-			it->second->u_substep.push_back(new double*[3]);
+			it->second->u_substep.push_back(Array2D<double>(3));
 			for (int j = 0; j < 3; j++) {
-				it->second->u_substep.at(i)[j] = new double[it->second->number_bf];
+				it->second->u_substep[i][j].resize(it->second->number_bf);
 			}
 		}
 	}
@@ -221,17 +228,17 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u_substep.at(U0)[0][i] = it->second->u[U][i];
-				it->second->u_substep.at(U0)[1][i] = it->second->u[V][i];
-				it->second->u_substep.at(U0)[2][i] = it->second->u[H][i];
+				it->second->u_substep[U0][0][i] = it->second->u[U][i];
+				it->second->u_substep[U0][1][i] = it->second->u[V][i];
+				it->second->u_substep[U0][2][i] = it->second->u[H][i];
 
-				it->second->u_substep.at(K1)[0][i] = it->second->u[D_U][i];
-				it->second->u_substep.at(K1)[1][i] = it->second->u[D_V][i];
-				it->second->u_substep.at(K1)[2][i] = it->second->u[D_H][i];
+				it->second->u_substep[K1][0][i] = it->second->u[D_U][i];
+				it->second->u_substep[K1][1][i] = it->second->u[D_V][i];
+				it->second->u_substep[K1][2][i] = it->second->u[D_H][i];
 
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + (dt / 2.0)*it->second->u_substep.at(K1)[0][i];
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + (dt / 2.0)*it->second->u_substep.at(K1)[1][i];
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + (dt / 2.0)*it->second->u_substep.at(K1)[2][i];
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + (dt / 2.0)*it->second->u_substep[K1][0][i];
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + (dt / 2.0)*it->second->u_substep[K1][1][i];
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + (dt / 2.0)*it->second->u_substep[K1][2][i];
 			}
 		}
 
@@ -239,13 +246,13 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u_substep.at(K2)[0][i] = it->second->u[D_U][i];
-				it->second->u_substep.at(K2)[1][i] = it->second->u[D_V][i];
-				it->second->u_substep.at(K2)[2][i] = it->second->u[D_H][i];
+				it->second->u_substep[K2][0][i] = it->second->u[D_U][i];
+				it->second->u_substep[K2][1][i] = it->second->u[D_V][i];
+				it->second->u_substep[K2][2][i] = it->second->u[D_H][i];
 
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + (dt / 2.0)*it->second->u_substep.at(K2)[0][i];
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + (dt / 2.0)*it->second->u_substep.at(K2)[1][i];
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + (dt / 2.0)*it->second->u_substep.at(K2)[2][i];
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + (dt / 2.0)*it->second->u_substep[K2][0][i];
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + (dt / 2.0)*it->second->u_substep[K2][1][i];
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + (dt / 2.0)*it->second->u_substep[K2][2][i];
 			}
 		}
 
@@ -253,13 +260,13 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u_substep.at(K3)[0][i] = it->second->u[D_U][i];
-				it->second->u_substep.at(K3)[1][i] = it->second->u[D_V][i];
-				it->second->u_substep.at(K3)[2][i] = it->second->u[D_H][i];
+				it->second->u_substep[K3][0][i] = it->second->u[D_U][i];
+				it->second->u_substep[K3][1][i] = it->second->u[D_V][i];
+				it->second->u_substep[K3][2][i] = it->second->u[D_H][i];
 
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + dt*it->second->u_substep.at(K3)[0][i];
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + dt*it->second->u_substep.at(K3)[1][i];
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + dt*it->second->u_substep.at(K3)[2][i];
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + dt*it->second->u_substep[K3][0][i];
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + dt*it->second->u_substep[K3][1][i];
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + dt*it->second->u_substep[K3][2][i];
 			}
 		}
 
@@ -267,17 +274,17 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 
 		for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 			for (int i = 0; i < it->second->number_bf; i++) {
-				it->second->u[U][i] = it->second->u_substep.at(U0)[0][i] + (dt / 6.0)*
-					(it->second->u_substep.at(K1)[0][i] + 2 * it->second->u_substep.at(K2)[0][i] +
-						2 * it->second->u_substep.at(K3)[0][i] + it->second->u[D_U][i]);
+				it->second->u[U][i] = it->second->u_substep[U0][0][i] + (dt / 6.0)*
+					(it->second->u_substep[K1][0][i] + 2 * it->second->u_substep[K2][0][i] +
+						2 * it->second->u_substep[K3][0][i] + it->second->u[D_U][i]);
 
-				it->second->u[V][i] = it->second->u_substep.at(U0)[1][i] + (dt / 6.0)*
-					(it->second->u_substep.at(K1)[1][i] + 2 * it->second->u_substep.at(K2)[1][i] +
-						2 * it->second->u_substep.at(K3)[1][i] + it->second->u[D_V][i]);
+				it->second->u[V][i] = it->second->u_substep[U0][1][i] + (dt / 6.0)*
+					(it->second->u_substep[K1][1][i] + 2 * it->second->u_substep[K2][1][i] +
+						2 * it->second->u_substep[K3][1][i] + it->second->u[D_V][i]);
 
-				it->second->u[H][i] = it->second->u_substep.at(U0)[2][i] + (dt / 6.0)*
-					(it->second->u_substep.at(K1)[2][i] + 2 * it->second->u_substep.at(K2)[2][i] +
-						2 * it->second->u_substep.at(K3)[2][i] + it->second->u[D_H][i]);
+				it->second->u[H][i] = it->second->u_substep[U0][2][i] + (dt / 6.0)*
+					(it->second->u_substep[K1][2][i] + 2 * it->second->u_substep[K2][2][i] +
+						2 * it->second->u_substep[K3][2][i] + it->second->u[D_H][i]);
 			}
 		}
 	}
@@ -285,11 +292,14 @@ void PROBLEM::RK4TimeStepper(int n_steps) {
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
-				delete[] it->second->u_substep.at(i)[j];
+				it->second->u_substep[i][j].clear();
+				it->second->u_substep[i][j].shrink_to_fit();
 			}
-			delete[] it->second->u_substep.at(i);
+			it->second->u_substep[i].clear();
+			it->second->u_substep[i].shrink_to_fit();
 		}
 		it->second->u_substep.clear();
+		it->second->u_substep.shrink_to_fit();
 	}
 }
 

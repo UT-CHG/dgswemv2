@@ -70,12 +70,9 @@ void PROBLEM::Timestep() {
 		}
 	}
 
-	int number_bf;
-	double* RHS;
-
 	for (auto it = this->mesh->elements.begin(); it != this->mesh->elements.end(); it++) {
-		number_bf = it->second->number_bf;
-        RHS = it->second->RHS;
+		int number_bf = it->second->number_bf;
+        std::vector<double>& RHS = it->second->RHS;
 
         //COMPUTING U
         for (int i = 0; i < number_bf; i++) {
@@ -108,7 +105,7 @@ void PROBLEM::Timestep() {
 }
 
 void PROBLEM::ComputeF(ELEMENT* element) {
-    double** u = element->u_internal;
+    Array2D<double>& u = element->u_internal;
 
     for (int i = 0; i < element->number_gp_internal; i++) {
 		u[F11][i] = u[SP][i] * GRAVITY * u[H][i];
@@ -121,7 +118,7 @@ void PROBLEM::ComputeF(ELEMENT* element) {
 	}
 
     for (int j = 0; j < element->number_boundaries; j++) {
-        u = element->u_boundary[j];
+        double** u = element->u_boundary[j];
 
         for (int i = 0; i < element->number_gp_boundary; i++) {
 			u[F11][i] = u[SP][i] * GRAVITY * u[H][i];
@@ -136,7 +133,7 @@ void PROBLEM::ComputeF(ELEMENT* element) {
 }
 
 void PROBLEM::ComputeS(ELEMENT* element) {
-	double** u = element->u_internal;
+	Array2D<double>& u = element->u_internal;
 
 	double cf = 0; // FOR TESTING NO BOTTOM FRICTION 
 	double tau_b;

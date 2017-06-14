@@ -1,14 +1,22 @@
 #include "../../class_element.h"
 #include "../../class_master_element.h"
 
-//template<int element_type = TRIANGLE, class Basis = Dubiner_2D,
-//	class Integration_int = Dunavant_2D, class Integration_bound = GaussLegendre_1D >
-void MasterElement::MasterTriangle(int p) {
+template<int element_type, class Basis, class Integration_int, class Integration_bound>
+void MasterElement<element_type, Basis, Integration_int, Integration_bound>::MasterTriangle(int p) {
+	this->dimension = 2;
+	this->element_type = TRIANGLE;
+	this->number_boundaries = 3;
+
 	std::pair<std::vector<double>, std::vector<Point<1>>> integration_rule_boundary = this->integration_boundary.get_rule(2 * p);
 	std::pair<std::vector<double>, std::vector<Point<2>>> integration_rule_internal = this->integration_internal.get_rule(2 * p);
 	
+	this->number_gp_boundary = integration_rule_boundary.first.size();
+	this->number_gp_internal = integration_rule_internal.first.size();
+
 	this->m_inv = this->basis.get_m_inv(p);
 	
+	this->number_bf = this->m_inv.second[0].size();
+
 	this->phi_internal = this->basis.get_phi(p, integration_rule_internal.second);
 	this->basis.basis_test(p, this->phi_internal, integration_rule_internal); //TEST BASIS
 
@@ -98,27 +106,6 @@ void MasterElement::MasterTriangle(int p) {
 }
 
 void ELEMENT::Triangle() {
-	this->dimension = 2;
-	this->number_boundaries = 3;
-
-	this->number_bf = this->master.phi_internal.size();
-	this->number_gp_internal = this->master.phi_internal[0].size();
-	this->number_gp_boundary = this->master.phi_boundary[0][0].size();
-
-	if (basis_geom != nullptr) {
-		this->number_bf_geom = 3;
-	}
-	else {
-		this->number_bf_geom = 3;
-	}
-
-	this->allocate_memory();
-
-	for (int i = 0; i < this->number_boundaries; i++) {
-		this->interfaces[i] = nullptr;
-		this->interface_owner[i] = false;
-	}
-
 	//COMPUTE GEOMETRY AND M_INV
 	if (this->basis_geom == nullptr) {
 		Array2D<double> J(2);
@@ -159,7 +146,7 @@ void ELEMENT::Triangle() {
 	}
 }
 
-void ELEMENT::InitializeVTKTriangle(std::vector<double*>& points, std::vector<unsigned int*>& cells) {
+void ELEMENT::InitializeVTKTriangle(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
 	unsigned int number_pt = points.size();
 
 	double z1;
@@ -169,7 +156,7 @@ void ELEMENT::InitializeVTKTriangle(std::vector<double*>& points, std::vector<un
 	if (this->basis_geom == nullptr) {
 		for (int i = 0; i <= N_DIV; i++) {
 			for (int j = 0; j <= N_DIV - i; j++) {
-				points.push_back(new double[3]);
+				points.push_back({0,0,0});
 
 				z1 = -1.0 + dz*j;
 				z2 = -1.0 + dz*i;
@@ -194,7 +181,7 @@ void ELEMENT::InitializeVTKTriangle(std::vector<double*>& points, std::vector<un
 
 	for (int i = 0; i < N_DIV; i++) {
 		for (int j = 0; j < N_DIV - i; j++) {
-			cells.push_back(new unsigned int[4]);
+			cells.push_back(std::vector<unsigned int>(4));
 
 			pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 
@@ -207,7 +194,7 @@ void ELEMENT::InitializeVTKTriangle(std::vector<double*>& points, std::vector<un
 
 	for (int i = 1; i < N_DIV; i++) {
 		for (int j = 0; j < N_DIV - i; j++) {
-			cells.push_back(new unsigned int[4]);
+			cells.push_back(std::vector<unsigned int>(4));
 
 			pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 
