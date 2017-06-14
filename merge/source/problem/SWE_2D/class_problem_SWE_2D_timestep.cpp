@@ -178,7 +178,7 @@ void PROBLEM::InterfaceFlowAverage(INTERFACE* intface) {
     }
 }
 
-void PROBLEM::ComputeUVA(ELEMENT* element) {
+void PROBLEM::ComputeUVA(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>* element) {
     double** u = element->u_internal;
 
     for (int i = 0; i < element->number_gp_internal; i++) {
@@ -198,7 +198,7 @@ void PROBLEM::ComputeUVA(ELEMENT* element) {
     }
 }
 
-void PROBLEM::ComputeF(ELEMENT* element) {
+void PROBLEM::ComputeF(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>* element) {
     double** u = element->u_internal;
 
     for (int i = 0; i < element->number_gp_internal; i++) {
@@ -228,7 +228,7 @@ void PROBLEM::ComputeF(ELEMENT* element) {
     }
 }
 
-void PROBLEM::ComputeS(ELEMENT* element) {
+void PROBLEM::ComputeS(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>* element) {
 	double** u = element->u_internal;
 
 	double cf = 0; // FOR TESTING NO BOTTOM FRICTION 

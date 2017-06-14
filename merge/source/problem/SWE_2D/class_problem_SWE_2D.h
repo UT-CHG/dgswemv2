@@ -27,9 +27,9 @@ private:
 
 	void Timestep();
 
-    void ComputeUVA(ELEMENT*);
-    void ComputeF(ELEMENT*);
-	void ComputeS(ELEMENT*);
+    void ComputeUVA(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>*);
+    void ComputeF(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>*);
+	void ComputeS(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>*);
 
 	void InterfaceFlowAverage(INTERFACE*);
 	void ComputeBoundaryInterfaceF(INTERFACE*);

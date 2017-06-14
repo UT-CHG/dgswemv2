@@ -1,5 +1,5 @@
-#ifndef CLASS_ELEMENT_2D_H
-#define CLASS_ELEMENT_2D_H
+#ifndef CLASS_ELEMENT_H
+#define CLASS_ELEMENT_H
 
 #include "general_definitions.h"
 
@@ -7,11 +7,12 @@
 #include "class_basis_geometry.h"
 #include "class_master_element.h"
 
+template<class Master>
 class ELEMENT{
     friend class PROBLEM;
 
 private:
-	MasterElement& master;
+	Master& master;
 
     unsigned int ID;
 
@@ -58,7 +59,7 @@ private:
     std::vector<double> RHS;
 
 public:
-	ELEMENT(MasterElement&,
+	ELEMENT(Master&,
 		unsigned int, std::vector<unsigned int>&, std::vector<unsigned char>&, Array2D<double>&, BASIS_GEOM* basis_geom = nullptr);
 
     std::map<unsigned int, INTERFACE*> CreateInterfaces();
@@ -91,5 +92,8 @@ private:
 	void WriteCellDataVTKTriangle(std::vector<double>&, int);
 	void WritePointDataVTKTriangle(std::vector<double>&, int);
 };
+
+#include "class_element.tpp"
+#include "elements\elements_2D\element_tri.tpp"
 
 #endif

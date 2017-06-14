@@ -1,5 +1,5 @@
-#ifndef CLASS_INTERFACE_2D_H
-#define CLASS_INTERFACE_2D_H
+#ifndef CLASS_INTERFACE_H
+#define CLASS_INTERFACE_H
 
 #include "general_definitions.h"
 

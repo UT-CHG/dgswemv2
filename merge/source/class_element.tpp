@@ -1,6 +1,7 @@
 #include "class_element.h"
 
-ELEMENT::ELEMENT(MasterElement& master,
+template<class Master>
+ELEMENT<Master>::ELEMENT(Master& master,
 	unsigned int ID, std::vector<unsigned int>& neighbor_ID, std::vector<unsigned char>& boundary_type, 
 	Array2D<double>& nodal_coordinates, BASIS_GEOM* basis_geom) :
 
@@ -77,7 +78,8 @@ ELEMENT::ELEMENT(MasterElement& master,
 	this->ComputeInternalU(ZB);
 }
 
-void ELEMENT::allocate_memory() {
+template<class Master>
+void ELEMENT<Master>::allocate_memory() {
 	//INITIALIZE ARRAYS TO STORE INTERFACE DATA
 	this->interfaces.first.resize(this->number_boundaries);
 	this->interfaces.second.resize(this->number_boundaries);
@@ -163,7 +165,8 @@ void ELEMENT::allocate_memory() {
 	}
 }
 
-void ELEMENT::ComputeDifferentiationFactors() {
+template<class Master>
+void ELEMENT<Master>::ComputeDifferentiationFactors() {
 	//This loop can be rearranged for better efficiency,
 	//however that will require two nested loops
 	double d_phi;
@@ -185,7 +188,8 @@ void ELEMENT::ComputeDifferentiationFactors() {
 	}
 }
 
-void ELEMENT::ComputeIntegrationFactors() 
+template<class Master>
+void ELEMENT<Master>::ComputeIntegrationFactors()
 {
 	if (this->basis_geom == nullptr) {
 		this->internal_int_fac_phi = this->master.internal_int_fac_phi;
@@ -217,7 +221,8 @@ void ELEMENT::ComputeIntegrationFactors()
 	}
 }
 
-std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() {
+template<class Master>
+std::map<unsigned int, INTERFACE*> ELEMENT<Master>::CreateInterfaces() {
 	std::map<unsigned int, INTERFACE*> internal_interfaces;
 
 	bool boundary;
@@ -260,7 +265,8 @@ std::map<unsigned int, INTERFACE*> ELEMENT::CreateInterfaces() {
 	return internal_interfaces;
 }
 
-void ELEMENT::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
+template<class Master>
+void ELEMENT<Master>::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
     for (int i = 0; i < this->number_boundaries; i++) {
         if (this->neighbor_ID[i] == neighbor_ID) {
             this->interfaces.second[i] = interface_ptr;
@@ -270,7 +276,8 @@ void ELEMENT::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr
     }
 }
 
-std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT::GetOwnInterfaces() {
+template<class Master>
+std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT<Master>::GetOwnInterfaces() {
     std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces;
 
     for (int i = 0; i < this->number_boundaries; i++) {
@@ -286,8 +293,8 @@ std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT::GetOwnInterfaces() {
     return own_interfaces;
 }
 
-
-void ELEMENT::ComputeInternalU(int u_flag) {
+template<class Master>
+void ELEMENT<Master>::ComputeInternalU(int u_flag) {
 	for (int i = 0; i < this->number_gp_internal; i++) {
 		this->u_internal[u_flag][i] = 0.0;
 	}
@@ -299,7 +306,8 @@ void ELEMENT::ComputeInternalU(int u_flag) {
 	}
 }
 
-void ELEMENT::ComputeInternalDU(int dim, int u_flag, int u_flag_store) {
+template<class Master>
+void ELEMENT<Master>::ComputeInternalDU(int dim, int u_flag, int u_flag_store) {
 	for (int i = 0; i < this->number_gp_boundary; i++) {
 		this->u_internal[u_flag_store][i] = 0.0;
 	}
@@ -311,7 +319,8 @@ void ELEMENT::ComputeInternalDU(int dim, int u_flag, int u_flag_store) {
 	}
 }
 
-void ELEMENT::ComputeBoundaryU(int u_flag) {
+template<class Master>
+void ELEMENT<Master>::ComputeBoundaryU(int u_flag) {
 	for (int i = 0; i < this->number_boundaries; i++) {
 		for (int j = 0; j < this->number_gp_boundary; j++) {
 			this->u_boundary[i][u_flag][j] = 0.0;
@@ -325,7 +334,8 @@ void ELEMENT::ComputeBoundaryU(int u_flag) {
 	}
 }
 
-double ELEMENT::IntegrationInternalPhi(int u_flag, int phi_n) {
+template<class Master>
+double ELEMENT<Master>::IntegrationInternalPhi(int u_flag, int phi_n) {
 	double integral = 0;
 
 	for (int i = 0; i < this->number_gp_internal; i++) {
@@ -335,7 +345,8 @@ double ELEMENT::IntegrationInternalPhi(int u_flag, int phi_n) {
 	return integral;
 }
 
-double ELEMENT::IntegrationInternalDPhi(int dim, int u_flag, int phi_n) {
+template<class Master>
+double ELEMENT<Master>::IntegrationInternalDPhi(int dim, int u_flag, int phi_n) {
 	double integral = 0;
 
 	for (int i = 0; i < this->number_gp_internal; i++) {
@@ -345,7 +356,8 @@ double ELEMENT::IntegrationInternalDPhi(int dim, int u_flag, int phi_n) {
 	return integral;
 }
 
-double ELEMENT::IntegrationBoundaryPhi(int u_flag, int phi_n) {
+template<class Master>
+double ELEMENT<Master>::IntegrationBoundaryPhi(int u_flag, int phi_n) {
 	double integral = 0;
 
 	for (int i = 0; i < this->number_boundaries; i++) {
@@ -357,7 +369,8 @@ double ELEMENT::IntegrationBoundaryPhi(int u_flag, int phi_n) {
 	return integral;
 }
 
-void ELEMENT::SolveLSE(int u_flag) {
+template<class Master>
+void ELEMENT<Master>::SolveLSE(int u_flag) {
 	if (this->m_inv.first) { //diagonal
 		for (int i = 0; i < this->number_bf; i++) {
 			this->u[u_flag][i] = this->m_inv.second[0][i] * this->RHS[i];
@@ -373,7 +386,8 @@ void ELEMENT::SolveLSE(int u_flag) {
 	}
 }
 
-void ELEMENT::InitializeVTK(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
+template<class Master>
+void ELEMENT<Master>::InitializeVTK(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
 	switch (this->element_type) {
 	case TRIANGLE: this->InitializeVTKTriangle(points, cells); break;
 	default:
@@ -384,7 +398,8 @@ void ELEMENT::InitializeVTK(std::vector<Point<3>>& points, Array2D<unsigned int>
 	}
 }
 
-void ELEMENT::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
+template<class Master>
+void ELEMENT<Master>::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
 	switch (element_type) {
 	case TRIANGLE: this->WriteCellDataVTKTriangle(cell_data, u_flag); break;
 	default:
@@ -395,7 +410,8 @@ void ELEMENT::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
 	}
 }
 
-void ELEMENT::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
+template<class Master>
+void ELEMENT<Master>::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
 	switch (element_type) {
 	case TRIANGLE: this->WritePointDataVTKTriangle(point_data, u_flag); break;
 	default:

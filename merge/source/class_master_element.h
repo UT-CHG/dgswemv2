@@ -8,7 +8,7 @@
 #include "integration_rules/integration_rules_1D.h"
 #include "integration_rules/integration_rules_2D.h"
 
-template<int element_type, class Basis, class Integration_int, class Integration_bound>
+template<int type, class Basis, class Integration_int, class Integration_bound>
 class MasterElement {
 public:
 	unsigned char dimension;
@@ -38,9 +38,7 @@ public:
 	Array2D<double> phi_postprocessor_point;
 public:
 	MasterElement(int p) {
-		int element_type = TRIANGLE; //for testing
-
-		switch (element_type) {
+		switch (type) {
 		case TRIANGLE: this->MasterTriangle(p); break;
 		default:
 			printf("\n");
@@ -52,5 +50,7 @@ public:
 private:
 	void MasterTriangle(int);
 };
+
+#include "master_tri.tpp"
 
 #endif

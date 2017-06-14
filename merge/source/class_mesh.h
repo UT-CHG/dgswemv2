@@ -6,6 +6,7 @@
 #include "class_basis_geometry.h"
 #include "class_element.h"
 
+
 class MESH {
     friend class PROBLEM;
 
@@ -13,9 +14,10 @@ protected:
     int p;
     int p_geom;
 
-	MasterElement triangle = MasterElement(1);
+	MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D> triangle = 
+		MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>(1);
 
-    std::map<unsigned int, ELEMENT*> elements;
+    std::map<unsigned int, ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>*> elements;
 	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
 public:
     MESH(int, int);
