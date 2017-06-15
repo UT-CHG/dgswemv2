@@ -7,17 +7,18 @@
 #include "class_basis_geometry.h"
 #include "class_master_element.h"
 
-template<class Master>
+template<int dimension = 2, int element_type = TRIANGLE, 
+class basis_type = Dubiner_2D, 
+class integration_int_type = Dunavant_2D, 
+class integration_bound_type = GaussLegendre_1D>
 class ELEMENT{
     friend class PROBLEM;
 
 private:
-	Master& master;
+	MasterElement<dimension, element_type, basis_type, integration_int_type, integration_bound_type>& master;
 
     unsigned int ID;
 
-	unsigned char dimension;
-	unsigned char element_type;
 	unsigned char number_boundaries;
 
    	std::vector<unsigned char> boundary_type;
@@ -59,7 +60,7 @@ private:
     std::vector<double> RHS;
 
 public:
-	ELEMENT(Master&,
+	ELEMENT(MasterElement<dimension, element_type, basis_type, integration_int_type, integration_bound_type>&,
 		unsigned int, std::vector<unsigned int>&, std::vector<unsigned char>&, Array2D<double>&, BASIS_GEOM* basis_geom = nullptr);
 
     std::map<unsigned int, INTERFACE*> CreateInterfaces();
@@ -94,6 +95,6 @@ private:
 };
 
 #include "class_element.tpp"
-#include "elements\elements_2D\element_tri.tpp"
+#include "elements/elements_2D/element_tri.tpp"
 
 #endif

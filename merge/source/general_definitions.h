@@ -32,6 +32,13 @@ using Array3D = std::vector<std::vector<std::vector<type>>>;
 template<class type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
+template<int dim>
+class Basis{
+	virtual Array2D<double> get_phi(int, const std::vector<Point<dim>>&) = 0;
+	virtual Array3D<double> get_dphi(int, const std::vector<Point<dim>>&) = 0;
+	virtual std::pair<bool, Array2D<double>> get_m_inv(int);
+};
+
 #define PI 3.14159265359	
 
 #define DEFAULT_ID 4294967295

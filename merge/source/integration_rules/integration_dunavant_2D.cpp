@@ -63,6 +63,8 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::get_rule(int 
 
 	rule_test(p, rule);
 
+	//for (size_t i = 0; i < rule.first.size(); i++) printf("%f %f %f \n", rule.first[i], rule.second[i][0], rule.second[i][1]);
+
 	return rule;
 }
 
@@ -71,10 +73,10 @@ void Dunavant_2D::rule_test(int p, const std::pair<std::vector<double>, std::vec
 
 	double num_integration = 0;
 	for (size_t i = 0; i < rule.first.size(); i++) { num_integration += pow(rule.second[i][X], p)*rule.first[i]; }
-
+	
 	double err = abs((num_integration - exact_integration) / exact_integration);
 
-	if (err < pow(10.0, -10.0)) {
+	if (abs(err) < pow(10.0, -10.0)) {
 		printf("\n");
 		printf("DUNAVANT 2D RULE - Test success!\n");
 		printf("err = %e\n", err);
@@ -389,13 +391,13 @@ std::pair<std::vector<double>, std::vector<Point<3>>> Dunavant_2D::gp_data(int p
 		gp.second.reserve(3);
 
 		gp.first.push_back(0.116786275726379);
-		gp.second.push_back({ 0.501426509658179, 0.249286745170910,0.249286745170910 });
+		gp.second.push_back({ 0.501426509658179, 0.249286745170910, 0.249286745170910 });
 
 		gp.first.push_back(0.050844906370207);
-		gp.second.push_back({ 0.873821971016996, 0.063089014491502,0.063089014491502 });
+		gp.second.push_back({ 0.873821971016996, 0.063089014491502, 0.063089014491502 });
 		
 		gp.first.push_back(0.082851075618374);
-		gp.second.push_back({ 0.053145049844817,310352451033784,0.636502499121399 });
+		gp.second.push_back({ 0.053145049844817, 0.310352451033784, 0.636502499121399 });
     }
     else if (p == 7) {
 		gp.first.reserve(4);

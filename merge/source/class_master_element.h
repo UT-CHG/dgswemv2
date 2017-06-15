@@ -8,20 +8,18 @@
 #include "integration_rules/integration_rules_1D.h"
 #include "integration_rules/integration_rules_2D.h"
 
-template<int type, class Basis, class Integration_int, class Integration_bound>
+template<int dimension = 2, int element_type = TRIANGLE, class basis_type = Dubiner_2D, class integration_int_type = Dunavant_2D, class integration_bound_type = GaussLegendre_1D>
 class MasterElement {
 public:
-	unsigned char dimension;
-	unsigned char element_type;
 	unsigned char number_boundaries;	
 
-	Basis basis;
+	basis_type basis;
 	int number_bf;
 
-	Integration_bound integration_boundary;
+	integration_bound_type integration_boundary;
 	int number_gp_boundary;
 	
-	Integration_int integration_internal;
+	integration_int_type integration_internal;
 	int number_gp_internal;
 
 	std::pair<bool, Array2D<double>> m_inv;
@@ -38,7 +36,7 @@ public:
 	Array2D<double> phi_postprocessor_point;
 public:
 	MasterElement(int p) {
-		switch (type) {
+		switch (element_type) {
 		case TRIANGLE: this->MasterTriangle(p); break;
 		default:
 			printf("\n");
@@ -51,6 +49,6 @@ private:
 	void MasterTriangle(int);
 };
 
-#include "master_tri.tpp"
+#include "class_master_element.tpp"
 
 #endif

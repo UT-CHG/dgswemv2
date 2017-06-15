@@ -14,10 +14,10 @@ protected:
     int p;
     int p_geom;
 
-	MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D> triangle = 
-		MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>(1);
+	MasterElement<> triangle = 
+		MasterElement<>(1);
 
-    std::map<unsigned int, ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>*> elements;
+    std::map<unsigned int, ELEMENT<>*> elements;
 	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
 public:
     MESH(int, int);

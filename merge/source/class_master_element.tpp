@@ -1,7 +1,5 @@
-template<int type, class Basis, class Integration_int, class Integration_bound>
-void MasterElement<type, Basis, Integration_int, Integration_bound>::MasterTriangle(int p) {
-	this->dimension = 2;
-	this->element_type = type;
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
+void MasterElement<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::MasterTriangle(int p) {
 	this->number_boundaries = 3;
 
 	std::pair<std::vector<double>, std::vector<Point<1>>> integration_rule_boundary = this->integration_boundary.get_rule(2 * p);

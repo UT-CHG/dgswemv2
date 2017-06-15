@@ -3,7 +3,7 @@
 PROBLEM::PROBLEM() {
     this->mesh = new MESH(1,0);
 
-	this->mesh->RectangularDomainTest(90000.0, 45000.0, 100, 2, TRIANGLE);
+	this->mesh->RectangularDomainTest(90000.0, 45000.0, 50, 4, TRIANGLE);
 }
 
 PROBLEM::~PROBLEM() {

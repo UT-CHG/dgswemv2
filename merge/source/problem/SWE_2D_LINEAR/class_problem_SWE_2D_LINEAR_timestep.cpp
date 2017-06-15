@@ -104,7 +104,7 @@ void PROBLEM::Timestep() {
     }
 }
 
-void PROBLEM::ComputeF(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>* element) {
+void PROBLEM::ComputeF(ELEMENT<>* element) {
     Array2D<double>& u = element->u_internal;
 
     for (int i = 0; i < element->number_gp_internal; i++) {
@@ -132,7 +132,7 @@ void PROBLEM::ComputeF(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLe
     }
 }
 
-void PROBLEM::ComputeS(ELEMENT<MasterElement<5, Dubiner_2D, Dunavant_2D, GaussLegendre_1D>>* element) {
+void PROBLEM::ComputeS(ELEMENT<>* element) {
 	Array2D<double>& u = element->u_internal;
 
 	double cf = 0; // FOR TESTING NO BOTTOM FRICTION 

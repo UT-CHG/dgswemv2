@@ -1,8 +1,8 @@
 #include "../../class_element.h"
 #include "../../class_master_element.h"
 
-template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::Triangle() {
+
+void ELEMENT::Triangle() {
 	//COMPUTE GEOMETRY AND M_INV
 	if (this->basis_geom == nullptr) {
 		Array2D<double> J(2);
@@ -43,8 +43,8 @@ void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bo
 	}
 }
 
-template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::InitializeVTKTriangle(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
+
+void ELEMENT::InitializeVTKTriangle(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
 	unsigned int number_pt = points.size();
 
 	double z1;
@@ -104,8 +104,8 @@ void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bo
 	}
 }
 
-template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_flag) {
+
+void ELEMENT::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_flag) {
 	double* u_post = new double[N_DIV*N_DIV];
 
 	for (int i = 0; i < N_DIV*N_DIV; i++) {
@@ -125,8 +125,8 @@ void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bo
 	delete[] u_post;
 }
 
-template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::WritePointDataVTKTriangle(std::vector<double>& point_data, int u_flag) {
+
+void ELEMENT::WritePointDataVTKTriangle(std::vector<double>& point_data, int u_flag) {
 	double* u_post = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
 
 	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {

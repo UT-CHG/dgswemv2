@@ -4,7 +4,7 @@
 #include "../general_definitions.h"
 #include "basis_functions.h"
 
-class Dubiner_2D {
+class Dubiner_2D : Basis<2> {
 public:
 	Array2D<double> get_phi(int, const std::vector<Point<2>>&);
 	Array3D<double> get_dphi(int, const std::vector<Point<2>>&);

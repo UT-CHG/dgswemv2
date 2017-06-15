@@ -20,8 +20,9 @@
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_mesh.cpp",
 
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_element.cpp",
+        //"/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_element.cpp",
         //"/h2/kazbek/UT-CHG/dgswemv2/merge/source/elements/elements_2D/element_tri.cpp",
+        //"/h2/kazbek/UT-CHG/dgswemv2/merge/source/master_tri.cpp",
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_interface.cpp",
 
