@@ -3,12 +3,13 @@
 
 #include "general_definitions.h"
 
-#include "basis_functions/bases_2D.h"
+#include "basis/bases_2D.h"
 
-#include "integration_rules/integration_rules_1D.h"
-#include "integration_rules/integration_rules_2D.h"
+#include "integration/integrations_1D.h"
+#include "integration/integrations_2D.h"
 
-template<int dimension = 2, int element_type = TRIANGLE, class basis_type = Dubiner_2D, class integration_int_type = Dunavant_2D, class integration_bound_type = GaussLegendre_1D>
+template<int dimension, int element_type, class basis_type, 
+	class integration_int_type, class integration_bound_type>
 class MasterElement {
 public:
 	unsigned char number_boundaries;	
@@ -34,6 +35,7 @@ public:
 
 	Array2D<double> phi_postprocessor_cell;
 	Array2D<double> phi_postprocessor_point;
+
 public:
 	MasterElement(int p) {
 		switch (element_type) {

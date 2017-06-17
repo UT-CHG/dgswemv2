@@ -8,9 +8,9 @@
 #include "class_master_element.h"
 
 template<int dimension = 2, int element_type = TRIANGLE, 
-class basis_type = Dubiner_2D, 
-class integration_int_type = Dunavant_2D, 
-class integration_bound_type = GaussLegendre_1D>
+class basis_type = Basis::Dubiner_2D, 
+class integration_int_type = Integration::Dunavant_2D, 
+class integration_bound_type = Integration::GaussLegendre_1D>
 class ELEMENT{
     friend class PROBLEM;
 
@@ -25,7 +25,7 @@ private:
 	std::vector<unsigned int> neighbor_ID;
 	std::pair<std::vector<bool>, std::vector<INTERFACE*>> interfaces;
 
-	Array2D<double> nodal_coordinates;
+	std::vector<Point<dimension>> nodal_coordinates;
 	std::pair<bool, Array2D<double>>& m_inv;
 
 	Array2D<double>& phi_internal;
@@ -55,13 +55,14 @@ private:
     Array3D<double> u_substep;
 
     Array2D<double> u_internal;
+	Array3D<double> u_boundary_;
     double*** u_boundary;
 
     std::vector<double> RHS;
 
 public:
 	ELEMENT(MasterElement<dimension, element_type, basis_type, integration_int_type, integration_bound_type>&,
-		unsigned int, std::vector<unsigned int>&, std::vector<unsigned char>&, Array2D<double>&, BASIS_GEOM* basis_geom = nullptr);
+		unsigned int, std::vector<unsigned int>&, std::vector<unsigned char>&, std::vector<Point<dimension>>&, BASIS_GEOM* basis_geom = nullptr);
 
     std::map<unsigned int, INTERFACE*> CreateInterfaces();
     void AppendInterface(unsigned int, INTERFACE*);
@@ -90,8 +91,6 @@ private:
     
     void Triangle();
     void InitializeVTKTriangle(std::vector<Point<3>>&, Array2D<unsigned int>&);
-	void WriteCellDataVTKTriangle(std::vector<double>&, int);
-	void WritePointDataVTKTriangle(std::vector<double>&, int);
 };
 
 #include "class_element.tpp"

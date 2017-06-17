@@ -1,5 +1,6 @@
-#include "integration_rules_2D.h"
+#include "../integrations_2D.h"
 
+namespace Integration{
 std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::get_rule(int p) {
 	if (p < 0 || p > 20) {
 		printf("\n");
@@ -901,4 +902,5 @@ std::pair<std::vector<double>, std::vector<Point<3>>> Dunavant_2D::gp_data(int p
     }
 
 	return gp;
+}
 }

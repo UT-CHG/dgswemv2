@@ -1,5 +1,6 @@
-#include "basis_functions.h"
+#include "../basis_polynomials.h"
 
+namespace Basis{
 std::vector<double> jacobi_polynomial(int n, int a, int b, const std::vector<double>& x) { 
 	size_t n_pts = x.size();
 
@@ -65,4 +66,5 @@ std::vector<double> jacobi_polynomial_derivative(int n, int a, int b, const std:
     }
 
 	return dP;
+}
 }

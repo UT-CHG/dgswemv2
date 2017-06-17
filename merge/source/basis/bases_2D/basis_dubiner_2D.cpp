@@ -1,5 +1,6 @@
-#include "bases_2D.h"
+#include "../bases_2D.h"
 
+namespace Basis{
 Array2D<double> Dubiner_2D::get_phi(int p, const std::vector<Point<2>>& coordinates) {
 	size_t n_pts = coordinates.size();
 	
@@ -150,4 +151,5 @@ Array2D<double> Dubiner_2D::dubiner_2d_dphi(int p, int q, const std::vector<doub
     }
 
 	return dphi_d;
+}
 }

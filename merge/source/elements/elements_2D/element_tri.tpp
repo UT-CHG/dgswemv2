@@ -1,5 +1,6 @@
 #include "../../class_element.h"
 #include "../../class_master_element.h"
+#include "../../shape/shapes_2D.h"
 
 template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
 void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::Triangle() {
@@ -9,12 +10,14 @@ void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bo
 		J[0].reserve(2);
 		J[1].reserve(2);
 
-		J[0].push_back((this->nodal_coordinates[X][1] - this->nodal_coordinates[X][0]) / 2.0);
-		J[0].push_back((this->nodal_coordinates[X][2] - this->nodal_coordinates[X][0]) / 2.0);
-		J[1].push_back((this->nodal_coordinates[Y][1] - this->nodal_coordinates[Y][0]) / 2.0);
-		J[1].push_back((this->nodal_coordinates[Y][2] - this->nodal_coordinates[Y][0]) / 2.0);
+		J[0].push_back((this->nodal_coordinates[1][X] - this->nodal_coordinates[0][X]) / 2.0);
+		J[0].push_back((this->nodal_coordinates[2][X] - this->nodal_coordinates[0][X]) / 2.0);
+		J[1].push_back((this->nodal_coordinates[1][Y] - this->nodal_coordinates[0][Y]) / 2.0);
+		J[1].push_back((this->nodal_coordinates[2][Y] - this->nodal_coordinates[0][Y]) / 2.0);
 
-		this->det_J_internal.push_back(J[0][0] * J[1][1] - J[0][1] * J[1][0]);
+		Shape::StraightTriangle shape();
+
+		this->det_J_internal.push_back(shape.get_J_det(this->nodal_coordinates)[0]);
 
 		this->J_inv_internal[0][0].push_back(J[1][1] / (this->det_J_internal[0]));
 		this->J_inv_internal[0][1].push_back(-J[0][1] / (this->det_J_internal[0]));
@@ -59,13 +62,13 @@ void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bo
 				z1 = -1.0 + dz*j;
 				z2 = -1.0 + dz*i;
 
-				points.back()[0] = this->nodal_coordinates[X][0] * (-(z1 + z2) / 2.0) +
-					this->nodal_coordinates[X][1] * ((1 + z1) / 2.0) +
-					this->nodal_coordinates[X][2] * ((1 + z2) / 2.0);
+				points.back()[0] = this->nodal_coordinates[0][X] * (-(z1 + z2) / 2.0) +
+					this->nodal_coordinates[1][X] * ((1 + z1) / 2.0) +
+					this->nodal_coordinates[2][X] * ((1 + z2) / 2.0);
 
-				points.back()[1] = this->nodal_coordinates[Y][0] * (-(z1 + z2) / 2.0) +
-					this->nodal_coordinates[Y][1] * ((1 + z1) / 2.0) +
-					this->nodal_coordinates[Y][2] * ((1 + z2) / 2.0);
+				points.back()[1] = this->nodal_coordinates[0][Y] * (-(z1 + z2) / 2.0) +
+					this->nodal_coordinates[1][Y] * ((1 + z1) / 2.0) +
+					this->nodal_coordinates[2][Y] * ((1 + z2) / 2.0);
 
 				points.back()[2] = 0;
 			}
@@ -102,46 +105,4 @@ void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bo
 			cells.back()[3] = pt_ID - (N_DIV + 2 - i) + 1;
 		}
 	}
-}
-
-template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::WriteCellDataVTKTriangle(std::vector<double>& cell_data, int u_flag) {
-	double* u_post = new double[N_DIV*N_DIV];
-
-	for (int i = 0; i < N_DIV*N_DIV; i++) {
-		u_post[i] = 0.0;
-	}
-
-	for (int i = 0; i < this->number_bf; i++) {
-		for (int j = 0; j < N_DIV*N_DIV; j++) {
-			u_post[j] += this->u[u_flag][i] * this->phi_postprocessor_cell[i][j];
-		}
-	}
-
-	for (int i = 0; i < N_DIV*N_DIV; i++) {
-		cell_data.push_back(u_post[i]);
-	}
-
-	delete[] u_post;
-}
-
-template<int dim, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dim, element_type, basis_type, integration_int_type, integration_bound_type>::WritePointDataVTKTriangle(std::vector<double>& point_data, int u_flag) {
-	double* u_post = new double[(N_DIV + 1)*(N_DIV + 2) / 2];
-
-	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
-		u_post[i] = 0.0;
-	}
-
-	for (int i = 0; i < this->number_bf; i++) {
-		for (int j = 0; j < (N_DIV + 1)*(N_DIV + 2) / 2; j++) {
-			u_post[j] += this->u[u_flag][i] * this->phi_postprocessor_point[i][j];
-		}
-	}
-
-	for (int i = 0; i < (N_DIV + 1)*(N_DIV + 2) / 2; i++) {
-		point_data.push_back(u_post[i]);
-	}
-
-	delete[] u_post;
 }

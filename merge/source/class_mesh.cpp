@@ -24,12 +24,13 @@ void MESH::RectangularDomainTest
 	case TRIANGLE: {
 		unsigned int ID;
 
-		Array2D<double> nodal_coordinates(2);
-		nodal_coordinates[0].resize(3);
-		nodal_coordinates[1].resize(3);
+		std::vector<Point<2>> nodal_coordinates(3);
 
 		std::vector<unsigned char> boundaries(3);
 		std::vector<unsigned int> neighbors(3);
+		
+		triangle = new MasterElement<2, TRIANGLE, Basis::Dubiner_2D, 
+		Integration::Dunavant_2D, Integration::GaussLegendre_1D>(1); 
 
 		//SIMPLE PATTERN
 		//for (int i = 0; i < n; i++) {
@@ -112,14 +113,14 @@ void MESH::RectangularDomainTest
 				}
 
 				nodal_coordinates[0][0] = j*dx;
-				nodal_coordinates[0][1] = nodal_coordinates[0][0];
-				nodal_coordinates[0][2] = nodal_coordinates[0][0] + dx;
+				nodal_coordinates[1][0] = nodal_coordinates[0][0];
+				nodal_coordinates[2][0] = nodal_coordinates[0][0] + dx;
 
-				nodal_coordinates[1][0] = (i + 1)*dy;
-				nodal_coordinates[1][1] = nodal_coordinates[1][0] - dy;
-				nodal_coordinates[1][2] = nodal_coordinates[1][0];
+				nodal_coordinates[0][1] = (i + 1)*dy;
+				nodal_coordinates[1][1] = nodal_coordinates[0][1] - dy;
+				nodal_coordinates[2][1] = nodal_coordinates[0][1];
 
-				this->elements[ID] = new ELEMENT<>(triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
 
 				ID = ID + 1;
 
@@ -142,9 +143,9 @@ void MESH::RectangularDomainTest
 
 				nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
 
-				nodal_coordinates[1][0] = nodal_coordinates[1][0] - dy;
+				nodal_coordinates[0][1] = nodal_coordinates[0][1] - dy;
 
-				this->elements[ID] = new ELEMENT<>(triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
 			}
 		}
 
@@ -170,14 +171,14 @@ void MESH::RectangularDomainTest
 				}
 
 				nodal_coordinates[0][0] = j*dx;
-				nodal_coordinates[0][1] = nodal_coordinates[0][0] + dx;
-				nodal_coordinates[0][2] = nodal_coordinates[0][0];
+				nodal_coordinates[1][0] = nodal_coordinates[0][0] + dx;
+				nodal_coordinates[2][0] = nodal_coordinates[0][0];
 
-				nodal_coordinates[1][0] = i*dy;
-				nodal_coordinates[1][1] = nodal_coordinates[1][0];
-				nodal_coordinates[1][2] = nodal_coordinates[1][0] + dy;
+				nodal_coordinates[0][1] = i*dy;
+				nodal_coordinates[1][1] = nodal_coordinates[0][1];
+				nodal_coordinates[2][1] = nodal_coordinates[0][1] + dy;
 
-				this->elements[ID] = new ELEMENT<>(triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
 
 				ID = ID + 1;
 
@@ -200,11 +201,13 @@ void MESH::RectangularDomainTest
 
 				nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
 
-				nodal_coordinates[1][0] = nodal_coordinates[1][0] + dy;
+				nodal_coordinates[0][1] = nodal_coordinates[0][1] + dy;
 
-				this->elements[ID] = new ELEMENT<>(triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
 			}
 		}
+
+		//delete triangle;
 	}
 	break;
 	default:

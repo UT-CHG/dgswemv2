@@ -1,5 +1,6 @@
-#include "integration_rules_1D.h"
+#include "../integrations_1D.h"
 
+namespace Integration{
 std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::get_rule(int p) {
 	if (p < 0 || p > 65) {
 		printf("\n");
@@ -1266,4 +1267,5 @@ std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::gp_data(
 	}
 	
 	return gp;
+}
 }

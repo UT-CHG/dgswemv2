@@ -13,7 +13,7 @@ void MasterElement<dimension, element_type, basis_type, integration_int_type, in
 	this->number_bf = this->m_inv.second[0].size();
 
 	this->phi_internal = this->basis.get_phi(p, integration_rule_internal.second);
-	this->basis.basis_test(p, this->phi_internal, integration_rule_internal); //TEST BASIS
+	this->basis.basis_test(p, this->phi_internal, integration_rule_internal);
 
 	this->dphi_internal = this->basis.get_dphi(p, integration_rule_internal.second);
 
