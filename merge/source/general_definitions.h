@@ -6,6 +6,7 @@
 #include <string>
 
 #include <cmath>
+#include <functional>
 
 #include <array>
 #include <vector>
@@ -32,30 +33,38 @@ using Array3D = std::vector<std::vector<std::vector<type>>>;
 template<class type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
-namespace Basis{
-template<int dim>
-class Basis{
-	virtual Array2D<double> get_phi(int, const std::vector<Point<dim>>&) = 0;
-	virtual Array3D<double> get_dphi(int, const std::vector<Point<dim>>&) = 0;
-	virtual std::pair<bool, Array2D<double>> get_m_inv(int) = 0;
-};
+namespace Basis {
+	template<int dim>
+	class Basis {
+	public:
+		virtual Array2D<double> get_phi(int, const std::vector<Point<dim>>&) = 0;
+		virtual Array3D<double> get_dphi(int, const std::vector<Point<dim>>&) = 0;
+		virtual std::pair<bool, Array2D<double>> get_m_inv(int) = 0;
+	};
 }
 
-namespace Integration{
-template<int dim>
-class Integration {
-	virtual std::pair<std::vector<double>, std::vector<Point<dim>>> get_rule(int) = 0;
-};
+namespace Integration {
+	template<int dim>
+	class Integration {
+	public:
+		virtual std::pair<std::vector<double>, std::vector<Point<dim>>> get_rule(int) = 0;
+	};
 }
 
-namespace Shape{
-template<int dim>
-class Shape {
-	virtual std::vector<double> get_J_det(const std::vector<Point<dim>>&) = 0;
-	virtual Array3D<double> get_J_inv(const std::vector<Point<dim>>&) = 0;
-	virtual Array2D<double> get_surface_J(const std::vector<Point<dim>>&) = 0;
-	virtual Array3D<double> get_surface_normal(const std::vector<Point<dim>>&) = 0;
-};
+namespace Shape {
+	template<int dim>
+	class Shape {
+	public:
+		virtual std::vector<double> get_J_det(const std::vector<Point<dim>>&) = 0;
+		virtual Array3D<double> get_J_inv(const std::vector<Point<dim>>&) = 0;
+		virtual Array2D<double> get_surface_J(const std::vector<Point<dim>>&) = 0;
+		virtual Array3D<double> get_surface_normal(const std::vector<Point<dim>>&) = 0;
+
+		virtual std::vector<double> get_surface_J_(int, const std::vector<Point<dim>>&) = 0;
+		virtual Array2D<double> get_surface_normal_(int, const std::vector<Point<dim>>&) = 0;
+
+		virtual void get_VTK(std::vector<Point<3>>&, Array2D<unsigned int>&, const std::vector<Point<dim>>&) = 0;
+	};
 }
 
 #define PI 3.14159265359	

@@ -32,6 +32,8 @@ void MESH::RectangularDomainTest
 		triangle = new MasterElement<2, TRIANGLE, Basis::Dubiner_2D, 
 		Integration::Dunavant_2D, Integration::GaussLegendre_1D>(1); 
 
+		shape = new Shape::StraightTriangle();
+
 		//SIMPLE PATTERN
 		//for (int i = 0; i < n; i++) {
 		//	for (int j = 0; j < m; j++) {
@@ -120,7 +122,7 @@ void MESH::RectangularDomainTest
 				nodal_coordinates[1][1] = nodal_coordinates[0][1] - dy;
 				nodal_coordinates[2][1] = nodal_coordinates[0][1];
 
-				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new Element<>(*triangle, *shape, ID, neighbors, boundaries, nodal_coordinates);
 
 				ID = ID + 1;
 
@@ -145,7 +147,7 @@ void MESH::RectangularDomainTest
 
 				nodal_coordinates[0][1] = nodal_coordinates[0][1] - dy;
 
-				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new Element<>(*triangle, *shape, ID, neighbors, boundaries, nodal_coordinates);
 			}
 		}
 
@@ -178,7 +180,7 @@ void MESH::RectangularDomainTest
 				nodal_coordinates[1][1] = nodal_coordinates[0][1];
 				nodal_coordinates[2][1] = nodal_coordinates[0][1] + dy;
 
-				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new Element<>(*triangle, *shape, ID, neighbors, boundaries, nodal_coordinates);
 
 				ID = ID + 1;
 
@@ -203,7 +205,7 @@ void MESH::RectangularDomainTest
 
 				nodal_coordinates[0][1] = nodal_coordinates[0][1] + dy;
 
-				this->elements[ID] = new ELEMENT<>(*triangle, ID, neighbors, boundaries, nodal_coordinates);
+				this->elements[ID] = new Element<>(*triangle, *shape, ID, neighbors, boundaries, nodal_coordinates);
 			}
 		}
 

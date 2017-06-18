@@ -20,7 +20,7 @@ void GaussLegendre_1D::rule_test(int p, const std::pair<std::vector<double>, std
 	double exact_integration = 2 - 1 / ((double)p + 1)*(1 + pow(-1.0, p)); // S(1-x^p)dx from -1 to 1 
 
 	double num_integration = 0;
-	for (size_t i = 0; i < rule.first.size(); i++) { num_integration = num_integration + (1.0 - pow(rule.second[i][X], p))*rule.first[i]; }
+	for (int i = 0; i < rule.first.size(); i++) { num_integration = num_integration + (1.0 - pow(rule.second[i][X], p))*rule.first[i]; }
 
 	double err = abs((num_integration - exact_integration) / exact_integration);
 

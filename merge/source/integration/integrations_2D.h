@@ -1,5 +1,5 @@
-#ifndef INTEGRATION_RULES_2D_H
-#define INTEGRATION_RULES_2D_H
+#ifndef INTEGRATIONS_2D_H
+#define INTEGRATIONS_2D_H
 
 #include "../general_definitions.h"
 

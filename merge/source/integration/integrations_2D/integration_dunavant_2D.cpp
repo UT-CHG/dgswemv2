@@ -20,13 +20,13 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::get_rule(int 
 	}
 
 	int number_gp = 0;
-	for (size_t i = 0; i < permutation.size(); i++) number_gp += permutation[i];
+	for (int i = 0; i < permutation.size(); i++) number_gp += permutation[i];
 
 	std::pair<std::vector<double>, std::vector<Point<2>>> rule;
 	rule.first.reserve(number_gp);
 	rule.second.reserve(number_gp);
 	
-	for (size_t i = 0; i < gp.first.size(); i++) {
+	for (int i = 0; i < gp.first.size(); i++) {
 		if (permutation[i] == 1) {
 			rule.first.push_back(2 * gp.first[i]); 
 			rule.second.push_back({ 2 * gp.second[i][0] - 1, 2 * gp.second[i][1] - 1 });
@@ -64,7 +64,7 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::get_rule(int 
 
 	rule_test(p, rule);
 
-	//for (size_t i = 0; i < rule.first.size(); i++) printf("%f %f %f \n", rule.first[i], rule.second[i][0], rule.second[i][1]);
+	//for (int i = 0; i < rule.first.size(); i++) printf("%f %f %f \n", rule.first[i], rule.second[i][0], rule.second[i][1]);
 
 	return rule;
 }
@@ -73,7 +73,7 @@ void Dunavant_2D::rule_test(int p, const std::pair<std::vector<double>, std::vec
 	double exact_integration = 1 / ((double)p + 1)*((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p)); // S(x^p)dxdy over triangle
 
 	double num_integration = 0;
-	for (size_t i = 0; i < rule.first.size(); i++) { num_integration += pow(rule.second[i][X], p)*rule.first[i]; }
+	for (int i = 0; i < rule.first.size(); i++) { num_integration += pow(rule.second[i][X], p)*rule.first[i]; }
 	
 	double err = abs((num_integration - exact_integration) / exact_integration);
 

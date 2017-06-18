@@ -1,15 +1,12 @@
 #include "class_element.h"
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::ELEMENT(
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::Element(
 	MasterElement<dimension, element_type, basis_type, integration_int_type, integration_bound_type>& master,
-	unsigned int ID, std::vector<unsigned int>& neighbor_ID, std::vector<unsigned char>& boundary_type, 
-	std::vector<Point<dimension>>& nodal_coordinates, BASIS_GEOM* basis_geom) :
+	shape_type& shape, unsigned int ID, std::vector<unsigned int>& neighbor_ID, std::vector<unsigned char>& boundary_type, 
+	std::vector<Point<dimension>>& nodal_coordinates) :
 
-	master(master), m_inv(master.m_inv),
-	phi_internal(master.phi_internal), phi_boundary(master.phi_boundary),
-	phi_postprocessor_cell(master.phi_postprocessor_cell),
-	phi_postprocessor_point(master.phi_postprocessor_point),
+	master(master), shape(shape),
 
 	//these values are stored at element to avoid repeat access to the values from master element
 	number_boundaries(master.number_boundaries), number_bf(master.number_bf), 
@@ -18,10 +15,6 @@ ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_b
 	ID(ID), nodal_coordinates(nodal_coordinates),
 	neighbor_ID(neighbor_ID), boundary_type(boundary_type)
 {
-    if (basis_geom != nullptr) {
-        this->basis_geom = basis_geom;
-    }
-
 	this->allocate_memory();
 
 	for (int i = 0; i < this->number_boundaries; i++) {
@@ -29,18 +22,61 @@ ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_b
 		this->interfaces.second[i] = nullptr;
 	}
 
-	switch (element_type){
-	case TRIANGLE: this->Triangle(); break;
-	default:
-		printf("\n");
-		printf("ELEMENT CONSTRUCTOR - Fatal error!\n");
-		printf("Undefined element type = %d\n", element_type);
-		exit(1);
-	}
+    //DEFORMATION
+	std::vector<double> det_J = shape.get_J_det(this->nodal_coordinates);
+	Array3D<double> J_inv = shape.get_J_inv(this->nodal_coordinates);
+	Array2D<double> surface_J = shape.get_surface_J(this->nodal_coordinates);;
 
-    //COMPUTE DIFFERENTIATION AND NUMERICAL INTEGRATION FACTORS
-	this->ComputeDifferentiationFactors();
-    this->ComputeIntegrationFactors();
+	if (det_J.size() == 1) { //constant Jacobian
+		//DIFFERENTIATION FACTORS
+		this->internal_dphi_fac.resize(this->master.dphi_internal.size());
+		for (int i = 0; i < this->master.dphi_internal.size(); i++) {
+			this->internal_dphi_fac[i].resize(dimension);
+			for (int j = 0; j < dimension; j++) {
+				this->internal_dphi_fac[i][j].reserve(this->master.dphi_internal[i][j].size());
+				for (int k = 0; k < this->master.dphi_internal[i][j].size(); k++) {
+					double dphi = 0;
+					for (int l = 0; l < dimension; l++) {
+						dphi += this->master.dphi_internal[i][l][k] * J_inv[l][j][0];
+					}
+					this->internal_dphi_fac[i][j].push_back(dphi);
+				}
+			}
+		}
+
+		//INTEGRATION FACTORS
+		this->internal_int_fac_phi = this->master.internal_int_fac_phi;
+
+		this->internal_int_fac_dphi.resize(this->master.internal_int_fac_dphi.size());
+		for (int i = 0; i < this->master.internal_int_fac_dphi.size(); i++) {
+			this->internal_int_fac_dphi[i].resize(dimension);
+			for (int j = 0; j < dimension; j++) {
+				this->internal_int_fac_dphi[i][j].reserve(this->master.internal_int_fac_dphi[i][j].size());
+				for (int k = 0; k < this->master.internal_int_fac_dphi[i][j].size(); k++) {
+					double int_dphi = 0;
+					for (int l = 0; l < dimension; l++) {
+						int_dphi += this->master.internal_int_fac_dphi[i][l][k] * J_inv[l][j][0];
+					}
+					this->internal_int_fac_dphi[i][j].push_back(int_dphi);
+				}
+			}
+		}
+
+		this->boundary_int_fac_phi = this->master.boundary_int_fac_phi;
+		for (int i = 0; i < this->master.boundary_int_fac_phi.size(); i++) {
+			for (int j = 0; j < this->master.boundary_int_fac_phi[i].size(); j++) {
+				for (int k = 0; k < this->master.boundary_int_fac_phi[i][j].size(); k++) {
+					this->boundary_int_fac_phi[i][j][k] *= surface_J[i][0] / abs(det_J[0]);
+				}
+			}
+		}
+
+		//MASS MATRIX
+		this->m_inv = this->master.m_inv;
+	}
+	else {
+		//Placeholder for cases p_geom > 1
+	}
 
 	//SET INITIAL CONDITIONS FOR TESTING
 	this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
@@ -78,8 +114,8 @@ ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_b
 	this->ComputeInternalU(ZB);
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::allocate_memory() {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::allocate_memory() {
 	//INITIALIZE ARRAYS TO STORE INTERFACE DATA
 	this->interfaces.first.resize(this->number_boundaries);
 	this->interfaces.second.resize(this->number_boundaries);
@@ -92,9 +128,9 @@ void ELEMENT<dimension, element_type, basis_type, integration_int_type, integrat
 		this->u[i].resize(this->number_bf);
 	}
 
-	this->u_internal.resize(SIZE_U_INTERNAL);
+	this->u_gp.resize(SIZE_U_INTERNAL);
 	for (int i = 0; i < SIZE_U_INTERNAL; i++) {
-		this->u_internal[i].resize(this->number_gp_internal);
+		this->u_gp[i].resize(this->number_gp_internal);
 	}
 
 	this->u_boundary_.resize(this->number_boundaries);
@@ -112,100 +148,14 @@ void ELEMENT<dimension, element_type, basis_type, integration_int_type, integrat
 			this->u_boundary[i][j] = new double[this->number_gp_boundary];
 		}
 	}
-
-	//INITIALIZE ARRAYS TO STORE GEOMETRIC DATA
-	if (this->basis_geom == nullptr) {
-		this->det_J_internal.reserve(1);
-
-		this->J_inv_internal.resize(dimension);
-		for (int i = 0; i < dimension; i++) {
-			this->J_inv_internal[i].resize(dimension);
-			for (int j = 0; j < dimension; j++) {
-				this->J_inv_internal[i][j].reserve(1);
-			}
-		}
-
-		this->surface_J_boundary.resize(this->number_boundaries);
-		for (int i = 0; i < this->number_boundaries; i++) {
-			this->surface_J_boundary[i].reserve(1);
-		}
-
-		this->normal_boundary.resize(this->number_boundaries);
-		for (int i = 0; i < this->number_boundaries; i++) {
-			this->normal_boundary[i].resize(dimension);
-			for (int j = 0; j < dimension; j++) {
-				this->normal_boundary[i][j].reserve(1);
-			}
-		}
-	}
-	else {
-		//Placeholder for cases p_geom > 1
-	}
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::ComputeDifferentiationFactors() {
-	//This loop can be rearranged for better efficiency,
-	//however that will require two nested loops
-	if (this->basis_geom == nullptr) {
-		this->internal_dphi_fac.resize(this->master.dphi_internal.size());
-		for (int i = 0; i < this->master.dphi_internal.size(); i++) {
-			this->internal_dphi_fac[i].resize(dimension);
-			for (int j = 0; j < dimension; j++) {
-				this->internal_dphi_fac[i][j].reserve(this->master.dphi_internal[i][j].size());
-				for (int k = 0; k < this->master.dphi_internal[i][j].size(); k++) {
-					double dphi = 0;
-					for (int l = 0; l < dimension; l++) {
-						dphi += this->master.dphi_internal[i][l][k] * this->J_inv_internal[l][j][0];
-					}
-					this->internal_dphi_fac[i][j].push_back(dphi);
-				}
-			}
-		}
-	}
-	else {
-		//Placeholder for cases p_geom > 1
-	}
-}
-
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::ComputeIntegrationFactors()
-{
-	if (this->basis_geom == nullptr) {
-		this->internal_int_fac_phi = this->master.internal_int_fac_phi;
-
-		this->internal_int_fac_dphi.resize(this->master.internal_int_fac_dphi.size());
-		for (int i = 0; i < this->master.internal_int_fac_dphi.size(); i++) {
-			this->internal_int_fac_dphi[i].resize(dimension);
-			for (int j = 0; j < dimension; j++) {
-				this->internal_int_fac_dphi[i][j].reserve(this->master.internal_int_fac_dphi[i][j].size());
-				for (int k = 0; k < this->master.internal_int_fac_dphi[i][j].size(); k++) {
-					double int_dphi = 0;
-					for (int l = 0; l < dimension; l++) {
-						int_dphi += this->master.internal_int_fac_dphi[i][l][k] * this->J_inv_internal[l][j][0];
-					}
-					this->internal_int_fac_dphi[i][j].push_back(int_dphi);
-				}
-			}
-		}
-
-		this->boundary_int_fac_phi = this->master.boundary_int_fac_phi;
-		for (int i = 0; i < this->master.boundary_int_fac_phi.size(); i++) {
-			for (int j = 0; j < this->master.boundary_int_fac_phi[i].size(); j++) {
-				for (int k = 0; k < this->master.boundary_int_fac_phi[i][j].size(); k++) {
-					this->boundary_int_fac_phi[i][j][k] *= this->surface_J_boundary[i][0] / abs(this->det_J_internal[0]);
-				}
-			}
-		}
-	}
-	else {
-		//Placeholder for cases p_geom > 1
-	}
-}
-
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-std::map<unsigned int, INTERFACE*> ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::CreateInterfaces() {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+std::map<unsigned int, INTERFACE*> Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::CreateInterfaces() {
 	std::map<unsigned int, INTERFACE*> internal_interfaces;
+
+	std::vector<double> det_J = shape.get_J_det(this->nodal_coordinates);
+	Array3D<double> surface_normal = shape.get_surface_normal(this->nodal_coordinates);
 
 	bool boundary;
 	for (int i = 0; i < this->interfaces.second.size(); i++) {
@@ -218,17 +168,17 @@ std::map<unsigned int, INTERFACE*> ELEMENT<dimension, element_type, basis_type, 
 				normal[j] = new double[this->number_gp_boundary];
 			}
 
-			if (this->basis_geom == nullptr) {
+			if (det_J.size() == 1) {
 				for (int j = 0; j < dimension; j++) {
 					for (int k = 0; k < this->number_gp_boundary; k++) {
-						normal[j][k] = this->normal_boundary[i][j][0];
+						normal[j][k] = surface_normal[i][j][0];
 					}
 				}
 			}
 			else {
 				for (int j = 0; j < dimension; j++) {
 					for (int k = 0; k < this->number_gp_boundary; k++) {
-						normal[j][k] = this->normal_boundary[i][j][k];
+						normal[j][k] = surface_normal[i][j][k];
 					}
 				}
 			}
@@ -247,8 +197,8 @@ std::map<unsigned int, INTERFACE*> ELEMENT<dimension, element_type, basis_type, 
 	return internal_interfaces;
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::AppendInterface(unsigned int neighbor_ID, INTERFACE* interface_ptr) {
     for (int i = 0; i < this->number_boundaries; i++) {
         if (this->neighbor_ID[i] == neighbor_ID) {
             this->interfaces.second[i] = interface_ptr;
@@ -258,8 +208,8 @@ void ELEMENT<dimension, element_type, basis_type, integration_int_type, integrat
     }
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::GetOwnInterfaces() {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+std::vector<std::pair<unsigned char, INTERFACE*>> Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::GetOwnInterfaces() {
     std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces;
 
     for (int i = 0; i < this->number_boundaries; i++) {
@@ -275,34 +225,34 @@ std::vector<std::pair<unsigned char, INTERFACE*>> ELEMENT<dimension, element_typ
     return own_interfaces;
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::ComputeInternalU(int u_flag) {
-	for (int i = 0; i < this->u_internal[u_flag].size(); i++) {
-		this->u_internal[u_flag][i] = 0.0;
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::ComputeInternalU(int u_flag) {
+	for (int i = 0; i < this->u_gp[u_flag].size(); i++) {
+		this->u_gp[u_flag][i] = 0.0;
 	}
 
 	for (int i = 0; i < this->u[u_flag].size(); i++) {
-		for (int j = 0; j < this->u_internal[u_flag].size(); j++) {
-			this->u_internal[u_flag][j] += this->u[u_flag][i] * this->phi_internal[i][j];
+		for (int j = 0; j < this->u_gp[u_flag].size(); j++) {
+			this->u_gp[u_flag][j] += this->u[u_flag][i] * this->master.phi_internal[i][j];
 		}
 	}
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::ComputeInternalDU(int dir, int u_flag, int u_flag_store) {
-	for (int i = 0; i < this->u_internal[u_flag_store].size(); i++) {
-		this->u_internal[u_flag_store][i] = 0.0;
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::ComputeInternalDU(int dir, int u_flag, int u_flag_store) {
+	for (int i = 0; i < this->u_gp[u_flag_store].size(); i++) {
+		this->u_gp[u_flag_store][i] = 0.0;
 	}
 
 	for (int i = 0; i < this->u[u_flag].size(); i++) {
-		for (int j = 0; j < this->u_internal[u_flag_store].size(); j++) {
-			this->u_internal[u_flag_store][j] += this->u[u_flag][i] * this->internal_dphi_fac[i][dir][j];
+		for (int j = 0; j < this->u_gp[u_flag_store].size(); j++) {
+			this->u_gp[u_flag_store][j] += this->u[u_flag][i] * this->internal_dphi_fac[i][dir][j];
 		}
 	}
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::ComputeBoundaryU(int u_flag) {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::ComputeBoundaryU(int u_flag) {
 	for (int i = 0; i < this->u_boundary_.size(); i++) {
 		for (int j = 0; j < this->u_boundary_[i][u_flag].size(); j++) {
 			this->u_boundary[i][u_flag][j] = 0.0;
@@ -310,36 +260,36 @@ void ELEMENT<dimension, element_type, basis_type, integration_int_type, integrat
 
 		for (int j = 0; j < this->u[u_flag].size(); j++) {
 			for (int k = 0; k < this->u_boundary_[i][u_flag].size(); k++) {
-				this->u_boundary[i][u_flag][k] += this->u[u_flag][j] * this->phi_boundary[i][j][k];
+				this->u_boundary[i][u_flag][k] += this->u[u_flag][j] * this->master.phi_boundary[i][j][k];
 			}
 		}
 	}
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-double ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::IntegrationInternalPhi(int u_flag, int phi_n) {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+double Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::IntegrationInternalPhi(int u_flag, int phi_n) {
 	double integral = 0;
 
 	for (int i = 0; i < this->internal_int_fac_phi[phi_n].size(); i++) {
-		integral += this->u_internal[u_flag][i] * this->internal_int_fac_phi[phi_n][i];
+		integral += this->u_gp[u_flag][i] * this->internal_int_fac_phi[phi_n][i];
 	}
 
 	return integral;
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-double ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::IntegrationInternalDPhi(int dir, int u_flag, int phi_n) {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+double Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::IntegrationInternalDPhi(int dir, int u_flag, int phi_n) {
 	double integral = 0;
 
 	for (int i = 0; i < this->internal_int_fac_dphi[phi_n][dir].size(); i++) {
-		integral += this->u_internal[u_flag][i] * this->internal_int_fac_dphi[phi_n][dir][i];
+		integral += this->u_gp[u_flag][i] * this->internal_int_fac_dphi[phi_n][dir][i];
 	}
 
 	return integral;
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-double ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::IntegrationBoundaryPhi(int u_flag, int phi_n) {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+double Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::IntegrationBoundaryPhi(int u_flag, int phi_n) {
 	double integral = 0;
 
 	for (int i = 0; i < this->boundary_int_fac_phi.size(); i++) {
@@ -351,8 +301,8 @@ double ELEMENT<dimension, element_type, basis_type, integration_int_type, integr
 	return integral;
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::SolveLSE(int u_flag) {
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::SolveLSE(int u_flag) {
 	if (this->m_inv.first) { //diagonal
 		for (int i = 0; i < this->u[u_flag].size(); i++) {
 			this->u[u_flag][i] = this->m_inv.second[0][i] * this->RHS[i];
@@ -368,21 +318,14 @@ void ELEMENT<dimension, element_type, basis_type, integration_int_type, integrat
 	}
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::InitializeVTK(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
-	switch (element_type) {
-	case TRIANGLE: this->InitializeVTKTriangle(points, cells); break;
-	default:
-		printf("\n");
-		printf("ELEMENT_2D InitializeVTK - Fatal error!\n");
-		printf("Undefined element type = %d\n", element_type);
-		exit(1);
-	}
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::InitializeVTK(std::vector<Point<3>>& points, Array2D<unsigned int>& cells) {
+	this->shape.get_VTK(points, cells, nodal_coordinates);
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
-	Array2D<double> temp = this->phi_postprocessor_cell;
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
+	Array2D<double> temp = this->master.phi_postprocessor_cell;
 
 	for (int i = 0; i < temp.size(); i++) {
 		for (int j = 0; j < temp[i].size(); j++) {
@@ -399,9 +342,9 @@ void ELEMENT<dimension, element_type, basis_type, integration_int_type, integrat
 	cell_data.insert(cell_data.end(), temp[0].begin(), temp[0].end());
 }
 
-template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type>
-void ELEMENT<dimension, element_type, basis_type, integration_int_type, integration_bound_type>::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
-	Array2D<double> temp = this->phi_postprocessor_point;
+template<int dimension, int element_type, class basis_type, class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
+	Array2D<double> temp = this->master.phi_postprocessor_point;
 
 	for (int i = 0; i < temp.size(); i++) {
 		for (int j = 0; j < temp[i].size(); j++) {

@@ -27,9 +27,9 @@ private:
 
 	void Timestep();
 
-    void ComputeUVA(ELEMENT<>*);
-    void ComputeF(ELEMENT<>*);
-	void ComputeS(ELEMENT<>*);
+    void ComputeUVA(Element<>*);
+    void ComputeF(Element<>*);
+	void ComputeS(Element<>*);
 
 	void InterfaceFlowAverage(INTERFACE*);
 	void ComputeBoundaryInterfaceF(INTERFACE*);

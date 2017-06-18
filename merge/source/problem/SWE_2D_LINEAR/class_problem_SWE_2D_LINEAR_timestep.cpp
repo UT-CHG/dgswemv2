@@ -104,8 +104,8 @@ void PROBLEM::Timestep() {
     }
 }
 
-void PROBLEM::ComputeF(ELEMENT<>* element) {
-    Array2D<double>& u = element->u_internal;
+void PROBLEM::ComputeF(Element<>* element) {
+    Array2D<double>& u = element->u_gp;
 
     for (int i = 0; i < element->number_gp_internal; i++) {
 		u[F11][i] = u[SP][i] * GRAVITY * u[H][i];
@@ -132,8 +132,8 @@ void PROBLEM::ComputeF(ELEMENT<>* element) {
     }
 }
 
-void PROBLEM::ComputeS(ELEMENT<>* element) {
-	Array2D<double>& u = element->u_internal;
+void PROBLEM::ComputeS(Element<>* element) {
+	Array2D<double>& u = element->u_gp;
 
 	double cf = 0; // FOR TESTING NO BOTTOM FRICTION 
 	double tau_b;
