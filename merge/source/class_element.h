@@ -6,6 +6,7 @@
 #include "class_interface.h"
 #include "element/class_master_element.h"
 #include "shape/shapes_2D.h"
+#include "boundary/class_boundary.h"
 
 template<int dimension = 2, int element_type = TRIANGLE, 
 	class basis_type = Basis::Dubiner_2D, 
@@ -56,7 +57,7 @@ public:
     void AppendInterface(unsigned int, INTERFACE*);
     std::vector<std::pair<unsigned char, INTERFACE*>> GetOwnInterfaces();
 
-	std::map<unsigned char, std::tuple<int, double>> CreateBoundaries();
+	std::vector<RawBoundary<dimension - 1>*> CreateBoundaries();
 
     void ComputeInternalU(int);
 	void ComputeInternalDU(int, int, int);
@@ -156,10 +157,6 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 		//Placeholder for cases p_geom > 1
 	}
 
-	if (ID == 1) {
-		this->CreateBoundaries();
-	}
-
 	//SET INITIAL CONDITIONS FOR TESTING
 	this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
 	this->u[ZB][0] = 3; //FLAT BED
@@ -236,9 +233,11 @@ void Element<dimension, element_type, basis_type, integration_int_type, integrat
 
 template<int dimension, int element_type, class basis_type, 
 	class integration_int_type, class integration_bound_type, class shape_type>
-std::map<unsigned char, std::tuple<int, double>> 
+std::vector<RawBoundary<dimension - 1>*> 
 Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
 ::CreateBoundaries() {
+	std::vector<RawBoundary<dimension - 1>*> my_raw_boundaries;
+
 	Basis::Basis<dimension>* basis;
 
 	std::function<std::vector<Point<dimension>>(const std::vector<Point<dimension - 1>>&)> boundary_to_master;
@@ -250,7 +249,7 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 
 		boundary_to_master = std::bind(&MasterElement<dimension, element_type, basis_type,
 			integration_int_type, integration_bound_type>::TriangleBoundaryToMasterCoordinates,
-			master, i, std::placeholders::_1);
+			master, i, std::placeholders::_1); //need specialization in master element
 
 		get_surface_normal = std::bind(&Shape::StraightTriangle::get_surface_normal_,
 			shape, i, nodal_coordinates);
@@ -258,12 +257,11 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 		get_surface_J = std::bind(&Shape::StraightTriangle::get_surface_J_,
 			shape, i, nodal_coordinates);
 
-		RawBoundary<> bound(master.p, this->u, basis, boundary_to_master, get_surface_normal, get_surface_J);
-		Boundary<> bb(bound);
+		my_raw_boundaries.push_back(new RawBoundary<dimension-1>(this->boundary_type[i], this->neighbor_ID[i], master.p, 
+			this->u, basis, boundary_to_master, get_surface_normal, get_surface_J));
 	}
 
-	std::map<unsigned char, std::tuple<int, double>> a;
-	return a;
+	return my_raw_boundaries;
 }
 
 template<int dimension, int element_type, class basis_type, 

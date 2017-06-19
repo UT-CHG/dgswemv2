@@ -8,19 +8,22 @@
 template<int dimension = 1>
 class RawBoundary {
 public:
+	unsigned char type;
+	unsigned int neighbor_ID;
+
 	int p;
 
 	Basis::Basis<dimension + 1>* basis;
-	std::function<std::vector<Point<dimension + 1>>(const std::vector<Point<dimension>>&)>& boundary_to_master;
-	std::function<Array2D<double>()>& get_surface_normal;
-	std::function<std::vector<double>()>& get_surface_J;
+	std::function<std::vector<Point<dimension + 1>>(const std::vector<Point<dimension>>&)> boundary_to_master;
+	std::function<Array2D<double>()> get_surface_normal;
+	std::function<std::vector<double>()> get_surface_J;
 
 	Array2D<double>& u;
 
-	RawBoundary(int p, Array2D<double>& u, Basis::Basis<dimension + 1>* basis,
+	RawBoundary(unsigned char type, unsigned int neighbor_ID, int p, Array2D<double>& u, Basis::Basis<dimension + 1>* basis,
 		std::function<std::vector<Point<dimension + 1>>(const std::vector<Point<dimension>>&)>& boundary_to_master,
 		std::function<Array2D<double>()>& get_surface_normal, std::function<std::vector<double>()>& get_surface_J) :
-		p(p), u(u), basis(basis), boundary_to_master(boundary_to_master), 
+		type(type), neighbor_ID(neighbor_ID), p(p), u(u), basis(basis), boundary_to_master(boundary_to_master),
 		get_surface_normal(get_surface_normal), get_surface_J(get_surface_J) {};
 };
 

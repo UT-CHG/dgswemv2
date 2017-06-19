@@ -19,13 +19,18 @@ protected:
     std::map<unsigned int, Element<2, TRIANGLE, Basis::Dubiner_2D, 
 		Integration::Dunavant_2D, Integration::GaussLegendre_1D, Shape::StraightTriangle>*> elements;
 	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
+
+	std::map<unsigned char, std::vector<Boundary<>*>> boundaries;
+
 public:
     MESH(int, int);
-    ~MESH();
+	~MESH();
 
 	void RectangularDomainTest(double, double, int, int, int);
 
 private:
+	void InitializeBoundaries();
+
     void InitializeInterfaces();
     void InitializeVTK();
 };

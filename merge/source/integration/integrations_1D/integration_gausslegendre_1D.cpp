@@ -11,7 +11,7 @@ std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::get_rule
 
 	std::pair<std::vector<double>, std::vector<Point<1>>> rule = this->gp_data((int)ceil(((double)p + 1) / 2));
 
-	rule_test(p, rule);
+	//rule_test(p, rule);
 
 	return rule;
 }

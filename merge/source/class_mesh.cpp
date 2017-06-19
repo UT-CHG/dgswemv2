@@ -6,6 +6,15 @@ MESH::MESH(int p, int p_geom) {
 }
 
 MESH::~MESH() {
+	delete shape; 
+	delete triangle;
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		delete it->second;
+	}
+	this->elements.clear();
+
+
     for (auto it = this->interfaces.begin(); it != this->interfaces.end(); it++) {
         for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
             delete *itt;
@@ -219,9 +228,29 @@ void MESH::RectangularDomainTest
 		exit(1);
 	}
 
+	this->InitializeBoundaries();
+
 	this->InitializeInterfaces();
 
 	this->InitializeVTK();
+}
+
+void MESH::InitializeBoundaries() {
+	std::map<unsigned char, std::vector<RawBoundary<>*>> boundaries;
+	std::map<unsigned int, std::map<unsigned int, RawBoundary<>*>> interfaces;
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		std::vector<RawBoundary<>*> raw_boundaries = it->second->CreateBoundaries();
+		
+		for (auto itt = raw_boundaries.begin(); itt != raw_boundaries.end(); itt++) {
+			if (boundaries.find((*itt)->type) != boundaries.end()) {
+				boundaries.find((*itt)->type)->second.push_back(*itt);
+			}
+			else {
+				boundaries[(*itt)->type] = std::vector<RawBoundary<>*>{ *itt };
+			}
+		}
+	}
 }
 
 void MESH::InitializeInterfaces() {

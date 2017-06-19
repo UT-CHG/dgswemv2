@@ -62,9 +62,7 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::get_rule(int 
 		}
 	}
 
-	rule_test(p, rule);
-
-	//for (int i = 0; i < rule.first.size(); i++) printf("%f %f %f \n", rule.first[i], rule.second[i][0], rule.second[i][1]);
+	//rule_test(p, rule);
 
 	return rule;
 }
