@@ -55,11 +55,20 @@ public:
 	Element(MasterElement<dimension, element_type, basis_type, integration_int_type, integration_bound_type>&,
 		shape_type&, unsigned int, std::vector<unsigned int>&, std::vector<unsigned char>&, std::vector<Point<dimension>>&);
 
+	std::vector<RawBoundary<dimension - 1>*> CreateBoundaries();
+
+	void ComputeUgp(std::vector<double>&, const std::vector<double>&);
+
+	double IntegrationPhi(int, const std::vector<double>&);
+	double IntegrationDPhi(int, const std::vector<double>&);
+
+    void InitializeVTK(std::vector<Point<3>>&, Array2D<unsigned int>&);
+    void WriteCellDataVTK(std::vector<double>&, int);
+	void WritePointDataVTK(std::vector<double>&, int);
+
     std::map<unsigned int, INTERFACE*> CreateInterfaces();
     void AppendInterface(unsigned int, INTERFACE*);
     std::vector<std::pair<unsigned char, INTERFACE*>> GetOwnInterfaces();
-
-	std::vector<RawBoundary<dimension - 1>*> CreateBoundaries();
 
     void ComputeInternalU(int);
 	void ComputeInternalDU(int, int, int);
@@ -71,10 +80,6 @@ public:
     double IntegrationBoundaryPhi(int, int);
 
     void SolveLSE(int);
-
-    void InitializeVTK(std::vector<Point<3>>&, Array2D<unsigned int>&);
-    void WriteCellDataVTK(std::vector<double>&, int);
-	void WritePointDataVTK(std::vector<double>&, int);
 
 private:
 	void allocate_memory();
@@ -127,6 +132,11 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 
 		//INTEGRATION FACTORS
 		this->internal_int_fac_phi = this->master.internal_int_fac_phi;
+		for (int i = 0; i < this->internal_int_fac_phi.size(); i++) {
+			for (int j = 0; j < this->internal_int_fac_phi[i].size(); j++) {
+				this->internal_int_fac_phi[i][j] *= 1;//abs(det_J[0]);
+			}
+		}
 
 		this->internal_int_fac_dphi.resize(this->master.internal_int_fac_dphi.size());
 		for (int i = 0; i < this->master.internal_int_fac_dphi.size(); i++) {
@@ -138,6 +148,7 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 					for (int l = 0; l < dimension; l++) {
 						int_dphi += this->master.internal_int_fac_dphi[i][l][k] * J_inv[l][j][0];
 					}
+					int_dphi *= 1;//abs(det_J[0]);
 					this->internal_int_fac_dphi[i][j].push_back(int_dphi);
 				}
 			}
@@ -147,13 +158,18 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 		for (int i = 0; i < this->master.boundary_int_fac_phi.size(); i++) {
 			for (int j = 0; j < this->master.boundary_int_fac_phi[i].size(); j++) {
 				for (int k = 0; k < this->master.boundary_int_fac_phi[i][j].size(); k++) {
-					this->boundary_int_fac_phi[i][j][k] *= surface_J[i][0] / abs(det_J[0]);
+					this->boundary_int_fac_phi[i][j][k] *= surface_J[i][0]/abs(det_J[0]);
 				}
 			}
 		}
 
 		//MASS MATRIX
 		this->m_inv = this->master.m_inv;
+		for(int i = 0; i<this->m_inv.second.size();i++){
+			for(int j = 0; j<this->m_inv.second[i].size();j++){
+				this->m_inv.second[i][j] *=  1;//abs(det_J[0]);
+			}
+		}
 	}
 	else {
 		//Placeholder for cases p_geom > 1
@@ -200,6 +216,80 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 
 template<int dimension, int element_type, class basis_type, 
 	class integration_int_type, class integration_bound_type, class shape_type>
+std::vector<RawBoundary<dimension - 1>*> 
+Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
+::CreateBoundaries() {
+	std::vector<RawBoundary<dimension - 1>*> my_raw_boundaries;
+
+	Basis::Basis<dimension>* basis;
+
+	std::function<std::vector<Point<dimension>>(const std::vector<Point<dimension - 1>>&)> boundary_to_master;
+	std::function<Array2D<double>()> get_surface_normal;
+	std::function<std::vector<double>()> get_surface_J;
+
+	for (int i = 0; i < this->boundary_type.size(); i++) {
+		basis = (Basis::Basis<dimension>*)(&master.basis);
+
+		boundary_to_master = std::bind(&MasterElement<dimension, element_type, basis_type,
+			integration_int_type, integration_bound_type>::TriangleBoundaryToMasterCoordinates,
+			master, i, std::placeholders::_1); //need specialization in master element
+
+		get_surface_normal = std::bind(&Shape::StraightTriangle::get_surface_normal_,
+			shape, i, nodal_coordinates);
+
+		get_surface_J = std::bind(&Shape::StraightTriangle::get_surface_J_,
+			shape, i, nodal_coordinates);
+
+		my_raw_boundaries.push_back(new RawBoundary<dimension-1>(this->boundary_type[i], this->neighbor_ID[i], master.p, 
+			this->data, basis, boundary_to_master, get_surface_normal, get_surface_J));
+	}
+
+	return my_raw_boundaries;
+}
+
+template<int dimension, int element_type, class basis_type, 
+	class integration_int_type, class integration_bound_type, class shape_type>
+void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
+::ComputeUgp(std::vector<double>& u_gp, const std::vector<double>& u) {
+	for (int i = 0; i < this->u_gp.size(); i++) {
+		this->u_gp[i] = 0.0;
+	}
+
+	for (int i = 0; i < this->u.size(); i++) {
+		for (int j = 0; j < this->u_gp.size(); j++) {
+			this->u_gp[j] += this->u[i] * this->master.phi_internal[i][j];
+		}
+	}
+}
+
+template<int dimension, int element_type, class basis_type, 
+	class integration_int_type, class integration_bound_type, class shape_type>
+double Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
+::IntegrationPhi(int phi_n, const std::vector<double>& u_gp) {
+	double integral = 0;
+
+	for (int i = 0; i < this->internal_int_fac_phi[phi_n].size(); i++) {
+		integral += u_gp[i] * this->internal_int_fac_phi[phi_n][i];
+	}
+	
+	return integral;
+} 
+
+template<int dimension, int element_type, class basis_type, 
+	class integration_int_type, class integration_bound_type, class shape_type>
+double Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
+::IntegrationDPhi(int phi_n, const std::vector<double>& u_gp) {
+	double integral = 0;
+
+	for (int i = 0; i < this->internal_int_fac_dphi[phi_n].size(); i++) {
+		integral += u_gp[i] * this->internal_int_fac_dphi[phi_n][i];
+	}
+	
+	return integral;
+}
+
+template<int dimension, int element_type, class basis_type, 
+	class integration_int_type, class integration_bound_type, class shape_type>
 void Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
 ::allocate_memory() {
 	//INITIALIZE ARRAYS TO STORE INTERFACE DATA
@@ -234,39 +324,6 @@ void Element<dimension, element_type, basis_type, integration_int_type, integrat
 			this->u_boundary[i][j] = new double[this->number_gp_boundary];
 		}
 	}
-}
-
-template<int dimension, int element_type, class basis_type, 
-	class integration_int_type, class integration_bound_type, class shape_type>
-std::vector<RawBoundary<dimension - 1>*> 
-Element<dimension, element_type, basis_type, integration_int_type, integration_bound_type, shape_type>
-::CreateBoundaries() {
-	std::vector<RawBoundary<dimension - 1>*> my_raw_boundaries;
-
-	Basis::Basis<dimension>* basis;
-
-	std::function<std::vector<Point<dimension>>(const std::vector<Point<dimension - 1>>&)> boundary_to_master;
-	std::function<Array2D<double>()> get_surface_normal;
-	std::function<std::vector<double>()> get_surface_J;
-
-	for (int i = 0; i < this->boundary_type.size(); i++) {
-		basis = (Basis::Basis<dimension>*)(&master.basis);
-
-		boundary_to_master = std::bind(&MasterElement<dimension, element_type, basis_type,
-			integration_int_type, integration_bound_type>::TriangleBoundaryToMasterCoordinates,
-			master, i, std::placeholders::_1); //need specialization in master element
-
-		get_surface_normal = std::bind(&Shape::StraightTriangle::get_surface_normal_,
-			shape, i, nodal_coordinates);
-
-		get_surface_J = std::bind(&Shape::StraightTriangle::get_surface_J_,
-			shape, i, nodal_coordinates);
-
-		my_raw_boundaries.push_back(new RawBoundary<dimension-1>(this->boundary_type[i], this->neighbor_ID[i], master.p, 
-			this->data, basis, boundary_to_master, get_surface_normal, get_surface_J));
-	}
-
-	return my_raw_boundaries;
 }
 
 template<int dimension, int element_type, class basis_type, 
