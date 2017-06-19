@@ -38,7 +38,9 @@ private:
     Array2D<double> internal_int_fac_phi;
 	Array3D<double> internal_int_fac_dphi;
 	Array3D<double> boundary_int_fac_phi;
- 
+	
+	SWE::Data data;
+
 	Array2D<double> u;
     Array3D<double> u_substep;
 
@@ -157,6 +159,9 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 		//Placeholder for cases p_geom > 1
 	}
 
+	this->data.state_data.push_back(SWE::State(this->internal_int_fac_phi.size()));
+	this->data.internal_data = SWE::Internal((*this->internal_int_fac_phi.begin()).size());
+
 	//SET INITIAL CONDITIONS FOR TESTING
 	this->u[SP][0] = 1; //NO SPHERICAL CORRECTION
 	this->u[ZB][0] = 3; //FLAT BED
@@ -258,7 +263,7 @@ Element<dimension, element_type, basis_type, integration_int_type, integration_b
 			shape, i, nodal_coordinates);
 
 		my_raw_boundaries.push_back(new RawBoundary<dimension-1>(this->boundary_type[i], this->neighbor_ID[i], master.p, 
-			this->u, basis, boundary_to_master, get_surface_normal, get_surface_J));
+			this->data, basis, boundary_to_master, get_surface_normal, get_surface_J));
 	}
 
 	return my_raw_boundaries;

@@ -20,16 +20,11 @@
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_mesh.cpp",
 
-        //"/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_element.cpp",
-        //"/h2/kazbek/UT-CHG/dgswemv2/merge/source/elements/elements_2D/element_tri.cpp",
-        //"/h2/kazbek/UT-CHG/dgswemv2/merge/source/master_tri.cpp",
-
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_interface.cpp",
 
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D/basis_dubiner_2D.cpp",
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/polynomials/basis_polynomials.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D/basis_dubiner_2D.cpp",
     
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_basis_geometry.cpp",
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D/shape_straighttriangle.cpp",
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D/integration_dunavant_2D.cpp",

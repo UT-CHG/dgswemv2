@@ -228,27 +228,59 @@ void MESH::RectangularDomainTest
 		exit(1);
 	}
 
-	this->InitializeBoundaries();
+	this->InitializeBoundariesInterfaces();
 
 	this->InitializeInterfaces();
 
 	this->InitializeVTK();
 }
 
-void MESH::InitializeBoundaries() {
-	std::map<unsigned char, std::vector<RawBoundary<>*>> boundaries;
-	std::map<unsigned int, std::map<unsigned int, RawBoundary<>*>> interfaces;
+void MESH::InitializeBoundariesInterfaces() {
+	std::map<unsigned char, std::vector<RawBoundary<>*>> pre_boundaries;
+	std::map<unsigned int, std::map<unsigned int, RawBoundary<>*>> pre_interfaces;
 
 	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
 		std::vector<RawBoundary<>*> raw_boundaries = it->second->CreateBoundaries();
 		
 		for (auto itt = raw_boundaries.begin(); itt != raw_boundaries.end(); itt++) {
-			if (boundaries.find((*itt)->type) != boundaries.end()) {
-				boundaries.find((*itt)->type)->second.push_back(*itt);
+			if((*itt)->type != INTERNAL){
+				if (pre_boundaries.find((*itt)->type) != pre_boundaries.end()) {
+					pre_boundaries.find((*itt)->type)->second.push_back(*itt);
+				}
+				else {
+					pre_boundaries[(*itt)->type] = std::vector<RawBoundary<>*>{ *itt };
+				}
 			}
-			else {
-				boundaries[(*itt)->type] = std::vector<RawBoundary<>*>{ *itt };
+			else if((*itt)->type == INTERNAL){
+				pre_interfaces[it->first][(*itt)->neighbor_ID] = *itt;
 			}
+		}
+	}
+
+	for(auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++){
+		this->boundaries[it->first] = std::vector<Boundary<>*>();	
+
+		for(auto itt = it->second.begin(); itt != it->second.end(); itt++){
+			this->boundaries[it->first].push_back(new Boundary<>(*(*itt)));
+			delete *itt;
+		}
+	}
+
+	RawBoundary<>* raw_in;
+	RawBoundary<>* raw_ex;
+
+	for(auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++){
+		for(auto itt = it->second.begin(); itt != it->second.end(); itt++){
+			raw_in = itt->second;
+			raw_ex = pre_interfaces[itt->second->neighbor_ID][it->first];
+
+			this->interfaces_.push_back(new Interface<>(*raw_in, *raw_ex));
+
+			pre_interfaces[itt->second->neighbor_ID].erase(it->first);
+			it->second.erase(itt);
+	
+			delete raw_in;
+			delete raw_ex; 
 		}
 	}
 }

@@ -12,6 +12,8 @@
 #include <vector>
 #include <map>
 
+#include "problem/SWE/swe_data.hpp"
+
 #define PROBLEM_SWE_2D_LINEAR
 
 #ifdef PROBLEM_SWE_2D

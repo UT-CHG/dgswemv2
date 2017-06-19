@@ -21,7 +21,7 @@ protected:
 	std::map<unsigned char, std::vector<INTERFACE*>> interfaces;
 
 	std::map<unsigned char, std::vector<Boundary<>*>> boundaries;
-
+	std::vector<Interface<>*> interfaces_;
 public:
     MESH(int, int);
 	~MESH();
@@ -29,7 +29,7 @@ public:
 	void RectangularDomainTest(double, double, int, int, int);
 
 private:
-	void InitializeBoundaries();
+	void InitializeBoundariesInterfaces();
 
     void InitializeInterfaces();
     void InitializeVTK();
