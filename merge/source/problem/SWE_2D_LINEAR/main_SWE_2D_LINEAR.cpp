@@ -2,14 +2,13 @@
 #include <fstream>
 #include <iomanip>
 
-#include "class_problem_SWE_2D_LINEAR.h"
 #include "../SWE/swe_data.hpp"
+#include "../../class_mesh.h"
 
-int main(int argc, const char* argv[])
-{  
-    PROBLEM* problem = new PROBLEM();
+int main(int argc, const char* argv[]){
+	MESH* mesh = new MESH(1);
 
-	problem->Solve(EEULER, 1, 172800.0, 300.0);
+	mesh->RectangularDomainTest(90000.0, 45000.0, 50, 4, TRIANGLE);
 
-    delete problem;
+	delete mesh;
 }

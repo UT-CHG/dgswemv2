@@ -53,18 +53,22 @@ namespace Integration {
 	};
 }
 
+namespace Master {
+	template<int dim>
+	class Master {
+	public:
+		virtual std::vector<Point<dim>> BoundaryToMasterCoordinates(int, const std::vector<Point<dim - 1>>&) = 0;
+	};
+}
+
 namespace Shape {
 	template<int dim>
 	class Shape {
 	public:
 		virtual std::vector<double> get_J_det(const std::vector<Point<dim>>&) = 0;
 		virtual Array3D<double> get_J_inv(const std::vector<Point<dim>>&) = 0;
-		virtual Array2D<double> get_surface_J(const std::vector<Point<dim>>&) = 0;
-		virtual Array3D<double> get_surface_normal(const std::vector<Point<dim>>&) = 0;
-
-		virtual std::vector<double> get_surface_J_(int, const std::vector<Point<dim>>&) = 0;
-		virtual Array2D<double> get_surface_normal_(int, const std::vector<Point<dim>>&) = 0;
-
+		virtual std::vector<double> get_surface_J(int, const std::vector<Point<dim>>&) = 0;
+		virtual Array2D<double> get_surface_normal(int, const std::vector<Point<dim>>&) = 0;
 		virtual void get_VTK(std::vector<Point<3>>&, Array2D<unsigned int>&, const std::vector<Point<dim>>&) = 0;
 	};
 }

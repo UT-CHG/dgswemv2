@@ -1,10 +1,5 @@
 #include "class_mesh.h"
 
-MESH::MESH(int p, int p_geom) {
-	this->p = p;
-	this->p_geom = p_geom;
-}
-
 MESH::~MESH() {
 	delete shape; 
 	delete triangle;
@@ -13,14 +8,6 @@ MESH::~MESH() {
 		delete it->second;
 	}
 	this->elements.clear();
-
-
-    for (auto it = this->interfaces.begin(); it != this->interfaces.end(); it++) {
-        for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-            delete *itt;
-        }
-        it->second.clear();
-    }
 }
 
 void MESH::RectangularDomainTest
@@ -38,8 +25,7 @@ void MESH::RectangularDomainTest
 		std::vector<unsigned char> boundaries(3);
 		std::vector<unsigned int> neighbors(3);
 		
-		triangle = new MasterElement<2, TRIANGLE, Basis::Dubiner_2D, 
-		Integration::Dunavant_2D, Integration::GaussLegendre_1D>(1); 
+		triangle = new Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>(this->p); 
 
 		shape = new Shape::StraightTriangle();
 
@@ -230,7 +216,8 @@ void MESH::RectangularDomainTest
 
 	this->InitializeBoundariesInterfaces();
 
-	this->InitializeInterfaces();
+	//printf("%d\n", this->boundaries[OCEAN].size());
+	//printf("%d\n", this->interfaces_.size());
 
 	this->InitializeVTK();
 }
@@ -241,9 +228,9 @@ void MESH::InitializeBoundariesInterfaces() {
 
 	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
 		std::vector<RawBoundary<>*> raw_boundaries = it->second->CreateBoundaries();
-		
+
 		for (auto itt = raw_boundaries.begin(); itt != raw_boundaries.end(); itt++) {
-			if((*itt)->type != INTERNAL){
+			if ((*itt)->type != INTERNAL) {
 				if (pre_boundaries.find((*itt)->type) != pre_boundaries.end()) {
 					pre_boundaries.find((*itt)->type)->second.push_back(*itt);
 				}
@@ -251,16 +238,16 @@ void MESH::InitializeBoundariesInterfaces() {
 					pre_boundaries[(*itt)->type] = std::vector<RawBoundary<>*>{ *itt };
 				}
 			}
-			else if((*itt)->type == INTERNAL){
+			else if ((*itt)->type == INTERNAL) {
 				pre_interfaces[it->first][(*itt)->neighbor_ID] = *itt;
 			}
 		}
 	}
 
-	for(auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++){
-		this->boundaries[it->first] = std::vector<Boundary<>*>();	
+	for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
+		this->boundaries[it->first] = std::vector<Boundary<>*>();
 
-		for(auto itt = it->second.begin(); itt != it->second.end(); itt++){
+		for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 			this->boundaries[it->first].push_back(new Boundary<>(*(*itt)));
 			delete *itt;
 		}
@@ -269,8 +256,8 @@ void MESH::InitializeBoundariesInterfaces() {
 	RawBoundary<>* raw_in;
 	RawBoundary<>* raw_ex;
 
-	for(auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++){
-		for(auto itt = it->second.begin(); itt != it->second.end(); itt++){
+	for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
+		for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 			raw_in = itt->second;
 			raw_ex = pre_interfaces[itt->second->neighbor_ID][it->first];
 
@@ -278,32 +265,11 @@ void MESH::InitializeBoundariesInterfaces() {
 
 			pre_interfaces[itt->second->neighbor_ID].erase(it->first);
 			it->second.erase(itt);
-	
+
 			delete raw_in;
-			delete raw_ex; 
+			delete raw_ex;
 		}
 	}
-}
-
-void MESH::InitializeInterfaces() {
-    for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
-        std::map<unsigned int, INTERFACE*> internal_interfaces(it->second->CreateInterfaces());
-
-        for (auto itt = internal_interfaces.begin(); itt != internal_interfaces.end(); itt++) {
-            this->elements.find(itt->first)->second->AppendInterface(it->first, itt->second);
-        }
-
-        std::vector<std::pair<unsigned char, INTERFACE*>> own_interfaces(it->second->GetOwnInterfaces());
-
-        for (auto itt = own_interfaces.begin(); itt != own_interfaces.end(); itt++) {
-            if (this->interfaces.find(itt->first) != this->interfaces.end()) {
-                this->interfaces.find(itt->first)->second.push_back(itt->second);
-            }
-            else {
-                this->interfaces[itt->first] = std::vector<INTERFACE*>{ itt->second };
-            }
-        }
-    }
 }
 
 void MESH::InitializeVTK() {

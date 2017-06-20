@@ -23,20 +23,21 @@ public:
 	RawBoundary(unsigned char type, unsigned int neighbor_ID, int p, SWE::Data& data, Basis::Basis<dimension + 1>* basis,
 		std::function<std::vector<Point<dimension + 1>>(const std::vector<Point<dimension>>&)>& boundary_to_master,
 		std::function<Array2D<double>()>& get_surface_normal, std::function<std::vector<double>()>& get_surface_J) :
-		
+
 		type(type), neighbor_ID(neighbor_ID), p(p), data(data), basis(basis), boundary_to_master(boundary_to_master),
 		get_surface_normal(get_surface_normal), get_surface_J(get_surface_J) {};
 };
 
 template<int dimension = 1, class integration_type = Integration::GaussLegendre_1D>
 class Boundary {
+public:
+	SWE::Data& data;
+	Array2D<double> surface_normal;
+
 private:
 	Array2D<double> phi_gp;
 	Array2D<double> int_fact_phi;
-	
-	Array2D<double> surface_normal;
 
-	SWE::Data& data;
 public:
 	Boundary(RawBoundary<dimension>&);
 
@@ -45,11 +46,13 @@ public:
 };
 
 template<int dimension, class integration_type>
-Boundary<dimension, integration_type>::Boundary(RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data) {
+Boundary<dimension, integration_type>
+::Boundary(RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data) {
 	integration_type integration;
 	std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.get_rule(2 * raw_boundary.p);
 
 	std::vector<Point<dimension + 1>> z_master = raw_boundary.boundary_to_master(integration_rule.second);
+	
 	this->phi_gp = raw_boundary.basis->get_phi(raw_boundary.p, z_master);
 
 	std::vector<double> surface_J = raw_boundary.get_surface_J();
@@ -90,22 +93,23 @@ double Boundary<dimension, integration_type>
 	for (int i = 0; i < this->int_fac_phi[phi_n].size(); i++) {
 		integral += u_gp[i] * this->int_fac_phi[phi_n][i];
 	}
-	
+
 	return integral;
 }
 
 template<int dimension = 1, class integration_type = Integration::GaussLegendre_1D>
 class Interface {
+public:
+	SWE::Data& data_in;
+	SWE::Data& data_ex;
+	Array2D<double> surface_normal;
+
 private:
 	Array2D<double> phi_gp_in;
 	Array2D<double> phi_gp_ex;
 	Array2D<double> int_fact_phi_in;
 	Array2D<double> int_fact_phi_ex;
-	
-	Array2D<double> surface_normal;
 
-	SWE::Data& data_in;
-	SWE::Data& data_ex;
 public:
 	Interface(RawBoundary<dimension>&, RawBoundary<dimension>&);
 
@@ -117,9 +121,9 @@ public:
 
 template<int dimension, class integration_type>
 Interface<dimension, integration_type>
-::Interface(RawBoundary<dimension>& raw_boundary_in, RawBoundary<dimension>& raw_boundary_ex) : 
-data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) {
-	int p = std::max(raw_boundary_in.p,raw_boundary_ex.p);
+::Interface(RawBoundary<dimension>& raw_boundary_in, RawBoundary<dimension>& raw_boundary_ex) :
+	data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) {
+	int p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
 	integration_type integration;
 	std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.get_rule(2 * p);
@@ -129,7 +133,7 @@ data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) {
 
 	z_master = raw_boundary_ex.boundary_to_master(integration_rule.second);
 	this->phi_gp_ex = raw_boundary_ex.basis->get_phi(p, z_master);
-	
+
 	std::vector<double> surface_J = raw_boundary_in.get_surface_J();
 
 	if (surface_J.size() == 1) { //constant Jacobian
@@ -171,7 +175,7 @@ double Interface<dimension, integration_type>
 	for (int i = 0; i < this->int_fac_phi_in[phi_n].size(); i++) {
 		integral += u_gp[i] * this->int_fac_phi_in[phi_n][i];
 	}
-	
+
 	return integral;
 }
 
@@ -197,7 +201,7 @@ double Interface<dimension, integration_type>
 	for (int i = 0; i < this->int_fac_phi_ex[phi_n].size(); i++) {
 		integral += u_gp[i] * this->int_fac_phi_ex[phi_n][i];
 	}
-	
+
 	return integral;
 }
 
