@@ -1,9 +1,9 @@
 #ifndef CLASS_BOUNDARY_H
 #define CLASS_BOUNDARY_H
 
-#include "../general_definitions.h"
+#include "general_definitions.h"
 
-#include "../integration/integrations_1D.h"
+#include "integration/integrations_1D.h"
 
 template<int dimension = 1>
 class RawBoundary {

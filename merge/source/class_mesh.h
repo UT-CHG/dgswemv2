@@ -4,7 +4,7 @@
 #include "general_definitions.h"
 
 #include "class_element.h"
-#include "boundary/class_boundary.h"
+#include "class_boundary.h"
 
 class MESH {
 protected:

@@ -3,9 +3,10 @@
 
 #include "general_definitions.h"
 
+#include "class_boundary.h"
+
 #include "master/master_elements_2D.h"
 #include "shape/shapes_2D.h"
-#include "boundary/class_boundary.h"
 
 template<int dimension = 2, 
 	class master_type = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>,
@@ -131,7 +132,7 @@ std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_t
 		basis = (Basis::Basis<dimension>*)(&master.basis);
 
 		boundary_to_master = std::bind(&master_type::BoundaryToMasterCoordinates,
-			master, i, std::placeholders::_1); //need specialization in master element
+			master, i, std::placeholders::_1);
 
 		get_surface_normal = std::bind(&shape_type::get_surface_normal,
 			shape, i, nodal_coordinates);
