@@ -1,12 +1,7 @@
 #ifndef SWE_KERNELS_HPP
 #define SWE_KERNELS_HPP
 
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-
-#include "globals.hpp"
-#include "stepper.hpp"
+#include "../../general_definitions.h"
 
 #include "LLF_flux.hpp"
 #include "source_terms/swe_source_terms.hpp"
@@ -15,168 +10,195 @@ namespace SWE {
 template<typename ElementType>
 void volume_kernel(const Stepper& stepper, ElementType& elt )
 {
-  using Global::g;
-  //note that dat is a std::unique_ptr type
-  auto& dat = elt.data;
-
   const uint rk_stage = stepper.get_stage();
 
+  auto& state = elt->data.state[rk_stage];
+  auto& internal = elt->data.internal;
+  
   //get state at Gauss points
-  elt.fill_area_gauss_points(dat->state[rk_stage].ze, dat->ze_at_gp);
-  elt.fill_area_gauss_points(dat->state[rk_stage].qx, dat->qx_at_gp);
-  elt.fill_area_gauss_points(dat->state[rk_stage].qy, dat->qy_at_gp);
-
+  elt->ComputeUgp(state.ze, internal.ze_at_gp);
+  elt->ComputeUgp(state.qx, internal.qx_at_gp);
+  elt->ComputeUgp(state.qy, internal.qy_at_gp); 
+  
   //assemble flux
-  for ( uint i = 0; i < elt.get_num_area_gauss_points(); ++i ) {
-    dat->water_column_hgt_at_gp[i] = dat->ze_at_gp[i] + dat->bath_at_gp[i];
+  for ( uint gp = 0; gp < internal.get_n_gp(); ++gp ) {
 
-    dat->ze_flux_at_gp[i][0] = dat->qx_at_gp[i];
-    dat->ze_flux_at_gp[i][1] = dat->qy_at_gp[i];
+    internal.water_column_hgt_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
 
-    dat->qx_flux_at_gp[i][0] = std::pow(dat->qx_at_gp[i],2)/ dat->water_column_hgt_at_gp[i] +
-      g * ( 0.5 * std::pow(dat->ze_at_gp[i],2) + dat->ze_at_gp[i] * dat->bath_at_gp[i]);
-    dat->qx_flux_at_gp[i][1] = dat->qx_at_gp[i]*dat->qy_at_gp[i]/dat->water_column_hgt_at_gp[i];
+    internal.ze_flux_at_gp[X][gp] = internal.qx_at_gp[gp];
+    internal.ze_flux_at_gp[Y][gp] = internal.qy_at_gp[gp];
 
-    dat->qy_flux_at_gp[i][0] = dat->qx_at_gp[i]*dat->qy_at_gp[i]/dat->water_column_hgt_at_gp[i];
-    dat->qy_flux_at_gp[i][1] = std::pow(dat->qy_at_gp[i],2)/ dat->water_column_hgt_at_gp[i] +
-      g * ( 0.5 * std::pow(dat->ze_at_gp[i],2) + dat->ze_at_gp[i] * dat->bath_at_gp[i]);
+    internal.qx_flux_at_gp[X][gp] = std::pow(internal.qx_at_gp[gp],2) / internal.water_column_hgt_at_gp[gp] +
+    Global::g * ( 0.5 * std::pow(internal.ze_at_gp[gp],2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
+    internal.qx_flux_at_gp[Y][gp] = internal.qx_at_gp[gp]*internal.qy_at_gp[gp]/internal.water_column_hgt_at_gp[gp];
+
+    internal.qy_flux_at_gp[X][gp] = internal.qx_at_gp[gp]*internal.qy_at_gp[gp]/internal.water_column_hgt_at_gp[gp];
+    internal.qy_flux_at_gp[Y][gp] = std::pow(internal.qy_at_gp[gp],2)/ internal.water_column_hgt_at_gp[gp] +
+    Global::g * ( 0.5 * std::pow(internal.ze_at_gp[gp],2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
   }
 
   //skip dof = 0, which is a constant and thus trivially 0
-  for ( uint dof = 1; dof < elt.get_num_dof(); ++dof ) {
-    dat->state[rk_stage].rhs_ze[dof] = elt.integrate_area_Dphi(dof, dat->ze_flux_at_gp);
-    dat->state[rk_stage].rhs_qx[dof] = elt.integrate_area_Dphi(dof, dat->qx_flux_at_gp);
-    dat->state[rk_stage].rhs_qy[dof] = elt.integrate_area_Dphi(dof, dat->qy_flux_at_gp);
-  }
+  for ( uint dof = 1; dof < state.get_ndof(); ++dof ) {
+    state.rhs_ze[dof] = elt->IntegrationDPhi(X, dof, internal.ze_flux_at_gp[X]) +
+      elt->IntegrationDPhi(Y, dof, internal.ze_flux_at_gp[Y]);
 
+    state.rhs_qx[dof] = elt->IntegrationDPhi(X, dof, internal.qx_flux_at_gp[X]) +
+      elt->IntegrationDPhi(Y, dof, internal.qx_flux_at_gp[Y]);
+
+    state.rhs_qy[dof] = elt->IntegrationDPhi(X, dof, internal.qy_flux_at_gp[X]) +
+      elt->IntegrationDPhi(Y, dof, internal.qy_flux_at_gp[Y]);  }
 
   SourceTerms::source_kernel(stepper,elt);
 };
 
 //compute contributions due to interior eddge
-template<typename EdgeType>
-void edge_kernel(const Stepper& stepper, EdgeType& edg )
+template<typename InterfaceType>
+void interface_kernel(const Stepper& stepper, InterfaceType& intface )
 {
-  auto& data_in = edg._elts.first->data;
-  auto& data_ex = edg._elts.second->data;
-
   const uint rk_stage = stepper.get_stage();
 
-  edg.fill_surface_gauss_points(0,data_in->state[rk_stage].ze, edg.data->ze_at_gp[0]);
-  edg.fill_surface_gauss_points(1,data_ex->state[rk_stage].ze, edg.data->ze_at_gp[1]);
+  auto& state_in = intface->data_in.state[rk_stage];
+  auto& boundary_in = intface->data_in.boundary;
 
-  edg.fill_surface_gauss_points(0,data_in->state[rk_stage].qx, edg.data->qx_at_gp[0]);
-  edg.fill_surface_gauss_points(1,data_ex->state[rk_stage].qx, edg.data->qx_at_gp[1]);
+  auto& state_ex = intface->data_ex.state[rk_stage];
+  auto& boundary_ex = intface->data_ex.boundary;
 
-  edg.fill_surface_gauss_points(0,data_in->state[rk_stage].qy, edg.data->qy_at_gp[0]);
-  edg.fill_surface_gauss_points(1,data_ex->state[rk_stage].qy, edg.data->qy_at_gp[1]);
+  intface->ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
+  intface->ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
+  intface->ComputeUgpIN(state_in.qy, boundary_in.qy_at_gp);
+
+  intface->ComputeUgpEX(state_ex.ze, boundary_ex.ze_at_gp);
+  intface->ComputeUgpEX(state_ex.qx, boundary_ex.qx_at_gp);
+  intface->ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
+
 
   //assemble numerical fluxes
-  for ( uint gp=0; gp < edg.get_num_surface_gauss_points(); ++gp ) {
-
-    const std::array<double,2> normal_at_gp = edg.get_normal_at_gp(gp);
-
-    LLF_flux( edg.data->ze_at_gp[0][gp], edg.data->ze_at_gp[1][gp],
-              edg.data->qx_at_gp[0][gp], edg.data->qx_at_gp[1][gp],
-              edg.data->qy_at_gp[0][gp], edg.data->qy_at_gp[1][gp],
-              edg.data->bath_at_gp[gp], normal_at_gp,
-              edg.data->ze_numerical_flux_at_gp[gp],
-              edg.data->qx_numerical_flux_at_gp[gp],
-              edg.data->qy_numerical_flux_at_gp[gp]
+  for ( uint gp=0; gp < boundary_in.get_n_gp(); ++gp ) {
+    LLF_flux( boundary_in.ze_at_gp[gp], boundary_ex.ze_at_gp[gp],
+              boundary_in.qx_at_gp[gp], boundary_ex.qx_at_gp[gp],
+              boundary_in.qy_at_gp[gp], boundary_ex.qy_at_gp[gp],
+              boundary_in.bath_at_gp[gp], intface->surface_normal[gp],
+              boundary_in.ze_numerical_flux_at_gp[gp],
+              boundary_in.qx_numerical_flux_at_gp[gp],
+              boundary_in.qy_numerical_flux_at_gp[gp]
               );
   }
 
   //now compute contributions to the righthand side
-  for ( uint dof = 0; dof < edg._elts.first->get_num_dof(); ++dof ) {
-    data_in->state[rk_stage].rhs_ze[dof] -= edg.integrate_surface_phi(0, dof,
-                                              edg.data->ze_numerical_flux_at_gp);
-    data_in->state[rk_stage].rhs_qx[dof] -= edg.integrate_surface_phi(0, dof,
-                                              edg.data->qx_numerical_flux_at_gp);
-    data_in->state[rk_stage].rhs_qy[dof] -= edg.integrate_surface_phi(0, dof,
-                                              edg.data->qy_numerical_flux_at_gp);
+  for ( uint dof = 0; dof < state_in.get_ndof(); ++dof ) {
+    state_in.rhs_ze[dof] -= intface->IntegrationPhiIN(dof,
+                                              boundary_in.ze_numerical_flux_at_gp);
+    state_in.rhs_qx[dof] -= intface->IntegrationPhiIN(dof,
+                                              boundary_in.qx_numerical_flux_at_gp);
+    state_in.rhs_qy[dof] -= intface->IntegrationPhiIN(dof,
+                                              boundary_in.qy_numerical_flux_at_gp);
   }
 
-  for ( uint dof = 0; dof < edg._elts.second->get_num_dof(); ++dof ) {
-    data_ex->state[rk_stage].rhs_ze[dof] += edg.integrate_surface_phi(1, dof,
-                                              edg.data->ze_numerical_flux_at_gp);
-    data_ex->state[rk_stage].rhs_qx[dof] += edg.integrate_surface_phi(1, dof,
-                                              edg.data->qx_numerical_flux_at_gp);
-    data_ex->state[rk_stage].rhs_qy[dof] += edg.integrate_surface_phi(1, dof,
-                                              edg.data->qy_numerical_flux_at_gp);
+  for ( uint dof = 0; dof < state_ex.get_ndof(); ++dof ) {
+    state_ex.rhs_ze[dof] += intface->IntegrationPhiEX(dof,
+                                              boundary_in.ze_numerical_flux_at_gp);
+    state_ex.rhs_qx[dof] += intface->IntegrationPhiEX(dof,
+                                              boundary_in.qx_numerical_flux_at_gp);
+    state_ex.rhs_qy[dof] += intface->IntegrationPhiEX(dof,
+                                              boundary_in.qy_numerical_flux_at_gp);
   }
 }
 
-template<typename EdgeType>
-void boundary_kernel(const Stepper& stepper, EdgeType& edg)
+template<typename BoundaryType>
+void boundary_kernel(const Stepper& stepper, BoundaryType& bound)
 {
-  auto& data_in = edg._elt->data;
   const uint rk_stage = stepper.get_stage();
 
-  edg.fill_surface_gauss_points(0,data_in->state[rk_stage].ze, edg.data->ze_at_gp);
-  edg.fill_surface_gauss_points(0,data_in->state[rk_stage].qx, edg.data->qx_at_gp);
-  edg.fill_surface_gauss_points(0,data_in->state[rk_stage].qy, edg.data->qy_at_gp);
+  auto& state = bound->data.state[rk_stage];
+  auto& boundary = bound->data.boundary;
 
-  //assemble numerical fluxes
-  for ( uint gp=0; gp < edg.get_num_surface_gauss_points(); ++gp ) {
+  bound->ComputeUgp(state.ze, boundary.ze_at_gp);
+  bound->ComputeUgp(state.qx, boundary.qx_at_gp);
+  bound->ComputeUgp(state.qy, boundary.qy_at_gp);
 
-    const std::array<double,2> normal_at_gp = edg.get_normal_at_gp(gp);
-
+  for ( uint gp=0; gp < boundary.get_n_gp(); ++gp ) {
     double ze_ex, qx_ex, qy_ex;
 
-    edg.data->get_ex( stepper.get_t_at_curr_stage(),
+    switch(bound->type){
+      case LAND: 
+        double n_x, n_y, t_x, t_y, 
+        qn_in, qt_in, qn_ex, qt_ex;
+
+        n_x = bound->surface_normal[X][gp];
+        n_y = bound->surface_normal[Y][gp];
+        t_x = -n_y;
+        t_y = n_x;
+
+        qn_in = boundary.qx_at_gp[gp] * n_x + boundary.qy_at_gp[gp] * n_y;
+        qt_in = boundary.qx_at_gp[gp] * t_x + boundary.qy_at_gp[gp] * t_y;
+
+        qn_ex = -qn_in;
+        qt_ex = qt_in;
+
+        ze_ex = boundary.ze_at_gp[gp];
+        qx_ex = qn_ex*n_x + qt_ex*t_x;
+        qy_ex = qn_ex*n_y + qt_ex*t_y;
+      break;
+      case OCEAN:     
+        ze_ex = 0; // tidal force      
+        qx_ex = boundary.qx_at_gp[gp];
+        qy_ex = boundary.qy_at_gp[gp];
+      break;
+    }
+
+    /*edg.data->get_ex( stepper.get_t_at_curr_stage(),
                       edg.data->ze_at_gp[gp], edg.data->qx_at_gp[gp], edg.data->qy_at_gp[gp],
-                      edg.data->bath_at_gp[gp], normal_at_gp, ze_ex, qx_ex, qy_ex);
+                      edg.data->bath_at_gp[gp], normal_at_gp, ze_ex, qx_ex, qy_ex);*/
 
     //    std::cout << "ze_ex: " << ze_ex << "\n";
 
-    LLF_flux( edg.data->ze_at_gp[gp], ze_ex,
-              edg.data->qx_at_gp[gp], qx_ex,
-              edg.data->qy_at_gp[gp], qy_ex,
-              edg.data->bath_at_gp[gp], normal_at_gp,
-              edg.data->ze_numerical_flux_at_gp[gp],
-              edg.data->qx_numerical_flux_at_gp[gp],
-              edg.data->qy_numerical_flux_at_gp[gp]
+    LLF_flux( boundary.ze_at_gp[gp], ze_ex,
+              boundary.qx_at_gp[gp], qx_ex,
+              boundary.qy_at_gp[gp], qy_ex,
+              boundary.bath_at_gp[gp], bound->surface_normal[gp],
+              boundary.ze_numerical_flux_at_gp[gp],
+              boundary.qx_numerical_flux_at_gp[gp],
+              boundary.qy_numerical_flux_at_gp[gp]
               );
   }
 
   //now compute contributions to the righthand side
-  for ( uint dof = 0; dof < edg._elt->get_num_dof(); ++dof ) {
-    data_in->state[rk_stage].rhs_ze[dof] -= edg.integrate_surface_phi(0,dof,
-                                              edg.data->ze_numerical_flux_at_gp);
-
-    // std::cout << "Dof: " << dof << " rhsZe: " << data_in->state[rk_stage].rhs_ze[dof] << "\n";
-
-    data_in->state[rk_stage].rhs_qx[dof] -= edg.integrate_surface_phi(0,dof,
-                                              edg.data->qx_numerical_flux_at_gp);
-    data_in->state[rk_stage].rhs_qy[dof] -= edg.integrate_surface_phi(0,dof,
-                                              edg.data->qy_numerical_flux_at_gp);
+  for ( uint dof = 0; dof < state.get_ndof(); ++dof ) {
+    state.rhs_ze[dof] -= bound->IntegrationPhi(dof,
+                                              boundary.ze_numerical_flux_at_gp);
+    state.rhs_qx[dof] -= bound->IntegrationPhi(dof,
+                                              boundary.qx_numerical_flux_at_gp);
+    state.rhs_qy[dof] -= bound->IntegrationPhi(dof,
+                                              boundary.qy_numerical_flux_at_gp);
   }
 }
 
 template<typename ElementType>
 void update_kernel( const Stepper& stepper, ElementType& elt ) {
-
   const uint rk_stage = stepper.get_stage();
-  auto& state = elt.data->state;
   double dt = stepper.get_dt();
+  
+  auto& state = elt->data.state;
+  auto& curr_state = elt->data.state[rk_stage];
+  auto& next_state = elt->data.state[rk_stage+1];
 
-  elt.apply_Minv(state[rk_stage].rhs_ze);
-  elt.apply_Minv(state[rk_stage].rhs_qx);
-  elt.apply_Minv(state[rk_stage].rhs_qy);
+  curr_state.rhs_ze = elt->SolveLSE(curr_state.rhs_ze);
+  curr_state.rhs_qx = elt->SolveLSE(curr_state.rhs_qx);
+  curr_state.rhs_qy = elt->SolveLSE(curr_state.rhs_qy);
 
-  std::fill(state[rk_stage+1].ze.begin(), state[rk_stage+1].ze.end(), 0);
-  std::fill(state[rk_stage+1].qx.begin(), state[rk_stage+1].qx.end(), 0);
-  std::fill(state[rk_stage+1].qy.begin(), state[rk_stage+1].qy.end(), 0);
+  std::fill(next_state.ze.begin(), next_state.ze.end(), 0);
+  std::fill(next_state.qx.begin(), next_state.qx.end(), 0);
+  std::fill(next_state.qy.begin(), next_state.qy.end(), 0);
 
   for ( uint s = 0; s <= rk_stage; ++s ) {
-    for ( uint dof = 0; dof < elt.get_num_dof(); ++dof ) {
-    state[rk_stage+1].ze[dof] += stepper.ark[rk_stage][s]*state[s].ze[dof]
+    for ( uint dof = 0; dof < curr_state.get_ndof(); ++dof ) {
+    next_state.ze[dof] += stepper.ark[rk_stage][s]*state[s].ze[dof]
       + dt*stepper.brk[rk_stage][s]*state[s].rhs_ze[dof];
 
-    state[rk_stage+1].qx[dof] += stepper.ark[rk_stage][s]*state[s].qx[dof]
+    next_state.qx[dof] += stepper.ark[rk_stage][s]*state[s].qx[dof]
       + dt*stepper.brk[rk_stage][s]*state[s].rhs_qx[dof];
 
-    state[rk_stage+1].qy[dof] += stepper.ark[rk_stage][s]*state[s].qy[dof]
+    next_state.qy[dof] += stepper.ark[rk_stage][s]*state[s].qy[dof]
       + dt*stepper.brk[rk_stage][s]*state[s].rhs_qy[dof];
     }
   }
@@ -186,11 +208,11 @@ template<typename ElementType>
 void swap_states( const Stepper& stepper, ElementType& elt)
 {
   uint n_stages = stepper.get_num_stages();
-  auto& dat = elt.data;
+  auto& state = elt->data.state;
 
-  std::swap(dat->state[0].ze, dat->state[n_stages].ze);
-  std::swap(dat->state[0].qx, dat->state[n_stages].qx);
-  std::swap(dat->state[0].qy, dat->state[n_stages].qy);
+  std::swap(state[0].ze, state[n_stages].ze);
+  std::swap(state[0].qx, state[n_stages].qx);
+  std::swap(state[0].qy, state[n_stages].qy);
 
 };
 

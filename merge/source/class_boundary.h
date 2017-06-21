@@ -31,6 +31,8 @@ public:
 template<int dimension = 1, class integration_type = Integration::GaussLegendre_1D>
 class Boundary {
 public:
+	unsigned char type; //this will be remodeled
+
 	SWE::Data& data;
 	Array2D<double> surface_normal;
 
@@ -41,13 +43,13 @@ private:
 public:
 	Boundary(RawBoundary<dimension>&);
 
-	void ComputeUgp(std::vector<double>&, const std::vector<double>&);
+	void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 	double IntegrationPhi(int, const std::vector<double>&);
 };
 
 template<int dimension, class integration_type>
 Boundary<dimension, integration_type>
-::Boundary(RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data) {
+::Boundary(RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data), type(raw_boundary.type) {
 	integration_type integration;
 	std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.get_rule(2 * raw_boundary.p);
 
@@ -64,23 +66,23 @@ Boundary<dimension, integration_type>
 				this->int_fact_phi[i][j] *= integration_rule.first[j] * surface_J[0];
 			}
 		}
+
+		this->surface_normal = Array2D<double>(integration_rule.first.size(), *raw_boundary.get_surface_normal().begin());
 	}
 
-	this->surface_normal = raw_boundary.get_surface_normal();
-
-	this->data.boundary_data = SWE::Boundary((*this->int_fact_phi.begin()).size());
+	this->data.boundary = SWE::Boundary((*this->int_fact_phi.begin()).size());
 }
 
 template<int dimension, class integration_type>
 void Boundary<dimension, integration_type>
-::ComputeUgp(std::vector<double>& u_gp, const std::vector<double>& u) {
-	for (int i = 0; i < this->u_gp.size(); i++) {
-		this->u_gp[i] = 0.0;
+::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
+	for (int i = 0; i < u_gp.size(); i++) {
+		u_gp[i] = 0.0;
 	}
 
-	for (int i = 0; i < this->u.size(); i++) {
-		for (int j = 0; j < this->u_gp.size(); j++) {
-			this->u_gp[j] += this->u[i] * this->phi_gp[i][j];
+	for (int i = 0; i < u.size(); i++) {
+		for (int j = 0; j < u_gp.size(); j++) {
+			u_gp[j] += u[i] * this->phi_gp[i][j];
 		}
 	}
 }
@@ -90,8 +92,8 @@ double Boundary<dimension, integration_type>
 ::IntegrationPhi(int phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (int i = 0; i < this->int_fac_phi[phi_n].size(); i++) {
-		integral += u_gp[i] * this->int_fac_phi[phi_n][i];
+	for (int i = 0; i < this->int_fact_phi[phi_n].size(); i++) {
+		integral += u_gp[i] * this->int_fact_phi[phi_n][i];
 	}
 
 	return integral;
@@ -113,8 +115,8 @@ private:
 public:
 	Interface(RawBoundary<dimension>&, RawBoundary<dimension>&);
 
-	void ComputeUgpIN(std::vector<double>&, const std::vector<double>&);
-	void ComputeUgpEX(std::vector<double>&, const std::vector<double>&);
+	void ComputeUgpIN(const std::vector<double>&, std::vector<double>&);
+	void ComputeUgpEX(const std::vector<double>&, std::vector<double>&);
 	double IntegrationPhiIN(int, const std::vector<double>&);
 	double IntegrationPhiEX(int, const std::vector<double>&);
 };
@@ -145,24 +147,24 @@ Interface<dimension, integration_type>
 				this->int_fact_phi_ex[i][j] *= integration_rule.first[j] * surface_J[0];
 			}
 		}
+	
+		this->surface_normal = Array2D<double>(integration_rule.first.size(), *raw_boundary_in.get_surface_normal().begin());
 	}
 
-	this->surface_normal = raw_boundary_in.get_surface_normal();
-
-	this->data_in.boundary_data = SWE::Boundary((*this->int_fact_phi_in.begin()).size());
-	this->data_ex.boundary_data = SWE::Boundary((*this->int_fact_phi_ex.begin()).size());
+	this->data_in.boundary = SWE::Boundary((*this->int_fact_phi_in.begin()).size());
+	this->data_ex.boundary = SWE::Boundary((*this->int_fact_phi_ex.begin()).size());
 }
 
 template<int dimension, class integration_type>
 void Interface<dimension, integration_type>
-::ComputeUgpIN(std::vector<double>& u_gp, const std::vector<double>& u) {
-	for (int i = 0; i < this->u_gp.size(); i++) {
-		this->u_gp[i] = 0.0;
+::ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp) {
+	for (int i = 0; i < u_gp.size(); i++) {
+		u_gp[i] = 0.0;
 	}
 
-	for (int i = 0; i < this->u.size(); i++) {
-		for (int j = 0; j < this->u_gp.size(); j++) {
-			this->u_gp[j] += this->u[i] * this->phi_gp_in[i][j];
+	for (int i = 0; i < u.size(); i++) {
+		for (int j = 0; j < u_gp.size(); j++) {
+			u_gp[j] += u[i] * this->phi_gp_in[i][j];
 		}
 	}
 }
@@ -172,8 +174,8 @@ double Interface<dimension, integration_type>
 ::IntegrationPhiIN(int phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (int i = 0; i < this->int_fac_phi_in[phi_n].size(); i++) {
-		integral += u_gp[i] * this->int_fac_phi_in[phi_n][i];
+	for (int i = 0; i < this->int_fact_phi_in[phi_n].size(); i++) {
+		integral += u_gp[i] * this->int_fact_phi_in[phi_n][i];
 	}
 
 	return integral;
@@ -181,14 +183,14 @@ double Interface<dimension, integration_type>
 
 template<int dimension, class integration_type>
 void Interface<dimension, integration_type>
-::ComputeUgpEX(std::vector<double>& u_gp, const std::vector<double>& u) {
-	for (int i = 0; i < this->u_gp.size(); i++) {
-		this->u_gp[i] = 0.0;
+::ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp) {
+	for (int i = 0; i < u_gp.size(); i++) {
+		u_gp[i] = 0.0;
 	}
 
-	for (int i = 0; i < this->u.size(); i++) {
-		for (int j = 0; j < this->u_gp.size(); j++) {
-			this->u_gp[j] += this->u[i] * this->phi_gp_ex[i][j];
+	for (int i = 0; i < u.size(); i++) {
+		for (int j = 0; j < u_gp.size(); j++) {
+			u_gp[j] += u[i] * this->phi_gp_ex[i][j];
 		}
 	}
 }
@@ -198,8 +200,8 @@ double Interface<dimension, integration_type>
 ::IntegrationPhiEX(int phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (int i = 0; i < this->int_fac_phi_ex[phi_n].size(); i++) {
-		integral += u_gp[i] * this->int_fac_phi_ex[phi_n][i];
+	for (int i = 0; i < this->int_fact_phi_ex[phi_n].size(); i++) {
+		integral += u_gp[i] * this->int_fact_phi_ex[phi_n][i];
 	}
 
 	return integral;

@@ -38,10 +38,10 @@ public:
 
 	std::vector<RawBoundary<dimension - 1>*> CreateBoundaries();
 
-	void ComputeUgp(std::vector<double>&, const std::vector<double>&);
-	void ComputeDUgp(int, std::vector<double>&, const std::vector<double>&);
+	void ComputeUgp(const std::vector<double>&, std::vector<double>&);
+	void ComputeDUgp(int, const std::vector<double>&, std::vector<double>&);
 	double IntegrationPhi(int, const std::vector<double>&);
-	double IntegrationDPhi(int, const std::vector<double>&);
+	double IntegrationDPhi(int, int, const std::vector<double>&);
 
 	std::vector<double> SolveLSE(const std::vector<double>&);
 
@@ -114,8 +114,8 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 		//Placeholder for nonconstant Jacobian
 	}
 
-	this->data.state_data.push_back(SWE::State(this->int_fact_phi.size()));
-	this->data.internal_data = SWE::Internal((*this->int_fact_phi.begin()).size());
+	this->data.state.push_back(SWE::State(this->int_fact_phi.size()));
+	this->data.internal = SWE::Internal((*this->int_fact_phi.begin()).size());
 }
 
 template<int dimension, class master_type, class shape_type>
@@ -148,20 +148,20 @@ std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_t
 }
 
 template<int dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::ComputeUgp(std::vector<double>& u_gp, const std::vector<double>& u) {
-	for (int i = 0; i < this->u_gp.size(); i++) {
-		this->u_gp[i] = 0.0;
+void Element<dimension, master_type, shape_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
+	for (int i = 0; i < u_gp.size(); i++) {
+		u_gp[i] = 0.0;
 	}
 
-	for (int i = 0; i < this->u.size(); i++) {
-		for (int j = 0; j < this->u_gp.size(); j++) {
-			this->u_gp[j] += this->u[i] * this->master.phi_gp[i][j];
+	for (int i = 0; i < u.size(); i++) {
+		for (int j = 0; j < u_gp.size(); j++) {
+			u_gp[j] += u[i] * this->master.phi_gp[i][j];
 		}
 	}
 }
 
 template<int dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::ComputeDUgp(int dir, std::vector<double>& du_gp, const std::vector<double>& u) {
+void Element<dimension, master_type, shape_type>::ComputeDUgp(int dir, const std::vector<double>& u, std::vector<double>& du_gp) {
 	for (int i = 0; i < this->u_gp.size(); i++) {
 		this->du_gp[i] = 0.0;
 	}
@@ -181,16 +181,16 @@ double Element<dimension, master_type, shape_type>::IntegrationPhi(int phi_n, co
 	for (int i = 0; i < this->int_fact_phi[phi_n].size(); i++) {
 		integral += u_gp[i] * this->int_fact_phi[phi_n][i];
 	}
-
+	
 	return integral;
 }
 
 template<int dimension, class master_type, class shape_type>
-double Element<dimension, master_type, shape_type>::IntegrationDPhi(int phi_n, const std::vector<double>& u_gp) {
+double Element<dimension, master_type, shape_type>::IntegrationDPhi(int dir, int phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (int i = 0; i < this->int_fact_dphi[phi_n].size(); i++) {
-		integral += u_gp[i] * this->int_fact_dphi[phi_n][i];
+	for (int i = 0; i < this->int_fact_dphi[phi_n][dir].size(); i++) {
+		integral += u_gp[i] * this->int_fact_dphi[phi_n][dir][i];
 	}
 
 	return integral;
@@ -201,15 +201,15 @@ std::vector<double> Element<dimension, master_type, shape_type>::SolveLSE(const 
 	std::vector<double> solution;
 
 	if (this->m_inv.first) { //diagonal
-		for (int i = 0; i < this->u[u_flag].size(); i++) {
-			solution.push_back(this->m_inv.second[0][i] * this->rhs[i]);
+		for (int i = 0; i < rhs.size(); i++) {
+			solution.push_back(this->m_inv.second[0][i] * rhs[i]);
 		}
 	}
 	else if (!(this->m_inv.first)) { //not diagonal
-		for (int i = 0; i < this->u[u_flag].size(); i++) {
+		for (int i = 0; i < this->m_inv.second.size(); i++) {
 			solution.push_back(0);
-			for (int j = 0; j < this->u[u_flag].size(); j++) {
-				solution[i] += this->m_inv.second[i][j] * this->RHS[j];
+			for (int j = 0; j < rhs.size(); j++) {
+				solution[i] += this->m_inv.second[i][j] * rhs[j];
 			}
 		}
 	}

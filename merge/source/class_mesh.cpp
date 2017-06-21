@@ -261,7 +261,7 @@ void MESH::InitializeBoundariesInterfaces() {
 			raw_in = itt->second;
 			raw_ex = pre_interfaces[itt->second->neighbor_ID][it->first];
 
-			this->interfaces_.push_back(new Interface<>(*raw_in, *raw_ex));
+			this->interfaces.push_back(new Interface<>(*raw_in, *raw_ex));
 
 			pre_interfaces[itt->second->neighbor_ID].erase(it->first);
 			it->second.erase(itt);
@@ -330,4 +330,37 @@ void MESH::InitializeVTK() {
     for (auto it = cells.begin(); it != cells.end(); it++) {
         file << (*it)[0] << '\n';
     }
+}
+
+void MESH::Solve(){
+	Stepper stepper(2, 2, 10.);
+
+	int stages = stepper.get_num_stages();
+
+	for (auto it = elements.begin(); it != elements.end(); it++){
+		it->second->data.state = std::vector<SWE::State>(stages, 
+			*it->second->data.state.begin());
+	}
+
+	for (auto it = elements.begin(); it != elements.end(); it++){
+		SWE::volume_kernel(stepper, it->second);
+	}
+
+	for (auto it = boundaries.begin(); it != boundaries.end(); it++){
+		for (auto itt = it->second.begin(); itt != it->second.end(); itt++){
+			SWE::boundary_kernel(stepper, *itt);
+		}
+	}
+
+	for (auto it = interfaces.begin(); it != interfaces.end(); it++){
+		SWE::interface_kernel(stepper, *it);
+	}
+
+	for (auto it = elements.begin(); it != elements.end(); it++){
+		SWE::update_kernel(stepper, it->second);
+	}
+
+	for (auto it = elements.begin(); it != elements.end(); it++){
+		//SWE::swap_states(stepper, it->second);
+	}
 }

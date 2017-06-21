@@ -7,12 +7,15 @@
 
 #include <cmath>
 #include <functional>
+#include <algorithm>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
+#include <assert.h>
 
 #include <array>
 #include <vector>
 #include <map>
-
-#include "problem/SWE/swe_data.hpp"
 
 #define PROBLEM_SWE_2D_LINEAR
 
@@ -73,6 +76,11 @@ namespace Shape {
 	};
 }
 
+namespace Global {
+	static constexpr double g = 9.81;
+	static constexpr double Cf = 0.0025;
+}
+
 #define PI 3.14159265359	
 
 #define DEFAULT_ID 4294967295
@@ -90,32 +98,10 @@ namespace Shape {
 #define N2 1
 #define N3 2
 
-// timestepper types
-#define EEULER 0
-#define RK2 1
-#define RK3 2
-#define RK4 3
-
 // element types (as VTK cell types)
 #define TRIANGLE 5
 
 // postprocessor element divisions
 #define N_DIV 1
-
-// 2D bases
-#define DUBINER_2D 16
-// 2D geometric Bases
-
-// 2D integration rules
-#define DUNAVANT_2D 16
-// 1D integration rules
-#define GAUSS_LEGENDRE_1D 0
-
-//TIMESTEPPING FLAGS FOR MULTISTEP METHODS
-#define U0 0U
-#define K1 1U
-#define K2 2U
-#define K3 3U
-#define K4 4U
 
 #endif

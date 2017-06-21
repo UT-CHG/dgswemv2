@@ -15,12 +15,9 @@
         "-o SWE_2D_LINEAR",
         
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE_2D_LINEAR/main_SWE_2D_LINEAR.cpp",
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE_2D_LINEAR/class_problem_SWE_2D_LINEAR.cpp",
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE_2D_LINEAR/class_problem_SWE_2D_LINEAR_timestep.cpp",
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_mesh.cpp",
-
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_interface.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp",
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/polynomials/basis_polynomials.cpp",
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D/basis_dubiner_2D.cpp",
