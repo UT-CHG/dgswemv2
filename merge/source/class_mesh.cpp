@@ -333,34 +333,151 @@ void MESH::InitializeVTK() {
 }
 
 void MESH::Solve(){
-	Stepper stepper(2, 2, 10.);
+	Stepper stepper(2, 2, 1.);
 
-	int stages = stepper.get_num_stages();
+	int n_stages = stepper.get_num_stages();
 
-	for (auto it = elements.begin(); it != elements.end(); it++){
-		it->second->data.state = std::vector<SWE::State>(stages, 
+	for (auto it = elements.begin(); it != elements.end(); it++) {
+		it->second->data.state = std::vector<SWE::State>(n_stages + 1,
 			*it->second->data.state.begin());
 	}
 
-	for (auto it = elements.begin(); it != elements.end(); it++){
-		SWE::volume_kernel(stepper, it->second);
-	}
+	this->WriteDataVTK();
 
-	for (auto it = boundaries.begin(); it != boundaries.end(); it++){
-		for (auto itt = it->second.begin(); itt != it->second.end(); itt++){
-			SWE::boundary_kernel(stepper, *itt);
+	uint nsteps = std::ceil(172800 / stepper.get_dt());
+	
+	for (uint step = 0; step < nsteps; ++step) {
+		for (uint stage = 0; stage < n_stages; ++stage) {
+			for (auto it = elements.begin(); it != elements.end(); it++) {
+				SWE::volume_kernel(stepper, it->second);
+				//SWE::source_kernel(stepper, it->second);
+			}
+
+			for (auto it = boundaries.begin(); it != boundaries.end(); it++) {
+				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+					SWE::boundary_kernel(stepper, *itt);
+				}
+			}
+
+			for (auto it = interfaces.begin(); it != interfaces.end(); it++) {
+				SWE::interface_kernel(stepper, *it);
+			}
+
+			for (auto it = elements.begin(); it != elements.end(); it++) {
+				SWE::update_kernel(stepper, it->second);
+			}
+
+			++stepper;
 		}
+
+		for (auto it = elements.begin(); it != elements.end(); it++) {
+			SWE::swap_states(stepper, it->second);
+		}
+
+		if (step % 360 == 0) this->WriteDataVTK();
+	}
+}
+
+void::MESH::WriteDataVTK() {
+	std::vector<double> cell_data;
+	std::vector<double> point_data;
+
+	std::string file_name = "data.vtk";
+	std::ofstream file(file_name);
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		it->second->WriteCellDataVTK(it->second->data.state[0].ze, cell_data);
 	}
 
-	for (auto it = interfaces.begin(); it != interfaces.end(); it++){
-		SWE::interface_kernel(stepper, *it);
+	file << "CELL_DATA " << cell_data.size() << '\n';
+	file << "SCALARS ze float 1\n";
+	file << "LOOKUP_TABLE default\n";
+
+	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+		file << *it << '\n';
 	}
 
-	for (auto it = elements.begin(); it != elements.end(); it++){
-		SWE::update_kernel(stepper, it->second);
+	cell_data.clear();
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		it->second->WriteCellDataVTK(it->second->data.state[0].qx, cell_data);
 	}
 
-	for (auto it = elements.begin(); it != elements.end(); it++){
-		//SWE::swap_states(stepper, it->second);
+	file << "SCALARS qx float 1\n";
+	file << "LOOKUP_TABLE default\n";
+
+	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+		file << *it << '\n';
 	}
+
+	cell_data.clear();
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		it->second->WriteCellDataVTK(it->second->data.state[0].qy, cell_data);
+	}
+
+	file << "SCALARS qy float 1\n";
+	file << "LOOKUP_TABLE default\n";
+
+	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
+		file << *it << '\n';
+	}
+
+	cell_data.clear();
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		it->second->WritePointDataVTK(it->second->data.state[0].ze, point_data);
+	}
+
+	file << "POINT_DATA " << point_data.size() << '\n';
+	file << "SCALARS ze float 1\n";
+	file << "LOOKUP_TABLE default\n";
+
+	for (auto it = point_data.begin(); it != point_data.end(); it++) {
+		file << *it << '\n';
+	}
+
+	point_data.clear();
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		it->second->WritePointDataVTK(it->second->data.state[0].qx, point_data);
+	}
+
+	file << "SCALARS u float 1\n";
+	file << "LOOKUP_TABLE default\n";
+
+	for (auto it = point_data.begin(); it != point_data.end(); it++) {
+		file << *it << '\n';
+	}
+
+	point_data.clear();
+
+	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
+		it->second->WritePointDataVTK(it->second->data.state[0].qy, point_data);
+	}
+
+	file << "SCALARS v float 1\n";
+	file << "LOOKUP_TABLE default\n";
+
+	for (auto it = point_data.begin(); it != point_data.end(); it++) {
+		file << *it << '\n';
+	}
+
+	point_data.clear();
+
+	file.close();
+
+	std::string file_name_geom = "geometry.vtk";
+	std::string file_name_data = "data.vtk";
+
+	std::ifstream file_geom(file_name_geom, std::ios_base::binary);
+	std::ifstream file_data(file_name_data, std::ios_base::binary);
+
+	std::string file_name_merge = "mesh_data_" + std::to_string(this->snapshot) + ".vtk";
+	std::ofstream file_merge(file_name_merge, std::ios_base::binary);
+
+	this->snapshot++;
+
+	file_merge << file_geom.rdbuf() << file_data.rdbuf();
+	file_merge.close();
 }

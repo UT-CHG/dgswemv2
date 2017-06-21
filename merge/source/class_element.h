@@ -3,10 +3,11 @@
 
 #include "general_definitions.h"
 
-#include "class_boundary.h"
-
 #include "master/master_elements_2D.h"
 #include "shape/shapes_2D.h"
+
+#include "class_boundary.h"
+#include "problem/SWE/swe_data.hpp"
 
 template<int dimension = 2, 
 	class master_type = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>,
@@ -46,8 +47,8 @@ public:
 	std::vector<double> SolveLSE(const std::vector<double>&);
 
 	void InitializeVTK(std::vector<Point<3>>&, Array2D<unsigned int>&);
-	void WriteCellDataVTK(std::vector<double>&, int);
-	void WritePointDataVTK(std::vector<double>&, int);
+	void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
+	void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
 };
 
 template<int dimension, class master_type, class shape_type>
@@ -116,6 +117,24 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 
 	this->data.state.push_back(SWE::State(this->int_fact_phi.size()));
 	this->data.internal = SWE::Internal((*this->int_fact_phi.begin()).size());
+
+	//SET INITIAL CONDITIONS FOR TESTING
+	double L = 90000;
+	double w = 2 * PI / 43200;
+	double beta = w * sqrt(1 / (3 * Global::g));
+
+	double h_true[3] = {
+		0.3*cos(beta * this->nodal_coordinates[0][X]) / cos(beta * L),
+		0.3*cos(beta * this->nodal_coordinates[1][X]) / cos(beta * L),
+		0.3*cos(beta * this->nodal_coordinates[2][X]) / cos(beta * L),
+	};
+
+	this->data.state[0].ze[0] = h_true[0] / 3.0 + h_true[1] / 3.0 + h_true[2] / 3.0;
+	this->data.state[0].ze[1] = -h_true[0] / 6.0 - h_true[1] / 6.0 + h_true[2] / 3.0;
+	this->data.state[0].ze[2] = -h_true[0] / 2.0 + h_true[1] / 2.0;
+
+	for (int i = 0; i < this->data.internal.get_n_gp(); i++)
+		this->data.internal.bath_at_gp[i] = 3.0;
 }
 
 template<int dimension, class master_type, class shape_type>
@@ -223,12 +242,12 @@ void Element<dimension, master_type, shape_type>::InitializeVTK(std::vector<Poin
 }
 
 template<int dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::WriteCellDataVTK(std::vector<double>& cell_data, int u_flag) {
+void Element<dimension, master_type, shape_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
 	Array2D<double> temp = this->master.phi_postprocessor_cell;
 
 	for (int i = 0; i < temp.size(); i++) {
 		for (int j = 0; j < temp[i].size(); j++) {
-			temp[i][j] *= this->u[u_flag][i];
+			temp[i][j] *= u[i];
 		}
 	}
 
@@ -242,12 +261,12 @@ void Element<dimension, master_type, shape_type>::WriteCellDataVTK(std::vector<d
 }
 
 template<int dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::WritePointDataVTK(std::vector<double>& point_data, int u_flag) {
+void Element<dimension, master_type, shape_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
 	Array2D<double> temp = this->master.phi_postprocessor_point;
 
 	for (int i = 0; i < temp.size(); i++) {
 		for (int j = 0; j < temp[i].size(); j++) {
-			temp[i][j] *= this->u[u_flag][i];
+			temp[i][j] *= u[i];
 		}
 	}
 

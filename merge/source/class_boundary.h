@@ -70,7 +70,10 @@ Boundary<dimension, integration_type>
 		this->surface_normal = Array2D<double>(integration_rule.first.size(), *raw_boundary.get_surface_normal().begin());
 	}
 
-	this->data.boundary = SWE::Boundary((*this->int_fact_phi.begin()).size());
+	this->data.boundary = SWE::Boundary(integration_rule.first.size());
+
+	for (int i = 0; i < this->data.boundary.get_n_gp(); i++)
+		this->data.boundary.bath_at_gp[i] = 3.0;
 }
 
 template<int dimension, class integration_type>
@@ -151,8 +154,14 @@ Interface<dimension, integration_type>
 		this->surface_normal = Array2D<double>(integration_rule.first.size(), *raw_boundary_in.get_surface_normal().begin());
 	}
 
-	this->data_in.boundary = SWE::Boundary((*this->int_fact_phi_in.begin()).size());
-	this->data_ex.boundary = SWE::Boundary((*this->int_fact_phi_ex.begin()).size());
+	this->data_in.boundary = SWE::Boundary(integration_rule.first.size());
+	this->data_ex.boundary = SWE::Boundary(integration_rule.first.size());
+
+	for (int i = 0; i < this->data_in.boundary.get_n_gp(); i++)
+		this->data_in.boundary.bath_at_gp[i] = 3.0;
+
+	for (int i = 0; i < this->data_ex.boundary.get_n_gp(); i++)
+		this->data_ex.boundary.bath_at_gp[i] = 3.0;
 }
 
 template<int dimension, class integration_type>

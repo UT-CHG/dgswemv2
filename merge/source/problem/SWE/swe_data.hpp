@@ -16,10 +16,10 @@ namespace SWE {
 		std::vector<double> rhs_ze;
 		std::vector<double> rhs_qx;
 		std::vector<double> rhs_qy;
-		
-		int get_ndof() {return ndof;}
-	  
-	  private:
+
+		int get_ndof() { return ndof; }
+
+	private:
 		int ndof;
 	};
 
@@ -45,16 +45,16 @@ namespace SWE {
 		std::vector<double> ze_numerical_flux_at_gp;
 		std::vector<double> qx_numerical_flux_at_gp;
 		std::vector<double> qy_numerical_flux_at_gp;
-      
-   		int get_n_gp() {return n_gp;}
 
-	  private:
+		int get_n_gp() { return n_gp; }
+
+	private:
 		int n_gp;
 	};
 
 	struct Internal {
 		Internal(int n_gp)
-			: n_gp(n_gp), 
+			: n_gp(n_gp),
 			ze_flux_at_gp({ std::vector<double>(n_gp), std::vector<double>(n_gp) }),
 			qx_flux_at_gp({ std::vector<double>(n_gp), std::vector<double>(n_gp) }),
 			qy_flux_at_gp({ std::vector<double>(n_gp), std::vector<double>(n_gp) }),
@@ -87,9 +87,9 @@ namespace SWE {
 
 		std::vector<double> water_column_hgt_at_gp;
 
-   		int get_n_gp() {return n_gp;}
-  
-	  private:
+		int get_n_gp() { return n_gp; }
+
+	private:
 		int n_gp;
 	};
 

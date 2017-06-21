@@ -17,15 +17,6 @@
 #include <vector>
 #include <map>
 
-#define PROBLEM_SWE_2D_LINEAR
-
-#ifdef PROBLEM_SWE_2D
-#include "problem/SWE_2D/definitions_SWE_2D.h"
-#endif
-#ifdef PROBLEM_SWE_2D_LINEAR
-#include "problem/SWE_2D_LINEAR/definitions_SWE_2D_LINEAR.h"
-#endif
-
 template<int DIM>
 using Point = std::array<double, DIM>;
 
@@ -97,6 +88,10 @@ namespace Global {
 #define N1 0
 #define N2 1
 #define N3 2
+
+#define OCEAN 0
+#define LAND 1
+#define INTERNAL 2
 
 // element types (as VTK cell types)
 #define TRIANGLE 5

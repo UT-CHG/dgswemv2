@@ -8,9 +8,9 @@
 //#include "../../run_simulation.hpp"
 
 int main(int argc, const char* argv[]){
-	MESH* mesh = new MESH(3);
+	MESH* mesh = new MESH(1);
 
-	mesh->RectangularDomainTest(90000.0, 45000.0, 50, 4, TRIANGLE);
+	mesh->RectangularDomainTest(90000.0, 45000.0, 100, 2, TRIANGLE);
 
 	mesh->Solve();
 

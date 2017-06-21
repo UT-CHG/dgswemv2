@@ -24,11 +24,13 @@ private:
 	std::vector<Interface<>*> interfaces;
 
 public:
-	MESH(int p) : p(p) {}
+	MESH(int p) : p(p), snapshot(0) {}
 	~MESH();
 
 	void RectangularDomainTest(double, double, int, int, int);
 	void Solve();
+	void WriteDataVTK();
+	int snapshot;
 
 private:
 	void InitializeBoundariesInterfaces();
