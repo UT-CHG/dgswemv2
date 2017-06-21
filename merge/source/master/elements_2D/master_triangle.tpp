@@ -35,7 +35,7 @@ namespace Master {
 	}
 
 	template<class basis_type, class integration_type>
-	std::vector<Point<2>> Triangle<basis_type, integration_type>::BoundaryToMasterCoordinates(int boundary, const std::vector<Point<1>>& z_boundary) {
+	std::vector<Point<2>> Triangle<basis_type, integration_type>::boundary_to_master(int boundary, const std::vector<Point<1>>& z_boundary) {
 		std::vector<Point<2>> z_master(z_boundary.size());
 
 		if (boundary == 0) {

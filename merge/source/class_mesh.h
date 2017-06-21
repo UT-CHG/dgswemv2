@@ -3,6 +3,8 @@
 
 #include "problem/SWE/swe_data.hpp"
 #include "problem/SWE/swe_kernels.hpp"
+#include "problem/SWE/swe_boundary_conditions.hpp"
+#include "problem/SWE/swe_definitions.hpp"
 
 #include "general_definitions.h"
 #include "stepper.hpp"

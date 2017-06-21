@@ -2,9 +2,10 @@
 #define SWE_KERNELS_HPP
 
 #include "../../general_definitions.h"
+#include "../../stepper.hpp"
 
 #include "swe_LLF_flux.hpp"
-#include "../../stepper.hpp"
+#include "swe_definitions.hpp"
 
 namespace SWE {
 	template<typename ElementType>
@@ -35,7 +36,7 @@ namespace SWE {
 				Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
 		}
 
-		//skip dof = 0, which is a constant and thus trivially 0
+		//skip dof = 0, which is a constant and thus trivially 0 NOT ALWAYS!
 		for (uint dof = 1; dof < state.get_ndof(); ++dof) {
 			state.rhs_ze[dof] = elt->IntegrationDPhi(X, dof, internal.ze_flux_at_gp[X]) +
 				elt->IntegrationDPhi(Y, dof, internal.ze_flux_at_gp[Y]);
@@ -123,7 +124,8 @@ namespace SWE {
 	}
 
 	template<typename BoundaryType>
-	void boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
+	void boundary_kernel(const Stepper& stepper, BoundaryType& bound, 
+		void(*set_bc)(const Stepper&, const BoundaryType&, uint, double&, double&, double&)) {
 		const uint rk_stage = stepper.get_stage();
 
 		auto& state = bound->data.state[rk_stage];
@@ -133,40 +135,14 @@ namespace SWE {
 		bound->ComputeUgp(state.qx, boundary.qx_at_gp);
 		bound->ComputeUgp(state.qy, boundary.qy_at_gp);
 
+		double H_0 = 0.3;
+		if (stepper.get_t_at_curr_stage() < 172800.0) H_0 = 0.3 *  stepper.get_t_at_curr_stage() / 172800.0; //LINEAR RAMPING
+		double H_ocean = H_0*cos(2 * PI *  stepper.get_t_at_curr_stage() / 43200.0); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.3m
+
+		double ze_ex, qx_ex, qy_ex;
 		for (uint gp = 0; gp < boundary.get_n_gp(); ++gp) {
-			double ze_ex, qx_ex, qy_ex;
-
-			switch (bound->type) {
-			case LAND:
-				double n_x, n_y, t_x, t_y,
-					qn_in, qt_in, qn_ex, qt_ex;
-
-				n_x = bound->surface_normal[X][gp];
-				n_y = bound->surface_normal[Y][gp];
-				t_x = -n_y;
-				t_y = n_x;
-
-				qn_in = boundary.qx_at_gp[gp] * n_x + boundary.qy_at_gp[gp] * n_y;
-				qt_in = boundary.qx_at_gp[gp] * t_x + boundary.qy_at_gp[gp] * t_y;
-
-				qn_ex = -qn_in;
-				qt_ex = qt_in;
-
-				ze_ex = boundary.ze_at_gp[gp];
-				qx_ex = qn_ex*n_x + qt_ex*t_x;
-				qy_ex = qn_ex*n_y + qt_ex*t_y;
-				break;
-			case OCEAN:
-				ze_ex = 0; // tidal force      
-				qx_ex = boundary.qx_at_gp[gp];
-				qy_ex = boundary.qy_at_gp[gp];
-				break;
-			}
-
-			/*edg.data->get_ex( stepper.get_t_at_curr_stage(),
-							  edg.data->ze_at_gp[gp], edg.data->qx_at_gp[gp], edg.data->qy_at_gp[gp],
-							  edg.data->bath_at_gp[gp], normal_at_gp, ze_ex, qx_ex, qy_ex);*/
-
+			set_bc(stepper, bound, gp, ze_ex, qx_ex, qy_ex);
+			
 			LLF_flux(boundary.ze_at_gp[gp], ze_ex,
 				boundary.qx_at_gp[gp], qx_ex,
 				boundary.qy_at_gp[gp], qy_ex,

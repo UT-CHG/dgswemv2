@@ -83,7 +83,7 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 		this->int_fact_phi = this->master.int_fact_phi;
 		for (int i = 0; i < this->int_fact_phi.size(); i++) {
 			for (int j = 0; j < this->int_fact_phi[i].size(); j++) {
-				this->int_fact_phi[i][j] *= abs(det_J[0]);
+				this->int_fact_phi[i][j] *= std::abs(det_J[0]);
 			}
 		}
 
@@ -97,7 +97,7 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 					for (int l = 0; l < dimension; l++) {
 						int_dphi += this->master.int_fact_dphi[i][l][k] * J_inv[l][j][0];
 					}
-					int_dphi *= abs(det_J[0]);
+					int_dphi *= std::abs(det_J[0]);
 					this->int_fact_dphi[i][j].push_back(int_dphi);
 				}
 			}
@@ -107,7 +107,7 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 		this->m_inv = this->master.m_inv;
 		for (int i = 0; i < this->m_inv.second.size(); i++) {
 			for (int j = 0; j < this->m_inv.second[i].size(); j++) {
-				this->m_inv.second[i][j] /= abs(det_J[0]);
+				this->m_inv.second[i][j] /= std::abs(det_J[0]);
 			}
 		}
 	}
@@ -119,20 +119,6 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 	this->data.internal = SWE::Internal((*this->int_fact_phi.begin()).size());
 
 	//SET INITIAL CONDITIONS FOR TESTING
-	double L = 90000;
-	double w = 2 * PI / 43200;
-	double beta = w * sqrt(1 / (3 * Global::g));
-
-	double h_true[3] = {
-		0.3*cos(beta * this->nodal_coordinates[0][X]) / cos(beta * L),
-		0.3*cos(beta * this->nodal_coordinates[1][X]) / cos(beta * L),
-		0.3*cos(beta * this->nodal_coordinates[2][X]) / cos(beta * L),
-	};
-
-	this->data.state[0].ze[0] = h_true[0] / 3.0 + h_true[1] / 3.0 + h_true[2] / 3.0;
-	this->data.state[0].ze[1] = -h_true[0] / 6.0 - h_true[1] / 6.0 + h_true[2] / 3.0;
-	this->data.state[0].ze[2] = -h_true[0] / 2.0 + h_true[1] / 2.0;
-
 	for (int i = 0; i < this->data.internal.get_n_gp(); i++)
 		this->data.internal.bath_at_gp[i] = 3.0;
 }
@@ -150,7 +136,7 @@ std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_t
 	for (int i = 0; i < this->boundary_type.size(); i++) {
 		basis = (Basis::Basis<dimension>*)(&master.basis);
 
-		boundary_to_master = std::bind(&master_type::BoundaryToMasterCoordinates,
+		boundary_to_master = std::bind(&master_type::boundary_to_master,
 			master, i, std::placeholders::_1);
 
 		get_surface_normal = std::bind(&shape_type::get_surface_normal,
@@ -168,26 +154,22 @@ std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_t
 
 template<int dimension, class master_type, class shape_type>
 void Element<dimension, master_type, shape_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
-	for (int i = 0; i < u_gp.size(); i++) {
-		u_gp[i] = 0.0;
-	}
+	std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
-	for (int i = 0; i < u.size(); i++) {
-		for (int j = 0; j < u_gp.size(); j++) {
-			u_gp[j] += u[i] * this->master.phi_gp[i][j];
+	for (uint dof = 0; dof < u.size(); dof++) {
+		for (uint gp = 0; gp < u_gp.size(); gp++) {
+			u_gp[gp] += u[dof] * this->master.phi_gp[dof][gp];
 		}
 	}
 }
 
 template<int dimension, class master_type, class shape_type>
 void Element<dimension, master_type, shape_type>::ComputeDUgp(int dir, const std::vector<double>& u, std::vector<double>& du_gp) {
-	for (int i = 0; i < this->u_gp.size(); i++) {
-		this->du_gp[i] = 0.0;
-	}
+	std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
-	for (int i = 0; i < this->u.size(); i++) {
-		for (int j = 0; j < this->du_gp.size(); j++) {
-			this->du_gp[j] += this->u[i] * this->internal_dphi_fact[i][dir][j];
+	for (uint dof = 0; dof < u.size(); dof++) {
+		for (uint gp = 0; gp < du_gp.size(); gp++) {
+			du_gp[gp] += u[dof] * this->internal_dphi_fact[dof][dir][gp];
 		}
 	}
 }
@@ -197,8 +179,8 @@ template<int dimension, class master_type, class shape_type>
 double Element<dimension, master_type, shape_type>::IntegrationPhi(int phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (int i = 0; i < this->int_fact_phi[phi_n].size(); i++) {
-		integral += u_gp[i] * this->int_fact_phi[phi_n][i];
+	for (uint gp = 0; gp < this->int_fact_phi[phi_n].size(); gp++) {
+		integral += u_gp[gp] * this->int_fact_phi[phi_n][gp];
 	}
 	
 	return integral;
@@ -208,8 +190,8 @@ template<int dimension, class master_type, class shape_type>
 double Element<dimension, master_type, shape_type>::IntegrationDPhi(int dir, int phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (int i = 0; i < this->int_fact_dphi[phi_n][dir].size(); i++) {
-		integral += u_gp[i] * this->int_fact_dphi[phi_n][dir][i];
+	for (uint gp = 0; gp < this->int_fact_dphi[phi_n][dir].size(); gp++) {
+		integral += u_gp[gp] * this->int_fact_dphi[phi_n][dir][gp];
 	}
 
 	return integral;
@@ -220,14 +202,14 @@ std::vector<double> Element<dimension, master_type, shape_type>::SolveLSE(const 
 	std::vector<double> solution;
 
 	if (this->m_inv.first) { //diagonal
-		for (int i = 0; i < rhs.size(); i++) {
+		for (uint i = 0; i < rhs.size(); i++) {
 			solution.push_back(this->m_inv.second[0][i] * rhs[i]);
 		}
 	}
 	else if (!(this->m_inv.first)) { //not diagonal
-		for (int i = 0; i < this->m_inv.second.size(); i++) {
+		for (uint i = 0; i < this->m_inv.second.size(); i++) {
 			solution.push_back(0);
-			for (int j = 0; j < rhs.size(); j++) {
+			for (uint j = 0; j < rhs.size(); j++) {
 				solution[i] += this->m_inv.second[i][j] * rhs[j];
 			}
 		}
@@ -245,15 +227,15 @@ template<int dimension, class master_type, class shape_type>
 void Element<dimension, master_type, shape_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
 	Array2D<double> temp = this->master.phi_postprocessor_cell;
 
-	for (int i = 0; i < temp.size(); i++) {
-		for (int j = 0; j < temp[i].size(); j++) {
-			temp[i][j] *= u[i];
+	for (uint dof = 0; dof < temp.size(); dof++) {
+		for (uint cell = 0; cell < temp[dof].size(); cell++) {
+			temp[dof][cell] *= u[dof];
 		}
 	}
 
-	for (int i = 1; i < temp.size(); i++) {
-		for (int j = 0; j < temp[i].size(); j++) {
-			temp[0][j] += temp[i][j];
+	for (uint dof = 1; dof < temp.size(); dof++) {
+		for (uint cell = 0; cell < temp[dof].size(); cell++) {
+			temp[0][cell] += temp[dof][cell];
 		}
 	}
 
@@ -264,15 +246,15 @@ template<int dimension, class master_type, class shape_type>
 void Element<dimension, master_type, shape_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
 	Array2D<double> temp = this->master.phi_postprocessor_point;
 
-	for (int i = 0; i < temp.size(); i++) {
-		for (int j = 0; j < temp[i].size(); j++) {
-			temp[i][j] *= u[i];
+	for (uint dof = 0; dof < temp.size(); dof++) {
+		for (uint pt = 0; pt < temp[dof].size(); pt++) {
+			temp[dof][pt] *= u[dof];
 		}
 	}
 
-	for (int i = 1; i < temp.size(); i++) {
-		for (int j = 0; j < temp[i].size(); j++) {
-			temp[0][j] += temp[i][j];
+	for (uint dof = 1; dof < temp.size(); dof++) {
+		for (uint pt = 0; pt < temp[dof].size(); pt++) {
+			temp[0][pt] += temp[dof][pt];
 		}
 	}
 

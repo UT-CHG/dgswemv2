@@ -3,6 +3,8 @@
 
 #include "../../general_definitions.h"
 
+#include "swe_definitions.hpp"
+
 namespace SWE {
 	//The normal points form the interior side (in) to the exterior side (ex)
 	inline

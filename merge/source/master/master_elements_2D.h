@@ -29,7 +29,7 @@ namespace Master {
 
 	public:
 		Triangle(int);
-		std::vector<Point<2>> BoundaryToMasterCoordinates(int, const std::vector<Point<1>>&);
+		std::vector<Point<2>> boundary_to_master(int, const std::vector<Point<1>>&);
 
 	private:
 		std::vector<Point<2>> VTKPostCell();

@@ -14,7 +14,7 @@
     
         "-o SWE_2D_LINEAR",
         
-        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE_2D_LINEAR/main_SWE_2D_LINEAR.cpp",
+        "/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp",
 
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_mesh.cpp",
         "/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp",

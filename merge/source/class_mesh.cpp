@@ -344,9 +344,9 @@ void MESH::Solve(){
 
 	this->WriteDataVTK();
 
-	uint nsteps = std::ceil(172800 / stepper.get_dt());
+	uint nsteps = std::ceil(5 * 172800 / stepper.get_dt());
 	
-	for (uint step = 0; step < nsteps; ++step) {
+	for (uint step = 1; step <= nsteps; ++step) {
 		for (uint stage = 0; stage < n_stages; ++stage) {
 			for (auto it = elements.begin(); it != elements.end(); it++) {
 				SWE::volume_kernel(stepper, it->second);
@@ -355,7 +355,10 @@ void MESH::Solve(){
 
 			for (auto it = boundaries.begin(); it != boundaries.end(); it++) {
 				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-					SWE::boundary_kernel(stepper, *itt);
+					switch(it->first){
+						case LAND: SWE::boundary_kernel(stepper, *itt, &SWE::land_bc); break;
+						case OCEAN: SWE::boundary_kernel(stepper, *itt, &SWE::tidal_bc); break;
+					}
 				}
 			}
 
@@ -374,7 +377,10 @@ void MESH::Solve(){
 			SWE::swap_states(stepper, it->second);
 		}
 
-		if (step % 360 == 0) this->WriteDataVTK();
+		if (step % 300 == 0) {
+			printf("%f\n", stepper.get_t_at_curr_stage());
+			this->WriteDataVTK();
+		}
 	}
 }
 
@@ -390,7 +396,7 @@ void::MESH::WriteDataVTK() {
 	}
 
 	file << "CELL_DATA " << cell_data.size() << '\n';
-	file << "SCALARS ze float 1\n";
+	file << "SCALARS ze_cell float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
@@ -403,7 +409,7 @@ void::MESH::WriteDataVTK() {
 		it->second->WriteCellDataVTK(it->second->data.state[0].qx, cell_data);
 	}
 
-	file << "SCALARS qx float 1\n";
+	file << "SCALARS qx_cell float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
@@ -416,7 +422,7 @@ void::MESH::WriteDataVTK() {
 		it->second->WriteCellDataVTK(it->second->data.state[0].qy, cell_data);
 	}
 
-	file << "SCALARS qy float 1\n";
+	file << "SCALARS qy_cell float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = cell_data.begin(); it != cell_data.end(); it++) {
@@ -430,7 +436,7 @@ void::MESH::WriteDataVTK() {
 	}
 
 	file << "POINT_DATA " << point_data.size() << '\n';
-	file << "SCALARS ze float 1\n";
+	file << "SCALARS ze_point float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = point_data.begin(); it != point_data.end(); it++) {
@@ -443,7 +449,7 @@ void::MESH::WriteDataVTK() {
 		it->second->WritePointDataVTK(it->second->data.state[0].qx, point_data);
 	}
 
-	file << "SCALARS u float 1\n";
+	file << "SCALARS qx_point float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = point_data.begin(); it != point_data.end(); it++) {
@@ -456,7 +462,7 @@ void::MESH::WriteDataVTK() {
 		it->second->WritePointDataVTK(it->second->data.state[0].qy, point_data);
 	}
 
-	file << "SCALARS v float 1\n";
+	file << "SCALARS qy_point float 1\n";
 	file << "LOOKUP_TABLE default\n";
 
 	for (auto it = point_data.begin(); it != point_data.end(); it++) {

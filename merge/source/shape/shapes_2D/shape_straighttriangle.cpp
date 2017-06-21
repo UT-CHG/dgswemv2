@@ -79,7 +79,7 @@ namespace Shape {
 		J[1].push_back((nodal_coordinates[2][Y] - nodal_coordinates[0][Y]) / 2.0);
 
 		double det_J = (J[0][0] * J[1][1] - J[0][1] * J[1][0]);
-		double cw = det_J / abs(det_J); //CW or CCW
+		double cw = det_J / std::abs(det_J); //CW or CCW
 
 		int pt_begin, pt_end;
 

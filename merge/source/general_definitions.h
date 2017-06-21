@@ -4,7 +4,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
 #include <cmath>
 #include <functional>
 #include <algorithm>
@@ -12,7 +11,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <assert.h>
-
 #include <array>
 #include <vector>
 #include <map>
@@ -51,7 +49,7 @@ namespace Master {
 	template<int dim>
 	class Master {
 	public:
-		virtual std::vector<Point<dim>> BoundaryToMasterCoordinates(int, const std::vector<Point<dim - 1>>&) = 0;
+		virtual std::vector<Point<dim>> boundary_to_master(int, const std::vector<Point<dim - 1>>&) = 0;
 	};
 }
 
@@ -65,11 +63,6 @@ namespace Shape {
 		virtual Array2D<double> get_surface_normal(int, const std::vector<Point<dim>>&) = 0;
 		virtual void get_VTK(std::vector<Point<3>>&, Array2D<unsigned int>&, const std::vector<Point<dim>>&) = 0;
 	};
-}
-
-namespace Global {
-	static constexpr double g = 9.81;
-	static constexpr double Cf = 0.0025;
 }
 
 #define PI 3.14159265359	
