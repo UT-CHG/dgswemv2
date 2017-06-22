@@ -1,11 +1,11 @@
 #ifndef SWE_DATA_HPP
 #define SWE_DATA_HPP
 
-#include "../../general_definitions.h"
+#include "../../general_definitions.hpp"
 
 namespace SWE {
 	struct State {
-		State(int ndof)
+		State(uint ndof)
 			: ndof(ndof), ze(ndof), qx(ndof), qy(ndof),
 			rhs_ze(ndof), rhs_qx(ndof), rhs_qy(ndof)
 		{}
@@ -17,15 +17,15 @@ namespace SWE {
 		std::vector<double> rhs_qx;
 		std::vector<double> rhs_qy;
 
-		int get_ndof() { return ndof; }
+		uint get_ndof() { return ndof; }
 
 	private:
-		int ndof;
+		uint ndof;
 	};
 
 	struct Boundary
 	{
-		Boundary(int n_gp)
+		Boundary(uint n_gp)
 			: n_gp(n_gp),
 			ze_at_gp(n_gp),
 			qx_at_gp(n_gp),
@@ -46,14 +46,14 @@ namespace SWE {
 		std::vector<double> qx_numerical_flux_at_gp;
 		std::vector<double> qy_numerical_flux_at_gp;
 
-		int get_n_gp() { return n_gp; }
+		uint get_n_gp() { return n_gp; }
 
 	private:
-		int n_gp;
+		uint n_gp;
 	};
 
 	struct Internal {
-		Internal(int n_gp)
+		Internal(uint n_gp)
 			: n_gp(n_gp),
 			ze_flux_at_gp({ std::vector<double>(n_gp), std::vector<double>(n_gp) }),
 			qx_flux_at_gp({ std::vector<double>(n_gp), std::vector<double>(n_gp) }),
@@ -87,10 +87,10 @@ namespace SWE {
 
 		std::vector<double> water_column_hgt_at_gp;
 
-		int get_n_gp() { return n_gp; }
+		uint get_n_gp() { return n_gp; }
 
 	private:
-		int n_gp;
+		uint n_gp;
 	};
 
 	struct Data {

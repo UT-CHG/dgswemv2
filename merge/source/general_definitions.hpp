@@ -15,7 +15,9 @@
 #include <vector>
 #include <map>
 
-template<int DIM>
+typedef unsigned int uint;
+
+template<uint DIM>
 using Point = std::array<double, DIM>;
 
 template<class type>
@@ -28,40 +30,40 @@ template<class type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 namespace Basis {
-	template<int dim>
+	template<uint dim>
 	class Basis {
 	public:
-		virtual Array2D<double> get_phi(int, const std::vector<Point<dim>>&) = 0;
-		virtual Array3D<double> get_dphi(int, const std::vector<Point<dim>>&) = 0;
-		virtual std::pair<bool, Array2D<double>> get_m_inv(int) = 0;
+		virtual Array2D<double> get_phi(uint, const std::vector<Point<dim>>&) = 0;
+		virtual Array3D<double> get_dphi(uint, const std::vector<Point<dim>>&) = 0;
+		virtual std::pair<bool, Array2D<double>> get_m_inv(uint) = 0;
 	};
 }
 
 namespace Integration {
-	template<int dim>
+	template<uint dim>
 	class Integration {
 	public:
-		virtual std::pair<std::vector<double>, std::vector<Point<dim>>> get_rule(int) = 0;
+		virtual std::pair<std::vector<double>, std::vector<Point<dim>>> get_rule(uint) = 0;
 	};
 }
 
 namespace Master {
-	template<int dim>
+	template<uint dim>
 	class Master {
 	public:
-		virtual std::vector<Point<dim>> boundary_to_master(int, const std::vector<Point<dim - 1>>&) = 0;
+		virtual std::vector<Point<dim>> boundary_to_master(uint, const std::vector<Point<dim - 1>>&) = 0;
 	};
 }
 
 namespace Shape {
-	template<int dim>
+	template<uint dim>
 	class Shape {
 	public:
 		virtual std::vector<double> get_J_det(const std::vector<Point<dim>>&) = 0;
 		virtual Array3D<double> get_J_inv(const std::vector<Point<dim>>&) = 0;
-		virtual std::vector<double> get_surface_J(int, const std::vector<Point<dim>>&) = 0;
-		virtual Array2D<double> get_surface_normal(int, const std::vector<Point<dim>>&) = 0;
-		virtual void get_VTK(std::vector<Point<3>>&, Array2D<unsigned int>&, const std::vector<Point<dim>>&) = 0;
+		virtual std::vector<double> get_surface_J(uint, const std::vector<Point<dim>>&) = 0;
+		virtual Array2D<double> get_surface_normal(uint, const std::vector<Point<dim>>&) = 0;
+		virtual void get_VTK(std::vector<Point<3>>&, Array2D<uint>&, const std::vector<Point<dim>>&) = 0;
 	};
 }
 

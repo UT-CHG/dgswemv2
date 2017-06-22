@@ -1,4 +1,4 @@
-#include "../shapes_2D.h"
+#include "../shapes_2D.hpp"
 
 namespace Shape {
 	std::vector<double> StraightTriangle::get_J_det(const std::vector<Point<2>>& nodal_coordinates) {
@@ -42,10 +42,10 @@ namespace Shape {
 		return J_inv;
 	}
 
-	std::vector<double> StraightTriangle::get_surface_J(int n_bound, const std::vector<Point<2>>& nodal_coordinates) {
+	std::vector<double> StraightTriangle::get_surface_J(uint n_bound, const std::vector<Point<2>>& nodal_coordinates) {
 		std::vector<double> surface_J;
 
-		int pt_begin, pt_end;
+		uint pt_begin, pt_end;
 
 		if (n_bound == 0) {
 			pt_begin = 1;
@@ -66,7 +66,7 @@ namespace Shape {
 		return surface_J;
 	}
 
-	Array2D<double> StraightTriangle::get_surface_normal(int n_bound, const std::vector<Point<2>>& nodal_coordinates) {
+	Array2D<double> StraightTriangle::get_surface_normal(uint n_bound, const std::vector<Point<2>>& nodal_coordinates) {
 		Array2D<double> surface_normal(1);
 
 		Array2D<double> J(2);
@@ -81,7 +81,7 @@ namespace Shape {
 		double det_J = (J[0][0] * J[1][1] - J[0][1] * J[1][0]);
 		double cw = det_J / std::abs(det_J); //CW or CCW
 
-		int pt_begin, pt_end;
+		uint pt_begin, pt_end;
 
 		if (n_bound == 0) {
 			pt_begin = 1;
@@ -105,15 +105,15 @@ namespace Shape {
 		return surface_normal;
 	}
 
-	void StraightTriangle::get_VTK(std::vector<Point<3>>& points, Array2D<unsigned int>& cells, const std::vector<Point<2>>& nodal_coordinates) {
-		unsigned int number_pt = points.size();
+	void StraightTriangle::get_VTK(std::vector<Point<3>>& points, Array2D<uint>& cells, const std::vector<Point<2>>& nodal_coordinates) {
+		uint number_pt = points.size();
 
 		double z1;
 		double z2;
 		double dz = 2.0 / N_DIV;
 
-		for (int i = 0; i <= N_DIV; i++) {
-			for (int j = 0; j <= N_DIV - i; j++) {
+		for (uint i = 0; i <= N_DIV; i++) {
+			for (uint j = 0; j <= N_DIV - i; j++) {
 				points.push_back({ 0,0,0 });
 
 				z1 = -1.0 + dz*j;
@@ -131,11 +131,11 @@ namespace Shape {
 			}
 		}
 
-		unsigned int pt_ID;
+		uint pt_ID;
 
-		for (int i = 0; i < N_DIV; i++) {
-			for (int j = 0; j < N_DIV - i; j++) {
-				cells.push_back(std::vector<unsigned int>(4));
+		for (uint i = 0; i < N_DIV; i++) {
+			for (uint j = 0; j < N_DIV - i; j++) {
+				cells.push_back(std::vector<uint>(4));
 
 				pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 
@@ -146,9 +146,9 @@ namespace Shape {
 			}
 		}
 
-		for (int i = 1; i < N_DIV; i++) {
-			for (int j = 0; j < N_DIV - i; j++) {
-				cells.push_back(std::vector<unsigned int>(4));
+		for (uint i = 1; i < N_DIV; i++) {
+			for (uint j = 0; j < N_DIV - i; j++) {
+				cells.push_back(std::vector<uint>(4));
 
 				pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 

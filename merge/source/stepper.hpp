@@ -1,9 +1,7 @@
 #ifndef STEPPER_HPP
 #define STEPPER_HPP
 
-#include "general_definitions.h"
-
-typedef unsigned int uint;
+#include "general_definitions.hpp"
 
 struct Stepper {
 	Stepper(uint nstages, uint order, double dt);

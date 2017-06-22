@@ -1,38 +1,38 @@
-#ifndef CLASS_MESH_H
-#define CLASS_MESH_H
+#ifndef CLASS_MESH_HPP
+#define CLASS_MESH_HPP
 
 #include "problem/SWE/swe_data.hpp"
 #include "problem/SWE/swe_kernels.hpp"
 #include "problem/SWE/swe_boundary_conditions.hpp"
 #include "problem/SWE/swe_definitions.hpp"
 
-#include "general_definitions.h"
+#include "general_definitions.hpp"
 #include "stepper.hpp"
 
-#include "class_element.h"
-#include "class_boundary.h"
+#include "class_element.hpp"
+#include "class_boundary.hpp"
 
 class MESH {
 private:
-    int p;
+    uint p;
 	
 	Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>* triangle; 
 	Shape::StraightTriangle* shape;
 
-    std::map<unsigned int, Element<2, Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>, 
+    std::map<uint, Element<2, Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>, 
 		Shape::StraightTriangle>*> elements;
 
 	std::map<unsigned char, std::vector<Boundary<>*>> boundaries;
 	std::vector<Interface<>*> interfaces;
 
 public:
-	MESH(int p) : p(p), snapshot(0) {}
+	MESH(uint p) : p(p), snapshot(0) {}
 	~MESH();
 
-	void RectangularDomainTest(double, double, int, int, int);
+	void RectangularDomainTest(double, double, uint, uint, uint);
 	void Solve();
 	void WriteDataVTK();
-	int snapshot;
+	uint snapshot;
 
 private:
 	void InitializeBoundariesInterfaces();

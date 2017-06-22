@@ -1,7 +1,7 @@
 #ifndef LLF_FLUX_HPP
 #define LLF_FLUX_HPP
 
-#include "../../general_definitions.h"
+#include "../../general_definitions.hpp"
 
 #include "swe_definitions.hpp"
 

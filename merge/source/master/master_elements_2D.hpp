@@ -1,18 +1,18 @@
-#ifndef CLASS_MASTER_ELEMENT_H
-#define CLASS_MASTER_ELEMENT_H
+#ifndef CLASS_MASTER_ELEMENT_HPP
+#define CLASS_MASTER_ELEMENT_HPP
 
-#include "../general_definitions.h"
+#include "../general_definitions.hpp"
 
-#include "../basis/bases_2D.h"
+#include "../basis/bases_2D.hpp"
 
-#include "../integration/integrations_1D.h"
-#include "../integration/integrations_2D.h"
+#include "../integration/integrations_1D.hpp"
+#include "../integration/integrations_2D.hpp"
 
 namespace Master {
 	template<class basis_type, class integration_type>
 	class Triangle : Master<2> {
 	public:
-		int p;
+		uint p;
 
 		basis_type basis;
 
@@ -28,8 +28,8 @@ namespace Master {
 		Array2D<double> phi_postprocessor_point;
 
 	public:
-		Triangle(int);
-		std::vector<Point<2>> boundary_to_master(int, const std::vector<Point<1>>&);
+		Triangle(uint);
+		std::vector<Point<2>> boundary_to_master(uint, const std::vector<Point<1>>&);
 
 	private:
 		std::vector<Point<2>> VTKPostCell();

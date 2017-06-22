@@ -1,7 +1,7 @@
 #ifndef SWE_KERNELS_HPP
 #define SWE_KERNELS_HPP
 
-#include "../../general_definitions.h"
+#include "../../general_definitions.hpp"
 #include "../../stepper.hpp"
 
 #include "swe_LLF_flux.hpp"
@@ -124,7 +124,7 @@ namespace SWE {
 	}
 
 	template<typename BoundaryType>
-	void boundary_kernel(const Stepper& stepper, BoundaryType& bound, 
+	void boundary_kernel(const Stepper& stepper, BoundaryType& bound,
 		void(*set_bc)(const Stepper&, const BoundaryType&, uint, double&, double&, double&)) {
 		const uint rk_stage = stepper.get_stage();
 
@@ -142,7 +142,7 @@ namespace SWE {
 		double ze_ex, qx_ex, qy_ex;
 		for (uint gp = 0; gp < boundary.get_n_gp(); ++gp) {
 			set_bc(stepper, bound, gp, ze_ex, qx_ex, qy_ex);
-			
+
 			LLF_flux(boundary.ze_at_gp[gp], ze_ex,
 				boundary.qx_at_gp[gp], qx_ex,
 				boundary.qy_at_gp[gp], qy_ex,

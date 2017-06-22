@@ -1,4 +1,4 @@
-#include "class_mesh.h"
+#include "class_mesh.hpp"
 
 MESH::~MESH() {
 	delete shape; 
@@ -11,27 +11,27 @@ MESH::~MESH() {
 }
 
 void MESH::RectangularDomainTest
-(double L, double W, int m, int n, int element_type) 
+(double L, double W, uint m, uint n, uint element_type) 
 {
 	double dx = L / m;
 	double dy = W / n;
 
 	switch (element_type) {
 	case TRIANGLE: {
-		unsigned int ID;
+		uint ID;
 
 		std::vector<Point<2>> nodal_coordinates(3);
 
 		std::vector<unsigned char> boundaries(3);
-		std::vector<unsigned int> neighbors(3);
+		std::vector<uint> neighbors(3);
 		
 		triangle = new Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>(this->p); 
 
 		shape = new Shape::StraightTriangle();
 
 		//SIMPLE PATTERN
-		//for (int i = 0; i < n; i++) {
-		//	for (int j = 0; j < m; j++) {
+		//for (uint i = 0; i < n; i++) {
+		//	for (uint j = 0; j < m; j++) {
 		//		ID = 2 * j + 2 * m * i;
 
 		//		neighbors[0] = ID + 1;
@@ -88,8 +88,8 @@ void MESH::RectangularDomainTest
 		//}
 
 		//// CHECKERS PATTERN
-		for (int i = 0; i < n; i++) {
-			for (int j = i % 2; j < m; j += 2) {
+		for (uint i = 0; i < n; i++) {
+			for (uint j = i % 2; j < m; j += 2) {
 				ID = 2 * j + 2 * m * i;
 
 				neighbors[0] = ID + 1;
@@ -146,8 +146,8 @@ void MESH::RectangularDomainTest
 			}
 		}
 
-		for (int i = 0; i < n; i++) {
-			for (int j = (i + 1) % 2; j < m; j += 2) {
+		for (uint i = 0; i < n; i++) {
+			for (uint j = (i + 1) % 2; j < m; j += 2) {
 				ID = 2 * j + 2 * m * i;
 
 				neighbors[0] = ID + 1;
@@ -224,7 +224,7 @@ void MESH::RectangularDomainTest
 
 void MESH::InitializeBoundariesInterfaces() {
 	std::map<unsigned char, std::vector<RawBoundary<>*>> pre_boundaries;
-	std::map<unsigned int, std::map<unsigned int, RawBoundary<>*>> pre_interfaces;
+	std::map<uint, std::map<uint, RawBoundary<>*>> pre_interfaces;
 
 	for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
 		std::vector<RawBoundary<>*> raw_boundaries = it->second->CreateBoundaries();
@@ -274,7 +274,7 @@ void MESH::InitializeBoundariesInterfaces() {
 
 void MESH::InitializeVTK() {
     std::vector<Point<3>> points;
-    Array2D<unsigned int> cells;
+    Array2D<uint> cells;
 
     for (auto it = this->elements.begin(); it != this->elements.end(); it++) {
         it->second->InitializeVTK(points, cells);
@@ -293,7 +293,7 @@ void MESH::InitializeVTK() {
         file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
     }
 
-    int n_cell_entries = 0;
+    uint n_cell_entries = 0;
     for (auto it = cells.begin(); it != cells.end(); it++) {
         switch ((*it)[0]) {
         case TRIANGLE: n_cell_entries += 4; break;
@@ -307,7 +307,7 @@ void MESH::InitializeVTK() {
 
     file << "CELLS " << cells.size() << ' ' << n_cell_entries << '\n';
     
-    int n_nodes;
+    uint n_nodes;
 
     for (auto it = cells.begin(); it != cells.end(); it++) {
         switch ((*it)[0]) {
@@ -319,7 +319,7 @@ void MESH::InitializeVTK() {
             exit(1);
         }
 
-        for (int i = 1; i <= n_nodes; i++) {
+        for (uint i = 1; i <= n_nodes; i++) {
             file << (*it)[i] << '\t';
         }
         file << '\n';
@@ -335,7 +335,7 @@ void MESH::InitializeVTK() {
 void MESH::Solve(){
 	Stepper stepper(2, 2, 1.);
 
-	int n_stages = stepper.get_num_stages();
+	uint n_stages = stepper.get_num_stages();
 
 	for (auto it = elements.begin(); it != elements.end(); it++) {
 		it->second->data.state = std::vector<SWE::State>(n_stages + 1,
@@ -344,7 +344,7 @@ void MESH::Solve(){
 
 	this->WriteDataVTK();
 
-	uint nsteps = std::ceil(5 * 172800 / stepper.get_dt());
+	uint nsteps = (uint)std::ceil(5 * 172800 / stepper.get_dt());
 	
 	for (uint step = 1; step <= nsteps; ++step) {
 		for (uint stage = 0; stage < n_stages; ++stage) {

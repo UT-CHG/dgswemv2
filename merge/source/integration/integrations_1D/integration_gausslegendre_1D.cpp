@@ -1,7 +1,7 @@
-#include "../integrations_1D.h"
+#include "../integrations_1D.hpp"
 
 namespace Integration{
-	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::get_rule(int p) {
+	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::get_rule(uint p) {
 		if (p < 0 || p > 65) {
 			printf("\n");
 			printf("GAUSS LEGENDRE 1D - Fatal error!\n");
@@ -9,18 +9,18 @@ namespace Integration{
 			exit(1);
 		}
 
-		std::pair<std::vector<double>, std::vector<Point<1>>> rule = this->gp_data((int)ceil(((double)p + 1) / 2));
+		std::pair<std::vector<double>, std::vector<Point<1>>> rule = this->gp_data((uint)ceil(((double)p + 1) / 2));
 
 		//rule_test(p, rule);
 
 		return rule;
 	}
 
-	void GaussLegendre_1D::rule_test(int p, const std::pair<std::vector<double>, std::vector<Point<1>>>& rule) {
+	void GaussLegendre_1D::rule_test(uint p, const std::pair<std::vector<double>, std::vector<Point<1>>>& rule) {
 		double exact_integration = 2 - 1 / ((double)p + 1)*(1 + pow(-1.0, p)); // S(1-x^p)dx from -1 to 1 
 
 		double num_integration = 0;
-		for (int i = 0; i < rule.first.size(); i++) { num_integration = num_integration + (1.0 - pow(rule.second[i][X], p))*rule.first[i]; }
+		for (uint gp = 0; gp < rule.first.size(); gp++) { num_integration = num_integration + (1.0 - pow(rule.second[gp][X], p))*rule.first[gp]; }
 
 		double err = abs((num_integration - exact_integration) / exact_integration);
 
@@ -39,7 +39,7 @@ namespace Integration{
 		}
 	}
 
-	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::gp_data(int number_gp){
+	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::gp_data(uint number_gp){
 		std::pair<std::vector<double>, std::vector<Point<1>>> gp;
 		gp.first.reserve(number_gp);
 		gp.second.reserve(number_gp);
