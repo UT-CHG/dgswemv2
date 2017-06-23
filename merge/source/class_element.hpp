@@ -11,10 +11,11 @@
 
 template<uint dimension = 2, 
 	class master_type = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>,
-	class shape_type = Shape::StraightTriangle>
+	class shape_type = Shape::StraightTriangle,
+	class data_type = SWE::Data>
 class Element {
 public:
-	SWE::Data data;
+	data_type data;
 
 private:
 	uint ID;
@@ -51,8 +52,8 @@ public:
 	void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
 };
 
-template<uint dimension, class master_type, class shape_type>
-Element<dimension, master_type, shape_type>::Element(master_type& master, shape_type& shape, uint ID, 
+template<uint dimension, class master_type, class shape_type, class data_type>
+Element<dimension, master_type, shape_type, data_type>::Element(master_type& master, shape_type& shape, uint ID, 
 	std::vector<uint>& neighbor_ID, std::vector<unsigned char>& boundary_type, std::vector<Point<dimension>>& nodal_coordinates) :
 
 	ID(ID), master(master), shape(shape), nodal_coordinates(nodal_coordinates),
@@ -115,16 +116,12 @@ Element<dimension, master_type, shape_type>::Element(master_type& master, shape_
 		//Placeholder for nonconstant Jacobian
 	}
 
-	this->data.state.push_back(SWE::State(this->int_fact_phi.size()));
-	this->data.internal = SWE::Internal((*this->int_fact_phi.begin()).size());
-
-	//SET INITIAL CONDITIONS FOR TESTING
-	for (uint i = 0; i < this->data.internal.get_n_gp(); i++)
-		this->data.internal.bath_at_gp[i] = 3.0;
+	this->data.set_ndof(this->master.phi_gp.size());
+	this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
 }
 
-template<uint dimension, class master_type, class shape_type>
-std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_type>::CreateBoundaries() {
+template<uint dimension, class master_type, class shape_type, class data_type>
+std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_type, data_type>::CreateBoundaries() {
 	std::vector<RawBoundary<dimension - 1>*> my_raw_boundaries;
 
 	Basis::Basis<dimension>* basis;
@@ -152,8 +149,8 @@ std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_t
 	return my_raw_boundaries;
 }
 
-template<uint dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
 	std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
 	for (uint dof = 0; dof < u.size(); dof++) {
@@ -163,8 +160,8 @@ void Element<dimension, master_type, shape_type>::ComputeUgp(const std::vector<d
 	}
 }
 
-template<uint dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::ComputeDUgp(uint dir, const std::vector<double>& u, std::vector<double>& du_gp) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint dir, const std::vector<double>& u, std::vector<double>& du_gp) {
 	std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
 	for (uint dof = 0; dof < u.size(); dof++) {
@@ -175,8 +172,8 @@ void Element<dimension, master_type, shape_type>::ComputeDUgp(uint dir, const st
 }
 
 
-template<uint dimension, class master_type, class shape_type>
-double Element<dimension, master_type, shape_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
 	for (uint gp = 0; gp < this->int_fact_phi[phi_n].size(); gp++) {
@@ -186,8 +183,8 @@ double Element<dimension, master_type, shape_type>::IntegrationPhi(uint phi_n, c
 	return integral;
 }
 
-template<uint dimension, class master_type, class shape_type>
-double Element<dimension, master_type, shape_type>::IntegrationDPhi(uint dir, uint phi_n, const std::vector<double>& u_gp) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir, uint phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
 	for (uint gp = 0; gp < this->int_fact_dphi[phi_n][dir].size(); gp++) {
@@ -197,8 +194,8 @@ double Element<dimension, master_type, shape_type>::IntegrationDPhi(uint dir, ui
 	return integral;
 }
 
-template<uint dimension, class master_type, class shape_type>
-std::vector<double> Element<dimension, master_type, shape_type>::SolveLSE(const std::vector<double>& rhs) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+std::vector<double> Element<dimension, master_type, shape_type, data_type>::SolveLSE(const std::vector<double>& rhs) {
 	std::vector<double> solution;
 
 	if (this->m_inv.first) { //diagonal
@@ -218,13 +215,13 @@ std::vector<double> Element<dimension, master_type, shape_type>::SolveLSE(const 
 	return solution;
 }
 
-template<uint dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+void Element<dimension, master_type, shape_type, data_type>::InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
 	this->shape.get_VTK(points, cells, nodal_coordinates);
 }
 
-template<uint dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+void Element<dimension, master_type, shape_type, data_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
 	Array2D<double> temp = this->master.phi_postprocessor_cell;
 
 	for (uint dof = 0; dof < temp.size(); dof++) {
@@ -242,8 +239,8 @@ void Element<dimension, master_type, shape_type>::WriteCellDataVTK(const std::ve
 	cell_data.insert(cell_data.end(), temp[0].begin(), temp[0].end());
 }
 
-template<uint dimension, class master_type, class shape_type>
-void Element<dimension, master_type, shape_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
+template<uint dimension, class master_type, class shape_type, class data_type>
+void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
 	Array2D<double> temp = this->master.phi_postprocessor_point;
 
 	for (uint dof = 0; dof < temp.size(); dof++) {

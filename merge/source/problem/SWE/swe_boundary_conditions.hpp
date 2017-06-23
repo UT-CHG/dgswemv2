@@ -30,8 +30,8 @@ namespace SWE {
 	void tidal_bc(const Stepper& stepper, const BoundaryType& bound, uint gp, double& ze_ex, double& qx_ex, double& qy_ex) {
 		auto& boundary = bound->data.boundary;
 
-		double H_0 = 0.3;
-		if (stepper.get_t_at_curr_stage() < 172800.0) H_0 = 0.3 *  stepper.get_t_at_curr_stage() / 172800.0; //LINEAR RAMPING
+		double H_0 = 0.1;
+		if (stepper.get_t_at_curr_stage() < 172800.0) H_0 = 0.1 *  stepper.get_t_at_curr_stage() / 172800.0; //LINEAR RAMPING
 		double H_ocean = H_0*cos(2 * PI *  stepper.get_t_at_curr_stage() / 43200.0); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.3m
 
 		ze_ex = H_ocean;

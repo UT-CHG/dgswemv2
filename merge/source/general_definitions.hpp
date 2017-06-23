@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
 #include <string>
 #include <cmath>
 #include <functional>
@@ -14,11 +16,12 @@
 #include <array>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 typedef unsigned int uint;
 
-template<uint DIM>
-using Point = std::array<double, DIM>;
+template<uint dim>
+using Point = std::array<double, dim>;
 
 template<class type>
 using Array2D = std::vector<std::vector<type>>;
@@ -92,6 +95,6 @@ namespace Shape {
 #define TRIANGLE 5
 
 // postprocessor element divisions
-#define N_DIV 1
+#define N_DIV 2
 
 #endif

@@ -20,7 +20,7 @@ private:
 	Shape::StraightTriangle* shape;
 
     std::map<uint, Element<2, Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>, 
-		Shape::StraightTriangle>*> elements;
+		Shape::StraightTriangle, SWE::Data>*> elements;
 
 	std::map<unsigned char, std::vector<Boundary<>*>> boundaries;
 	std::vector<Interface<>*> interfaces;

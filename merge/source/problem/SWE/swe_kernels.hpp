@@ -21,7 +21,7 @@ namespace SWE {
 		elt->ComputeUgp(state.qy, internal.qy_at_gp);
 
 		//assemble flux
-		for (uint gp = 0; gp < internal.get_n_gp(); ++gp) {
+		for (uint gp = 0; gp < elt->data.get_ngp_internal(); ++gp) {
 			internal.water_column_hgt_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
 
 			internal.ze_flux_at_gp[X][gp] = internal.qx_at_gp[gp];
@@ -37,7 +37,7 @@ namespace SWE {
 		}
 
 		//skip dof = 0, which is a constant and thus trivially 0 NOT ALWAYS!
-		for (uint dof = 1; dof < state.get_ndof(); ++dof) {
+		for (uint dof = 1; dof < elt->data.get_ndof(); ++dof) {
 			state.rhs_ze[dof] = elt->IntegrationDPhi(X, dof, internal.ze_flux_at_gp[X]) +
 				elt->IntegrationDPhi(Y, dof, internal.ze_flux_at_gp[Y]);
 
@@ -57,7 +57,7 @@ namespace SWE {
 		auto& internal = elt->data.internal;
 
 		//note we assume that the values at gauss points have already been computed
-		for (uint gp = 0; gp < internal.get_n_gp(); ++gp) {
+		for (uint gp = 0; gp < elt->data.get_ngp_internal(); ++gp) {
 			//compute contribution of hydrostatic pressure
 			internal.qx_source_term_at_gp[gp] = Global::g * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
 			internal.qy_source_term_at_gp[gp] = Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.ze_at_gp[gp];
@@ -73,7 +73,7 @@ namespace SWE {
 			internal.qy_source_term_at_gp[gp] -= bottom_friction_stress * internal.qy_at_gp[gp];
 		}
 
-		for (uint dof = 0; dof < state.get_ndof(); ++dof) {
+		for (uint dof = 0; dof < elt->data.get_ndof(); ++dof) {
 			//current we don't have any source terms that affect ze
 			state.rhs_qx[dof] += elt->IntegrationPhi(dof, internal.qx_source_term_at_gp);
 			state.rhs_qy[dof] += elt->IntegrationPhi(dof, internal.qy_source_term_at_gp);
@@ -99,7 +99,7 @@ namespace SWE {
 		intface->ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
 
 		//assemble numerical fluxes
-		for (uint gp = 0; gp < boundary_in.get_n_gp(); ++gp) {
+		for (uint gp = 0; gp < intface->data_in.get_ngp_boundary(); ++gp) {
 			LLF_flux(boundary_in.ze_at_gp[gp], boundary_ex.ze_at_gp[gp],
 				boundary_in.qx_at_gp[gp], boundary_ex.qx_at_gp[gp],
 				boundary_in.qy_at_gp[gp], boundary_ex.qy_at_gp[gp],
@@ -110,13 +110,13 @@ namespace SWE {
 		}
 
 		//now compute contributions to the righthand side
-		for (uint dof = 0; dof < state_in.get_ndof(); ++dof) {
+		for (uint dof = 0; dof < intface->data_in.get_ndof(); ++dof) {
 			state_in.rhs_ze[dof] -= intface->IntegrationPhiIN(dof, boundary_in.ze_numerical_flux_at_gp);
 			state_in.rhs_qx[dof] -= intface->IntegrationPhiIN(dof, boundary_in.qx_numerical_flux_at_gp);
 			state_in.rhs_qy[dof] -= intface->IntegrationPhiIN(dof, boundary_in.qy_numerical_flux_at_gp);
 		}
 
-		for (uint dof = 0; dof < state_ex.get_ndof(); ++dof) {
+		for (uint dof = 0; dof < intface->data_ex.get_ndof(); ++dof) {
 			state_ex.rhs_ze[dof] += intface->IntegrationPhiEX(dof, boundary_in.ze_numerical_flux_at_gp);
 			state_ex.rhs_qx[dof] += intface->IntegrationPhiEX(dof, boundary_in.qx_numerical_flux_at_gp);
 			state_ex.rhs_qy[dof] += intface->IntegrationPhiEX(dof, boundary_in.qy_numerical_flux_at_gp);
@@ -140,7 +140,7 @@ namespace SWE {
 		double H_ocean = H_0*cos(2 * PI *  stepper.get_t_at_curr_stage() / 43200.0); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.3m
 
 		double ze_ex, qx_ex, qy_ex;
-		for (uint gp = 0; gp < boundary.get_n_gp(); ++gp) {
+		for (uint gp = 0; gp < bound->data.get_ngp_boundary(); ++gp) {
 			set_bc(stepper, bound, gp, ze_ex, qx_ex, qy_ex);
 
 			LLF_flux(boundary.ze_at_gp[gp], ze_ex,
@@ -153,7 +153,7 @@ namespace SWE {
 		}
 
 		//now compute contributions to the righthand side
-		for (uint dof = 0; dof < state.get_ndof(); ++dof) {
+		for (uint dof = 0; dof < bound->data.get_ndof(); ++dof) {
 			state.rhs_ze[dof] -= bound->IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);
 			state.rhs_qx[dof] -= bound->IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
 			state.rhs_qy[dof] -= bound->IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
@@ -178,7 +178,7 @@ namespace SWE {
 		std::fill(next_state.qy.begin(), next_state.qy.end(), 0);
 
 		for (uint s = 0; s <= rk_stage; ++s) {
-			for (uint dof = 0; dof < curr_state.get_ndof(); ++dof) {
+			for (uint dof = 0; dof < elt->data.get_ndof(); ++dof) {
 				next_state.ze[dof] += stepper.ark[rk_stage][s] * state[s].ze[dof]
 					+ dt*stepper.brk[rk_stage][s] * state[s].rhs_ze[dof];
 

@@ -215,10 +215,7 @@ void MESH::RectangularDomainTest
 	}
 
 	this->InitializeBoundariesInterfaces();
-
-	//printf("%d\n", this->boundaries[OCEAN].size());
-	//printf("%d\n", this->interfaces_.size());
-
+	
 	this->InitializeVTK();
 }
 
@@ -338,8 +335,7 @@ void MESH::Solve(){
 	uint n_stages = stepper.get_num_stages();
 
 	for (auto it = elements.begin(); it != elements.end(); it++) {
-		it->second->data.state = std::vector<SWE::State>(n_stages + 1,
-			*it->second->data.state.begin());
+		it->second->data.resize(n_stages + 1);
 	}
 
 	this->WriteDataVTK();
