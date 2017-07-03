@@ -89,10 +89,10 @@ namespace SWE {
 
 			//SET INITIAL CONDITIONS FOR TESTING
 			for (uint i = 0; i < this->ngp_internal; i++)
-				this->internal.bath_at_gp[i] = 3.0;
+				this->internal.bath_at_gp[i] = 5.0;
 
 			for (uint i = 0; i < this->ngp_boundary; i++)
-				this->boundary.bath_at_gp[i] = 3.0;
+				this->boundary.bath_at_gp[i] = 5.0;
 		}
 
 		std::vector<State> state;
