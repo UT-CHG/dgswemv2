@@ -1,7 +1,7 @@
 #include "../bases_2D.hpp"
 
 namespace Basis {
-	Array2D<double> Dubiner_2D::get_phi(uint p, const std::vector<Point<2>>& coordinates) {
+	Array2D<double> Dubiner_2D::GetPhi(uint p, const std::vector<Point<2>>& coordinates) {
 		uint n_pts = coordinates.size();
 
 		Array2D<double> phi((p + 1)*(p + 2) / 2);
@@ -19,7 +19,7 @@ namespace Basis {
 		uint m = 0;
 		for (uint i = 0; i <= p; i++) {
 			for (uint j = 0; j <= p - i; j++) {
-				phi[m] = dubiner_2d_phi(i, j, n1, n2);
+				phi[m] = ComputePhi(i, j, n1, n2);
 				m++;
 			}
 		}
@@ -27,7 +27,7 @@ namespace Basis {
 		return phi;
 	}
 
-	Array3D<double> Dubiner_2D::get_dphi(uint p, const std::vector<Point<2>>& coordinates) {
+	Array3D<double> Dubiner_2D::GetDPhi(uint p, const std::vector<Point<2>>& coordinates) {
 		uint n_pts = coordinates.size();
 
 		Array3D<double> dphi((p + 1)*(p + 2) / 2);
@@ -43,7 +43,7 @@ namespace Basis {
 		uint m = 0;
 		for (uint i = 0; i <= p; i++) {
 			for (uint j = 0; j <= p - i; j++) {
-				dphi[m] = dubiner_2d_dphi(i, j, n1, n2);
+				dphi[m] = ComputeDPhi(i, j, n1, n2);
 				m++;
 			}
 		}
@@ -51,7 +51,7 @@ namespace Basis {
 		return dphi;
 	}
 
-	std::pair<bool, Array2D<double>> Dubiner_2D::get_m_inv(uint p) {
+	std::pair<bool, Array2D<double>> Dubiner_2D::GetMinv(uint p) {
 		std::pair<bool, Array2D<double>> m_inv(true, Array2D<double>(1)); //diagonal
 
 		m_inv.second[0].reserve((p + 1)*(p + 2) / 2);
@@ -106,7 +106,7 @@ namespace Basis {
 		printf("DUBINER 2D - Test success!\n");
 	}
 
-	std::vector<double> Dubiner_2D::dubiner_2d_phi(uint p, uint q, const std::vector<double>& n1, const std::vector<double>& n2) {
+	std::vector<double> Dubiner_2D::ComputePhi(uint p, uint q, const std::vector<double>& n1, const std::vector<double>& n2) {
 		uint n_pts = n1.size(); //CHECK IF n1.size() = n2.size()
 
 		std::vector<double> phi(n_pts);
@@ -130,7 +130,7 @@ namespace Basis {
 		return phi;
 	}
 
-	Array2D<double> Dubiner_2D::dubiner_2d_dphi(uint p, uint q, const std::vector<double>& n1, const std::vector<double>& n2) {
+	Array2D<double> Dubiner_2D::ComputeDPhi(uint p, uint q, const std::vector<double>& n1, const std::vector<double>& n2) {
 		uint n_pts = n1.size(); //CHECK IF n1.size() = n2.size()
 
 		Array2D<double> dphi_d(2);

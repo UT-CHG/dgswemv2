@@ -21,12 +21,10 @@ private:
 	uint ID;
 
 	master_type& master;
-	shape_type& shape;
+	shape_type shape;
 
 	std::vector<unsigned char> boundary_type;
 	std::vector<uint> neighbor_ID;
-
-	std::vector<Point<dimension>> nodal_coordinates;
 
 	Array3D<double> dphi_fact;
 	Array2D<double> int_fact_phi;
@@ -35,8 +33,8 @@ private:
 	std::pair<bool, Array2D<double>> m_inv;
 
 public:
-	Element(master_type&, shape_type&, uint, std::vector<uint>&, 
-		std::vector<unsigned char>&, std::vector<Point<dimension>>&);
+	Element(uint, master_type&, std::vector<Point<dimension>>&, 
+		std::vector<uint>&, std::vector<unsigned char>&);
 
 	std::vector<RawBoundary<dimension - 1>*> CreateBoundaries();
 
@@ -53,15 +51,16 @@ public:
 };
 
 template<uint dimension, class master_type, class shape_type, class data_type>
-Element<dimension, master_type, shape_type, data_type>::Element(master_type& master, shape_type& shape, uint ID, 
-	std::vector<uint>& neighbor_ID, std::vector<unsigned char>& boundary_type, std::vector<Point<dimension>>& nodal_coordinates) :
-
-	ID(ID), master(master), shape(shape), nodal_coordinates(nodal_coordinates),
+Element<dimension, master_type, shape_type, data_type>::Element(uint ID, master_type& master, std::vector<Point<dimension>>& nodal_coordinates,
+	std::vector<uint>& neighbor_ID, std::vector<unsigned char>& boundary_type) :
+	ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 	neighbor_ID(neighbor_ID), boundary_type(boundary_type)
 {
 	//DEFORMATION
-	std::vector<double> det_J = shape.get_J_det(this->nodal_coordinates);
-	Array3D<double> J_inv = shape.get_J_inv(this->nodal_coordinates);
+	std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
+
+	std::vector<double> det_J = this->shape.GetJdet(gp);
+	Array3D<double> J_inv = this->shape.GetJinv(gp);
 
 	if (det_J.size() == 1) { //constant Jacobian
 		//DIFFERENTIATION FACTORS
@@ -124,26 +123,13 @@ template<uint dimension, class master_type, class shape_type, class data_type>
 std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_type, data_type>::CreateBoundaries() {
 	std::vector<RawBoundary<dimension - 1>*> my_raw_boundaries;
 
-	Basis::Basis<dimension>* basis;
-
-	std::function<std::vector<Point<dimension>>(const std::vector<Point<dimension - 1>>&)> boundary_to_master;
-	std::function<Array2D<double>()> get_surface_normal;
-	std::function<std::vector<double>()> get_surface_J;
+	Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
+	Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
+	Shape::Shape<dimension>* my_shape = (Shape::Shape<dimension>*)(&this->shape);
 
 	for (uint i = 0; i < this->boundary_type.size(); i++) {
-		basis = (Basis::Basis<dimension>*)(&master.basis);
-
-		boundary_to_master = std::bind(&master_type::boundary_to_master,
-			master, i, std::placeholders::_1);
-
-		get_surface_normal = std::bind(&shape_type::get_surface_normal,
-			shape, i, nodal_coordinates);
-
-		get_surface_J = std::bind(&shape_type::get_surface_J,
-			shape, i, nodal_coordinates);
-
-		my_raw_boundaries.push_back(new RawBoundary<dimension - 1>(this->boundary_type[i], this->neighbor_ID[i], master.p,
-			this->data, basis, boundary_to_master, get_surface_normal, get_surface_J));
+		my_raw_boundaries.push_back(new RawBoundary<dimension - 1>(this->master.p, i, this->boundary_type[i], this->neighbor_ID[i],
+			this->data, *my_basis, *my_master, *my_shape));
 	}
 
 	return my_raw_boundaries;
@@ -166,7 +152,7 @@ void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint di
 
 	for (uint dof = 0; dof < u.size(); dof++) {
 		for (uint gp = 0; gp < du_gp.size(); gp++) {
-			du_gp[gp] += u[dof] * this->internal_dphi_fact[dof][dir][gp];
+			du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
 		}
 	}
 }
@@ -176,7 +162,7 @@ template<uint dimension, class master_type, class shape_type, class data_type>
 double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (uint gp = 0; gp < this->int_fact_phi[phi_n].size(); gp++) {
+	for (uint gp = 0; gp < u_gp.size(); gp++) {
 		integral += u_gp[gp] * this->int_fact_phi[phi_n][gp];
 	}
 	
@@ -187,7 +173,7 @@ template<uint dimension, class master_type, class shape_type, class data_type>
 double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir, uint phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
-	for (uint gp = 0; gp < this->int_fact_dphi[phi_n][dir].size(); gp++) {
+	for (uint gp = 0; gp < u_gp.size(); gp++) {
 		integral += u_gp[gp] * this->int_fact_dphi[phi_n][dir][gp];
 	}
 
@@ -217,7 +203,7 @@ std::vector<double> Element<dimension, master_type, shape_type, data_type>::Solv
 
 template<uint dimension, class master_type, class shape_type, class data_type>
 void Element<dimension, master_type, shape_type, data_type>::InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
-	this->shape.get_VTK(points, cells, nodal_coordinates);
+	this->shape.GetVTK(points, cells);
 }
 
 template<uint dimension, class master_type, class shape_type, class data_type>

@@ -2,40 +2,39 @@
 
 namespace Master {
 	template<class basis_type, class integration_type>
-	Triangle<basis_type, integration_type>::Triangle(uint p) : p(p) {
-		integration_type integration;
-		std::pair<std::vector<double>, std::vector<Point<2>>> integration_rule = integration.get_rule(2 * p);
+	Triangle<basis_type, integration_type>::Triangle(uint p) : Master<2>(p) {
+		std::pair<std::vector<double>, std::vector<Point<2>>> integration_rule = this->integration.GetRule(2 * this->p);
 
-		this->phi_gp = this->basis.get_phi(p, integration_rule.second);
-		this->dphi_gp = this->basis.get_dphi(p, integration_rule.second);
+		this->phi_gp = this->basis.GetPhi(this->p, integration_rule.second);
+		this->dphi_gp = this->basis.GetDPhi(this->p, integration_rule.second);
 
 		std::vector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
-		this->phi_postprocessor_cell = this->basis.get_phi(p, z_postprocessor_cell);
+		this->phi_postprocessor_cell = this->basis.GetPhi(this->p, z_postprocessor_cell);
 
 		std::vector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
-		this->phi_postprocessor_point = this->basis.get_phi(p, z_postprocessor_point);
+		this->phi_postprocessor_point = this->basis.GetPhi(this->p, z_postprocessor_point);
 
 		this->int_fact_phi = this->phi_gp;
 		for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) { //iterate through basis functions
-			for (uint gp = 0; gp < int_fact_phi[dof].size(); gp++) { //iterate through internal GPs
+			for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) { //iterate through internal GPs
 				this->int_fact_phi[dof][gp] *= integration_rule.first[gp]; //apply weight
 			}
 		}
 
 		this->int_fact_dphi = this->dphi_gp;
-		for (uint dof = 0; dof < int_fact_dphi.size(); dof++) { //iterate through basis functions
-			for (uint dir = 0; dir < int_fact_dphi[dof].size(); dir++) { //iterate through differentiation directions
-				for (uint gp = 0; gp < int_fact_dphi[dof][dir].size(); gp++) { //iterate through internal GPs
+		for (uint dof = 0; dof < this->int_fact_dphi.size(); dof++) { //iterate through basis functions
+			for (uint dir = 0; dir < this->int_fact_dphi[dof].size(); dir++) { //iterate through differentiation directions
+				for (uint gp = 0; gp < this->int_fact_dphi[dof][dir].size(); gp++) { //iterate through internal GPs
 					this->int_fact_dphi[dof][dir][gp] *= integration_rule.first[gp]; //apply weight
 				}
 			}
 		}
 
-		this->m_inv = this->basis.get_m_inv(p);
+		this->m_inv = this->basis.GetMinv(this->p);
 	}
 
 	template<class basis_type, class integration_type>
-	std::vector<Point<2>> Triangle<basis_type, integration_type>::boundary_to_master(uint boundary, const std::vector<Point<1>>& z_boundary) {
+	std::vector<Point<2>> Triangle<basis_type, integration_type>::BoundaryToMasterCoordinates(uint boundary, const std::vector<Point<1>>& z_boundary) {
 		std::vector<Point<2>> z_master(z_boundary.size());
 
 		if (boundary == 0) {

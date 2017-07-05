@@ -1,7 +1,7 @@
 #include "../integrations_1D.hpp"
 
 namespace Integration{
-	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::get_rule(uint p) {
+	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GetRule(uint p) {
 		if (p < 0 || p > 65) {
 			printf("\n");
 			printf("GAUSS LEGENDRE 1D - Fatal error!\n");
@@ -9,7 +9,7 @@ namespace Integration{
 			exit(1);
 		}
 
-		std::pair<std::vector<double>, std::vector<Point<1>>> rule = this->gp_data((uint)ceil(((double)p + 1) / 2));
+		std::pair<std::vector<double>, std::vector<Point<1>>> rule = this->GPData((uint)ceil(((double)p + 1) / 2));
 
 		//rule_test(p, rule);
 
@@ -39,7 +39,7 @@ namespace Integration{
 		}
 	}
 
-	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::gp_data(uint number_gp){
+	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GPData(uint number_gp){
 		std::pair<std::vector<double>, std::vector<Point<1>>> gp;
 		gp.first.reserve(number_gp);
 		gp.second.reserve(number_gp);
