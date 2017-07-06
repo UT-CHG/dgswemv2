@@ -64,7 +64,6 @@ namespace Basis {
 		return m_inv;
 	}
 
-
 	void Dubiner_2D::basis_test(uint p, const Array2D<double>& phi_area, const std::pair<std::vector<double>, std::vector<Point<2>>>& integration_rule) {
 		uint number_bf = (p + 1)*(p + 2) / 2;
 

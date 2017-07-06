@@ -15,5 +15,11 @@ int main(int argc, const char* argv[]){
 
 	mesh->Solve();
 
+	auto a = [](){ return 1; };
+  	
+	auto volume_kernel = [](auto& elt) {
+    	//SWE::volume_kernel(elt);
+	};
+
 	delete mesh;
 }
