@@ -17,9 +17,26 @@ else()
   messsage(WARNING "Using untested compiler")
 endif()
 
-set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_VERBOSE_MAKEFILE off)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
+list (APPEND DG_HYPER_SWE_SOURCES
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.cpp
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/class_mesh.cpp
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp
 
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/polynomials/basis_polynomials.cpp
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D/basis_dubiner_2D.cpp
+   
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D/shape_straighttriangle.cpp
 
-
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+)
+      
+add_executable(
+  DG_HYPER_SWE
+  /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp
+  ${DG_HYPER_SWE_SOURCES}
+)
