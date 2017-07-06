@@ -8,6 +8,7 @@ namespace SWE {
 	}
 
 	enum class BoundaryConditions {
+	        internal,
 		land,
 		tidal
 	};
