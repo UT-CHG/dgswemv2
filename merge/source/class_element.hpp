@@ -16,7 +16,7 @@ template<uint dimension = 2,
 class Element {
 public:
 	data_type data;
-
+        typedef master_type master_type_;
 private:
 	uint ID;
 

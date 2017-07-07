@@ -55,6 +55,18 @@ namespace Utilities {
 	void for_each_in_tuple(std::tuple<Ts...>& t, F f) {
 		for_each(t, f, gen_seq<sizeof...(Ts)>());
 	}
+
+
+        // take two tuples tuple<Pack1...> tuple<Pack2...> and join them to
+        // make a new tuple tuple<Pack1..., Pack2...>
+        template<typename Tup1, typename Tup2>
+        struct tuple_join;
+
+        template<typename... Pack1, typename... Pack2>
+        struct tuple_join<std::tuple<Pack1...>, std::tuple<Pack2...> >
+        {
+            typedef std::tuple<Pack1..., Pack2...> type;
+        };
 }
 
 #endif
