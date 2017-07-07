@@ -8,8 +8,9 @@
 #include "../../stepper.hpp"
 #include "../../mesh.hpp"
 #include "../../initialize_mesh.hpp"
+#include "../../run_simulation.hpp"
 
-#include "../../ADCIRC_reader/adcirc_format.hpp"
+//#include "../../ADCIRC_reader/adcirc_format.hpp"
 
 int main(int argc, const char* argv[]){
 	/*MESH* mesh = new MESH(2);
@@ -20,6 +21,8 @@ int main(int argc, const char* argv[]){
 
 	Geometry::MeshType<SWE::Data> mesh;
 	Geometry::initialize_mesh(1, mesh);
+
+
 
 	//delete mesh;
 }

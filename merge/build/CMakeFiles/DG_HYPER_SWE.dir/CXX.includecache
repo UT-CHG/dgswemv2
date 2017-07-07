@@ -157,8 +157,8 @@ swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh.hpp
 ../../initialize_mesh.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_mesh.hpp
-../../ADCIRC_reader/adcirc_format.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
+../../run_simulation.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/run_simulation.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_LLF_flux.hpp
 ../../general_definitions.hpp
@@ -185,6 +185,10 @@ swe_LLF_flux.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_LLF_flux.hpp
 swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/run_simulation.hpp
+general_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
 ../general_definitions.hpp

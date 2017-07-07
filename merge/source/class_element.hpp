@@ -133,13 +133,11 @@ void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries
 		if (this->boundary_type[i] == INTERNAL) {
 			pre_interfaces[this->ID].emplace(
 				std::make_pair(this->neighbor_ID[i],
-					RawBoundary<dimension - 1>(this->master.p, i, this->boundary_type[i], this->neighbor_ID[i],
-						this->data, *my_basis, *my_master, *my_shape)));
+					RawBoundary<dimension - 1>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
 		}
 		else {
 			pre_boundaries[this->boundary_type[i]].emplace_back(
-				RawBoundary<dimension - 1>(this->master.p, i, this->boundary_type[i], this->neighbor_ID[i],
-					this->data, *my_basis, *my_master, *my_shape));
+				RawBoundary<dimension - 1>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
 		}
 	}
 }

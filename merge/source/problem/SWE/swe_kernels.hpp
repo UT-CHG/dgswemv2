@@ -124,8 +124,7 @@ namespace SWE {
 	}
 
 	template<typename BoundaryType>
-	void boundary_kernel(const Stepper& stepper, BoundaryType& bound,
-		void(*set_bc)(const Stepper&, const BoundaryType&, uint, double&, double&, double&)) {
+	void boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
 		const uint rk_stage = stepper.get_stage();
 
 		auto& state = bound->data.state[rk_stage];
@@ -141,7 +140,9 @@ namespace SWE {
 
 		double ze_ex, qx_ex, qy_ex;
 		for (uint gp = 0; gp < bound->data.get_ngp_boundary(); ++gp) {
-			set_bc(stepper, bound, gp, ze_ex, qx_ex, qy_ex);
+			bound->boundary_condition.set_ex(stepper, bound->surface_normal[gp], 
+				boundary.ze_at_gp[gp], boundary.qx_at_gp[gp], boundary.qy_at_gp[gp],
+				ze_ex, qx_ex, qy_ex);
 
 			LLF_flux(boundary.ze_at_gp[gp], ze_ex,
 				boundary.qx_at_gp[gp], qx_ex,

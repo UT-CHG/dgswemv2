@@ -11,25 +11,24 @@ public:
 	uint p;
 	uint n_bound;
 
-	unsigned char type;
-	uint neighbor_ID;
-
 	Basis::Basis<dimension + 1>& basis;
 	Master::Master<dimension + 1>& master;
 	Shape::Shape<dimension + 1>& shape;
 
 	data_type& data;
 
-	RawBoundary(uint p, uint n_bound, unsigned char type, uint neighbor_ID, data_type& data,
+	RawBoundary(uint p, uint n_bound, data_type& data,
 		Basis::Basis<dimension + 1>& basis, Master::Master<dimension + 1>& master, Shape::Shape<dimension + 1>& shape) :
-		p(p), n_bound(n_bound), type(type), neighbor_ID(neighbor_ID), data(data),
+		p(p), n_bound(n_bound), data(data),
 		basis(basis), master(master), shape(shape) {}
 };
 
-template<uint dimension = 1, class integration_type = Integration::GaussLegendre_1D, class data_type = SWE::Data>
+template<uint dimension = 1, class integration_type = Integration::GaussLegendre_1D, class data_type = SWE::Data, class boundary_type = SWE::Land>
 class Boundary {
 public:
 	data_type& data;
+	boundary_type boundary_condition;
+
 	Array2D<double> surface_normal;
 
 private:
@@ -43,8 +42,8 @@ public:
 	double IntegrationPhi(uint, const std::vector<double>&);
 };
 
-template<uint dimension, class integration_type, class data_type>
-Boundary<dimension, integration_type, data_type>::Boundary(const RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data) {
+template<uint dimension, class integration_type, class data_type, class boundary_type>
+Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(const RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data) {
 	integration_type integration;
 	std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * raw_boundary.p);
 
@@ -71,8 +70,8 @@ Boundary<dimension, integration_type, data_type>::Boundary(const RawBoundary<dim
 	this->data.set_ngp_boundary(integration_rule.first.size());
 }
 
-template<uint dimension, class integration_type, class data_type>
-void Boundary<dimension, integration_type, data_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
+template<uint dimension, class integration_type, class data_type, class boundary_type>
+void Boundary<dimension, integration_type, data_type, boundary_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
 	std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
 	for (uint dof = 0; dof < u.size(); dof++) {
@@ -82,8 +81,8 @@ void Boundary<dimension, integration_type, data_type>::ComputeUgp(const std::vec
 	}
 }
 
-template<uint dimension, class integration_type, class data_type>
-double Boundary<dimension, integration_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
+template<uint dimension, class integration_type, class data_type, class boundary_type>
+double Boundary<dimension, integration_type, data_type, boundary_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
 	double integral = 0;
 
 	for (uint gp = 0; gp < u_gp.size(); gp++) {

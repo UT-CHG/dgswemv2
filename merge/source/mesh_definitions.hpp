@@ -19,7 +19,8 @@ namespace Geometry {
 
 	template<typename Data>
 	using BoundaryTypeTuple = std::tuple<
-		Boundary<1, Integration::GaussLegendre_1D, Data>
+		Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Land>,
+		Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Tide>
 	>;
 
 	template<typename Data>

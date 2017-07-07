@@ -7,13 +7,27 @@
 
 namespace Geometry {
 	template<typename Data>
+	void initialize_mesh_elements(uint, MeshType<Data>&);
+
+	template<typename Data>
 	void initialize_mesh_VTK_geometry(MeshType<Data>&);
 
 	template<typename Data>
 	void initialize_mesh_interfaces_boundaries(MeshType<Data>&);
 
 	template<typename Data>
-	void initialize_mesh(int p, MeshType<Data>& mesh) {
+	void initialize_mesh(uint p, MeshType<Data>& mesh) {
+		initialize_mesh_elements(p, mesh);
+		initialize_mesh_VTK_geometry<Data>(mesh);
+		initialize_mesh_interfaces_boundaries<Data>(mesh);
+
+		printf("%d\n", mesh.GetNumberElements());
+		printf("%d\n", mesh.GetNumberInterfaces());
+		printf("%d\n", mesh.GetNumberBoundaries());
+	}
+
+	template<typename Data>
+	void initialize_mesh_elements(uint p, MeshType<Data>& mesh) {
 		using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 		using ElementType = Element<2, MasterType, Shape::StraightTriangle, Data>;
 
@@ -33,7 +47,6 @@ namespace Geometry {
 		std::vector<uint> neighbors(3);
 
 		MasterType* triangle = new MasterType(p);
-		MasterType _triangle(p);
 
 		for (uint i = 0; i < n; i++) {
 			for (uint j = i % 2; j < m; j += 2) {
@@ -150,94 +163,15 @@ namespace Geometry {
 				mesh.template CreateElement<ElementType>(ID, ID, *triangle, nodal_coordinates, neighbors, boundaries);
 			}
 		}
-
-
-		initialize_mesh_VTK_geometry<Data>(mesh);
-		initialize_mesh_interfaces_boundaries<Data>(mesh);
-
-		printf("%d\n", mesh.GetNumberElements());
-		printf("%d\n", mesh.GetNumberInterfaces());
-
-		//mesh.CallForEachElement([](auto& elem){ printf("%d\n", elem.ID);});
-
-
-		/*
-		using ElementType = Element::Triangle< Basis::Dubiner, typename Data::Volume>;
-		{//make all the elements
-			using Point = std::array<double, 2>;
-
-			using MasterTriangle = Element::MasterTriangle<Basis::Dubiner>;
-			std::shared_ptr<MasterTriangle > master(std::make_shared<MasterTriangle>(p));
-
-
-			for (const auto& elt : mesh_file.elements) {
-				std::vector<Point> vrtxs(3);
-				for (uint i = 0; i < 3; ++i) {
-					std::array<double, 3> tmp = mesh_file.nodes.at(elt.second[i + 1]);
-					vrtxs[i][0] = tmp[0];
-					vrtxs[i][1] = tmp[1];
-				}
-
-				Shape::Straight<2> shape(vrtxs);
-				mesh.template create_element<ElementType>(elt.first, master, shape);
-			}
-		}
-
-		{//make all edges
-			using eltID_faceID = std::pair<int, int>;
-
-			std::unordered_map<std::uint64_t, std::pair<eltID_faceID, eltID_faceID> > edge_dictionary;
-			for (const auto& elt : mesh_file.elements) {
-				std::vector<int> node{ elt.second[1], elt.second[2], elt.second[3] };
-
-				for (int k = 0; k < 3; ++k) {
-					std::uint64_t curr_key = (static_cast<std::uint64_t>(std::min(node[k], node[(k + 1) % 3]))) << 32
-						| static_cast<std::uint64_t>(std::max(node[k], node[(k + 1) % 3]));
-
-					if (edge_dictionary.count(curr_key)) {//if already one element has the edge.
-						edge_dictionary.at(curr_key).second = std::make_pair(elt.first, k);
-					}
-					else {
-						std::pair<eltID_faceID, eltID_faceID> edge_info{ {elt.first,k},{-1,0} };
-						edge_dictionary.insert({ curr_key, edge_info });
-					}
-				}
-			}
-
-			for (const auto& edge : edge_dictionary) {
-				//check if there are two elements associated with this edge
-				if (edge.second.second.first != -1) {
-					int eltA_id = edge.second.first.first;
-					int eltB_id = edge.second.second.first;
-					int fidA = edge.second.first.second;
-					int fidB = edge.second.second.second;
-
-					mesh.template create_interior_edge<Edge::InteriorEdge,
-						typename Data::Edge,
-						ElementType, ElementType>(eltA_id, eltB_id,
-							fidA, fidB);
-				}
-				else {
-					//treat boundary conditions
-					int elt_id = edge.second.first.first;
-					int fid = edge.second.first.second;
-
-					mesh.template create_boundary_edge<Edge::BoundaryEdge,
-						BoundaryData,
-						ElementType>(elt_id, fid);
-				}
-			}
-		}
-		*/
 	}
-
 
 	template<typename Data>
 	void initialize_mesh_interfaces_boundaries(MeshType<Data>& mesh) {
 		using RawBoundaryType = RawBoundary<1>;
 
 		using InterfaceType = Interface<1, Integration::GaussLegendre_1D, Data>;
-		using BoundaryType = Boundary<1, Integration::GaussLegendre_1D, Data>;
+		using BoundaryTypeLand = Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Land>;
+		using BoundaryTypeTide = Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Tide>;
 
 		std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
 		std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
@@ -262,7 +196,12 @@ namespace Geometry {
 
 		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
 			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-				mesh.template CreateBoundary<BoundaryType>(*itt);
+				switch(it->first){
+					case LAND :
+						mesh.template CreateBoundary<BoundaryTypeLand>(*itt); break;
+					case OCEAN : 
+						mesh.template CreateBoundary<BoundaryTypeTide>(*itt); break;
+				}
 			}
 		}
 	}
