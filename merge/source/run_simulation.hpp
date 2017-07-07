@@ -81,16 +81,24 @@ void run_simulation(double time_end, Stepper& rk_stepper, MeshType& mesh)
     SWE::swap_states(rk_stepper, elt);
   };
 
+
   /*auto scru_sol = [&rk_stepper](auto& elt) {
     scrutinize_solution(rk_stepper, elt);
   };*/
 
   uint nsteps = std::ceil(time_end/rk_stepper.get_dt());
+  uint n_stages = rk_stepper.get_num_stages();
+
+  auto resize_data_container = [n_stages](auto& elt) {
+    elt.data.resize(n_stages + 1);
+  };
+ 
+  mesh.CallForEachElement(resize_data_container);
 
   for ( uint step = 1; step <= nsteps; ++step ) {
     for ( uint stage = 0; stage < rk_stepper.get_num_stages(); ++stage ) {
 
-      mesh.call_for_each_element(volume_kernel);
+      mesh.CallForEachElement(volume_kernel);
 
       //mesh.call_for_each_interior_edge(edge_kernel);
 
@@ -101,7 +109,7 @@ void run_simulation(double time_end, Stepper& rk_stepper, MeshType& mesh)
       ++rk_stepper;
     }
 
-    mesh.call_for_each_element(swap_states);
+    mesh.CallForEachElement(swap_states);
 
     if ( step % 360 == 0 ) {
       std::cout << "Step: " << step << "\n";

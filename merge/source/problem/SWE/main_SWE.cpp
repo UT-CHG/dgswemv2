@@ -22,6 +22,10 @@ int main(int argc, const char* argv[]){
 	Geometry::MeshType<SWE::Data> mesh;
 	Geometry::initialize_mesh(1, mesh);
 
+	Stepper stepper(2, 2, 1.);
+
+	run_simulation(1200, stepper,mesh);
+
 
 
 	//delete mesh;

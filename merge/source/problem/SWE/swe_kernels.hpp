@@ -12,16 +12,16 @@ namespace SWE {
 	void volume_kernel(const Stepper& stepper, ElementType& elt) {
 		const uint rk_stage = stepper.get_stage();
 
-		auto& state = elt->data.state[rk_stage];
-		auto& internal = elt->data.internal;
+		auto& state = elt.data.state[rk_stage];
+		auto& internal = elt.data.internal;
 
 		//get state at Gauss points
-		elt->ComputeUgp(state.ze, internal.ze_at_gp);
-		elt->ComputeUgp(state.qx, internal.qx_at_gp);
-		elt->ComputeUgp(state.qy, internal.qy_at_gp);
+		elt.ComputeUgp(state.ze, internal.ze_at_gp);
+		elt.ComputeUgp(state.qx, internal.qx_at_gp);
+		elt.ComputeUgp(state.qy, internal.qy_at_gp);
 
 		//assemble flux
-		for (uint gp = 0; gp < elt->data.get_ngp_internal(); ++gp) {
+		for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
 			internal.water_column_hgt_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
 
 			internal.ze_flux_at_gp[X][gp] = internal.qx_at_gp[gp];
@@ -37,15 +37,15 @@ namespace SWE {
 		}
 
 		//skip dof = 0, which is a constant and thus trivially 0 NOT ALWAYS!
-		for (uint dof = 1; dof < elt->data.get_ndof(); ++dof) {
-			state.rhs_ze[dof] = elt->IntegrationDPhi(X, dof, internal.ze_flux_at_gp[X]) +
-				elt->IntegrationDPhi(Y, dof, internal.ze_flux_at_gp[Y]);
+		for (uint dof = 1; dof < elt.data.get_ndof(); ++dof) {
+			state.rhs_ze[dof] = elt.IntegrationDPhi(X, dof, internal.ze_flux_at_gp[X]) +
+				elt.IntegrationDPhi(Y, dof, internal.ze_flux_at_gp[Y]);
 
-			state.rhs_qx[dof] = elt->IntegrationDPhi(X, dof, internal.qx_flux_at_gp[X]) +
-				elt->IntegrationDPhi(Y, dof, internal.qx_flux_at_gp[Y]);
+			state.rhs_qx[dof] = elt.IntegrationDPhi(X, dof, internal.qx_flux_at_gp[X]) +
+				elt.IntegrationDPhi(Y, dof, internal.qx_flux_at_gp[Y]);
 
-			state.rhs_qy[dof] = elt->IntegrationDPhi(X, dof, internal.qy_flux_at_gp[X]) +
-				elt->IntegrationDPhi(Y, dof, internal.qy_flux_at_gp[Y]);
+			state.rhs_qy[dof] = elt.IntegrationDPhi(X, dof, internal.qy_flux_at_gp[X]) +
+				elt.IntegrationDPhi(Y, dof, internal.qy_flux_at_gp[Y]);
 		}
 	};
 
@@ -195,11 +195,12 @@ namespace SWE {
 	template<typename ElementType>
 	void swap_states(const Stepper& stepper, ElementType& elt) {
 		uint n_stages = stepper.get_num_stages();
-		auto& state = elt->data.state;
+		auto& state = elt.data.state;
 
 		std::swap(state[0].ze, state[n_stages].ze);
 		std::swap(state[0].qx, state[n_stages].qx);
 		std::swap(state[0].qy, state[n_stages].qy);
 	};
 }
+
 #endif

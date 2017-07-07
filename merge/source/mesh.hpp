@@ -56,7 +56,7 @@ namespace Geometry {
 
 		/*
 		template<typename UnaryFunction>
-		void call_for_each_interior_edge(UnaryFunction f)
+		void CallForEachInterface(UnaryFunction f)
 		{
 			util::for_each_in_tuple(_interior_edges.data,
 				[f](auto& edge_vector) {
