@@ -8,7 +8,7 @@
 namespace Geometry {
 	template<typename Data>
 	void initialize_mesh_VTK_geometry(MeshType<Data>&);
-	
+
 	template<typename Data>
 	void initialize_mesh_interfaces_boundaries(MeshType<Data>&);
 
@@ -17,10 +17,10 @@ namespace Geometry {
 		using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 		using ElementType = Element<2, MasterType, Shape::StraightTriangle, Data>;
 
-		double L = 90000; 
-		double W = 45000; 
-		
-		uint m = 20; 
+		double L = 90000;
+		double W = 45000;
+
+		uint m = 20;
 		uint n = 10;
 
 		double dx = L / m;
@@ -33,7 +33,8 @@ namespace Geometry {
 		std::vector<uint> neighbors(3);
 
 		MasterType* triangle = new MasterType(p);
-		
+		MasterType _triangle(p);
+
 		for (uint i = 0; i < n; i++) {
 			for (uint j = i % 2; j < m; j += 2) {
 				ID = 2 * j + 2 * m * i;
@@ -158,7 +159,7 @@ namespace Geometry {
 		printf("%d\n", mesh.GetNumberInterfaces());
 
 		//mesh.CallForEachElement([](auto& elem){ printf("%d\n", elem.ID);});
-		
+
 
 		/*
 		using ElementType = Element::Triangle< Basis::Dubiner, typename Data::Volume>;
@@ -231,103 +232,102 @@ namespace Geometry {
 	}
 
 
-template<typename Data>
-void initialize_mesh_interfaces_boundaries(MeshType<Data>& mesh) {
-	using RawBoundaryType = RawBoundary<1>;
+	template<typename Data>
+	void initialize_mesh_interfaces_boundaries(MeshType<Data>& mesh) {
+		using RawBoundaryType = RawBoundary<1>;
 
-	using InterfaceType = Interface<1, Integration::GaussLegendre_1D, Data>;
+		using InterfaceType = Interface<1, Integration::GaussLegendre_1D, Data>;
+		using BoundaryType = Boundary<1, Integration::GaussLegendre_1D, Data>;
 
-	std::map<uint, std::map<uint, RawBoundaryType*>> pre_interfaces;
-	std::map<unsigned char, std::vector<RawBoundaryType*>> pre_boundaries;
-	
-	mesh.CallForEachElement([&pre_interfaces, &pre_boundaries](auto& elem){ elem.CreateRawBoundaries(pre_interfaces, pre_boundaries);});
+		std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
+		std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
 
-/*
-	for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
-		this->boundaries[it->first] = std::vector<Boundary<>*>();
+		mesh.CallForEachElement(
+			[&pre_interfaces, &pre_boundaries](auto& elem) 
+			{ elem.CreateRawBoundaries(pre_interfaces, pre_boundaries); }
+		);
+		
+		for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 
-		for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-			this->boundaries[it->first].push_back(new Boundary<>(*(*itt)));
-			delete *itt;
+				mesh.template CreateInterface<InterfaceType>(
+					itt->second,
+					pre_interfaces.at(itt->first).at(it->first)
+				);
+
+				pre_interfaces.at(itt->first).erase(it->first);
+				it->second.erase(itt);
+			}
+		}
+
+		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
+			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+				mesh.template CreateBoundary<BoundaryType>(*itt);
+			}
 		}
 	}
 
-	*/
-	
-	for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
-		for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+	template<typename Data>
+	void initialize_mesh_VTK_geometry(MeshType<Data>& mesh) {
+		std::vector<Point<3>> points;
+		Array2D<uint> cells;
 
-			mesh.template CreateInterface<InterfaceType>(
-				*itt->second,
-				*pre_interfaces[itt->first][it->first]);
+		mesh.CallForEachElement(
+			[&points, &cells](auto& elem) 
+			{ elem.InitializeVTK(points, cells); }
+		);
 
-			delete itt->second;
-			delete pre_interfaces[itt->first][it->first];
+		std::string file_name = "geometry.vtk";
+		std::ofstream file(file_name);
 
-			pre_interfaces[itt->first].erase(it->first);
-			it->second.erase(itt);
+		file << "# vtk DataFile Version 3.0\n";
+		file << "OUTPUT DATA\n";
+		file << "ASCII\n";
+		file << "DATASET UNSTRUCTURED_GRID\n";
+		file << "POINTS " << points.size() << " float\n";
+
+		for (auto it = points.begin(); it != points.end(); it++) {
+			file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
+		}
+
+		uint n_cell_entries = 0;
+		for (auto it = cells.begin(); it != cells.end(); it++) {
+			switch ((*it)[0]) {
+			case TRIANGLE: n_cell_entries += 4; break;
+			default:
+				printf("\n");
+				printf("MESH InitializeVTK - Fatal error!\n");
+				printf("Undefined cell type = %d\n", (*it)[0]);
+				exit(1);
+			}
+		}
+
+		file << "CELLS " << cells.size() << ' ' << n_cell_entries << '\n';
+
+		uint n_nodes;
+
+		for (auto it = cells.begin(); it != cells.end(); it++) {
+			switch ((*it)[0]) {
+			case TRIANGLE: file << 3 << '\t'; n_nodes = 3; break;
+			default:
+				printf("\n");
+				printf("MESH InitializeVTK - Fatal error!\n");
+				printf("Undefined cell type = %d\n", (*it)[0]);
+				exit(1);
+			}
+
+			for (uint i = 1; i <= n_nodes; i++) {
+				file << (*it)[i] << '\t';
+			}
+			file << '\n';
+		}
+
+		file << "CELL_TYPES " << cells.size() << '\n';
+
+		for (auto it = cells.begin(); it != cells.end(); it++) {
+			file << (*it)[0] << '\n';
 		}
 	}
-}
-
-template<typename Data>
-void initialize_mesh_VTK_geometry(MeshType<Data>& mesh) {
-    std::vector<Point<3>> points;
-    Array2D<uint> cells;
-
-	mesh.CallForEachElement([&points, &cells](auto& elem){ elem.InitializeVTK(points,cells);});
-
-	std::string file_name = "geometry.vtk";
-    std::ofstream file(file_name);
-
-    file << "# vtk DataFile Version 3.0\n";
-    file << "OUTPUT DATA\n";
-    file << "ASCII\n";
-    file << "DATASET UNSTRUCTURED_GRID\n";
-    file << "POINTS " << points.size() << " float\n";
-
-    for (auto it = points.begin(); it != points.end(); it++) {
-        file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
-    }
-
-    uint n_cell_entries = 0;
-    for (auto it = cells.begin(); it != cells.end(); it++) {
-        switch ((*it)[0]) {
-        case TRIANGLE: n_cell_entries += 4; break;
-        default:
-            printf("\n");
-            printf("MESH InitializeVTK - Fatal error!\n");
-            printf("Undefined cell type = %d\n", (*it)[0]);
-            exit(1);
-        }
-    }
-
-    file << "CELLS " << cells.size() << ' ' << n_cell_entries << '\n';
-    
-    uint n_nodes;
-
-    for (auto it = cells.begin(); it != cells.end(); it++) {
-        switch ((*it)[0]) {
-        case TRIANGLE: file << 3 << '\t'; n_nodes = 3; break;
-        default:
-            printf("\n");
-            printf("MESH InitializeVTK - Fatal error!\n");
-            printf("Undefined cell type = %d\n", (*it)[0]);
-            exit(1);
-        }
-
-        for (uint i = 1; i <= n_nodes; i++) {
-            file << (*it)[i] << '\t';
-        }
-        file << '\n';
-    }
-
-    file << "CELL_TYPES " << cells.size() << '\n';
-
-    for (auto it = cells.begin(); it != cells.end(); it++) {
-        file << (*it)[0] << '\n';
-    }
-}
 }
 
 #endif

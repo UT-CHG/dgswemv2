@@ -48,10 +48,10 @@ namespace Geometry {
 		
 		template<typename F>
 		void CallForEachElement(const F& f) {
-			Utilities::for_each_in_tuple(elements.data, 
-				[&f](auto& element_map) {
-					std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) {f(pair.second);});
-				});
+			Utilities::for_each_in_tuple(elements.data,
+				[&f](auto& element_map)
+				{ std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) { f(pair.second); }); }
+			);
 		}
 
 		/*
