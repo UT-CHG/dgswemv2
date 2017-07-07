@@ -5,6 +5,24 @@
 #include "utilities/heterogeneous_containers.hpp"
 
 namespace Geometry {
+
+        template<typename Tuple>
+        struct make_master_type;
+
+        template<typename E>
+        struct make_master_type<std::tuple<E>>
+        {
+            typedef std::tuple<typename E::master_type_> type;
+        };
+
+        template<typename E, typename... Es>
+        struct make_master_type<std::tuple<E, Es...>>
+        {
+          typedef typename Utilities::tuple_join< std::tuple<typename E::master_type_>,
+						  typename make_master_type<std::tuple<Es...>>::type>::type type;
+        };
+
+
 	template <typename T, typename... Args>
 	T create(Args&&... args) {
 		return T(std::forward<Args>(args)...);
@@ -18,6 +36,8 @@ namespace Geometry {
 	template<typename... Elements, typename... Interfaces, typename... Boundaries>
 	class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Boundaries...>> {
 	private:
+	        using MasterElementType = make_master_type<std::tuple<Elements...> >::type;
+
 		using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
 		using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
 		using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
@@ -25,6 +45,9 @@ namespace Geometry {
 		ElementContainer elements;
 		InterfaceContainer interfaces;
 		BoundaryContainer boundaries;
+		MasterElementType masters;
+
+		//todo: make sure masters gets initialized
 	
 	public:
 		uint GetNumberElements() { return this->elements.size(); }
@@ -33,7 +56,13 @@ namespace Geometry {
 		
 		template<typename T, typename... Args>
 		void CreateElement(uint n, Args&&... args) {
-			this->elements.template emplace<T>(n, create<T>(std::forward<Args>(args)...));
+
+
+		  ///		  using MasterType = T::master_type;
+		  ///uint indx = index<MasterType, MasterElementType>::value;
+		  ///const auto& master_elt = std::get<indx>(masters);
+
+		  this->elements.template emplace<T>(n, create<T>(std::forward<Args>(args)...));
 		}
 
 		template<typename T, typename... Args>
