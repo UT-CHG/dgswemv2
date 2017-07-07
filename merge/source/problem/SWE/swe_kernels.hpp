@@ -47,7 +47,7 @@ namespace SWE {
 			state.rhs_qy[dof] = elt.IntegrationDPhi(X, dof, internal.qy_flux_at_gp[X]) +
 				elt.IntegrationDPhi(Y, dof, internal.qy_flux_at_gp[Y]);
 		}
-	};
+	}
 
 	template<typename ElementType>
 	void source_kernel(const Stepper& stepper, ElementType& elt) {
@@ -78,48 +78,48 @@ namespace SWE {
 			state.rhs_qx[dof] += elt->IntegrationPhi(dof, internal.qx_source_term_at_gp);
 			state.rhs_qy[dof] += elt->IntegrationPhi(dof, internal.qy_source_term_at_gp);
 		}
-	};
+	}
 
 	template<typename InterfaceType>
 	void interface_kernel(const Stepper& stepper, InterfaceType& intface) {
 		const uint rk_stage = stepper.get_stage();
 
-		auto& state_in = intface->data_in.state[rk_stage];
-		auto& boundary_in = intface->data_in.boundary;
+		auto& state_in = intface.data_in.state[rk_stage];
+		auto& boundary_in = intface.data_in.boundary;
 
-		auto& state_ex = intface->data_ex.state[rk_stage];
-		auto& boundary_ex = intface->data_ex.boundary;
+		auto& state_ex = intface.data_ex.state[rk_stage];
+		auto& boundary_ex = intface.data_ex.boundary;
 
-		intface->ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
-		intface->ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
-		intface->ComputeUgpIN(state_in.qy, boundary_in.qy_at_gp);
+		intface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
+		intface.ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
+		intface.ComputeUgpIN(state_in.qy, boundary_in.qy_at_gp);
 
-		intface->ComputeUgpEX(state_ex.ze, boundary_ex.ze_at_gp);
-		intface->ComputeUgpEX(state_ex.qx, boundary_ex.qx_at_gp);
-		intface->ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
+		intface.ComputeUgpEX(state_ex.ze, boundary_ex.ze_at_gp);
+		intface.ComputeUgpEX(state_ex.qx, boundary_ex.qx_at_gp);
+		intface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
 
 		//assemble numerical fluxes
-		for (uint gp = 0; gp < intface->data_in.get_ngp_boundary(); ++gp) {
+		for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(); ++gp) {
 			LLF_flux(boundary_in.ze_at_gp[gp], boundary_ex.ze_at_gp[gp],
 				boundary_in.qx_at_gp[gp], boundary_ex.qx_at_gp[gp],
 				boundary_in.qy_at_gp[gp], boundary_ex.qy_at_gp[gp],
-				boundary_in.bath_at_gp[gp], intface->surface_normal[gp],
+				boundary_in.bath_at_gp[gp], intface.surface_normal[gp],
 				boundary_in.ze_numerical_flux_at_gp[gp],
 				boundary_in.qx_numerical_flux_at_gp[gp],
 				boundary_in.qy_numerical_flux_at_gp[gp]);
 		}
 
 		//now compute contributions to the righthand side
-		for (uint dof = 0; dof < intface->data_in.get_ndof(); ++dof) {
-			state_in.rhs_ze[dof] -= intface->IntegrationPhiIN(dof, boundary_in.ze_numerical_flux_at_gp);
-			state_in.rhs_qx[dof] -= intface->IntegrationPhiIN(dof, boundary_in.qx_numerical_flux_at_gp);
-			state_in.rhs_qy[dof] -= intface->IntegrationPhiIN(dof, boundary_in.qy_numerical_flux_at_gp);
+		for (uint dof = 0; dof < intface.data_in.get_ndof(); ++dof) {
+			state_in.rhs_ze[dof] -= intface.IntegrationPhiIN(dof, boundary_in.ze_numerical_flux_at_gp);
+			state_in.rhs_qx[dof] -= intface.IntegrationPhiIN(dof, boundary_in.qx_numerical_flux_at_gp);
+			state_in.rhs_qy[dof] -= intface.IntegrationPhiIN(dof, boundary_in.qy_numerical_flux_at_gp);
 		}
 
-		for (uint dof = 0; dof < intface->data_ex.get_ndof(); ++dof) {
-			state_ex.rhs_ze[dof] += intface->IntegrationPhiEX(dof, boundary_in.ze_numerical_flux_at_gp);
-			state_ex.rhs_qx[dof] += intface->IntegrationPhiEX(dof, boundary_in.qx_numerical_flux_at_gp);
-			state_ex.rhs_qy[dof] += intface->IntegrationPhiEX(dof, boundary_in.qy_numerical_flux_at_gp);
+		for (uint dof = 0; dof < intface.data_ex.get_ndof(); ++dof) {
+			state_ex.rhs_ze[dof] += intface.IntegrationPhiEX(dof, boundary_in.ze_numerical_flux_at_gp);
+			state_ex.rhs_qx[dof] += intface.IntegrationPhiEX(dof, boundary_in.qx_numerical_flux_at_gp);
+			state_ex.rhs_qy[dof] += intface.IntegrationPhiEX(dof, boundary_in.qy_numerical_flux_at_gp);
 		}
 	}
 
@@ -127,37 +127,33 @@ namespace SWE {
 	void boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
 		const uint rk_stage = stepper.get_stage();
 
-		auto& state = bound->data.state[rk_stage];
-		auto& boundary = bound->data.boundary;
+		auto& state = bound.data.state[rk_stage];
+		auto& boundary = bound.data.boundary;
 
-		bound->ComputeUgp(state.ze, boundary.ze_at_gp);
-		bound->ComputeUgp(state.qx, boundary.qx_at_gp);
-		bound->ComputeUgp(state.qy, boundary.qy_at_gp);
-
-		double H_0 = 0.3;
-		if (stepper.get_t_at_curr_stage() < 172800.0) H_0 = 0.3 *  stepper.get_t_at_curr_stage() / 172800.0; //LINEAR RAMPING
-		double H_ocean = H_0*cos(2 * PI *  stepper.get_t_at_curr_stage() / 43200.0); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.3m
+		bound.ComputeUgp(state.ze, boundary.ze_at_gp);
+		bound.ComputeUgp(state.qx, boundary.qx_at_gp);
+		bound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
 		double ze_ex, qx_ex, qy_ex;
-		for (uint gp = 0; gp < bound->data.get_ngp_boundary(); ++gp) {
-			bound->boundary_condition.set_ex(stepper, bound->surface_normal[gp], 
+		for (uint gp = 0; gp < bound.data.get_ngp_boundary(); ++gp) {
+			bound.boundary_condition.set_ex(stepper, bound.surface_normal[gp], 
 				boundary.ze_at_gp[gp], boundary.qx_at_gp[gp], boundary.qy_at_gp[gp],
 				ze_ex, qx_ex, qy_ex);
 
 			LLF_flux(boundary.ze_at_gp[gp], ze_ex,
 				boundary.qx_at_gp[gp], qx_ex,
 				boundary.qy_at_gp[gp], qy_ex,
-				boundary.bath_at_gp[gp], bound->surface_normal[gp],
+				boundary.bath_at_gp[gp], bound.surface_normal[gp],
 				boundary.ze_numerical_flux_at_gp[gp],
 				boundary.qx_numerical_flux_at_gp[gp],
 				boundary.qy_numerical_flux_at_gp[gp]);
 		}
 
 		//now compute contributions to the righthand side
-		for (uint dof = 0; dof < bound->data.get_ndof(); ++dof) {
-			state.rhs_ze[dof] -= bound->IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);
-			state.rhs_qx[dof] -= bound->IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
-			state.rhs_qy[dof] -= bound->IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
+		for (uint dof = 0; dof < bound.data.get_ndof(); ++dof) {
+			state.rhs_ze[dof] -= bound.IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);
+			state.rhs_qx[dof] -= bound.IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
+			state.rhs_qy[dof] -= bound.IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
 		}
 	}
 
@@ -166,20 +162,20 @@ namespace SWE {
 		const uint rk_stage = stepper.get_stage();
 		double dt = stepper.get_dt();
 
-		auto& state = elt->data.state;
-		auto& curr_state = elt->data.state[rk_stage];
-		auto& next_state = elt->data.state[rk_stage + 1];
+		auto& state = elt.data.state;
+		auto& curr_state = elt.data.state[rk_stage];
+		auto& next_state = elt.data.state[rk_stage + 1];
 
-		curr_state.rhs_ze = elt->SolveLSE(curr_state.rhs_ze);
-		curr_state.rhs_qx = elt->SolveLSE(curr_state.rhs_qx);
-		curr_state.rhs_qy = elt->SolveLSE(curr_state.rhs_qy);
+		curr_state.rhs_ze = elt.SolveLSE(curr_state.rhs_ze);
+		curr_state.rhs_qx = elt.SolveLSE(curr_state.rhs_qx);
+		curr_state.rhs_qy = elt.SolveLSE(curr_state.rhs_qy);
 
 		std::fill(next_state.ze.begin(), next_state.ze.end(), 0);
 		std::fill(next_state.qx.begin(), next_state.qx.end(), 0);
 		std::fill(next_state.qy.begin(), next_state.qy.end(), 0);
 
 		for (uint s = 0; s <= rk_stage; ++s) {
-			for (uint dof = 0; dof < elt->data.get_ndof(); ++dof) {
+			for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
 				next_state.ze[dof] += stepper.ark[rk_stage][s] * state[s].ze[dof]
 					+ dt*stepper.brk[rk_stage][s] * state[s].rhs_ze[dof];
 
@@ -190,7 +186,7 @@ namespace SWE {
 					+ dt*stepper.brk[rk_stage][s] * state[s].rhs_qy[dof];
 			}
 		}
-	};
+	}
 
 	template<typename ElementType>
 	void swap_states(const Stepper& stepper, ElementType& elt) {
@@ -200,7 +196,79 @@ namespace SWE {
 		std::swap(state[0].ze, state[n_stages].ze);
 		std::swap(state[0].qx, state[n_stages].qx);
 		std::swap(state[0].qy, state[n_stages].qy);
-	};
+	}
+
+	template<typename ElementType>
+	void extract_VTK_data_kernel(const Stepper& stepper, ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
+		elt.WriteCellDataVTK(elt.data.state[0].ze, cell_data[0]);
+		elt.WriteCellDataVTK(elt.data.state[0].qx, cell_data[1]);
+		elt.WriteCellDataVTK(elt.data.state[0].qy, cell_data[2]);
+
+		elt.WritePointDataVTK(elt.data.state[0].ze, point_data[0]);
+		elt.WritePointDataVTK(elt.data.state[0].qx, point_data[1]);
+		elt.WritePointDataVTK(elt.data.state[0].qy, point_data[2]);
+	}
+
+	template<typename MeshType> 
+	void write_VTK_data(const Stepper& stepper, MeshType& mesh) {
+  		Array2D<double> cell_data;
+  		Array2D<double> point_data;
+
+	    cell_data.resize(3);
+	 	point_data.resize(3);
+
+		auto extract_VTK_data_kernel = [&stepper,&cell_data, &point_data](auto& elt) {
+			SWE::extract_VTK_data_kernel(stepper,elt,cell_data,point_data);
+  		};
+  
+ 		mesh.CallForEachElement(extract_VTK_data_kernel);
+
+
+		std::string file_name = "data.vtk";
+		std::ofstream file(file_name);
+
+		file << "CELL_DATA " << (*cell_data.begin()).size() << '\n';
+		file << "SCALARS ze_cell float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = cell_data[0].begin(); it != cell_data[0].end(); it++) file << *it << '\n';
+		
+		file << "SCALARS qx_cell float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = cell_data[1].begin(); it != cell_data[1].end(); it++) file << *it << '\n';
+
+		file << "SCALARS qy_cell float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = cell_data[2].begin(); it != cell_data[2].end(); it++) file << *it << '\n';
+
+		file << "POINT_DATA " << (*point_data.begin()).size() << '\n';
+		file << "SCALARS ze_point float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = point_data[0].begin(); it != point_data[0].end(); it++) file << *it << '\n';
+	
+		file << "SCALARS qx_point float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = point_data[1].begin(); it != point_data[1].end(); it++) file << *it << '\n';
+
+		file << "SCALARS qy_point float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = point_data[2].begin(); it != point_data[2].end(); it++) file << *it << '\n';
+
+		file.close();
+		
+		std::string file_name_geom = "geometry.vtk";
+		std::string file_name_data = "data.vtk";
+
+		std::ifstream file_geom(file_name_geom, std::ios_base::binary);
+		std::ifstream file_data(file_name_data, std::ios_base::binary);
+
+		uint n_step = (uint)(stepper.get_t_at_curr_stage()/stepper.get_dt());
+
+		std::string file_name_merge = "mesh_data_" + std::to_string(n_step) + ".vtk";
+		std::ofstream file_merge(file_name_merge, std::ios_base::binary);
+
+		file_merge << file_geom.rdbuf() << file_data.rdbuf();
+		file_merge.close();
+	}
 }
 
 #endif

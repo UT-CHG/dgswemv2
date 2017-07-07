@@ -24,8 +24,7 @@ int main(int argc, const char* argv[]){
 
 	Stepper stepper(2, 2, 1.);
 
-	run_simulation(1200, stepper,mesh);
-
+	run_simulation(344000.0, stepper,mesh);
 
 
 	//delete mesh;

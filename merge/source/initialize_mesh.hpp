@@ -20,10 +20,6 @@ namespace Geometry {
 		initialize_mesh_elements(p, mesh);
 		initialize_mesh_VTK_geometry<Data>(mesh);
 		initialize_mesh_interfaces_boundaries<Data>(mesh);
-
-		printf("%d\n", mesh.GetNumberElements());
-		printf("%d\n", mesh.GetNumberInterfaces());
-		printf("%d\n", mesh.GetNumberBoundaries());
 	}
 
 	template<typename Data>

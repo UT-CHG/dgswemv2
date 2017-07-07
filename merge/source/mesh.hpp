@@ -36,7 +36,7 @@ namespace Geometry {
 	template<typename... Elements, typename... Interfaces, typename... Boundaries>
 	class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Boundaries...>> {
 	private:
-	        using MasterElementType = make_master_type<std::tuple<Elements...> >::type;
+	    //using MasterElementType = make_master_type<std::tuple<Elements...> >::type;
 
 		using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
 		using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
@@ -45,7 +45,7 @@ namespace Geometry {
 		ElementContainer elements;
 		InterfaceContainer interfaces;
 		BoundaryContainer boundaries;
-		MasterElementType masters;
+		//MasterElementType masters;
 
 		//todo: make sure masters gets initialized
 	
@@ -78,31 +78,32 @@ namespace Geometry {
 		template<typename F>
 		void CallForEachElement(const F& f) {
 			Utilities::for_each_in_tuple(elements.data,
-				[&f](auto& element_map)
-				{ std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) { f(pair.second); }); }
+				[&f](auto& element_map) { 
+					std::for_each(element_map.begin(), element_map.end(), 
+					[&f](auto& pair) { f(pair.second); }); 
+				}
 			);
 		}
 
-		/*
-		template<typename UnaryFunction>
-		void CallForEachInterface(UnaryFunction f)
-		{
-			util::for_each_in_tuple(_interior_edges.data,
-				[f](auto& edge_vector) {
-				std::for_each(edge_vector.begin(), edge_vector.end(),
-					f);
-			});
+		template<typename F>
+		void CallForEachInterface(F f) {
+			Utilities::for_each_in_tuple(interfaces.data,
+				[f](auto& interface_vector) {
+					std::for_each(interface_vector.begin(), interface_vector.end(),
+					f );
+				}
+			);
 		}
 
-		template<typename UnaryFunction>
-		void call_for_each_boundary_edge(UnaryFunction f)
-		{
-			util::for_each_in_tuple(_boundary_edges.data,
-				[f](auto& edge_vector) {
-				std::for_each(edge_vector.begin(), edge_vector.end(),
+		template<typename F>
+		void CallForEachBoundary(F f) {
+			Utilities::for_each_in_tuple(boundaries.data,
+				[f](auto& boundary_vector) {
+					std::for_each(boundary_vector.begin(), boundary_vector.end(),
 					f);
-			});
-		}*/
+				}
+			);
+		}
 	};
 }
 
