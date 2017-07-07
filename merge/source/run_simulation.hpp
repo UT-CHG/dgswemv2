@@ -108,3 +108,4 @@ void run_simulation(double time_end, Stepper& rk_stepper, MeshType& mesh)
       std::string fname = "output/P" + std::to_string(step) + ".vtk"; std::string var_name = "Ze";
   }
 }
+}
