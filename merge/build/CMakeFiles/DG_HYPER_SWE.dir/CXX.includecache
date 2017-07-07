@@ -34,23 +34,15 @@ basis_polynomials.hpp
 ../basis_polynomials.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/basis_polynomials.hpp
 
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_boundary.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/boundary.hpp
 general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-integration/integrations_1D.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
 
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_element.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/element.hpp
 general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-master/master_elements_2D.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
-shape/shapes_2D.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
-class_boundary.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_boundary.hpp
-problem/SWE/swe_data.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
+boundary.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/boundary.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 iostream
@@ -117,12 +109,6 @@ mesh_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
 ../general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-../basis/bases_2D.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
-../integration/integrations_1D.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
-../integration/integrations_2D.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
 elements_2D/master_triangle.tpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/elements_2D/master_triangle.tpp
 
@@ -135,10 +121,20 @@ utilities/heterogeneous_containers.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_definitions.hpp
 general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-class_element.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_element.hpp
-class_boundary.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/class_boundary.hpp
+element.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/element.hpp
+master/master_elements_2D.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
+shape/shapes_2D.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
+basis/bases_2D.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
+integration/integrations_1D.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
+integration/integrations_2D.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
+boundary.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/boundary.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp
 ../../general_definitions.hpp

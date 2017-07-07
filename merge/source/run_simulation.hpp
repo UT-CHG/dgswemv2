@@ -53,6 +53,8 @@ void run_simulation(double time_end, Stepper& rk_stepper, MeshType& mesh)
 
       mesh.CallForEachElement(volume_kernel);
 
+      //mesh.CallForEachElement(source_kernel);
+ 
       mesh.CallForEachInterface(interface_kernel);
 
       mesh.CallForEachBoundary(boundary_kernel);

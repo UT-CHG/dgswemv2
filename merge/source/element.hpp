@@ -3,20 +3,15 @@
 
 #include "general_definitions.hpp"
 
-#include "master/master_elements_2D.hpp"
-#include "shape/shapes_2D.hpp"
+#include "boundary.hpp"
 
-#include "class_boundary.hpp"
-#include "problem/SWE/swe_data.hpp"
-
-template<uint dimension = 2, 
-	class master_type = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>,
-	class shape_type = Shape::StraightTriangle,
-	class data_type = SWE::Data>
+template<uint dimension, class master_type, class shape_type, class data_type>
 class Element {
 public:
+    typedef master_type master_element_type;
+
 	data_type data;
-        typedef master_type master_type_;
+
 private:
 	uint ID;
 
@@ -33,11 +28,13 @@ private:
 	std::pair<bool, Array2D<double>> m_inv;
 
 public:
-	Element(uint, master_type&, std::vector<Point<dimension>>&, 
+	Element(master_type&, uint, std::vector<Point<dimension>>&, 
 		std::vector<uint>&, std::vector<unsigned char>&);
+	
+	uint GetID() { return this->ID; };
 
-	void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1>>>&,
-		std::map<unsigned char, std::vector<RawBoundary<dimension - 1>>>&);
+	void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
+		std::map<unsigned char, std::vector<RawBoundary<dimension - 1, data_type>>>&);
 
 	void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 	void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
@@ -52,9 +49,9 @@ public:
 };
 
 template<uint dimension, class master_type, class shape_type, class data_type>
-Element<dimension, master_type, shape_type, data_type>::Element(uint ID, master_type& master, std::vector<Point<dimension>>& nodal_coordinates,
+Element<dimension, master_type, shape_type, data_type>::Element(master_type& master, uint ID, std::vector<Point<dimension>>& nodal_coordinates,
 	std::vector<uint>& neighbor_ID, std::vector<unsigned char>& boundary_type) :
-	ID(ID), master(master), shape(shape_type(nodal_coordinates)),
+	master(master), ID(ID), shape(shape_type(nodal_coordinates)),
 	neighbor_ID(neighbor_ID), boundary_type(boundary_type)
 {
 	//DEFORMATION
@@ -122,8 +119,8 @@ Element<dimension, master_type, shape_type, data_type>::Element(uint ID, master_
 
 template<uint dimension, class master_type, class shape_type, class data_type>
 void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
-	std::map<uint, std::map<uint, RawBoundary<dimension - 1>>>& pre_interfaces,
-	std::map<unsigned char, std::vector<RawBoundary<dimension - 1>>>& pre_boundaries)
+	std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_interfaces,
+	std::map<unsigned char, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries)
 {
 	Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
 	Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
@@ -133,11 +130,11 @@ void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries
 		if (this->boundary_type[i] == INTERNAL) {
 			pre_interfaces[this->ID].emplace(
 				std::make_pair(this->neighbor_ID[i],
-					RawBoundary<dimension - 1>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
+					RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
 		}
 		else {
 			pre_boundaries[this->boundary_type[i]].emplace_back(
-				RawBoundary<dimension - 1>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
+				RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
 		}
 	}
 }

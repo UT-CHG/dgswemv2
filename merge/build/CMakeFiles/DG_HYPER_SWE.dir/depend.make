@@ -25,8 +25,8 @@ CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.
 
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/basis_polynomials.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/class_boundary.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/class_element.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/boundary.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/element.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_mesh.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp

@@ -3,8 +3,16 @@
 
 #include "general_definitions.hpp"
 
-#include "class_element.hpp"
-#include "class_boundary.hpp"
+#include "element.hpp"
+#include "master/master_elements_2D.hpp"
+#include "shape/shapes_2D.hpp"
+
+#include "basis/bases_2D.hpp"
+
+#include "integration/integrations_1D.hpp"
+#include "integration/integrations_2D.hpp"
+
+#include "boundary.hpp"
 
 namespace Geometry {
 	template<typename Data>

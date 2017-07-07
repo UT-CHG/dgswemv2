@@ -3,9 +3,7 @@
 
 #include "general_definitions.hpp"
 
-#include "integration/integrations_1D.hpp"
-
-template<uint dimension = 1, class data_type = SWE::Data>
+template<uint dimension, class data_type>
 class RawBoundary {
 public:
 	uint p;
@@ -23,7 +21,7 @@ public:
 		basis(basis), master(master), shape(shape) {}
 };
 
-template<uint dimension = 1, class integration_type = Integration::GaussLegendre_1D, class data_type = SWE::Data, class boundary_type = SWE::Land>
+template<uint dimension, class integration_type, class data_type, class boundary_type>
 class Boundary {
 public:
 	data_type& data;
@@ -36,14 +34,14 @@ private:
 	Array2D<double> int_fact_phi;
 
 public:
-	Boundary(const RawBoundary<dimension>&);
+	Boundary(const RawBoundary<dimension, data_type>&);
 
 	void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 	double IntegrationPhi(uint, const std::vector<double>&);
 };
 
 template<uint dimension, class integration_type, class data_type, class boundary_type>
-Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(const RawBoundary<dimension>& raw_boundary) : data(raw_boundary.data) {
+Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(const RawBoundary<dimension, data_type>& raw_boundary) : data(raw_boundary.data) {
 	integration_type integration;
 	std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * raw_boundary.p);
 
@@ -92,7 +90,7 @@ double Boundary<dimension, integration_type, data_type, boundary_type>::Integrat
 	return integral;
 }
 
-template<uint dimension = 1, class integration_type = Integration::GaussLegendre_1D, class data_type = SWE::Data>
+template<uint dimension, class integration_type, class data_type>
 class Interface {
 public:
 	data_type& data_in;
@@ -106,7 +104,7 @@ private:
 	Array2D<double> int_fact_phi_ex;
 
 public:
-	Interface(const RawBoundary<dimension>&, const RawBoundary<dimension>&);
+	Interface(const RawBoundary<dimension, data_type>&, const RawBoundary<dimension, data_type>&);
 
 	void ComputeUgpIN(const std::vector<double>&, std::vector<double>&);
 	void ComputeUgpEX(const std::vector<double>&, std::vector<double>&);
@@ -115,7 +113,8 @@ public:
 };
 
 template<uint dimension, class integration_type, class data_type>
-Interface<dimension, integration_type, data_type>::Interface(const RawBoundary<dimension>& raw_boundary_in, const RawBoundary<dimension>& raw_boundary_ex) : 
+Interface<dimension, integration_type, data_type>::Interface
+(const RawBoundary<dimension, data_type>& raw_boundary_in, const RawBoundary<dimension, data_type>& raw_boundary_ex) : 
 	data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) 
 {
 	uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);

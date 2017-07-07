@@ -73,7 +73,7 @@ namespace Geometry {
 				nodal_coordinates[1][1] = nodal_coordinates[0][1] - dy;
 				nodal_coordinates[2][1] = nodal_coordinates[0][1];
 
-				mesh.template CreateElement<ElementType>(ID, ID, *triangle, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
 
 				ID = ID + 1;
 
@@ -98,7 +98,7 @@ namespace Geometry {
 
 				nodal_coordinates[0][1] = nodal_coordinates[0][1] - dy;
 
-				mesh.template CreateElement<ElementType>(ID, ID, *triangle, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
 			}
 		}
 
@@ -131,7 +131,7 @@ namespace Geometry {
 				nodal_coordinates[1][1] = nodal_coordinates[0][1];
 				nodal_coordinates[2][1] = nodal_coordinates[0][1] + dy;
 
-				mesh.template CreateElement<ElementType>(ID, ID, *triangle, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
 
 				ID = ID + 1;
 
@@ -156,14 +156,14 @@ namespace Geometry {
 
 				nodal_coordinates[0][1] = nodal_coordinates[0][1] + dy;
 
-				mesh.template CreateElement<ElementType>(ID, ID, *triangle, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
 			}
 		}
 	}
 
 	template<typename Data>
 	void initialize_mesh_interfaces_boundaries(MeshType<Data>& mesh) {
-		using RawBoundaryType = RawBoundary<1>;
+		using RawBoundaryType = RawBoundary<1, Data>;
 
 		using InterfaceType = Interface<1, Integration::GaussLegendre_1D, Data>;
 		using BoundaryTypeLand = Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Land>;

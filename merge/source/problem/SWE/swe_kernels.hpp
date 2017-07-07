@@ -53,11 +53,11 @@ namespace SWE {
 	void source_kernel(const Stepper& stepper, ElementType& elt) {
 		const uint rk_stage = stepper.get_stage();
 
-		auto& state = elt->data.state[rk_stage];
-		auto& internal = elt->data.internal;
+		auto& state = elt.data.state[rk_stage];
+		auto& internal = elt.data.internal;
 
 		//note we assume that the values at gauss points have already been computed
-		for (uint gp = 0; gp < elt->data.get_ngp_internal(); ++gp) {
+		for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
 			//compute contribution of hydrostatic pressure
 			internal.qx_source_term_at_gp[gp] = Global::g * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
 			internal.qy_source_term_at_gp[gp] = Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.ze_at_gp[gp];
@@ -73,10 +73,10 @@ namespace SWE {
 			internal.qy_source_term_at_gp[gp] -= bottom_friction_stress * internal.qy_at_gp[gp];
 		}
 
-		for (uint dof = 0; dof < elt->data.get_ndof(); ++dof) {
+		for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
 			//current we don't have any source terms that affect ze
-			state.rhs_qx[dof] += elt->IntegrationPhi(dof, internal.qx_source_term_at_gp);
-			state.rhs_qy[dof] += elt->IntegrationPhi(dof, internal.qy_source_term_at_gp);
+			state.rhs_qx[dof] += elt.IntegrationPhi(dof, internal.qx_source_term_at_gp);
+			state.rhs_qy[dof] += elt.IntegrationPhi(dof, internal.qy_source_term_at_gp);
 		}
 	}
 

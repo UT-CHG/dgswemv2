@@ -3,11 +3,6 @@
 
 #include "../general_definitions.hpp"
 
-#include "../basis/bases_2D.hpp"
-
-#include "../integration/integrations_1D.hpp"
-#include "../integration/integrations_2D.hpp"
-
 namespace Master {
 	template<class basis_type, class integration_type>
 	class Triangle : public Master<2> {
