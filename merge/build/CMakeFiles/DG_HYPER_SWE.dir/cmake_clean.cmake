@@ -1,7 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o"
-  "CMakeFiles/DG_HYPER_SWE.dir/class_mesh.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o"

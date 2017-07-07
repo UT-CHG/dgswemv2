@@ -32,8 +32,8 @@ namespace Geometry {
 		uint GetNumberBoundaries() { return this->boundaries.size(); }
 		
 		template<typename T, typename... Args>
-		void CreateElement(uint ID, Args&&... args) {
-			this->elements.template emplace<T>(ID, create<T>(std::forward<Args>(args)...));
+		void CreateElement(uint n, Args&&... args) {
+			this->elements.template emplace<T>(n, create<T>(std::forward<Args>(args)...));
 		}
 
 		template<typename T, typename... Args>
@@ -45,31 +45,16 @@ namespace Geometry {
 		void CreateBoundary(Args&&... args) {
 			this->boundaries.template emplace_back<T>(create<T>(std::forward<Args>(args)...));
 		}
+		
+		template<typename F>
+		void CallForEachElement(const F& f) {
+			Utilities::for_each_in_tuple(elements.data, 
+				[&f](auto& element_map) {
+					std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) {f(pair.second);});
+				});
+		}
 
 		/*
-		template<typename T>
-		T* find_element(int id)
-		{
-			T* ptr = nullptr;
-			auto& elements_of_type_T = std::get< util::index<T, TupleType>::value >(_elements.data);
-			for (uint i = 0; i < elements_of_type_T.size(); ++i) {
-				if (elements_of_type_T[i].get_id() == id) {
-					ptr = &(elements_of_type_T[i]);
-				}
-			}
-			return ptr;
-		}
-
-		template<typename UnaryFunction>
-		void call_for_each_element(UnaryFunction f)
-		{
-			util::for_each_in_tuple(_elements.data,
-				[f](auto& element_vector) {
-				std::for_each(element_vector.begin(), element_vector.end(),
-					f);
-			});
-		}
-
 		template<typename UnaryFunction>
 		void call_for_each_interior_edge(UnaryFunction f)
 		{

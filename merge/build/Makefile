@@ -204,33 +204,6 @@ basis/polynomials/basis_polynomials.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.s
 .PHONY : basis/polynomials/basis_polynomials.cpp.s
 
-class_mesh.o: class_mesh.cpp.o
-
-.PHONY : class_mesh.o
-
-# target to build an object file
-class_mesh.cpp.o:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/class_mesh.cpp.o
-.PHONY : class_mesh.cpp.o
-
-class_mesh.i: class_mesh.cpp.i
-
-.PHONY : class_mesh.i
-
-# target to preprocess a source file
-class_mesh.cpp.i:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/class_mesh.cpp.i
-.PHONY : class_mesh.cpp.i
-
-class_mesh.s: class_mesh.cpp.s
-
-.PHONY : class_mesh.s
-
-# target to generate assembly for a file
-class_mesh.cpp.s:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/class_mesh.cpp.s
-.PHONY : class_mesh.cpp.s
-
 integration/integrations_1D/integration_gausslegendre_1D.o: integration/integrations_1D/integration_gausslegendre_1D.cpp.o
 
 .PHONY : integration/integrations_1D/integration_gausslegendre_1D.o
@@ -384,9 +357,6 @@ help:
 	@echo "... basis/polynomials/basis_polynomials.o"
 	@echo "... basis/polynomials/basis_polynomials.i"
 	@echo "... basis/polynomials/basis_polynomials.s"
-	@echo "... class_mesh.o"
-	@echo "... class_mesh.i"
-	@echo "... class_mesh.s"
 	@echo "... integration/integrations_1D/integration_gausslegendre_1D.o"
 	@echo "... integration/integrations_1D/integration_gausslegendre_1D.i"
 	@echo "... integration/integrations_1D/integration_gausslegendre_1D.s"

@@ -36,7 +36,8 @@ public:
 	Element(uint, master_type&, std::vector<Point<dimension>>&, 
 		std::vector<uint>&, std::vector<unsigned char>&);
 
-	std::vector<RawBoundary<dimension - 1>*> CreateBoundaries();
+	void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension-1>*>>&,
+		std::map<unsigned char, std::vector<RawBoundary<dimension-1>*>>&);
 
 	void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 	void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
@@ -120,7 +121,10 @@ Element<dimension, master_type, shape_type, data_type>::Element(uint ID, master_
 }
 
 template<uint dimension, class master_type, class shape_type, class data_type>
-std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_type, data_type>::CreateBoundaries() {
+void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
+	std::map<uint, std::map<uint, RawBoundary<dimension-1>*>>& pre_interfaces, 
+	std::map<unsigned char, std::vector<RawBoundary<dimension-1>*>>& pre_boundaries)
+{
 	std::vector<RawBoundary<dimension - 1>*> my_raw_boundaries;
 
 	Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
@@ -128,11 +132,18 @@ std::vector<RawBoundary<dimension - 1>*> Element<dimension, master_type, shape_t
 	Shape::Shape<dimension>* my_shape = (Shape::Shape<dimension>*)(&this->shape);
 
 	for (uint i = 0; i < this->boundary_type.size(); i++) {
-		my_raw_boundaries.push_back(new RawBoundary<dimension - 1>(this->master.p, i, this->boundary_type[i], this->neighbor_ID[i],
-			this->data, *my_basis, *my_master, *my_shape));
+		if(this->boundary_type[i] == INTERNAL){
+			pre_interfaces[this->ID].emplace(
+				std::make_pair(this->neighbor_ID[i], 
+				new RawBoundary<dimension - 1>(this->master.p, i, this->boundary_type[i], this->neighbor_ID[i], 
+				this->data, *my_basis, *my_master, *my_shape)));
+		}
+		else{
+			pre_boundaries[this->boundary_type[i]].emplace_back(
+				new RawBoundary<dimension - 1>(this->master.p, i, this->boundary_type[i], this->neighbor_ID[i], 
+				this->data, *my_basis, *my_master, *my_shape));
+		}
 	}
-
-	return my_raw_boundaries;
 }
 
 template<uint dimension, class master_type, class shape_type, class data_type>

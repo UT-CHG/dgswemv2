@@ -23,7 +23,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 list (APPEND DG_HYPER_SWE_SOURCES
   /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.cpp
-  /h2/kazbek/UT-CHG/dgswemv2/merge/source/class_mesh.cpp
   /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp
 
   /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/polynomials/basis_polynomials.cpp

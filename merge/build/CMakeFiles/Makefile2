@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = /h2/kazbek/UT-CHG/dgswemv2/merge/build
 CMakeFiles/DG_HYPER_SWE.dir/all:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/depend
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Built target DG_HYPER_SWE"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target DG_HYPER_SWE"
 .PHONY : CMakeFiles/DG_HYPER_SWE.dir/all
 
 # Include target in all.
@@ -76,7 +76,7 @@ all: CMakeFiles/DG_HYPER_SWE.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/DG_HYPER_SWE.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles 10
+	$(CMAKE_COMMAND) -E cmake_progress_start /h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles 9
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/DG_HYPER_SWE.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles 0
 .PHONY : CMakeFiles/DG_HYPER_SWE.dir/rule

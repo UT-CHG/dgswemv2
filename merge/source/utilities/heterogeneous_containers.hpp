@@ -19,14 +19,6 @@ namespace Utilities {
 		}
 
 		template<typename T>
-		void reserve(uint new_cap) {
-			static_assert(has_type<T, TupleType>::value,
-				"Error in HeterogeneousVector::reserve: Type not found");
-
-			std::get<index<T, TupleType>::value>(data).reserve(new_cap);
-		}
-
-		template<typename T>
 		void emplace_back(T&& t) {
 			static_assert(has_type<T, TupleType>::value,
 				"Error in HeterogeneousVector::emplace_back: Type not found");

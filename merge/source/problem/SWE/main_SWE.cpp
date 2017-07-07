@@ -1,6 +1,9 @@
 #include "../../general_definitions.hpp"
 
-#include "../../class_mesh.hpp"
+#include "swe_data.hpp"
+#include "swe_kernels.hpp"
+#include "swe_boundary_conditions.hpp"
+#include "swe_definitions.hpp"
 
 #include "../../stepper.hpp"
 #include "../../mesh.hpp"
