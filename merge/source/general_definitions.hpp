@@ -111,7 +111,7 @@ namespace Shape {
 
 #define OCEAN 0
 #define LAND 1
-#define INTERNAL 2
+#define INTERNAL 255
 
 // element types (as VTK cell types)
 #define TRIANGLE 5

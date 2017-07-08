@@ -1,33 +1,12 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include "general_definitions.hpp"
-#include "utilities/heterogeneous_containers.hpp"
+#include "../general_definitions.hpp"
+#include "../utilities/heterogeneous_containers.hpp"
+
+#include "mesh_utilities.hpp"
 
 namespace Geometry {
-
-        template<typename Tuple>
-        struct make_master_type;
-
-        template<typename E>
-        struct make_master_type<std::tuple<E>>
-        {
-            typedef std::tuple<typename E::master_type_> type;
-        };
-
-        template<typename E, typename... Es>
-        struct make_master_type<std::tuple<E, Es...>>
-        {
-          typedef typename Utilities::tuple_join< std::tuple<typename E::master_type_>,
-						  typename make_master_type<std::tuple<Es...>>::type>::type type;
-        };
-
-
-	template <typename T, typename... Args>
-	T create(Args&&... args) {
-		return T(std::forward<Args>(args)...);
-	}
-
 	//Since elements types already come in a tuple. We can use specialization
 	//to get easy access to the parameter packs for the element and edge types.
 	template<typename ElementTypeTuple, typename InteriorEdgeTypeTuple, typename BoundaryEdgeTypeTuple>
@@ -36,33 +15,31 @@ namespace Geometry {
 	template<typename... Elements, typename... Interfaces, typename... Boundaries>
 	class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Boundaries...>> {
 	private:
-	    //using MasterElementType = make_master_type<std::tuple<Elements...> >::type;
-
+	    using MasterElementTypes = typename make_master_type<std::tuple<Elements...> >::type;
 		using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
 		using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
 		using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
 
+		MasterElementTypes masters;
 		ElementContainer elements;
 		InterfaceContainer interfaces;
 		BoundaryContainer boundaries;
-		//MasterElementType masters;
-
-		//todo: make sure masters gets initialized
 	
 	public:
+		Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+
 		uint GetNumberElements() { return this->elements.size(); }
 		uint GetNumberInterfaces() { return this->interfaces.size(); }
 		uint GetNumberBoundaries() { return this->boundaries.size(); }
 		
 		template<typename T, typename... Args>
 		void CreateElement(uint n, Args&&... args) {
+		  using MasterType = typename T::master_element_type;
+		  
+		  MasterType& master_elt = 
+		  	std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
 
-
-		  ///		  using MasterType = T::master_type;
-		  ///uint indx = index<MasterType, MasterElementType>::value;
-		  ///const auto& master_elt = std::get<indx>(masters);
-
-		  this->elements.template emplace<T>(n, create<T>(std::forward<Args>(args)...));
+		  this->elements.template emplace<T>(n, create<T>(n, master_elt, std::forward<Args>(args)...));
 		}
 
 		template<typename T, typename... Args>

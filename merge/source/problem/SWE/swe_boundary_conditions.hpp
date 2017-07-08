@@ -29,7 +29,7 @@ namespace SWE {
 		} 
 	};
 
-	class Tide {
+	class Tidal {
 		public:
 		void set_ex(const Stepper& stepper, std::vector<double> surface_normal, 
 			double ze_in, double qx_in, double qy_in,

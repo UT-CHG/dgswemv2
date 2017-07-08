@@ -25,16 +25,17 @@ CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.
 
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/basis_polynomials.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/boundary.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/element.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/element.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_definitions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_utilities.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_mesh.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/elements_2D/master_triangle.tpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_definitions.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_LLF_flux.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp

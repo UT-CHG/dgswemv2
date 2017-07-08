@@ -3,27 +3,27 @@
 
 #include "general_definitions.hpp"
 
-#include "mesh_definitions.hpp"
+#include "geometry/mesh_definitions.hpp"
 
 namespace Geometry {
-	template<typename Data>
-	void initialize_mesh_elements(uint, MeshType<Data>&);
+	template<typename Data, typename... BCs>
+	void initialize_mesh_elements(uint, MeshType<Data, BCs...>&);
 
-	template<typename Data>
-	void initialize_mesh_VTK_geometry(MeshType<Data>&);
+	template<typename Data, typename... BCs>
+	void initialize_mesh_VTK_geometry(MeshType<Data, BCs...>&);
 
-	template<typename Data>
-	void initialize_mesh_interfaces_boundaries(MeshType<Data>&);
+	template<typename Data, typename... BCs>
+	void initialize_mesh_interfaces_boundaries(MeshType<Data, BCs...>&);
 
-	template<typename Data>
-	void initialize_mesh(uint p, MeshType<Data>& mesh) {
-		initialize_mesh_elements(p, mesh);
+	template<typename Data, typename... BCs>
+	void initialize_mesh(MeshType<Data, BCs...>& mesh) {
+		initialize_mesh_elements(mesh);
 		initialize_mesh_VTK_geometry<Data>(mesh);
 		initialize_mesh_interfaces_boundaries<Data>(mesh);
 	}
 
-	template<typename Data>
-	void initialize_mesh_elements(uint p, MeshType<Data>& mesh) {
+	template<typename Data, typename... BCs>
+	void initialize_mesh_elements(MeshType<Data, BCs...>& mesh) {
 		using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 		using ElementType = Element<2, MasterType, Shape::StraightTriangle, Data>;
 
@@ -42,8 +42,6 @@ namespace Geometry {
 		std::vector<unsigned char> boundaries(3);
 		std::vector<uint> neighbors(3);
 
-		MasterType* triangle = new MasterType(p);
-
 		for (uint i = 0; i < n; i++) {
 			for (uint j = i % 2; j < m; j += 2) {
 				ID = 2 * j + 2 * m * i;
@@ -52,17 +50,17 @@ namespace Geometry {
 				neighbors[1] = ID + 2 * m;
 				neighbors[2] = ID - 1;
 
-				boundaries[0] = INTERNAL;
-				boundaries[1] = INTERNAL;
-				boundaries[2] = INTERNAL;
+				boundaries[0] = SWE::internal;
+				boundaries[1] = SWE::internal;
+				boundaries[2] = SWE::internal;
 
 				if (i == n - 1) {
 					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = LAND;
+					boundaries[1] = SWE::land;
 				}
 				if (j == 0) {
 					neighbors[2] = DEFAULT_ID;
-					boundaries[2] = LAND;
+					boundaries[2] = SWE::land;
 				}
 
 				nodal_coordinates[0][0] = j*dx;
@@ -73,7 +71,7 @@ namespace Geometry {
 				nodal_coordinates[1][1] = nodal_coordinates[0][1] - dy;
 				nodal_coordinates[2][1] = nodal_coordinates[0][1];
 
-				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
 
 				ID = ID + 1;
 
@@ -81,24 +79,24 @@ namespace Geometry {
 				neighbors[1] = ID + 1;
 				neighbors[2] = ID - 2 * m;
 
-				boundaries[0] = INTERNAL;
-				boundaries[1] = INTERNAL;
-				boundaries[2] = INTERNAL;
+				boundaries[0] = SWE::internal;
+				boundaries[1] = SWE::internal;
+				boundaries[2] = SWE::internal;
 
 				if (i == 0) {
 					neighbors[2] = DEFAULT_ID;
-					boundaries[2] = LAND;
+					boundaries[2] = SWE::land;
 				}
 				if (j == m - 1) {
 					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = OCEAN;
+					boundaries[1] = SWE::tidal;
 				}
 
 				nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
 
 				nodal_coordinates[0][1] = nodal_coordinates[0][1] - dy;
 
-				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
 			}
 		}
 
@@ -110,17 +108,17 @@ namespace Geometry {
 				neighbors[1] = ID - 1;
 				neighbors[2] = ID - 2 * m;
 
-				boundaries[0] = INTERNAL;
-				boundaries[1] = INTERNAL;
-				boundaries[2] = INTERNAL;
+				boundaries[0] = SWE::internal;
+				boundaries[1] = SWE::internal;
+				boundaries[2] = SWE::internal;
 
 				if (i == 0) {
 					neighbors[2] = DEFAULT_ID;
-					boundaries[2] = LAND;
+					boundaries[2] = SWE::land;
 				}
 				if (j == 0) {
 					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = LAND;
+					boundaries[1] = SWE::land;
 				}
 
 				nodal_coordinates[0][0] = j*dx;
@@ -131,7 +129,7 @@ namespace Geometry {
 				nodal_coordinates[1][1] = nodal_coordinates[0][1];
 				nodal_coordinates[2][1] = nodal_coordinates[0][1] + dy;
 
-				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
 
 				ID = ID + 1;
 
@@ -139,35 +137,34 @@ namespace Geometry {
 				neighbors[1] = ID + 2 * m;
 				neighbors[2] = ID + 1;
 
-				boundaries[0] = INTERNAL;
-				boundaries[1] = INTERNAL;
-				boundaries[2] = INTERNAL;
+				boundaries[0] = SWE::internal;
+				boundaries[1] = SWE::internal;
+				boundaries[2] = SWE::internal;
 
 				if (i == n - 1) {
 					neighbors[1] = DEFAULT_ID;
-					boundaries[1] = LAND;
+					boundaries[1] = SWE::land;
 				}
 				if (j == m - 1) {
 					neighbors[2] = DEFAULT_ID;
-					boundaries[2] = OCEAN;
+					boundaries[2] = SWE::tidal;
 				}
 
 				nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
 
 				nodal_coordinates[0][1] = nodal_coordinates[0][1] + dy;
 
-				mesh.template CreateElement<ElementType>(ID, *triangle, ID, nodal_coordinates, neighbors, boundaries);
+				mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
 			}
 		}
 	}
 
-	template<typename Data>
-	void initialize_mesh_interfaces_boundaries(MeshType<Data>& mesh) {
+	template<typename Data, typename... BCs>
+	void initialize_mesh_interfaces_boundaries(MeshType<Data, BCs...>& mesh) {
 		using RawBoundaryType = RawBoundary<1, Data>;
 
 		using InterfaceType = Interface<1, Integration::GaussLegendre_1D, Data>;
-		using BoundaryTypeLand = Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Land>;
-		using BoundaryTypeTide = Boundary<1, Integration::GaussLegendre_1D, Data, SWE::Tide>;
+		using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, BCs>...>;
 
 		std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
 		std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
@@ -191,19 +188,17 @@ namespace Geometry {
 		}
 
 		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
+			switch(it->first) {
+				using BoundaryType = typename std::tuple_element<it->first, BoundaryTypeTuple>::type;
+			}
 			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-				switch(it->first){
-					case LAND :
-						mesh.template CreateBoundary<BoundaryTypeLand>(*itt); break;
-					case OCEAN : 
-						mesh.template CreateBoundary<BoundaryTypeTide>(*itt); break;
-				}
+					mesh.template CreateBoundary<BoundaryType>(*itt); break;
 			}
 		}
 	}
 
-	template<typename Data>
-	void initialize_mesh_VTK_geometry(MeshType<Data>& mesh) {
+	template<typename Data, typename... BCs>
+	void initialize_mesh_VTK_geometry(MeshType<Data, BCs...>& mesh) {
 		std::vector<Point<3>> points;
 		Array2D<uint> cells;
 

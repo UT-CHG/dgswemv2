@@ -1,10 +1,11 @@
 #ifndef CLASS_ELEMENT_HPP
 #define CLASS_ELEMENT_HPP
 
-#include "general_definitions.hpp"
+#include "../general_definitions.hpp"
 
 #include "boundary.hpp"
 
+namespace Geometry {
 template<uint dimension, class master_type, class shape_type, class data_type>
 class Element {
 public:
@@ -18,8 +19,8 @@ private:
 	master_type& master;
 	shape_type shape;
 
-	std::vector<unsigned char> boundary_type;
 	std::vector<uint> neighbor_ID;
+	std::vector<unsigned char> boundary_type;
 
 	Array3D<double> dphi_fact;
 	Array2D<double> int_fact_phi;
@@ -28,7 +29,7 @@ private:
 	std::pair<bool, Array2D<double>> m_inv;
 
 public:
-	Element(master_type&, uint, std::vector<Point<dimension>>&, 
+	Element(uint, master_type&, std::vector<Point<dimension>>&, 
 		std::vector<uint>&, std::vector<unsigned char>&);
 	
 	uint GetID() { return this->ID; };
@@ -49,9 +50,9 @@ public:
 };
 
 template<uint dimension, class master_type, class shape_type, class data_type>
-Element<dimension, master_type, shape_type, data_type>::Element(master_type& master, uint ID, std::vector<Point<dimension>>& nodal_coordinates,
+Element<dimension, master_type, shape_type, data_type>::Element(uint ID, master_type& master, std::vector<Point<dimension>>& nodal_coordinates,
 	std::vector<uint>& neighbor_ID, std::vector<unsigned char>& boundary_type) :
-	master(master), ID(ID), shape(shape_type(nodal_coordinates)),
+	ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 	neighbor_ID(neighbor_ID), boundary_type(boundary_type)
 {
 	//DEFORMATION
@@ -246,6 +247,7 @@ void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(c
 	}
 
 	point_data.insert(point_data.end(), temp[0].begin(), temp[0].end());
+}
 }
 
 #endif

@@ -1,19 +1,20 @@
 #ifndef CLASS_BOUNDARY_HPP
 #define CLASS_BOUNDARY_HPP
 
-#include "general_definitions.hpp"
+#include "../general_definitions.hpp"
 
+namespace Geometry {
 template<uint dimension, class data_type>
 class RawBoundary {
 public:
 	uint p;
 	uint n_bound;
 
+	data_type& data;
+
 	Basis::Basis<dimension + 1>& basis;
 	Master::Master<dimension + 1>& master;
 	Shape::Shape<dimension + 1>& shape;
-
-	data_type& data;
 
 	RawBoundary(uint p, uint n_bound, data_type& data,
 		Basis::Basis<dimension + 1>& basis, Master::Master<dimension + 1>& master, Shape::Shape<dimension + 1>& shape) :
@@ -198,6 +199,7 @@ double Interface<dimension, integration_type, data_type>::IntegrationPhiEX(uint 
 	}
 
 	return integral;
+}
 }
 
 #endif

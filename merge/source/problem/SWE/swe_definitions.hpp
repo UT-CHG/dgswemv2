@@ -7,10 +7,10 @@ namespace SWE {
 		static constexpr double Cf = 0.0025;
 	}
 
-	enum class BoundaryConditions {
-	        internal,
-		land,
-		tidal
+	enum BoundaryConditions : unsigned char {
+		land = 0,
+		tidal = 1,
+	        internal = 255
 	};
 }
 
