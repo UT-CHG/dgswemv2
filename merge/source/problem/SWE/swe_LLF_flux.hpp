@@ -10,7 +10,8 @@ namespace SWE {
 	inline
 		void LLF_flux(const double ze_in, const double ze_ex, const double qx_in, const double qx_ex,
 			const double qy_in, const double qy_ex, const double bath,
-			const std::vector<double>& normal, double& ze_flux, double& qx_flux, double& qy_flux) {
+			const std::vector<double>& normal, double& ze_flux, double& qx_flux, double& qy_flux)
+	{
 
 		double h_in = ze_in + bath;
 		double h_ex = ze_ex + bath;
@@ -38,4 +39,5 @@ namespace SWE {
 		qy_flux = 0.5*(un_in*qy_in + un_ex*qy_ex + (pe_in + pe_ex)*normal[Y] + max_eigenvalue*(qy_in - qy_ex));
 	}
 }
+
 #endif

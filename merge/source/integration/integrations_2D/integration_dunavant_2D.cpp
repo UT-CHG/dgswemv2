@@ -62,30 +62,7 @@ namespace Integration {
 			}
 		}
 
-		//rule_test(p, rule);
-
 		return rule;
-	}
-
-	void Dunavant_2D::rule_test(uint p, const std::pair<std::vector<double>, std::vector<Point<2>>>& rule) {
-		double exact_integration = 1 / ((double)p + 1)*((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p)); // S(x^p)dxdy over triangle
-
-		double num_integration = 0;
-		for (uint gp = 0; gp < rule.first.size(); gp++) { num_integration += pow(rule.second[gp][X], p)*rule.first[gp]; }
-
-		double err = abs((num_integration - exact_integration) / exact_integration);
-
-		if (abs(err) < pow(10.0, -10.0)) {
-			printf("\n");
-			printf("DUNAVANT 2D RULE - Test success!\n");
-			printf("err = %e\n", err);
-		}
-		else {
-			printf("\n");
-			printf("DUNAVANT 2D RULE - Test fail!\n");
-			printf("err = %e\n", err);
-			exit(1);
-		}
 	}
 
 	std::vector<uint> Dunavant_2D::PermutationData(uint p) {

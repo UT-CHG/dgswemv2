@@ -64,47 +64,6 @@ namespace Basis {
 		return m_inv;
 	}
 
-	void Dubiner_2D::basis_test(uint p, const Array2D<double>& phi_area, const std::pair<std::vector<double>, std::vector<Point<2>>>& integration_rule) {
-		uint number_bf = (p + 1)*(p + 2) / 2;
-
-		Array2D<double> M(number_bf);
-
-		for (uint i = 0; i < number_bf; i++) {
-			M[i].reserve(number_bf);
-			for (uint j = 0; j < number_bf; j++) {
-				M[i].push_back(0);
-				for (uint k = 0; k < integration_rule.first.size(); k++) {
-					M[i][j] = M[i][j] + integration_rule.first[k] * phi_area[i][k] * phi_area[j][k];
-				}
-			}
-		}
-
-		uint m = 0;
-		double M_exact;
-		for (uint i = 0; i <= p; i++) {
-			for (uint j = 0; j <= p - i; j++) {
-				M_exact = 2.0 / ((2 * i + 1)*(i + j + 1));
-				M[m][m] = abs((M[m][m] - M_exact) / M_exact);
-				m = m + 1;
-			}
-		}
-
-		for (uint i = 0; i < number_bf; i++) {
-			for (uint j = 0; j < number_bf; j++) {
-				if (abs(M[i][j]) > pow(10.0, -10.0))
-				{
-					printf("\n");
-					printf("DUBINER 2D - Test fail!\n");
-					printf("(i,j) = (%d,%d)\n", i, j);
-					exit(1);
-				}
-			}
-		}
-
-		printf("\n");
-		printf("DUBINER 2D - Test success!\n");
-	}
-
 	std::vector<double> Dubiner_2D::ComputePhi(uint p, uint q, const std::vector<double>& n1, const std::vector<double>& n2) {
 		uint n_pts = n1.size(); //CHECK IF n1.size() = n2.size()
 

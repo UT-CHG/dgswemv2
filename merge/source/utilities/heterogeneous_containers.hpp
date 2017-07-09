@@ -12,9 +12,9 @@ namespace Utilities {
 
 		uint size() {
 			uint size = 0;
-			
+
 			for_each_in_tuple(this->data, [&size](const auto& vector) { size += vector.size(); });
-			
+
 			return size;
 		}
 

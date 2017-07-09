@@ -18,7 +18,6 @@ namespace Utilities {
 	template <typename T, typename... Ts>
 	struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};
 
-
 	// get_index returns the first location of a type
 	// https://stackoverflow.com/questions/18063451/get-index-of-a-tuple-elements-type
 	template <class T, class Tuple>
@@ -56,17 +55,16 @@ namespace Utilities {
 		for_each(t, f, gen_seq<sizeof...(Ts)>());
 	}
 
+	// take two tuples tuple<Pack1...> tuple<Pack2...> and join them to
+	// make a new tuple tuple<Pack1..., Pack2...>
+	template<typename Tup1, typename Tup2>
+	struct tuple_join;
 
-        // take two tuples tuple<Pack1...> tuple<Pack2...> and join them to
-        // make a new tuple tuple<Pack1..., Pack2...>
-        template<typename Tup1, typename Tup2>
-        struct tuple_join;
-
-        template<typename... Pack1, typename... Pack2>
-        struct tuple_join<std::tuple<Pack1...>, std::tuple<Pack2...> >
-        {
-            typedef std::tuple<Pack1..., Pack2...> type;
-        };
+	template<typename... Pack1, typename... Pack2>
+	struct tuple_join<std::tuple<Pack1...>, std::tuple<Pack2...> >
+	{
+		typedef std::tuple<Pack1..., Pack2...> type;
+	};
 }
 
 #endif

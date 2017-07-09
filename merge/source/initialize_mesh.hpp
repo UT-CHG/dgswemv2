@@ -7,7 +7,7 @@
 
 namespace Geometry {
 	template<typename Data, typename... BCs>
-	void initialize_mesh_elements(uint, MeshType<Data, BCs...>&);
+	void initialize_mesh_elements(MeshType<Data, BCs...>&);
 
 	template<typename Data, typename... BCs>
 	void initialize_mesh_VTK_geometry(MeshType<Data, BCs...>&);
@@ -18,8 +18,8 @@ namespace Geometry {
 	template<typename Data, typename... BCs>
 	void initialize_mesh(MeshType<Data, BCs...>& mesh) {
 		initialize_mesh_elements(mesh);
-		initialize_mesh_VTK_geometry<Data>(mesh);
-		initialize_mesh_interfaces_boundaries<Data>(mesh);
+		initialize_mesh_VTK_geometry(mesh);
+		initialize_mesh_interfaces_boundaries(mesh);
 	}
 
 	template<typename Data, typename... BCs>
@@ -170,17 +170,17 @@ namespace Geometry {
 		std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
 
 		mesh.CallForEachElement(
-			[&pre_interfaces, &pre_boundaries](auto& elem) 
+			[&pre_interfaces, &pre_boundaries](auto& elem)
 			{ elem.CreateRawBoundaries(pre_interfaces, pre_boundaries); }
 		);
-		
+
 		for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
 			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 
 				mesh.template CreateInterface<InterfaceType>(
 					itt->second,
 					pre_interfaces.at(itt->first).at(it->first)
-				);
+					);
 
 				pre_interfaces.at(itt->first).erase(it->first);
 				it->second.erase(itt);
@@ -188,11 +188,11 @@ namespace Geometry {
 		}
 
 		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
-			switch(it->first) {
+			switch (it->first) {
 				using BoundaryType = typename std::tuple_element<it->first, BoundaryTypeTuple>::type;
 			}
 			for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-					mesh.template CreateBoundary<BoundaryType>(*itt); break;
+				mesh.template CreateBoundary<BoundaryType>(*itt); break;
 			}
 		}
 	}
@@ -203,7 +203,7 @@ namespace Geometry {
 		Array2D<uint> cells;
 
 		mesh.CallForEachElement(
-			[&points, &cells](auto& elem) 
+			[&points, &cells](auto& elem)
 			{ elem.InitializeVTK(points, cells); }
 		);
 

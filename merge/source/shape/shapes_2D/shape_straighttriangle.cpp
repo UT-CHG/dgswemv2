@@ -32,7 +32,7 @@ namespace Shape {
 		J[1].push_back((this->nodal_coordinates[1][Y] - this->nodal_coordinates[0][Y]) / 2.0);
 		J[1].push_back((this->nodal_coordinates[2][Y] - this->nodal_coordinates[0][Y]) / 2.0);
 
-		double det_J = this->GetJdet(this->nodal_coordinates)[0];
+		double det_J = (J[0][0] * J[1][1] - J[0][1] * J[1][0]);
 
 		J_inv[0][0].push_back(J[1][1] / det_J);
 		J_inv[0][1].push_back(-J[0][1] / det_J);

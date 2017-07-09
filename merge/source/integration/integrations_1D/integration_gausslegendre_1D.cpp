@@ -11,32 +11,7 @@ namespace Integration{
 
 		std::pair<std::vector<double>, std::vector<Point<1>>> rule = this->GPData((uint)ceil(((double)p + 1) / 2));
 
-		//rule_test(p, rule);
-
 		return rule;
-	}
-
-	void GaussLegendre_1D::rule_test(uint p, const std::pair<std::vector<double>, std::vector<Point<1>>>& rule) {
-		double exact_integration = 2 - 1 / ((double)p + 1)*(1 + pow(-1.0, p)); // S(1-x^p)dx from -1 to 1 
-
-		double num_integration = 0;
-		for (uint gp = 0; gp < rule.first.size(); gp++) { num_integration = num_integration + (1.0 - pow(rule.second[gp][X], p))*rule.first[gp]; }
-
-		double err = abs((num_integration - exact_integration) / exact_integration);
-
-		if (err < pow(10.0, -10.0))
-		{
-			printf("\n");
-			printf("GAUSSLEGENDRE 1D RULE - Test success!\n");
-			printf("err = %e\n", err);
-		}
-		else
-		{
-			printf("\n");
-			printf("GAUSSLEGENDRE 1D RULE - Test fail!\n");
-			printf("err = %e\n", err);
-			exit(1);
-		}
 	}
 
 	std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GPData(uint number_gp){

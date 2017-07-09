@@ -15,7 +15,7 @@ namespace Geometry {
 	template<typename... Elements, typename... Interfaces, typename... Boundaries>
 	class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Boundaries...>> {
 	private:
-	    using MasterElementTypes = typename make_master_type<std::tuple<Elements...> >::type;
+		using MasterElementTypes = typename make_master_type<std::tuple<Elements...>>::type;
 		using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
 		using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
 		using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
@@ -24,22 +24,22 @@ namespace Geometry {
 		ElementContainer elements;
 		InterfaceContainer interfaces;
 		BoundaryContainer boundaries;
-	
+
 	public:
 		Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
 		uint GetNumberElements() { return this->elements.size(); }
 		uint GetNumberInterfaces() { return this->interfaces.size(); }
 		uint GetNumberBoundaries() { return this->boundaries.size(); }
-		
+
 		template<typename T, typename... Args>
 		void CreateElement(uint n, Args&&... args) {
-		  using MasterType = typename T::master_element_type;
-		  
-		  MasterType& master_elt = 
-		  	std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
+			using MasterType = typename T::master_element_type;
 
-		  this->elements.template emplace<T>(n, create<T>(n, master_elt, std::forward<Args>(args)...));
+			MasterType& master_elt =
+				std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
+
+			this->elements.template emplace<T>(n, create<T>(n, master_elt, std::forward<Args>(args)...));
 		}
 
 		template<typename T, typename... Args>
@@ -51,13 +51,13 @@ namespace Geometry {
 		void CreateBoundary(Args&&... args) {
 			this->boundaries.template emplace_back<T>(create<T>(std::forward<Args>(args)...));
 		}
-		
+
 		template<typename F>
 		void CallForEachElement(const F& f) {
 			Utilities::for_each_in_tuple(elements.data,
-				[&f](auto& element_map) { 
-					std::for_each(element_map.begin(), element_map.end(), 
-					[&f](auto& pair) { f(pair.second); }); 
+				[&f](auto& element_map) {
+					std::for_each(element_map.begin(), element_map.end(),
+					[&f](auto& pair) { f(pair.second); });
 				}
 			);
 		}
@@ -67,7 +67,7 @@ namespace Geometry {
 			Utilities::for_each_in_tuple(interfaces.data,
 				[f](auto& interface_vector) {
 					std::for_each(interface_vector.begin(), interface_vector.end(),
-					f );
+					f);
 				}
 			);
 		}

@@ -10,9 +10,9 @@
 namespace SWE {
 	template<typename ElementType>
 	void volume_kernel(const Stepper& stepper, ElementType& elt) {
-		const uint rk_stage = stepper.get_stage();
+		const uint stage = stepper.get_stage();
 
-		auto& state = elt.data.state[rk_stage];
+		auto& state = elt.data.state[stage];
 		auto& internal = elt.data.internal;
 
 		//get state at Gauss points
@@ -51,9 +51,9 @@ namespace SWE {
 
 	template<typename ElementType>
 	void source_kernel(const Stepper& stepper, ElementType& elt) {
-		const uint rk_stage = stepper.get_stage();
+		const uint stage = stepper.get_stage();
 
-		auto& state = elt.data.state[rk_stage];
+		auto& state = elt.data.state[stage];
 		auto& internal = elt.data.internal;
 
 		//note we assume that the values at gauss points have already been computed
@@ -82,12 +82,12 @@ namespace SWE {
 
 	template<typename InterfaceType>
 	void interface_kernel(const Stepper& stepper, InterfaceType& intface) {
-		const uint rk_stage = stepper.get_stage();
+		const uint stage = stepper.get_stage();
 
-		auto& state_in = intface.data_in.state[rk_stage];
+		auto& state_in = intface.data_in.state[stage];
 		auto& boundary_in = intface.data_in.boundary;
 
-		auto& state_ex = intface.data_ex.state[rk_stage];
+		auto& state_ex = intface.data_ex.state[stage];
 		auto& boundary_ex = intface.data_ex.boundary;
 
 		intface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
@@ -125,9 +125,9 @@ namespace SWE {
 
 	template<typename BoundaryType>
 	void boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
-		const uint rk_stage = stepper.get_stage();
+		const uint stage = stepper.get_stage();
 
-		auto& state = bound.data.state[rk_stage];
+		auto& state = bound.data.state[stage];
 		auto& boundary = bound.data.boundary;
 
 		bound.ComputeUgp(state.ze, boundary.ze_at_gp);
@@ -136,7 +136,7 @@ namespace SWE {
 
 		double ze_ex, qx_ex, qy_ex;
 		for (uint gp = 0; gp < bound.data.get_ngp_boundary(); ++gp) {
-			bound.boundary_condition.set_ex(stepper, bound.surface_normal[gp], 
+			bound.boundary_condition.set_ex(stepper, bound.surface_normal[gp],
 				boundary.ze_at_gp[gp], boundary.qx_at_gp[gp], boundary.qy_at_gp[gp],
 				ze_ex, qx_ex, qy_ex);
 
@@ -159,12 +159,12 @@ namespace SWE {
 
 	template<typename ElementType>
 	void update_kernel(const Stepper& stepper, ElementType& elt) {
-		const uint rk_stage = stepper.get_stage();
+		const uint stage = stepper.get_stage();
 		double dt = stepper.get_dt();
 
 		auto& state = elt.data.state;
-		auto& curr_state = elt.data.state[rk_stage];
-		auto& next_state = elt.data.state[rk_stage + 1];
+		auto& curr_state = elt.data.state[stage];
+		auto& next_state = elt.data.state[stage + 1];
 
 		curr_state.rhs_ze = elt.SolveLSE(curr_state.rhs_ze);
 		curr_state.rhs_qx = elt.SolveLSE(curr_state.rhs_qx);
@@ -174,22 +174,22 @@ namespace SWE {
 		std::fill(next_state.qx.begin(), next_state.qx.end(), 0);
 		std::fill(next_state.qy.begin(), next_state.qy.end(), 0);
 
-		for (uint s = 0; s <= rk_stage; ++s) {
+		for (uint s = 0; s <= stage; ++s) {
 			for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-				next_state.ze[dof] += stepper.ark[rk_stage][s] * state[s].ze[dof]
-					+ dt*stepper.brk[rk_stage][s] * state[s].rhs_ze[dof];
+				next_state.ze[dof] += stepper.ark[stage][s] * state[s].ze[dof]
+					+ dt*stepper.brk[stage][s] * state[s].rhs_ze[dof];
 
-				next_state.qx[dof] += stepper.ark[rk_stage][s] * state[s].qx[dof]
-					+ dt*stepper.brk[rk_stage][s] * state[s].rhs_qx[dof];
+				next_state.qx[dof] += stepper.ark[stage][s] * state[s].qx[dof]
+					+ dt*stepper.brk[stage][s] * state[s].rhs_qx[dof];
 
-				next_state.qy[dof] += stepper.ark[rk_stage][s] * state[s].qy[dof]
-					+ dt*stepper.brk[rk_stage][s] * state[s].rhs_qy[dof];
+				next_state.qy[dof] += stepper.ark[stage][s] * state[s].qy[dof]
+					+ dt*stepper.brk[stage][s] * state[s].rhs_qy[dof];
 			}
 		}
 	}
 
 	template<typename ElementType>
-	void swap_states(const Stepper& stepper, ElementType& elt) {
+	void swap_states_kernel(const Stepper& stepper, ElementType& elt) {
 		uint n_stages = stepper.get_num_stages();
 		auto& state = elt.data.state;
 
@@ -209,20 +209,19 @@ namespace SWE {
 		elt.WritePointDataVTK(elt.data.state[0].qy, point_data[2]);
 	}
 
-	template<typename MeshType> 
+	template<typename MeshType>
 	void write_VTK_data(const Stepper& stepper, MeshType& mesh) {
-  		Array2D<double> cell_data;
-  		Array2D<double> point_data;
+		Array2D<double> cell_data;
+		Array2D<double> point_data;
 
-	    cell_data.resize(3);
-	 	point_data.resize(3);
+		cell_data.resize(3);
+		point_data.resize(3);
 
-		auto extract_VTK_data_kernel = [&stepper,&cell_data, &point_data](auto& elt) {
-			SWE::extract_VTK_data_kernel(stepper,elt,cell_data,point_data);
-  		};
-  
- 		mesh.CallForEachElement(extract_VTK_data_kernel);
+		auto extract_VTK_data_kernel = [&stepper, &cell_data, &point_data](auto& elt) {
+			SWE::extract_VTK_data_kernel(stepper, elt, cell_data, point_data);
+		};
 
+		mesh.CallForEachElement(extract_VTK_data_kernel);
 
 		std::string file_name = "data.vtk";
 		std::ofstream file(file_name);
@@ -231,7 +230,7 @@ namespace SWE {
 		file << "SCALARS ze_cell float 1\n";
 		file << "LOOKUP_TABLE default\n";
 		for (auto it = cell_data[0].begin(); it != cell_data[0].end(); it++) file << *it << '\n';
-		
+
 		file << "SCALARS qx_cell float 1\n";
 		file << "LOOKUP_TABLE default\n";
 		for (auto it = cell_data[1].begin(); it != cell_data[1].end(); it++) file << *it << '\n';
@@ -244,7 +243,7 @@ namespace SWE {
 		file << "SCALARS ze_point float 1\n";
 		file << "LOOKUP_TABLE default\n";
 		for (auto it = point_data[0].begin(); it != point_data[0].end(); it++) file << *it << '\n';
-	
+
 		file << "SCALARS qx_point float 1\n";
 		file << "LOOKUP_TABLE default\n";
 		for (auto it = point_data[1].begin(); it != point_data[1].end(); it++) file << *it << '\n';
@@ -254,20 +253,69 @@ namespace SWE {
 		for (auto it = point_data[2].begin(); it != point_data[2].end(); it++) file << *it << '\n';
 
 		file.close();
-		
+
 		std::string file_name_geom = "geometry.vtk";
 		std::string file_name_data = "data.vtk";
 
 		std::ifstream file_geom(file_name_geom, std::ios_base::binary);
 		std::ifstream file_data(file_name_data, std::ios_base::binary);
 
-		uint n_step = (uint)(stepper.get_t_at_curr_stage()/stepper.get_dt());
+		uint n_step = (uint)(stepper.get_t_at_curr_stage() / stepper.get_dt());
 
 		std::string file_name_merge = "mesh_data_" + std::to_string(n_step) + ".vtk";
 		std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
 		file_merge << file_geom.rdbuf() << file_data.rdbuf();
 		file_merge.close();
+	}
+
+	template<typename ElementType>
+	void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
+		uint stage = stepper.get_stage();
+
+		auto& state = elt.data.state[stage];
+
+		for (auto& ze_mode : state.ze) {
+			if (isnan(ze_mode)) {
+				std::cerr << "Error: found isnan ze at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& qx_mode : state.qx) {
+			if (isnan(qx_mode)) {
+				std::cerr << "Error: found isnan qx at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& qy_mode : state.qy) {
+			if (isnan(qy_mode)) {
+				std::cerr << "Error: found isnan qy at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& rhs_ze_mode : state.rhs_ze) {
+			if (isnan(rhs_ze_mode)) {
+				std::cerr << "Error: found isnan rhs_ze at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& rhs_qx_mode : state.rhs_qx) {
+			if (isnan(rhs_qx_mode)) {
+				std::cerr << "Error: found isnan rhs_qx at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& rhs_qy_mode : state.rhs_qy) {
+			if (isnan(rhs_qy_mode)) {
+				std::cerr << "Error: found isnan rhs_qy at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
 	}
 }
 
