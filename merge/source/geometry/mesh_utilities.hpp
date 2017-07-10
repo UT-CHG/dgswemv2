@@ -1,5 +1,5 @@
-#ifndef MESH_DEFINITIONS_HPP
-#define MESH_DEFINITIONS_HPP
+#ifndef MESH_UTILITIES_HPP
+#define MESH_UTILITIES_HPP
 
 namespace Geometry {
 	template <typename T, typename... Args>
