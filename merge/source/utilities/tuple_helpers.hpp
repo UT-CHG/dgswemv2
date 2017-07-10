@@ -1,8 +1,6 @@
 #ifndef TUPLE_HELPERS_HPP
 #define TUPLE_HELPERS_HPP
 
-#include "../general_definitions.hpp"
-
 namespace Utilities {
 	// has_type implementation from
 	//https://stackoverflow.com/questions/25958259/how-do-i-find-out-if-a-tuple-contains-a-type
@@ -47,7 +45,8 @@ namespace Utilities {
 	template<typename T, typename F, int... Is>
 	void for_each(T&& t, F f, seq<Is...>) {
 		//ensure that variables get executed in the correct order
-		auto __attribute((unused)) unused = { (f(std::get<Is>(t)), 0)... };
+		//auto __attribute((unused)) unused = { (f(std::get<Is>(t)), 0)... };
+		auto unused = { (f(std::get<Is>(t)), 0)... };
 	}
 
 	template<typename... Ts, typename F>

@@ -1,16 +1,15 @@
 #ifndef MESH_DEFINITIONS_H
 #define MESH_DEFINITIONS_H
 
-#include "../general_definitions.hpp"
+#include "mesh.hpp"
+#include "element.hpp"
+#include "boundary.hpp"
 
 #include "../master/master_elements_2D.hpp"
 #include "../shape/shapes_2D.hpp"
 #include "../basis/bases_2D.hpp"
 #include "../integration/integrations_1D.hpp"
 #include "../integration/integrations_2D.hpp"
-
-#include "element.hpp"
-#include "boundary.hpp"
 
 namespace Geometry {
 	template<typename Data>

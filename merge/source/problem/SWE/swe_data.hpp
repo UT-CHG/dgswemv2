@@ -1,8 +1,6 @@
 #ifndef SWE_DATA_HPP
 #define SWE_DATA_HPP
 
-#include "../../general_definitions.hpp"
-
 namespace SWE {
 	struct State {
 		State(uint ndof)

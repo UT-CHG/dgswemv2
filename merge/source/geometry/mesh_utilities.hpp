@@ -1,8 +1,6 @@
 #ifndef MESH_DEFINITIONS_HPP
 #define MESH_DEFINITIONS_HPP
 
-#include "../general_definitions.hpp"
-
 namespace Geometry {
 	template <typename T, typename... Args>
 	T create(Args&&... args) {

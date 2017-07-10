@@ -1,16 +1,12 @@
 #ifndef CLASS_ELEMENT_HPP
 #define CLASS_ELEMENT_HPP
 
-#include "../general_definitions.hpp"
-
 #include "boundary.hpp"
 
 namespace Geometry {
 	template<uint dimension, class master_type, class shape_type, class data_type>
 	class Element {
 	public:
-		typedef master_type master_element_type;
-
 		data_type data;
 
 	private:
@@ -41,10 +37,12 @@ namespace Geometry {
 		double IntegrationDPhi(uint, uint, const std::vector<double>&);
 	
 		std::vector<double> SolveLSE(const std::vector<double>&);
-'
+
 		void InitializeVTK(std::vector<Point<3>>&, Array2D<uint>&);
 		void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
 		void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
+
+		typedef master_type master_element_type;
 	};
 
 	template<uint dimension, class master_type, class shape_type, class data_type>

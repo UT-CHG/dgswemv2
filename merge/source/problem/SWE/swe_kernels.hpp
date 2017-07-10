@@ -1,15 +1,38 @@
 #ifndef SWE_KERNELS_HPP
 #define SWE_KERNELS_HPP
 
-#include "../../general_definitions.hpp"
-#include "../../stepper.hpp"
-
 #include "swe_LLF_flux.hpp"
-#include "swe_definitions.hpp"
+#include "../../geometry/mesh_definitions.hpp"
 
 namespace SWE {
+	template<typename RawBoundaryType>
+	void Problem::create_boundaries(const mesh_type& mesh, std::map<unsigned char, std::vector<RawBoundaryType>>& pre_boundaries) {
+		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
+			switch (it->first) {
+			case SWE::land:
+				using BoundaryTypeLand = Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
+
+				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+					mesh.template CreateBoundary<BoundaryTypeLand>(*itt);
+					//it->second.erase(itt);
+				}
+
+				break;
+			case SWE::tidal:
+				using BoundaryTypeTidal = Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Tidal>;
+
+				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+					mesh.template CreateBoundary<BoundaryTypeTidal>(*itt);
+				}
+
+				break;
+			}
+		}
+	}
+
+
 	template<typename ElementType>
-	void volume_kernel(const Stepper& stepper, ElementType& elt) {
+	void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
 		const uint stage = stepper.get_stage();
 
 		auto& state = elt.data.state[stage];
@@ -50,7 +73,7 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void source_kernel(const Stepper& stepper, ElementType& elt) {
+	void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
 		const uint stage = stepper.get_stage();
 
 		auto& state = elt.data.state[stage];
@@ -81,7 +104,7 @@ namespace SWE {
 	}
 
 	template<typename InterfaceType>
-	void interface_kernel(const Stepper& stepper, InterfaceType& intface) {
+	void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
 		const uint stage = stepper.get_stage();
 
 		auto& state_in = intface.data_in.state[stage];
@@ -124,7 +147,7 @@ namespace SWE {
 	}
 
 	template<typename BoundaryType>
-	void boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
+	void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
 		const uint stage = stepper.get_stage();
 
 		auto& state = bound.data.state[stage];
@@ -158,7 +181,7 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void update_kernel(const Stepper& stepper, ElementType& elt) {
+	void Problem::update_kernel(const Stepper& stepper, ElementType& elt) {
 		const uint stage = stepper.get_stage();
 		double dt = stepper.get_dt();
 
@@ -189,7 +212,7 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void swap_states_kernel(const Stepper& stepper, ElementType& elt) {
+	void Problem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
 		uint n_stages = stepper.get_num_stages();
 		auto& state = elt.data.state;
 
@@ -199,7 +222,7 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void extract_VTK_data_kernel(const Stepper& stepper, ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
+	void Problem::extract_VTK_data_kernel(const Stepper& stepper, ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
 		elt.WriteCellDataVTK(elt.data.state[0].ze, cell_data[0]);
 		elt.WriteCellDataVTK(elt.data.state[0].qx, cell_data[1]);
 		elt.WriteCellDataVTK(elt.data.state[0].qy, cell_data[2]);
@@ -210,7 +233,7 @@ namespace SWE {
 	}
 
 	template<typename MeshType>
-	void write_VTK_data(const Stepper& stepper, MeshType& mesh) {
+	void Problem::write_VTK_data(const Stepper& stepper, MeshType& mesh) {
 		Array2D<double> cell_data;
 		Array2D<double> point_data;
 
@@ -218,7 +241,7 @@ namespace SWE {
 		point_data.resize(3);
 
 		auto extract_VTK_data_kernel = [&stepper, &cell_data, &point_data](auto& elt) {
-			SWE::extract_VTK_data_kernel(stepper, elt, cell_data, point_data);
+			Problem::extract_VTK_data_kernel(stepper, elt, cell_data, point_data);
 		};
 
 		mesh.CallForEachElement(extract_VTK_data_kernel);
@@ -270,7 +293,7 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
+	void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
 		uint stage = stepper.get_stage();
 
 		auto& state = elt.data.state[stage];

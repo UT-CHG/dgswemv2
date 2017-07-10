@@ -1,7 +1,46 @@
 #ifndef SWE_DEFINITIONS_HPP
 #define SWE_DEFINITIONS_HPP
 
+#include "swe_data.hpp"
+#include "swe_boundary_conditions.hpp"
+
 namespace SWE {
+	struct Problem {
+		typedef SWE::Data data_type;
+		
+		typedef Geometry::MeshType<SWE::Data, SWE::Land, SWE::Tidal> mesh_type;
+		
+		template<typename RawBoundaryType>
+		static void create_boundaries(const mesh_type&, std::map<unsigned char, std::vector<RawBoundaryType>>&);
+
+		template<typename ElementType>
+		static void volume_kernel(const Stepper&, ElementType&);
+
+		template<typename ElementType>
+		static void source_kernel(const Stepper&, ElementType&);
+
+		template<typename InterfaceType>
+		static void interface_kernel(const Stepper&, InterfaceType&);
+
+		template<typename BoundaryType>
+		static void boundary_kernel(const Stepper&, BoundaryType&);
+
+		template<typename ElementType>
+		static void update_kernel(const Stepper&, ElementType&);
+
+		template<typename ElementType>
+		static void swap_states_kernel(const Stepper&, ElementType&);
+
+		template<typename ElementType>
+		static void scrutinize_solution_kernel(const Stepper&, ElementType&);
+
+		template<typename ElementType>
+		static void extract_VTK_data_kernel(const Stepper&, ElementType&, Array2D<double>&, Array2D<double>&);
+
+		template<typename MeshType>
+		static void write_VTK_data(const Stepper&, MeshType&);
+	};
+
 	namespace Global {
 		static constexpr double g = 9.81;
 		static constexpr double Cf = 0.0025;

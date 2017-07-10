@@ -1,8 +1,6 @@
 #ifndef SWE_BOUNDARY_CONDITIONS_HPP
 #define SWE_BOUNDARY_CONDITIONS_HPP
 
-#include "../../general_definitions.hpp"
-
 namespace SWE {
 	class Land {
 	public:
