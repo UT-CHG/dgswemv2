@@ -1,7 +1,7 @@
 #ifndef SWE_BOUNDARY_CONDITIONS_HPP
 #define SWE_BOUNDARY_CONDITIONS_HPP
 
-#include "../../stepper.hpp"
+#include "../../utilities/stepper.hpp"
 
 namespace SWE {
 	class Land {
@@ -12,8 +12,8 @@ namespace SWE {
 		{
 			double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
 
-			n_x = surface_normal[X];
-			n_y = surface_normal[Y];
+			n_x = surface_normal[GlobalCoord::x];
+			n_y = surface_normal[GlobalCoord::y];
 			t_x = -n_y;
 			t_y = n_x;
 

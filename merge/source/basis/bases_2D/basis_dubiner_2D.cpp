@@ -10,10 +10,10 @@ namespace Basis {
 		std::vector<double> n2(n_pts);
 
 		for (uint i = 0; i < n_pts; i++) {
-			n1[i] = 2 * (1 + coordinates[i][Z1]) / (1 - coordinates[i][Z2]) - 1;
-			n2[i] = coordinates[i][Z2];
+			n1[i] = 2 * (1 + coordinates[i][LocalCoordTri::z1]) / (1 - coordinates[i][LocalCoordTri::z2]) - 1;
+			n2[i] = coordinates[i][LocalCoordTri::z2];
 
-			if (coordinates[i][Z2] == 1) n1[i] = NAN; //singular point (-1,1);
+			if (coordinates[i][LocalCoordTri::z2] == 1) n1[i] = NAN; //singular point (-1,1);
 		}
 
 		uint m = 0;
@@ -36,8 +36,8 @@ namespace Basis {
 		std::vector<double> n2(n_pts);
 
 		for (uint i = 0; i < n_pts; i++) {
-			n1[i] = 2 * (1 + coordinates[i][Z1]) / (1 - coordinates[i][Z2]) - 1;
-			n2[i] = coordinates[i][Z2];
+			n1[i] = 2 * (1 + coordinates[i][LocalCoordTri::z1]) / (1 - coordinates[i][LocalCoordTri::z2]) - 1;
+			n2[i] = coordinates[i][LocalCoordTri::z2];
 		}
 
 		uint m = 0;
@@ -92,8 +92,8 @@ namespace Basis {
 		uint n_pts = n1.size(); //CHECK IF n1.size() = n2.size()
 
 		Array2D<double> dphi_d(2);
-		dphi_d[Z1].reserve(n_pts);
-		dphi_d[Z2].reserve(n_pts);
+		dphi_d[LocalCoordTri::z1].reserve(n_pts);
+		dphi_d[LocalCoordTri::z2].reserve(n_pts);
 
 		std::vector<double> psi_p(jacobi_polynomial(p, 0, 0, n1));
 		std::vector<double> psi_pq(jacobi_polynomial(q, 2 * p + 1, 0, n2));
@@ -102,9 +102,9 @@ namespace Basis {
 		std::vector<double> dpsi_pq_dn2(jacobi_polynomial_derivative(q, 2 * p + 1, 0, n2));
 
 		for (uint i = 0; i < n_pts; i++) {
-			dphi_d[Z1].push_back((2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i]);
+			dphi_d[LocalCoordTri::z1].push_back((2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i]);
 
-			dphi_d[Z2].push_back(((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
+			dphi_d[LocalCoordTri::z2].push_back(((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
 				psi_p[i] * (pow((1.0 - n2[i]) / 2.0, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, p - 1)*psi_pq[i]));
 		}
 

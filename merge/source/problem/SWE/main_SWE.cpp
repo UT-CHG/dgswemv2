@@ -1,10 +1,12 @@
 #include "../../general_definitions.hpp"
 
+#include "../../utilities/mesh_metadata.hpp"
 #include "../../ADCIRC_reader/adcirc_format.hpp"
-#include "../../ADCIRC_reader/mesh_metadata.hpp"
 
-#include "../../stepper.hpp"
+#include "../../utilities/stepper.hpp"
+
 #include "../../initialize_mesh.hpp"
+#include "../../initialize_data.hpp"
 #include "../../run_simulation.hpp"
 
 #include "swe_definitions.hpp"
@@ -14,10 +16,18 @@ int main(int argc, const char* argv[]) {
 	AdcircFormat adcirc_file("sample_fort.14");
 	MeshMetaData mesh_data(adcirc_file);
  	
+	auto mesh = initialize_mesh<SWE::Problem>(2, mesh_data);
+
+	initialize_data(*mesh, adcirc_file);
+
 	Stepper stepper(2, 2, 1.);
 
-	auto mesh = initialize_mesh<SWE::Problem>(2, mesh_data);
+    auto t1 = std::chrono::high_resolution_clock::now();
 	run_simulation<SWE::Problem>(345600.0, stepper, *mesh);
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Time Elapsed (in us): "
+		<< std::chrono::duration_cast<std::chrono::microseconds>(t2 -t1).count() << "\n";
 	
 	delete mesh;
 }

@@ -53,7 +53,7 @@ namespace SWE {
 	enum BoundaryConditions : unsigned char {
 		land = 0,
 		tidal = 1,
-		internal = 255
+		internal = INTERNAL
 	};
 }
 

@@ -1,7 +1,7 @@
 #ifndef STEPPER_HPP
 #define STEPPER_HPP
 
-#include "general_definitions.hpp"
+#include "../general_definitions.hpp"
 
 struct Stepper {
 	Stepper(uint nstages, uint order, double dt);

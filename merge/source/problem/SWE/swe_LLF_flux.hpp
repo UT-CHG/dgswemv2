@@ -18,8 +18,8 @@ namespace SWE {
 		assert(h_ex >= 0);
 
 		//compute normal fluxes
-		double qn_in = qx_in * normal[X] + qy_in * normal[Y];
-		double qn_ex = qx_ex * normal[X] + qy_ex * normal[Y];
+		double qn_in = qx_in * normal[GlobalCoord::x] + qy_in * normal[GlobalCoord::y];
+		double qn_ex = qx_ex * normal[GlobalCoord::x] + qy_ex * normal[GlobalCoord::y];
 
 		double un_in = qn_in / h_in;
 		double un_ex = qn_ex / h_ex;
@@ -33,8 +33,8 @@ namespace SWE {
 		double pe_ex = Global::g * (std::pow(ze_ex, 2) / 2 + ze_ex*bath);
 
 		ze_flux = 0.5*(qn_in + qn_ex + max_eigenvalue* (ze_in - ze_ex));
-		qx_flux = 0.5*(un_in*qx_in + un_ex*qx_ex + (pe_in + pe_ex)*normal[X] + max_eigenvalue*(qx_in - qx_ex));
-		qy_flux = 0.5*(un_in*qy_in + un_ex*qy_ex + (pe_in + pe_ex)*normal[Y] + max_eigenvalue*(qy_in - qy_ex));
+		qx_flux = 0.5*(un_in*qx_in + un_ex*qx_ex + (pe_in + pe_ex)*normal[GlobalCoord::x] + max_eigenvalue*(qx_in - qx_ex));
+		qy_flux = 0.5*(un_in*qy_in + un_ex*qy_ex + (pe_in + pe_ex)*normal[GlobalCoord::y] + max_eigenvalue*(qy_in - qy_ex));
 	}
 }
 

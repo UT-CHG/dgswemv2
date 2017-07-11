@@ -39,20 +39,20 @@ namespace Master {
 
 		if (boundary == 0) {
 			for (uint gp = 0; gp < z_master.size(); gp++) {
-				z_master[gp][Z1] = -z_boundary[gp][Z1];
-				z_master[gp][Z2] = z_boundary[gp][Z1];
+				z_master[gp][LocalCoordTri::z1] = -z_boundary[gp][LocalCoordTri::z1];
+				z_master[gp][LocalCoordTri::z2] = z_boundary[gp][LocalCoordTri::z1];
 			}
 		}
 		else if (boundary == 1) {
 			for (uint gp = 0; gp < z_master.size(); gp++) {
-				z_master[gp][Z1] = -1;
-				z_master[gp][Z2] = -z_boundary[gp][Z1];
+				z_master[gp][LocalCoordTri::z1] = -1;
+				z_master[gp][LocalCoordTri::z2] = -z_boundary[gp][LocalCoordTri::z1];
 			}
 		}
 		else if (boundary == 2) {
 			for (uint gp = 0; gp < z_master.size(); gp++) {
-				z_master[gp][Z1] = z_boundary[gp][Z1];
-				z_master[gp][Z2] = -1;
+				z_master[gp][LocalCoordTri::z1] = z_boundary[gp][LocalCoordTri::z1];
+				z_master[gp][LocalCoordTri::z2] = -1;
 			}
 		}
 
@@ -68,15 +68,15 @@ namespace Master {
 		uint n_pt = 0;
 		for (uint i = 0; i < N_DIV; i++) {
 			for (uint j = 0; j < N_DIV - i; j++) {
-				z_postprocessor_cell[n_pt][Z1] = -1.0 + dz*j + dz / 3.0; //CENTROID
-				z_postprocessor_cell[n_pt][Z2] = -1.0 + dz*i + dz / 3.0;
+				z_postprocessor_cell[n_pt][LocalCoordTri::z1] = -1.0 + dz*j + dz / 3.0; //CENTROID
+				z_postprocessor_cell[n_pt][LocalCoordTri::z2] = -1.0 + dz*i + dz / 3.0;
 				n_pt++;
 			}
 		}
 		for (uint i = 1; i < N_DIV; i++) {
 			for (uint j = 0; j < N_DIV - i; j++) {
-				z_postprocessor_cell[n_pt][Z1] = -1.0 + dz*j + 2 * dz / 3.0; //CENTROID
-				z_postprocessor_cell[n_pt][Z2] = -1.0 + dz*i - dz / 3.0;
+				z_postprocessor_cell[n_pt][LocalCoordTri::z1] = -1.0 + dz*j + 2 * dz / 3.0; //CENTROID
+				z_postprocessor_cell[n_pt][LocalCoordTri::z2] = -1.0 + dz*i - dz / 3.0;
 				n_pt++;
 			}
 		}
@@ -93,8 +93,8 @@ namespace Master {
 		uint n_pt = 0;
 		for (uint i = 0; i < N_DIV; i++) {
 			for (uint j = 0; j <= N_DIV - i; j++) {
-				z_postprocessor_point[n_pt][Z1] = -1.0 + dz*j;
-				z_postprocessor_point[n_pt][Z2] = -1.0 + dz*i;
+				z_postprocessor_point[n_pt][LocalCoordTri::z1] = -1.0 + dz*j;
+				z_postprocessor_point[n_pt][LocalCoordTri::z2] = -1.0 + dz*i;
 				n_pt++;
 			}
 		}

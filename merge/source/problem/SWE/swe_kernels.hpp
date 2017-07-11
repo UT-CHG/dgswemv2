@@ -55,28 +55,28 @@ namespace SWE {
 		for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
 			internal.water_column_hgt_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
 
-			internal.ze_flux_at_gp[X][gp] = internal.qx_at_gp[gp];
-			internal.ze_flux_at_gp[Y][gp] = internal.qy_at_gp[gp];
+			internal.ze_flux_at_gp[GlobalCoord::x][gp] = internal.qx_at_gp[gp];
+			internal.ze_flux_at_gp[GlobalCoord::y][gp] = internal.qy_at_gp[gp];
 
-			internal.qx_flux_at_gp[X][gp] = std::pow(internal.qx_at_gp[gp], 2) / internal.water_column_hgt_at_gp[gp] +
+			internal.qx_flux_at_gp[GlobalCoord::x][gp] = std::pow(internal.qx_at_gp[gp], 2) / internal.water_column_hgt_at_gp[gp] +
 				Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
-			internal.qx_flux_at_gp[Y][gp] = internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
+			internal.qx_flux_at_gp[GlobalCoord::y][gp] = internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
 
-			internal.qy_flux_at_gp[X][gp] = internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
-			internal.qy_flux_at_gp[Y][gp] = std::pow(internal.qy_at_gp[gp], 2) / internal.water_column_hgt_at_gp[gp] +
+			internal.qy_flux_at_gp[GlobalCoord::x][gp] = internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
+			internal.qy_flux_at_gp[GlobalCoord::y][gp] = std::pow(internal.qy_at_gp[gp], 2) / internal.water_column_hgt_at_gp[gp] +
 				Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
 		}
 
 		//skip dof = 0, which is a constant and thus trivially 0 NOT ALWAYS!
 		for (uint dof = 1; dof < elt.data.get_ndof(); ++dof) {
-			state.rhs_ze[dof] = elt.IntegrationDPhi(X, dof, internal.ze_flux_at_gp[X]) +
-				elt.IntegrationDPhi(Y, dof, internal.ze_flux_at_gp[Y]);
+			state.rhs_ze[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.ze_flux_at_gp[GlobalCoord::x]) +
+				elt.IntegrationDPhi(GlobalCoord::y, dof, internal.ze_flux_at_gp[GlobalCoord::y]);
 
-			state.rhs_qx[dof] = elt.IntegrationDPhi(X, dof, internal.qx_flux_at_gp[X]) +
-				elt.IntegrationDPhi(Y, dof, internal.qx_flux_at_gp[Y]);
+			state.rhs_qx[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.qx_flux_at_gp[GlobalCoord::x]) +
+				elt.IntegrationDPhi(GlobalCoord::y, dof, internal.qx_flux_at_gp[GlobalCoord::y]);
 
-			state.rhs_qy[dof] = elt.IntegrationDPhi(X, dof, internal.qy_flux_at_gp[X]) +
-				elt.IntegrationDPhi(Y, dof, internal.qy_flux_at_gp[Y]);
+			state.rhs_qy[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.qy_flux_at_gp[GlobalCoord::x]) +
+				elt.IntegrationDPhi(GlobalCoord::y, dof, internal.qy_flux_at_gp[GlobalCoord::y]);
 		}
 	}
 

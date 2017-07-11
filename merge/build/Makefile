@@ -150,33 +150,6 @@ ADCIRC_reader/adcirc_format.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.s
 .PHONY : ADCIRC_reader/adcirc_format.cpp.s
 
-ADCIRC_reader/mesh_metadata.o: ADCIRC_reader/mesh_metadata.cpp.o
-
-.PHONY : ADCIRC_reader/mesh_metadata.o
-
-# target to build an object file
-ADCIRC_reader/mesh_metadata.cpp.o:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o
-.PHONY : ADCIRC_reader/mesh_metadata.cpp.o
-
-ADCIRC_reader/mesh_metadata.i: ADCIRC_reader/mesh_metadata.cpp.i
-
-.PHONY : ADCIRC_reader/mesh_metadata.i
-
-# target to preprocess a source file
-ADCIRC_reader/mesh_metadata.cpp.i:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.i
-.PHONY : ADCIRC_reader/mesh_metadata.cpp.i
-
-ADCIRC_reader/mesh_metadata.s: ADCIRC_reader/mesh_metadata.cpp.s
-
-.PHONY : ADCIRC_reader/mesh_metadata.s
-
-# target to generate assembly for a file
-ADCIRC_reader/mesh_metadata.cpp.s:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.s
-.PHONY : ADCIRC_reader/mesh_metadata.cpp.s
-
 basis/bases_2D/basis_dubiner_2D.o: basis/bases_2D/basis_dubiner_2D.cpp.o
 
 .PHONY : basis/bases_2D/basis_dubiner_2D.o
@@ -339,32 +312,59 @@ shape/shapes_2D/shape_straighttriangle.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.s
 .PHONY : shape/shapes_2D/shape_straighttriangle.cpp.s
 
-stepper.o: stepper.cpp.o
+utilities/mesh_metadata.o: utilities/mesh_metadata.cpp.o
 
-.PHONY : stepper.o
+.PHONY : utilities/mesh_metadata.o
 
 # target to build an object file
-stepper.cpp.o:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o
-.PHONY : stepper.cpp.o
+utilities/mesh_metadata.cpp.o:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o
+.PHONY : utilities/mesh_metadata.cpp.o
 
-stepper.i: stepper.cpp.i
+utilities/mesh_metadata.i: utilities/mesh_metadata.cpp.i
 
-.PHONY : stepper.i
+.PHONY : utilities/mesh_metadata.i
 
 # target to preprocess a source file
-stepper.cpp.i:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.i
-.PHONY : stepper.cpp.i
+utilities/mesh_metadata.cpp.i:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.i
+.PHONY : utilities/mesh_metadata.cpp.i
 
-stepper.s: stepper.cpp.s
+utilities/mesh_metadata.s: utilities/mesh_metadata.cpp.s
 
-.PHONY : stepper.s
+.PHONY : utilities/mesh_metadata.s
 
 # target to generate assembly for a file
-stepper.cpp.s:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.s
-.PHONY : stepper.cpp.s
+utilities/mesh_metadata.cpp.s:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.s
+.PHONY : utilities/mesh_metadata.cpp.s
+
+utilities/stepper.o: utilities/stepper.cpp.o
+
+.PHONY : utilities/stepper.o
+
+# target to build an object file
+utilities/stepper.cpp.o:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.o
+.PHONY : utilities/stepper.cpp.o
+
+utilities/stepper.i: utilities/stepper.cpp.i
+
+.PHONY : utilities/stepper.i
+
+# target to preprocess a source file
+utilities/stepper.cpp.i:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.i
+.PHONY : utilities/stepper.cpp.i
+
+utilities/stepper.s: utilities/stepper.cpp.s
+
+.PHONY : utilities/stepper.s
+
+# target to generate assembly for a file
+utilities/stepper.cpp.s:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.s
+.PHONY : utilities/stepper.cpp.s
 
 # Help Target
 help:
@@ -378,9 +378,6 @@ help:
 	@echo "... ADCIRC_reader/adcirc_format.o"
 	@echo "... ADCIRC_reader/adcirc_format.i"
 	@echo "... ADCIRC_reader/adcirc_format.s"
-	@echo "... ADCIRC_reader/mesh_metadata.o"
-	@echo "... ADCIRC_reader/mesh_metadata.i"
-	@echo "... ADCIRC_reader/mesh_metadata.s"
 	@echo "... basis/bases_2D/basis_dubiner_2D.o"
 	@echo "... basis/bases_2D/basis_dubiner_2D.i"
 	@echo "... basis/bases_2D/basis_dubiner_2D.s"
@@ -399,9 +396,12 @@ help:
 	@echo "... shape/shapes_2D/shape_straighttriangle.o"
 	@echo "... shape/shapes_2D/shape_straighttriangle.i"
 	@echo "... shape/shapes_2D/shape_straighttriangle.s"
-	@echo "... stepper.o"
-	@echo "... stepper.i"
-	@echo "... stepper.s"
+	@echo "... utilities/mesh_metadata.o"
+	@echo "... utilities/mesh_metadata.i"
+	@echo "... utilities/mesh_metadata.s"
+	@echo "... utilities/stepper.o"
+	@echo "... utilities/stepper.i"
+	@echo "... utilities/stepper.s"
 .PHONY : help
 
 

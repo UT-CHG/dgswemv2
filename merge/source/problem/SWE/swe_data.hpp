@@ -4,13 +4,15 @@
 namespace SWE {
 	struct State {
 		State(uint ndof)
-		  : ze(ndof), qx(ndof), qy(ndof),
+		  : bath(ndof), ze(ndof), qx(ndof), qy(ndof),
 			rhs_ze(ndof), rhs_qx(ndof), rhs_qy(ndof)
 		{}
 
+		std::vector<double> bath;
 		std::vector<double> ze;
 		std::vector<double> qx;
 		std::vector<double> qy;
+
 		std::vector<double> rhs_ze;
 		std::vector<double> rhs_qx;
 		std::vector<double> rhs_qy;
@@ -84,13 +86,6 @@ namespace SWE {
 			this->state = std::vector<State>{State(ndof)};
 			this->internal = Internal(ngp_internal);
 			this->boundary = Boundary(ngp_boundary);
-
-			//SET INITIAL CONDITIONS FOR TESTING
-			for (uint i = 0; i < this->ngp_internal; i++)
-				this->internal.bath_at_gp[i] = 5.0;
-
-			for (uint i = 0; i < this->ngp_boundary; i++)
-				this->boundary.bath_at_gp[i] = 5.0;
 		}
 
 		void resize(uint nstate) {

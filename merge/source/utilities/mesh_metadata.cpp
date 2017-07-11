@@ -16,13 +16,13 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     }
 
     { //make all edges
-        using eltID_faceID = std::pair<int, int>;
+        using eltID_faceID = std::pair<uint, uint>;
         std::unordered_map<std::uint64_t, std::pair<eltID_faceID, eltID_faceID> > edge_dictionary;
 
         for (const auto& elt : mesh_file.elements) {
             std::vector<int> node{ elt.second[1], elt.second[2], elt.second[3] };
 
-            for (int k = 0; k < 3; ++k) {
+            for (uint k = 0; k < 3; ++k) {
                 std::uint64_t curr_key = (std::uint64_t)(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32
                     | std::max(node[(k + 1) % 3], node[(k + 2) % 3]);
 
@@ -30,7 +30,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
                     edge_dictionary.at(curr_key).second = std::make_pair(elt.first, k);
                 }
                 else {
-                    std::pair<eltID_faceID, eltID_faceID> edge_info{ { elt.first, k }, { -1, 0 } };
+                    std::pair<eltID_faceID, eltID_faceID> edge_info{ { elt.first, k }, { DEFAULT_ID, 0 } };
                     edge_dictionary.insert({ curr_key, edge_info });
                 }
             }
@@ -38,7 +38,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 
         for (const auto& edge : edge_dictionary) {
             //check if there are two elements associated with this edge
-            if (edge.second.second.first != -1) {
+            if (edge.second.second.first != DEFAULT_ID) {
                 uint eltA_id = edge.second.first.first;
                 uint eltB_id = edge.second.second.first;
                 uint faceA_id = edge.second.first.second;
@@ -52,8 +52,8 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             }
             else {
                 //treat boundary conditions
-                int elt_id = edge.second.first.first;
-                int face_id = edge.second.first.second;
+                uint elt_id = edge.second.first.first;
+                uint face_id = edge.second.first.second;
 
                 std::array<int, 2> nodes{ mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
                     mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1] };

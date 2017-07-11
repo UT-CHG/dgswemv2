@@ -27,9 +27,13 @@ namespace Geometry {
 	public:
 		Element(uint, master_type&, const std::vector<Point<dimension>>&,
 			const std::vector<uint>&, const std::vector<unsigned char>&);
-
+		
 		void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
 			std::map<unsigned char, std::vector<RawBoundary<dimension - 1, data_type>>>&);
+
+		uint GetID() { return this->ID; }
+
+		std::vector<double> L2Projection(const std::vector<double>&);
 
 		void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 		void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
@@ -135,6 +139,28 @@ namespace Geometry {
 					RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
 			}
 		}
+	}
+
+	template<uint dimension, class master_type, class shape_type, class data_type>
+	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(const std::vector<double>& nodal_values) {
+		std::vector<double> projection;
+	
+		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
+		
+		std::vector<double> interpolation = this->shape.InterpolateNodalValues(nodal_values, gp);
+
+		if (this->m_inv.first) { 
+			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+				projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[0][dof]);
+			}
+		}
+		else if (!(this->m_inv.first)) { //not diagonal
+			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+				projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[dof][dof]);
+			}
+		}
+		
+		return projection;
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>

@@ -38,7 +38,6 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 	uint n_stages = stepper.get_num_stages();
 
 	auto resize_data_container = [n_stages](auto& elt) {
-		elt.data.initialize();
 		elt.data.resize(n_stages);
 	};
 
