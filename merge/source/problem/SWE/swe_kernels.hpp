@@ -2,24 +2,22 @@
 #define SWE_KERNELS_HPP
 
 #include "swe_LLF_flux.hpp"
-#include "../../geometry/mesh_definitions.hpp"
 
 namespace SWE {
 	template<typename RawBoundaryType>
-	void Problem::create_boundaries(const mesh_type& mesh, std::map<unsigned char, std::vector<RawBoundaryType>>& pre_boundaries) {
+	void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<unsigned char, std::vector<RawBoundaryType>>& pre_boundaries) {
 		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
 			switch (it->first) {
 			case SWE::land:
-				using BoundaryTypeLand = Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
+				using BoundaryTypeLand = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
 
 				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 					mesh.template CreateBoundary<BoundaryTypeLand>(*itt);
-					//it->second.erase(itt);
 				}
 
 				break;
 			case SWE::tidal:
-				using BoundaryTypeTidal = Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Tidal>;
+				using BoundaryTypeTidal = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Tidal>;
 
 				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 					mesh.template CreateBoundary<BoundaryTypeTidal>(*itt);
@@ -29,7 +27,6 @@ namespace SWE {
 			}
 		}
 	}
-
 
 	template<typename ElementType>
 	void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
@@ -233,7 +230,7 @@ namespace SWE {
 	}
 
 	template<typename MeshType>
-	void Problem::write_VTK_data(const Stepper& stepper, MeshType& mesh) {
+	void Problem::write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh) {
 		Array2D<double> cell_data;
 		Array2D<double> point_data;
 
@@ -246,7 +243,7 @@ namespace SWE {
 
 		mesh.CallForEachElement(extract_VTK_data_kernel);
 
-		std::string file_name = "data.vtk";
+		std::string file_name = "output/data.vtk";
 		std::ofstream file(file_name);
 
 		file << "CELL_DATA " << (*cell_data.begin()).size() << '\n';
@@ -277,15 +274,15 @@ namespace SWE {
 
 		file.close();
 
-		std::string file_name_geom = "geometry.vtk";
-		std::string file_name_data = "data.vtk";
+		std::string file_name_geom = "output/geometry.vtk";
+		std::string file_name_data = "output/data.vtk";
 
 		std::ifstream file_geom(file_name_geom, std::ios_base::binary);
 		std::ifstream file_data(file_name_data, std::ios_base::binary);
 
 		uint n_step = (uint)(stepper.get_t_at_curr_stage() / stepper.get_dt());
 
-		std::string file_name_merge = "mesh_data_" + std::to_string(n_step) + ".vtk";
+		std::string file_name_merge = "output/mesh_data_" + std::to_string(n_step) + ".vtk";
 		std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
 		file_merge << file_geom.rdbuf() << file_data.rdbuf();

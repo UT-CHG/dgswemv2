@@ -150,6 +150,33 @@ ADCIRC_reader/adcirc_format.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.s
 .PHONY : ADCIRC_reader/adcirc_format.cpp.s
 
+ADCIRC_reader/mesh_metadata.o: ADCIRC_reader/mesh_metadata.cpp.o
+
+.PHONY : ADCIRC_reader/mesh_metadata.o
+
+# target to build an object file
+ADCIRC_reader/mesh_metadata.cpp.o:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o
+.PHONY : ADCIRC_reader/mesh_metadata.cpp.o
+
+ADCIRC_reader/mesh_metadata.i: ADCIRC_reader/mesh_metadata.cpp.i
+
+.PHONY : ADCIRC_reader/mesh_metadata.i
+
+# target to preprocess a source file
+ADCIRC_reader/mesh_metadata.cpp.i:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.i
+.PHONY : ADCIRC_reader/mesh_metadata.cpp.i
+
+ADCIRC_reader/mesh_metadata.s: ADCIRC_reader/mesh_metadata.cpp.s
+
+.PHONY : ADCIRC_reader/mesh_metadata.s
+
+# target to generate assembly for a file
+ADCIRC_reader/mesh_metadata.cpp.s:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.s
+.PHONY : ADCIRC_reader/mesh_metadata.cpp.s
+
 basis/bases_2D/basis_dubiner_2D.o: basis/bases_2D/basis_dubiner_2D.cpp.o
 
 .PHONY : basis/bases_2D/basis_dubiner_2D.o
@@ -351,6 +378,9 @@ help:
 	@echo "... ADCIRC_reader/adcirc_format.o"
 	@echo "... ADCIRC_reader/adcirc_format.i"
 	@echo "... ADCIRC_reader/adcirc_format.s"
+	@echo "... ADCIRC_reader/mesh_metadata.o"
+	@echo "... ADCIRC_reader/mesh_metadata.i"
+	@echo "... ADCIRC_reader/mesh_metadata.s"
 	@echo "... basis/bases_2D/basis_dubiner_2D.o"
 	@echo "... basis/bases_2D/basis_dubiner_2D.i"
 	@echo "... basis/bases_2D/basis_dubiner_2D.s"

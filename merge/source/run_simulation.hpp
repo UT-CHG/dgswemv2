@@ -43,14 +43,14 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 
 	mesh.CallForEachElement(resize_data_container);
 
-	ProblemType::write_VTK_data(stepper, mesh);
+	ProblemType::write_VTK_data_kernel(stepper, mesh);
 
 	for (uint step = 1; step <= nsteps; ++step) {
 		for (uint stage = 0; stage < stepper.get_num_stages(); ++stage) {
 
 			mesh.CallForEachElement(volume_kernel);
 
-			//mesh.CallForEachElement(source_kernel);
+			mesh.CallForEachElement(source_kernel);
 
 			mesh.CallForEachInterface(interface_kernel);
 
@@ -65,7 +65,7 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 
 		if (step % 300 == 0) {
 			std::cout << "Step: " << step << "\n";
-			ProblemType::write_VTK_data(stepper, mesh);
+			ProblemType::write_VTK_data_kernel(stepper, mesh);
 		}
 	}
 }

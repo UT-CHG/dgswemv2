@@ -3,6 +3,7 @@
 
 #include "swe_data.hpp"
 #include "swe_boundary_conditions.hpp"
+#include "../../geometry/mesh_definitions.hpp"
 
 namespace SWE {
 	struct Problem {
@@ -10,9 +11,11 @@ namespace SWE {
 		
 		typedef Geometry::MeshType<SWE::Data, SWE::Land, SWE::Tidal> mesh_type;
 		
+		//preprocessor kernels
 		template<typename RawBoundaryType>
-		static void create_boundaries(const mesh_type&, std::map<unsigned char, std::vector<RawBoundaryType>>&);
+		static void create_boundaries_kernel(mesh_type&, std::map<unsigned char, std::vector<RawBoundaryType>>&);
 
+		//processor kernels
 		template<typename ElementType>
 		static void volume_kernel(const Stepper&, ElementType&);
 
@@ -34,11 +37,12 @@ namespace SWE {
 		template<typename ElementType>
 		static void scrutinize_solution_kernel(const Stepper&, ElementType&);
 
+		//postprocessor kernels
 		template<typename ElementType>
 		static void extract_VTK_data_kernel(const Stepper&, ElementType&, Array2D<double>&, Array2D<double>&);
 
 		template<typename MeshType>
-		static void write_VTK_data(const Stepper&, MeshType&);
+		static void write_VTK_data_kernel(const Stepper&, MeshType&);
 	};
 
 	namespace Global {

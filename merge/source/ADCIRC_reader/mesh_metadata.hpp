@@ -14,33 +14,19 @@
 struct ElementMetaData
 {
   ElementMetaData(uint n_faces)
-    : coordinates(n_faces), boundary_type(n_faces), neighbor_IDs(n_faces)
+    : nodal_coordinates(n_faces), neighbor_ID(n_faces), boundary_type(n_faces)
   {}
 
-  std::vector<Point<2>> coordinates;
-  std::vector<SWE::BoundaryConditions> boundary_type;
-  std::vector<uint> neighbor_IDs;
+  std::vector<Point<2>> nodal_coordinates;
+  std::vector<uint> neighbor_ID;
+  std::vector<unsigned char> boundary_type;
 };
 
-
-class MeshMetaData
+struct MeshMetaData
 {
-public:
   MeshMetaData(const AdcircFormat& mesh_file);
 
-  using const_iterator = std::vector<ElementMetaData>::const_iterator;
-
-  inline
-  const_iterator cbegin()
-  { return _meta.cbegin(); }
-
-  inline
-  const_iterator cend()
-  { return _meta.cend(); }
-
-private:
   std::unordered_map<uint,ElementMetaData> _meta;
 };
-
 
 #endif

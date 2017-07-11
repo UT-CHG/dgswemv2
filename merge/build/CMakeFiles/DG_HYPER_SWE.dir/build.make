@@ -105,9 +105,33 @@ CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o.provides: CMakeFil
 CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o.provides.build: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o
 
 
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o"
+	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.cpp
+
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.i"
+	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.cpp > CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.i
+
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.s"
+	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.cpp -o CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.s
+
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.requires:
+
+.PHONY : CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.requires
+
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.provides: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.requires
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.provides.build
+.PHONY : CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.provides
+
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.provides.build: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o
+
+
 CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
 CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o"
 	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp
 
 CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.i: cmake_force
@@ -131,7 +155,7 @@ CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o.provides.build: CMakeFiles/DG_HYPER_SW
 
 CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
 CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/polynomials/basis_polynomials.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o"
 	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/polynomials/basis_polynomials.cpp
 
 CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.i: cmake_force
@@ -155,7 +179,7 @@ CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o.provides.b
 
 CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
 CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D/basis_dubiner_2D.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o"
 	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D/basis_dubiner_2D.cpp
 
 CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.i: cmake_force
@@ -179,7 +203,7 @@ CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o.provides.build
 
 CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
 CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D/shape_straighttriangle.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o"
 	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D/shape_straighttriangle.cpp
 
 CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.i: cmake_force
@@ -203,7 +227,7 @@ CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o.provide
 
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D/integration_dunavant_2D.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o"
 	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D/integration_dunavant_2D.cpp
 
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.i: cmake_force
@@ -227,7 +251,7 @@ CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.
 
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o"
 	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.i: cmake_force
@@ -253,6 +277,7 @@ CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendr
 DG_HYPER_SWE_OBJECTS = \
 "CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o" \
+"CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o" \
@@ -265,6 +290,7 @@ DG_HYPER_SWE_EXTERNAL_OBJECTS =
 
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o
+DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o
@@ -273,7 +299,7 @@ DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integratio
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/build.make
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable DG_HYPER_SWE"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/merge/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable DG_HYPER_SWE"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/DG_HYPER_SWE.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -283,6 +309,7 @@ CMakeFiles/DG_HYPER_SWE.dir/build: DG_HYPER_SWE
 
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o.requires
+CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/mesh_metadata.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/basis/polynomials/basis_polynomials.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o.requires

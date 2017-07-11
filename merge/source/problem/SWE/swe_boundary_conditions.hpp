@@ -1,6 +1,8 @@
 #ifndef SWE_BOUNDARY_CONDITIONS_HPP
 #define SWE_BOUNDARY_CONDITIONS_HPP
 
+#include "../../stepper.hpp"
+
 namespace SWE {
 	class Land {
 	public:

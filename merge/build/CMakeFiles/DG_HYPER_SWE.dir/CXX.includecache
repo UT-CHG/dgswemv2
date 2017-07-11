@@ -16,6 +16,18 @@ adcirc_format.hpp
 ../problem/SWE/swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.cpp
+mesh_metadata.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.hpp
+../general_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+../problem/SWE/swe_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
+adcirc_format.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
+
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
 ../general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
@@ -71,26 +83,24 @@ tuple
 -
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/element.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 boundary.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 ../utilities/heterogeneous_containers.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
 mesh_utilities.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_utilities.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_definitions.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+mesh.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh.hpp
+element.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/element.hpp
+boundary.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
 ../master/master_elements_2D.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
 ../shape/shapes_2D.hpp
@@ -101,20 +111,14 @@ mesh_utilities.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
 ../integration/integrations_2D.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
-element.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/element.hpp
-boundary.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_utilities.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_mesh.hpp
-general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 geometry/mesh_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_definitions.hpp
+problem/SWE/swe_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
 ../general_definitions.hpp
@@ -145,52 +149,44 @@ elements_2D/master_triangle.tpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp
 ../../general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-swe_data.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
-swe_kernels.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_kernels.hpp
-swe_boundary_conditions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
-swe_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
-../../geometry/mesh.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh.hpp
+../../ADCIRC_reader/adcirc_format.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
+../../ADCIRC_reader/mesh_metadata.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/mesh_metadata.hpp
 ../../stepper.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
 ../../initialize_mesh.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_mesh.hpp
 ../../run_simulation.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/run_simulation.hpp
+swe_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
+swe_kernels.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_kernels.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_LLF_flux.hpp
-../../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
-../../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
-../../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_kernels.hpp
-../../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 ../../stepper.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
+swe_data.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
+swe_boundary_conditions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
+../../geometry/mesh_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_definitions.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_kernels.hpp
 swe_LLF_flux.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_LLF_flux.hpp
-swe_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/run_simulation.hpp
-general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
 ../general_definitions.hpp
@@ -209,12 +205,8 @@ general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 tuple_helpers.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 

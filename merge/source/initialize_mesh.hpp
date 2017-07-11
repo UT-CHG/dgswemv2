@@ -2,11 +2,12 @@
 #define INITIALIZE_MESH_HPP
 
 #include "geometry/mesh_definitions.hpp"
+#include "problem/SWE/swe_definitions.hpp"
 
 using namespace Geometry;
 
 template<typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::mesh_type&);
+void initialize_mesh_elements(typename ProblemType::mesh_type&, const MeshMetaData& mesh_data);
 
 template<typename ProblemType>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type&);
@@ -15,10 +16,10 @@ template<typename ProblemType>
 void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
 template<typename ProblemType>
-typename ProblemType::mesh_type* initialize_mesh(uint p) {
+typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mesh_data) {
 	typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(2);
 
-	initialize_mesh_elements<ProblemType>(*mesh);
+	initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
 	initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
 	initialize_mesh_VTK_geometry<ProblemType>(*mesh);
 
@@ -26,139 +27,13 @@ typename ProblemType::mesh_type* initialize_mesh(uint p) {
 }
 
 template<typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::mesh_type& mesh) {
+void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
 	using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 	using ElementType = Element<2, MasterType, Shape::StraightTriangle, typename ProblemType::data_type>;
 
-	double L = 90000;
-	double W = 45000;
-
-	uint m = 20;
-	uint n = 10;
-
-	double dx = L / m;
-	double dy = W / n;
-
-	uint ID;
-	std::vector<Point<2>> nodal_coordinates(3);
-
-	std::vector<unsigned char> boundaries(3);
-	std::vector<uint> neighbors(3);
-
-	for (uint i = 0; i < n; i++) {
-		for (uint j = i % 2; j < m; j += 2) {
-			ID = 2 * j + 2 * m * i;
-
-			neighbors[0] = ID + 1;
-			neighbors[1] = ID + 2 * m;
-			neighbors[2] = ID - 1;
-
-			boundaries[0] = SWE::internal;
-			boundaries[1] = SWE::internal;
-			boundaries[2] = SWE::internal;
-
-			if (i == n - 1) {
-				neighbors[1] = DEFAULT_ID;
-				boundaries[1] = SWE::land;
-			}
-			if (j == 0) {
-				neighbors[2] = DEFAULT_ID;
-				boundaries[2] = SWE::land;
-			}
-
-			nodal_coordinates[0][0] = j*dx;
-			nodal_coordinates[1][0] = nodal_coordinates[0][0];
-			nodal_coordinates[2][0] = nodal_coordinates[0][0] + dx;
-
-			nodal_coordinates[0][1] = (i + 1)*dy;
-			nodal_coordinates[1][1] = nodal_coordinates[0][1] - dy;
-			nodal_coordinates[2][1] = nodal_coordinates[0][1];
-
-			mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
-
-			ID = ID + 1;
-
-			neighbors[0] = ID - 1;
-			neighbors[1] = ID + 1;
-			neighbors[2] = ID - 2 * m;
-
-			boundaries[0] = SWE::internal;
-			boundaries[1] = SWE::internal;
-			boundaries[2] = SWE::internal;
-
-			if (i == 0) {
-				neighbors[2] = DEFAULT_ID;
-				boundaries[2] = SWE::land;
-			}
-			if (j == m - 1) {
-				neighbors[1] = DEFAULT_ID;
-				boundaries[1] = SWE::tidal;
-			}
-
-			nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
-
-			nodal_coordinates[0][1] = nodal_coordinates[0][1] - dy;
-
-			mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
-		}
-	}
-
-	for (uint i = 0; i < n; i++) {
-		for (uint j = (i + 1) % 2; j < m; j += 2) {
-			ID = 2 * j + 2 * m * i;
-
-			neighbors[0] = ID + 1;
-			neighbors[1] = ID - 1;
-			neighbors[2] = ID - 2 * m;
-
-			boundaries[0] = SWE::internal;
-			boundaries[1] = SWE::internal;
-			boundaries[2] = SWE::internal;
-
-			if (i == 0) {
-				neighbors[2] = DEFAULT_ID;
-				boundaries[2] = SWE::land;
-			}
-			if (j == 0) {
-				neighbors[1] = DEFAULT_ID;
-				boundaries[1] = SWE::land;
-			}
-
-			nodal_coordinates[0][0] = j*dx;
-			nodal_coordinates[1][0] = nodal_coordinates[0][0] + dx;
-			nodal_coordinates[2][0] = nodal_coordinates[0][0];
-
-			nodal_coordinates[0][1] = i*dy;
-			nodal_coordinates[1][1] = nodal_coordinates[0][1];
-			nodal_coordinates[2][1] = nodal_coordinates[0][1] + dy;
-
-			mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
-
-			ID = ID + 1;
-
-			neighbors[0] = ID - 1;
-			neighbors[1] = ID + 2 * m;
-			neighbors[2] = ID + 1;
-
-			boundaries[0] = SWE::internal;
-			boundaries[1] = SWE::internal;
-			boundaries[2] = SWE::internal;
-
-			if (i == n - 1) {
-				neighbors[1] = DEFAULT_ID;
-				boundaries[1] = SWE::land;
-			}
-			if (j == m - 1) {
-				neighbors[2] = DEFAULT_ID;
-				boundaries[2] = SWE::tidal;
-			}
-
-			nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
-
-			nodal_coordinates[0][1] = nodal_coordinates[0][1] + dy;
-
-			mesh.template CreateElement<ElementType>(ID, nodal_coordinates, neighbors, boundaries);
-		}
+	for (auto it = mesh_data._meta.begin(); it != mesh_data._meta.end(); it++){
+		mesh.template CreateElement<ElementType>(it->first, it->second.nodal_coordinates, 
+		  it->second.neighbor_ID,  it->second.boundary_type);
 	}
 }
 
@@ -189,7 +64,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 		}
 	}
 
-	ProblemType::create_boundaries(mesh, pre_boundaries);
+	ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
 }
 
 template<typename ProblemType>
@@ -202,7 +77,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 	{ elem.InitializeVTK(points, cells); }
 	);
 
-	std::string file_name = "geometry.vtk";
+	std::string file_name = "output/geometry.vtk";
 	std::ofstream file(file_name);
 
 	file << "# vtk DataFile Version 3.0\n";

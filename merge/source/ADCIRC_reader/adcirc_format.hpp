@@ -4,7 +4,6 @@
 #include "../general_definitions.hpp"
 #include "../problem/SWE/swe_definitions.hpp"
 
-namespace Geometry {
 class AdcircFormat
 {
 public:
@@ -67,5 +66,5 @@ private:
   }
 
 };
-}
+
 #endif

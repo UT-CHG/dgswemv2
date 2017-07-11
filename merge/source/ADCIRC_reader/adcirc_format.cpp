@@ -1,6 +1,5 @@
 #include "adcirc_format.hpp"
 
-namespace Geometry {
 AdcircFormat::AdcircFormat(const char* fort14)
 {
   std::ifstream ifs(fort14);
@@ -123,5 +122,4 @@ void AdcircFormat::write_to(const char* out_name)
       file << NBVV[n][i] << "\n";
     }
   }
-}
 }

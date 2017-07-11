@@ -6,7 +6,7 @@
 namespace Shape {
 	class StraightTriangle : public Shape<2> {
 	public:
-		StraightTriangle(std::vector<Point<2>> nodal_coordinates) : Shape<2>(nodal_coordinates) {}
+		StraightTriangle(const std::vector<Point<2>>& nodal_coordinates) : Shape<2>(nodal_coordinates) {}
 
 		std::vector<double> GetJdet(const std::vector<Point<2>>&);
 		Array3D<double> GetJinv(const std::vector<Point<2>>&);

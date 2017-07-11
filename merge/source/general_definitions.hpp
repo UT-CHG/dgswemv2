@@ -82,7 +82,7 @@ namespace Shape {
 		std::vector<Point<dim>> nodal_coordinates;
 
 	public:
-		Shape(std::vector<Point<dim>>& nodal_coordinates) : nodal_coordinates(nodal_coordinates) {}
+		Shape(const std::vector<Point<dim>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
 		virtual std::vector<double> GetJdet(const std::vector<Point<dim>>&) = 0;
 		virtual Array3D<double> GetJinv(const std::vector<Point<dim>>&) = 0;
@@ -117,6 +117,6 @@ namespace Shape {
 #define TRIANGLE 5
 
 // postprocessor element divisions
-#define N_DIV 2
+#define N_DIV 1
 
 #endif

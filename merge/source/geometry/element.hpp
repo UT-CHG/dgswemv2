@@ -25,8 +25,8 @@ namespace Geometry {
 		std::pair<bool, Array2D<double>> m_inv;
 
 	public:
-		Element(uint, master_type&, std::vector<Point<dimension>>&,
-			std::vector<uint>&, std::vector<unsigned char>&);
+		Element(uint, master_type&, const std::vector<Point<dimension>>&,
+			const std::vector<uint>&, const std::vector<unsigned char>&);
 
 		void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
 			std::map<unsigned char, std::vector<RawBoundary<dimension - 1, data_type>>>&);
@@ -46,8 +46,9 @@ namespace Geometry {
 	};
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	Element<dimension, master_type, shape_type, data_type>::Element(uint ID, master_type& master, std::vector<Point<dimension>>& nodal_coordinates,
-		std::vector<uint>& neighbor_ID, std::vector<unsigned char>& boundary_type) :
+	Element<dimension, master_type, shape_type, data_type>::Element(uint ID, 
+		master_type& master, const std::vector<Point<dimension>>& nodal_coordinates,
+		const std::vector<uint>& neighbor_ID, const std::vector<unsigned char>& boundary_type) :
 		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 		neighbor_ID(neighbor_ID), boundary_type(boundary_type)
 	{
