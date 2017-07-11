@@ -13,21 +13,21 @@ public:
   std::unordered_map<int,std::array<double,3> > nodes;
   std::unordered_map<int,std::array<int,4> > elements;
 
-  SWE::BoundaryConditions get_ibtype( std::array<int,2> node_pair ) {
+  SWE::BoundaryConditions get_ibtype( std::array<int,2>& node_pair ) const {
     for ( auto& open_bdry : NBDV ) {
       if ( has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair) ) {
         return SWE::BoundaryConditions::tidal;
       }
     }
-
+	
     for ( auto& land_bdry : NBVV ) {
       if ( has_edge(land_bdry.cbegin(), land_bdry.cend(), node_pair) ) {
         return SWE::BoundaryConditions::land;
       }
     }
-
-    throw std::logic_error("Error Boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" + std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
-    return SWE::BoundaryConditions::tidal; //here to hide warning
+	
+    //throw std::logic_error("Error Boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" + std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+    //return SWE::BoundaryConditions::tidal; //here to hide warning
   }
 
   void write_to(const char* out_name);
@@ -46,7 +46,7 @@ public:
 private:
 
   bool has_edge( std::vector<int>::const_iterator cbegin, std::vector<int>::const_iterator cend,
-                 std::array<int,2>& node_pair )
+                 std::array<int,2>& node_pair ) const
   {
     auto it = std::find( cbegin, cend, node_pair[0]);
     if ( it != cend ) {

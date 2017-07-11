@@ -45,12 +45,12 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 
 	std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
 	std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
-
+	
 	mesh.CallForEachElement(
 		[&pre_interfaces, &pre_boundaries](auto& elem)
 		{ elem.CreateRawBoundaries(pre_interfaces, pre_boundaries); }
 	);
-
+	
 	for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
 		for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 
@@ -63,7 +63,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 			it->second.erase(itt);
 		}
 	}
-
+	
 	ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
 }
 

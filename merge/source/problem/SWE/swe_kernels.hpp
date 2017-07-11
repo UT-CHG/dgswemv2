@@ -14,6 +14,7 @@ namespace SWE {
 				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 					mesh.template CreateBoundary<BoundaryTypeLand>(*itt);
 				}
+				std::cout << "Number of boundaries: " << mesh.GetNumberBoundaries() << "\n";
 
 				break;
 			case SWE::tidal:
@@ -22,6 +23,7 @@ namespace SWE {
 				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 					mesh.template CreateBoundary<BoundaryTypeTidal>(*itt);
 				}
+				std::cout << "Number of boundaries: " << mesh.GetNumberBoundaries() << "\n";
 
 				break;
 			}

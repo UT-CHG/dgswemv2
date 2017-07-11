@@ -45,8 +45,8 @@ namespace Utilities {
 	template<typename T, typename F, int... Is>
 	void for_each(T&& t, F f, seq<Is...>) {
 		//ensure that variables get executed in the correct order
-		auto __attribute((unused)) unused = { (f(std::get<Is>(t)), 0)... };
-		//auto unused = { (f(std::get<Is>(t)), 0)... };
+		//auto __attribute((unused)) unused = { (f(std::get<Is>(t)), 0)... };
+		auto unused = { (f(std::get<Is>(t)), 0)... };
 	}
 
 	template<typename... Ts, typename F>
