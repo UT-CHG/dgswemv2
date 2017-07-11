@@ -22,7 +22,7 @@ typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mes
 	initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
 	initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
 	initialize_mesh_VTK_geometry<ProblemType>(*mesh);
-
+	
 	return mesh;
 }
 
@@ -35,6 +35,8 @@ void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshM
 		mesh.template CreateElement<ElementType>(it->first, it->second.nodal_coordinates, 
 		  it->second.neighbor_ID,  it->second.boundary_type);
 	}
+
+    std::cout << "Number of elements: " << mesh.GetNumberElements() << "\n";
 }
 
 template<typename ProblemType>
@@ -63,7 +65,9 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 			it->second.erase(itt);
 		}
 	}
-	
+
+    std::cout << "Number of interfaces: " << mesh.GetNumberInterfaces() << "\n";
+
 	ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
 }
 
@@ -74,7 +78,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 
 	mesh.CallForEachElement(
 		[&points, &cells](auto& elem)
-	{ elem.InitializeVTK(points, cells); }
+		{ elem.InitializeVTK(points, cells); }
 	);
 
 	std::string file_name = "output/geometry.vtk";

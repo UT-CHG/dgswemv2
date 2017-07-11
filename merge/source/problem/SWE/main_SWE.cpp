@@ -17,10 +17,7 @@ int main(int argc, const char* argv[]) {
 	Stepper stepper(2, 2, 1.);
 
 	auto mesh = initialize_mesh<SWE::Problem>(2, mesh_data);
-	//run_simulation<SWE::Problem>(344000.0, stepper, *mesh);
-	
-    std::cout << "Number of interfaces: " << mesh->GetNumberInterfaces() << "\n";
-	std::cout << "Number of boundaries: " << mesh->GetNumberBoundaries() << "\n";
+	run_simulation<SWE::Problem>(345600.0, stepper, *mesh);
 	
 	delete mesh;
 }

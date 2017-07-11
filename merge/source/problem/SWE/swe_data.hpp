@@ -80,8 +80,8 @@ namespace SWE {
 			: state(0, State(0)), internal(0), boundary(0)
 		{}
 
-		void resize(uint nstate) {
-			this->state = std::vector<State>(nstate, State(ndof));
+		void initialize() {
+			this->state = std::vector<State>{State(ndof)};
 			this->internal = Internal(ngp_internal);
 			this->boundary = Boundary(ngp_boundary);
 
@@ -91,6 +91,12 @@ namespace SWE {
 
 			for (uint i = 0; i < this->ngp_boundary; i++)
 				this->boundary.bath_at_gp[i] = 5.0;
+		}
+
+		void resize(uint nstate) {
+			this->state.insert(this->state.end(), nstate, State(ndof));
+//			this->internal = Internal(ngp_internal);
+//			this->boundary = Boundary(ngp_boundary);
 		}
 
 		std::vector<State> state;
