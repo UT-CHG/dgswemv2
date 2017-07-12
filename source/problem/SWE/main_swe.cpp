@@ -19,10 +19,10 @@ int main(int argc, const char* argv[]) {
 
 	initialize_data(*mesh, adcirc_file);
 
-	Stepper stepper(2, 2, 1.);
+	Stepper stepper(2, 2, 10.);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
-	run_simulation<SWE::Problem>(345600.0, stepper, *mesh);
+	run_simulation<SWE::Problem>(86400.0, stepper, *mesh);
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Time Elapsed (in us): "

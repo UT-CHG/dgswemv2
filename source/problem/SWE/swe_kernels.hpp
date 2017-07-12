@@ -230,7 +230,56 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void Problem::extract_VTK_data_kernel(const Stepper& stepper, ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
+	void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
+		uint stage = stepper.get_stage();
+
+		auto& state = elt.data.state[stage];
+
+		for (auto& ze_mode : state.ze) {
+			if (isnan(ze_mode)) {
+				std::cerr << "Error: found isnan ze at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& qx_mode : state.qx) {
+			if (isnan(qx_mode)) {
+				std::cerr << "Error: found isnan qx at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& qy_mode : state.qy) {
+			if (isnan(qy_mode)) {
+				std::cerr << "Error: found isnan qy at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& rhs_ze_mode : state.rhs_ze) {
+			if (isnan(rhs_ze_mode)) {
+				std::cerr << "Error: found isnan rhs_ze at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& rhs_qx_mode : state.rhs_qx) {
+			if (isnan(rhs_qx_mode)) {
+				std::cerr << "Error: found isnan rhs_qx at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+
+		for (auto& rhs_qy_mode : state.rhs_qy) {
+			if (isnan(rhs_qy_mode)) {
+				std::cerr << "Error: found isnan rhs_qy at Element " << elt.get_id();
+				std::cerr << "       At stage: " << stage << "\n";
+			}
+		}
+	}
+
+	template<typename ElementType>
+	void Problem::extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
 		elt.WriteCellDataVTK(elt.data.state[0].ze, cell_data[0]);
 		elt.WriteCellDataVTK(elt.data.state[0].qx, cell_data[1]);
 		elt.WriteCellDataVTK(elt.data.state[0].qy, cell_data[2]);
@@ -250,8 +299,8 @@ namespace SWE {
 		cell_data.resize(4);
 		point_data.resize(4);
 
-		auto extract_VTK_data_kernel = [&stepper, &cell_data, &point_data](auto& elt) {
-			Problem::extract_VTK_data_kernel(stepper, elt, cell_data, point_data);
+		auto extract_VTK_data_kernel = [&cell_data, &point_data](auto& elt) {
+			Problem::extract_VTK_data_kernel(elt, cell_data, point_data);
 		};
 
 		mesh.CallForEachElement(extract_VTK_data_kernel);
@@ -311,52 +360,72 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
-		uint stage = stepper.get_stage();
+	void Problem::extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<uint, Array2D<double>>>& modal_data) {
+		modal_data.push_back(
+			std::make_pair(elt.GetID(), 
+				Array2D<double>{elt.data.state[0].ze, elt.data.state[0].qx,
+								elt.data.state[0].qy, elt.data.state[0].bath}
+			)
+		);
+	}
 
-		auto& state = elt.data.state[stage];
+	template<typename MeshType>
+	void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
+		std::vector<std::pair<uint, Array2D<double>>> modal_data;
 
-		for (auto& ze_mode : state.ze) {
-			if (isnan(ze_mode)) {
-				std::cerr << "Error: found isnan ze at Element " << elt.get_id();
-				std::cerr << "       At stage: " << stage << "\n";
+		auto extract_modal_data_kernel = [&modal_data](auto& elt) {
+			Problem::extract_modal_data_kernel(elt, modal_data);
+		};
+
+		mesh.CallForEachElement(extract_modal_data_kernel);
+
+		std::string file_name = "output/modal_ze.txt";
+		std::ofstream file(file_name, std::ios::app);
+
+		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
+			for(auto itt = (*it).second[0].begin(); itt != (*it).second[0].end(); itt++) {
+				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
 			}
 		}
 
-		for (auto& qx_mode : state.qx) {
-			if (isnan(qx_mode)) {
-				std::cerr << "Error: found isnan qx at Element " << elt.get_id();
-				std::cerr << "       At stage: " << stage << "\n";
+		file.close();
+
+		file_name = "output/modal_qx.txt";
+		file = std::ofstream(file_name, std::ios::app);
+
+		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
+			for(auto itt = (*it).second[1].begin(); itt != (*it).second[1].end(); itt++) {
+				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
 			}
 		}
 
-		for (auto& qy_mode : state.qy) {
-			if (isnan(qy_mode)) {
-				std::cerr << "Error: found isnan qy at Element " << elt.get_id();
-				std::cerr << "       At stage: " << stage << "\n";
+		file.close();
+
+		file_name = "output/modal_qy.txt";
+		file = std::ofstream(file_name, std::ios::app);
+
+		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
+			for(auto itt = (*it).second[2].begin(); itt != (*it).second[2].end(); itt++) {
+				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
 			}
 		}
 
-		for (auto& rhs_ze_mode : state.rhs_ze) {
-			if (isnan(rhs_ze_mode)) {
-				std::cerr << "Error: found isnan rhs_ze at Element " << elt.get_id();
-				std::cerr << "       At stage: " << stage << "\n";
+		file.close();
+
+		file_name = "output/modal_bath.txt";
+		file = std::ofstream(file_name, std::ios::app);
+
+		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
+			for(auto itt = (*it).second[3].begin(); itt != (*it).second[3].end(); itt++) {
+				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
 			}
 		}
 
-		for (auto& rhs_qx_mode : state.rhs_qx) {
-			if (isnan(rhs_qx_mode)) {
-				std::cerr << "Error: found isnan rhs_qx at Element " << elt.get_id();
-				std::cerr << "       At stage: " << stage << "\n";
-			}
-		}
-
-		for (auto& rhs_qy_mode : state.rhs_qy) {
-			if (isnan(rhs_qy_mode)) {
-				std::cerr << "Error: found isnan rhs_qy at Element " << elt.get_id();
-				std::cerr << "       At stage: " << stage << "\n";
-			}
-		}
+		file.close();
 	}
 }
 

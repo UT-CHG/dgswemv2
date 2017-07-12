@@ -39,15 +39,21 @@ namespace SWE {
 
 		//postprocessor kernels
 		template<typename ElementType>
-		static void extract_VTK_data_kernel(const Stepper&, ElementType&, Array2D<double>&, Array2D<double>&);
+		static void extract_VTK_data_kernel(ElementType&, Array2D<double>&, Array2D<double>&);
 
 		template<typename MeshType>
 		static void write_VTK_data_kernel(const Stepper&, MeshType&);
+
+		template<typename ElementType>
+		static void extract_modal_data_kernel(ElementType&, std::vector<std::pair<uint, Array2D<double>>>&);
+
+		template<typename MeshType>
+		static void write_modal_data_kernel(const Stepper&, MeshType&);
 	};
 
 	namespace Global {
 		static constexpr double g = 9.81;
-		static constexpr double Cf = 0.0025;
+		static constexpr double Cf = 0.001;
 	}
 
 	enum BoundaryConditions : unsigned char {
