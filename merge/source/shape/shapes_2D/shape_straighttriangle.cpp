@@ -162,18 +162,18 @@ namespace Shape {
 
 	std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values, const std::vector<Point<2>>& pts) {
 		std::vector<double> interpolation;
-		
+
 		interpolation.reserve(pts.size());
 
-		for (uint pt = 0; pt < pts.size(); pt++) { 
+		for (uint pt = 0; pt < pts.size(); pt++) {
 			interpolation.push_back(0);
-			
-			interpolation[pt] = 
-				-(pts[pt][LocalCoordTri::z1] + pts[pt][LocalCoordTri::z2])/2 * nodal_values[0] //N1
-				+(1 + pts[pt][LocalCoordTri::z1])/2 * nodal_values[1]						   //N2
-				+(1 + pts[pt][LocalCoordTri::z2])/2 * nodal_values[2];						   //N3
+
+			interpolation[pt] =
+				-(pts[pt][LocalCoordTri::z1] + pts[pt][LocalCoordTri::z2]) / 2 * nodal_values[0]   //N1
+				+ (1 + pts[pt][LocalCoordTri::z1]) / 2 * nodal_values[1]						   //N2
+				+ (1 + pts[pt][LocalCoordTri::z2]) / 2 * nodal_values[2];						   //N3
 		}
 
-		return interpolation; 
+		return interpolation;
 	}
 }

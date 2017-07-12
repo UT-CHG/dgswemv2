@@ -144,12 +144,12 @@ namespace Geometry {
 	template<uint dimension, class master_type, class shape_type, class data_type>
 	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(const std::vector<double>& nodal_values) {
 		std::vector<double> projection;
-	
+
 		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
-		
+
 		std::vector<double> interpolation = this->shape.InterpolateNodalValues(nodal_values, gp);
 
-		if (this->m_inv.first) { 
+		if (this->m_inv.first) { //diagonal
 			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
 				projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[0][dof]);
 			}
@@ -159,7 +159,7 @@ namespace Geometry {
 				projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[dof][dof]);
 			}
 		}
-		
+
 		return projection;
 	}
 

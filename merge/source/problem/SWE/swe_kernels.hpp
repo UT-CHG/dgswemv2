@@ -6,14 +6,14 @@
 namespace SWE {
 	template<typename RawBoundaryType>
 	void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<unsigned char, std::vector<RawBoundaryType>>& pre_boundaries) {
-		uint n_bound_old_land = 0; 
+		uint n_bound_old_land = 0;
 		uint n_bound_old_tidal = 0;
 
 		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
 			switch (it->first) {
 			case SWE::land:
 				using BoundaryTypeLand = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
-				
+
 				n_bound_old_land = mesh.GetNumberBoundaries();
 
 				for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {

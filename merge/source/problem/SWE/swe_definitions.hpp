@@ -8,9 +8,9 @@
 namespace SWE {
 	struct Problem {
 		typedef SWE::Data data_type;
-		
+
 		typedef Geometry::MeshType<SWE::Data, SWE::Land, SWE::Tidal> mesh_type;
-		
+
 		//preprocessor kernels
 		template<typename RawBoundaryType>
 		static void create_boundaries_kernel(mesh_type&, std::map<unsigned char, std::vector<RawBoundaryType>>&);

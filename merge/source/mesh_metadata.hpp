@@ -1,10 +1,10 @@
 #ifndef MESH_METADATA_HPP
 #define MESH_METADATA_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
-#include "../ADCIRC_reader/adcirc_format.hpp"
-#include "../problem/SWE/swe_definitions.hpp"
+#include "ADCIRC_reader/adcirc_format.hpp"
+#include "problem/SWE/swe_definitions.hpp"
 
 // ID: corresponds to the element ID
 // coordinates: correspond to the vertices of the element

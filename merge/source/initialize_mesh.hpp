@@ -22,7 +22,7 @@ typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mes
 	initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
 	initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
 	initialize_mesh_VTK_geometry<ProblemType>(*mesh);
-	
+
 	return mesh;
 }
 
@@ -31,12 +31,12 @@ void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshM
 	using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 	using ElementType = Element<2, MasterType, Shape::StraightTriangle, typename ProblemType::data_type>;
 
-	for (auto it = mesh_data._meta.begin(); it != mesh_data._meta.end(); it++){
-		mesh.template CreateElement<ElementType>(it->first, it->second.nodal_coordinates, 
-		  it->second.neighbor_ID,  it->second.boundary_type);
+	for (auto it = mesh_data._meta.begin(); it != mesh_data._meta.end(); it++) {
+		mesh.template CreateElement<ElementType>(it->first, it->second.nodal_coordinates,
+			it->second.neighbor_ID, it->second.boundary_type);
 	}
 
-    std::cout << "Number of elements: " << mesh.GetNumberElements() << "\n";
+	std::cout << "Number of elements: " << mesh.GetNumberElements() << "\n";
 }
 
 template<typename ProblemType>
@@ -47,12 +47,12 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 
 	std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
 	std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
-	
+
 	mesh.CallForEachElement(
 		[&pre_interfaces, &pre_boundaries](auto& elem)
 		{ elem.CreateRawBoundaries(pre_interfaces, pre_boundaries); }
 	);
-	
+
 	for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
 		for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
 
@@ -66,7 +66,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 		}
 	}
 
-    std::cout << "Number of interfaces: " << mesh.GetNumberInterfaces() << "\n";
+	std::cout << "Number of interfaces: " << mesh.GetNumberInterfaces() << "\n";
 
 	ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
 }

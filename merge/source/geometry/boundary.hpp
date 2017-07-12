@@ -113,7 +113,7 @@ namespace Geometry {
 
 	template<uint dimension, class integration_type, class data_type>
 	Interface<dimension, integration_type, data_type>::Interface
-		(const RawBoundary<dimension, data_type>& raw_boundary_in, const RawBoundary<dimension, data_type>& raw_boundary_ex) :
+	(const RawBoundary<dimension, data_type>& raw_boundary_in, const RawBoundary<dimension, data_type>& raw_boundary_ex) :
 		data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data)
 	{
 		uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
