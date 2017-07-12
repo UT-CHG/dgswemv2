@@ -19,8 +19,8 @@ CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG
 CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
 CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
 CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
-CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
 CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
 
 CMakeFiles/DG_HYPER_SWE.dir/basis/bases_2D/basis_dubiner_2D.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
@@ -40,6 +40,29 @@ CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D/integration_dunavant_2D.cpp
 
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/basis_polynomials.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/element.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_definitions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_utilities.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/elements_2D/master_triangle.tpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.cpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
+CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
+
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/basis_polynomials.hpp
@@ -55,6 +78,7 @@ CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswem
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/elements_2D/master_triangle.tpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_LLF_flux.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
@@ -63,39 +87,15 @@ CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswem
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_kernels.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/run_simulation.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.hpp
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
 CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
 
 CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
 CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D/shape_straighttriangle.cpp
 
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/bases_2D.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/basis/basis_polynomials.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/boundary.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/element.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_definitions.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/geometry/mesh_utilities.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_1D.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/integration/integrations_2D.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/elements_2D/master_triangle.tpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/master_elements_2D.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.cpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
-
-CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.cpp
-CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
+CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp
+CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
 

@@ -68,7 +68,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class integration_type, class data_type, class boundary_type>
-	void Boundary<dimension, integration_type, data_type, boundary_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
+	inline void Boundary<dimension, integration_type, data_type, boundary_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
 		std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
 		for (uint dof = 0; dof < u.size(); dof++) {
@@ -79,7 +79,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class integration_type, class data_type, class boundary_type>
-	double Boundary<dimension, integration_type, data_type, boundary_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
+	inline double Boundary<dimension, integration_type, data_type, boundary_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
 		double integral = 0;
 
 		for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -156,7 +156,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class integration_type, class data_type>
-	void Interface<dimension, integration_type, data_type>::ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp) {
+	inline void Interface<dimension, integration_type, data_type>::ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp) {
 		std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
 		for (uint dof = 0; dof < u.size(); dof++) {
@@ -167,7 +167,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class integration_type, class data_type>
-	double Interface<dimension, integration_type, data_type>::IntegrationPhiIN(uint phi_n, const std::vector<double>& u_gp) {
+	inline double Interface<dimension, integration_type, data_type>::IntegrationPhiIN(uint phi_n, const std::vector<double>& u_gp) {
 		double integral = 0;
 
 		for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -178,7 +178,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class integration_type, class data_type>
-	void Interface<dimension, integration_type, data_type>::ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp) {
+	inline void Interface<dimension, integration_type, data_type>::ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp) {
 		std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
 		for (uint dof = 0; dof < u.size(); dof++) {
@@ -189,7 +189,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class integration_type, class data_type>
-	double Interface<dimension, integration_type, data_type>::IntegrationPhiEX(uint phi_n, const std::vector<double>& u_gp) {
+	inline double Interface<dimension, integration_type, data_type>::IntegrationPhiEX(uint phi_n, const std::vector<double>& u_gp) {
 		double integral = 0;
 
 		for (uint gp = 0; gp < u_gp.size(); gp++) {

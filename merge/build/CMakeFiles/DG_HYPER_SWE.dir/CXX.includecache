@@ -138,21 +138,33 @@ problem/SWE/swe_definitions.hpp
 elements_2D/master_triangle.tpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/master/elements_2D/master_triangle.tpp
 
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.cpp
+mesh_metadata.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.hpp
+general_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+ADCIRC_reader/adcirc_format.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
+problem/SWE/swe_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
+
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/main_SWE.cpp
 ../../general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-../../utilities/mesh_metadata.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.hpp
-../../ADCIRC_reader/adcirc_format.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
-../../utilities/stepper.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
+../../mesh_metadata.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/mesh_metadata.hpp
+../../stepper.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
 ../../initialize_mesh.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_mesh.hpp
 ../../initialize_data.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/initialize_data.hpp
 ../../run_simulation.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/run_simulation.hpp
+../../ADCIRC_reader/adcirc_format.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
 swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 swe_kernels.hpp
@@ -163,8 +175,8 @@ swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_boundary_conditions.hpp
-../../utilities/stepper.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
+../../stepper.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_data.hpp
 
@@ -190,29 +202,17 @@ swe_LLF_flux.hpp
 ../shapes_2D.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/shape/shapes_2D.hpp
 
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.cpp
+stepper.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
+
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/stepper.hpp
+general_definitions.hpp
+/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
+
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/heterogeneous_containers.hpp
 tuple_helpers.hpp
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.cpp
-mesh_metadata.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/mesh_metadata.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
-../ADCIRC_reader/adcirc_format.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/ADCIRC_reader/adcirc_format.hpp
-../problem/SWE/swe_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/problem/SWE/swe_definitions.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.cpp
-stepper.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
-
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/stepper.hpp
-../general_definitions.hpp
-/h2/kazbek/UT-CHG/dgswemv2/merge/source/general_definitions.hpp
 
 /h2/kazbek/UT-CHG/dgswemv2/merge/source/utilities/tuple_helpers.hpp
 

@@ -1,14 +1,13 @@
 #include "../../general_definitions.hpp"
 
 #include "../../mesh_metadata.hpp"
-#include "../../ADCIRC_reader/adcirc_format.hpp"
-
 #include "../../stepper.hpp"
 
 #include "../../initialize_mesh.hpp"
 #include "../../initialize_data.hpp"
 #include "../../run_simulation.hpp"
 
+#include "../../ADCIRC_reader/adcirc_format.hpp"
 #include "swe_definitions.hpp"
 #include "swe_kernels.hpp"
 

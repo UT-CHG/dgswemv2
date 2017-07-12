@@ -89,7 +89,12 @@ namespace SWE {
 		}
 
 		void resize(uint nstate) {
-			this->state.insert(this->state.end(), nstate, State(ndof));
+			if ((this->state.size() - 1) < nstate) {
+				this->state.insert(this->state.end(), nstate - (this->state.size() - 1), State(ndof));
+			}
+			else if((this->state.size() - 1) > nstate) { 
+				this->state.erase(this->state.end() - ((this->state.size() - 1) - nstate), this->state.end());
+			}
 //			this->internal = Internal(ngp_internal);
 //			this->boundary = Boundary(ngp_boundary);
 		}

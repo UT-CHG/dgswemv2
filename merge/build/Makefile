@@ -258,6 +258,33 @@ integration/integrations_2D/integration_dunavant_2D.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.s
 .PHONY : integration/integrations_2D/integration_dunavant_2D.cpp.s
 
+mesh_metadata.o: mesh_metadata.cpp.o
+
+.PHONY : mesh_metadata.o
+
+# target to build an object file
+mesh_metadata.cpp.o:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o
+.PHONY : mesh_metadata.cpp.o
+
+mesh_metadata.i: mesh_metadata.cpp.i
+
+.PHONY : mesh_metadata.i
+
+# target to preprocess a source file
+mesh_metadata.cpp.i:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.i
+.PHONY : mesh_metadata.cpp.i
+
+mesh_metadata.s: mesh_metadata.cpp.s
+
+.PHONY : mesh_metadata.s
+
+# target to generate assembly for a file
+mesh_metadata.cpp.s:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.s
+.PHONY : mesh_metadata.cpp.s
+
 problem/SWE/main_SWE.o: problem/SWE/main_SWE.cpp.o
 
 .PHONY : problem/SWE/main_SWE.o
@@ -312,59 +339,32 @@ shape/shapes_2D/shape_straighttriangle.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.s
 .PHONY : shape/shapes_2D/shape_straighttriangle.cpp.s
 
-utilities/mesh_metadata.o: utilities/mesh_metadata.cpp.o
+stepper.o: stepper.cpp.o
 
-.PHONY : utilities/mesh_metadata.o
-
-# target to build an object file
-utilities/mesh_metadata.cpp.o:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.o
-.PHONY : utilities/mesh_metadata.cpp.o
-
-utilities/mesh_metadata.i: utilities/mesh_metadata.cpp.i
-
-.PHONY : utilities/mesh_metadata.i
-
-# target to preprocess a source file
-utilities/mesh_metadata.cpp.i:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.i
-.PHONY : utilities/mesh_metadata.cpp.i
-
-utilities/mesh_metadata.s: utilities/mesh_metadata.cpp.s
-
-.PHONY : utilities/mesh_metadata.s
-
-# target to generate assembly for a file
-utilities/mesh_metadata.cpp.s:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/mesh_metadata.cpp.s
-.PHONY : utilities/mesh_metadata.cpp.s
-
-utilities/stepper.o: utilities/stepper.cpp.o
-
-.PHONY : utilities/stepper.o
+.PHONY : stepper.o
 
 # target to build an object file
-utilities/stepper.cpp.o:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.o
-.PHONY : utilities/stepper.cpp.o
+stepper.cpp.o:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o
+.PHONY : stepper.cpp.o
 
-utilities/stepper.i: utilities/stepper.cpp.i
+stepper.i: stepper.cpp.i
 
-.PHONY : utilities/stepper.i
+.PHONY : stepper.i
 
 # target to preprocess a source file
-utilities/stepper.cpp.i:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.i
-.PHONY : utilities/stepper.cpp.i
+stepper.cpp.i:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.i
+.PHONY : stepper.cpp.i
 
-utilities/stepper.s: utilities/stepper.cpp.s
+stepper.s: stepper.cpp.s
 
-.PHONY : utilities/stepper.s
+.PHONY : stepper.s
 
 # target to generate assembly for a file
-utilities/stepper.cpp.s:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/utilities/stepper.cpp.s
-.PHONY : utilities/stepper.cpp.s
+stepper.cpp.s:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.s
+.PHONY : stepper.cpp.s
 
 # Help Target
 help:
@@ -390,18 +390,18 @@ help:
 	@echo "... integration/integrations_2D/integration_dunavant_2D.o"
 	@echo "... integration/integrations_2D/integration_dunavant_2D.i"
 	@echo "... integration/integrations_2D/integration_dunavant_2D.s"
+	@echo "... mesh_metadata.o"
+	@echo "... mesh_metadata.i"
+	@echo "... mesh_metadata.s"
 	@echo "... problem/SWE/main_SWE.o"
 	@echo "... problem/SWE/main_SWE.i"
 	@echo "... problem/SWE/main_SWE.s"
 	@echo "... shape/shapes_2D/shape_straighttriangle.o"
 	@echo "... shape/shapes_2D/shape_straighttriangle.i"
 	@echo "... shape/shapes_2D/shape_straighttriangle.s"
-	@echo "... utilities/mesh_metadata.o"
-	@echo "... utilities/mesh_metadata.i"
-	@echo "... utilities/mesh_metadata.s"
-	@echo "... utilities/stepper.o"
-	@echo "... utilities/stepper.i"
-	@echo "... utilities/stepper.s"
+	@echo "... stepper.o"
+	@echo "... stepper.i"
+	@echo "... stepper.s"
 .PHONY : help
 
 

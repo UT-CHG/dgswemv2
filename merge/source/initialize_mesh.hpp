@@ -97,7 +97,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 	uint n_cell_entries = 0;
 	for (auto it = cells.begin(); it != cells.end(); it++) {
 		switch ((*it)[0]) {
-		case TRIANGLE: n_cell_entries += 4; break;
+		case VTKElementTypes::straight_triangle: n_cell_entries += 4; break;
 		default:
 			printf("\n");
 			printf("MESH InitializeVTK - Fatal error!\n");
@@ -112,7 +112,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 
 	for (auto it = cells.begin(); it != cells.end(); it++) {
 		switch ((*it)[0]) {
-		case TRIANGLE: file << 3 << '\t'; n_nodes = 3; break;
+		case VTKElementTypes::straight_triangle: file << 3 << '\t'; n_nodes = 3; break;
 		default:
 			printf("\n");
 			printf("MESH InitializeVTK - Fatal error!\n");

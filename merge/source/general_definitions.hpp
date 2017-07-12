@@ -22,6 +22,8 @@
 
 typedef unsigned int uint;
 
+typedef unsigned char uchar;
+
 template<uint dim>
 using Point = std::array<double, dim>;
 
@@ -96,8 +98,9 @@ namespace Shape {
 
 #define PI 3.14159265359	
 
-#define DEFAULT_ID 4294967295
-#define INTERNAL 255
+#define N_DIV 1 //postproc elem div
+#define DEFAULT_ID 4294967295 //max uint as default id
+#define INTERNAL 255 //max uchar as default bound type: internal
 
 enum GlobalCoord : unsigned char {
 	x = 0, y = 1, z = 2
@@ -111,10 +114,8 @@ enum LocalCoordQuad : unsigned char {
 	n1 = 0, n2 = 1, n3 = 2
 };
 
-// element types (as VTK cell types)
-#define TRIANGLE 5
-
-// postprocessor element divisions
-#define N_DIV 1
+enum VTKElementTypes : unsigned char {
+	straight_triangle = 5
+};
 
 #endif

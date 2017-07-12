@@ -54,7 +54,7 @@ namespace Geometry {
 		master_type& master, const std::vector<Point<dimension>>& nodal_coordinates,
 		const std::vector<uint>& neighbor_ID, const std::vector<unsigned char>& boundary_type) :
 		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
-		neighbor_ID(neighbor_ID), boundary_type(boundary_type)
+		neighbor_ID(std::move(neighbor_ID)), boundary_type(std::move(boundary_type))
 	{
 		//DEFORMATION
 		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
@@ -164,7 +164,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
+	inline void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
 		std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
 		for (uint dof = 0; dof < u.size(); dof++) {
@@ -175,7 +175,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint dir, const std::vector<double>& u, std::vector<double>& du_gp) {
+	inline void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint dir, const std::vector<double>& u, std::vector<double>& du_gp) {
 		std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
 		for (uint dof = 0; dof < u.size(); dof++) {
@@ -187,7 +187,7 @@ namespace Geometry {
 
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
+	inline double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
 		double integral = 0;
 
 		for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -198,7 +198,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir, uint phi_n, const std::vector<double>& u_gp) {
+	inline double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir, uint phi_n, const std::vector<double>& u_gp) {
 		double integral = 0;
 
 		for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -209,7 +209,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	std::vector<double> Element<dimension, master_type, shape_type, data_type>::SolveLSE(const std::vector<double>& rhs) {
+	inline std::vector<double> Element<dimension, master_type, shape_type, data_type>::SolveLSE(const std::vector<double>& rhs) {
 		std::vector<double> solution;
 
 		if (this->m_inv.first) { //diagonal
@@ -235,7 +235,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	void Element<dimension, master_type, shape_type, data_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
+	inline void Element<dimension, master_type, shape_type, data_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
 		Array2D<double> temp = this->master.phi_postprocessor_cell;
 
 		for (uint dof = 0; dof < temp.size(); dof++) {
@@ -254,7 +254,7 @@ namespace Geometry {
 	}
 
 	template<uint dimension, class master_type, class shape_type, class data_type>
-	void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
+	inline void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
 		Array2D<double> temp = this->master.phi_postprocessor_point;
 
 		for (uint dof = 0; dof < temp.size(); dof++) {

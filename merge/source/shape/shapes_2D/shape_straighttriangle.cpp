@@ -45,23 +45,8 @@ namespace Shape {
 	std::vector<double> StraightTriangle::GetSurfaceJ(uint n_bound, const std::vector<Point<2>>& pts) {
 		std::vector<double> surface_J;
 
-		uint pt_begin, pt_end;
-
-		if (n_bound == 0) {
-			pt_begin = 1;
-			pt_end = 2;
-		}
-		else if (n_bound == 1) {
-			pt_begin = 2;
-			pt_end = 0;
-		}
-		else if (n_bound == 2) {
-			pt_begin = 0;
-			pt_end = 1;
-		}
-
-		surface_J.push_back(sqrt(pow(this->nodal_coordinates[pt_end][GlobalCoord::x] - this->nodal_coordinates[pt_begin][GlobalCoord::x], 2.0) +
-			pow(this->nodal_coordinates[pt_end][GlobalCoord::y] - this->nodal_coordinates[pt_begin][GlobalCoord::y], 2.0)) / 2.0); //half length for straight edge
+		surface_J.push_back(sqrt(pow(this->nodal_coordinates[(n_bound + 2) % 3][GlobalCoord::x] - this->nodal_coordinates[(n_bound + 1) % 3][GlobalCoord::x], 2.0) +
+			pow(this->nodal_coordinates[(n_bound + 2) % 3][GlobalCoord::y] - this->nodal_coordinates[(n_bound + 1) % 3][GlobalCoord::y], 2.0)) / 2.0); //half length for straight edge
 
 		return surface_J;
 	}
@@ -81,26 +66,11 @@ namespace Shape {
 		double det_J = (J[0][0] * J[1][1] - J[0][1] * J[1][0]);
 		double cw = det_J / std::abs(det_J); //CW or CCW
 
-		uint pt_begin, pt_end;
+		double length = sqrt(pow(this->nodal_coordinates[(n_bound + 2) % 3][GlobalCoord::x] - this->nodal_coordinates[(n_bound + 1) % 3][GlobalCoord::x], 2.0) +
+			pow(this->nodal_coordinates[(n_bound + 2) % 3][GlobalCoord::y] - this->nodal_coordinates[(n_bound + 1) % 3][GlobalCoord::y], 2.0));
 
-		if (n_bound == 0) {
-			pt_begin = 1;
-			pt_end = 2;
-		}
-		else if (n_bound == 1) {
-			pt_begin = 2;
-			pt_end = 0;
-		}
-		else if (n_bound == 2) {
-			pt_begin = 0;
-			pt_end = 1;
-		}
-
-		double length = sqrt(pow(this->nodal_coordinates[pt_end][GlobalCoord::x] - this->nodal_coordinates[pt_begin][GlobalCoord::x], 2.0) +
-			pow(this->nodal_coordinates[pt_end][GlobalCoord::y] - this->nodal_coordinates[pt_begin][GlobalCoord::y], 2.0));
-
-		surface_normal[0].push_back(cw * (this->nodal_coordinates[pt_end][GlobalCoord::y] - this->nodal_coordinates[pt_begin][GlobalCoord::y]) / length);
-		surface_normal[0].push_back(-cw * (this->nodal_coordinates[pt_end][GlobalCoord::x] - this->nodal_coordinates[pt_begin][GlobalCoord::x]) / length);
+		surface_normal[0].push_back(cw * (this->nodal_coordinates[(n_bound + 2) % 3][GlobalCoord::y] - this->nodal_coordinates[(n_bound + 1) % 3][GlobalCoord::y]) / length);
+		surface_normal[0].push_back(-cw * (this->nodal_coordinates[(n_bound + 2) % 3][GlobalCoord::x] - this->nodal_coordinates[(n_bound + 1) % 3][GlobalCoord::x]) / length);
 
 		return surface_normal;
 	}
@@ -152,7 +122,7 @@ namespace Shape {
 
 				pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 
-				cells.back()[0] = 5;
+				cells.back()[0] = VTKElementTypes::straight_triangle;
 				cells.back()[1] = pt_ID;
 				cells.back()[2] = pt_ID + 1;
 				cells.back()[3] = pt_ID - (N_DIV + 2 - i) + 1;
