@@ -63,7 +63,7 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 
 		mesh.CallForEachElement(swap_states_kernel);
 
-		if (step % 300 == 0) {
+		if (step % 720 == 0) {
 			std::cout << "Step: " << step << "\n";
 			ProblemType::write_VTK_data_kernel(stepper, mesh);
 		}

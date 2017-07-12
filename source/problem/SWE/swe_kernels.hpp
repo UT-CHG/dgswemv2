@@ -234,10 +234,12 @@ namespace SWE {
 		elt.WriteCellDataVTK(elt.data.state[0].ze, cell_data[0]);
 		elt.WriteCellDataVTK(elt.data.state[0].qx, cell_data[1]);
 		elt.WriteCellDataVTK(elt.data.state[0].qy, cell_data[2]);
+		elt.WriteCellDataVTK(elt.data.state[0].bath, cell_data[3]);
 
 		elt.WritePointDataVTK(elt.data.state[0].ze, point_data[0]);
 		elt.WritePointDataVTK(elt.data.state[0].qx, point_data[1]);
 		elt.WritePointDataVTK(elt.data.state[0].qy, point_data[2]);
+		elt.WritePointDataVTK(elt.data.state[0].bath, point_data[3]);
 	}
 
 	template<typename MeshType>
@@ -245,8 +247,8 @@ namespace SWE {
 		Array2D<double> cell_data;
 		Array2D<double> point_data;
 
-		cell_data.resize(3);
-		point_data.resize(3);
+		cell_data.resize(4);
+		point_data.resize(4);
 
 		auto extract_VTK_data_kernel = [&stepper, &cell_data, &point_data](auto& elt) {
 			Problem::extract_VTK_data_kernel(stepper, elt, cell_data, point_data);
@@ -270,6 +272,10 @@ namespace SWE {
 		file << "LOOKUP_TABLE default\n";
 		for (auto it = cell_data[2].begin(); it != cell_data[2].end(); it++) file << *it << '\n';
 
+		file << "SCALARS bath_cell float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = cell_data[3].begin(); it != cell_data[3].end(); it++) file << *it << '\n';
+
 		file << "POINT_DATA " << (*point_data.begin()).size() << '\n';
 		file << "SCALARS ze_point float 1\n";
 		file << "LOOKUP_TABLE default\n";
@@ -282,6 +288,10 @@ namespace SWE {
 		file << "SCALARS qy_point float 1\n";
 		file << "LOOKUP_TABLE default\n";
 		for (auto it = point_data[2].begin(); it != point_data[2].end(); it++) file << *it << '\n';
+
+		file << "SCALARS bath_point float 1\n";
+		file << "LOOKUP_TABLE default\n";
+		for (auto it = point_data[3].begin(); it != point_data[3].end(); it++) file << *it << '\n';
 
 		file.close();
 

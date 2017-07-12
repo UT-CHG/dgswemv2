@@ -17,7 +17,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
 template<typename ProblemType>
 typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mesh_data) {
-	typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(2);
+	typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(p);
 
 	initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
 	initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);

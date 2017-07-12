@@ -38,6 +38,6 @@ list (APPEND DG_HYPER_SWE_SOURCES
       
 add_executable(
   DG_HYPER_SWE
-  /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp
+  /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )

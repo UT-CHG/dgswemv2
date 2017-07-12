@@ -285,32 +285,32 @@ mesh_metadata.cpp.s:
 	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.s
 .PHONY : mesh_metadata.cpp.s
 
-problem/SWE/main_SWE.o: problem/SWE/main_SWE.cpp.o
+problem/SWE/main_swe.o: problem/SWE/main_swe.cpp.o
 
-.PHONY : problem/SWE/main_SWE.o
+.PHONY : problem/SWE/main_swe.o
 
 # target to build an object file
-problem/SWE/main_SWE.cpp.o:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o
-.PHONY : problem/SWE/main_SWE.cpp.o
+problem/SWE/main_swe.cpp.o:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o
+.PHONY : problem/SWE/main_swe.cpp.o
 
-problem/SWE/main_SWE.i: problem/SWE/main_SWE.cpp.i
+problem/SWE/main_swe.i: problem/SWE/main_swe.cpp.i
 
-.PHONY : problem/SWE/main_SWE.i
+.PHONY : problem/SWE/main_swe.i
 
 # target to preprocess a source file
-problem/SWE/main_SWE.cpp.i:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.i
-.PHONY : problem/SWE/main_SWE.cpp.i
+problem/SWE/main_swe.cpp.i:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.i
+.PHONY : problem/SWE/main_swe.cpp.i
 
-problem/SWE/main_SWE.s: problem/SWE/main_SWE.cpp.s
+problem/SWE/main_swe.s: problem/SWE/main_swe.cpp.s
 
-.PHONY : problem/SWE/main_SWE.s
+.PHONY : problem/SWE/main_swe.s
 
 # target to generate assembly for a file
-problem/SWE/main_SWE.cpp.s:
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.s
-.PHONY : problem/SWE/main_SWE.cpp.s
+problem/SWE/main_swe.cpp.s:
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.s
+.PHONY : problem/SWE/main_swe.cpp.s
 
 shape/shapes_2D/shape_straighttriangle.o: shape/shapes_2D/shape_straighttriangle.cpp.o
 
@@ -393,9 +393,9 @@ help:
 	@echo "... mesh_metadata.o"
 	@echo "... mesh_metadata.i"
 	@echo "... mesh_metadata.s"
-	@echo "... problem/SWE/main_SWE.o"
-	@echo "... problem/SWE/main_SWE.i"
-	@echo "... problem/SWE/main_SWE.s"
+	@echo "... problem/SWE/main_swe.o"
+	@echo "... problem/SWE/main_swe.i"
+	@echo "... problem/SWE/main_swe.s"
 	@echo "... shape/shapes_2D/shape_straighttriangle.o"
 	@echo "... shape/shapes_2D/shape_straighttriangle.i"
 	@echo "... shape/shapes_2D/shape_straighttriangle.s"

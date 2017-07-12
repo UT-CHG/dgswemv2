@@ -150,7 +150,7 @@ ADCIRC_reader/adcirc_format.hpp
 problem/SWE/swe_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/swe_definitions.hpp
 
-/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp
+/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp
 ../../general_definitions.hpp
 /h2/kazbek/UT-CHG/dgswemv2/source/general_definitions.hpp
 ../../mesh_metadata.hpp

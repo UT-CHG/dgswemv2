@@ -57,28 +57,28 @@ include CMakeFiles/DG_HYPER_SWE.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/DG_HYPER_SWE.dir/flags.make
 
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o"
-	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o: /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o"
+	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o -c /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp
 
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.i"
-	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp > CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.i
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.i"
+	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++  $(CXX_DEFINES) $(CXX_FLAGS) -E /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp > CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.i
 
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.s"
-	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp -o CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.s
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.s"
+	/opt/apps/ossw/applications/gcc/gcc-6.1/c7/bin/g++  $(CXX_DEFINES) $(CXX_FLAGS) -S /h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp -o CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.s
 
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.requires:
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.requires:
 
-.PHONY : CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.requires
+.PHONY : CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.requires
 
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.provides: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.requires
-	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.provides.build
-.PHONY : CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.provides
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.provides: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.requires
+	$(MAKE) -f CMakeFiles/DG_HYPER_SWE.dir/build.make CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.provides.build
+.PHONY : CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.provides
 
-CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.provides.build: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o
+CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.provides.build: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o
 
 
 CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o: CMakeFiles/DG_HYPER_SWE.dir/flags.make
@@ -275,7 +275,7 @@ CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendr
 
 # Object files for target DG_HYPER_SWE
 DG_HYPER_SWE_OBJECTS = \
-"CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o" \
+"CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o" \
 "CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o" \
@@ -288,7 +288,7 @@ DG_HYPER_SWE_OBJECTS = \
 # External object files for target DG_HYPER_SWE
 DG_HYPER_SWE_EXTERNAL_OBJECTS =
 
-DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o
+DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o
 DG_HYPER_SWE: CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o
@@ -307,7 +307,7 @@ CMakeFiles/DG_HYPER_SWE.dir/build: DG_HYPER_SWE
 
 .PHONY : CMakeFiles/DG_HYPER_SWE.dir/build
 
-CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o.requires
+CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o.requires
 CMakeFiles/DG_HYPER_SWE.dir/requires: CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o.requires

@@ -98,7 +98,7 @@ namespace Shape {
 
 #define PI 3.14159265359	
 
-#define N_DIV 1 //postproc elem div
+#define N_DIV 2 //postproc elem div
 #define DEFAULT_ID 4294967295 //max uint as default id
 #define INTERNAL 255 //max uchar as default bound type: internal
 

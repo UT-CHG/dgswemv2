@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o"
+  "CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/ADCIRC_reader/adcirc_format.cpp.o"
   "CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o"

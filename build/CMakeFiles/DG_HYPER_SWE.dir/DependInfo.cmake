@@ -10,7 +10,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/h2/kazbek/UT-CHG/dgswemv2/source/integration/integrations_1D/integration_gausslegendre_1D.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_1D/integration_gausslegendre_1D.cpp.o"
   "/h2/kazbek/UT-CHG/dgswemv2/source/integration/integrations_2D/integration_dunavant_2D.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/integration/integrations_2D/integration_dunavant_2D.cpp.o"
   "/h2/kazbek/UT-CHG/dgswemv2/source/mesh_metadata.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/mesh_metadata.cpp.o"
-  "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_SWE.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_SWE.cpp.o"
+  "/h2/kazbek/UT-CHG/dgswemv2/source/problem/SWE/main_swe.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/problem/SWE/main_swe.cpp.o"
   "/h2/kazbek/UT-CHG/dgswemv2/source/shape/shapes_2D/shape_straighttriangle.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/shape/shapes_2D/shape_straighttriangle.cpp.o"
   "/h2/kazbek/UT-CHG/dgswemv2/source/stepper.cpp" "/h2/kazbek/UT-CHG/dgswemv2/build/CMakeFiles/DG_HYPER_SWE.dir/stepper.cpp.o"
   )
