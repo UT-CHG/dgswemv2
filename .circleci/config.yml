@@ -1,7 +1,4 @@
-version: 2
-jobs:
-  build:
-    working_directory: ~/dgswemv2
+#machine:
 #  build:
 #  environment:
 #    Boost_ROOT: /home/ubuntu/boost_1_63_0_install
