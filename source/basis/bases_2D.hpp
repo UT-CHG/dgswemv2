@@ -15,8 +15,8 @@ namespace Basis {
 		Array2D<double> ComputeDPhi(uint, uint, const std::vector<double>&, const std::vector<double>&);
 
 		std::vector<double> ComputeSingularDPhi(uint, uint);
-		double ComputeSingularDPhiDZ1(uint);
-		double ComputeSingularDPhiDZ2(uint);
+		std::vector<double> ComputeSingularDPhiDZ1(uint);
+		std::vector<double> ComputeSingularDPhiDZ2(uint);
 	};
 }
 
