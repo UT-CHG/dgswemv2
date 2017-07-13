@@ -1,6 +1,6 @@
-#DGSWEM V2
+# DGSWEM V2
 
-##Building instructions
+## Building instructions
 
 From the project's root directory run the following
 
