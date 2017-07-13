@@ -1,6 +1,8 @@
 #ifndef TUPLE_HELPERS_HPP
 #define TUPLE_HELPERS_HPP
 
+#include <tuple>
+
 namespace Utilities {
 	// has_type implementation from
 	//https://stackoverflow.com/questions/25958259/how-do-i-find-out-if-a-tuple-contains-a-type

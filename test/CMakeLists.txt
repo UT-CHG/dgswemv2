@@ -1,14 +1,14 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -Wall")
 
-#add_executable(
-#  test_tuple_helpers_exe
-#  test_tuple_helpers.cpp
-#)
+add_executable(
+  test_tuple_helpers_exe
+  test_tuple_helpers.cpp
+)
 
-#add_test(
-#  Unit_tuple_helpers
-#  test_tuple_helpers_exe
-#)
+add_test(
+  Unit_tuple_helpers
+  test_tuple_helpers_exe
+)
 
 #add_executable(
 #  test_dubiner_exe
@@ -40,7 +40,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -Wall")
 #  test_quadrature_1d.cpp
 #  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
 #  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/gauss_legendre.cpp
-#)
+#)A
 
 #add_test(
 #  Unit_quadratures_1d
@@ -57,17 +57,17 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -Wall")
 #  test_linear_interpolation_exe
 #)
 
-#add_executable(
-#  test_adcirc_format_exe
-#  test_adcirc_format.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/reader/adcirc_format.cpp
-#)
+add_executable(
+  test_adcirc_format_exe
+  test_adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/ADCIRC_reader/adcirc_format.cpp
+)
 
-#add_test(
-#  Unit_read_adcirc_mesh
-#  test_adcirc_format_exe
-#  ${PROJECT_SOURCE_DIR}/test/sample_fort.14
-#)
+add_test(
+  Unit_read_adcirc_mesh
+  test_adcirc_format_exe
+  ${PROJECT_SOURCE_DIR}/test/sample_fort.14
+)
 
 #add_executable(
 #  test_heterogeneous_vector_exe
