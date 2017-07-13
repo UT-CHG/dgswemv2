@@ -69,15 +69,15 @@ add_test(
   ${PROJECT_SOURCE_DIR}/test/sample_fort.14
 )
 
-#add_executable(
-#  test_heterogeneous_vector_exe
-#  test_heterogeneous_vector.cpp
-#)
+add_executable(
+  test_heterogeneous_vector_exe
+  test_heterogeneous_vector.cpp
+)
 
-#add_test(
-#  Unit_heterogeneous_vector
-#  test_heterogeneous_vector_exe
-#)
+add_test(
+  Unit_heterogeneous_vector
+  test_heterogeneous_vector_exe
+)
 
 #add_executable(
 #  test_master_triangle_exe
@@ -192,15 +192,15 @@ add_test(
 #  test_triangulation_exe
 #)
 
-#add_executable(
-#  test_llf_flux_exe
-#  test_llf_flux.cpp
-#)
+add_executable(
+  test_llf_flux_exe
+  test_llf_flux.cpp
+)
 
-#add_test(
-#  Unit_llf_flux
-#  test_llf_flux_exe
-#)
+add_test(
+  Unit_llf_flux
+  test_llf_flux_exe
+)
 
 #add_executable(
 #  test_swe_boundaries_exe

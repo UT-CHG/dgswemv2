@@ -1,6 +1,9 @@
 #ifndef SWE_DATA_HPP
 #define SWE_DATA_HPP
 
+#include <array>
+#include <vector>
+
 namespace SWE {
 	struct State {
 		State(uint ndof)
