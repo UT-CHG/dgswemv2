@@ -1,12 +1,7 @@
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <limits>
+#include "utilities/almost_equal.hpp"
+#include "basis/bases_2D.hpp"
 
-#include "util/almost_equal.hpp"
-#include "geometry/basis/dubiner.hpp"
-
-const std::vector<std::array<double,2> > points = {
+const std::vector<Point<2>> points = {
   {1.0000000000000000e+00, -1.0000000000000000e+00},
   {5.0000000000000000e-01, -1.0000000000000000e+00},
   {5.0000000000000000e-01, -5.0000000000000000e-01},
@@ -161,72 +156,75 @@ const std::vector<std::vector<double> > true_Dvals = {
   {-4.5000000000000000e+01, -3.0000000000000000e+01, -7.2372436523437500e-01, -4.5612716674804688e+00, 1.9146595001220703e+01, 1.8020324707031250e+01, -2.4609375000000000e+00, -1.2304687500000000e+00, -1.1410331726074219e+00, -7.3328018188476562e-01, 1.6699218750000000e+00, 1.5234375000000000e+00, -7.2372436523437500e-01, 3.8375473022460938e+00, -1.1410331726074219e+00, -4.0775299072265625e-01, 9.1323852539062500e-02, 4.5661926269531250e-02, 1.0128021240234375e-02, 9.1552734375000000e-03, -4.5000000000000000e+01, -1.5000000000000000e+01, 1.9146595001220703e+01, 1.1262702941894531e+00, 1.6699218750000000e+00, 1.4648437500000000e-01, 1.0128021240234375e-02, 9.7274780273437500e-04, 0.0000000000000000e+00, 0.0000000000000000e+00},
   {5.5000000000000000e+01, 5.0000000000000000e+01, -2.3171234130859375e+00, -7.9669952392578125e-01, 4.1296577453613281e+00, 3.7542343139648438e+00, 0.0000000000000000e+00, 1.2304687500000000e+00, -8.5391998291015625e-02, -1.4337539672851562e-01, 1.0742187500000000e-01, 9.7656250000000000e-02, 2.3171234130859375e+00, 1.5204238891601562e+00, 8.5391998291015625e-02, -5.7983398437500000e-02, 0.0000000000000000e+00, 2.4032592773437500e-03, 2.0980834960937500e-04, 1.9073486328125000e-04, -5.5000000000000000e+01, -5.0000000000000000e+00, -4.1296577453613281e+00, -3.7542343139648438e-01, -1.0742187500000000e-01, -9.7656250000000000e-03, -2.0980834960937500e-04, -1.9073486328125000e-05, 0.0000000000000000e+00, 0.0000000000000000e+00}
 };
+
 int main() {
+    using Utilities::almost_equal;
 
-  using util::almost_equal;
+    auto is_normal_or_zero = [](double a) -> bool {
+        return (std::isnormal(a) || (a == 0));
+    };
 
-  auto is_normal_or_zero = [](double a)->bool {
-    return (std::isnormal(a) || (a == 0) );
-  };
+    Basis::Dubiner_2D basis;
+    bool error_found = false;
 
-  Geometry::Basis::Dubiner basis(10);
-  bool error_found = false;
+    Array2D<double> my_evals = basis.GetPhi(10, points);
+    Array3D<double> my_Devals = basis.GetDPhi(10, points);
 
-  for ( int id = 0; id < 66; ++id ) {
-    std::vector<double> my_evals = basis.get(id,points);
-    std::vector<std::array<double,2> > my_Devals = basis.get_grad(id,points);
+    for (uint dof = 0; dof < 66; ++dof) {
+        //Check the evaluations of the Dubiner polynomials
+        for (uint pt = 0; pt < 15; ++pt) {
+            if (!is_normal_or_zero(my_evals[dof][pt])) {
+                std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
+                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
+                
+                error_found = true;
+            }
+        }
 
+        for (uint pt = 0; pt < 15; ++pt) {
+            if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
+                std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
+                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
+                
+                error_found = true;
+            }
+        }
 
-    //Check the evaluations of the Dubiner polynomials
-    for ( int pt = 0; pt < 15; ++pt ) {
-      if ( !is_normal_or_zero(my_evals[pt]) ) {
-        std::cerr << "Error id(" << id << "): the true value = " << true_vals[id][pt]
-                  << " your computed value  = " << my_evals[pt] << std::endl;
-          error_found = true;
-      }
+        //Check the Gradient evaluations of the Dubiner polynomials
+        for (int pt = 0; pt < 15; ++pt) {
+            if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt])
+             || !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
+
+                std::cerr << "Error in Gradient dof(" << dof << "): the true value = ("
+                          << true_Dvals[dof][2 * pt] << ", " 
+                          << true_Dvals[dof][2 * pt + 1]
+                          << ") your computed value  = ("
+                          << my_Devals[dof][LocalCoordTri::z1][pt] << ", "
+                          << my_Devals[dof][LocalCoordTri::z2][pt] << ")\n";
+                
+                error_found = true;
+            }
+        }
+
+        for (int pt = 0; pt < 15; ++pt) {
+            if (!almost_equal(true_Dvals[dof][2 * pt], my_Devals[dof][LocalCoordTri::z1][pt], 1000)
+             || !almost_equal(true_Dvals[dof][2 * pt + 1], my_Devals[dof][LocalCoordTri::z2][pt], 1000)) {
+
+                std::cerr << "Error in Gradient dof(" << dof << pt << "): the true value = ("
+                          << std::setprecision(14)
+                          << true_Dvals[dof][2 * pt] << ", " 
+                          << true_Dvals[dof][2 * pt + 1]
+                          << ") your computed value  = ("
+                          << my_Devals[dof][LocalCoordTri::z1][pt] << ", "
+                          << my_Devals[dof][LocalCoordTri::z2][pt] << ")\n";
+
+                error_found = true;
+            }
+        }
     }
 
-    for ( int pt = 0; pt < 15; ++pt ) {
-      if ( !almost_equal(true_vals[id][pt],my_evals[pt]) ) {
-        std::cerr << "Error id(" << id << "): the true value = " << true_vals[id][pt]
-                  << " your computed value  = " << my_evals[pt] << std::endl;
-        error_found = true;
-      }
+    if (error_found) {
+        return 1;
     }
-
-
-    //Check the Gradient evaluations of the Dubiner polynomials
-    for ( int pt = 0; pt < 15; ++pt ) {
-      if ( !is_normal_or_zero(my_Devals[pt][0]) ||
-           !is_normal_or_zero(my_Devals[pt][0]) ) {
-
-        std::cerr << "Error in Gradient id(" << id << "): the true value = ("
-                  << true_Dvals[id][2*pt] << ", " << true_Dvals[id][2*pt+1]
-                  << ") your computed value  = (" << my_Devals[pt][0] << ", "
-                  << my_Devals[pt][1] << ")\n";
-          error_found = true;
-
-      }
-    }
-
-    for ( int pt = 0; pt < 15; ++pt ) {
-      if ( !almost_equal(true_Dvals[id][    2*pt],my_Devals[pt][0],1000) ||
-           !almost_equal(true_Dvals[id][2*pt + 1],my_Devals[pt][1],1000) ) {
-
-        std::cerr << "Hello\n";
-
-        std::cerr << "Error in Gradient id(" << id << "): the true value = ("
-                  << std::setprecision(14)
-                  << true_Dvals[id][2*pt] << ", " << true_Dvals[id][2*pt+1]
-                  << ") your computed value  = (" << my_Devals[pt][0] << ", "
-                  << my_Devals[pt][1] << ")\n";
-        error_found = true;
-      }
-    }
-
-
-  }
-
-  if (error_found) { return 1; }
-  return 0;
+    return 0;
 }

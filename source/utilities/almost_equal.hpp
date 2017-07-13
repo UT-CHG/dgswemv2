@@ -1,9 +1,7 @@
 #ifndef ALMOST_EQUAL_HPP
 #define ALMOST_EQUAL_HPP
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
+#include "../general_definitions.hpp"
 
 namespace Utilities {
         constexpr bool almost_equal(double a, double b, double factor = 100)
