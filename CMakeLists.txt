@@ -30,4 +30,4 @@ include_directories(source)
 enable_testing()
 
 add_subdirectory(source)
-#add_subdirectory(test)
+add_subdirectory(test)
