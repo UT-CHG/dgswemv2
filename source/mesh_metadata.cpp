@@ -10,8 +10,8 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 		_meta.insert({ ID, ElementMetaData(3) });
 
 		for (uint i = 0; i < 3; ++i) {
-			_meta.at(ID).nodal_coordinates[i][0] = mesh_file.nodes.at(elt.second[i + 1])[0];
-			_meta.at(ID).nodal_coordinates[i][1] = mesh_file.nodes.at(elt.second[i + 1])[1];
+			_meta.at(ID).nodal_coordinates[i][0] = mesh_file.nodes.at(elt.second[(i+1)%3 + 1])[0];
+			_meta.at(ID).nodal_coordinates[i][1] = mesh_file.nodes.at(elt.second[(i+1)%3 + 1])[1];
 		}
 	}
 
@@ -20,7 +20,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 		std::unordered_map<std::uint64_t, std::pair<eltID_faceID, eltID_faceID> > edge_dictionary;
 
 		for (const auto& elt : mesh_file.elements) {
-			std::vector<int> node{ elt.second[1], elt.second[2], elt.second[3] };
+			std::vector<int> node{ elt.second[2], elt.second[3], elt.second[1] };
 
 			for (uint k = 0; k < 3; ++k) {
 				std::uint64_t curr_key = (std::uint64_t)(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32
