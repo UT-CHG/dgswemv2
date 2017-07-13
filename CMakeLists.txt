@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 project (DG_HYPER CXX)
-
+ 
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -30,4 +30,4 @@ include_directories(source)
 enable_testing()
 
 add_subdirectory(source)
-#add_subdirectory(test)
+add_subdirectory(test)

@@ -3,6 +3,9 @@
 
 #include "tuple_helpers.hpp"
 
+#include <map>
+#include <vector>
+
 namespace Utilities {
 	template<typename... Ts>
 	struct HeterogeneousVector {
