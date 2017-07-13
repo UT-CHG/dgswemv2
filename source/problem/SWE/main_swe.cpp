@@ -15,11 +15,11 @@ int main(int argc, const char* argv[]) {
 	AdcircFormat adcirc_file("sample_fort.14");
 	MeshMetaData mesh_data(adcirc_file);
 
-	auto mesh = initialize_mesh<SWE::Problem>(1, mesh_data);
+	auto mesh = initialize_mesh<SWE::Problem>(3, mesh_data);
 
 	initialize_data(*mesh, adcirc_file);
 
-	Stepper stepper(2, 2, 10.);
+	Stepper stepper(2, 2, 1.);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
 	run_simulation<SWE::Problem>(86400.0, stepper, *mesh);

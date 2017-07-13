@@ -13,6 +13,10 @@ namespace Basis {
 	private:
 		std::vector<double> ComputePhi(uint, uint, const std::vector<double>&, const std::vector<double>&);
 		Array2D<double> ComputeDPhi(uint, uint, const std::vector<double>&, const std::vector<double>&);
+
+		std::vector<double> ComputeSingularDPhi(uint, uint);
+		double ComputeSingularDPhiDZ1(uint);
+		double ComputeSingularDPhiDZ2(uint);
 	};
 }
 
