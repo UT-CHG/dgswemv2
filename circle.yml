@@ -8,8 +8,8 @@ dependencies:
 
 compile:
   override:
-    - .circleci/build.sh
+    - scripts/circleci/build.sh
 
 test:
   override:
-    - .circleci/test.sh
+    - scripts/circleci/test.sh
