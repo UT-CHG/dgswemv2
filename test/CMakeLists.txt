@@ -67,13 +67,13 @@ add_test(
 )
 
 add_executable(
-  test_heterogeneous_vector_exe
-  test_heterogeneous_vector.cpp
+  test_heterogeneous_containers_exe
+  test_heterogeneous_containers.cpp
 )
 
 add_test(
-  Unit_heterogeneous_vector
-  test_heterogeneous_vector_exe
+  Unit_heterogeneous_containers
+  test_heterogeneous_containers_exe
 )
 
 #add_executable(
