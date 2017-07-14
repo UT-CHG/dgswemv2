@@ -11,6 +11,28 @@ add_test(
 )
 
 add_executable(
+  test_heterogeneous_containers_exe
+  test_heterogeneous_containers.cpp
+)
+
+add_test(
+  Unit_heterogeneous_containers
+  test_heterogeneous_containers_exe
+)
+
+add_executable(
+  test_adcirc_format_exe
+  test_adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/ADCIRC_reader/adcirc_format.cpp
+)
+
+add_test(
+  Unit_adcirc_format
+  test_adcirc_format_exe
+  ${PROJECT_SOURCE_DIR}/test/sample_fort.14
+)
+
+add_executable(
   test_basis_dubiner_2d_exe
   test_basis_dubiner_2d.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -20,6 +42,17 @@ add_executable(
 add_test(
   Unit_basis_dubiner_2d
   test_basis_dubiner_2d_exe
+)
+
+add_executable(
+  test_integ_gausslegendre_1d_exe
+  test_integ_gausslegendre_1d.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+)
+
+add_test(
+  Unit_integ_gausslegendre_1d
+  test_integ_gausslegendre_1d_exe
 )
 
 add_executable(
@@ -34,62 +67,6 @@ add_test(
 )
 
 add_executable(
-  test_integ_gausslegendre_1d_exe
-  test_integ_gausslegendre_1d.cpp
-  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
-)
-
-add_test(
-  Unit_integ_gausslegendre_1d
-  test_integ_gausslegendre_1d_exe
-)
-
-#add_executable(
-#  test_linear_interpolation_exe
-#  test_linear_interpolation.cpp
-#)
-
-#add_test(
-#  Unit_linear_interpolation
-#  test_linear_interpolation_exe
-#)
-
-add_executable(
-  test_adcirc_format_exe
-  test_adcirc_format.cpp
-  ${PROJECT_SOURCE_DIR}/source/ADCIRC_reader/adcirc_format.cpp
-)
-
-add_test(
-  Unit_read_adcirc_mesh
-  test_adcirc_format_exe
-  ${PROJECT_SOURCE_DIR}/test/sample_fort.14
-)
-
-add_executable(
-  test_heterogeneous_containers_exe
-  test_heterogeneous_containers.cpp
-)
-
-add_test(
-  Unit_heterogeneous_containers
-  test_heterogeneous_containers_exe
-)
-
-#add_executable(
-#  test_master_triangle_exe
-#  test_master_triangle.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#)
-
-#add_test(
-#  Unit_master_triangle
-#  test_master_triangle_exe
-#)
-
-add_executable(
   test_shape_straight_triangle_exe
   test_shape_straight_triangle.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
@@ -100,18 +77,23 @@ add_test(
   test_shape_straight_triangle_exe
 )
 
-#add_executable(
-#  test_triangle_exe
-#  test_triangle_2d.cpp
+add_executable(
+  test_element_triangle_exe
+  test_element_triangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 #  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
 #  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
 #  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#)
+)
 
-#add_test(
-#  Unit_element_triangle
-#  test_triangle_exe
-#)
+add_test(
+  Unit_element_triangle
+  test_element_triangle_exe
+)
 
 #add_executable(
 #  test_l2_projection_exe
