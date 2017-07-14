@@ -65,6 +65,22 @@ int main() {
         }
     }
 
+    //check Interpolation
+    std::vector<double> nodal_vals = { -2., 2., 3. };
+
+    std::vector<Point<2> > interpolation_pts = 
+    { { -1, -1 }, { 1, -1 }, { -1, 1 }, { 0, 0 }, 
+      { -1, 0 }, { 0, -1 }, { -1 / 3., -1 / 3. } };
+
+    std::vector<double> interpolation_true = { -2., 2., 3., 2.5, 0.5, 0, 1. };
+
+    std::vector<double> interpolation_comp = triangle.InterpolateNodalValues(nodal_vals, interpolation_pts);
+    for (uint i = 0; i < 6; i++) {
+        if (!almost_equal(interpolation_true[i], interpolation_comp[i])) {
+            std::cerr << "Error InterpolateNodalValues\n";
+            error_found = true;
+        }
+    }
     if (error_found) {
         return 1;
     }

@@ -40,7 +40,7 @@ namespace Basis {
 			n2[i] = coordinates[i][LocalCoordTri::z2];
 		}
 
-		for(uint dof = 0; dof<dphi.size();dof++){
+		for(uint dof = 0; dof < dphi.size();dof++){
 			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
 			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
 			
@@ -56,11 +56,16 @@ namespace Basis {
 	std::pair<bool, Array2D<double>> Dubiner_2D::GetMinv(uint p) {
 		std::pair<bool, Array2D<double>> m_inv(true, Array2D<double>(1)); //diagonal
 
-		m_inv.second[0].reserve((p + 1)*(p + 2) / 2);
-		for (uint i = 0; i <= p; i++) {
-			for (uint j = 0; j <= p - i; j++) {
-				m_inv.second[0].push_back((2 * i + 1)*(i + j + 1) / 2.0);
-			}
+		m_inv.second[0].resize((p + 1)*(p + 2) / 2);
+
+		for(uint dof = 0; dof < m_inv.second[0].size();dof++){
+			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
+			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
+			
+			uint p = dof - lower_tri_num;
+			uint q = tri_num_indx - p;
+			
+			m_inv.second[0][dof] = ((2 * p + 1)*(p + q + 1) / 2.0);
 		}
 
 		return m_inv;
