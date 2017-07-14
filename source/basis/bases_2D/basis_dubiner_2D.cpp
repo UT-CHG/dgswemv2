@@ -12,16 +12,16 @@ namespace Basis {
 		for (uint i = 0; i < n_pts; i++) {
 			n1[i] = 2 * (1 + coordinates[i][LocalCoordTri::z1]) / (1 - coordinates[i][LocalCoordTri::z2]) - 1;
 			n2[i] = coordinates[i][LocalCoordTri::z2];
-
-			if (coordinates[i][LocalCoordTri::z2] == 1) n1[i] = NAN; //singular point (-1,1);
 		}
 
-		uint m = 0;
-		for (uint i = 0; i <= p; i++) {
-			for (uint j = 0; j <= p - i; j++) {
-				phi[m] = ComputePhi(i, j, n1, n2);
-				m++;
-			}
+		for(uint dof = 0; dof<phi.size();dof++){
+			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
+			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
+			
+			uint p = dof - lower_tri_num;
+			uint q = tri_num_indx - p;
+			
+			phi[dof] = ComputePhi(p, q, n1, n2);
 		}
 
 		return phi;
@@ -40,12 +40,14 @@ namespace Basis {
 			n2[i] = coordinates[i][LocalCoordTri::z2];
 		}
 
-		uint m = 0;
-		for (uint i = 0; i <= p; i++) {
-			for (uint j = 0; j <= p - i; j++) {
-				dphi[m] = ComputeDPhi(i, j, n1, n2);
-				m++;
-			}
+		for(uint dof = 0; dof<dphi.size();dof++){
+			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
+			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
+			
+			uint p = dof - lower_tri_num;
+			uint q = tri_num_indx - p;
+			
+			dphi[dof] = ComputeDPhi(p, q, n1, n2);
 		}
 
 		return dphi;
@@ -66,7 +68,6 @@ namespace Basis {
 
 	std::vector<double> Dubiner_2D::ComputePhi(uint p, uint q, const std::vector<double>& n1, const std::vector<double>& n2) {
 		uint n_pts = n1.size(); //CHECK IF n1.size() = n2.size()
-
 		std::vector<double> phi(n_pts);
 
 		std::vector<double> psi_p(jacobi_polynomial(p, 0, 0, n1));
@@ -75,7 +76,7 @@ namespace Basis {
 		for (uint i = 0; i < n_pts; i++) {
 			phi[i] = psi_p[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i];
 
-			if (n1[i] == NAN) { //value of Dubiner polynomial at singular point (-1,1)
+			if (std::isnan(n1[i])) { //value of Dubiner polynomial at singular point (-1,1)
 				if (p == 0) {
 					phi[i] = q + 1;
 				}
@@ -107,7 +108,7 @@ namespace Basis {
 			dphi_d[LocalCoordTri::z2].push_back(((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
 				psi_p[i] * (pow((1.0 - n2[i]) / 2.0, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, p - 1)*psi_pq[i]));
 			
-			if (n1[i] == NAN) { //value of Dubiner polynomial derivatives at singular point (-1,1)
+			if (std::isnan(n1[i])) { //value of Dubiner polynomial derivatives at singular point (-1,1)
 				std::vector<double> dphi = this->ComputeSingularDPhi(p, q); 
 				
 				dphi_d[LocalCoordTri::z1][i] = dphi[LocalCoordTri::z1];
@@ -147,12 +148,12 @@ namespace Basis {
 		std::vector<double> dphi_data(2);
 
 		if (q == 0) {
-		    dphi_data[0] = 3;
-    		dphi_data[1] = 1;
+		    dphi_data[0] = 3.;
+    		dphi_data[1] = 1.;
 		}
 		else {
 		    std::vector<double> temp_dphi_data = 
-				this->ComputeSingularDPhiDZ2(q - 1);
+				this->ComputeSingularDPhiDZ1(q - 1);
 
 		    dphi_data[0] = temp_dphi_data[0] + q + 2;
     		dphi_data[1] = temp_dphi_data[0] + temp_dphi_data[1];

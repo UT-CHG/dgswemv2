@@ -10,30 +10,30 @@ add_test(
   test_tuple_helpers_exe
 )
 
-#add_executable(
-#  test_dubiner_exe
-#  test_dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#)
+add_executable(
+  test_dubiner_exe
+  test_dubiner.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+)
 
-#add_test(
-#  Unit_basis_Dubiner
-#  test_dubiner_exe
-#)
+add_test(
+  Unit_basis_Dubiner
+  test_dubiner_exe
+)
 
-#add_executable(
-#  test_quadrature_2d_exe
-#  test_quadrature_2d.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#)
+add_executable(
+  test_quadrature_2d_exe
+  test_quadrature_2d.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+)
 
-#add_test(
-#  Unit_quadratures_2d
-#  test_quadrature_2d_exe
-#)
+add_test(
+  Unit_quadratures_2d
+  test_quadrature_2d_exe
+)
 
 #add_executable(
 #  test_quadrature_1d_exe
