@@ -1,19 +1,15 @@
-machine:
-  environment:
-    Boost_ROOT: /home/ubuntu/boost_1_63_0_install
-    INSTALL_ROOT: /home/ubuntu/install
-LD_LIBRARY_PATH: /home/ubuntu/boost_1_63_0_install/lib:/home/ubuntu/install/lib
 dependencies:
   pre:
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo add-apt-repository -y ppa:george-edison55/cmake-3.x
     - sudo apt-get update
-    - sudo apt-get install -y gcc-6 g++-6 gfortran-6 cmake libgoogle-perftools-dev
+    - sudo apt-get install -y gcc-6 g++-6 cmake libgoogle-perftools-dev
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 20
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 20
 
 compile:
   override:
-    - ./circleci/compile-ci.sh
+    - scripts/circleci/build.sh
+
 test:
   override:
-    - ctest --test-regex unit
+    - scripts/circleci/test.sh
