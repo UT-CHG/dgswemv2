@@ -1,5 +1,5 @@
 # DGSWEM V2
-[![CircleCI](https://circleci.com/gh/UT-CHG/dgswemv2.svg?style=svg)](https://circleci.com/gh/UT-CHG/dgswemv2)
+[![CircleCI](https://circleci.com/gh/UT-CHG/dgswemv2.svg?style=svg&circle-token=0479b7746d69a87e977936dd4b6105be5b2e6316)](https://circleci.com/gh/UT-CHG/dgswemv2)
 
 ## Building instructions
 

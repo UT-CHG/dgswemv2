@@ -2,7 +2,6 @@
 #define INITIALIZE_MESH_HPP
 
 #include "geometry/mesh_definitions.hpp"
-#include "problem/SWE/swe_definitions.hpp"
 
 using namespace Geometry;
 
