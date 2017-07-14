@@ -8,10 +8,8 @@ dependencies:
 
 compile:
   override:
-    - cmake --version && g++ --version
-    - mkdir build
-    - cd build && cmake -DCMAKE_BUILD_TYPE=Debug ..
-    - make
+    - .circleci/build.sh
+
 test:
   override:
-    - ctest --test-regex unit
+    - .circleci/test.sh
