@@ -11,41 +11,38 @@ add_test(
 )
 
 add_executable(
-  test_dubiner_exe
-  test_dubiner.cpp
+  test_basis_dubiner_2d_exe
+  test_basis_dubiner_2d.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
 )
 
 add_test(
-  Unit_basis_Dubiner
-  test_dubiner_exe
+  Unit_basis_dubiner_2d
+  test_basis_dubiner_2d_exe
 )
 
 add_executable(
-  test_quadrature_2d_exe
-  test_quadrature_2d.cpp
+  test_integ_dunavant_2d_exe
+  test_integ_dunavant_2d.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
-  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
-  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
 )
 
 add_test(
-  Unit_quadratures_2d
-  test_quadrature_2d_exe
+  Unit_integ_dunavant_2d
+  test_integ_dunavant_2d_exe
 )
 
-#add_executable(
-#  test_quadrature_1d_exe
-#  test_quadrature_1d.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/gauss_legendre.cpp
-#)A
+add_executable(
+  test_integ_gausslegendre_1d_exe
+  test_integ_gausslegendre_1d.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+)
 
-#add_test(
-#  Unit_quadratures_1d
-#  test_quadrature_1d_exe
-#)
+add_test(
+  Unit_integ_gausslegendre_1d
+  test_integ_gausslegendre_1d_exe
+)
 
 #add_executable(
 #  test_linear_interpolation_exe
