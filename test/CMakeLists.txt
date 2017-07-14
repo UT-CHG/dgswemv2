@@ -89,15 +89,16 @@ add_test(
 #  test_master_triangle_exe
 #)
 
-#add_executable(
-#  test_shape_straight_exe
-#  test_straight.cpp
-#)
+add_executable(
+  test_shape_straight_triangle_exe
+  test_shape_straight_triangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+)
 
-#add_test(
-#  Unit_shape_straight
-#  test_shape_straight_exe
-#)
+add_test(
+  Unit_shape_straight_triangle
+  test_shape_straight_triangle_exe
+)
 
 #add_executable(
 #  test_triangle_exe
