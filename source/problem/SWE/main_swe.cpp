@@ -8,7 +8,7 @@
 #include "../../run_simulation.hpp"
 
 #include "../../ADCIRC_reader/adcirc_format.hpp"
-#include "swe_definitions.hpp"
+#include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
 int main(int argc, const char* argv[]) {

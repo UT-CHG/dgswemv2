@@ -168,16 +168,16 @@ add_test(
 #  test_boundary_edge_exe
 #)
 
-#add_executable(
-#  test_rk_stepper_exe
-#  test_rk_stepper.cpp
-#  ${PROJECT_SOURCE_DIR}/src/stepper.cpp
-#)
+add_executable(
+  test_rk_stepper_exe
+  test_rk_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/stepper.cpp
+)
 
-#add_test(
-#  Unit_RK_stepper
-#  test_rk_stepper_exe
-#)
+add_test(
+  Unit_RK_stepper
+  test_rk_stepper_exe
+)
 
 #add_executable(
 #  test_triangulation_exe
