@@ -13,7 +13,3 @@ compile:
 test:
   override:
     - scripts/circleci/test.sh
-
-notify:
-  webhooks:
-    - url: https://hooks.slack.com/services/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
