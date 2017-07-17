@@ -141,6 +141,68 @@ const std::vector<double> IntegrationDPhiDX_true = {
   1.443375672974064e-01
 };
 
+const std::vector<double> IntegrationDPhiDY_true = {
+  0.00000000000000e+00,
+  2.383974596215561,
+  0.00000000000000e+00,
+  -1.744016935856293,
+  4.166666666666668e-01,
+  5.639957660359269e-01,
+  2.337820631441114,
+  -3.00000000000000e-01,
+  3.443590455313351e-01,
+  2.00000000000000e-01,
+  -1.879743494847109,
+  3.50000000000000e-01,
+  1.913828550551446e-01,
+  1.00000000000000e-01,
+  3.851221159381804e-01,
+  2.252991532071854,
+  -3.238095238095238e-01,
+  2.131929837166789e-01,
+  5.714285714285716e-02,
+  2.453297042212707e-01,
+  1.428571428571429e-01,
+  -1.937912020128888,
+  3.392857142857143e-01,
+  1.178190458792872e-01,
+  3.571428571428573e-02,
+  1.83043385083546e-01,
+  8.92857142857143e-02,
+  2.855387752616669e-01,
+  2.210576982387224,
+  -3.293650793650794e-01,
+  1.641331427947897e-01,
+  2.380952380952382e-02,
+  1.483567763383696e-01,
+  5.952380952380954e-02,
+  2.021367719068524e-01,
+  1.111111111111111e-01,
+  -1.970227867507653,
+  3.361111111111112e-01,
+  8.21387896549881e-02,
+  1.666666666666667e-02,
+  1.26044828084989e-01,
+  4.166666666666668e-02,
+  1.569447932368951e-01,
+  7.777777777777779e-02,
+  2.272196374916589e-01,
+  2.185128252576446,
+  -3.313131313131313e-01,
+  1.367871463596913e-01,
+  1.212121212121213e-02,
+  1.102706931333926e-01,
+  3.030303030303032e-02,
+  1.293162666349232e-01,
+  5.656565656565658e-02,
+  1.71701644642061e-01,
+  9.09090909090909e-02,
+  -1.990792497657777,
+  3.348484848484849e-01,
+  6.041767889566378e-02,
+  9.0909090909091e-03
+};
+
 int main() {
   using Utilities::almost_equal;
   bool error_found = false;
@@ -192,6 +254,36 @@ int main() {
     }
   }
 
+  for(uint dof=0;dof<59;dof++){
+    if(!almost_equal(IntegrationDPhiDY_true[dof],triangle.IntegrationDPhi(GlobalCoord::y,dof,f_vals),1.e+04)) {
+            error_found = true;
+            std::cerr << "Error found in Tringle element in IntegrationDPhi in y direction" << 
+                         " - integration true value: " << IntegrationDPhiDY_true[dof] <<
+                         ", integration computed value: " << triangle.IntegrationDPhi(GlobalCoord::y,dof,f_vals) <<
+            std::endl;
+    }
+  }
+
+  std::vector<double> mod_vals(triangle.data.get_ndof());
+  std::vector<double> gp_vals(triangle.data.get_ngp_internal());
+
+  for(uint dof=0;dof<66;dof++){
+    std::fill(mod_vals.begin(), mod_vals.end(),0.0);
+    mod_vals[dof] = 1.0;
+
+    triangle.ComputeUgp(mod_vals, gp_vals);
+    
+    for(uint doff=0;doff<66;doff++){
+      if(dof == doff){
+        printf("%f\n", triangle.IntegrationPhi(doff, gp_vals));
+      }
+      else {
+        if(!almost_equal(triangle.IntegrationPhi(doff, gp_vals), 0.0)) {
+          printf("%f\n", triangle.IntegrationPhi(doff, gp_vals));       
+        }
+      }
+    }
+  } 
 /*ShapeType shape(vrtxs);
 
   ElementType elt(0, m_tri, shape);
