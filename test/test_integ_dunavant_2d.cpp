@@ -1,6 +1,9 @@
 #include "integration/integrations_2D.hpp"
+#include "utilities/almost_equal.hpp"
 
 int main() {
+    using Utilities::almost_equal;
+
     bool any_error = false;
     Integration::Dunavant_2D dunavant;
     std::pair<std::vector<double>, std::vector<Point<2> > > rule;
@@ -15,11 +18,12 @@ int main() {
             num_integration += pow(rule.second[gp][GlobalCoord::x], p) * rule.first[gp];
         }
 
-        double err = abs((num_integration - exact_integration) / exact_integration);
-
-        if (err > 100 * std::numeric_limits<double>::epsilon()) {
+        if (!almost_equal(num_integration, exact_integration, 1.e+03)) {
             any_error = true;
-            std::cerr << "Error found in Dunavant 2D at " << std::to_string(p) << std::endl;
+            std::cerr << "Error found in Dunavant 2D at " << std::to_string(p) << 
+                         " - integration true value: " << exact_integration <<
+                         ", integration computed value: " << num_integration <<
+            std::endl;
         }
     }
 

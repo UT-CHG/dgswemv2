@@ -79,7 +79,7 @@ namespace Basis {
 		std::vector<double> psi_pq(jacobi_polynomial(q, 2 * p + 1, 0, n2));
 
 		for (uint i = 0; i < n_pts; i++) {
-			phi[i] = psi_p[i] * pow((1 - n2[i]) / 2, p)*psi_pq[i];
+			phi[i] = psi_p[i] * pow((1 - n2[i]) / 2, (int)p)*psi_pq[i];
 
 			if (std::isnan(n1[i])) { //value of Dubiner polynomial at singular point (-1,1)
 				if (p == 0) {
@@ -108,11 +108,11 @@ namespace Basis {
 		std::vector<double> dpsi_pq_dn2(jacobi_polynomial_derivative(q, 2 * p + 1, 0, n2));
 
 		for (uint i = 0; i < n_pts; i++) {
-			dphi_d[LocalCoordTri::z1].push_back((2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i]);
+			dphi_d[LocalCoordTri::z1].push_back((2.0 / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, (int)p)*psi_pq[i]);
 
-			dphi_d[LocalCoordTri::z2].push_back(((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, p)*psi_pq[i] +
-				psi_p[i] * (pow((1.0 - n2[i]) / 2.0, p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, p - 1)*psi_pq[i]));
-			
+			dphi_d[LocalCoordTri::z2].push_back(((1 + n1[i]) / (1.0 - n2[i])) * dpsi_p_dn1[i] * pow((1.0 - n2[i]) / 2.0, (int)p)*psi_pq[i] +
+				psi_p[i] * (pow((1.0 - n2[i]) / 2.0, (int)p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, (int)(p - 1))*psi_pq[i]));
+
 			if (std::isnan(n1[i])) { //value of Dubiner polynomial derivatives at singular point (-1,1)
 				std::vector<double> dphi = this->ComputeSingularDPhi(p, q); 
 				

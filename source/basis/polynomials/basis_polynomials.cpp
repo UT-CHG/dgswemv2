@@ -54,7 +54,7 @@ namespace Basis {
 		std::vector<double> dP(n_pts);
 
 		if (n == 0) {
-			for (uint i = 0; i < n_pts; i++) { dP[i] = 0; }
+			for (uint i = 0; i < n_pts; i++) { dP[i] = 0.0; }
 		}
 		else if (n == 1) {
 			for (uint i = 0; i < n_pts; i++) { dP[i] = (a + b + n + 1) / 2.0; }
@@ -62,7 +62,7 @@ namespace Basis {
 		else {
 			dP = jacobi_polynomial(n - 1, a + 1, b + 1, x);
 
-			for (uint i = 0; i < n_pts; i++) { dP[i] = dP[i] * (a + b + n + 1) / 2.0; }
+			for (uint i = 0; i < n_pts; i++) { dP[i] *= (a + b + n + 1) / 2.0; }
 		}
 
 		return dP;
