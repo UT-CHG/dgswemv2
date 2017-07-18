@@ -15,7 +15,7 @@ namespace Basis {
 		}
 
 		for (uint dof = 0; dof < phi.size(); dof++) {
-			uint tri_num_indx = std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
+			uint tri_num_indx = (uint)std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
 			uint lower_tri_num = (tri_num_indx + 1)*tri_num_indx / 2;
 
 			uint p = dof - lower_tri_num;
@@ -41,7 +41,7 @@ namespace Basis {
 		}
 
 		for (uint dof = 0; dof < dphi.size(); dof++) {
-			uint tri_num_indx = std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
+			uint tri_num_indx = (uint)std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
 			uint lower_tri_num = (tri_num_indx + 1)*tri_num_indx / 2;
 
 			uint p = dof - lower_tri_num;
@@ -59,7 +59,7 @@ namespace Basis {
 		m_inv.second[0].resize((p + 1)*(p + 2) / 2);
 
 		for (uint dof = 0; dof < m_inv.second[0].size(); dof++) {
-			uint tri_num_indx = std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
+			uint tri_num_indx = (uint)std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
 			uint lower_tri_num = (tri_num_indx + 1)*tri_num_indx / 2;
 
 			uint p = dof - lower_tri_num;

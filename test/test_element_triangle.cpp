@@ -222,6 +222,7 @@ int main() {
 
 	ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<unsigned char>(0));
 
+	//Check integrations
 	Integration::Dunavant_2D integ;
 	std::vector<Point<2>> gp = integ.GetRule(20).second;
 
@@ -237,33 +238,27 @@ int main() {
 	for (uint dof = 0; dof < 66; dof++) {
 		if (!almost_equal(IntegrationPhi_true[dof], triangle.IntegrationPhi(dof, f_vals), 1.e+04)) {
 			error_found = true;
-			std::cerr << "Error found in Tringle element in IntegrationPhi" <<
-				" - integration true value: " << IntegrationPhi_true[dof] <<
-				", integration computed value: " << triangle.IntegrationPhi(dof, f_vals) <<
-				std::endl;
+			std::cerr << "Error found in Tringle element in IntegrationPhi" << std::endl;
 		}
 	}
 
 	for (uint dof = 0; dof < 66; dof++) {
 		if (!almost_equal(IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals), 1.e+04)) {
 			error_found = true;
-			std::cerr << "Error found in Tringle element in IntegrationDPhi in x direction" <<
-				" - integration true value: " << IntegrationDPhiDX_true[dof] <<
-				", integration computed value: " << triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals) <<
-				std::endl;
+
+			std::cerr << "Error found in Tringle element in IntegrationDPhi in x direction" << std::endl;
 		}
 	}
-
+	//Add 7 more modes
 	for (uint dof = 0; dof < 59; dof++) {
 		if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
 			error_found = true;
-			std::cerr << "Error found in Tringle element in IntegrationDPhi in y direction" <<
-				" - integration true value: " << IntegrationDPhiDY_true[dof] <<
-				", integration computed value: " << triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals) <<
-				std::endl;
+
+			std::cerr << "Error found in Tringle element in IntegrationDPhi in y direction" << std::endl;
 		}
 	}
 
+	//Check ComputeUgp and SolveLSE
 	std::vector<double> mod_vals(triangle.data.get_ndof());
 	std::vector<double> gp_vals(triangle.data.get_ngp_internal());
 
@@ -275,176 +270,72 @@ int main() {
 
 		for (uint doff = 0; doff < 66; doff++) {
 			if (dof == doff) {
-				printf("%f\n", triangle.IntegrationPhi(doff, gp_vals));
+				if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)), triangle.SolveLSE(mod_vals)[dof], 1.e+03)) {
+					error_found = true;
+
+					std::cerr << "Error found in Tringle element in SolveLSE" << std::endl;
+				}
 			}
 			else {
 				if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals), 0.0)) {
-					printf("%f\n", triangle.IntegrationPhi(doff, gp_vals));
+					error_found = true;
+
+					std::cerr << "Error found in Tringle element in ComputeUgp" << std::endl;
 				}
 			}
 		}
 	}
-	/*ShapeType shape(vrtxs);
 
-	  ElementType elt(0, m_tri, shape);
+	//Check ComputeDUgp
+	std::vector<double> gp_dvals(triangle.data.get_ngp_internal());
+	std::fill(gp_vals.begin(), gp_vals.end(), 1.0);
 
-	  //for this example we will consider the function f(x,y) = y. We will project it to the triangle and
-	  //ensurer that all integrals get evaulated correctly
+	for (uint dof = 0; dof < 66; dof++) {
+		std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
+		mod_vals[dof] = 1.0;
 
-	  //check the function is being evaluated correctly at Gauss Points
-	  {
-		std::function<double(Point)> x_ = [](Point pt) {
-		  return pt[0];
-		};
+		triangle.ComputeDUgp(GlobalCoord::x, mod_vals, gp_dvals);
 
-		std::function<double(Point)> y_ = [](Point pt) {
-		  return pt[1];
-		};
+		if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals), triangle.IntegrationDPhi(GlobalCoord::x, dof, gp_vals))) {
+			error_found = true;
 
-		std::vector<double> f_at_gp(elt.get_num_area_gauss_points() );
-
-		Geometry::Quadrature::Dunavant quadr(2);
-		const std::vector<Point>& gps = quadr.get_gp();
-
-		elt.fill_area_gauss_points(x_, f_at_gp);
-		for ( uint i = 0; i < gps.size(); ++i ) {
-		  if ( !almost_equal(f_at_gp[i], shape.master2elt(gps[i])[0] ) ) {
-			std::cerr << "Error in evaluating function\n";
-			std::cerr << "Got: " << f_at_gp[i] << " Should be: " << shape.master2elt(gps[i])[0] << "\n";
-		  }
+			std::cerr << "Error found in Tringle element in ComputeDUgp in x direction" << std::endl;
 		}
 
-		elt.fill_area_gauss_points(y_, f_at_gp);
-		for ( uint i = 0; i < gps.size(); ++i ) {
-		  if ( !almost_equal(f_at_gp[i], shape.master2elt(gps[i])[1] ) ) {
-			std::cerr << "Error in evaluating function\n";
-			std::cerr << "Got: " << f_at_gp[i] << " Should be: " << shape.master2elt(gps[i])[0] << "\n";
-		  }
+		triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
+
+		if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals), triangle.IntegrationDPhi(GlobalCoord::y, dof, gp_vals))) {
+			error_found = true;
+
+			std::cerr << "Error found in Tringle element in ComputeDUgp in y direction" << std::endl;
 		}
-	  }
+	}
 
-	  //check if Jacobian is correct by integrating 1 over the element
-	  {
-		std::vector<double> f_at_gp(elt.get_num_area_gauss_points(), 1);
-		double area = elt.integrate_area_phi(0,f_at_gp);
+	//Check L2 projection
+	std::vector<double> nodal_vals{ 1.0, 2.0, 3.0 };
+	std::vector<double> modal_vals_true{ 2.0, 0.5, 0.5 };
 
-		if ( !almost_equal(area, std::sqrt(3.)/4.) ) {
-		  std::cerr << "Error in integrating 1 over the triangle\n";
-		  std::cerr << "Got: " << area << " Should be: " << std::sqrt(3.)/4. << "\n\n";
+	std::vector<double> modal_vals_computed = triangle.L2Projection(nodal_vals);
+
+	for (uint i = 0; i < 3; i++) {
+		if (!almost_equal(modal_vals_computed[i], modal_vals_true[i])) {
+			error_found = true;
+
+			std::cerr << "Error found in Tringle element in L2 projection" << std::endl;
 		}
-	  }
+	}
 
-	  //check normals of edges
-	  {
-		std::array<double,2> normal;
-		normal = {-std::sqrt(3.)*0.5, 0.5};
+	for (uint i = 3; i < 66; i++) {
+		if (!almost_equal(modal_vals_computed[i], 0.0, 1.e+04)) {
+			error_found = true;
 
-		std::array<double,2> computed = elt.get_normal(0,0);
-		if ( !almost_equal(computed[0],normal[0]) || !almost_equal(computed[1],normal[1]) ) {
-		  std::cerr << "Error in computing normals\n";
-		  std::cerr << " Got: { " << computed[0] << " , " << computed[1] << " } Should be: { "
-					<< normal[0] << " , " << normal[1] << " }\n";
-		  error_found = true;
+			std::cerr << "Error found in Tringle element in L2 projection" << std::endl;
 		}
+	}
 
-		normal = {0, -1};
-
-		computed = elt.get_normal(0,1);
-		if ( !almost_equal(computed[0],normal[0]) || !almost_equal(computed[1],normal[1]) ) {
-		  std::cerr << "Error in computing normals\n";
-		  std::cerr << " Got: { " << computed[0] << " , " << computed[1] << " } Should be: { "
-					<< normal[0] << " , " << normal[1] << " }\n";
-		}
-
-		normal = {std::sqrt(3.)*0.5, 0.5};
-
-		computed = elt.get_normal(0,2);
-		if ( !almost_equal(computed[0],normal[0]) || !almost_equal(computed[1],normal[1]) ) {
-		  std::cerr << "Error in computing normals\n";
-		  std::cerr << " Got: { " << computed[0] << " , " << computed[1] << " } Should be: { "
-					<< normal[0] << " , " << normal[1] << " }\n\n";
-		  error_found = true;
-		}
-	  }
-
-	  //check surface jacobians
-	  for ( uint edge = 0; edge < 3; ++edge ) {
-		double ej = elt.get_edge_jacobian(0, edge);
-		if ( !almost_equal(ej, 0.5) ) {
-		  std::cerr << "Error Edge jacobian for an equilateral\n";
-		  std::cerr << " For Edge( " << edge << " ): Got:  " << ej
-					<< "Should be: " << 0.5 << "\n";
-		  error_found = true;
-		}
-	  }
-
-	  //check some integral evaluations
-	  {
-		std::function<double(Point)> x_ = [](Point pt) {
-		  return pt[0];
-		};
-
-		std::vector<double> f_at_gp(elt.get_num_area_gauss_points() );
-		elt.fill_area_gauss_points(x_, f_at_gp);
-		double eval = elt.integrate_area_phi(0, f_at_gp);
-
-		if ( !almost_equal(eval,0.) ) {
-		  std::cerr<< "Error in integrating x\n";
-		  std::cerr<< "Got: " << eval << " Should be: " << 0 << "\n";
-		  error_found = true;
-		}
-
-		std::function<double(Point)> y_ = [](Point pt) {
-		  return pt[1];
-		};
-
-		elt.fill_area_gauss_points(y_, f_at_gp);
-		eval = elt.integrate_area_phi(0, f_at_gp);
-
-		if ( !almost_equal(eval,1./8.) ) {
-		  std::cerr<< "Error in integrating y\n";
-		  std::cerr<< "Got: " << eval << " Should be: " << 1./8. << "\n";
-		  error_found = true;
-		}
-
-	  }
-
-	  {//check get_master2elt
-		std::array<double,2> master_pt = {-1,-1};
-		std::array<double,2> elt_pt = elt.get_master2elt(master_pt);
-
-		if ( !almost_equal(elt_pt[0], vrtxs[0][0]) || !almost_equal(elt_pt[1], vrtxs[0][1]) ) {
-		  std::cerr << "Error in get_master2elt\n";
-		  std::cerr << "Got: ( " << elt_pt[0] << ", " << elt_pt[1] << ") Should be: ( "
-					<< vrtxs[0][0] << ", " << vrtxs[0][1] << ")\n";
-		  error_found = true;
-		}
-
-		master_pt = { 1,-1};
-		elt_pt = elt.get_master2elt(master_pt);
-
-		if ( !almost_equal(elt_pt[0], vrtxs[1][0]) || !almost_equal(elt_pt[1], vrtxs[1][1]) ) {
-		  std::cerr << "Error in get_master2elt\n";
-		  std::cerr << "Got: ( " << elt_pt[0] << ", " << elt_pt[1] << ") Should be: ( "
-					<< vrtxs[1][0] << ", " << vrtxs[1][1] << ")\n";
-		  error_found = true;
-		}
-
-		master_pt = {-1, 1};
-		elt_pt = elt.get_master2elt(master_pt);
-
-		if ( !almost_equal(elt_pt[0], vrtxs[2][0]) || !almost_equal(elt_pt[1], vrtxs[2][1]) ) {
-		  std::cerr << "Error in get_master2elt\n";
-		  std::cerr << "Got: ( " << elt_pt[0] << ", " << elt_pt[1] << ") Should be: ( "
-					<< vrtxs[2][0] << ", " << vrtxs[2][1] << ")\n";
-		  error_found = true;
-		}
-	  }
-
-	  if (error_found) {
+	if (error_found) {
 		return 1;
-	  }
+	}
 
-	  return 0;
-	  */
+	return 0;
 }
