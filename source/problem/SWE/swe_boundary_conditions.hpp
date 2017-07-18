@@ -40,10 +40,10 @@ namespace SWE {
 			if (stepper.get_t_at_curr_stage() < 172800.0) H_0 = 0.1 *  stepper.get_t_at_curr_stage() / 172800.0; //LINEAR RAMPING
 			double H_ocean = H_0*cos(2 * PI *  stepper.get_t_at_curr_stage() / 43200.0); //FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS AND AMPLITUDE OF 0.3m
 			*/
-			
+
 			double H_0 = 0.2763;
 			double H_ocean = H_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0)); //FOR TESTING
-		
+
 			ze_ex = H_ocean;
 			qx_ex = qx_in;
 			qy_ex = qy_in;

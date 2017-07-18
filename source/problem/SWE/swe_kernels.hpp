@@ -362,10 +362,10 @@ namespace SWE {
 	template<typename ElementType>
 	void Problem::extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<uint, Array2D<double>>>& modal_data) {
 		modal_data.push_back(
-			std::make_pair(elt.GetID(), 
+			std::make_pair(elt.GetID(),
 				Array2D<double>{elt.data.state[0].ze, elt.data.state[0].qx,
-								elt.data.state[0].qy, elt.data.state[0].bath}
-			)
+				elt.data.state[0].qy, elt.data.state[0].bath}
+		)
 		);
 	}
 
@@ -384,8 +384,8 @@ namespace SWE {
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-			for(auto itt = (*it).second[0].begin(); itt != (*it).second[0].end(); itt++) {
-				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
+			for (auto itt = (*it).second[0].begin(); itt != (*it).second[0].end(); itt++) {
+				file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
 			}
 		}
 
@@ -396,8 +396,8 @@ namespace SWE {
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-			for(auto itt = (*it).second[1].begin(); itt != (*it).second[1].end(); itt++) {
-				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
+			for (auto itt = (*it).second[1].begin(); itt != (*it).second[1].end(); itt++) {
+				file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
 			}
 		}
 
@@ -408,8 +408,8 @@ namespace SWE {
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-			for(auto itt = (*it).second[2].begin(); itt != (*it).second[2].end(); itt++) {
-				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
+			for (auto itt = (*it).second[2].begin(); itt != (*it).second[2].end(); itt++) {
+				file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
 			}
 		}
 
@@ -420,8 +420,8 @@ namespace SWE {
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-			for(auto itt = (*it).second[3].begin(); itt != (*it).second[3].end(); itt++) {
-				file << (*it).first << ' '<< std::scientific << (*itt) << '\n';
+			for (auto itt = (*it).second[3].begin(); itt != (*it).second[3].end(); itt++) {
+				file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
 			}
 		}
 

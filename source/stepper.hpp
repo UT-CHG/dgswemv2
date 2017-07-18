@@ -6,28 +6,23 @@
 struct Stepper {
 	Stepper(uint nstages, uint order, double dt);
 
-		uint get_num_stages() const
-	{
+	uint get_num_stages() const {
 		return nstages;
 	}
 
-		double get_t_at_curr_stage() const
-	{
+	double get_t_at_curr_stage() const {
 		return _t + _dt*drk[irk];
 	}
 
-		double get_dt() const
-	{
+	double get_dt() const {
 		return _dt;
 	}
 
-		uint get_stage() const
-	{
+	uint get_stage() const {
 		return irk;
 	}
 
-		Stepper& operator++()
-	{
+	Stepper& operator++() {
 		++irk;
 		irk = irk % nstages;
 

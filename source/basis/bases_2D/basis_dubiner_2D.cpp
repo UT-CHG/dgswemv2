@@ -14,13 +14,13 @@ namespace Basis {
 			n2[i] = coordinates[i][LocalCoordTri::z2];
 		}
 
-		for(uint dof = 0; dof<phi.size();dof++){
-			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
-			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
-			
+		for (uint dof = 0; dof < phi.size(); dof++) {
+			uint tri_num_indx = std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
+			uint lower_tri_num = (tri_num_indx + 1)*tri_num_indx / 2;
+
 			uint p = dof - lower_tri_num;
 			uint q = tri_num_indx - p;
-			
+
 			phi[dof] = ComputePhi(p, q, n1, n2);
 		}
 
@@ -40,13 +40,13 @@ namespace Basis {
 			n2[i] = coordinates[i][LocalCoordTri::z2];
 		}
 
-		for(uint dof = 0; dof < dphi.size();dof++){
-			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
-			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
-			
+		for (uint dof = 0; dof < dphi.size(); dof++) {
+			uint tri_num_indx = std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
+			uint lower_tri_num = (tri_num_indx + 1)*tri_num_indx / 2;
+
 			uint p = dof - lower_tri_num;
 			uint q = tri_num_indx - p;
-			
+
 			dphi[dof] = ComputeDPhi(p, q, n1, n2);
 		}
 
@@ -58,13 +58,13 @@ namespace Basis {
 
 		m_inv.second[0].resize((p + 1)*(p + 2) / 2);
 
-		for(uint dof = 0; dof < m_inv.second[0].size();dof++){
-			uint tri_num_indx = std::ceil( (-3. + std::sqrt(1. + 8.*(dof+1)))/2.);
-			uint lower_tri_num = (tri_num_indx+1)*tri_num_indx/2;
-			
+		for (uint dof = 0; dof < m_inv.second[0].size(); dof++) {
+			uint tri_num_indx = std::ceil((-3. + std::sqrt(1. + 8.*(dof + 1))) / 2.);
+			uint lower_tri_num = (tri_num_indx + 1)*tri_num_indx / 2;
+
 			uint p = dof - lower_tri_num;
 			uint q = tri_num_indx - p;
-			
+
 			m_inv.second[0][dof] = ((2 * p + 1)*(p + q + 1) / 2.0);
 		}
 
@@ -114,8 +114,8 @@ namespace Basis {
 				psi_p[i] * (pow((1.0 - n2[i]) / 2.0, (int)p)*dpsi_pq_dn2[i] - (p / 2.0)*pow((1.0 - n2[i]) / 2.0, (int)(p - 1))*psi_pq[i]));
 
 			if (std::isnan(n1[i])) { //value of Dubiner polynomial derivatives at singular point (-1,1)
-				std::vector<double> dphi = this->ComputeSingularDPhi(p, q); 
-				
+				std::vector<double> dphi = this->ComputeSingularDPhi(p, q);
+
 				dphi_d[LocalCoordTri::z1][i] = dphi[LocalCoordTri::z1];
 				dphi_d[LocalCoordTri::z2][i] = dphi[LocalCoordTri::z2];
 			}
@@ -125,63 +125,63 @@ namespace Basis {
 	}
 
 	std::vector<double> Dubiner_2D::ComputeSingularDPhi(uint p, uint q) {
-    	std::vector<double> dphi(2);
+		std::vector<double> dphi(2);
 
-	    if (p == 1) {
-        	dphi[LocalCoordTri::z1] = ComputeSingularDPhiDZ1(q)[1];
-    	}
-	    else {
-        	dphi[LocalCoordTri::z1] = 0;
-    	}
+		if (p == 1) {
+			dphi[LocalCoordTri::z1] = ComputeSingularDPhiDZ1(q)[1];
+		}
+		else {
+			dphi[LocalCoordTri::z1] = 0;
+		}
 
-	    if (p == 0) {
-        	dphi[LocalCoordTri::z2] = 3 * ComputeSingularDPhiDZ2(q)[1];
-    	}
-    	else if (p == 1) {
-        	dphi[LocalCoordTri::z2] = ComputeSingularDPhiDZ2(q + 1)[1];
-    	}
-	    else if (p > 1) {
-       		dphi[LocalCoordTri::z2] = 0;
-    	}
+		if (p == 0) {
+			dphi[LocalCoordTri::z2] = 3 * ComputeSingularDPhiDZ2(q)[1];
+		}
+		else if (p == 1) {
+			dphi[LocalCoordTri::z2] = ComputeSingularDPhiDZ2(q + 1)[1];
+		}
+		else if (p > 1) {
+			dphi[LocalCoordTri::z2] = 0;
+		}
 
-    	return dphi;
+		return dphi;
 	}
 
 	std::vector<double> Dubiner_2D::ComputeSingularDPhiDZ1(uint q) {
 		assert(q >= 0);
-		
+
 		std::vector<double> dphi_data(2);
 
 		if (q == 0) {
-		    dphi_data[0] = 3.;
-    		dphi_data[1] = 1.;
+			dphi_data[0] = 3.;
+			dphi_data[1] = 1.;
 		}
 		else {
-		    std::vector<double> temp_dphi_data = 
+			std::vector<double> temp_dphi_data =
 				this->ComputeSingularDPhiDZ1(q - 1);
 
-		    dphi_data[0] = temp_dphi_data[0] + q + 2;
-    		dphi_data[1] = temp_dphi_data[0] + temp_dphi_data[1];
+			dphi_data[0] = temp_dphi_data[0] + q + 2;
+			dphi_data[1] = temp_dphi_data[0] + temp_dphi_data[1];
 		}
 
 		return dphi_data;
 	}
-	
+
 	std::vector<double> Dubiner_2D::ComputeSingularDPhiDZ2(uint q) {
 		assert(q >= 0);
-		
+
 		std::vector<double> dphi_data(2);
 
 		if (q == 0) {
-		    dphi_data[0] = 0.5;
-    		dphi_data[1] = 0;
+			dphi_data[0] = 0.5;
+			dphi_data[1] = 0;
 		}
 		else {
-		    std::vector<double> temp_dphi_data = 
+			std::vector<double> temp_dphi_data =
 				this->ComputeSingularDPhiDZ2(q - 1);
 
-		    dphi_data[0] = temp_dphi_data[0] + 0.5 * (q + 1);
-    		dphi_data[1] = temp_dphi_data[0] + temp_dphi_data[1];
+			dphi_data[0] = temp_dphi_data[0] + 0.5 * (q + 1);
+			dphi_data[1] = temp_dphi_data[0] + temp_dphi_data[1];
 		}
 
 		return dphi_data;

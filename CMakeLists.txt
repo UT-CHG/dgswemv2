@@ -14,7 +14,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message(FATAL_ERROR "GCC version must be at least 5.2")
   endif()
 else()
-  messsage(WARNING "Using untested compiler")
+  message(WARNING "Using untested compiler")
 endif()
 
 set(CMAKE_VERBOSE_MAKEFILE on)

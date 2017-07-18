@@ -86,7 +86,7 @@ namespace SWE {
 		{}
 
 		void initialize() {
-			this->state = std::vector<State>{State(ndof)};
+			this->state = std::vector<State>{ State(ndof) };
 			this->internal = Internal(ngp_internal);
 			this->boundary = Boundary(ngp_boundary);
 		}
@@ -95,11 +95,9 @@ namespace SWE {
 			if ((this->state.size() - 1) < nstate) {
 				this->state.insert(this->state.end(), nstate - (this->state.size() - 1), State(ndof));
 			}
-			else if((this->state.size() - 1) > nstate) { 
+			else if ((this->state.size() - 1) > nstate) {
 				this->state.erase(this->state.end() - ((this->state.size() - 1) - nstate), this->state.end());
 			}
-//			this->internal = Internal(ngp_internal);
-//			this->boundary = Boundary(ngp_boundary);
 		}
 
 		std::vector<State> state;
@@ -107,7 +105,7 @@ namespace SWE {
 		Boundary boundary;
 
 		uint get_ngp_internal() { return ngp_internal; }
-		uint get_ngp_boundary() { return ngp_boundary; }		
+		uint get_ngp_boundary() { return ngp_boundary; }
 		uint get_ndof() { return ndof; }
 
 		void set_ngp_internal(uint ngp) { this->ngp_internal = ngp; }

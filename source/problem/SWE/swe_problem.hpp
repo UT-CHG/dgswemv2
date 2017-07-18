@@ -52,4 +52,5 @@ namespace SWE {
 		static void write_modal_data_kernel(const Stepper&, MeshType&);
 	};
 }
+
 #endif

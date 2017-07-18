@@ -50,23 +50,6 @@ void initialize_data(MeshType& mesh, AdcircFormat& mesh_file) {
 	mesh.CallForEachBoundary(
 		[](auto& bound) {
 			bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary.bath_at_gp);
-		/*
-	  SWE::BOUNDARY_TYPE ibtype = mesh_file.get_ibtype(node_pair);
-	  switch (ibtype)
-		{
-		case SWE::BOUNDARY_TYPE::_land_boundary:
-		  edg.data = std::make_unique<SWE::LandBoundary>(edg.get_num_surface_gauss_points() );
-		  break;
-		case SWE::BOUNDARY_TYPE::_tidal_boundary:
-		  std::vector<double> freq_comp { 0.0001405257046694307, 0.0002810514093388614,
-			  0.0004215771140082921, 0.0005621028186777228, 0.0007026285233471535,
-			  0.0008431542280165842, 0.0009836799326860149, 0.00112420563736,
-			  0.00126473134202};
-
-		  edg.data = std::make_unique<SWE::TidalBoundary>(edg.get_num_surface_gauss_points(),
-														  0.2763, freq_comp, 0., 21600.);
-		  break;
-		}*/
 		}
 	);
 }
