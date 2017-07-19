@@ -85,9 +85,6 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
 )
 
 add_test(
@@ -95,60 +92,20 @@ add_test(
   test_element_triangle_exe
 )
 
-#add_executable(
-#  test_l2_projection_exe
-#  test_l2_projection.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#)
+add_executable(
+  test_boundary_interface_exe
+  test_boundary_interface.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+)
 
-#add_test(
-#  Unit_l2_projection
-#  test_l2_projection_exe
-#)
-
-#add_executable(
-#  test_integrate_area_Dphi_exe
-#  test_integrate_area_Dphi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#)
-
-#add_test(
-#  Uint_integrate_area_Dphi
-#  test_integrate_area_Dphi_exe
-#)
-
-
-#add_executable(
-#  test_interior_edge_exe
-#  test_interior_edge.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/gauss_legendre.cpp
-#)
-
-#add_test(
-#  Unit_interior_edge
-#  test_interior_edge_exe
-#)
-
-#add_executable(
-#  test_boundary_edge_exe
-#  test_boundary_edge.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/helper_jacobi.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/basis/dubiner.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/dunavant.cpp
-#  ${PROJECT_SOURCE_DIR}/src/geometry/quadrature/gauss_legendre.cpp
-#)
-
-#add_test(
-#  Unit_boundary_edge
-#  test_boundary_edge_exe
-#)
+add_test(
+  Unit_boundary_interface
+  test_boundary_interface_exe
+)
 
 add_executable(
   test_rk_stepper_exe

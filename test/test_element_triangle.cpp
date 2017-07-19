@@ -232,13 +232,13 @@ int main() {
 	std::vector<double> f_vals(triangle.data.get_ngp_internal());
 
 	for (uint gp = 0; gp < triangle.data.get_ngp_internal(); gp++) {
-		f_vals[gp] = std::pow(x[gp] + 1., 2.) + std::pow(y[gp] - 1., 2.);
+		f_vals[gp] = std::pow(x[gp] + 1., 2) + std::pow(y[gp] - 1., 2);
 	}
 
 	for (uint dof = 0; dof < 66; dof++) {
 		if (!almost_equal(IntegrationPhi_true[dof], triangle.IntegrationPhi(dof, f_vals), 1.e+04)) {
 			error_found = true;
-			std::cerr << "Error found in Tringle element in IntegrationPhi" << std::endl;
+			std::cerr << "Error found in Triangle element in IntegrationPhi" << std::endl;
 		}
 	}
 
@@ -246,7 +246,7 @@ int main() {
 		if (!almost_equal(IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals), 1.e+04)) {
 			error_found = true;
 
-			std::cerr << "Error found in Tringle element in IntegrationDPhi in x direction" << std::endl;
+			std::cerr << "Error found in Triangle element in IntegrationDPhi in x direction" << std::endl;
 		}
 	}
 	//Add 7 more modes
@@ -254,7 +254,7 @@ int main() {
 		if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
 			error_found = true;
 
-			std::cerr << "Error found in Tringle element in IntegrationDPhi in y direction" << std::endl;
+			std::cerr << "Error found in Triangle element in IntegrationDPhi in y direction" << std::endl;
 		}
 	}
 
@@ -273,14 +273,14 @@ int main() {
 				if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)), triangle.SolveLSE(mod_vals)[dof], 1.e+03)) {
 					error_found = true;
 
-					std::cerr << "Error found in Tringle element in SolveLSE" << std::endl;
+					std::cerr << "Error found in Triangle element in SolveLSE" << std::endl;
 				}
 			}
 			else {
 				if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals), 0.0)) {
 					error_found = true;
 
-					std::cerr << "Error found in Tringle element in ComputeUgp" << std::endl;
+					std::cerr << "Error found in Triangle element in ComputeUgp" << std::endl;
 				}
 			}
 		}
@@ -299,7 +299,7 @@ int main() {
 		if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals), triangle.IntegrationDPhi(GlobalCoord::x, dof, gp_vals))) {
 			error_found = true;
 
-			std::cerr << "Error found in Tringle element in ComputeDUgp in x direction" << std::endl;
+			std::cerr << "Error found in Triangle element in ComputeDUgp in x direction" << std::endl;
 		}
 
 		triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
@@ -307,7 +307,7 @@ int main() {
 		if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals), triangle.IntegrationDPhi(GlobalCoord::y, dof, gp_vals))) {
 			error_found = true;
 
-			std::cerr << "Error found in Tringle element in ComputeDUgp in y direction" << std::endl;
+			std::cerr << "Error found in Triangle element in ComputeDUgp in y direction" << std::endl;
 		}
 	}
 
@@ -321,7 +321,7 @@ int main() {
 		if (!almost_equal(modal_vals_computed[i], modal_vals_true[i])) {
 			error_found = true;
 
-			std::cerr << "Error found in Tringle element in L2 projection" << std::endl;
+			std::cerr << "Error found in Triangle element in L2 projection" << std::endl;
 		}
 	}
 
@@ -329,7 +329,7 @@ int main() {
 		if (!almost_equal(modal_vals_computed[i], 0.0, 1.e+04)) {
 			error_found = true;
 
-			std::cerr << "Error found in Tringle element in L2 projection" << std::endl;
+			std::cerr << "Error found in Triangle element in L2 projection" << std::endl;
 		}
 	}
 
