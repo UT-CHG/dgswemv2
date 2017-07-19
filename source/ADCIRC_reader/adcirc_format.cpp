@@ -4,7 +4,7 @@ AdcircFormat::AdcircFormat(const char* fort14) {
 	std::ifstream ifs(fort14);
 
 	if (!ifs) {
-		std::cerr << "Fatal Error: Mesh named" << fort14 << " not found \n";
+		std::cerr << "Fatal Error: Mesh named " << fort14 << " not found \n";
 		exit(1);
 	}
 

@@ -30,9 +30,9 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 		ProblemType::swap_states_kernel(stepper, elt);
 	};
 
-	/*auto scru_sol = [&stepper](auto& elt) {
-	  scrutinize_solution(stepper, elt);
-	};*/
+	auto scrutinize_solution_kernel = [&stepper](auto& elt) {
+	  	ProblemType::scrutinize_solution_kernel(stepper, elt);
+	};
 
 	uint nsteps = (uint)std::ceil(time_end / stepper.get_dt());
 	uint n_stages = stepper.get_num_stages();
@@ -44,6 +44,7 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 	mesh.CallForEachElement(resize_data_container);
 
 	ProblemType::write_VTK_data_kernel(stepper, mesh);
+	ProblemType::write_modal_data_kernel(stepper, mesh);
 
 	for (uint step = 1; step <= nsteps; ++step) {
 		for (uint stage = 0; stage < stepper.get_num_stages(); ++stage) {
@@ -56,6 +57,8 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 			mesh.CallForEachBoundary(boundary_kernel);
 
 			mesh.CallForEachElement(update_kernel);
+
+			mesh.CallForEachElement(scrutinize_solution_kernel);
 
 			++stepper;
 		}

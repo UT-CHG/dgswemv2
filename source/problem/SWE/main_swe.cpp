@@ -12,17 +12,19 @@
 #include "swe_kernels.hpp"
 
 int main(int argc, const char* argv[]) {
-	AdcircFormat adcirc_file("fort.14");
+	printf("Starting program %s with p=%d for %s mesh\n\n", argv[0], std::stoi(argv[1]), argv[2]);
+
+	AdcircFormat adcirc_file(argv[2]);
 	MeshMetaData mesh_data(adcirc_file);
 
-	auto mesh = initialize_mesh<SWE::Problem>(1, mesh_data);
+	auto mesh = initialize_mesh<SWE::Problem>(std::stoi(argv[1]), mesh_data);
 
 	initialize_data(*mesh, adcirc_file);
 
 	Stepper stepper(2, 2, 1.);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
-	run_simulation<SWE::Problem>(86400.0, stepper, *mesh);
+	run_simulation<SWE::Problem>(5*86400.0, stepper, *mesh);
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Time Elapsed (in us): "

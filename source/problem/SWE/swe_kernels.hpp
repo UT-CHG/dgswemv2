@@ -243,42 +243,42 @@ namespace SWE {
 
 		for (auto& ze_mode : state.ze) {
 			if (isnan(ze_mode)) {
-				std::cerr << "Error: found isnan ze at Element " << elt.get_id();
+				std::cerr << "Error: found isnan ze at Element " << elt.GetID();
 				std::cerr << "       At stage: " << stage << "\n";
 			}
 		}
 
 		for (auto& qx_mode : state.qx) {
 			if (isnan(qx_mode)) {
-				std::cerr << "Error: found isnan qx at Element " << elt.get_id();
+				std::cerr << "Error: found isnan qx at Element " << elt.GetID();
 				std::cerr << "       At stage: " << stage << "\n";
 			}
 		}
 
 		for (auto& qy_mode : state.qy) {
 			if (isnan(qy_mode)) {
-				std::cerr << "Error: found isnan qy at Element " << elt.get_id();
+				std::cerr << "Error: found isnan qy at Element " << elt.GetID();
 				std::cerr << "       At stage: " << stage << "\n";
 			}
 		}
 
 		for (auto& rhs_ze_mode : state.rhs_ze) {
 			if (isnan(rhs_ze_mode)) {
-				std::cerr << "Error: found isnan rhs_ze at Element " << elt.get_id();
+				std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
 				std::cerr << "       At stage: " << stage << "\n";
 			}
 		}
 
 		for (auto& rhs_qx_mode : state.rhs_qx) {
 			if (isnan(rhs_qx_mode)) {
-				std::cerr << "Error: found isnan rhs_qx at Element " << elt.get_id();
+				std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
 				std::cerr << "       At stage: " << stage << "\n";
 			}
 		}
 
 		for (auto& rhs_qy_mode : state.rhs_qy) {
 			if (isnan(rhs_qy_mode)) {
-				std::cerr << "Error: found isnan rhs_qy at Element " << elt.get_id();
+				std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
 				std::cerr << "       At stage: " << stage << "\n";
 			}
 		}
@@ -385,8 +385,15 @@ namespace SWE {
 
 		mesh.CallForEachElement(extract_modal_data_kernel);
 
+		std::ofstream file;
+
 		std::string file_name = "output/modal_ze.txt";
-		std::ofstream file(file_name, std::ios::app);
+		if(stepper.get_t_at_curr_stage() == 0.0){
+			file = std::ofstream(file_name);
+		}
+		else{
+			file = std::ofstream(file_name, std::ios::app);
+		}
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
@@ -398,7 +405,12 @@ namespace SWE {
 		file.close();
 
 		file_name = "output/modal_qx.txt";
-		file = std::ofstream(file_name, std::ios::app);
+		if(stepper.get_t_at_curr_stage() == 0.0){
+			file = std::ofstream(file_name);
+		}
+		else{
+			file = std::ofstream(file_name, std::ios::app);
+		}
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
@@ -410,7 +422,12 @@ namespace SWE {
 		file.close();
 
 		file_name = "output/modal_qy.txt";
-		file = std::ofstream(file_name, std::ios::app);
+		if(stepper.get_t_at_curr_stage() == 0.0){
+			file = std::ofstream(file_name);
+		}
+		else{
+			file = std::ofstream(file_name, std::ios::app);
+		}
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
@@ -422,7 +439,12 @@ namespace SWE {
 		file.close();
 
 		file_name = "output/modal_bath.txt";
-		file = std::ofstream(file_name, std::ios::app);
+		if(stepper.get_t_at_curr_stage() == 0.0){
+			file = std::ofstream(file_name);
+		}
+		else{
+			file = std::ofstream(file_name, std::ios::app);
+		}
 
 		file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
 		for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
