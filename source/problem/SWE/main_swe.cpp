@@ -12,10 +12,10 @@
 #include "swe_kernels.hpp"
 
 int main(int argc, const char* argv[]) {
-	AdcircFormat adcirc_file("sample_fort.14");
+	AdcircFormat adcirc_file("fort.14");
 	MeshMetaData mesh_data(adcirc_file);
 
-	auto mesh = initialize_mesh<SWE::Problem>(3, mesh_data);
+	auto mesh = initialize_mesh<SWE::Problem>(1, mesh_data);
 
 	initialize_data(*mesh, adcirc_file);
 

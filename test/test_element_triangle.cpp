@@ -200,7 +200,14 @@ const std::vector<double> IntegrationDPhiDY_true = {
   -1.990792497657777,
   3.348484848484849e-01,
   6.041767889566378e-02,
-  9.0909090909091e-03
+  9.0909090909091e-03,
+  9.83877593333601e-02,
+  2.272727272727273e-02,
+  1.1080228133985e-01,
+  4.242424242424243e-02,
+  1.378321850860735e-01,
+  6.818181818181821e-02,
+  1.8880147989604e-01
 };
 
 int main() {
@@ -250,7 +257,7 @@ int main() {
 		}
 	}
 	//Add 7 more modes
-	for (uint dof = 0; dof < 59; dof++) {
+	for (uint dof = 0; dof < 66; dof++) {
 		if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
 			error_found = true;
 

@@ -91,7 +91,7 @@ namespace Master {
 		double dz = 2.0 / N_DIV;
 
 		uint n_pt = 0;
-		for (uint i = 0; i < N_DIV; i++) {
+		for (uint i = 0; i <= N_DIV; i++) {
 			for (uint j = 0; j <= N_DIV - i; j++) {
 				z_postprocessor_point[n_pt][LocalCoordTri::z1] = -1.0 + dz*j;
 				z_postprocessor_point[n_pt][LocalCoordTri::z2] = -1.0 + dz*i;
