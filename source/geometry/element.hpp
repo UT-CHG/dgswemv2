@@ -155,7 +155,7 @@ namespace Geometry {
 		std::vector<double> f_vals;
 	
 		std::for_each(global_coordinates.begin(), global_coordinates.end(), 
-			[&f_vals](Point<2>& pt) {
+			[&f_vals, &f](Point<2>& pt) {
 				f_vals.push_back(f(pt));
 			}
 		);
