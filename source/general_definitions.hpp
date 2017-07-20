@@ -91,8 +91,11 @@ namespace Shape {
 		virtual Array3D<double> GetJinv(const std::vector<Point<dim>>&) = 0;
 		virtual std::vector<double> GetSurfaceJ(uint, const std::vector<Point<dim>>&) = 0;
 		virtual Array2D<double> GetSurfaceNormal(uint, const std::vector<Point<dim>>&) = 0;
+
+		virtual	std::vector<double> InterpolateNodalValues(const std::vector<double>&, const std::vector<Point<dim>>&) = 0;
+		virtual	std::vector<Point<dim>> LocalToGlobalCoordinates(const std::vector<Point<dim>>&) = 0;
+
 		virtual void GetVTK(std::vector<Point<3>>&, Array2D<uint>&) = 0;
-		virtual	std::vector<double> InterpolateNodalValues(const std::vector<double>&, const std::vector<Point<2>>&) = 0;
 	};
 }
 

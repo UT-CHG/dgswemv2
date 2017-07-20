@@ -132,7 +132,7 @@ namespace SWE {
 		//assemble numerical fluxes
 		for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(); ++gp) {
 			uint gp_ex = intface.data_in.get_ngp_boundary() - gp - 1;
-			
+
 			LLF_flux(boundary_in.ze_at_gp[gp], boundary_ex.ze_at_gp[gp_ex],
 				boundary_in.qx_at_gp[gp], boundary_ex.qx_at_gp[gp_ex],
 				boundary_in.qy_at_gp[gp], boundary_ex.qy_at_gp[gp_ex],
@@ -143,7 +143,7 @@ namespace SWE {
 
 			boundary_ex.ze_numerical_flux_at_gp[gp_ex] = -boundary_in.ze_numerical_flux_at_gp[gp];
 			boundary_ex.qx_numerical_flux_at_gp[gp_ex] = -boundary_in.qx_numerical_flux_at_gp[gp];
-			boundary_ex.qy_numerical_flux_at_gp[gp_ex] = -boundary_in.qy_numerical_flux_at_gp[gp];		
+			boundary_ex.qy_numerical_flux_at_gp[gp_ex] = -boundary_in.qy_numerical_flux_at_gp[gp];
 		}
 
 		//now compute contributions to the righthand side
@@ -388,10 +388,10 @@ namespace SWE {
 		std::ofstream file;
 
 		std::string file_name = "output/modal_ze.txt";
-		if(stepper.get_t_at_curr_stage() == 0.0){
+		if (stepper.get_t_at_curr_stage() == 0.0) {
 			file = std::ofstream(file_name);
 		}
-		else{
+		else {
 			file = std::ofstream(file_name, std::ios::app);
 		}
 
@@ -405,10 +405,10 @@ namespace SWE {
 		file.close();
 
 		file_name = "output/modal_qx.txt";
-		if(stepper.get_t_at_curr_stage() == 0.0){
+		if (stepper.get_t_at_curr_stage() == 0.0) {
 			file = std::ofstream(file_name);
 		}
-		else{
+		else {
 			file = std::ofstream(file_name, std::ios::app);
 		}
 
@@ -422,10 +422,10 @@ namespace SWE {
 		file.close();
 
 		file_name = "output/modal_qy.txt";
-		if(stepper.get_t_at_curr_stage() == 0.0){
+		if (stepper.get_t_at_curr_stage() == 0.0) {
 			file = std::ofstream(file_name);
 		}
-		else{
+		else {
 			file = std::ofstream(file_name, std::ios::app);
 		}
 
@@ -439,10 +439,10 @@ namespace SWE {
 		file.close();
 
 		file_name = "output/modal_bath.txt";
-		if(stepper.get_t_at_curr_stage() == 0.0){
+		if (stepper.get_t_at_curr_stage() == 0.0) {
 			file = std::ofstream(file_name);
 		}
-		else{
+		else {
 			file = std::ofstream(file_name, std::ios::app);
 		}
 

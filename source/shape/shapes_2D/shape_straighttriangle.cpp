@@ -75,6 +75,46 @@ namespace Shape {
 		return surface_normal;
 	}
 
+	std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values, const std::vector<Point<2>>& pts) {
+		std::vector<double> interpolation;
+
+		interpolation.reserve(pts.size());
+
+		for (uint pt = 0; pt < pts.size(); pt++) {
+			interpolation.push_back(0);
+
+			interpolation[pt] =
+				-(pts[pt][LocalCoordTri::z1] + pts[pt][LocalCoordTri::z2]) / 2 * nodal_values[0]   //N1
+				+ (1 + pts[pt][LocalCoordTri::z1]) / 2 * nodal_values[1]						   //N2
+				+ (1 + pts[pt][LocalCoordTri::z2]) / 2 * nodal_values[2];						   //N3
+		}
+
+		return interpolation;
+	}
+
+	std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& pts) {
+		std::vector<Point<2>> global_coordinates(pts.size());
+
+		std::vector<double> x = 
+			this->InterpolateNodalValues(std::vector<double>{
+				this->nodal_coordinates[0][GlobalCoord::x], 
+				this->nodal_coordinates[1][GlobalCoord::x], 
+				this->nodal_coordinates[2][GlobalCoord::x] }, pts);
+
+		std::vector<double> y =
+			this->InterpolateNodalValues(std::vector<double>{
+				this->nodal_coordinates[0][GlobalCoord::y],
+				this->nodal_coordinates[1][GlobalCoord::y],
+				this->nodal_coordinates[2][GlobalCoord::y] }, pts);
+		
+		for (uint pt = 0; pt < pts.size(); pt++) {
+			global_coordinates[pt][GlobalCoord::x] = x[pt];
+			global_coordinates[pt][GlobalCoord::y] = y[pt];
+		}
+
+		return global_coordinates;
+	}
+
 	void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
 		uint number_pt = points.size();
 
@@ -128,22 +168,5 @@ namespace Shape {
 				cells.back()[3] = pt_ID - (N_DIV + 2 - i) + 1;
 			}
 		}
-	}
-
-	std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values, const std::vector<Point<2>>& pts) {
-		std::vector<double> interpolation;
-
-		interpolation.reserve(pts.size());
-
-		for (uint pt = 0; pt < pts.size(); pt++) {
-			interpolation.push_back(0);
-
-			interpolation[pt] =
-				-(pts[pt][LocalCoordTri::z1] + pts[pt][LocalCoordTri::z2]) / 2 * nodal_values[0]   //N1
-				+ (1 + pts[pt][LocalCoordTri::z1]) / 2 * nodal_values[1]						   //N2
-				+ (1 + pts[pt][LocalCoordTri::z2]) / 2 * nodal_values[2];						   //N3
-		}
-
-		return interpolation;
 	}
 }
