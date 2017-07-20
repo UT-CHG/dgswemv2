@@ -23,7 +23,7 @@ struct element {
 int main() {
 	double L = 100;
 	double W = 100;
-	uint m = 8;
+	uint m = 6;
 	uint n = 8;
 
 	double dx = L / m;
@@ -41,7 +41,7 @@ int main() {
 		}
 	}
 
-	std::vector<element> elements(m*n);
+	std::vector<element> elements(2*m*n);
 
 	//mesh with triangular elements checker pattern
 	for (uint j = 0; j < n; j++) {
@@ -49,16 +49,14 @@ int main() {
 			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
 			elements[2 * i + 2 * m * j].type = 3;
 			elements[2 * i + 2 * m * j].nodes.resize(3);
-			//elements[2 * i + 2 * m * j].nodes = 
-			std::vector<uint>{i+(m+1)*j, i+m+1+(m+1)*j, i+m+2+(m+1)*j};
-			printf("%d\n", elements[2 * i + 2 * m * j].nodes.size());
-
+			elements[2 * i + 2 * m * j].nodes = std::vector<uint>{i+(m+1)*j, i+m+1+(m+1)*j, i+m+2+(m+1)*j};
+			
 			elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
 			elements[2 * i + 2 * m * j + 1].type = 3;
-//			elements[2 * i + 2 * m * j + 1].nodes = std::vector<uint>{i+(m+1)*j, i+1+(m+1)*j, i+m+2+(m+1)*j};
+			elements[2 * i + 2 * m * j + 1].nodes = std::vector<uint>{i+(m+1)*j, i+1+(m+1)*j, i+m+2+(m+1)*j};
 		}
 	}
-/*
+
 	for (uint j = 0; j < n; j++) {
 		for (uint i = (j + 1) % 2; i < m; i += 2) {
 			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
@@ -70,7 +68,6 @@ int main() {
 			elements[2 * i + 2 * m * j + 1].nodes = std::vector<uint>{i+m+1+(m+1)*j, i+m+2+(m+1)*j, i+1+(m+1)*j};
 		}
 	}
-*/
 
 	std::string file_name = "rectangular_mesh.14";
 	std::ofstream file(file_name);
@@ -83,7 +80,7 @@ int main() {
 		file << nodes[node].coord[1] << "\t\t";
 		file << nodes[node].coord[2] << '\n';
 	}
-/*
+
 	for(uint element=0; element<elements.size();element++){
 		file << elements[element].ID << "\t\t";
 		file << elements[element].type << "\t\t";
@@ -91,7 +88,7 @@ int main() {
 		file << elements[element].nodes[1] << "\t\t";
 		file << elements[element].nodes[2] << '\n';
 	}
-*/
+
 	//SIMPLE PATTERN
 	//for (int i = 0; i < n; i++) {
 	//	for (int j = 0; j < m; j++) {
