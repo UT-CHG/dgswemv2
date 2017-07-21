@@ -48,19 +48,23 @@ private:
 		std::array<int, 2>& node_pair) const
 	{
 		auto it = std::find(cbegin, cend, node_pair[0]);
+
 		if (it != cend) {
-			++it; //look at next element
-			if (it == cend) {
-				return false; // if you found the last element in that boundary
+			//look at next element
+			if ((it + 1) != cend && *(it + 1) == node_pair[1]) {
+				return true;
 			}
-			else if (*it == node_pair[1]) {
-				return true; //found the edge
+
+			//look at previous element unless we are at the first element
+			if (it != cbegin) {
+				if (*(it - 1) == node_pair[1]) {
+					return true;
+				}
 			}
-			else {
-				//here you're not at the end of vector, but haven't found an edge
-				//so we must look through the tail
-				return has_edge(it, cend, node_pair);
-			}
+
+			//here you're not at the end of vector, but haven't found an edge
+			//so we must look through the tail
+			return has_edge(it+1, cend, node_pair);
 		}
 
 		return false;
