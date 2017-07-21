@@ -46,9 +46,13 @@ namespace Utilities {
 
 	template<typename T, typename F, int... Is>
 	void for_each(T&& t, F f, seq<Is...>) {
-		//ensure that variables get executed in the correct order
+	         //This warning is pretty verbose given all the metaprogramming.
+                 //using compiler macros to supress the warnings in relevant compilers
+#if defined(USING_GNU)
 		auto __attribute((unused)) unused = { (f(std::get<Is>(t)), 0)... };
-		//auto unused = { (f(std::get<Is>(t)), 0)... };
+#else
+		auto unused = { (f(std::get<Is>(t)), 0)... };
+#endif
 	}
 
 	template<typename... Ts, typename F>
