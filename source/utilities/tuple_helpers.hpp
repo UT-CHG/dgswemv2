@@ -2,6 +2,7 @@
 #define TUPLE_HELPERS_HPP
 
 #include <tuple>
+#include "ignore.hpp"
 
 namespace Utilities {
 	// has_type implementation from
@@ -48,11 +49,8 @@ namespace Utilities {
 	void for_each(T&& t, F f, seq<Is...>) {
 	         //This warning is pretty verbose given all the metaprogramming.
                  //using compiler macros to supress the warnings in relevant compilers
-#if defined(USING_GNU)
-		auto __attribute((unused)) unused = { (f(std::get<Is>(t)), 0)... };
-#else
 		auto unused = { (f(std::get<Is>(t)), 0)... };
-#endif
+                ignore(unused);
 	}
 
 	template<typename... Ts, typename F>

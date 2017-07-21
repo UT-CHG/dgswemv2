@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 project (DG_HYPER CXX)
- 
+
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -13,7 +13,6 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
     message(FATAL_ERROR "GCC version must be at least 5.2")
   endif()
-  set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSING_GNU" )
 else()
   message(WARNING "Using untested compiler")
 endif()
