@@ -41,6 +41,22 @@ AdcircFormat::AdcircFormat(const char* fort14) {
 		}
 	}
 
+	{ //check if element nodes are ccw, swap if necessary
+		for (auto& elt : elements) {
+			Shape::StraightTriangle triangle({
+				{nodes.at(elt.second[1])[0],nodes.at(elt.second[1])[1]},
+				{nodes.at(elt.second[2])[0],nodes.at(elt.second[2])[1]},
+				{nodes.at(elt.second[3])[0],nodes.at(elt.second[3])[1]}
+			});
+			
+			std::vector<uint> nodal_IDs{(uint)elt.second[1], (uint)elt.second[2], (uint)elt.second[3]};
+
+			if(triangle.CheckJacobian(nodal_IDs)) {
+				std::copy(nodal_IDs.begin(), nodal_IDs.end(), elt.second.begin() + 1);
+			}
+		}
+	}
+
 	{ //process open boundaries
 		ifs >> NOPE;
 		ifs.ignore(1000, '\n');

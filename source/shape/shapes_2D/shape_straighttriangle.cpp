@@ -1,6 +1,18 @@
 #include "../shapes_2D.hpp"
 
 namespace Shape {
+	bool StraightTriangle::CheckJacobian(std::vector<uint>& nodal_IDs) {
+		if(this->GetJdet(std::vector<Point<2>>(0))[0] < 0) {
+			uint temp = nodal_IDs[0];
+			nodal_IDs[0] = nodal_IDs[2];
+			nodal_IDs[2] = temp;
+
+			return true;
+		}
+
+		return false;
+	}
+
 	std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& pts) {
 		std::vector<double> J_det;
 

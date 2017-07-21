@@ -24,6 +24,7 @@ add_executable(
   test_adcirc_format_exe
   test_adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
 add_test(

@@ -46,7 +46,7 @@ int main() {
 
 			nodes[j*(m + 1) + i].coord[0] = dx*i;
 			nodes[j*(m + 1) + i].coord[1] = dy*j;
-			nodes[j*(m + 1) + i].coord[2] = 2.0;
+			nodes[j*(m + 1) + i].coord[2] = 3.0;
 		}
 	}
 
@@ -57,7 +57,6 @@ int main() {
 		for (uint i = j % 2; i < m; i += 2) {
 			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
 			elements[2 * i + 2 * m * j].type = 3;
-			elements[2 * i + 2 * m * j].nodes.resize(3);
 			elements[2 * i + 2 * m * j].nodes =
 				std::vector<uint>{ i + (m + 1)*j, i + m + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j };
 
@@ -81,7 +80,36 @@ int main() {
 				std::vector<uint>{ i + m + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j, i + 1 + (m + 1)*j };
 		}
 	}
+/*
+	//mesh with triangular elements zigzag pattern
+	for (uint j = 0; j < n; j += 2) {
+		for (uint i = 0 ; i < m; i++) {
+			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+			elements[2 * i + 2 * m * j].type = 3;
+			elements[2 * i + 2 * m * j].nodes =
+				std::vector<uint>{ i + (m + 1)*j, i + m + 2 + (m + 1)*j, i + m + 1 + (m + 1)*j };
 
+			elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+			elements[2 * i + 2 * m * j + 1].type = 3;
+			elements[2 * i + 2 * m * j + 1].nodes =
+				std::vector<uint>{ i + (m + 1)*j, i + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j };
+		}
+	}
+
+	for (uint j = 1; j < n; j += 2) {
+		for (uint i = 0 ; i < m; i++) {
+			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+			elements[2 * i + 2 * m * j].type = 3;
+			elements[2 * i + 2 * m * j].nodes =
+				std::vector<uint>{ i + (m + 1)*j, i + 1 + (m + 1)*j, i + m + 1 + (m + 1)*j };
+
+			elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+			elements[2 * i + 2 * m * j + 1].type = 3;
+			elements[2 * i + 2 * m * j + 1].nodes =
+				std::vector<uint>{ i + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j, i + m + 1 + (m + 1)*j };
+		}
+	}
+*/
 	std::vector<boundary> boundaries(4);
 
 	boundaries[0].type = boundary_type[0];
@@ -181,60 +209,7 @@ int main() {
 	//for (int i = 0; i < n; i++) {
 	//	for (int j = 0; j < m; j++) {
 	//		ID = 2 * j + 2 * m * i;
-
-	//		x[0] = j*dx;
-	//		x[1] = x[0];
-	//		x[2] = x[0] + dx;
-
-	//		y[0] = (i + 1)*dy;
-	//		y[1] = y[0] - dy;
-	//		y[2] = y[0];
-
 	//		ID = ID + 1;
-
-	//		x[0] = x[0] + dx;
-	//		y[0] = y[0] - dy;
 	//	}
 	//}
-
-	//// CHECKERS PATTERN
-/*	for (int i = 0; i < n; i++) {
-		for (int j = i % 2; j < m; j += 2) {
-			ID = 2 * j + 2 * m * i;
-
-			nodal_coordinates[0][0] = j*dx;
-			nodal_coordinates[1][0] = nodal_coordinates[0][0];
-			nodal_coordinates[2][0] = nodal_coordinates[0][0] + dx;
-
-			nodal_coordinates[0][1] = (i + 1)*dy;
-			nodal_coordinates[1][1] = nodal_coordinates[0][1] - dy;
-			nodal_coordinates[2][1] = nodal_coordinates[0][1];
-
-			ID = ID + 1;
-
-			nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
-
-			nodal_coordinates[0][1] = nodal_coordinates[0][1] - dy;
-		}
-	}
-
-	for (int i = 0; i < n; i++) {
-		for (int j = (i + 1) % 2; j < m; j += 2) {
-			ID = 2 * j + 2 * m * i;
-
-			nodal_coordinates[0][0] = j*dx;
-			nodal_coordinates[1][0] = nodal_coordinates[0][0] + dx;
-			nodal_coordinates[2][0] = nodal_coordinates[0][0];
-
-			nodal_coordinates[0][1] = i*dy;
-			nodal_coordinates[1][1] = nodal_coordinates[0][1];
-			nodal_coordinates[2][1] = nodal_coordinates[0][1] + dy;
-
-			ID = ID + 1;
-
-			nodal_coordinates[0][0] = nodal_coordinates[0][0] + dx;
-
-			nodal_coordinates[0][1] = nodal_coordinates[0][1] + dy;
-		}
-	}*/
 }

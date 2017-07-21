@@ -4,6 +4,9 @@
 #include "../general_definitions.hpp"
 #include "../problem/SWE/swe_definitions.hpp"
 
+#include "../shape/shapes_2D.hpp"
+
+
 class AdcircFormat {
 public:
 	AdcircFormat(const char* in_name);
