@@ -81,13 +81,13 @@ namespace Master {
 namespace Shape {
 	template<uint dim>
 	class Shape {
-	public:
+	protected:
 		std::vector<Point<dim>> nodal_coordinates;
 
 	public:
 		Shape(const std::vector<Point<dim>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
-		virtual bool CheckJacobian(std::vector<uint>&) = 0;
+                virtual bool CheckJacobianPositive(const Point<dim>&) = 0;
 
 		virtual std::vector<double> GetJdet(const std::vector<Point<dim>>&) = 0;
 		virtual Array3D<double> GetJinv(const std::vector<Point<dim>>&) = 0;
