@@ -87,7 +87,7 @@ namespace Shape {
 	public:
 		Shape(const std::vector<Point<dim>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
-                virtual bool CheckJacobianPositive(const Point<dim>&) = 0;
+		virtual bool CheckJacobianPositive(const Point<dim>&) = 0;
 
 		virtual std::vector<double> GetJdet(const std::vector<Point<dim>>&) = 0;
 		virtual Array3D<double> GetJinv(const std::vector<Point<dim>>&) = 0;

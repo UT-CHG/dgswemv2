@@ -67,7 +67,7 @@ private:
 
 			//here you're not at the end of vector, but haven't found an edge
 			//so we must look through the tail
-			return has_edge(it+1, cend, node_pair);
+			return has_edge(it + 1, cend, node_pair);
 		}
 
 		return false;

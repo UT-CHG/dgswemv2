@@ -80,36 +80,36 @@ int main() {
 				std::vector<uint>{ i + m + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j, i + 1 + (m + 1)*j };
 		}
 	}
-/*
-	//mesh with triangular elements zigzag pattern
-	for (uint j = 0; j < n; j += 2) {
-		for (uint i = 0 ; i < m; i++) {
-			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
-			elements[2 * i + 2 * m * j].type = 3;
-			elements[2 * i + 2 * m * j].nodes =
-				std::vector<uint>{ i + (m + 1)*j, i + m + 2 + (m + 1)*j, i + m + 1 + (m + 1)*j };
+	/*
+		//mesh with triangular elements zigzag pattern
+		for (uint j = 0; j < n; j += 2) {
+			for (uint i = 0 ; i < m; i++) {
+				elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+				elements[2 * i + 2 * m * j].type = 3;
+				elements[2 * i + 2 * m * j].nodes =
+					std::vector<uint>{ i + (m + 1)*j, i + m + 2 + (m + 1)*j, i + m + 1 + (m + 1)*j };
 
-			elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
-			elements[2 * i + 2 * m * j + 1].type = 3;
-			elements[2 * i + 2 * m * j + 1].nodes =
-				std::vector<uint>{ i + (m + 1)*j, i + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j };
+				elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+				elements[2 * i + 2 * m * j + 1].type = 3;
+				elements[2 * i + 2 * m * j + 1].nodes =
+					std::vector<uint>{ i + (m + 1)*j, i + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j };
+			}
 		}
-	}
 
-	for (uint j = 1; j < n; j += 2) {
-		for (uint i = 0 ; i < m; i++) {
-			elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
-			elements[2 * i + 2 * m * j].type = 3;
-			elements[2 * i + 2 * m * j].nodes =
-				std::vector<uint>{ i + (m + 1)*j, i + 1 + (m + 1)*j, i + m + 1 + (m + 1)*j };
+		for (uint j = 1; j < n; j += 2) {
+			for (uint i = 0 ; i < m; i++) {
+				elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+				elements[2 * i + 2 * m * j].type = 3;
+				elements[2 * i + 2 * m * j].nodes =
+					std::vector<uint>{ i + (m + 1)*j, i + 1 + (m + 1)*j, i + m + 1 + (m + 1)*j };
 
-			elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
-			elements[2 * i + 2 * m * j + 1].type = 3;
-			elements[2 * i + 2 * m * j + 1].nodes =
-				std::vector<uint>{ i + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j, i + m + 1 + (m + 1)*j };
+				elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+				elements[2 * i + 2 * m * j + 1].type = 3;
+				elements[2 * i + 2 * m * j + 1].nodes =
+					std::vector<uint>{ i + 1 + (m + 1)*j, i + m + 2 + (m + 1)*j, i + m + 1 + (m + 1)*j };
+			}
 		}
-	}
-*/
+	*/
 	std::vector<boundary> boundaries(4);
 
 	boundaries[0].type = boundary_type[0];
