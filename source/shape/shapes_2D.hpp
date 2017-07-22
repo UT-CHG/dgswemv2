@@ -8,7 +8,7 @@ namespace Shape {
 	public:
 		StraightTriangle(const std::vector<Point<2>>& nodal_coordinates) : Shape<2>(nodal_coordinates) {}
 
-		bool CheckJacobian(std::vector<uint>&);
+                bool CheckJacobianPositive(const Point<2>& = Point<2>{0, 0});
 
 		std::vector<double> GetJdet(const std::vector<Point<2>>&);
 		Array3D<double> GetJinv(const std::vector<Point<2>>&);

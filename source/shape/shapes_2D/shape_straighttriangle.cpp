@@ -2,7 +2,7 @@
 
 namespace Shape {
         bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
-          return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
+                return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 	}
 
 	std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& pts) {
