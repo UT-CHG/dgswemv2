@@ -21,12 +21,20 @@ void zigzag_pattern_tri(uint, uint, std::vector<element>&);
 void checker_pattern_tri(uint, uint, std::vector<element>&);
 
 int main() {
-	double L = 50000;
-	double W = 8000;
-	uint m = 25;
-	uint n = 4;
+	//Hardcoded for manufactured solution mesh
+	double x1 = 40000.;
+	double x2 = 151800.;
 
-	std::vector<uchar> boundary_type{ 0,0,0,1 }; // 0 - land, 1 - tidal
+	double y1 = 10000.;
+	double y2 = 54720.;
+
+	uint m = 50;
+	uint n = 20;
+
+	std::vector<uchar> boundary_type{ 0,0,0,0 }; // 0 - land, 1 - tidal
+
+	double L = x2 - x1;
+	double W = y2 - y1;
 
 	double dx = L / m;
 	double dy = W / n;
@@ -37,9 +45,9 @@ int main() {
 		for (uint j = 0; j <= n; j++) {
 			nodes[j*(m + 1) + i].ID = j*(m + 1) + i;
 
-			nodes[j*(m + 1) + i].coord[0] = dx*i;
-			nodes[j*(m + 1) + i].coord[1] = dy*j;
-			nodes[j*(m + 1) + i].coord[2] = 3.0;
+			nodes[j*(m + 1) + i].coord[0] = x1 + dx*i;
+			nodes[j*(m + 1) + i].coord[1] = y1 + dy*j;
+			nodes[j*(m + 1) + i].coord[2] = 2.0;
 		}
 	}
 

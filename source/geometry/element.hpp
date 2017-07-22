@@ -18,6 +18,7 @@ namespace Geometry {
 		std::vector<uint> neighbor_ID;
 		std::vector<uchar> boundary_type;
 
+		std::vector<Point<dimension>> gp_global_coordinates;
 		Array3D<double> dphi_fact;
 		Array2D<double> int_fact_phi;
 		Array3D<double> int_fact_dphi;
@@ -36,6 +37,9 @@ namespace Geometry {
 		template<typename F> 
 		std::vector<double> L2Projection(F f);
 		std::vector<double> L2Projection(const std::vector<double>&);
+
+		template<typename F>
+		void ComputeFgp(F f, std::vector<double>&);
 
 		void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 		void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
@@ -58,9 +62,12 @@ namespace Geometry {
 		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 		neighbor_ID(std::move(neighbor_ID)), boundary_type(std::move(boundary_type))
 	{
-		//DEFORMATION
 		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
+		
+		//GLOBAL COORDINATES OF GPS
+		this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(gp);
 
+		//DEFORMATION
 		std::vector<double> det_J = this->shape.GetJdet(gp);
 		Array3D<double> J_inv = this->shape.GetJinv(gp);
 
@@ -148,18 +155,10 @@ namespace Geometry {
 	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(F f) {
 		std::vector<double> projection;
 
-		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
+		std::vector<double> f_vals(this->gp_global_coordinates.size());
 
-		std::vector<Point<dimension>> global_coordinates = this->shape.LocalToGlobalCoordinates(gp);
-
-		std::vector<double> f_vals;
+		this->ComputeFgp(f, f_vals);
 	
-		std::for_each(global_coordinates.begin(), global_coordinates.end(), 
-			[&f_vals, &f](Point<2>& pt) {
-				f_vals.push_back(f(pt));
-			}
-		);
-
 		if (this->m_inv.first) { //diagonal
 			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
 				projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
@@ -194,6 +193,14 @@ namespace Geometry {
 		}
 
 		return projection;
+	}
+
+	template<uint dimension, typename master_type, typename shape_type, typename data_type>
+	template<typename F>
+	inline void Element<dimension, master_type, shape_type, data_type>::ComputeFgp(F f, std::vector<double>& f_gp) {
+		for (uint gp = 0; gp < f_gp.size(); gp++) {
+			f_gp[gp] = f(this->gp_global_coordinates[gp]);
+		}
 	}
 
 	template<uint dimension, typename master_type, typename shape_type, typename data_type>

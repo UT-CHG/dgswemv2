@@ -8,7 +8,7 @@
 namespace SWE {
 	namespace Global {
 		static constexpr double g = 9.81;
-		static constexpr double Cf = 0.001;
+		static constexpr double Cf = 0;
 	}
 
 	enum BoundaryConditions : uchar {

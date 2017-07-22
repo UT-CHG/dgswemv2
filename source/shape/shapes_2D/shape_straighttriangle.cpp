@@ -153,7 +153,7 @@ namespace Shape {
 
 				pt_ID = number_pt + (N_DIV + 1)*(N_DIV + 2) / 2 - (N_DIV - i + 1)*(N_DIV - i + 2) / 2 + j;
 
-				cells.back()[0] = 5;
+				cells.back()[0] = VTKElementTypes::straight_triangle;
 				cells.back()[1] = pt_ID;
 				cells.back()[2] = pt_ID + 1;
 				cells.back()[3] = pt_ID + (N_DIV + 1 - i);
