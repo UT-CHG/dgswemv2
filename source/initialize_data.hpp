@@ -1,7 +1,7 @@
 #ifndef INITIALIZE_DATA_HPP
 #define INITIALIZE_DATA_HPP
 
-#include "../problem/SWE/swe_ic_src_functions.hpp"
+#include "problem/SWE/swe_ic_src_functions.hpp"
 
 template <typename MeshType>
 void initialize_data(MeshType& mesh, AdcircFormat& mesh_file) {
