@@ -9,10 +9,12 @@ namespace SWE {
 		uint n_bound_old_land = 0;
 		uint n_bound_old_tidal = 0;
 
+		using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal>;
+
 		for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
 			switch (it->first) {
 			case SWE::land:
-				using BoundaryTypeLand = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
+				using BoundaryTypeLand = typename std::tuple_element<0, BoundaryTypes>::type;
 
 				n_bound_old_land = mesh.GetNumberBoundaries();
 
@@ -24,7 +26,7 @@ namespace SWE {
 
 				break;
 			case SWE::tidal:
-				using BoundaryTypeTidal = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Tidal>;
+				using BoundaryTypeTidal = typename std::tuple_element<1, BoundaryTypes>::type;
 
 				n_bound_old_tidal = mesh.GetNumberBoundaries();
 

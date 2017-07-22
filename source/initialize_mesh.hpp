@@ -27,9 +27,9 @@ typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mes
 
 template<typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
-	using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
-	using ElementType = Element<2, MasterType, Shape::StraightTriangle, typename ProblemType::data_type>;
-
+	using ElementType =
+		typename std::tuple_element<0, Geometry::ElementTypeTuple<ProblemType::data_type>>::type;
+	
 	for (auto it = mesh_data._meta.begin(); it != mesh_data._meta.end(); it++) {
 		mesh.template CreateElement<ElementType>(it->first, it->second.nodal_coordinates,
 			it->second.neighbor_ID, it->second.boundary_type);
@@ -42,7 +42,8 @@ template<typename ProblemType>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh) {
 	using RawBoundaryType = RawBoundary<1, typename ProblemType::data_type>;
 
-	using InterfaceType = Interface<1, Integration::GaussLegendre_1D, typename ProblemType::data_type>;
+	using InterfaceType = 
+		typename std::tuple_element<0, Geometry::InterfaceTypeTuple<ProblemType::data_type>>::type;
 
 	std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
 	std::map<uchar, std::vector<RawBoundaryType>> pre_boundaries;
