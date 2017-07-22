@@ -20,7 +20,7 @@ struct ElementMetaData {
 
 	std::vector<Point<2> > nodal_coordinates;
 	std::vector<uint> neighbor_ID;
-	std::vector<unsigned char> boundary_type;
+	std::vector<uchar> boundary_type;
 };
 
 struct MeshMetaData {

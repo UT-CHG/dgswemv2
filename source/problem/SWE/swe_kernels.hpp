@@ -5,7 +5,7 @@
 
 namespace SWE {
 	template<typename RawBoundaryType>
-	void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<unsigned char, std::vector<RawBoundaryType>>& pre_boundaries) {
+	void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
 		uint n_bound_old_land = 0;
 		uint n_bound_old_tidal = 0;
 

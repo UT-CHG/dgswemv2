@@ -45,7 +45,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 	using InterfaceType = Interface<1, Integration::GaussLegendre_1D, typename ProblemType::data_type>;
 
 	std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
-	std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
+	std::map<uchar, std::vector<RawBoundaryType>> pre_boundaries;
 
 	mesh.CallForEachElement(
 		[&pre_interfaces, &pre_boundaries](auto& elem)

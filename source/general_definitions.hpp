@@ -107,19 +107,19 @@ namespace Shape {
 #define DEFAULT_ID 4294967295 //max uint as default id
 #define INTERNAL 255 //max uchar as default bound type: internal
 
-enum GlobalCoord : unsigned char {
+enum GlobalCoord : uchar {
 	x = 0, y = 1, z = 2
 };
 
-enum LocalCoordTri : unsigned char {
+enum LocalCoordTri : uchar {
 	z1 = 0, z2 = 1, z3 = 2
 };
 
-enum LocalCoordQuad : unsigned char {
+enum LocalCoordQuad : uchar {
 	n1 = 0, n2 = 1, n3 = 2
 };
 
-enum VTKElementTypes : unsigned char {
+enum VTKElementTypes : uchar {
 	straight_triangle = 5
 };
 

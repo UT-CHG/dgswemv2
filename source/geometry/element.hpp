@@ -16,7 +16,7 @@ namespace Geometry {
 		shape_type shape;
 
 		std::vector<uint> neighbor_ID;
-		std::vector<unsigned char> boundary_type;
+		std::vector<uchar> boundary_type;
 
 		Array3D<double> dphi_fact;
 		Array2D<double> int_fact_phi;
@@ -26,10 +26,10 @@ namespace Geometry {
 
 	public:
 		Element(uint, master_type&, const std::vector<Point<dimension>>&,
-			const std::vector<uint>&, const std::vector<unsigned char>&);
+			const std::vector<uint>&, const std::vector<uchar>&);
 		
 		void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
-			std::map<unsigned char, std::vector<RawBoundary<dimension - 1, data_type>>>&);
+			std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&);
 
 		uint GetID() { return this->ID; }
 
@@ -54,7 +54,7 @@ namespace Geometry {
 	template<uint dimension, typename master_type, typename shape_type, typename data_type>
 	Element<dimension, master_type, shape_type, data_type>::Element(uint ID, 
 		master_type& master, const std::vector<Point<dimension>>& nodal_coordinates,
-		const std::vector<uint>& neighbor_ID, const std::vector<unsigned char>& boundary_type) :
+		const std::vector<uint>& neighbor_ID, const std::vector<uchar>& boundary_type) :
 		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 		neighbor_ID(std::move(neighbor_ID)), boundary_type(std::move(boundary_type))
 	{
@@ -124,7 +124,7 @@ namespace Geometry {
 	template<uint dimension, typename master_type, typename shape_type, typename data_type>
 	void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
 		std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_interfaces,
-		std::map<unsigned char, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries)
+		std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries)
 	{
 		Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
 		Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);

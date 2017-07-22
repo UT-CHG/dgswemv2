@@ -57,7 +57,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 
 			std::array<int, 2> nodes{ mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
 				mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1] };
-			
+
 			_meta.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
 		}
 	}

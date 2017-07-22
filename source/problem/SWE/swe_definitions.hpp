@@ -11,7 +11,7 @@ namespace SWE {
 		static constexpr double Cf = 0.001;
 	}
 
-	enum BoundaryConditions : unsigned char {
+	enum BoundaryConditions : uchar {
 		land = 0,
 		tidal = 1,
 		internal = INTERNAL

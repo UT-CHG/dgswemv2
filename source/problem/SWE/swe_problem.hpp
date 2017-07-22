@@ -14,7 +14,7 @@ namespace SWE {
 
 		//preprocessor kernels
 		template<typename RawBoundaryType>
-		static void create_boundaries_kernel(mesh_type&, std::map<unsigned char, std::vector<RawBoundaryType>>&);
+		static void create_boundaries_kernel(mesh_type&, std::map<uchar, std::vector<RawBoundaryType>>&);
 
 		//processor kernels
 		template<typename ElementType>
