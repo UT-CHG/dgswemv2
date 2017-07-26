@@ -61,15 +61,13 @@ namespace Geometry {
 		const std::vector<uint>& neighbor_ID, const std::vector<uchar>& boundary_type) :
 		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 		neighbor_ID(std::move(neighbor_ID)), boundary_type(std::move(boundary_type))
-	{
-		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
-		
+	{		
 		//GLOBAL COORDINATES OF GPS
-		this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(gp);
+		this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
 
 		//DEFORMATION
-		std::vector<double> det_J = this->shape.GetJdet(gp);
-		Array3D<double> J_inv = this->shape.GetJinv(gp);
+		std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
+		Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
 
 		if (det_J.size() == 1) { //constant Jacobian
 			//DIFFERENTIATION FACTORS
@@ -177,9 +175,7 @@ namespace Geometry {
 	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(const std::vector<double>& nodal_values) {
 		std::vector<double> projection;
 
-		std::vector<Point<dimension>> gp = this->master.integration.GetRule(2 * this->master.p).second;
-
-		std::vector<double> interpolation = this->shape.InterpolateNodalValues(nodal_values, gp);
+		std::vector<double> interpolation = this->shape.InterpolateNodalValues(nodal_values, this->master.integration_rule.second);
 
 		if (this->m_inv.first) { //diagonal
 			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {

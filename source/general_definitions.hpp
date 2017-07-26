@@ -60,6 +60,8 @@ namespace Master {
 	public:
 		uint p;
 
+		std::pair<std::vector<double>, std::vector<Point<dim>>> integration_rule;
+
 		Array2D<double> phi_gp;
 		Array3D<double> dphi_gp;
 
