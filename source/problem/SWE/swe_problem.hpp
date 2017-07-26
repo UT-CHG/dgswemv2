@@ -40,6 +40,9 @@ namespace SWE {
 
 		//postprocessor kernels
 		template<typename ElementType>
+		static double compute_residual_L2_kernel(const Stepper&, ElementType&);
+
+		template<typename ElementType>
 		static void extract_VTK_data_kernel(ElementType&, Array2D<double>&, Array2D<double>&);
 
 		template<typename MeshType>

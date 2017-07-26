@@ -20,6 +20,8 @@ namespace Geometry {
 
 		std::vector<Point<dimension>> gp_global_coordinates;
 		Array3D<double> dphi_fact;
+
+		std::vector<double> int_fact;
 		Array2D<double> int_fact_phi;
 		Array3D<double> int_fact_dphi;
 
@@ -40,9 +42,10 @@ namespace Geometry {
 
 		template<typename F>
 		void ComputeFgp(F f, std::vector<double>&);
-
 		void ComputeUgp(const std::vector<double>&, std::vector<double>&);
 		void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
+
+		double Integration(const std::vector<double>&);
 		double IntegrationPhi(uint, const std::vector<double>&);
 		double IntegrationDPhi(uint, uint, const std::vector<double>&);
 	
@@ -70,6 +73,12 @@ namespace Geometry {
 		Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
 
 		if (det_J.size() == 1) { //constant Jacobian
+			//INTEGRATION OVER ELEMENT FACTORS
+			this->int_fact = this->master.integration_rule.first;
+			for (uint gp = 0; gp < this->int_fact.size(); gp++) {
+				this->int_fact[gp] *= std::abs(det_J[0]);
+			}
+
 			//DIFFERENTIATION FACTORS
 			this->dphi_fact.resize(this->master.dphi_gp.size());
 			for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
@@ -221,6 +230,16 @@ namespace Geometry {
 		}
 	}
 
+	template<uint dimension, typename master_type, typename shape_type, typename data_type>
+	inline double Element<dimension, master_type, shape_type, data_type>::Integration(const std::vector<double>& u_gp) {
+		double integral = 0;
+
+		for (uint gp = 0; gp < u_gp.size(); gp++) {
+			integral += u_gp[gp] * this->int_fact[gp];
+		}
+
+		return integral;
+	}
 
 	template<uint dimension, typename master_type, typename shape_type, typename data_type>
 	inline double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
