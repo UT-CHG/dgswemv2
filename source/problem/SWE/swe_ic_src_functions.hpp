@@ -6,14 +6,14 @@ namespace SWE {
 
 	double ic_ze(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 151800.;
+		double x2 = 148000.;
 		double y1 = 10000.;
-		double y2 = 54720.;
+		double y2 = 53200.;
 
 		double Ho = 2.;
 		double zo = 0.25;
 
-		double w = 2 * PI / 44720.;
+		double w = 2 * PI / 43200.;
 		double tau = 0;
 
 		return 2 * zo*cos(w*(pt[GlobalCoord::x] - x1)) * cos(w*(pt[GlobalCoord::y] - y1)) *
@@ -22,14 +22,14 @@ namespace SWE {
 
 	double ic_qx(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 151800.;
+		double x2 = 148000.;
 		double y1 = 10000.;
-		double y2 = 54720.;
+		double y2 = 53200.;
 
 		double Ho = 2.;
 		double zo = 0.25;
 
-		double w = 2 * PI / 44720.;
+		double w = 2 * PI / 43200.;
 		double tau = 0;
 
 		return zo*sin(w*(pt[GlobalCoord::x] - x1)) * cos(w*(pt[GlobalCoord::y] - y1)) *
@@ -38,14 +38,14 @@ namespace SWE {
 	
 	double ic_qy(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 151800.;
+		double x2 = 148000.;
 		double y1 = 10000.;
-		double y2 = 54720.;
+		double y2 = 53200.;
 
 		double Ho = 2.;
 		double zo = 0.25;
 
-		double w = 2 * PI / 44720.;
+		double w = 2 * PI / 43200.;
 		double tau = 0;
 
 		return zo*cos(w*(pt[GlobalCoord::x] - x1)) * sin(w*(pt[GlobalCoord::y] - y1)) *
@@ -58,14 +58,14 @@ namespace SWE {
 
 	double source_qx(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 151800.;
+		double x2 = 148000.;
 		double y1 = 10000.;
-		double y2 = 54720.;
+		double y2 = 53200.;
 
 		double Ho = 2.;
 		double zo = 0.25;
 
-		double w = 2 * PI / 44720.;
+		double w = 2 * PI / 43200.;
 		double tau = 0;
 
 		double x = pt[GlobalCoord::x];
@@ -99,14 +99,14 @@ namespace SWE {
 	
 	double source_qy(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 151800.;
+		double x2 = 148000.;
 		double y1 = 10000.;
-		double y2 = 54720.;
+		double y2 = 53200.;
 
 		double Ho = 2.;
 		double zo = 0.25;
 
-		double w = 2 * PI / 44720.;
+		double w = 2 * PI / 43200.;
 		double tau = 0;
 
 		double x = pt[GlobalCoord::x];

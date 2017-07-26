@@ -24,7 +24,7 @@ int main(int argc, const char* argv[]) {
 	Stepper stepper(2, 2, 1.);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
-	run_simulation<SWE::Problem>(5*86400.0, stepper, *mesh);
+	run_simulation<SWE::Problem>(43200.0, stepper, *mesh);
 	auto t2 = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Time Elapsed (in us): "

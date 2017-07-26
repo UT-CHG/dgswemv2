@@ -23,10 +23,10 @@ void checker_pattern_tri(uint, uint, std::vector<element>&);
 int main() {
 	//Hardcoded for manufactured solution mesh
 	double x1 = 40000.;
-	double x2 = 151800.;
+	double x2 = 148000.;
 
 	double y1 = 10000.;
-	double y2 = 54720.;
+	double y2 = 53200.;
 
 	uint m = 50;
 	uint n = 20;
