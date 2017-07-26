@@ -43,8 +43,8 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 
 	mesh.CallForEachElement(resize_data_container);
 
-	ProblemType::write_VTK_data_kernel(stepper, mesh);
-	ProblemType::write_modal_data_kernel(stepper, mesh);
+	//ProblemType::write_VTK_data_kernel(stepper, mesh);
+	//ProblemType::write_modal_data_kernel(stepper, mesh);
 
 	for (uint step = 1; step <= nsteps; ++step) {
 		for (uint stage = 0; stage < stepper.get_num_stages(); ++stage) {
@@ -67,10 +67,19 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 
 		if (step % 360 == 0) {
 			std::cout << "Step: " << step << "\n";
-			ProblemType::write_VTK_data_kernel(stepper, mesh);
-			ProblemType::write_modal_data_kernel(stepper, mesh);
+			//ProblemType::write_VTK_data_kernel(stepper, mesh);
+			//ProblemType::write_modal_data_kernel(stepper, mesh);
 		}
 	}
+	
+	double residual_L2 = 0;
+	auto compute_residual_L2_kernel = [&residual_L2, &stepper](auto& elt) {
+		residual_L2 += ProblemType::compute_residual_L2_kernel(stepper, elt);
+	};
+
+	mesh.CallForEachElement(compute_residual_L2_kernel);
+
+	std::cout << "residual L2 norm: " << residual_L2 << '\n';
 }
 
 #endif
