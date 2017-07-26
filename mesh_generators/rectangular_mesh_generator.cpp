@@ -23,13 +23,13 @@ void checker_pattern_tri(uint, uint, std::vector<element>&);
 int main() {
 	//Hardcoded for manufactured solution mesh
 	double x1 = 40000.;
-	double x2 = 148000.;
+	double x2 = 83200.;
 
 	double y1 = 10000.;
 	double y2 = 53200.;
 
-	uint m = 50;
-	uint n = 20;
+	uint m = 32;
+	uint n = 32;
 
 	std::vector<uchar> boundary_type{ 0,0,0,0 }; // 0 - land, 1 - tidal
 

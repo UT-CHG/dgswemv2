@@ -6,7 +6,7 @@ namespace SWE {
 
 	double ic_ze(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 148000.;
+		double x2 = 83200.;
 		double y1 = 10000.;
 		double y2 = 53200.;
 
@@ -22,7 +22,7 @@ namespace SWE {
 
 	double ic_qx(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 148000.;
+		double x2 = 83200.;
 		double y1 = 10000.;
 		double y2 = 53200.;
 
@@ -38,7 +38,7 @@ namespace SWE {
 	
 	double ic_qy(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 148000.;
+		double x2 = 83200.;
 		double y1 = 10000.;
 		double y2 = 53200.;
 
@@ -58,7 +58,7 @@ namespace SWE {
 
 	double source_qx(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 148000.;
+		double x2 = 83200.;
 		double y1 = 10000.;
 		double y2 = 53200.;
 
@@ -99,7 +99,7 @@ namespace SWE {
 	
 	double source_qy(double t, Point<2>& pt) {
 		double x1 = 40000.;
-		double x2 = 148000.;
+		double x2 = 83200.;
 		double y1 = 10000.;
 		double y2 = 53200.;
 
