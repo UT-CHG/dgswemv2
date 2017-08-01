@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]) {
 
 	initialize_data(*mesh, adcirc_file);
 
-	Stepper stepper(2, 2, 1.);
+	Stepper stepper(2, 2, .25);
 
 	auto t1 = std::chrono::high_resolution_clock::now();
 	run_simulation<SWE::Problem>(43200.0, stepper, *mesh);

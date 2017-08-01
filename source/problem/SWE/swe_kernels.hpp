@@ -340,7 +340,7 @@ namespace SWE {
 		for (uint gp = 0; gp < sq_diff.size(); gp++) {
 			L2 += sq_diff[gp] * rule.first[gp];
 		}
-		return L2;
+		return L2*std::abs(elt.shape.GetJdet(rule.second)[0]);
 
 		/*std::vector<double> est_ze_gp(elt.data.get_ngp_internal());
 		elt.ComputeUgp(elt.data.state[0].ze, est_ze_gp);
