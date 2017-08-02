@@ -1,6 +1,6 @@
 #include "adcirc_format.hpp"
 
-AdcircFormat::AdcircFormat(const char* fort14) {
+AdcircFormat::AdcircFormat(const std::string& fort14) {
 	std::ifstream ifs(fort14);
 
 	if (!ifs) {

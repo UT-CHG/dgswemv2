@@ -1,15 +1,15 @@
 #ifndef ADCIRC_FORMAT_HPP
 #define ADCIRC_FORMAT_HPP
 
-#include "../general_definitions.hpp"
-#include "../problem/SWE/swe_definitions.hpp"
+#include "../../general_definitions.hpp"
+#include "../../problem/SWE/swe_definitions.hpp"
 
-#include "../shape/shapes_2D.hpp"
+#include "../../shape/shapes_2D.hpp"
 
 
 class AdcircFormat {
 public:
-	AdcircFormat(const char* in_name);
+        AdcircFormat(const std::string& in_name);
 
 	std::string name;
 	std::unordered_map<int, std::array<double, 3>> nodes;

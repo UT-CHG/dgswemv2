@@ -4,7 +4,7 @@
 #include "problem/SWE/swe_ic_src_functions.hpp"
 
 template <typename MeshType>
-void initialize_data(MeshType& mesh, AdcircFormat& mesh_file) {
+void initialize_data(MeshType& mesh, const MeshMetaData& mesh_data) {
 	mesh.CallForEachElement(
 		[](auto& elt) {
 			elt.data.initialize();
@@ -13,11 +13,8 @@ void initialize_data(MeshType& mesh, AdcircFormat& mesh_file) {
 
 	std::unordered_map<uint, std::vector<double> > bathymetry;
 
-	for (auto elt : mesh_file.elements) {
-		bathymetry.insert({ elt.first, std::vector<double>(3) });
-		for (uint node = 0; node < 3; node++) {
-			bathymetry[elt.first][node] = mesh_file.nodes.at(elt.second[node + 1])[2];
-		}
+	for (const auto& elt : mesh_data._elements) {
+	        bathymetry.insert({ elt.first, mesh_data.GetBathymetry(elt.first) });
 	}
 
 	mesh.CallForEachElement(

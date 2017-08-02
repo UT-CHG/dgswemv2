@@ -1,34 +1,50 @@
 #include "../../general_definitions.hpp"
 
-#include "../../mesh_metadata.hpp"
+#include "../../preprocessor/input_parameters.hpp"
+
 #include "../../stepper.hpp"
 
 #include "../../initialize_mesh.hpp"
 #include "../../initialize_data.hpp"
 #include "../../run_simulation.hpp"
 
-#include "../../ADCIRC_reader/adcirc_format.hpp"
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
 int main(int argc, const char* argv[]) {
-	printf("Starting program %s with p=%d for %s mesh\n\n", argv[0], std::stoi(argv[1]), argv[2]);
+        if ( argc != 2 ) {
+	  std::cerr << "Usage\n"
+		    << "    /path/to/DG_HYPER_SWE input_file\n";
+	  return 1;
+        }
 
-	AdcircFormat adcirc_file(argv[2]);
-	MeshMetaData mesh_data(adcirc_file);
+	try {
 
-	auto mesh = initialize_mesh<SWE::Problem>(std::stoi(argv[1]), mesh_data);
+	  const InputParameters input(argv[1]);
 
-	initialize_data(*mesh, adcirc_file);
+	  printf("Starting program %s with p=%d for %s mesh\n\n", argv[1], input.polynomial_order, input.mesh_file_name.c_str() );
 
-	Stepper stepper(2, 2, .25);
+	  auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
 
-	auto t1 = std::chrono::high_resolution_clock::now();
-	run_simulation<SWE::Problem>(43200.0, stepper, *mesh);
-	auto t2 = std::chrono::high_resolution_clock::now();
+	  initialize_data(*mesh, input.mesh_data);
 
-	std::cout << "Time Elapsed (in us): "
-		<< std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << "\n";
+	  Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
 
-	delete mesh;
+	  auto t1 = std::chrono::high_resolution_clock::now();
+	  run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
+	  auto t2 = std::chrono::high_resolution_clock::now();
+
+	  std::cout << "Time Elapsed (in us): "
+		    << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << "\n";
+
+	  delete mesh;
+
+	  return 0;
+
+	} catch (const std::exception& e) {
+	  std::cerr << "Exception caught\n";
+	  std::cerr << "  " << e.what() << std::endl;
+
+	  return 1;
+	}
 }

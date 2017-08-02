@@ -1,0 +1,12 @@
+BUILD_TYPE=Debug
+NUM_BUILDCORES=4
+
+CMAKE="/usr/bin/cmake /usr/bin/X11/cmake /usr/share/man/man1/cmake.1.gz"
+
+WORK=$HOME
+
+BUILD_PATH=$WORK/dgswemv2_local_build_${BUILD_TYPE}
+INSTALL_PATH=$WORK/dgswemv2_local_install_${BUILD_TYPE}
+
+YAML_CPP_REPO_PATH=$WORK/yaml-cpp
+YAML_CPP_BUILD_PATH=$BUILD_PATH/yaml-cpp
