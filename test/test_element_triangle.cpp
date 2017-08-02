@@ -242,6 +242,11 @@ int main() {
 		f_vals[gp] = std::pow(x[gp] + 1., 2) + std::pow(y[gp] - 1., 2);
 	}
 
+	if (!almost_equal(IntegrationPhi_true[0], triangle.Integration(f_vals), 1.e+04)) {
+		error_found = true;
+    std::cerr << "Error found in Triangle element in Integration" << std::endl;
+	}
+
 	for (uint dof = 0; dof < 66; dof++) {
 		if (!almost_equal(IntegrationPhi_true[dof], triangle.IntegrationPhi(dof, f_vals), 1.e+04)) {
 			error_found = true;

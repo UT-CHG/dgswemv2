@@ -20,7 +20,7 @@ void simple_pattern_tri(uint, uint, std::vector<element>&);
 void zigzag_pattern_tri(uint, uint, std::vector<element>&);
 void checker_pattern_tri(uint, uint, std::vector<element>&);
 
-int main() {
+int main(int argc, const char* argv[]) {
 	//Hardcoded for manufactured solution mesh
 	double x1 = 40000.;
 	double x2 = 83200.;
@@ -28,8 +28,8 @@ int main() {
 	double y1 = 10000.;
 	double y2 = 53200.;
 
-	uint m = 32;
-	uint n = 32;
+	uint m = std::stoi(argv[1]);
+	uint n = std::stoi(argv[1]);
 
 	std::vector<uchar> boundary_type{ 0,0,0,0 }; // 0 - land, 1 - tidal
 
