@@ -4,7 +4,7 @@
 #include "general_definitions.hpp"
 
 #include "ADCIRC_reader/adcirc_format.hpp"
-#include "problem/SWE/swe_definitions.hpp"
+#include "../problem/SWE/swe_definitions.hpp"
 
 struct NodeMetaData {
         Point<2> coordinates;

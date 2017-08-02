@@ -1,10 +1,10 @@
 #ifndef ADCIRC_FORMAT_HPP
 #define ADCIRC_FORMAT_HPP
 
-#include "../general_definitions.hpp"
-#include "../problem/SWE/swe_definitions.hpp"
+#include "../../general_definitions.hpp"
+#include "../../problem/SWE/swe_definitions.hpp"
 
-#include "../shape/shapes_2D.hpp"
+#include "../../shape/shapes_2D.hpp"
 
 
 class AdcircFormat {
