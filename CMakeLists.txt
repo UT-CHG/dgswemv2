@@ -27,6 +27,10 @@ FORCE)
 
 include_directories(source)
 
+#############################################################################
+#  Check for dependencies
+find_package(yaml-cpp REQUIRED)
+
 enable_testing()
 
 add_subdirectory(source)

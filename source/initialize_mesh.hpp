@@ -29,10 +29,11 @@ template<typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
 	using ElementType =
 		typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::data_type>>::type;
-	
-	for (auto it = mesh_data._meta.begin(); it != mesh_data._meta.end(); it++) {
-		mesh.template CreateElement<ElementType>(it->first, it->second.nodal_coordinates,
-			it->second.neighbor_ID, it->second.boundary_type);
+
+	for (const auto& it : mesh_data._elements) {
+	        uint elt_id = it.first;
+	        mesh.template CreateElement<ElementType>(elt_id, mesh_data.GetNodalCoordinates(elt_id),
+			it.second.neighbor_ID, it.second.boundary_type);
 	}
 
 	std::cout << "Number of elements: " << mesh.GetNumberElements() << "\n";

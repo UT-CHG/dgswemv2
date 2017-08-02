@@ -9,7 +9,7 @@
 
 class AdcircFormat {
 public:
-	AdcircFormat(const char* in_name);
+        AdcircFormat(const std::string& in_name);
 
 	std::string name;
 	std::unordered_map<int, std::array<double, 3>> nodes;
