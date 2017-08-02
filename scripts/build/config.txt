@@ -1,0 +1,18 @@
+BUILD_TYPE=Release
+MACHINE=ices-desktop
+#VERBOSE=true
+
+if [ "$MACHINE" == "ices-desktop" ]; then
+   echo "using ices-desktop"
+    NUM_BUILDCORES=16
+    MODULES="c7 gcc/6.1 cmake/3.3.2"
+    CMAKE="/usr/bin/cmake /usr/lib64/cmake /usr/share/cmake /opt/apps/ossw/applications/cmake/cmake-3.3.2/c7/gcc-6.1/bin/cmake /usr/share/man/man1/cmake.1.gz"
+
+    WORK=/workspace
+fi
+
+BUILD_PATH=$WORK/dgswemv2_local_build_${BUILD_TYPE}
+INSTALL_PATH=$WORK/dgswemv2_local_install_${BUILD_TYPE}
+
+YAML_CPP_REPO_PATH=$WORK/yaml-cpp
+YAML_CPP_BUILD_PATH=$BUILD_PATH/yaml-cpp
