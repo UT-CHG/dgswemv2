@@ -3,4 +3,4 @@
 ################################################################################
 
 build/*
-test/sample_fort.14.out
+test/files_for_testing/sample_fort.14.out

@@ -4,8 +4,8 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
 	std::ifstream ifs(fort14);
 
 	if (!ifs) {
-		std::cerr << "Fatal Error: Mesh named " << fort14 << " not found \n";
-		exit(1);
+		std::string err_msg = "Fatal Error: Mesh named " + fort14 + " not found\n";
+		throw std::logic_error(err_msg);
 	}
 
 	std::getline(ifs, name);

@@ -30,7 +30,7 @@ add_executable(
 add_test(
   Unit_adcirc_format
   test_adcirc_format_exe
-  ${PROJECT_SOURCE_DIR}/test/sample_fort.14
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
 )
 
 add_executable(
@@ -149,3 +149,37 @@ add_test(
 #  Uint_test_land_boundary.cpp
 #  test_swe_boundaries_exe
 #)
+
+include_directories("${YAML_CPP_INCLUDE_DIR}")
+
+add_executable(
+  test_input_parameters_exe
+  test_input_parameters.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/input_parameters.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+)
+
+target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
+
+add_test(
+  Unit_input_parameters
+  test_input_parameters_exe
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/input_that_doesnt_exist.15
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/missing_field_input.15
+)
+
+#Everytime Cmake is run, we generate an input file with correct build parameters
+file(WRITE files_for_testing/correct_input.15
+"mesh:\n\
+  format: Adcirc\n\
+  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\n\
+timestepping:\n\
+  dt: 1                           #in seconds\n\
+  end_time: 86400                 #in seconds\n\
+  order: 2\n\
+  nstages: 2\n\n\
+polynomial_order: 2"
+)

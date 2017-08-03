@@ -1,0 +1,18 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Adcirc
+  file_name: rectangular_mesh.14
+
+timestepping:
+  dt: 1                           #in seconds
+  end_time: 86400                 #in seconds
+  order: 2
+  nstages: 2
+
+#This input file is incorrect because polynomial order is commented out
+#polynomial_order: 2
