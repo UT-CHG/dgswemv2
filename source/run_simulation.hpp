@@ -71,15 +71,6 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 			ProblemType::write_modal_data_kernel(stepper, mesh);
 		}
 	}
-	
-	double residual_L2 = 0;
-	auto compute_residual_L2_kernel = [&residual_L2, &stepper](auto& elt) {
-		residual_L2 += ProblemType::compute_residual_L2_kernel(stepper, elt);
-	};
-
-	mesh.CallForEachElement(compute_residual_L2_kernel);
-
-	std::cout << "residual L2 norm: " << sqrt(residual_L2) << '\n';
 }
 
 #endif

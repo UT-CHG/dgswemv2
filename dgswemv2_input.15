@@ -14,4 +14,4 @@ timestepping:
   order: 2
   nstages: 2
 
-polynomial_order: 2
+polynomial_order: 1

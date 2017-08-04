@@ -368,63 +368,6 @@ namespace SWE {
 	}
 
 	template<typename ElementType>
-	double Problem::compute_residual_L2_kernel(const Stepper& stepper, ElementType& elt) {
-		std::pair<std::vector<double>, std::vector<Point<2>>> rule = elt.master.integration.GetRule(20);
-
-		Array2D<double> Phi = elt.master.basis.GetPhi(elt.master.p, rule.second);
-
-		std::vector<double> est_ze_gp(rule.first.size());
-		std::fill(est_ze_gp.begin(), est_ze_gp.end(), 0.0);
-
-		for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-			for (uint gp = 0; gp < est_ze_gp.size(); gp++) {
-				est_ze_gp[gp] += Phi[dof][gp] * elt.data.state[0].ze[dof];
-			}
-		}
-
-		double t = stepper.get_t_at_curr_stage();
-		std::vector<Point<2>> gp_global = elt.shape.LocalToGlobalCoordinates(rule.second);
-
-		std::vector<double> true_ze_gp(rule.first.size());
-
-		for (uint gp = 0; gp < true_ze_gp.size(); gp++) {
-			true_ze_gp[gp] = SWE::true_ze(t, gp_global[gp]);
-		}
-
-		std::vector<double> sq_diff(rule.first.size());
-
-		for (uint gp = 0; gp < sq_diff.size(); gp++) {
-			sq_diff[gp] = pow((true_ze_gp[gp] - est_ze_gp[gp]), 2);
-		}
-
-		double L2 = 0;
-
-		for (uint gp = 0; gp < sq_diff.size(); gp++) {
-			L2 += sq_diff[gp] * rule.first[gp];
-		}
-
-		return L2*std::abs(elt.shape.GetJdet(rule.second)[0]);
-
-		/*std::vector<double> est_ze_gp(elt.data.get_ngp_internal());
-		elt.ComputeUgp(elt.data.state[0].ze, est_ze_gp);
-
-		double t = stepper.get_t_at_curr_stage();
-		auto true_ze = [t](Point<2>& pt) {
-			return SWE::true_ze(t, pt);
-		};
-
-		std::vector<double> true_ze_gp(elt.data.get_ngp_internal());
-		elt.ComputeFgp(true_ze, true_ze_gp);
-
-		std::vector<double> sq_diff(elt.data.get_ngp_internal());
-		for (uint gp = 0; gp < elt.data.get_ngp_internal(); gp++) {
-			sq_diff[gp] = pow((true_ze_gp[gp] - est_ze_gp[gp]), 2);
-		}
-
-		return elt.Integration(sq_diff);*/
-	}
-
-	template<typename ElementType>
 	void Problem::extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
 		elt.WriteCellDataVTK(elt.data.state[0].ze, cell_data[0]);
 		elt.WriteCellDataVTK(elt.data.state[0].qx, cell_data[1]);
