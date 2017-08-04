@@ -2,8 +2,6 @@
 #define SWE_TRUE_SRC_FUNCTIONS_HPP
 
 namespace SWE {
-	//This sets up manufactured solution (hopefuly)
-
 	double true_ze(double t, Point<2>& pt) {
 		double x1 = 40000.;
 		double x2 = 83200.;
