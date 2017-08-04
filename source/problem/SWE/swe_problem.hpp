@@ -5,6 +5,7 @@
 #include "swe_boundary_conditions.hpp"
 #include "swe_data.hpp"
 #include "../../geometry/mesh_definitions.hpp"
+#include "../../preprocessor/mesh_metadata.hpp"
 
 namespace SWE {
 	struct Problem {
