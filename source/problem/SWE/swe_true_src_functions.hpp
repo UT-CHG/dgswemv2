@@ -1,10 +1,10 @@
-#ifndef SWE_IC_SRC_FUNCTIONS_HPP
-#define SWE_IC_SRC_FUNCTIONS_HPP
+#ifndef SWE_TRUE_SRC_FUNCTIONS_HPP
+#define SWE_TRUE_SRC_FUNCTIONS_HPP
 
 namespace SWE {
 	//This sets up manufactured solution (hopefuly)
 
-	double ic_ze(double t, Point<2>& pt) {
+	double true_ze(double t, Point<2>& pt) {
 		double x1 = 40000.;
 		double x2 = 83200.;
 		double y1 = 10000.;
@@ -20,7 +20,7 @@ namespace SWE {
 			cos(w*(t + tau)) / (cos(w*(x2 - x1)) * cos(w*(y2 - y1)));
 	}
 
-	double ic_qx(double t, Point<2>& pt) {
+	double true_qx(double t, Point<2>& pt) {
 		double x1 = 40000.;
 		double x2 = 83200.;
 		double y1 = 10000.;
@@ -35,8 +35,8 @@ namespace SWE {
 		return zo*sin(w*(pt[GlobalCoord::x] - x1)) * cos(w*(pt[GlobalCoord::y] - y1)) *
 			sin(w*(t + tau)) / (cos(w*(x2 - x1)) * cos(w*(y2 - y1)));
 	}
-	
-	double ic_qy(double t, Point<2>& pt) {
+
+	double true_qy(double t, Point<2>& pt) {
 		double x1 = 40000.;
 		double x2 = 83200.;
 		double y1 = 10000.;
@@ -96,7 +96,7 @@ namespace SWE {
 					(Ho + 2 * zo*cos((t + tau)*w)*cos(w*(x - x1))*cos(w*(y - y1))*(1. / cos(w*(-x1 + x2)))*
 			(1. / cos(w*(-y1 + y2))));
 	}
-	
+
 	double source_qy(double t, Point<2>& pt) {
 		double x1 = 40000.;
 		double x2 = 83200.;
@@ -111,7 +111,7 @@ namespace SWE {
 
 		double x = pt[GlobalCoord::x];
 		double y = pt[GlobalCoord::y];
-		
+
 		return w*zo*cos((t + tau)*w)*cos(w*(x - x1))*(1. / cos(w*(-x1 + x2)))*(1. / cos(w*(-y1 + y2)))*
 			sin(w*(y - y1)) - 2 * SWE::Global::g*Ho*w*zo*cos((t + tau)*w)*cos(w*(x - x1))*
 			(1. / cos(w*(-x1 + x2)))*(1. / cos(w*(-y1 + y2)))*sin(w*(y - y1)) -

@@ -30,13 +30,13 @@ namespace Geometry {
 	public:
 		Element(uint, master_type&, const std::vector<Point<dimension>>&,
 			const std::vector<uint>&, const std::vector<uchar>&);
-		
+
 		void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
 			std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&);
 
 		uint GetID() { return this->ID; }
 
-		template<typename F> 
+		template<typename F>
 		std::vector<double> L2Projection(F f);
 		std::vector<double> L2Projection(const std::vector<double>&);
 
@@ -48,7 +48,7 @@ namespace Geometry {
 		double Integration(const std::vector<double>&);
 		double IntegrationPhi(uint, const std::vector<double>&);
 		double IntegrationDPhi(uint, uint, const std::vector<double>&);
-	
+
 		std::vector<double> SolveLSE(const std::vector<double>&);
 
 		void InitializeVTK(std::vector<Point<3>>&, Array2D<uint>&);
@@ -59,12 +59,12 @@ namespace Geometry {
 	};
 
 	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	Element<dimension, master_type, shape_type, data_type>::Element(uint ID, 
+	Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
 		master_type& master, const std::vector<Point<dimension>>& nodal_coordinates,
 		const std::vector<uint>& neighbor_ID, const std::vector<uchar>& boundary_type) :
 		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
 		neighbor_ID(std::move(neighbor_ID)), boundary_type(std::move(boundary_type))
-	{		
+	{
 		//GLOBAL COORDINATES OF GPS
 		this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
 
@@ -158,14 +158,14 @@ namespace Geometry {
 	}
 
 	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	template<typename F> 
+	template<typename F>
 	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(F f) {
 		std::vector<double> projection;
 
 		std::vector<double> f_vals(this->gp_global_coordinates.size());
 
 		this->ComputeFgp(f, f_vals);
-	
+
 		if (this->m_inv.first) { //diagonal
 			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
 				projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);

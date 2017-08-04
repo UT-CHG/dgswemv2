@@ -1,12 +1,12 @@
 #include "mesh_metadata.hpp"
 
 MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
-        for (const auto& nod : mesh_file.nodes ) {
-	  if ( nod.first < 0 ) {
-	    throw std::logic_error("ERROR in mesh_metadata.cpp: Node ID is negative; not supported\n");
-	  }
-	  uint ID = nod.first;
-	  _nodes.insert({ID,{ {nod.second[0], nod.second[1]}, nod.second[2]} });
+	for (const auto& nod : mesh_file.nodes) {
+		if (nod.first < 0) {
+			throw std::logic_error("ERROR in mesh_metadata.cpp: Node ID is negative; not supported\n");
+		}
+		uint ID = nod.first;
+		_nodes.insert({ ID,{ {nod.second[0], nod.second[1]}, nod.second[2]} });
 	}
 
 
@@ -19,7 +19,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 		_elements.insert({ ID, ElementMetaData(3) });
 
 		for (uint i = 0; i < 3; ++i) {
-		         _elements.at(ID).node_ids[i] = elt.second[i + 1];
+			_elements.at(ID).node_ids[i] = elt.second[i + 1];
 		}
 	}
 
@@ -71,20 +71,20 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 	}
 }
 
-std::vector<Point<2> > MeshMetaData::GetNodalCoordinates(uint elt_id) const {
-  const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
-  std::vector<Point<2>> nodal_coordinates(node_ids.size());
-  for ( uint indx = 0; indx < node_ids.size(); ++indx ) {
-    nodal_coordinates[indx] = _nodes.at(node_ids[indx]).coordinates;
-  }
-  return nodal_coordinates;
+std::vector<Point<2>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
+	const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
+	std::vector<Point<2>> nodal_coordinates(node_ids.size());
+	for (uint indx = 0; indx < node_ids.size(); ++indx) {
+		nodal_coordinates[indx] = _nodes.at(node_ids[indx]).coordinates;
+	}
+	return nodal_coordinates;
 }
 
 std::vector<double> MeshMetaData::GetBathymetry(uint elt_id) const {
-  const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
-  std::vector<double> nodal_bathymetry(node_ids.size());
-  for ( uint indx = 0; indx < node_ids.size(); ++indx ) {
-    nodal_bathymetry[indx] = _nodes.at(node_ids[indx]).bathymetry;
-  }
-  return nodal_bathymetry;
+	const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
+	std::vector<double> nodal_bathymetry(node_ids.size());
+	for (uint indx = 0; indx < node_ids.size(); ++indx) {
+		nodal_bathymetry[indx] = _nodes.at(node_ids[indx]).bathymetry;
+	}
+	return nodal_bathymetry;
 }

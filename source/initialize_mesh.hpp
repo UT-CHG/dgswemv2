@@ -21,7 +21,7 @@ typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mes
 	initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
 	initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
 	initialize_mesh_VTK_geometry<ProblemType>(*mesh);
-
+	
 	return mesh;
 }
 
@@ -79,7 +79,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 
 	mesh.CallForEachElement(
 		[&points, &cells](auto& elem)
-		{ elem.InitializeVTK(points, cells); }
+	{ elem.InitializeVTK(points, cells); }
 	);
 
 	std::string file_name = "output/geometry.vtk";

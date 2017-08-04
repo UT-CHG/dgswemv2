@@ -1,16 +1,15 @@
 #ifndef MESH_METADATA_HPP
 #define MESH_METADATA_HPP
 
-#include "general_definitions.hpp"
+#include "../general_definitions.hpp"
 
 #include "ADCIRC_reader/adcirc_format.hpp"
 #include "../problem/SWE/swe_definitions.hpp"
 
 struct NodeMetaData {
-        Point<2> coordinates;
-        double bathymetry;
+	Point<2> coordinates; // maybe Point<3>
+	double bathymetry; //this is somewhat problem specific to SWE, even mesh file specific to adcirc
 };
-
 
 // ID: corresponds to the element ID
 // coordinates: correspond to the vertices of the element
@@ -29,14 +28,14 @@ struct ElementMetaData {
 };
 
 struct MeshMetaData {
-        MeshMetaData() = default;
-	MeshMetaData(const AdcircFormat& mesh_file);\
+	MeshMetaData() = default; //why define default constructor?
+	MeshMetaData(const AdcircFormat& mesh_file);
 
-        std::vector<Point<2> > GetNodalCoordinates(uint elt_id) const;
-        std::vector<double> GetBathymetry(uint elt_id) const;
+	std::vector<Point<2> > GetNodalCoordinates(uint elt_id) const;
+	std::vector<double> GetBathymetry(uint elt_id) const;
 
 	std::unordered_map<uint, ElementMetaData> _elements;
-        std::unordered_map<uint, NodeMetaData> _nodes;
+	std::unordered_map<uint, NodeMetaData> _nodes;
 };
 
 #endif

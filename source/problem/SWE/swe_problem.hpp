@@ -16,6 +16,8 @@ namespace SWE {
 		template<typename RawBoundaryType>
 		static void create_boundaries_kernel(mesh_type&, std::map<uchar, std::vector<RawBoundaryType>>&);
 
+		static void initialize_data_kernel(mesh_type&, const MeshMetaData&);
+
 		//processor kernels
 		template<typename ElementType>
 		static void volume_kernel(const Stepper&, ElementType&);

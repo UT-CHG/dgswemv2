@@ -2,7 +2,7 @@
 #define SWE_KERNELS_HPP
 
 #include "swe_LLF_flux.hpp"
-#include "swe_ic_src_functions.hpp"
+#include "swe_true_src_functions.hpp"
 
 namespace SWE {
 	template<typename RawBoundaryType>
@@ -40,6 +40,68 @@ namespace SWE {
 				break;
 			}
 		}
+	}
+
+	void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_data) {
+		mesh.CallForEachElement(
+			[](auto& elt) {
+			elt.data.initialize();
+		}
+		);
+
+		std::unordered_map<uint, std::vector<double>> bathymetry;
+
+		for (const auto& elt : mesh_data._elements) {
+			bathymetry.insert({ elt.first, mesh_data.GetBathymetry(elt.first) });
+		}
+
+		mesh.CallForEachElement(
+			[&bathymetry](auto& elt) {
+			uint id = elt.GetID();
+
+			if (!bathymetry.count(id)) {
+				throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
+			}
+
+			elt.data.state[0].bath = elt.L2Projection(bathymetry[id]);
+
+			elt.ComputeUgp(elt.data.state[0].bath, elt.data.internal.bath_at_gp);
+
+			elt.ComputeDUgp(GlobalCoord::x, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_x_at_gp);
+			elt.ComputeDUgp(GlobalCoord::y, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_y_at_gp);
+
+			auto ze_init = [](Point<2>& pt) {
+				return SWE::true_ze(0, pt);
+			};
+
+			elt.data.state[0].ze = elt.L2Projection(ze_init);
+
+			auto qx_init = [](Point<2>& pt) {
+				return SWE::true_qx(0, pt);
+			};
+
+			elt.data.state[0].qx = elt.L2Projection(qx_init);
+
+			auto qy_init = [](Point<2>& pt) {
+				return SWE::true_qy(0, pt);
+			};
+
+			elt.data.state[0].qy = elt.L2Projection(qy_init);
+		}
+		);
+
+		mesh.CallForEachInterface(
+			[](auto& intface) {
+			intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary.bath_at_gp);
+			intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary.bath_at_gp);
+		}
+		);
+
+		mesh.CallForEachBoundary(
+			[](auto& bound) {
+			bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary.bath_at_gp);
+		}
+		);
 	}
 
 	template<typename ElementType>
@@ -326,7 +388,7 @@ namespace SWE {
 		std::vector<double> true_ze_gp(rule.first.size());
 
 		for (uint gp = 0; gp < true_ze_gp.size(); gp++) {
-			true_ze_gp[gp] = SWE::ic_ze(t, gp_global[gp]);
+			true_ze_gp[gp] = SWE::true_ze(t, gp_global[gp]);
 		}
 
 		std::vector<double> sq_diff(rule.first.size());
@@ -340,6 +402,7 @@ namespace SWE {
 		for (uint gp = 0; gp < sq_diff.size(); gp++) {
 			L2 += sq_diff[gp] * rule.first[gp];
 		}
+
 		return L2*std::abs(elt.shape.GetJdet(rule.second)[0]);
 
 		/*std::vector<double> est_ze_gp(elt.data.get_ngp_internal());
@@ -347,7 +410,7 @@ namespace SWE {
 
 		double t = stepper.get_t_at_curr_stage();
 		auto true_ze = [t](Point<2>& pt) {
-			return SWE::ic_ze(t, pt);
+			return SWE::true_ze(t, pt);
 		};
 
 		std::vector<double> true_ze_gp(elt.data.get_ngp_internal());

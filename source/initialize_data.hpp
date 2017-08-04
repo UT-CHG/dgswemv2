@@ -1,7 +1,7 @@
 #ifndef INITIALIZE_DATA_HPP
 #define INITIALIZE_DATA_HPP
 
-#include "problem/SWE/swe_ic_src_functions.hpp"
+#include "problem/SWE/swe_true_src_functions.hpp"
 
 template <typename MeshType>
 void initialize_data(MeshType& mesh, const MeshMetaData& mesh_data) {
@@ -33,19 +33,19 @@ void initialize_data(MeshType& mesh, const MeshMetaData& mesh_data) {
 			elt.ComputeDUgp(GlobalCoord::y, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_y_at_gp);
 
 			auto ze_init = [](Point<2>& pt) {
-				return SWE::ic_ze(0, pt);
+				return SWE::true_ze(0, pt);
 			};
 
 			elt.data.state[0].ze = elt.L2Projection(ze_init);
 
 			auto qx_init = [](Point<2>& pt){
-				return SWE::ic_qx(0, pt);
+				return SWE::true_qx(0, pt);
 			};
 
 			elt.data.state[0].qx = elt.L2Projection(qx_init);
 
 			auto qy_init = [](Point<2>& pt){
-				return SWE::ic_qy(0, pt);
+				return SWE::true_qy(0, pt);
 			};
 
 			elt.data.state[0].qy = elt.L2Projection(qy_init);
