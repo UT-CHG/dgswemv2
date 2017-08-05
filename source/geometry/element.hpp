@@ -11,10 +11,10 @@ namespace Geometry {
 
 	private:
 		uint ID;
-	public:
+	
 		master_type& master;
 		shape_type shape;
-	private:
+	
 		std::vector<uint> neighbor_ID;
 		std::vector<uchar> boundary_type;
 
