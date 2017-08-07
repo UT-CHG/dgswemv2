@@ -1,5 +1,5 @@
 BUILD_TYPE=Release
-MACHINE=ices-desktop
+MACHINE=stampede2
 #VERBOSE=true
 
 if [ "$MACHINE" == "ices-desktop" ]; then
@@ -11,8 +11,21 @@ if [ "$MACHINE" == "ices-desktop" ]; then
     WORK=/workspace
 fi
 
+if [ "$MACHINE" == "stampede2" ]; then
+    NUM_BUILDCORES=16
+    MODULES="xalt/1.7 TACC gcc/7.1.0 boost/1.64 cmake/3.8.2"
+    CMAKE="cmake"
+
+    VTUNE_MODULES="vtune/17.update4"
+    VTUNE_DIR=/opt/intel/vtune_amplifier_xe_2017.4.0.518798
+fi
+
+
 BUILD_PATH=$WORK/dgswemv2_local_build_${BUILD_TYPE}
 INSTALL_PATH=$WORK/dgswemv2_local_install_${BUILD_TYPE}
 
 YAML_CPP_REPO_PATH=$WORK/yaml-cpp
 YAML_CPP_BUILD_PATH=$BUILD_PATH/yaml-cpp
+
+HPX_REPO_PATH=$WORK/hpx
+HPX_BUILD_PATH=$BUILD_PATH/hpx
