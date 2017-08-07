@@ -18,6 +18,8 @@ if [ "$MACHINE" == "stampede2" ]; then
 
     VTUNE_MODULES="vtune/17.update4"
     VTUNE_DIR=/opt/intel/vtune_amplifier_xe_2017.4.0.518798
+
+    CXX_COMPILER="/opt/apps/gcc/7.1.0/bin/g++"
 fi
 
 
