@@ -30,7 +30,6 @@ include_directories(source)
 #############################################################################
 #  Check for dependencies
 find_package(yaml-cpp REQUIRED)
-find_package(HPX REQUIRED)
 
 enable_testing()
 
