@@ -17,7 +17,7 @@ list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
-include_directories(${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})
+include_directories("${YAML_CPP_INCLUDE_DIR}")
 
 add_executable(
   DG_HYPER_SWE
@@ -25,4 +25,4 @@ add_executable(
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES})
