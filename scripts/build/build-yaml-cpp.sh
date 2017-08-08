@@ -173,6 +173,10 @@ if [ ! -d "$YAML_CPP_BUILD_PATH" ]; then
 
     CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
                  -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH}"
+    if [ -v CXX_COMPILER ]; then
+    CMAKE_FLAGS="$CMAKE_FLAGS \
+                 -DCMAKE_CXX_COMPILER=${CXX_COMPILER}"
+    fi
 
     CMD="cmake ${CMAKE_FLAGS} $YAML_CPP_REPO_PATH"
     echo "CMD = $CMD"
