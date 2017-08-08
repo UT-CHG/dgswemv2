@@ -8,7 +8,8 @@
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
-//#include <yaml-cpp/yaml.h>
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx.hpp>
 
 int main(int argc, const char* argv[]) {
     if (argc != 2) {
