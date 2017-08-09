@@ -70,12 +70,6 @@ while read line; do
 done < $CONFIGFILE
 
 echo "Press enter to continue with these settings (or ctrl-c to exit)."
-
-if [ "$1" == "reinstall" ]; then
-    $START_BOLD
-    echo "WARNING! reinstalling old files if you've changed the config file might be a bad idea"
-fi
-
 read answer
 
 if [ -s "$CONFIGFILE" ]; then
@@ -104,7 +98,7 @@ else
 fi
 
 if [ "$1" == "clean" ]; then
-    CLEAN_CMD="rm -rf $HPX_BUILD_PATH"
+    CLEAN_CMD="rm -rf $HWLOC_BUILD_PATH"
 
     $START_BOLD
     echo "$0 clean:"
@@ -116,30 +110,12 @@ if [ "$1" == "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${HPX_BUILD_PATH}"
+	echo "removing build directory ${HWLOC_BUILD_PATH}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
     fi
     exit 0
-fi
-
-if [ "$1" == "reinstall" ]; then
-    if [ -d ${HPX_BUILD_PATH} ]; then
-	cd ${HPX_BUILD_PATH}	
-	make install
-	if [ "$#" != 0 ]; then
-	    $START_BOLD; echo "make install may have failed!"; $END_BOLD;
-	fi
-    fi
-fi
-
-echo "Build type is: ${BUILD_TYPE}"
-echo "Build path is: ${HPX_BUILD_PATH}"
-
-# Add VTune module
-if [ "$VTUNE" = "true" ]; then
-    MODULES="${MODULES} ${VTUNE_MODULE}"
 fi
 
 echo "MODULES = $MODULES"
@@ -165,54 +141,17 @@ module list
 
 #echo "MODULES = $MODULES" >> $LOGFILE
 
-if [ ! -d "$HPX_BUILD_PATH" ]; then
-    echo "Creating build path..."
-    mkdir -p "$HPX_BUILD_PATH"
-    cd "$HPX_BUILD_PATH"
-
-    ############################################
-    # MODIFY CMAKE FLAGS AS YOU WISH
-    #
-
-    MALLOC="jemalloc"
-    IDLE_RATES="true"
-
-    CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
-                 -DHPX_WITH_PARCELPORT_MPI=true \
-                 -DHPX_WITH_MALLOC=$MALLOC \
-                 -DHPX_WITH_THREAD_IDLE_RATES=${IDLE_RATES} \
-                 -DHPX_WITH_CXX14=On \
-                 -DHPX_WITH_TESTS=Off \
-                 -DHPX_WITH_EXAMPLES=Off"
-    if [ $MACHINE = "stampede2" ]; then
-    CMAKE_FLAGS="${CMAKE_FLAGS} \
-                 -DCMAKE_TOOLCHAIN_FILE=${HPX_REPO_PATH}/cmake/toolchains/Stampede2-gcc.cmake"
-    fi
-    if [ $VTUNE = "true" ]; then
-	CMAKE_FLAGS="${CMAKE_FLAGS} \
-                 -DHPX_WITH_ITTNOTIFY=On \
-                 -DAMPLIFIER_ROOT=${VTUNE_DIR}"
-    fi
-
-    CMD="cmake ${CMAKE_FLAGS} $HPX_REPO_PATH"
-    echo "CMD = $CMD"
-
-    $CMD
-
-    #
-    ############################################
-
-
-    # cleanup on failure
-    rc=$?
-    if [[ $rc != 0 ]] ; then
-	echo "build failure, deleting build path"
-        cd "$SCRIPTPATH"
-        rm -rf "$HPX_BUILD_PATH"
-        exit $rc
-    fi
-
+HWLOC_BUILD="${BUILD_PATH}/hwloc"
+if [ ! -d "$HWLOC_BUILD_PATH" ]; then
+    set -e
+    mkdir -p ${HWLOC_BUILD}
+    cd ${HWLOC_BUILD}
+    wget https://www.open-mpi.org/software/hwloc/v1.11/downloads/hwloc-1.11.7.tar.gz
+    tar xf hwloc-1.11.7.tar.gz
+    cd hwloc-1.11.7
+    ./configure --prefix=${INSTALL_PATH}
+    make
+    make install
 else
     $START_BOLD
     echo "directory exists! please either run:"
@@ -221,18 +160,8 @@ else
     $START_BOLD
     echo "or continue the build process:"
     $END_BOLD
-    echo "cd ${HPX_BUILD_PATH}"
-    echo "nice make -k -j${NUM_BUILDCORES} || exit 1"
+    echo "cd ${HWLOC_BUILD_PATH}"
+    echo "make"
     echo "make install"
     exit 0
-fi
-
-# the actual build command
-if [ "$1" != "no-make" ]; then
-    cd "$HPX_BUILD_PATH"
-    MAKECMD="make -k -j$NUM_BUILDCORES"
-    INSTALLCMD="make install"
-    
-    $MAKECMD
-    $INSTALLCMD
 fi
