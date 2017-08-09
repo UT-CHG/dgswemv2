@@ -12,46 +12,31 @@
 #include <hpx/hpx.hpp>
 
 int main(int argc, char* argv[]) {
-namespace po = boost::program_options;
+    boost::program_options::options_description op_desc("Allowed options");
 
-// Declare the supported options.
-po::options_description desc("Allowed options");
-desc.add_options()
-    ("help", "produce help message")
-    ("compression", po::value<int>(), "set compression level")
-;
+    op_desc.add_options()                                                                //
+        ("help", "produce help message")                                                 //
+        ("input-file", boost::program_options::value<std::string>(), "set input file");  //
 
-po::variables_map vm;
-po::store(po::parse_command_line(argc, argv, desc), vm);
-po::notify(vm);    
+    boost::program_options::variables_map vm;
+    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, op_desc), vm);
 
-if (vm.count("help")) {
-    cout << desc << "\n";
-    return 1;
-}
-
-    return hpx::init(desc, argc, argv);
-}
-
-int hpx_main(boost::program_options::variables_map& vm) {
-if (vm.count("compression")) {
-    std::cout << "Compression level was set to " 
- << vm["compression"].as<int>() << ".\n";
-} else {
-    std::cout << "Compression level was not set.\n";
-}
-/*
-    if (argc != 2) {
-        std::cerr << "Usage\n"
-                  << "    /path/to/DG_HYPER_SWE input_file\n";
+    if (vm.count("help")) {
+        std::cout << op_desc << "\n";
         return 1;
     }
 
-    try {
-        const InputParameters input(argv[1]);
+    return hpx::init(op_desc, argc, argv);
+}
+
+int hpx_main(boost::program_options::variables_map& vm) {
+    if (vm.count("input-file")) {
+        const char* file_name = vm["input-file"].as<std::string>().c_str();
+
+        const InputParameters input(file_name);
 
         printf("Starting program %s with p=%d for %s mesh\n\n",
-               argv[1],
+               file_name,
                input.polynomial_order,
                input.mesh_file_name.c_str());
 
@@ -69,14 +54,9 @@ if (vm.count("compression")) {
                   << "\n";
 
         delete mesh;
-
-        return 0;
+    } else {
+        std::cout << "Input file is not set.\n";
     }
-    catch (const std::exception& e) {
-        std::cerr << "Exception caught\n";
-        std::cerr << "  " << e.what() << std::endl;
 
-        return 1;
-    }
-*/
+    return hpx::finalize();  // Handles HPX shutdown
 }
