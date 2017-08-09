@@ -34,11 +34,6 @@ if (vm.count("help")) {
 }
 
 int hpx_main(boost::program_options::variables_map& vm) {
-if (vm.count("help")) {
-    std::cout << desc << "\n";
-    return 1;
-}
-
 if (vm.count("compression")) {
     std::cout << "Compression level was set to " 
  << vm["compression"].as<int>() << ".\n";
