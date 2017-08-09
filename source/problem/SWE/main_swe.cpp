@@ -22,7 +22,7 @@ desc.add_options()
 ;
 
 po::variables_map vm;
-po::store(po::parse_command_line(ac, av, desc), vm);
+po::store(po::parse_command_line(argc, argv, desc), vm);
 po::notify(vm);    
 
 if (vm.count("help")) {
