@@ -12,7 +12,27 @@
 #include <hpx/hpx.hpp>
 
 int main(int argc, char* argv[]) {
+<<<<<<< HEAD
     boost::program_options::options_description op_desc("Allowed options");
+=======
+namespace po = boost::program_options;
+
+// Declare the supported options.
+po::options_description desc("Allowed options");
+desc.add_options()
+    ("help", "produce help message")
+    ("compression", po::value<int>(), "set compression level")
+;
+
+po::variables_map vm;
+po::store(po::parse_command_line(argc, argv, desc), vm);
+po::notify(vm);    
+
+if (vm.count("help")) {
+    std::cout << desc << "\n";
+    return 1;
+}
+>>>>>>> beb9725dadf506923d138614ff245a0439399051
 
     op_desc.add_options()                                                                //
         ("help", "produce help message")                                                 //
@@ -58,5 +78,12 @@ int hpx_main(boost::program_options::variables_map& vm) {
         std::cout << "Input file is not set.\n";
     }
 
+<<<<<<< HEAD
     return hpx::finalize();  // Handles HPX shutdown
 }
+=======
+        return 1;
+    }
+*/
+}
+>>>>>>> beb9725dadf506923d138614ff245a0439399051
