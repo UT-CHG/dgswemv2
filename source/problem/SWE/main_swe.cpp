@@ -21,10 +21,10 @@ desc.add_options()
     ("compression", po::value<int>(), "set compression level")
 ;
 
-po::variables_map vm;
-po::store(po::parse_command_line(argc, argv, desc), vm);
-po::notify(vm);    
+    return hpx::init(desc, argc, argv);
+}
 
+int hpx_main(boost::program_options::variables_map& vm) {
 if (vm.count("help")) {
     std::cout << desc << "\n";
     return 1;
