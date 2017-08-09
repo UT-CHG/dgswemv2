@@ -187,7 +187,7 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
                  -DHPX_WITH_EXAMPLES=Off"
     if [ $MACHINE = "stampede2" ]; then
     CMAKE_FLAGS="${CMAKE_FLAGS} \
-                 -DCMAKE_TOOLCHAIN_FILE=${HPX_REPO_PATH}/cmake/toolchains/Stampede2-gcc.cmake"
+                 -DCMAKE_TOOLCHAIN_FILE=${SCRIPTPATH}/Stampede2-gcc.cmake"
     fi
     if [ $VTUNE = "true" ]; then
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
