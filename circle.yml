@@ -7,7 +7,7 @@ dependencies:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 20
     - ./scripts/set-up-dependencies.sh
   cache_directories:
-    - "/home/ubuntu/yaml-cpp
+    - "/home/ubuntu/yaml-cpp"
     - "/home/ubuntu/hpx"
     - "/home/ubuntu/build"
     - "/home/ubuntu/install"
