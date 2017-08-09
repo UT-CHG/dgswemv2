@@ -109,11 +109,15 @@ if [ "$1" = "clean" ]; then
     fi
     exit 0
 fi
- 
+
 if [ ! -d $INSTALL_PATH ]; then
     echo "Creating install path..."
     mkdir -p ${INSTALL_PATH}
 fi
+
+for module in $MODULES; do
+    module load $module
+done
 
 JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
 if [ ! -d ${JEMALLOC_BUILD} ]; then
