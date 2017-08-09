@@ -36,7 +36,7 @@ if (vm.count("compression")) {
 } else {
     std::cout << "Compression level was not set.\n";
 }
-
+/*
     if (argc != 2) {
         std::cerr << "Usage\n"
                   << "    /path/to/DG_HYPER_SWE input_file\n";
@@ -74,4 +74,5 @@ if (vm.count("compression")) {
 
         return 1;
     }
+*/
 }
