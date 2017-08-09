@@ -15,11 +15,9 @@ int main(int argc, const char* argv[]) {
     boost::program_options::options_description desc_commandline("Usage: " HPX_APPLICATION_STRING " [options]");
     
     desc_commandline.add_options()
-        ( "n-value",
-          boost::program_options::value<std::uint64_t>()->default_value(10),
-          "n value for the Fibonacci function")
-        ;
-
+    ("help", "produce help message")
+    ("compression", po::value<int>(), "set compression level");
+    
     if (argc != 2) {
         std::cerr << "Usage\n"
                   << "    /path/to/DG_HYPER_SWE input_file\n";
