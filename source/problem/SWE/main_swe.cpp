@@ -12,30 +12,23 @@
 #include <hpx/hpx.hpp>
 
 int main(int argc, char* argv[]) {
-    return hpx::init(argc, argv);
+    if (argc != 2) {
+        std::cerr << "Usage\n"
+                  << "    /path/to/DG_HYPER_SWE input_file\n";
+        return 1;
+    } else {
+        return hpx::init(argc, argv);
+    }
 }
 
 int hpx_main(int argc, char* argv[]) {
-    boost::program_options::options_description op_desc("Allowed options");
-
-    op_desc.add_options()                                                                //
-        ("input-file", boost::program_options::value<std::string>(), "set input file");  //
-    
-    boost::program_options::positional_options_description pos_opt;
-    pos_opt.add("input-file", -1);
-
-    boost::program_options::variables_map vm;
-    boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(op_desc).positional(pos_opt).run(), vm);
-
-    if (vm.count("input-file")) {
-        const char* file_name = vm["input-file"].as<std::string>().c_str();
-
-        const InputParameters input(file_name);
+    try {
+        const InputParameters input(argv[1]);
 
         printf("Starting program %s with p=%d for %s mesh\n\n",
-               file_name,
+               argv[1],
                input.polynomial_order,
-               input.mesh_file_name.c_str());
+               input.mesh_file_name.c_str());        const InputParameters input(file_name);
 
         auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
 
@@ -49,10 +42,10 @@ int hpx_main(int argc, char* argv[]) {
 
         std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
                   << "\n";
-
-        delete mesh;
-    } else {
-        std::cout << "Input file is not set.\n";
+    } 
+    catch (const std::exception& e) {
+        std::cerr << "Exception caught\n";
+        std::cerr << "  " << e.what() << std::endl;
     }
 
     return hpx::finalize();  // Handles HPX shutdown
