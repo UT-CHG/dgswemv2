@@ -12,24 +12,27 @@
 #include <hpx/hpx.hpp>
 
 int main(int argc, char* argv[]) {
+    return hpx::init(argc, argv);
+}
+
+int hpx_main(int argc, char* argv[]) {
     boost::program_options::options_description op_desc("Allowed options");
 
     op_desc.add_options()                                                                //
         ("help", "produce help message")                                                 //
         ("input-file", boost::program_options::value<std::string>(), "set input file");  //
+    
+    boost::program_options::positional_options_description pos_opt;
+    pos_opt.add("input-file", -1);
 
     boost::program_options::variables_map vm;
-    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, op_desc), vm);
+    boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(op_desc).positional(pos_opt).run(), vm);
 
     if (vm.count("help")) {
         std::cout << op_desc << "\n";
         return 1;
     }
 
-    return hpx::init(op_desc, argc, argv);
-}
-
-int hpx_main(boost::program_options::variables_map& vm) {
     if (vm.count("input-file")) {
         const char* file_name = vm["input-file"].as<std::string>().c_str();
 
