@@ -88,9 +88,9 @@ else
 fi
 
 # Done setting up variables.
-
+JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
 if [ "$1" = "clean" ]; then
-    CLEAN_CMD="rm -rf ${SCRIPTPATH}/jemalloc"
+    CLEAN_CMD="rm -rf ${JEMALLOC_BUILD}"
 
     $START_BOLD
     echo "$0 clean:"
@@ -102,7 +102,7 @@ if [ "$1" = "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${SCRIPTPATH}/jemalloc"
+	echo "removing build directory ${JEMALLOC_BUILD}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
@@ -119,7 +119,6 @@ for module in $MODULES; do
     module load $module
 done
 
-JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
 if [ ! -d ${JEMALLOC_BUILD} ]; then
     set -e
     mkdir -p ${JEMALLOC_BUILD}
