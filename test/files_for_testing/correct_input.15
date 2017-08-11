@@ -1,6 +1,6 @@
 mesh:
   format: Adcirc
-  file_name: /work/04430/kazbek/stampede2/dgswemv2/test/files_for_testing/sample_fort.14
+  file_name: /h2/kazbek/UT-CHG/dgswemv2/test/files_for_testing/sample_fort.14
 
 timestepping:
   dt: 1                           #in seconds

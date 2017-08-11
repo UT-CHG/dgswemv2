@@ -12,48 +12,23 @@
 #include <hpx/hpx.hpp>
 
 int main(int argc, char* argv[]) {
-namespace po = boost::program_options;
-
-// Declare the supported options.
-po::options_description desc("Allowed options");
-desc.add_options()
-    ("help", "produce help message")
-    ("compression", po::value<int>(), "set compression level")
-;
-
-po::variables_map vm;
-po::store(po::parse_command_line(argc, argv, desc), vm);
-po::notify(vm);    
-
-if (vm.count("help")) {
-    cout << desc << "\n";
-    return 1;
-}
-
-    return hpx::init(desc, argc, argv);
-}
-
-int hpx_main(boost::program_options::variables_map& vm) {
-if (vm.count("compression")) {
-    std::cout << "Compression level was set to " 
- << vm["compression"].as<int>() << ".\n";
-} else {
-    std::cout << "Compression level was not set.\n";
-}
-/*
     if (argc != 2) {
         std::cerr << "Usage\n"
                   << "    /path/to/DG_HYPER_SWE input_file\n";
         return 1;
+    } else {
+        return hpx::init(argc, argv);
     }
+}
 
+int hpx_main(int argc, char* argv[]) {
     try {
         const InputParameters input(argv[1]);
 
         printf("Starting program %s with p=%d for %s mesh\n\n",
                argv[1],
                input.polynomial_order,
-               input.mesh_file_name.c_str());
+               input.mesh_file_name.c_str());        const InputParameters input(file_name);
 
         auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
 
@@ -67,16 +42,11 @@ if (vm.count("compression")) {
 
         std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
                   << "\n";
-
-        delete mesh;
-
-        return 0;
-    }
+    } 
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
         std::cerr << "  " << e.what() << std::endl;
-
-        return 1;
     }
-*/
+
+    return hpx::finalize();  // Handles HPX shutdown
 }
