@@ -90,13 +90,6 @@ else
     set +x
 fi
 
-if [ -d "${HPX_REPO_PATH}" ]; then
-    echo "found HPX repo path: ${HPX_REPO_PATH}"
-else
-    echo "could not find HPX repo path: ${HPX_REPO_PATH}!"
-    exit 1
-fi
-
 if [ "$1" == "clean" ]; then
     CLEAN_CMD="rm -rf $HWLOC_BUILD_PATH"
 
