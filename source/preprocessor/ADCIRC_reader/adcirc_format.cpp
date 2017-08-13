@@ -23,6 +23,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> node_name;
             ifs >> node_data[0] >> node_data[1] >> node_data[2];
 
+            assert( !nodes.count(node_name) ); //Can't define a node twice
             nodes.insert({node_name, node_data});
             ifs.ignore(1000, '\n');
         }
@@ -36,6 +37,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> element_name;
             ifs >> element_data[0] >> element_data[1] >> element_data[2] >> element_data[3];
 
+            assert( !elements.count(element_name) ); //Can't define element twice
             elements.insert({element_name, element_data});
             ifs.ignore(1000, '\n');
         }
@@ -103,23 +105,23 @@ void AdcircFormat::write_to(const char* out_name) {
     std::ofstream file;
     file.open(out_name);
 
-    file << name << "\n";
-    file << elements.size() << "    " << nodes.size() << "\n";
+    file << name << '\n';
+    file << elements.size() << "    " << nodes.size() << '\n';
 
     for (const auto& node : nodes) {
         file << node.first;
         for (int i = 0; i < 3; ++i) {
             file << std::setprecision(15) << std::setw(22) << node.second[i];
         }
-        file << "\n";
+        file << '\n';
     }
 
     for (const auto& element : elements) {
         file << element.first;
         for (int i = 0; i < 4; ++i) {
-            file << std::setw(5) << element.second[i];
+            file << std::setw(12) << element.second[i];
         }
-        file << "\n";
+        file << '\n';
     }
 
     file << NOPE << " = Number of open boundaries\n";
@@ -135,9 +137,9 @@ void AdcircFormat::write_to(const char* out_name) {
     file << NVEL << " = Total number of open boundary nodes\n";
 
     for (int n = 0; n < NBOU; ++n) {
-        file << NBVV[n].size() << " " << IBTYPE[n] << " = Number of nodes for land boundary " << n + 1 << "\n";
+        file << NBVV[n].size() << " " << IBTYPE[n] << " = Number of nodes for land boundary " << n + 1 << '\n';
         for (uint i = 0; i < NBVV[n].size(); ++i) {
-            file << NBVV[n][i] << "\n";
+            file << NBVV[n][i] << '\n';
         }
     }
 }
