@@ -45,7 +45,7 @@ class AdcircFormat {
                                std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
     }
 
-    void write_to(const char* out_name);
+    void write_to(const char* out_name) const;
 
   private:
     bool has_edge(std::vector<int>::const_iterator cbegin,

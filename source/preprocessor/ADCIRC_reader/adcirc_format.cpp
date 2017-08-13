@@ -101,7 +101,8 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     ifs.close();
 }
 
-void AdcircFormat::write_to(const char* out_name) {
+void AdcircFormat::write_to(const char* out_name) const
+{
     std::ofstream file;
     file.open(out_name);
 
