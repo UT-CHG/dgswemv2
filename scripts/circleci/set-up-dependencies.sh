@@ -14,6 +14,8 @@ echo | build/build-boost.sh -c circleci/test.config.txt
 
 echo | build/build-jemalloc.sh -c circleci/test.config.txt
 
+echo | build/build-metis.sh -c circleci/test.config.txt
+
 #hpx
 cd $HOME
 git clone https://github.com/STEllAR-GROUP/hpx.git
