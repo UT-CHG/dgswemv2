@@ -8,8 +8,13 @@
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
-#include <hpx/hpx_init.hpp>
 #include <hpx/hpx.hpp>
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx_main.hpp>
+#include <hpx/include/iostreams.hpp>
+
+void local_main(std::string);
+HPX_PLAIN_ACTION(local_main, local_main_act);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -22,7 +27,20 @@ int main(int argc, char* argv[]) {
 }
 
 int hpx_main(int argc, char* argv[]) {
-    try {
+    std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
+    
+    hpx::cout << localities.size();
+    /*
+    std::vector<hpx::future<void> > futures;
+    futures.reserve(localities.size());
+
+    for (hpx::naming::id_type const& node : localities) {
+        futures.push_back(hpx::async<local_main_act>(node, std::string(argv[1])));
+    }
+
+    hpx::wait_all(futures);
+
+    /*try {
         const InputParameters input(argv[1]);
 
         printf("Starting program %s with p=%d for %s mesh\n\n",
@@ -47,6 +65,10 @@ int hpx_main(int argc, char* argv[]) {
         std::cerr << "Exception caught\n";
         std::cerr << "  " << e.what() << std::endl;
     }
-
+    */
     return hpx::finalize();  // Handles HPX shutdown
+}
+
+void local_main(std::string input_file) {
+    hpx::cout << "a\n";
 }

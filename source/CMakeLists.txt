@@ -26,3 +26,8 @@ add_executable(
 )
 
 target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+
+hpx_setup_target(
+    DG_HYPER_SWE
+    COMPONENT_DEPENDENCIES iostreams
+)
