@@ -32,7 +32,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         std::vector<int> node{elt.second[1], elt.second[2], elt.second[3]};
 
         for (uint k = 0; k < 3; ++k) {
-            std::uint64_t curr_key = (std::uint64_t)(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32 |
+            std::uint64_t curr_key = static_cast<std::uint64_t>(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32 |
                                      std::max(node[(k + 1) % 3], node[(k + 2) % 3]);
 
             if (edge_dictionary.count(curr_key)) {  // if already one element has the edge.
@@ -65,6 +65,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             std::array<int, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
                                      mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
 
+            _elements.at(elt_id).neighbor_ID[face_id] = DEFAULT_ID;
             _elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
         }
     }

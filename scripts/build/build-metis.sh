@@ -91,7 +91,7 @@ else
 fi
 
 if [ "$1" == "clean" ]; then
-    CLEAN_CMD="rm -rf $HWLOC_BUILD_PATH"
+    CLEAN_CMD="rm -rf $METIS_BUILD_PATH"
 
     $START_BOLD
     echo "$0 clean:"
@@ -103,7 +103,7 @@ if [ "$1" == "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${HWLOC_BUILD_PATH}"
+	echo "removing build directory ${METIS_BUILD_PATH}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
@@ -134,15 +134,17 @@ module list
 
 #echo "MODULES = $MODULES" >> $LOGFILE
 
-HWLOC_BUILD="${BUILD_PATH}/hwloc"
-if [ ! -d "$HWLOC_BUILD_PATH" ]; then
+METIS_BUILD="${BUILD_PATH}/metis"
+if [ ! -d "$METIS_BUILD_PATH" ]; then
     set -e
-    mkdir -p ${HWLOC_BUILD}
-    cd ${HWLOC_BUILD}
-    wget https://www.open-mpi.org/software/hwloc/v1.11/downloads/hwloc-1.11.7.tar.gz
-    tar xf hwloc-1.11.7.tar.gz
-    cd hwloc-1.11.7
-    ./configure --prefix=${INSTALL_PATH}
+    mkdir -p ${METIS_BUILD}
+    cd ${METIS_BUILD}
+    wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+    tar xf metis-5.1.0.tar.gz
+    cd metis-5.1.0
+    sed -i 's/#define IDXTYPEWIDTH 32/#define IDXTYPEWIDTH 64/g' include/metis.h
+    sed -i 's/#define REALTYPEWIDTH 32/#define REALTYPEWIDTH 64/g' include/metis.h
+    make config prefix=${INSTALL_PATH}
     make
     make install
 else
@@ -153,7 +155,7 @@ else
     $START_BOLD
     echo "or continue the build process:"
     $END_BOLD
-    echo "cd ${HWLOC_BUILD_PATH}"
+    echo "cd ${METIS_BUILD_PATH}"
     echo "make"
     echo "make install"
     exit 0

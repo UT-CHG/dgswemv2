@@ -11,3 +11,9 @@ From the project's root directory run the following
 To build dgswem-v2 run
 
     make DG_HYPER_SWE
+
+## License
+
+DGSWEM V2 is licensed under the MIT license. The following files have been taken from other repositories. Their licenses are inlined within the files:
+
+ - `cmake/modules/FindMETIS.cmake`
