@@ -30,7 +30,7 @@ int hpx_main(int argc, char* argv[]) {
     std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
     
     hpx::cout << localities.size();
-    /*
+    
     std::vector<hpx::future<void> > futures;
     futures.reserve(localities.size());
 
