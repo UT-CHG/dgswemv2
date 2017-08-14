@@ -29,8 +29,6 @@ int main(int argc, char* argv[]) {
 int hpx_main(int argc, char* argv[]) {
     std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
     
-    hpx::cout << localities.size();
-    
     std::vector<hpx::future<void> > futures;
     futures.reserve(localities.size());
 
@@ -70,5 +68,5 @@ int hpx_main(int argc, char* argv[]) {
 }
 
 void local_main(std::string input_file) {
-    hpx::cout << "a\n";
+    hpx::cout << input_file << '\n';
 }
