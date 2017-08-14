@@ -71,6 +71,58 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     }
 }
 
+MeshMetaData::MeshMetaData(const std::string& file) {
+    std::ifstream ifs(file);
+
+    if (!ifs) {
+        std::string err_msg = "Fatal Error: Mesh named " + file + " not found\n";
+        throw std::logic_error(err_msg);
+    }
+
+    std::getline(ifs, _mesh_name);
+
+    uint num_elements;
+    ifs >> num_elements;
+    ifs.ignore(1000,'\n');
+    uint elt_id;
+    for ( uint e = 0; e < num_elements; ++e ) {
+        ifs >> elt_id;
+        ifs >> _elements[elt_id];
+        ifs.ignore(1000,'\n');
+    }
+
+    uint num_nodes;
+    ifs >> num_nodes;
+    ifs.ignore(1000,'\n');
+    uint node_id;
+    for ( uint n =0; n < num_nodes; ++n ) {
+        ifs >> node_id;
+        ifs >> _nodes[node_id];
+        ifs.ignore(1000,'\n');
+    }
+
+    ifs.close();
+}
+
+void MeshMetaData::WriteTo(const std::string& file) {
+    std::ofstream ofs;
+    ofs.open(file);
+
+    ofs << _mesh_name << '\n';
+    ofs << _elements.size() << " = number of elements\n";
+    for ( const auto& elt : _elements ) {
+        ofs << elt.first << " " << elt.second << '\n';
+    }
+
+    ofs << _nodes.size() << " = number of nodes\n";
+    for ( const auto& nod : _nodes ) {
+        ofs << nod.first << " " << nod.second << '\n';
+    }
+
+    ofs.close();
+
+}
+
 std::vector<Point<2>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
     const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
     std::vector<Point<2>> nodal_coordinates(node_ids.size());

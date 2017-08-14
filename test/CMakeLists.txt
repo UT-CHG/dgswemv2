@@ -150,6 +150,20 @@ add_test(
 #  test_swe_boundaries_exe
 #)
 
+add_executable(
+  test_mesh_metadata_exe
+  test_mesh_metadata.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+)
+
+add_test(
+  Unit_mesh_metadata
+  test_mesh_metadata_exe
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
+)
+
 include_directories("${YAML_CPP_INCLUDE_DIR}")
 
 add_executable(

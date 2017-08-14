@@ -4,5 +4,6 @@
 
 build/*
 test/files_for_testing/sample_fort.14.out
+test/files_for_testing/sample_fort.14.meta.out
 test/files_for_testing/correct_input.15
 scripts/build/config-kazbek.txt
