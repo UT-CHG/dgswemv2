@@ -16,7 +16,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
 template <typename ProblemType>
 typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mesh_data) {
-    typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(p);
+    typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(p, mesh_data._mesh_name);
 
     initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
     initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
@@ -75,7 +75,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 
     mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });
 
-    std::string file_name = "output/geometry.vtk";
+    std::string file_name = "output/" + mesh.GetMeshName() + "_geometry.vtk";
     std::ofstream file(file_name);
 
     file << "# vtk DataFile Version 3.0\n";

@@ -26,9 +26,9 @@ int hpx_main(int argc, char* argv[]) {
         const InputParameters input(argv[1]);
 
         printf("Starting program %s with p=%d for %s mesh\n\n",
-               argv[1],
+               argv[0],
                input.polynomial_order,
-               input.mesh_file_name.c_str());        const InputParameters input(file_name);
+               input.mesh_file_name.c_str());
 
         auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
 
@@ -42,7 +42,7 @@ int hpx_main(int argc, char* argv[]) {
 
         std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
                   << "\n";
-    } 
+    }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
         std::cerr << "  " << e.what() << std::endl;

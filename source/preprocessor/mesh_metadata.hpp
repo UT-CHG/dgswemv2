@@ -32,6 +32,7 @@ struct MeshMetaData {
     std::vector<Point<2>> GetNodalCoordinates(uint elt_id) const;
     std::vector<double> GetBathymetry(uint elt_id) const;
 
+    std::string _mesh_name;
     std::unordered_map<uint, ElementMetaData> _elements;
     std::unordered_map<uint, NodeMetaData> _nodes;
 };

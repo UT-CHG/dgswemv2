@@ -1,6 +1,8 @@
 #include "mesh_metadata.hpp"
 
 MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
+    _mesh_name = mesh_file.name;
+
     for (const auto& nod : mesh_file.nodes) {
         if (nod.first < 0) {
             throw std::logic_error("ERROR in mesh_metadata.cpp: Node ID is negative; not supported\n");

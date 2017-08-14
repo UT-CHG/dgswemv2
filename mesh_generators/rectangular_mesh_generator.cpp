@@ -83,7 +83,7 @@ int main(int argc, const char* argv[]) {
     std::ofstream file(file_name);
 
     file << std::fixed << std::setprecision(12);
-    file << "ADCIRC Model\n";
+    file << "rectangle\n";
     file << 2 * m* n << "    " << (m + 1) * (n + 1) << '\n';
 
     for (uint node = 0; node < nodes.size(); node++) {

@@ -14,6 +14,8 @@ class Mesh;
 template <typename... Elements, typename... Interfaces, typename... Boundaries>
 class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Boundaries...>> {
   private:
+    std::string mesh_name;
+
     using MasterElementTypes = typename make_master_type<std::tuple<Elements...>>::type;
     using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
     using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
@@ -25,8 +27,10 @@ class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Bounda
     BoundaryContainer boundaries;
 
   public:
-    Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+    Mesh(uint p, std::string mesh_name)
+        : mesh_name(mesh_name), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
+    std::string& GetMeshName() { return this->mesh_name; }
     uint GetNumberElements() { return this->elements.size(); }
     uint GetNumberInterfaces() { return this->interfaces.size(); }
     uint GetNumberBoundaries() { return this->boundaries.size(); }
