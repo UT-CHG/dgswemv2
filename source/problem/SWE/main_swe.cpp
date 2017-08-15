@@ -62,8 +62,7 @@ void solve_mesh(std::string input_string, uint thread) {
     try {
         const InputParameters input(input_string.c_str(), hpx::get_locality_id(), thread);
             
-            printf("Starting program %s with p=%d for %s mesh\n\n",
-                   argv[0],
+            printf("Starting program with p=%d for %s mesh\n\n",
                    input.polynomial_order,
                    input.mesh_file_name.c_str());
 
