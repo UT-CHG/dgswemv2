@@ -16,7 +16,7 @@
 void local_main(std::string);
 HPX_PLAIN_ACTION(local_main, local_main_act);
 
-void solve_mesh(std::string);
+void solve_mesh(std::string, uint);
 HPX_PLAIN_ACTION(solve_mesh, solve_mesh_act);
 
 int main(int argc, char* argv[]) {
@@ -52,14 +52,14 @@ void local_main(std::string input_string) {
     futures.reserve(n_threads);
 
     for(uint thread = 0; thread < n_threads; thread++){
-        futures.push_back(hpx::async<solve_mesh_act>(here, input_string));
+        futures.push_back(hpx::async<solve_mesh_act>(here, input_string, thread));
     }
 
     hpx::wait_all(futures);
 }
 
-void solve_mesh(std::string input_string) {
-    hpx::cout << input_string << '\n';
+void solve_mesh(std::string input_string, uint thread) {
+    hpx::cout << input_string + std::to_string(thread) + hpx::find_here() << '\n';
     /*
     try {
         const InputParameters input(input_string.c_str());
