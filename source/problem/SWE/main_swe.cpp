@@ -61,7 +61,7 @@ void local_main(std::string input_string) {
 void solve_mesh(std::string input_string, uint thread) {
     try {
         const InputParameters input(input_string.c_str(), hpx::get_locality_id(), thread);
-        /*
+            
             printf("Starting program %s with p=%d for %s mesh\n\n",
                    argv[0],
                    input.polynomial_order,
@@ -79,7 +79,7 @@ void solve_mesh(std::string input_string, uint thread) {
 
             std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
         t1).count()
-        << "\n";*/
+        << "\n";
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

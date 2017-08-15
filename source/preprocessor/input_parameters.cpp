@@ -48,9 +48,7 @@ InputParameters::InputParameters(const char* input_string, uint locality, uint t
         std::string format = raw_mesh["format"].as<std::string>();
         if (format == "Adcirc") {
             mesh_file_name = raw_mesh["file_name"].as<std::string>();
-
             mesh_file_name.erase(mesh_file_name.size() - 3);
-
             mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(thread) + ".14";
 
             AdcircFormat adcirc_file(mesh_file_name);
