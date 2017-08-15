@@ -2,7 +2,7 @@
 #define RUN_SIMULATION_HPP
 
 template <typename ProblemType>
-void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mesh_type& mesh) {
+hpx::future<void> run_simulation(double time_end, Stepper& stepper, typename ProblemType::mesh_type& mesh) {
     // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
     // the nice std::for_each notation without having to define stepper within each element
 
@@ -30,6 +30,8 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
     ProblemType::write_VTK_data_kernel(stepper, mesh);
     ProblemType::write_modal_data_kernel(stepper, mesh);
 
+    hpx::future<void> future = hpx::make_ready_future();
+
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < stepper.get_num_stages(); ++stage) {
             mesh.CallForEachElement(volume_kernel);
@@ -38,7 +40,9 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
 
             mesh.CallForEachInterface(interface_kernel);
 
-            mesh.CallForEachBoundary(boundary_kernel);
+            future = future.then([&mesh, &boundary_kernel](hpx::future<void>&&) {
+                mesh.CallForEachBoundary(boundary_kernel);
+            });
 
             mesh.CallForEachElement(update_kernel);
 
@@ -55,6 +59,8 @@ void run_simulation(double time_end, Stepper& stepper, typename ProblemType::mes
             ProblemType::write_modal_data_kernel(stepper, mesh);
         }
     }
+
+    return future;
 }
 
 #endif

@@ -1,3 +1,8 @@
+#include <hpx/hpx.hpp>
+#include <hpx/hpx_init.hpp>
+#include <hpx/hpx_main.hpp>
+#include <hpx/include/iostreams.hpp>
+
 #include "../../general_definitions.hpp"
 
 #include "../../preprocessor/input_parameters.hpp"
@@ -8,15 +13,10 @@
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
-#include <hpx/hpx.hpp>
-#include <hpx/hpx_init.hpp>
-#include <hpx/hpx_main.hpp>
-#include <hpx/include/iostreams.hpp>
-
 void local_main(std::string);
 HPX_PLAIN_ACTION(local_main, local_main_act);
 
-void solve_mesh(std::string, uint);
+hpx::future<void> solve_mesh(std::string, uint);
 HPX_PLAIN_ACTION(solve_mesh, solve_mesh_act);
 
 int main(int argc, char* argv[]) {
@@ -35,11 +35,16 @@ int hpx_main(int argc, char* argv[]) {
     std::vector<hpx::future<void>> futures;
     futures.reserve(localities.size());
 
+    auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& node : localities) {
         futures.push_back(hpx::async<local_main_act>(node, std::string(argv[1])));
     }
 
     hpx::wait_all(futures);
+    auto t2 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+              << "\n";
 
     return hpx::finalize();  // Handles HPX shutdown
 }
@@ -58,7 +63,7 @@ void local_main(std::string input_string) {
     hpx::wait_all(futures);
 }
 
-void solve_mesh(std::string input_string, uint thread) {
+hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
         const InputParameters input(input_string.c_str(), hpx::get_locality_id(), thread);
 
@@ -70,12 +75,7 @@ void solve_mesh(std::string input_string, uint thread) {
 
         Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
 
-        auto t1 = std::chrono::high_resolution_clock::now();
-        run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
-        auto t2 = std::chrono::high_resolution_clock::now();
-
-        std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-                  << "\n";
+        return run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
