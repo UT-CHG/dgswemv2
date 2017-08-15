@@ -61,24 +61,21 @@ void local_main(std::string input_string) {
 void solve_mesh(std::string input_string, uint thread) {
     try {
         const InputParameters input(input_string.c_str(), hpx::get_locality_id(), thread);
-            
-            printf("Starting program with p=%d for %s mesh\n\n",
-                   input.polynomial_order,
-                   input.mesh_file_name.c_str());
 
-            auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
+        printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
-            SWE::Problem::initialize_data_kernel(*mesh, input.mesh_data);
+        auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
 
-            Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
+        SWE::Problem::initialize_data_kernel(*mesh, input.mesh_data);
 
-            auto t1 = std::chrono::high_resolution_clock::now();
-            run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
-            auto t2 = std::chrono::high_resolution_clock::now();
+        Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
 
-            std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
-        t1).count()
-        << "\n";
+        auto t1 = std::chrono::high_resolution_clock::now();
+        run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+                  << "\n";
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

@@ -2,7 +2,6 @@
 #define INPUT_HPP
 
 #include "mesh_metadata.hpp"
-#include <hpx/include/iostreams.hpp>
 
 struct RKInput {
     uint nstages;
