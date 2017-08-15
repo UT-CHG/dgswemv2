@@ -1,22 +1,21 @@
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
-const static auto is_equal = [](const MeshMetaData& meshA,
-                                const MeshMetaData& meshB)-> bool {
+const static auto is_equal = [](const MeshMetaData & meshA, const MeshMetaData & meshB) -> bool {
 
-    bool is_the_same {true};
+    bool is_the_same{true};
 
-    if ( meshA._mesh_name.compare(meshB._mesh_name) != 0 ) {
+    if (meshA._mesh_name.compare(meshB._mesh_name) != 0) {
         std::cerr << "Strings not equal\n";
         is_the_same = false;
     }
 
-    if ( meshA._elements != meshB._elements ) {
+    if (meshA._elements != meshB._elements) {
         std::cerr << "Elements not equal\n";
         is_the_same = false;
     }
 
-    if ( meshA._nodes != meshB._nodes ) {
+    if (meshA._nodes != meshB._nodes) {
         std::cerr << "Nodes not equal\n";
         is_the_same = false;
     }

@@ -23,7 +23,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> node_name;
             ifs >> node_data[0] >> node_data[1] >> node_data[2];
 
-            assert( !nodes.count(node_name) ); //Can't define a node twice
+            assert(!nodes.count(node_name));  // Can't define a node twice
             nodes.insert({node_name, node_data});
             ifs.ignore(1000, '\n');
         }
@@ -37,7 +37,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> element_name;
             ifs >> element_data[0] >> element_data[1] >> element_data[2] >> element_data[3];
 
-            assert( !elements.count(element_name) ); //Can't define element twice
+            assert(!elements.count(element_name));  // Can't define element twice
             elements.insert({element_name, element_data});
             ifs.ignore(1000, '\n');
         }
@@ -101,8 +101,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     ifs.close();
 }
 
-void AdcircFormat::write_to(const char* out_name) const
-{
+void AdcircFormat::write_to(const char* out_name) const {
     std::ofstream file;
     file.open(out_name);
 

@@ -9,24 +9,18 @@
 struct NodeMetaData {
     Point<2> coordinates;  // maybe Point<3>
     double bathymetry;     // this is somewhat problem specific to SWE, even mesh file specific to adcirc
-    friend std::ostream& operator<<(std::ostream& s, const NodeMetaData& node)
-    {
-        return s << node.coordinates[0] << " " << node.coordinates[1] << " "
-                 << node.bathymetry;
+    friend std::ostream& operator<<(std::ostream& s, const NodeMetaData& node) {
+        return s << node.coordinates[0] << " " << node.coordinates[1] << " " << node.bathymetry;
     }
 
-    friend std::istream& operator>>(std::istream& s, NodeMetaData& node)
-    {
+    friend std::istream& operator>>(std::istream& s, NodeMetaData& node) {
         return s >> node.coordinates[0] >> node.coordinates[1] >> node.bathymetry;
     }
 };
 
-inline
-bool operator==(const NodeMetaData& lhs, const NodeMetaData& rhs)
-{
-    return ( lhs.coordinates[0] == rhs.coordinates[0] ) &&
-        ( lhs.coordinates[1] == rhs.coordinates[1] ) &&
-        ( lhs.bathymetry == rhs.bathymetry );
+inline bool operator==(const NodeMetaData& lhs, const NodeMetaData& rhs) {
+    return (lhs.coordinates[0] == rhs.coordinates[0]) && (lhs.coordinates[1] == rhs.coordinates[1]) &&
+           (lhs.bathymetry == rhs.bathymetry);
 }
 
 // ID: corresponds to the element ID
@@ -42,26 +36,24 @@ struct ElementMetaData {
     std::vector<uint> node_ids;
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
-    friend std::ostream& operator<<(std::ostream& s, const ElementMetaData& elt)
-    {
+    friend std::ostream& operator<<(std::ostream& s, const ElementMetaData& elt) {
         s << elt.node_ids.size();
-        for ( const auto& node_id : elt.node_ids ) {
+        for (const auto& node_id : elt.node_ids) {
             s << " " << node_id;
         }
 
-        for ( const auto& neigh_id : elt.neighbor_ID ) {
+        for (const auto& neigh_id : elt.neighbor_ID) {
             s << " " << neigh_id;
         }
 
-        for ( const auto& bt : elt.boundary_type ) {
+        for (const auto& bt : elt.boundary_type) {
             s << " " << bt;
         }
 
         return s;
     }
 
-    friend std::istream& operator>>(std::istream& s, ElementMetaData& elt)
-    {
+    friend std::istream& operator>>(std::istream& s, ElementMetaData& elt) {
         uint n_faces;
         s >> n_faces;
 
@@ -69,16 +61,15 @@ struct ElementMetaData {
         elt.neighbor_ID.resize(n_faces);
         elt.boundary_type.resize(n_faces);
 
-        for ( uint i = 0; i < n_faces; ++i ) {
+        for (uint i = 0; i < n_faces; ++i) {
             s >> elt.node_ids[i];
         }
 
-        for ( uint i = 0; i < n_faces; ++i ) {
+        for (uint i = 0; i < n_faces; ++i) {
             s >> elt.neighbor_ID[i];
         }
 
-
-        for ( uint i = 0; i < n_faces; ++i ) {
+        for (uint i = 0; i < n_faces; ++i) {
             s >> elt.boundary_type[i];
         }
 
@@ -86,20 +77,17 @@ struct ElementMetaData {
     }
 };
 
-inline
-bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs)
-{
-    return ( lhs.node_ids == rhs.node_ids ) &&
-        ( lhs.neighbor_ID == rhs.neighbor_ID ) &&
-        ( lhs.boundary_type == rhs.boundary_type );
+inline bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
+    return (lhs.node_ids == rhs.node_ids) && (lhs.neighbor_ID == rhs.neighbor_ID) &&
+           (lhs.boundary_type == rhs.boundary_type);
 }
 
 struct MeshMetaData {
     MeshMetaData() = default;  // why define default constructor?
     MeshMetaData(const AdcircFormat& mesh_file);
-    MeshMetaData(const std::string& file); //read from file
+    MeshMetaData(const std::string& file);  // read from file
 
-    void WriteTo(const std::string& file); //write to file
+    void WriteTo(const std::string& file);  // write to file
 
     std::vector<Point<2>> GetNodalCoordinates(uint elt_id) const;
     std::vector<double> GetBathymetry(uint elt_id) const;

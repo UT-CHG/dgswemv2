@@ -83,22 +83,22 @@ MeshMetaData::MeshMetaData(const std::string& file) {
 
     uint num_elements;
     ifs >> num_elements;
-    ifs.ignore(1000,'\n');
+    ifs.ignore(1000, '\n');
     uint elt_id;
-    for ( uint e = 0; e < num_elements; ++e ) {
+    for (uint e = 0; e < num_elements; ++e) {
         ifs >> elt_id;
         ifs >> _elements[elt_id];
-        ifs.ignore(1000,'\n');
+        ifs.ignore(1000, '\n');
     }
 
     uint num_nodes;
     ifs >> num_nodes;
-    ifs.ignore(1000,'\n');
+    ifs.ignore(1000, '\n');
     uint node_id;
-    for ( uint n =0; n < num_nodes; ++n ) {
+    for (uint n = 0; n < num_nodes; ++n) {
         ifs >> node_id;
         ifs >> _nodes[node_id];
-        ifs.ignore(1000,'\n');
+        ifs.ignore(1000, '\n');
     }
 
     ifs.close();
@@ -110,17 +110,16 @@ void MeshMetaData::WriteTo(const std::string& file) {
 
     ofs << _mesh_name << '\n';
     ofs << _elements.size() << " = number of elements\n";
-    for ( const auto& elt : _elements ) {
+    for (const auto& elt : _elements) {
         ofs << elt.first << " " << elt.second << '\n';
     }
 
     ofs << _nodes.size() << " = number of nodes\n";
-    for ( const auto& nod : _nodes ) {
+    for (const auto& nod : _nodes) {
         ofs << nod.first << " " << nod.second << '\n';
     }
 
     ofs.close();
-
 }
 
 std::vector<Point<2>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {

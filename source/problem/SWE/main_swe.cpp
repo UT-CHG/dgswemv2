@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
 
 int hpx_main(int argc, char* argv[]) {
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
-    
-    std::vector<hpx::future<void> > futures;
+
+    std::vector<hpx::future<void>> futures;
     futures.reserve(localities.size());
 
     for (hpx::naming::id_type const& node : localities) {
@@ -48,10 +48,10 @@ void local_main(std::string input_string) {
     const uint n_threads = hpx::get_os_thread_count();
     const hpx::naming::id_type here = hpx::find_here();
 
-    std::vector<hpx::future<void> > futures;
+    std::vector<hpx::future<void>> futures;
     futures.reserve(n_threads);
 
-    for(uint thread = 0; thread < n_threads; thread++){
+    for (uint thread = 0; thread < n_threads; thread++) {
         futures.push_back(hpx::async<solve_mesh_act>(here, input_string, thread));
     }
 
@@ -59,33 +59,30 @@ void local_main(std::string input_string) {
 }
 
 void solve_mesh(std::string input_string, uint thread) {
-  hpx::cout << input_string + 
-    '_' + std::to_string(hpx::get_locality_id()) + 
-    '_' + std::to_string(thread) << '\n';
-    /*
     try {
-        const InputParameters input(input_string.c_str());
+        const InputParameters input(input_string.c_str(), hpx::get_locality_id(), thread);
+        /*
+            printf("Starting program %s with p=%d for %s mesh\n\n",
+                   argv[0],
+                   input.polynomial_order,
+                   input.mesh_file_name.c_str());
 
-        printf("Starting program %s with p=%d for %s mesh\n\n",
-               argv[0],
-               input.polynomial_order,
-               input.mesh_file_name.c_str());
+            auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
 
-        auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
+            SWE::Problem::initialize_data_kernel(*mesh, input.mesh_data);
 
-        SWE::Problem::initialize_data_kernel(*mesh, input.mesh_data);
-        
-        Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
+            Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
 
-        auto t1 = std::chrono::high_resolution_clock::now();
-        run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
-        auto t2 = std::chrono::high_resolution_clock::now();
-        
-        std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-                  << "\n";
+            auto t1 = std::chrono::high_resolution_clock::now();
+            run_simulation<SWE::Problem>(input.T_end, stepper, *mesh);
+            auto t2 = std::chrono::high_resolution_clock::now();
+
+            std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 -
+        t1).count()
+        << "\n";*/
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
         std::cerr << "  " << e.what() << std::endl;
-    }*/
+    }
 }

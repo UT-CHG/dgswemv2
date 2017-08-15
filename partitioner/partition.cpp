@@ -6,54 +6,48 @@
 
 #include <vector>
 
-std::vector<std::vector<MeshMetaData> > partition(const MeshMetaData& mesh_meta,
-                                                  const int num_partitions,
-                                                  const int num_nodes,
-                                                  const NumaConfiguration& numa_config)
-{
-    const int num_localities = num_nodes*numa_config.get_num_numa_domains();
+std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
+                                                 const int num_partitions,
+                                                 const int num_nodes,
+                                                 const NumaConfiguration& numa_config) {
+    const int num_localities = num_nodes * numa_config.get_num_numa_domains();
 
     std::unordered_map<int, double> element_weights;
-    std::unordered_map<std::pair<int,int>, double> edge_weights;
+    std::unordered_map<std::pair<int, int>, double> edge_weights;
 
-    for ( const auto& elt : mesh_meta._elements ) {
-        element_weights.insert( std::make_pair( elt.first, 1.) );
+    for (const auto& elt : mesh_meta._elements) {
+        element_weights.insert(std::make_pair(elt.first, 1.));
 
-        for ( const uint neigh_id : elt.second.neighbor_ID ) {
-            if ( neigh_id != DEFAULT_ID ) {
-                std::pair<int,int> edg = { std::min( elt.first, neigh_id),
-                                           std::max( elt.first, neigh_id) };
+        for (const uint neigh_id : elt.second.neighbor_ID) {
+            if (neigh_id != DEFAULT_ID) {
+                std::pair<int, int> edg = {std::min(elt.first, neigh_id), std::max(elt.first, neigh_id)};
 
                 edge_weights[edg] = 1;
             }
         }
     }
 
-
     CSRMat<> mesh_graph(element_weights, edge_weights);
-    std::vector<std::function<double(int)> > cons;
-    cons.push_back([&element_weights](int i){
-            return element_weights.at(i);});
+    std::vector<std::function<double(int)>> cons;
+    cons.push_back([&element_weights](int i) { return element_weights.at(i); });
 
-    std::vector<int64_t> mesh_part = metis_part( mesh_graph, num_partitions,
-                                                 cons, 1.05 );
+    std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, cons, 1.05);
 
-    std::unordered_map<int,int64_t> elt2partition;
+    std::unordered_map<int, int64_t> elt2partition;
     const std::vector<int>& elts_sorted = mesh_graph.node_ids();
-    for ( uint i = 0; i < elts_sorted.size(); ++i ) {
-        elt2partition.insert( { elts_sorted.at(i), mesh_part.at(i) } );
+    for (uint i = 0; i < elts_sorted.size(); ++i) {
+        elt2partition.insert({elts_sorted.at(i), mesh_part.at(i)});
     }
 
     {
         double inter_submesh_edge_cuts(0);
-        for ( const auto& edg : edge_weights ) {
-            if ( elt2partition.at(edg.first.first) != elt2partition.at(edg.first.second) ) {
+        for (const auto& edg : edge_weights) {
+            if (elt2partition.at(edg.first.first) != elt2partition.at(edg.first.second)) {
                 inter_submesh_edge_cuts += edg.second;
             }
         }
 
-        std::cout << "  Percentage of inter-submesh edge cuts: "
-                  << inter_submesh_edge_cuts/edge_weights.size()*100
+        std::cout << "  Percentage of inter-submesh edge cuts: " << inter_submesh_edge_cuts / edge_weights.size() * 100
                   << " %\n";
     }
 
