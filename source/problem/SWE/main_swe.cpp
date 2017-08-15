@@ -52,7 +52,7 @@ void local_main(std::string input_string) {
     futures.reserve(n_threads);
 
     for(uint thread = 0; thread < n_threads; thread++){
-        futures.push_back(hpx::async<solve_mesh_act>(here, thread));
+        futures.push_back(hpx::async<solve_mesh_act>(here, input_string));
     }
 
     hpx::wait_all(futures);
