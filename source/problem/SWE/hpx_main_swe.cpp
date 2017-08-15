@@ -7,8 +7,8 @@
 
 #include "../../preprocessor/input_parameters.hpp"
 #include "../../stepper.hpp"
-#include "../../initialize_mesh.hpp"
-#include "../../run_simulation.hpp"
+#include "../../preprocessor/initialize_mesh.hpp"
+#include "../../hpx_run_simulation.hpp"
 
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
@@ -70,8 +70,6 @@ hpx::future<void> solve_mesh(std::string input_string, uint thread) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
         auto mesh = initialize_mesh<SWE::Problem>(input.polynomial_order, input.mesh_data);
-
-        SWE::Problem::initialize_data_kernel(*mesh, input.mesh_data);
 
         Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
 

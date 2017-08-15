@@ -22,6 +22,8 @@ typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mes
     initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
     initialize_mesh_VTK_geometry<ProblemType>(*mesh);
 
+    ProblemType::initialize_data_kernel(*mesh, mesh_data);
+
     return mesh;
 }
 

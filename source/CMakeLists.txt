@@ -21,7 +21,7 @@ include_directories(${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})
 
 add_executable(
   DG_HYPER_SWE
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/main_swe.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/hpx_main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 

@@ -1,5 +1,5 @@
-#ifndef RUN_SIMULATION_HPP
-#define RUN_SIMULATION_HPP
+#ifndef HPX_RUN_SIMULATION_HPP
+#define HPX_RUN_SIMULATION_HPP
 
 template <typename ProblemType>
 hpx::future<void> run_simulation(double time_end, Stepper& stepper, typename ProblemType::mesh_type& mesh) {
