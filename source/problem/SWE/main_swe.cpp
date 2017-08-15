@@ -59,7 +59,9 @@ void local_main(std::string input_string) {
 }
 
 void solve_mesh(std::string input_string, uint thread) {
-    hpx::cout << input_string + std::to_string(thread) + hpx::find_here() << '\n';
+  hpx::cout << input_string + 
+    '_' + std::to_string(hpx::get_locality_id()) + 
+    '_' + std::to_string(thread) << '\n';
     /*
     try {
         const InputParameters input(input_string.c_str());
