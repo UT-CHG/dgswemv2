@@ -14,6 +14,7 @@
 #include "swe_kernels.hpp"
 
 #include "../../hpx/hpx_mesh.hpp"
+#include "../../simulation/simulation.hpp"
 
 using hpx_mesh_swe_component = hpx::components::simple_component<hpx_mesh<SWE::Problem>>;
 using hpx_mesh_swe = hpx_mesh<SWE::Problem>;
@@ -71,20 +72,12 @@ void local_main(std::string input_string) {
 
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
-        const InputParameters input(input_string.c_str(), hpx::get_locality_id(), thread);
+        Simulation<Problem::SWE> simulation(input_string);
 
-        printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
-        
-        hpx::id_type here = hpx::find_here();
-        hpx::future<hpx::id_type> f = hpx::new_<hpx_mesh_swe_component>(here);//, input.polynomial_order, input.mesh_data);
+        simulation.RunSimulation(43000.0);
 
-        SWE::Problem::mesh_type mesh(input.polynomial_order, input.mesh_data._mesh_name);
-
-        initialize_mesh<SWE::Problem>(mesh, input.mesh_data);
-
-        Stepper stepper(input.rk.nstages, input.rk.order, input.dt);
-
-        return run_simulation<SWE::Problem>(input.T_end, stepper, mesh);
+        hpx::future<void> future = hpx::make_ready_future();
+        return future;
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

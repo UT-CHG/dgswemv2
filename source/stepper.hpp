@@ -4,6 +4,7 @@
 #include "general_definitions.hpp"
 
 struct Stepper {
+    Stepper() = default;
     Stepper(uint nstages, uint order, double dt);
 
     uint get_num_stages() const { return nstages; }
