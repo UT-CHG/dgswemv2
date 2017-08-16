@@ -27,7 +27,6 @@ class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Bounda
     BoundaryContainer boundaries;
 
   public:
-    Mesh() = default;
     Mesh(uint p, std::string mesh_name)
         : mesh_name(mesh_name), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 

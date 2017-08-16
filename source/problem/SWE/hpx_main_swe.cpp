@@ -74,7 +74,7 @@ hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
         Simulation<Problem::SWE> simulation(input_string);
 
-        simulation.RunSimulation(43000.0);
+        simulation.RunSimulation(43200.0);
 
         hpx::future<void> future = hpx::make_ready_future();
         return future;
