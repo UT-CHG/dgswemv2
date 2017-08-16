@@ -1,6 +1,9 @@
 #ifndef HPX_SIMULATION_HPP
 #define HPX_SIMULATION_HPP
 
+#include "../preprocessor/input_parameters.hpp"
+#include "../preprocessor/initialize_mesh.hpp"
+
 template <typename ProblemType>
 class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
   private:
@@ -10,7 +13,10 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     Stepper stepper;
 
   public:
-    HPXSimulation() : input(std::string("void").c_str(), 0, 0), mesh(1, "void"), stepper(1, 1, 0.) {}
+    HPXSimulation()
+        : input(),
+          mesh(input.polynomial_order, input.mesh_data._mesh_name),
+          stepper(input.rk.nstages, input.rk.order, input.dt) {}
     HPXSimulation(std::string input_string, uint locality, uint thread)
         : input(input_string, locality, thread),
           mesh(input.polynomial_order, input.mesh_data._mesh_name),
@@ -21,6 +27,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     }
 
     hpx::future<void> Run(double);
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
 };
 
 template <typename ProblemType>
@@ -57,35 +64,51 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
-            this->mesh.CallForEachElement(volume_kernel);
+            future =
+                future.then([this, &volume_kernel, &source_kernel, &interface_kernel](hpx::future<void>&&) {
+                                this->mesh.CallForEachElement(volume_kernel);
 
-            this->mesh.CallForEachElement(source_kernel);
+                                this->mesh.CallForEachElement(source_kernel);
 
-            this->mesh.CallForEachInterface(interface_kernel);
+                                this->mesh.CallForEachInterface(interface_kernel);
+                            })
+                    .then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](hpx::future<void>&&) {
+                         this->mesh.CallForEachBoundary(boundary_kernel);
 
-            future = future.then([this, &boundary_kernel](hpx::future<void>&&) {
-                this->mesh.CallForEachBoundary(boundary_kernel);
-            });
+                         this->mesh.CallForEachElement(update_kernel);
 
-            this->mesh.CallForEachBoundary(boundary_kernel);
+                         this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-            this->mesh.CallForEachElement(update_kernel);
-
-            this->mesh.CallForEachElement(scrutinize_solution_kernel);
-
-            ++(this->stepper);
+                         ++(this->stepper);
+                     });
         }
 
-        this->mesh.CallForEachElement(swap_states_kernel);
+        future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
+            this->mesh.CallForEachElement(swap_states_kernel);
 
-        if (step % 360 == 0) {
-            std::cout << "Step: " << step << "\n";
-            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-            ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-        }
+            if (step % 360 == 0) {
+                std::cout << "Step: " << step << "\n";
+                ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+                ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+            }
+        });
     }
 
     return future;
 }
+
+template <typename ProblemType>
+class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<ProblemType>, HPXSimulation<ProblemType>> {
+  private:
+    using BaseType = hpx::components::client_base<HPXSimulationClient<ProblemType>, HPXSimulation<ProblemType>>;
+
+  public:
+    HPXSimulationClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+
+    hpx::future<void> Run(double time_end) {
+        using ActionType = typename HPXSimulation<ProblemType>::RunAction;
+        return hpx::async<ActionType>(this->get_id(), time_end);
+    }
+};
 
 #endif

@@ -111,7 +111,7 @@ add_test(
 add_executable(
   test_rk_stepper_exe
   test_rk_stepper.cpp
-  ${PROJECT_SOURCE_DIR}/source/stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
 )
 
 add_test(

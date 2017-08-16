@@ -9,6 +9,7 @@ struct RKInput {
 };
 
 struct InputParameters {
+    InputParameters() = default;
     InputParameters(const std::string&);
     InputParameters(const std::string&, uint, uint);
 

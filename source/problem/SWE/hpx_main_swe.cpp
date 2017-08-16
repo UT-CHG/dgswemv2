@@ -2,27 +2,24 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/iostreams.hpp>
+#include <hpx/include/components.hpp>
 
 #include "../../general_definitions.hpp"
 
-#include "../../preprocessor/input_parameters.hpp"
-#include "../../preprocessor/initialize_mesh.hpp"
-#include "../../stepper.hpp"
-
+#include "../../simulation/stepper.hpp"
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
-
 #include "../../simulation/hpx_simulation.hpp"
+
+void local_main(std::string);
+HPX_PLAIN_ACTION(local_main, local_main_action);
+
+hpx::future<void> solve_mesh(std::string, uint);
+HPX_PLAIN_ACTION(solve_mesh, solve_mesh_action);
 
 using hpx_simulation_swe = HPXSimulation<SWE::Problem>;
 using hpx_simulation_swe_component = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;
 HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
-
-void local_main(std::string);
-HPX_PLAIN_ACTION(local_main, local_main_act);
-
-hpx::future<void> solve_mesh(std::string, uint);
-HPX_PLAIN_ACTION(solve_mesh, solve_mesh_act);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -42,7 +39,7 @@ int hpx_main(int argc, char* argv[]) {
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& node : localities) {
-        futures.push_back(hpx::async<local_main_act>(node, std::string(argv[1])));
+        futures.push_back(hpx::async<local_main_action>(node, std::string(argv[1])));
     }
 
     hpx::wait_all(futures);
@@ -62,7 +59,7 @@ void local_main(std::string input_string) {
     futures.reserve(n_threads);
 
     for (uint thread = 0; thread < n_threads; thread++) {
-        futures.push_back(hpx::async<solve_mesh_act>(here, input_string, thread));
+        futures.push_back(hpx::async<solve_mesh_action>(here, input_string, thread));
     }
 
     hpx::wait_all(futures);
@@ -71,16 +68,17 @@ void local_main(std::string input_string) {
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
         hpx::id_type here = hpx::find_here();
-        hpx::future<hpx::id_type> f =
+        hpx::future<hpx::id_type> simulation_id =
             hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), thread);
 
-        HPXSimulation<SWE::Problem> simulation(input_string, hpx::get_locality_id(), thread);
+        HPXSimulationClient<SWE::Problem> simulation_client(std::move(simulation_id));
 
-        // return simulation.Run(43200.0);
-        return hpx::make_ready_future();
+        return simulation_client.Run(18000.);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
         std::cerr << "  " << e.what() << std::endl;
+
+        return hpx::make_ready_future();
     }
 }
