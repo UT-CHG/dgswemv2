@@ -4,6 +4,7 @@
 #include "numa_configuration.hpp"
 
 #include <cassert>
+#include <chrono>
 #include <vector>
 
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
@@ -40,26 +41,25 @@ int main(int argc, char** argv) {
         std::cout << "  NUMA configuration: " << numa_str << "n\n";
     } else {
         numa_config = NumaConfiguration("default");
-        std::cout << "  NUMA configuration: default\n\n";
+        std::cout << "  NUMA configuration: default (1 NUMA domain per node)\n\n";
     }
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     AdcircFormat mesh(input_mesh_str);
-    mesh.write_to("test_mesh");
-    //    try {
     MeshMetaData mesh_meta(mesh);
-    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions, num_nodes, numa_config);
-    /*    for ( uint n = 0; n < submeshes.size(); ++n ) {
-            for ( uint m = 0; n < submeshes[n].size(); ++m ) {
-                std::string outname = input_mesh_str + "_" + std::to_string(static_cast<long long>(n))
-                    + "_" + std::to_string(static_cast<long long>(m));
+    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions,
+                                                                     num_nodes, numa_config);
+    for ( uint n = 0; n < submeshes.size(); ++n ) {
+        for ( uint m = 0; m < submeshes[n].size(); ++m ) {
+            std::string outname = input_mesh_str + "_" + std::to_string(static_cast<long long>(n))
+                + "_" + std::to_string(static_cast<long long>(m));
 
-                AdcircFormat tmp = submeshes[n].write_AdcircFormat();
-                tmp.write_to(outname);
-            }
-            }*/
+            submeshes[n][m].WriteTo(outname);
+        }
+    }
 
-    //  } catch (const std::exception& e ) {
-    // std::cerr << "Exception thrown in constructing MeshMetaData: " << e.what() << '\n';
-    // return 1;
-    //}
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "\nTime Elapsed (in us): "
+              << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
 }
