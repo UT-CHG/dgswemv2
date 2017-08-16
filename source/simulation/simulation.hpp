@@ -10,9 +10,10 @@ class Simulation {
     Stepper stepper;
 
   public:
-    Simulation(std::string input_string) : input(input_string.c_str()), 
-    mesh(input.polynomial_order, input.mesh_data._mesh_name),
-    stepper(input.rk.nstages, input.rk.order, input.dt) {
+    Simulation(std::string input_string)
+        : input(input_string.c_str()),
+          mesh(input.polynomial_order, input.mesh_data._mesh_name),
+          stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
         initialize_mesh<ProblemType>(this->mesh, input.mesh_data);

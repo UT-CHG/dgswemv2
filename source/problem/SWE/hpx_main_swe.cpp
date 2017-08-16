@@ -8,13 +8,11 @@
 #include "../../preprocessor/input_parameters.hpp"
 #include "../../stepper.hpp"
 #include "../../preprocessor/initialize_mesh.hpp"
-#include "../../hpx_run_simulation.hpp"
 
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
-#include "../../hpx/hpx_mesh.hpp"
-#include "../../simulation/simulation.hpp"
+#include "../../simulation/hpx_simulation.hpp"
 
 // using hpx_mesh_swe_component = hpx::components::simple_component<hpx_mesh<SWE::Problem>>;
 // using hpx_mesh_swe = hpx_mesh<SWE::Problem>;
@@ -72,9 +70,9 @@ void local_main(std::string input_string) {
 
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
-        HPXSimulation<SWE::Problem> simulation(input_string, hpx::get_locality_id() ,thread);
+        HPXSimulation<SWE::Problem> simulation(input_string, hpx::get_locality_id(), thread);
 
-        return simulation.RunSimulation(43200.0);
+        return simulation.Run(43200.0);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

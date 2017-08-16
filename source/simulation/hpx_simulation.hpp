@@ -10,9 +10,10 @@ class HPXSimulation {
     Stepper stepper;
 
   public:
-    HPXSimulation(std::string input_string, uint locality, uint thread) : input(input_string.c_str(), locality, thread), 
-    mesh(input.polynomial_order, input.mesh_data._mesh_name),
-    stepper(input.rk.nstages, input.rk.order, input.dt) {
+    HPXSimulation(std::string input_string, uint locality, uint thread)
+        : input(input_string.c_str(), locality, thread),
+          mesh(input.polynomial_order, input.mesh_data._mesh_name),
+          stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
         initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
