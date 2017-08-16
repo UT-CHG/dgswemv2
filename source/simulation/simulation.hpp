@@ -11,7 +11,7 @@ class Simulation {
 
   public:
     Simulation(std::string input_string)
-        : input(input_string.c_str()),
+        : input(input_string),
           mesh(input.polynomial_order, input.mesh_data._mesh_name),
           stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());

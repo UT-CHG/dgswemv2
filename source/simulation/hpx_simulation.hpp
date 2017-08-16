@@ -12,7 +12,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
   public:
     HPXSimulation() : input(std::string("void").c_str(), 0, 0), mesh(1, "void"), stepper(1, 1, 0.) {}
     HPXSimulation(std::string input_string, uint locality, uint thread)
-        : input(input_string.c_str(), locality, thread),
+        : input(input_string, locality, thread),
           mesh(input.polynomial_order, input.mesh_data._mesh_name),
           stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
