@@ -25,20 +25,20 @@ template <typename ProblemType>
 void Simulation<ProblemType>::RunSimulation(double time_end) {
     // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
     // the nice std::for_each notation without having to define stepper within each element
-    auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(*(this->stepper), elt); };
+    auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
-    auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(*(this->stepper), elt); };
+    auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
 
-    auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(*(this->stepper), intface); };
+    auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
-    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(*(this->stepper), bound); };
+    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
-    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(*(this->stepper), elt); };
+    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(*(this->stepper), elt); };
+    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     auto scrutinize_solution_kernel = [this](auto& elt) {
-        ProblemType::scrutinize_solution_kernel(*(this->stepper), elt);
+        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
 
     uint nsteps = (uint)std::ceil(time_end / this->stepper->get_dt());
@@ -48,8 +48,8 @@ void Simulation<ProblemType>::RunSimulation(double time_end) {
 
     this->mesh->CallForEachElement(resize_data_container);
 
-    ProblemType::write_VTK_data_kernel(*(this->stepper), *(this->mesh));
-    ProblemType::write_modal_data_kernel(*(this->stepper), *(this->mesh));
+    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
     hpx::future<void> future = hpx::make_ready_future();
 
@@ -67,15 +67,15 @@ void Simulation<ProblemType>::RunSimulation(double time_end) {
 
             this->mesh->CallForEachElement(scrutinize_solution_kernel);
 
-            ++(*(this->stepper));
+            ++(this->stepper);
         }
 
         this->mesh->CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
             std::cout << "Step: " << step << "\n";
-            ProblemType::write_VTK_data_kernel(*(this->stepper), *(this->mesh));
-            ProblemType::write_modal_data_kernel(*(this->stepper), *(this->mesh));
+            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+            ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
         }
     }
 }
