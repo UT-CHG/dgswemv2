@@ -15,16 +15,12 @@ template <typename ProblemType>
 void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
 template <typename ProblemType>
-typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mesh_data) {
-    typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(p, mesh_data._mesh_name);
+void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
+    initialize_mesh_elements<ProblemType>(mesh, mesh_data);
+    initialize_mesh_interfaces_boundaries<ProblemType>(mesh);
+    initialize_mesh_VTK_geometry<ProblemType>(mesh);
 
-    initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
-    initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
-    initialize_mesh_VTK_geometry<ProblemType>(*mesh);
-
-    ProblemType::initialize_data_kernel(*mesh, mesh_data);
-
-    return mesh;
+    ProblemType::initialize_data_kernel(mesh, mesh_data);
 }
 
 template <typename ProblemType>

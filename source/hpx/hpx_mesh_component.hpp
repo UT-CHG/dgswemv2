@@ -1,4 +1,0 @@
-#ifndef HPX_MESH_COMPONENT_HPP
-#define HPX_MESH_COMPONENT_HPP
-
-#endif
