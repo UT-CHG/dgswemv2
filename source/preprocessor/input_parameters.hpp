@@ -9,8 +9,8 @@ struct RKInput {
 };
 
 struct InputParameters {
-    InputParameters(const char*);
-    InputParameters(const char*, uint, uint);
+    InputParameters(const std::string&);
+    InputParameters(const std::string&, uint, uint);
 
     std::string mesh_file_name;
     MeshMetaData mesh_data;

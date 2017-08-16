@@ -1,3 +1,3 @@
 #!/bin/bash
 
-clang-format -i -style=file */*.cpp */*.hpp */*/*.cpp */*/*.hpp */*/*/*.cpp */*/*/*.hpp */*/*/*/*.cpp */*/*/*/*.hpp   
+clang-format -i -style=file */*.cpp */*.hpp */*.tpp */*/*.cpp */*/*.hpp */*/*.tpp */*/*/*.cpp */*/*/*.hpp */*/*/*.tpp */*/*/*/*.cpp */*/*/*/*.hpp */*/*/*/*.tpp     
