@@ -71,11 +71,13 @@ void local_main(std::string input_string) {
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
         hpx::id_type here = hpx::find_here();
- +      hpx::future<hpx::id_type> f = hpx::new_<hpx_simulation_swe_component>(input_string, hpx::get_locality_id(), thread);
-        
+        hpx::future<hpx::id_type> f =
+            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), thread);
+
         HPXSimulation<SWE::Problem> simulation(input_string, hpx::get_locality_id(), thread);
 
-        return simulation.Run(43200.0);
+        // return simulation.Run(43200.0);
+        return hpx::make_ready_future();
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

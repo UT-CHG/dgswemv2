@@ -10,6 +10,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     Stepper stepper;
 
   public:
+    HPXSimulation() : input(std::string("void").c_str(), 0, 0), mesh(1, "void"), stepper(1, 1, 0.) {}
     HPXSimulation(std::string input_string, uint locality, uint thread)
         : input(input_string.c_str(), locality, thread),
           mesh(input.polynomial_order, input.mesh_data._mesh_name),
