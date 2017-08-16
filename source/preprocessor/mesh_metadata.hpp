@@ -10,7 +10,8 @@ struct NodeMetaData {
     Point<2> coordinates;  // maybe Point<3>
     double bathymetry;     // this is somewhat problem specific to SWE, even mesh file specific to adcirc
     friend std::ostream& operator<<(std::ostream& s, const NodeMetaData& node) {
-        return s << node.coordinates[0] << " " << node.coordinates[1] << " " << node.bathymetry;
+        return s << std::setprecision(15)
+                 << node.coordinates[0] << " " << node.coordinates[1] << " " << node.bathymetry;
     }
 
     friend std::istream& operator>>(std::istream& s, NodeMetaData& node) {

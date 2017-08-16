@@ -47,11 +47,13 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
             }
         }
 
-        std::cout << "  Percentage of inter-submesh edge cuts: " << inter_submesh_edge_cuts / edge_weights.size() * 100
+        std::cout << "Results:\n";
+        std::cout << "  Percentage of inter-submesh edge cuts: "
+                  << inter_submesh_edge_cuts/edge_weights.size()*100
                   << " %\n";
     }
 
-    /*//partition submeshes onto localities
+    //partition submeshes onto nodes
     std::unordered_map<int,double> submesh_weight;
     for ( auto& elt : element_weights ) {
         if ( submesh_weight.count( elt2partition.at(elt.first) ) ) {
@@ -82,7 +84,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
             return submesh_weight.at(i);});
 
 
-    std::vector<int64_t> sbmsh_part = metis_part( sbmsh_graph, num_localities,
+    std::vector<int64_t> sbmsh_part = metis_part( sbmsh_graph, num_nodes,
                                                   sbmsh_cons, 1.02 );
 
     std::vector<int> permutation;
@@ -97,6 +99,69 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
         partition2node.insert( { sbmshs_sorted.at(i), sbmsh_part.at(i) } );
     }
 
+    std::vector<std::vector<MeshMetaData>> submeshes(num_nodes);
+    std::vector<uint> partition2local_partition(num_partitions);
+    {
+        std::vector<uint> local_partition_counter(num_nodes,0);
+        for ( auto& p_n : partition2node ) {
+            partition2local_partition[p_n.first] = local_partition_counter[p_n.second]++;
+        }
+
+        for ( uint sm = 0; sm < num_nodes; ++sm ) {
+            submeshes[sm].resize( local_partition_counter[sm] );
+            for ( uint i = 0; i < local_partition_counter[sm]; ++i ) {
+                submeshes[sm][i]._mesh_name = mesh_meta._mesh_name + "_" + std::to_string(sm)
+                    + "_" + std::to_string(i);
+            }
+        }
+    }
+
+    { //assemble submeshes
+        for ( const auto& elt : mesh_meta._elements ) {
+            uint partition = elt2partition.at(elt.first);
+            uint rank = partition2node[partition];
+            uint loc_part = partition2local_partition[partition];
+
+            //error here the partition in question is not actually the partition you are interested in.
+            submeshes[rank][loc_part]._elements.insert(elt);
+
+            for ( uint id : elt.second.node_ids ) {
+                submeshes[rank][loc_part]._nodes[id] = mesh_meta._nodes.at(id);
+            }
+        }
+    }
+
+    { // update boundaries for split edges
+        for (const auto& edg : edge_weights) {
+            if (elt2partition.at(edg.first.first) != elt2partition.at(edg.first.second)) {
+                uint elt_A = edg.first.first;
+                uint part_A = elt2partition.at(elt_A);
+                uint loc_part_A = partition2local_partition[part_A];
+                uint rank_A = partition2node[part_A];
+
+                uint elt_B = edg.first.second;
+                uint part_B = elt2partition.at(elt_B);
+                uint loc_part_B = partition2local_partition[part_B];
+                uint rank_B = partition2node[part_B];
+
+                for ( uint k = 0; k < 3; ++k ) {
+                    if ( elt_B == mesh_meta._elements.at(elt_A).neighbor_ID[k] ) {
+                        ElementMetaData& curr_elt = submeshes[rank_A][loc_part_A]._elements.at(elt_A);
+                        curr_elt.neighbor_ID[k] = DEFAULT_ID;
+                        curr_elt.boundary_type[k] = SWE::BoundaryConditions::distributed;
+                    }
+                }
+
+                for ( uint k = 0; k < 3; ++k ) {
+                    if ( elt_A == mesh_meta._elements.at(elt_B).neighbor_ID[k] ) {
+                        ElementMetaData& curr_elt = submeshes[rank_B][loc_part_B]._elements.at(elt_B);
+                        curr_elt.neighbor_ID[k] = DEFAULT_ID;
+                        curr_elt.boundary_type[k] = SWE::BoundaryConditions::distributed;
+                    }
+                }
+            }
+        }
+    }
 
     { // compute percentage of inter-node edge cuts
         double inter_node_edge_cuts(0);
@@ -112,20 +177,27 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
 
     }
 
-    { //compute imbalance across NUMA Domains
+    { //compute imbalance across nodes
         double max_load(0);
         double avg_load(0);
+        std::vector<double> node_weight(num_nodes, 0);
+
         for ( const auto& sw : submesh_weight ) {
-            if ( sw.second > max_load ) {
-                max_load = sw.second;
-            }
-            avg_load += sw.second;
+            node_weight.at(partition2node.at( sw.first )) += sw.second;
         }
-        avg_load /= submesh_weight.size();
+
+        for ( const auto& wght : node_weight ) {
+            if ( wght > max_load ) {
+                max_load = wght;
+            }
+            avg_load += wght;
+        }
+
+        avg_load /= num_nodes;
         double imbalance = ( max_load - avg_load ) / avg_load;
 
         std::cout << "  Imbalance across NUMA domains: " << imbalance << '\n';
-        }*/
+    }
 
-    return std::vector<std::vector<MeshMetaData>>();
+    return submeshes;
 }
