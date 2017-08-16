@@ -41,36 +41,34 @@ void Simulation<ProblemType>::RunSimulation(double time_end) {
         ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
 
-    uint nsteps = (uint)std::ceil(time_end / this->stepper->get_dt());
-    uint n_stages = this->stepper->get_num_stages();
+    uint nsteps = (uint)std::ceil(time_end / this->stepper.get_dt());
+    uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
-    this->mesh->CallForEachElement(resize_data_container);
+    this->mesh.CallForEachElement(resize_data_container);
 
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
     ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
-    hpx::future<void> future = hpx::make_ready_future();
-
     for (uint step = 1; step <= nsteps; ++step) {
-        for (uint stage = 0; stage < this->stepper->get_num_stages(); ++stage) {
-            this->mesh->CallForEachElement(volume_kernel);
+        for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
+            this->mesh.CallForEachElement(volume_kernel);
 
-            this->mesh->CallForEachElement(source_kernel);
+            this->mesh.CallForEachElement(source_kernel);
 
-            this->mesh->CallForEachInterface(interface_kernel);
+            this->mesh.CallForEachInterface(interface_kernel);
 
-            this->mesh->CallForEachBoundary(boundary_kernel);
+            this->mesh.CallForEachBoundary(boundary_kernel);
 
-            this->mesh->CallForEachElement(update_kernel);
+            this->mesh.CallForEachElement(update_kernel);
 
-            this->mesh->CallForEachElement(scrutinize_solution_kernel);
+            this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
             ++(this->stepper);
         }
 
-        this->mesh->CallForEachElement(swap_states_kernel);
+        this->mesh.CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
             std::cout << "Step: " << step << "\n";
