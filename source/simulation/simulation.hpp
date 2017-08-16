@@ -1,13 +1,13 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
-template <typename ProblemType> 
+template <typename ProblemType>
 class Simulation {
-private:
+  private:
     typename ProblemType::mesh_type* mesh;
     Stepper* stepper;
 
-public:
+  public:
     Simulation(std::string);
 
     void RunSimulation(double);
@@ -18,12 +18,12 @@ Simulation<ProblemType>::Simulation(std::string input_string) {
     const InputParameters input(input_string.c_str());
 
     printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
-            
+
     this->stepper = new Stepper(input.rk.nstages, input.rk.order, input.dt);
 
     this->mesh = new typename ProblemType::mesh_type(input.polynomial_order, input.mesh_data._mesh_name);
 
-    initialize_mesh<SWE::Problem>(mesh, input.mesh_data);
+    initialize_mesh<ProblemType>(*(this->mesh), input.mesh_data);
 }
 
 template <typename ProblemType>
@@ -42,7 +42,9 @@ void Simulation<ProblemType>::RunSimulation(double time_end) {
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(*(this->stepper), elt); };
 
-    auto scrutinize_solution_kernel = [this](auto& elt) { ProblemType::scrutinize_solution_kernel(*(this->stepper), elt); };
+    auto scrutinize_solution_kernel = [this](auto& elt) {
+        ProblemType::scrutinize_solution_kernel(*(this->stepper), elt);
+    };
 
     uint nsteps = (uint)std::ceil(time_end / this->stepper->get_dt());
     uint n_stages = this->stepper->get_num_stages();
@@ -70,7 +72,7 @@ void Simulation<ProblemType>::RunSimulation(double time_end) {
 
             this->mesh->CallForEachElement(scrutinize_solution_kernel);
 
-            *(this->stepper)++;
+            ++(*(this->stepper));
         }
 
         this->mesh->CallForEachElement(swap_states_kernel);

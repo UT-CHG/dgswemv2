@@ -16,9 +16,9 @@
 #include "../../hpx/hpx_mesh.hpp"
 #include "../../simulation/simulation.hpp"
 
-using hpx_mesh_swe_component = hpx::components::simple_component<hpx_mesh<SWE::Problem>>;
-using hpx_mesh_swe = hpx_mesh<SWE::Problem>;
-HPX_REGISTER_COMPONENT(hpx_mesh_swe_component, hpx_mesh_swe);
+// using hpx_mesh_swe_component = hpx::components::simple_component<hpx_mesh<SWE::Problem>>;
+// using hpx_mesh_swe = hpx_mesh<SWE::Problem>;
+// HPX_REGISTER_COMPONENT(hpx_mesh_swe_component, hpx_mesh_swe);
 
 void local_main(std::string);
 HPX_PLAIN_ACTION(local_main, local_main_act);
@@ -72,7 +72,7 @@ void local_main(std::string input_string) {
 
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
-        Simulation<Problem::SWE> simulation(input_string);
+        Simulation<SWE::Problem> simulation(input_string);
 
         simulation.RunSimulation(43200.0);
 
