@@ -72,12 +72,9 @@ void local_main(std::string input_string) {
 
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
-        Simulation<SWE::Problem> simulation(input_string);
+        HPXSimulation<SWE::Problem> simulation(input_string, hpx::get_locality_id() ,thread);
 
-        simulation.RunSimulation(43200.0);
-
-        hpx::future<void> future = hpx::make_ready_future();
-        return future;
+        return simulation.RunSimulation(43200.0);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
