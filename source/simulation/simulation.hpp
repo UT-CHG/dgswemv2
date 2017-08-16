@@ -4,27 +4,22 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    typename ProblemType::mesh_type* mesh;
-    Stepper* stepper;
+    const InputParameters input;
+
+    typename ProblemType::mesh_type mesh;
+    Stepper stepper;
 
   public:
-    Simulation(std::string);
+    Simulation(std::string input_string) : input(input_string.c_str()), 
+    mesh(input.polynomial_order, input.mesh_data._mesh_name),
+    stepper(input.rk.nstages, input.rk.order, input.dt) {
+        printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
+
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
+    }
 
     void RunSimulation(double);
 };
-
-template <typename ProblemType>
-Simulation<ProblemType>::Simulation(std::string input_string) {
-    const InputParameters input(input_string.c_str());
-
-    printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
-
-    this->stepper = new Stepper(input.rk.nstages, input.rk.order, input.dt);
-
-    this->mesh = new typename ProblemType::mesh_type(input.polynomial_order, input.mesh_data._mesh_name);
-
-    initialize_mesh<ProblemType>(*(this->mesh), input.mesh_data);
-}
 
 template <typename ProblemType>
 void Simulation<ProblemType>::RunSimulation(double time_end) {
