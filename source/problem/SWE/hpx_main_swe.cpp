@@ -6,17 +6,17 @@
 #include "../../general_definitions.hpp"
 
 #include "../../preprocessor/input_parameters.hpp"
-#include "../../stepper.hpp"
 #include "../../preprocessor/initialize_mesh.hpp"
+#include "../../stepper.hpp"
 
 #include "swe_problem.hpp"
 #include "swe_kernels.hpp"
 
 #include "../../simulation/hpx_simulation.hpp"
 
-// using hpx_mesh_swe_component = hpx::components::simple_component<hpx_mesh<SWE::Problem>>;
-// using hpx_mesh_swe = hpx_mesh<SWE::Problem>;
-// HPX_REGISTER_COMPONENT(hpx_mesh_swe_component, hpx_mesh_swe);
+using hpx_simulation_swe = HPXSimulation<SWE::Problem>;
+using hpx_simulation_swe_component = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;
+HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
 
 void local_main(std::string);
 HPX_PLAIN_ACTION(local_main, local_main_act);
@@ -70,6 +70,9 @@ void local_main(std::string input_string) {
 
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
     try {
+        hpx::id_type here = hpx::find_here();
+ +      hpx::future<hpx::id_type> f = hpx::new_<hpx_simulation_swe_component>(input_string, hpx::get_locality_id(), thread);
+        
         HPXSimulation<SWE::Problem> simulation(input_string, hpx::get_locality_id(), thread);
 
         return simulation.Run(43200.0);

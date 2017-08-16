@@ -2,7 +2,7 @@
 #define HPX_SIMULATION_HPP
 
 template <typename ProblemType>
-class HPXSimulation {
+class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
   private:
     const InputParameters input;
 
