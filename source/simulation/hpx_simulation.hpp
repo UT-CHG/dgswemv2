@@ -57,22 +57,22 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
 
     this->mesh.CallForEachElement(resize_data_container);
 
-    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    //ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    //ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
     hpx::future<void> future = hpx::make_ready_future();
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
-            future =
-                future.then([this, &volume_kernel, &source_kernel, &interface_kernel](hpx::future<void>&&) {
+     //       future =
+      //          future.then([this, &volume_kernel, &source_kernel, &interface_kernel](hpx::future<void>&&) {
                                 this->mesh.CallForEachElement(volume_kernel);
 
                                 this->mesh.CallForEachElement(source_kernel);
 
                                 this->mesh.CallForEachInterface(interface_kernel);
-                            })
-                    .then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](hpx::future<void>&&) {
+        //                    })
+          //          .then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](hpx::future<void>&&) {
                          this->mesh.CallForEachBoundary(boundary_kernel);
 
                          this->mesh.CallForEachElement(update_kernel);
@@ -80,18 +80,18 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                          this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
                          ++(this->stepper);
-                     });
+            //         });
         }
 
-        future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
+//        future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
             this->mesh.CallForEachElement(swap_states_kernel);
 
             if (step % 360 == 0) {
                 std::cout << "Step: " << step << "\n";
-                ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-                ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+                //ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+                //ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
             }
-        });
+  //      });
     }
 
     return future;
