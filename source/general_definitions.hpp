@@ -50,7 +50,8 @@ namespace Integration {
 template <uint dim>
 class Integration {
   public:
-    virtual std::pair<std::vector<double>, std::vector<Point<dim>>> GetRule(uint) = 0;
+    virtual uint GetNumGP(uint p) = 0;
+    virtual std::pair<std::vector<double>, std::vector<Point<dim>>> GetRule(uint p) = 0;
 };
 }
 
