@@ -48,18 +48,17 @@ int main(int argc, char** argv) {
 
     AdcircFormat mesh(input_mesh_str);
     MeshMetaData mesh_meta(mesh);
-    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions,
-                                                                     num_nodes, numa_config);
-    for ( uint n = 0; n < submeshes.size(); ++n ) {
-        for ( uint m = 0; m < submeshes[n].size(); ++m ) {
-            std::string outname = input_mesh_str + "_" + std::to_string(static_cast<long long>(n))
-                + "_" + std::to_string(static_cast<long long>(m));
+    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions, num_nodes, numa_config);
+    for (uint n = 0; n < submeshes.size(); ++n) {
+        for (uint m = 0; m < submeshes[n].size(); ++m) {
+            std::string outname = input_mesh_str + "_" + std::to_string(static_cast<long long>(n)) + "_" +
+                                  std::to_string(static_cast<long long>(m));
 
             submeshes[n][m].WriteTo(outname);
         }
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "\nTime Elapsed (in us): "
-              << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+    std::cout << "\nTime Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+              << std::endl;
 }
