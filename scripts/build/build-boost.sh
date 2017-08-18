@@ -88,9 +88,10 @@ else
 fi
 
 # Done setting up variables.
-JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
+
+BOOST_BUILD="${BUILD_PATH}/boost"
 if [ "$1" = "clean" ]; then
-    CLEAN_CMD="rm -rf ${JEMALLOC_BUILD}"
+    CLEAN_CMD="rm -rf ${BOOST_BUILD}"
 
     $START_BOLD
     echo "$0 clean:"
@@ -102,7 +103,7 @@ if [ "$1" = "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${JEMALLOC_BUILD}"
+	echo "removing build directory ${BOOST_BUILD}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
@@ -119,19 +120,19 @@ for module in $MODULES; do
     module load $module
 done
 
-if [ ! -d ${JEMALLOC_BUILD} ]; then
+if [ ! -d ${BOOST_BUILD} ]; then
     set -e
-    mkdir -p ${JEMALLOC_BUILD}
-    cd ${JEMALLOC_BUILD}
-    wget http://www.canonware.com/download/jemalloc/jemalloc-3.6.0.tar.bz2
-    tar xf jemalloc-3.6.0.tar.bz2
-    cd jemalloc-3.6.0
-    ./configure --prefix=$INSTALL_PATH
-    make -j install
+    mkdir -p ${BOOST_BUILD}
+    cd ${BOOST_BUILD}
+    wget 'http://downloads.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2'
+    tar xf boost_1_63_0.tar.bz2
+    cd boost_1_63_0
+    ./bootstrap.sh --prefix="$INSTALL_PATH"
+    ./b2 -j4 install
     exit
 else
     set -e
-    cd ${JEMALLOC_BUILD}/jemalloc-3.6.0
+    cd ${BOOST_BUILD}/
     make install
     exit
 fi

@@ -16,18 +16,17 @@ Triangle<basis_type, integration_type>::Triangle(uint p)
     this->phi_postprocessor_point = this->basis.GetPhi(this->p, z_postprocessor_point);
 
     this->int_fact_phi = this->phi_gp;
-    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {  // iterate through basis functions
-        for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {  // iterate through internal GPs
-            this->int_fact_phi[dof][gp] *= this->integration_rule.first[gp];  // apply weight
+    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+        for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
+            this->int_fact_phi[dof][gp] *= this->integration_rule.first[gp];
         }
     }
 
     this->int_fact_dphi = this->dphi_gp;
-    for (uint dof = 0; dof < this->int_fact_dphi.size(); dof++) {  // iterate through basis functions
-        for (uint dir = 0; dir < this->int_fact_dphi[dof].size(); dir++) {  // iterate through differentiation
-                                                                            // directions
-            for (uint gp = 0; gp < this->int_fact_dphi[dof][dir].size(); gp++) {  // iterate through internal GPs
-                this->int_fact_dphi[dof][dir][gp] *= this->integration_rule.first[gp];  // apply weight
+    for (uint dof = 0; dof < this->int_fact_dphi.size(); dof++) {
+        for (uint dir = 0; dir < this->int_fact_dphi[dof].size(); dir++) {
+            for (uint gp = 0; gp < this->int_fact_dphi[dof][dir].size(); gp++) {
+                this->int_fact_dphi[dof][dir][gp] *= this->integration_rule.first[gp];
             }
         }
     }

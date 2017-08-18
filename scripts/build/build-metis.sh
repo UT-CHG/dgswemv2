@@ -15,6 +15,8 @@ usage () {
     echo "        removes build directory."
     echo "    no-make"
     echo "        runs CMake, does not run make."
+    echo "    reinstall"
+    echo "        if already built, reinstalls into install dir."
     exit 1
 }
 
@@ -29,8 +31,9 @@ fi
 if [ "$1" == "-h" ]; then usage; fi
 if [ "$1" == "--help" ]; then usage; fi
 
+# Fix me: handle more options
 if ["$#" -gt 0]; then
-    if [ "$1" != "clean" ] && [ "$1" != "no-make" ]; then
+    if [ "$1" != "clean" ] && [ "$1" != "no-make" ] && [ "$1" != "reinstall"]; then
 	echo "invalid option: $1"
 	usage
     fi
@@ -87,10 +90,8 @@ else
     set +x
 fi
 
-# Done setting up variables.
-JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
-if [ "$1" = "clean" ]; then
-    CLEAN_CMD="rm -rf ${JEMALLOC_BUILD}"
+if [ "$1" == "clean" ]; then
+    CLEAN_CMD="rm -rf $METIS_BUILD_PATH"
 
     $START_BOLD
     echo "$0 clean:"
@@ -102,7 +103,7 @@ if [ "$1" = "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${JEMALLOC_BUILD}"
+	echo "removing build directory ${METIS_BUILD_PATH}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
@@ -110,28 +111,52 @@ if [ "$1" = "clean" ]; then
     exit 0
 fi
 
-if [ ! -d $INSTALL_PATH ]; then
-    echo "Creating install path..."
-    mkdir -p ${INSTALL_PATH}
-fi
+echo "MODULES = $MODULES"
+
+module purge
 
 for module in $MODULES; do
     module load $module
 done
 
-if [ ! -d ${JEMALLOC_BUILD} ]; then
+module list
+
+#echo "git branch:"
+#git show-branch >> $LOGFILE
+#echo "git hash:"
+#git rev-parse HEAD >> $LOGFILE
+#echo "git status:"
+#git status >> $LOGFILE
+
+#echo "*** config file: ***"
+#cat $CONFIGFILE >> $LOGFILE
+#echo "*** end config file ***"
+
+#echo "MODULES = $MODULES" >> $LOGFILE
+
+METIS_BUILD="${BUILD_PATH}/metis"
+if [ ! -d "$METIS_BUILD_PATH" ]; then
     set -e
-    mkdir -p ${JEMALLOC_BUILD}
-    cd ${JEMALLOC_BUILD}
-    wget http://www.canonware.com/download/jemalloc/jemalloc-3.6.0.tar.bz2
-    tar xf jemalloc-3.6.0.tar.bz2
-    cd jemalloc-3.6.0
-    ./configure --prefix=$INSTALL_PATH
-    make -j install
-    exit
-else
-    set -e
-    cd ${JEMALLOC_BUILD}/jemalloc-3.6.0
+    mkdir -p ${METIS_BUILD}
+    cd ${METIS_BUILD}
+    wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+    tar xf metis-5.1.0.tar.gz
+    cd metis-5.1.0
+    sed -i 's/#define IDXTYPEWIDTH 32/#define IDXTYPEWIDTH 64/g' include/metis.h
+    sed -i 's/#define REALTYPEWIDTH 32/#define REALTYPEWIDTH 64/g' include/metis.h
+    make config prefix=${INSTALL_PATH}
+    make
     make install
-    exit
+else
+    $START_BOLD
+    echo "directory exists! please either run:"
+    $END_BOLD
+    echo "$0 clean"
+    $START_BOLD
+    echo "or continue the build process:"
+    $END_BOLD
+    echo "cd ${METIS_BUILD_PATH}"
+    echo "make"
+    echo "make install"
+    exit 0
 fi

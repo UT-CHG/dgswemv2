@@ -15,14 +15,12 @@ template <typename ProblemType>
 void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
 template <typename ProblemType>
-typename ProblemType::mesh_type* initialize_mesh(uint p, const MeshMetaData& mesh_data) {
-    typename ProblemType::mesh_type* mesh = new typename ProblemType::mesh_type(p);
+void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
+    initialize_mesh_elements<ProblemType>(mesh, mesh_data);
+    initialize_mesh_interfaces_boundaries<ProblemType>(mesh);
+    initialize_mesh_VTK_geometry<ProblemType>(mesh);
 
-    initialize_mesh_elements<ProblemType>(*mesh, mesh_data);
-    initialize_mesh_interfaces_boundaries<ProblemType>(*mesh);
-    initialize_mesh_VTK_geometry<ProblemType>(*mesh);
-
-    return mesh;
+    ProblemType::initialize_data_kernel(mesh, mesh_data);
 }
 
 template <typename ProblemType>
@@ -75,7 +73,7 @@ void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
 
     mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });
 
-    std::string file_name = "output/geometry.vtk";
+    std::string file_name = "output/" + mesh.GetMeshName() + "_geometry.vtk";
     std::ofstream file(file_name);
 
     file << "# vtk DataFile Version 3.0\n";

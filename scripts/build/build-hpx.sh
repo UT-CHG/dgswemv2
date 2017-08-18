@@ -177,13 +177,18 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
     MALLOC="jemalloc"
     IDLE_RATES="true"
 
-    CMAKE_FLAGS="-DCMAKE_TOOLCHAIN_FILE=${HPX_REPO_PATH}/cmake/toolchains/Stampede2-gcc.cmake \
-                 -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+    CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
                  -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
                  -DHPX_WITH_PARCELPORT_MPI=true \
                  -DHPX_WITH_MALLOC=$MALLOC \
                  -DHPX_WITH_THREAD_IDLE_RATES=${IDLE_RATES} \
-                 -DHPX_WITH_CXX14=On"
+                 -DHPX_WITH_CXX14=On \
+                 -DHPX_WITH_TESTS=Off \
+                 -DHPX_WITH_EXAMPLES=Off"
+    if [ $MACHINE = "stampede2" ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} \
+                 -DCMAKE_TOOLCHAIN_FILE=${SCRIPTPATH}/Stampede2-gcc.cmake"
+    fi
     if [ $VTUNE = "true" ]; then
 	CMAKE_FLAGS="${CMAKE_FLAGS} \
                  -DHPX_WITH_ITTNOTIFY=On \

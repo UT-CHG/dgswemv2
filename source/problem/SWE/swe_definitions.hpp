@@ -14,6 +14,7 @@ static constexpr double Cf = 0;
 enum BoundaryConditions : uchar {
     land = 0,
     tidal = 1,
+    distributed = DISTRIBUTED,
     internal = INTERNAL
 };
 }

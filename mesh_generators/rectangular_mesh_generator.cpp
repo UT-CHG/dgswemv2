@@ -22,11 +22,11 @@ void checker_pattern_tri(uint, uint, std::vector<element>&);
 
 int main(int argc, const char* argv[]) {
     // Hardcoded for manufactured solution mesh
-    double x1 = 40000.;
-    double x2 = 83200.;
+    double x1 = 40000. + 43200. * 1.;
+    double x2 = 83200. + 43200. * 1.;
 
-    double y1 = 10000.;
-    double y2 = 53200.;
+    double y1 = 10000. + 43200. * 1.;
+    double y2 = 53200. + 43200. * 1.;
 
     uint m = std::stoi(argv[1]);
     uint n = std::stoi(argv[1]);
@@ -83,7 +83,7 @@ int main(int argc, const char* argv[]) {
     std::ofstream file(file_name);
 
     file << std::fixed << std::setprecision(12);
-    file << "ADCIRC Model\n";
+    file << "rectangle\n";
     file << 2 * m* n << "    " << (m + 1) * (n + 1) << '\n';
 
     for (uint node = 0; node < nodes.size(); node++) {

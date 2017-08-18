@@ -50,7 +50,8 @@ namespace Integration {
 template <uint dim>
 class Integration {
   public:
-    virtual std::pair<std::vector<double>, std::vector<Point<dim>>> GetRule(uint) = 0;
+    virtual uint GetNumGP(uint p) = 0;
+    virtual std::pair<std::vector<double>, std::vector<Point<dim>>> GetRule(uint p) = 0;
 };
 }
 
@@ -108,6 +109,7 @@ class Shape {
 #define N_DIV 2                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
 #define INTERNAL 255           // max uchar as default bound type: internal
+#define DISTRIBUTED 254
 
 enum GlobalCoord : uchar {
     x = 0,

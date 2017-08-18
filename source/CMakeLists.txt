@@ -6,7 +6,7 @@ list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
 
-  ${PROJECT_SOURCE_DIR}/source/stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
 
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
@@ -17,12 +17,17 @@ list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
-include_directories("${YAML_CPP_INCLUDE_DIR}")
+include_directories(${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})
 
 add_executable(
   DG_HYPER_SWE
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/main_swe.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/hpx_main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES})
+target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+
+hpx_setup_target(
+    DG_HYPER_SWE
+    COMPONENT_DEPENDENCIES iostreams
+)

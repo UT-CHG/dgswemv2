@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 add_executable(
   test_tuple_helpers_exe
@@ -111,7 +111,7 @@ add_test(
 add_executable(
   test_rk_stepper_exe
   test_rk_stepper.cpp
-  ${PROJECT_SOURCE_DIR}/source/stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
 )
 
 add_test(
@@ -149,6 +149,20 @@ add_test(
 #  Uint_test_land_boundary.cpp
 #  test_swe_boundaries_exe
 #)
+
+add_executable(
+  test_mesh_metadata_exe
+  test_mesh_metadata.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+)
+
+add_test(
+  Unit_mesh_metadata
+  test_mesh_metadata_exe
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
+)
 
 include_directories("${YAML_CPP_INCLUDE_DIR}")
 

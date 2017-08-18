@@ -1,6 +1,8 @@
 #include "mesh_metadata.hpp"
 
 MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
+    _mesh_name = mesh_file.name;
+
     for (const auto& nod : mesh_file.nodes) {
         if (nod.first < 0) {
             throw std::logic_error("ERROR in mesh_metadata.cpp: Node ID is negative; not supported\n");
@@ -30,7 +32,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         std::vector<int> node{elt.second[1], elt.second[2], elt.second[3]};
 
         for (uint k = 0; k < 3; ++k) {
-            std::uint64_t curr_key = (std::uint64_t)(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32 |
+            std::uint64_t curr_key = static_cast<std::uint64_t>(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32 |
                                      std::max(node[(k + 1) % 3], node[(k + 2) % 3]);
 
             if (edge_dictionary.count(curr_key)) {  // if already one element has the edge.
@@ -63,9 +65,61 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             std::array<int, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
                                      mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
 
+            _elements.at(elt_id).neighbor_ID[face_id] = DEFAULT_ID;
             _elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
         }
     }
+}
+
+MeshMetaData::MeshMetaData(const std::string& file) {
+    std::ifstream ifs(file);
+
+    if (!ifs) {
+        std::string err_msg = "Fatal Error: Mesh named " + file + " not found\n";
+        throw std::logic_error(err_msg);
+    }
+
+    std::getline(ifs, _mesh_name);
+
+    uint num_elements;
+    ifs >> num_elements;
+    ifs.ignore(1000, '\n');
+    uint elt_id;
+    for (uint e = 0; e < num_elements; ++e) {
+        ifs >> elt_id;
+        ifs >> _elements[elt_id];
+        ifs.ignore(1000, '\n');
+    }
+
+    uint num_nodes;
+    ifs >> num_nodes;
+    ifs.ignore(1000, '\n');
+    uint node_id;
+    for (uint n = 0; n < num_nodes; ++n) {
+        ifs >> node_id;
+        ifs >> _nodes[node_id];
+        ifs.ignore(1000, '\n');
+    }
+
+    ifs.close();
+}
+
+void MeshMetaData::WriteTo(const std::string& file) {
+    std::ofstream ofs;
+    ofs.open(file);
+
+    ofs << _mesh_name << '\n';
+    ofs << _elements.size() << " = number of elements\n";
+    for (const auto& elt : _elements) {
+        ofs << elt.first << " " << elt.second << '\n';
+    }
+
+    ofs << _nodes.size() << " = number of nodes\n";
+    for (const auto& nod : _nodes) {
+        ofs << nod.first << " " << nod.second << '\n';
+    }
+
+    ofs.close();
 }
 
 std::vector<Point<2>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {

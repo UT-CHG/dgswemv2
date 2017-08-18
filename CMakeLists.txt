@@ -29,10 +29,14 @@ include_directories(source)
 
 #############################################################################
 #  Check for dependencies
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
+
 find_package(yaml-cpp REQUIRED)
+find_package(HPX REQUIRED)
 
 enable_testing()
 
 add_subdirectory(source)
 add_subdirectory(test)
 add_subdirectory(mesh_generators)
+add_subdirectory(partitioner)

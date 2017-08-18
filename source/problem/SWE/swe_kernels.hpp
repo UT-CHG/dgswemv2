@@ -388,7 +388,7 @@ void Problem::write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     mesh.CallForEachElement(extract_VTK_data_kernel);
 
-    std::string file_name = "output/data.vtk";
+    std::string file_name = "output/" + mesh.GetMeshName() + "_raw_data.vtk";
     std::ofstream file(file_name);
 
     file << "CELL_DATA " << (*cell_data.begin()).size() << '\n';
@@ -435,15 +435,15 @@ void Problem::write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    std::string file_name_geom = "output/geometry.vtk";
-    std::string file_name_data = "output/data.vtk";
+    std::string file_name_geom = "output/" + mesh.GetMeshName() + "_geometry.vtk";
+    std::string file_name_data = "output/" + mesh.GetMeshName() + "_raw_data.vtk";
 
     std::ifstream file_geom(file_name_geom, std::ios_base::binary);
     std::ifstream file_data(file_name_data, std::ios_base::binary);
 
     uint n_step = (uint)(stepper.get_t_at_curr_stage() / stepper.get_dt());
 
-    std::string file_name_merge = "output/mesh_data_" + std::to_string(n_step) + ".vtk";
+    std::string file_name_merge = "output/" + mesh.GetMeshName() + "_data_" + std::to_string(n_step) + ".vtk";
     std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
     file_merge << file_geom.rdbuf() << file_data.rdbuf();
@@ -466,7 +466,7 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     std::ofstream file;
 
-    std::string file_name = "output/modal_ze.txt";
+    std::string file_name = "output/" + mesh.GetMeshName() + "_modal_ze.txt";
     if (stepper.get_t_at_curr_stage() == 0.0) {
         file = std::ofstream(file_name);
     } else {
@@ -482,7 +482,7 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    file_name = "output/modal_qx.txt";
+    file_name = "output/" + mesh.GetMeshName() + "_modal_qx.txt";
     if (stepper.get_t_at_curr_stage() == 0.0) {
         file = std::ofstream(file_name);
     } else {
@@ -498,7 +498,7 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    file_name = "output/modal_qy.txt";
+    file_name = "output/" + mesh.GetMeshName() + "_modal_qy.txt";
     if (stepper.get_t_at_curr_stage() == 0.0) {
         file = std::ofstream(file_name);
     } else {
@@ -514,7 +514,7 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    file_name = "output/modal_bath.txt";
+    file_name = "output/" + mesh.GetMeshName() + "_modal_bath.txt";
     if (stepper.get_t_at_curr_stage() == 0.0) {
         file = std::ofstream(file_name);
     } else {
