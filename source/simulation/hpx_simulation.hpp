@@ -90,6 +90,8 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
 
                 this->Send(this->stepper.get_stage(), timestamp);
 
+                receive_futures = this->Receive(timestamp);
+
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
@@ -97,18 +99,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                 this->mesh.CallForEachInterface(interface_kernel);
             });
 
-            future = future.then([this, stage, &receive_futures, &volume_kernel, &source_kernel, &interface_kernel](
-                hpx::future<void>&&) {
-                double timestamp = this->stepper.get_t_at_curr_stage() +
-                                   stage * this->stepper.get_dt() / this->stepper.get_num_stages();
-
-                receive_futures = this->Receive(timestamp);
+            future = when_all(receive_futures).then([&receive_futures](auto&& ready_receive_futures) {
+                std::vector<uint> msg = hpx::util::unwrap(ready_receive_futures.get());
             });
-
-            for (hpx::future<uint>& receive_future : receive_futures) {
-                future =
-                    future.then([&receive_future](hpx::future<void>) { std::cout << receive_future.get() << '\n'; });
-            }
 
             future =
                 future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](hpx::future<void>&&) {
