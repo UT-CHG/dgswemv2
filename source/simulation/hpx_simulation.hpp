@@ -38,7 +38,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     void SetUpCommunication(uint, uint);
 
     void Send(uint, double);
-    void Receive(double);
+    std::vector<hpx::future<uint>> Receive(double);
 };
 
 template <typename ProblemType>
@@ -88,7 +88,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                 this->mesh.CallForEachInterface(interface_kernel);
             });
 
-            this->Receive(this->stepper.get_t_at_curr_stage());
+            when_all(this->Receive(this->stepper.get_t_at_curr_stage())).get();
 
             future =
                 future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](hpx::future<void>&&) {
@@ -154,10 +154,14 @@ void HPXSimulation<ProblemType>::Send(uint message, double timestamp) {
 }
 
 template <typename ProblemType>
-void HPXSimulation<ProblemType>::Receive(double timestamp) {
+std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(double timestamp) {
+    std::vector<hpx::future<uint>> receive_futures(communicators.size());
+    
     for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
-        std::cout << communicator.Receive(timestamp).get() << '\n';
-    }    
+        receive_futures.push_back(communicator.Receive(timestamp));
+    }
+
+    return receive_futures;    
 }
 
 template <typename ProblemType>
