@@ -28,11 +28,10 @@ int main() {
                       << ", integration computed value: " << num_integration << std::endl;
         }
 
-        if ( num_gp != rule.first.size() ) {
+        if (num_gp != rule.first.size()) {
             any_error = true;
-            std::cerr << "Error found in Dunavant 2D at " << std::to_string(p)
-                      << " gp_vector has size " << rule.first.size()
-                      << " and return num_gp value " << num_gp << std::endl;
+            std::cerr << "Error found in Dunavant 2D at " << std::to_string(p) << " gp_vector has size "
+                      << rule.first.size() << " and return num_gp value " << num_gp << std::endl;
         }
     }
 

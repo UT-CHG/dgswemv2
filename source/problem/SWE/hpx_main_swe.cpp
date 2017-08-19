@@ -77,7 +77,7 @@ hpx::future<void> solve_mesh(std::string input_string, uint thread) {
 
         //     HPXSimulation<SWE::Problem> simulation_client(input_string, hpx::get_locality_id(), thread);
 
-        return simulation_client.Run(18000.);
+        return simulation_client.Run(1800.);
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

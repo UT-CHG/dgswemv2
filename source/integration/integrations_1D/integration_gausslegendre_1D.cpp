@@ -12,9 +12,7 @@ std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GetRule(
     return this->GPData(this->GetNumGP(p));
 }
 
-uint GaussLegendre_1D::GetNumGP(uint p) {
-    return (uint)ceil(((double)p + 1) / 2);
-}
+uint GaussLegendre_1D::GetNumGP(uint p) { return (uint)ceil(((double)p + 1) / 2); }
 
 std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GPData(uint number_gp) {
     std::pair<std::vector<double>, std::vector<Point<1>>> gp;
