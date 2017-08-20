@@ -103,7 +103,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                     for (uint& message : messages) {
                         log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
                     }
-                });
+		  });
             });
 
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
@@ -142,7 +142,7 @@ void HPXSimulation<ProblemType>::SetUpCommunication(uint locality, uint thread) 
 
     // This is just to communicate between everyone(complete graph)
     const uint n_localities = hpx::find_all_localities().size();
-    const uint n_threads = hpx::get_os_thread_count();
+    const uint n_threads = 4;
 
     out_locations.reserve(n_localities * n_threads);
 
