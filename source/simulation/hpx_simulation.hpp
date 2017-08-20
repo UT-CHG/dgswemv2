@@ -95,15 +95,15 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
             });
             
             future = future.then([this](auto&&) {
-                hpx::when_all(this->Receive(this->stepper.get_timestamp())).then([this](auto&& ready_receives) {
-                    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+                auto ready_receives = hpx::when_all(this->Receive(this->stepper.get_timestamp()));
+                
+                std::vector<uint> messages = hpx::util::unwrap(ready_receives.get());
 
-                    std::vector<uint> messages = hpx::util::unwrap(ready_receives.get());
+                std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-                    for (uint& message : messages) {
-                        log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
-                    }
-		  });
+                for (uint& message : messages) {
+                    log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
+                }
             });
 
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
