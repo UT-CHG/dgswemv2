@@ -13,8 +13,8 @@ class HPXCommunicator {
     HPXCommunicator() = default;
     HPXCommunicator(std::string, std::string);
 
-    void Send(uint, double);
-    hpx::future<uint> Receive(double);
+    void Send(uint, uint);
+    hpx::future<uint> Receive(uint);
 };
 
 template <typename ProblemType>
@@ -32,12 +32,12 @@ HPXCommunicator<ProblemType>::HPXCommunicator(std::string in_location, std::stri
 }
 
 template <typename ProblemType>
-void HPXCommunicator<ProblemType>::Send(uint message, double timestamp) {
+void HPXCommunicator<ProblemType>::Send(uint message, uint timestamp) {
     outgoing.set(message, timestamp);
 }
 
 template <typename ProblemType>
-hpx::future<uint> HPXCommunicator<ProblemType>::Receive(double timestamp) {
+hpx::future<uint> HPXCommunicator<ProblemType>::Receive(uint timestamp) {
     return incoming.get(timestamp);
 }
 

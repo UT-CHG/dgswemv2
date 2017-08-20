@@ -42,8 +42,8 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
   private:
     void SetUpCommunication(uint, uint);
 
-    void Send(uint, double);
-    std::vector<hpx::future<uint>> Receive(double);
+    void Send(uint, uint);
+    std::vector<hpx::future<uint>> Receive(uint);
 };
 
 template <typename ProblemType>
@@ -83,7 +83,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
     for (uint step = 1; step <= nsteps; step++) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
             future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
-                this->Send(this->stepper.get_stage(), this->stepper.get_t_at_curr_stage());
+                this->Send(this->stepper.get_timestamp(), this->stepper.get_t_at_curr_stage());
 
                 this->mesh.CallForEachElement(volume_kernel);
 
@@ -91,9 +91,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
 
                 this->mesh.CallForEachInterface(interface_kernel);
 
-                // hpx::wait_all(this->Receive(this->stepper.get_t_at_curr_stage()));
+                // hpx::wait_all(this->Receive(this->stepper.get_timestamp()));
 
-                hpx::when_all(this->Receive(this->stepper.get_t_at_curr_stage())).then([this](auto&& ready_receives) {
+                hpx::when_all(this->Receive(this->stepper.get_timestamp())).then([this](auto&& ready_receives) {
                     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
                     std::vector<uint> messages = hpx::util::unwrap(ready_receives.get());
@@ -160,7 +160,7 @@ void HPXSimulation<ProblemType>::SetUpCommunication(uint locality, uint thread) 
 }
 
 template <typename ProblemType>
-void HPXSimulation<ProblemType>::Send(uint message, double timestamp) {
+void HPXSimulation<ProblemType>::Send(uint message, uint timestamp) {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
@@ -170,8 +170,9 @@ void HPXSimulation<ProblemType>::Send(uint message, double timestamp) {
 }
 
 template <typename ProblemType>
-std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(double timestamp) {
+std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(uint timestamp) {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     std::vector<hpx::future<uint>> receive_futures(communicators.size());
 
     for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
