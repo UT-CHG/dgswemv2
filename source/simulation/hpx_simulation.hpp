@@ -82,7 +82,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
 
     for (uint step = 1; step <= nsteps; step++) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
-            future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
+            future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
                 this->Send(this->stepper.get_timestamp(), this->stepper.get_t_at_curr_stage());
 
                 this->mesh.CallForEachElement(volume_kernel);
@@ -92,7 +92,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                 this->mesh.CallForEachInterface(interface_kernel);
 
                 // hpx::wait_all(this->Receive(this->stepper.get_timestamp()));
-
+            });
+            
+            future = future.then([this](auto&&) {
                 hpx::when_all(this->Receive(this->stepper.get_timestamp())).then([this](auto&& ready_receives) {
                     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -102,7 +104,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                         log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
                     }
                 });
+            });
 
+            future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
                 this->mesh.CallForEachBoundary(boundary_kernel);
 
                 this->mesh.CallForEachElement(update_kernel);
