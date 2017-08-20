@@ -1,3 +1,4 @@
+#include "preprocessor/input_parameters.hpp"
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
@@ -12,31 +13,38 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_nodes,
                                                  const NumaConfiguration& numa_config);
 
+void write_distributed_edge_metadata(const std::string& file_name,
+                                      const InputParameters& input,
+                                      const MeshMetaData& mesh_meta,
+                                     const std::vector<std::vector<MeshMetaData>>& submeshes);
+
 int main(int argc, char** argv) {
 
     std::cout << "?????????????????????????????????????????????????????????????????????\n";
     std::cout << "?  Mesh Preprocessor\n";
     std::cout << "?????????????????????????????????????????????????????????????????????\n\n";
 
-    if (argc < 3) {
+    if (argc < 4 || argc > 5) {
         std::cout << "\nUsage:\n";
-        std::cout << "  path/to/partitioner <input_file_name> <number of partitions>\n";
+        std::cout << "  path/to/partitioner <input_file_name> <mesh_file_name> <number of partitions>\n";
         std::cout << "                      <number of nodes> <NUMA configuration>(optional)\n";
 
         return 0;
     }
 
     std::cout << "Mesh Partitioner Configuration\n";
-    std::string input_mesh_str(argv[1]);
+    InputParameters input(argv[1]);
+    std::cout << "  Input File: " << argv[1] << '\n';
+    std::string input_mesh_str(argv[2]);
     std::cout << "  Mesh Name: " << input_mesh_str << '\n';
-    int num_partitions = atoi(argv[2]);
+    int num_partitions = atoi(argv[3]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
-    int num_nodes = atoi(argv[3]);
+    int num_nodes = atoi(argv[4]);
     std::cout << "  Number of compute nodes: " << num_nodes << '\n';
 
     NumaConfiguration numa_config;
-    if (argc > 4) {
-        std::string numa_str(argv[4]);
+    if (argc == 5) {
+        std::string numa_str(argv[5]);
         numa_config = NumaConfiguration(numa_str);
         std::cout << "  NUMA configuration: " << numa_str << "n\n";
     } else {
@@ -57,6 +65,9 @@ int main(int argc, char** argv) {
             submeshes[n][m].WriteTo(outname);
         }
     }
+
+
+    write_distributed_edge_metadata(input_mesh_str, input, mesh_meta, submeshes);
 
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "\nTime Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()

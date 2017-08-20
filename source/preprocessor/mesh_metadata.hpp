@@ -83,6 +83,25 @@ inline bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
            (lhs.boundary_type == rhs.boundary_type);
 }
 
+struct DistributedInterfaceMetaData {
+
+    std::pair<uint,uint> elements;
+    std::pair<uint,uint> face_id;
+    uint polynomial_order;
+
+    friend std::ostream& operator<<(std::ostream& s, const DistributedInterfaceMetaData& dist_int) {
+        return s << dist_int.elements.first << " " << dist_int.elements.second << " "
+                 << dist_int.face_id.first << " " << dist_int.face_id.second << " "
+                 << dist_int.polynomial_order;
+    }
+
+    friend std::istream& operator>>(std::istream& s, DistributedInterfaceMetaData& dist_int) {
+        return s >> dist_int.elements.first >> dist_int.elements.second
+                 >> dist_int.face_id.first >> dist_int.face_id.second
+                 >> dist_int.polynomial_order;
+    }
+};
+
 struct MeshMetaData {
     MeshMetaData() = default;  // why define default constructor?
     MeshMetaData(const AdcircFormat& mesh_file);

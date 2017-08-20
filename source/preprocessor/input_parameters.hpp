@@ -1,5 +1,5 @@
-#ifndef INPUT_HPP
-#define INPUT_HPP
+#ifndef INPUT_PARAMETERS_HPP
+#define INPUT_PARAMETERS_HPP
 
 #include "mesh_metadata.hpp"
 
