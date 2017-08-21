@@ -83,27 +83,24 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
     for (uint step = 1; step <= nsteps; step++) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
             future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
-                this->Send(this->stepper.get_timestamp(), this->stepper.get_timestamp());
 
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
 
                 this->mesh.CallForEachInterface(interface_kernel);
-
-                // hpx::wait_all(this->Receive(this->stepper.get_timestamp()));
             });
-            
+
             future = future.then([this](auto&&) {
-                auto ready_receives = hpx::when_all(this->Receive(this->stepper.get_timestamp()));
-                
-                std::vector<uint> messages = hpx::util::unwrap(ready_receives.get());
+                hpx::when_all(this->Receive(this->stepper.get_timestamp())).then([this](auto&& ready_messages) {
+                    auto messages = ready_messages.get();
 
-                std::ofstream log_file(this->log_file_name, std::ofstream::app);
+                    std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-                for (uint& message : messages) {
-                    log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
-                }
+                    for (auto& message : messages) {
+                        log_file << this->mesh.GetMeshName() << " received message: " << message.get() << '\n';
+                    }
+                });
             });
 
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
@@ -175,7 +172,8 @@ template <typename ProblemType>
 std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(uint timestamp) {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-    std::vector<hpx::future<uint>> receive_futures(communicators.size());
+    std::vector<hpx::future<uint>> receive_futures;
+    receive_futures.reserve(communicators.size());
 
     for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
         receive_futures.push_back(communicator.Receive(timestamp));
