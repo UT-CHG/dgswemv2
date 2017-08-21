@@ -95,8 +95,8 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
             });
 
             future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
-                this->Send(this->stepper.get_t_at_curr_stage(), this->stepper.get_timestamp());  
-                
+                this->Send(this->stepper.get_t_at_curr_stage(), this->stepper.get_timestamp());
+
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
