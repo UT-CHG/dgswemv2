@@ -13,7 +13,10 @@ struct InputParameters {
     InputParameters(const std::string&);
     InputParameters(const std::string&, uint, uint);
 
+    void WriteTo(const std::string& output_filename);
+
     std::string mesh_file_name;
+    std::string mesh_format;
     MeshMetaData mesh_data;
 
     // right now we only support SSPRK timestepping

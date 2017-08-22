@@ -9,8 +9,8 @@ InputParameters::InputParameters(const std::string& input_string) {
     // Process Mesh information
     {
         YAML::Node raw_mesh = input_file["mesh"];
-        std::string format = raw_mesh["format"].as<std::string>();
-        if (format == "Adcirc") {
+        mesh_format = raw_mesh["format"].as<std::string>();
+        if (mesh_format == "Adcirc") {
             mesh_file_name = raw_mesh["file_name"].as<std::string>();
             AdcircFormat adcirc_file(mesh_file_name);
             mesh_data = MeshMetaData(adcirc_file);
@@ -45,8 +45,8 @@ InputParameters::InputParameters(const std::string& input_string, uint locality,
     // Process Mesh information
     {
         YAML::Node raw_mesh = input_file["mesh"];
-        std::string format = raw_mesh["format"].as<std::string>();
-        if (format == "Adcirc") {
+        mesh_format = raw_mesh["format"].as<std::string>();
+        if (mesh_format == "Adcirc") {
             mesh_file_name = raw_mesh["file_name"].as<std::string>();
             mesh_file_name.erase(mesh_file_name.size() - 3);
             mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(thread) + ".14";
@@ -76,4 +76,44 @@ InputParameters::InputParameters(const std::string& input_string, uint locality,
 
         throw std::logic_error(err_msg);
     }
+}
+
+void InputParameters::WriteTo(const std::string& output_filename) {
+    YAML::Emitter output;
+    assert(output.good());
+    output << YAML::BeginMap;
+    // Assemble mesh information
+    {
+        YAML::Node mesh;
+        mesh["format"] = mesh_format;
+        mesh["file_name"] = mesh_file_name;
+
+        output << YAML::Key << "mesh";
+        output << YAML::Value << mesh;
+    }
+    // Assemble timestepping information
+    {
+        YAML::Node timestepping;
+        timestepping["dt"] = dt;
+        timestepping["end_time"] = T_end;
+        timestepping["order"] = rk.order;
+        timestepping["nstages"] = rk.nstages;
+
+        output << YAML::Key << "timestepping" << YAML::Value << timestepping;
+    }
+
+    output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
+
+    output << YAML::EndMap;
+
+    std::ofstream ofs(output_filename);
+    assert(ofs);
+
+    ofs << "###############################################################################\n"
+        << "#\n"
+        << "#  DGSWEMv2 input file\n"
+        << "#\n"
+        << "###############################################################################\n\n";
+
+    ofs << output.c_str();
 }
