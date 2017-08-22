@@ -14,8 +14,8 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const NumaConfiguration& numa_config);
 
 void write_distributed_edge_metadata(const std::string& file_name,
-                                      const InputParameters& input,
-                                      const MeshMetaData& mesh_meta,
+                                     const InputParameters& input,
+                                     const MeshMetaData& mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes);
 
 int main(int argc, char** argv) {
@@ -65,7 +65,6 @@ int main(int argc, char** argv) {
             submeshes[n][m].WriteTo(outname);
         }
     }
-
 
     write_distributed_edge_metadata(input_mesh_str, input, mesh_meta, submeshes);
 
