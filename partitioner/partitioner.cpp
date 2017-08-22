@@ -25,8 +25,8 @@ int main(int argc, char** argv) {
     std::cout << "?????????????????????????????????????????????????????????????????????\n\n";
 
     if (argc < 4 || argc > 5) {
-        std::cout << "\nUsage:\n";
-        std::cout << "  path/to/partitioner <input_file_name> <mesh_file_name> <number of partitions>\n";
+        std::cout << "Usage:\n";
+        std::cout << "  path/to/partitioner <input_file_name> <number of partitions>\n";
         std::cout << "                      <number of nodes> <NUMA configuration>(optional)\n";
 
         return 0;
@@ -35,16 +35,16 @@ int main(int argc, char** argv) {
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
-    std::string input_mesh_str(argv[2]);
+    std::string input_mesh_str(input.mesh_file_name);
     std::cout << "  Mesh Name: " << input_mesh_str << '\n';
-    int num_partitions = atoi(argv[3]);
+    int num_partitions = atoi(argv[2]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
-    int num_nodes = atoi(argv[4]);
+    int num_nodes = atoi(argv[3]);
     std::cout << "  Number of compute nodes: " << num_nodes << '\n';
 
     NumaConfiguration numa_config;
     if (argc == 5) {
-        std::string numa_str(argv[5]);
+        std::string numa_str(argv[4]);
         numa_config = NumaConfiguration(numa_str);
         std::cout << "  NUMA configuration: " << numa_str << "n\n";
     } else {

@@ -1,4 +1,9 @@
-#include "source/preprocessor/mesh_metadata.hpp"
+#include "preprocessor/mesh_metadata.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "util.hpp"
+
+#include <deque>
+#include <unordered_set>
 
 void write_distributed_edge_metadata(const std::string& file_name,
                                       const InputParameters& input,
@@ -17,12 +22,11 @@ void write_distributed_edge_metadata(const std::string& file_name,
             }
         }
     }
-
     std::unordered_map<uint,uint> elt2partition;
     for ( uint loc_id = 0; loc_id < submeshes.size(); ++loc_id ) {
         for ( uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id ) {
-            for ( auto& elt : mesh_meta._elements ) {
-                elt2partition.insert( elt.first, loc_id + num_loc * sbmsh_id );
+            for ( auto& elt : submeshes[loc_id][sbmsh_id]._elements ) {
+                elt2partition.insert( std::make_pair( elt.first, loc_id + num_loc * sbmsh_id ));
                 for ( auto& neigh : elt.second.neighbor_ID ) {
                     if ( neigh != DEFAULT_ID ) {
                         std::pair<uint,uint> edge_name { std::min( elt.first, neigh ),
@@ -33,9 +37,8 @@ void write_distributed_edge_metadata(const std::string& file_name,
             }
         }
     }
-
     //Assemble lists of distributed interface meta data
-    std::unordered_map< std::pair<uint,uint>, std::deque<DistributedInterfaceMeta> > shared_faces;
+    std::unordered_map< std::pair<uint,uint>, std::deque<DistributedInterfaceMetaData> > shared_faces;
     for ( auto& f : faces ) {
         uint eltA = f.first;
         uint rnkA = elt2partition.at(eltA);
@@ -44,7 +47,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         uint rnkB = elt2partition.at(eltB);
 
         uint face_id_A {DEFAULT_ID};
-        const ElementMetaData& eltA_meta = mesh_meta._elements.at[eltA];
+        const ElementMetaData& eltA_meta = mesh_meta._elements.at(eltA);
         for ( uint fid = 0; fid < eltA_meta.neighbor_ID.size(); ++fid ) {
             if ( eltB == eltA_meta.neighbor_ID[fid] ) {
                 face_id_A = fid;
@@ -53,7 +56,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         assert( face_id_A != DEFAULT_ID );
 
         uint face_id_B {DEFAULT_ID};
-        const ElementMetaData& eltB_meta = mesh_meta._elements.at[eltB];
+        const ElementMetaData& eltB_meta = mesh_meta._elements.at(eltB);
         for ( uint fid = 0; fid< eltB_meta.neighbor_ID.size(); ++fid ) {
             if ( eltA == eltB_meta.neighbor_ID[fid] ) {
                 face_id_B = fid;
@@ -61,9 +64,9 @@ void write_distributed_edge_metadata(const std::string& file_name,
         }
         assert( face_id_B != DEFAULT_ID );
 
-        std::pair<uint,uint> rnk_pair { std::min(eltA, eltB), std::max(eltA,eltB) };
+        std::pair<uint,uint> rnk_pair { std::min(rnkA, rnkB), std::max(rnkA,rnkB) };
 
-        DistributedInterfaceMeta dist_int;
+        DistributedInterfaceMetaData dist_int;
         dist_int.polynomial_order = input.polynomial_order;
 
         if ( eltA > eltB ) {
@@ -74,7 +77,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
             dist_int.face_id = { face_id_A, face_id_B };
         }
 
-        shared_faces[rnk_pair].insert( std::move(dist_int));
+        shared_faces[rnk_pair].push_back( std::move(dist_int));
     }
 
     std::ofstream file( file_name + "_meta" );
