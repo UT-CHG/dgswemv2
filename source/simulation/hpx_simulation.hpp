@@ -71,20 +71,45 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
-    hpx::future<void> future = hpx::make_ready_future();
+    this->mesh.CallForEachElement(resize_data_container);
 
-    future = future.then([this, &resize_data_container](hpx::future<void>&&) {
-        this->mesh.CallForEachElement(resize_data_container);
+    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
-        // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-        // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-    });
+    std::vector<hpx::future<void>> update_futures;
+    hpx::future<void> kernels_future = hpx::make_ready_future();
+    std::vector<hpx::future<void>> receive_futures;
+    hpx::future<void> send_future = hpx::make_ready_future();
 
+    update_futures.push_back(hpx::make_ready_future());
+
+    kernels_future.get();
+    //receive_future.get();
+    send_future.get();
+
+
+    //HAVE TO PUT ALL FUTURES INTO CONTAINERS    
     for (uint step = 1; step <= nsteps; step++) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
-            future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
-                this->Send(this->stepper.get_t_at_curr_stage(), this->stepper.get_timestamp());
+            // send_future = hpx::make_ready_future();
+            send_future = update_futures[stage].then([this, step, stage](auto&&) {
+                std::ofstream log_file(this->log_file_name, std::ofstream::app);
+                log_file << this->mesh.GetMeshName() << " Send step,stage: " << step << ',' << stage << '\n';
 
+                this->Send(this->stepper.get_t_at_curr_stage(), step * 10 + stage);
+            });
+            
+            //receive_future = hpx::make_ready_future();
+            receive_futures.push_back(hpx::when_all(this->Receive(step * 10 + stage)).then([this](auto&& ready_messages) {
+                /*std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+                for (auto& message : ready_messages.get()) {
+                    log_file << this->mesh.GetMeshName() << " received message: " << message.get() << '\n';
+                }*/
+            }));
+
+            // kernels_future = hpx::make_ready_future();
+            kernels_future = send_future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
@@ -92,39 +117,29 @@ hpx::future<void> HPXSimulation<ProblemType>::Run(double time_end) {
                 this->mesh.CallForEachInterface(interface_kernel);
             });
 
-            future = future.then([this](auto&&) {
-                return hpx::when_all(this->Receive(this->stepper.get_timestamp())).then([this](auto&& ready_messages) {
-                    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+            update_futures.push_back(hpx::when_all(kernels_future, receive_futures[stage])
+                                .then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
+                                     this->mesh.CallForEachBoundary(boundary_kernel);
 
-                    for (auto& message : ready_messages.get()) {
-                        log_file << this->mesh.GetMeshName() << " received message: " << message.get() << '\n';
-                    }
-                });
-            });
+                                     this->mesh.CallForEachElement(update_kernel);
 
-            future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
-                this->mesh.CallForEachBoundary(boundary_kernel);
+                                     this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-                this->mesh.CallForEachElement(update_kernel);
-
-                this->mesh.CallForEachElement(scrutinize_solution_kernel);
-
-                ++(this->stepper);
-            });
+                                     ++(this->stepper);
+                                 }));
         }
-
+        /*
         future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
             this->mesh.CallForEachElement(swap_states_kernel);
-
             if (step % 360 == 0) {
                 std::cout << "Step: " << step << "\n";
                 // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
                 // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
             }
-        });
+        });*/
     }
 
-    return future;
+    return kernels_future;
 }
 
 template <typename ProblemType>
