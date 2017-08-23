@@ -3,6 +3,8 @@
 
 #include "mesh_metadata.hpp"
 
+#include <yaml-cpp/yaml.h>
+
 struct RKInput {
     uint nstages;
     uint order;
@@ -28,5 +30,8 @@ struct InputParameters {
     double T_end;
 
     uint polynomial_order;
+
+  private:
+    void Initialize(YAML::Node& input_file);
 };
 #endif
