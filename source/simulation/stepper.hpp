@@ -14,11 +14,7 @@ struct Stepper {
 
     uint get_stage() const { return irk; }
 
-    uint get_timestamp() const { return timestamp; }
-
     Stepper& operator++() {
-        ++timestamp;
-
         ++irk;
         irk = irk % nstages;
 
@@ -39,8 +35,6 @@ struct Stepper {
 
     double _t;
     const double _dt;
-
-    uint timestamp;
 };
 
 #endif

@@ -12,7 +12,7 @@
 #include "swe_kernels.hpp"
 #include "../../simulation/hpx_simulation.hpp"
 
-void local_main(std::string);
+hpx::future<void> local_main(std::string);
 HPX_PLAIN_ACTION(local_main, local_main_action);
 
 hpx::future<void> solve_mesh(std::string, uint);
@@ -52,7 +52,7 @@ int hpx_main(int argc, char* argv[]) {
     return hpx::finalize();  // Handles HPX shutdown
 }
 
-void local_main(std::string input_string) {
+hpx::future<void> local_main(std::string input_string) {
     const uint n_threads = 4;
     const hpx::naming::id_type here = hpx::find_here();
 
@@ -63,7 +63,7 @@ void local_main(std::string input_string) {
         futures.push_back(hpx::async<solve_mesh_action>(here, input_string, thread));
     }
 
-    hpx::wait_all(futures);
+    return hpx::when_all(futures);
 }
 
 hpx::future<void> solve_mesh(std::string input_string, uint thread) {
@@ -77,7 +77,7 @@ hpx::future<void> solve_mesh(std::string input_string, uint thread) {
 
         //     HPXSimulation<SWE::Problem> simulation_client(input_string, hpx::get_locality_id(), thread);
 
-        return simulation_client.Run(1.);
+        return simulation_client.Run();
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";

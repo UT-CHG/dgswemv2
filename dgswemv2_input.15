@@ -9,8 +9,8 @@ mesh:
   file_name: ../mesh_generators/rectangular_mesh.14
 
 timestepping:
-  dt: 1                           #in seconds
-  end_time: 43200                 #in seconds
+  dt: 1 #seconds
+  end_time: 1800 #seconds
   order: 2
   nstages: 2
 

@@ -5,7 +5,7 @@ HPX_REGISTER_CHANNEL(uint);
 
 template <typename ProblemType>
 class HPXCommunicator {
-  private:
+  public:
     hpx::lcos::channel<uint> outgoing;
     hpx::lcos::channel<uint> incoming;
 
