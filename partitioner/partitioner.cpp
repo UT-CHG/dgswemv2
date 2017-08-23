@@ -68,6 +68,11 @@ int main(int argc, char** argv) {
 
     write_distributed_edge_metadata(input_mesh_str, input, mesh_meta, submeshes);
 
+    // finish out by writing updated output file
+    std::string updated_input_filename = std::string(argv[1]) + "_parallelized";
+    input.mesh_format = "Meta";
+    input.WriteTo(updated_input_filename);
+
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "\nTime Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << std::endl;
