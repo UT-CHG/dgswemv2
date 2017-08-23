@@ -8,11 +8,17 @@
 namespace Geometry {
 // Since elements types already come in a tuple. We can use specialization
 // to get easy access to the parameter packs for the element and edge types.
-template <typename ElementTypeTuple, typename InteriorEdgeTypeTuple, typename BoundaryEdgeTypeTuple, typename DistributedEdgeTypeTuple>
+template <typename ElementTypeTuple,
+          typename InteriorEdgeTypeTuple,
+          typename BoundaryEdgeTypeTuple,
+          typename DistributedEdgeTypeTuple>
 class Mesh;
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedInterfaces>
-class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Boundaries...>, std::tuple<DistributedInterfaces...>> {
+class Mesh<std::tuple<Elements...>,
+           std::tuple<Interfaces...>,
+           std::tuple<Boundaries...>,
+           std::tuple<DistributedInterfaces...>> {
   private:
     std::string mesh_name;
 
@@ -20,13 +26,13 @@ class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Bounda
     using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
     using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
     using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
-    using DistributedInterfaces = Utilities::HeterogeneousVector<DistributedInterfaces..>;
+    using DistributedInterfaceContainer = Utilities::HeterogeneousVector<DistributedInterfaces...>;
 
     MasterElementTypes masters;
     ElementContainer elements;
     InterfaceContainer interfaces;
     BoundaryContainer boundaries;
-    DistributedInterfaces distributed_interfaces;
+    DistributedInterfaceContainer distributed_interfaces;
 
   public:
     Mesh(uint p, std::string mesh_name)
@@ -86,7 +92,7 @@ class Mesh<std::tuple<Elements...>, std::tuple<Interfaces...>, std::tuple<Bounda
     template <typename F>
     void CallForEachDistributedInterface(F f) {
         Utilities::for_each_in_tuple(boundaries.data, [f](auto& distributed_interface_vector) {
-            std::for_each( distributed_interface_vector.begin(), distributed_interface_vector.end(), f);
+            std::for_each(distributed_interface_vector.begin(), distributed_interface_vector.end(), f);
         });
     }
 };
