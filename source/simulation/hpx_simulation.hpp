@@ -86,7 +86,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
     uint timestamp = 0;
     for (uint step = 1; step <= nsteps; step++) {
-        for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
+        for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {/*
             std::vector<hpx::future<uint>> receive_futures;
 
             future = future.then([this, timestamp, &receive_futures](auto&&) {
@@ -123,13 +123,13 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                              log_file << this->mesh.GetMeshName() << " received message: " << message.get() << '\n';
                          }
                      })
-                     .get();*/
+                     .get();
             });
                             for (uint& message : messages) {
                                 log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
                             }
                         });
-            */
+            
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -146,9 +146,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 log_file << this->mesh.GetMeshName() << " finished work on kernels after receive\n";
             });
 
-            timestamp++;
+            timestamp++;*/
         }
-
+/*
         future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
             this->mesh.CallForEachElement(swap_states_kernel);
             if (step % 360 == 0) {
@@ -157,7 +157,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
                 // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
             }
-        });
+        });*/
     }
 
     return future;

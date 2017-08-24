@@ -15,7 +15,7 @@
 #include "preprocessor/input_parameters.hpp"
 #include "utilities/file_exists.hpp"
 
-void local_main(std::string, std::string);
+hpx::future<void> local_main(std::string, std::string);
 HPX_PLAIN_ACTION(local_main, local_main_action);
 
 hpx::future<void> solve_mesh(std::string, uint);
@@ -58,7 +58,7 @@ int hpx_main(int argc, char* argv[]) {
     return hpx::finalize();  // Handles HPX shutdown
 }
 
-void local_main(std::string input_string, std::string mesh_file_name) {
+hpx::future<void> local_main(std::string input_string, std::string mesh_file_name) {
     const hpx::naming::id_type here = hpx::find_here();
 
     uint locality_id = hpx::get_locality_id();
