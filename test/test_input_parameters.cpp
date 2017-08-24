@@ -1,5 +1,12 @@
 #include "preprocessor/input_parameters.hpp"
+#include "utilities/almost_equal.hpp"
 
+const static auto equal = [](const InputParameters & ipa, const InputParameters & ipb) -> bool {
+    return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
+           (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
+           Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
+           (ipa.polynomial_order == ipb.polynomial_order);
+};
 int main(int argc, char** argv) {
     bool error_found{false};
 
@@ -9,6 +16,12 @@ int main(int argc, char** argv) {
         bool local_error{false};
         try {
             InputParameters input(argv[1]);
+            std::string output_file_name = std::string(argv[1]) + ".emitted";
+            std::cout << output_file_name << '\n';
+            input.WriteTo(output_file_name);
+
+            InputParameters input2(output_file_name);
+            local_error = !equal(input, input2);
         }
         catch (const std::exception& e) {
             local_error = true;

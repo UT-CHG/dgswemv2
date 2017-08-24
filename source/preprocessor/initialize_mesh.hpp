@@ -14,10 +14,10 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type&);
 template <typename ProblemType>
 void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
-template <typename ProblemType>
-void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
+template <typename ProblemType, typename Communicator>
+void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data, const Communicator& comm) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data);
-    initialize_mesh_interfaces_boundaries<ProblemType>(mesh);
+    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, comm);
     initialize_mesh_VTK_geometry<ProblemType>(mesh);
 
     ProblemType::initialize_data_kernel(mesh, mesh_data);
@@ -37,8 +37,8 @@ void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshM
     std::cout << "Number of elements: " << mesh.GetNumberElements() << "\n";
 }
 
-template <typename ProblemType>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh) {
+template <typename ProblemType, typename Communicator>
+void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh, const Communicator& comm) {
     using RawBoundaryType = RawBoundary<1, typename ProblemType::data_type>;
 
     using InterfaceType =
@@ -46,9 +46,10 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
 
     std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
     std::map<uchar, std::vector<RawBoundaryType>> pre_boundaries;
+    std::map<uint, std::map<uint, RawBoundaryType>> pre_distributed_interfaces;
 
-    mesh.CallForEachElement([&pre_interfaces, &pre_boundaries](auto& elem) {
-        elem.CreateRawBoundaries(pre_interfaces, pre_boundaries);
+    mesh.CallForEachElement([&pre_interfaces, &pre_boundaries, &pre_distributed_interfaces](auto& elem) {
+        elem.CreateRawBoundaries(pre_interfaces, pre_boundaries, pre_distributed_interfaces);
     });
 
     for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
@@ -64,6 +65,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
     std::cout << "Number of interfaces: " << mesh.GetNumberInterfaces() << "\n";
 
     ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
+    ProblemType::create_distributed_interfaces_kernel(mesh, comm, pre_distributed_interfaces);
 }
 
 template <typename ProblemType>

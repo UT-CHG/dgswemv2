@@ -2,11 +2,6 @@
 #define MESH_UTILITIES_HPP
 
 namespace Geometry {
-template <typename T, typename... Args>
-T create(Args&&... args) {
-    return T(std::forward<Args>(args)...);
-}
-
 template <typename E>
 struct make_master_type;
 

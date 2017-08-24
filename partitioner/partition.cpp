@@ -10,7 +10,8 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
                                                  const NumaConfiguration& numa_config) {
-    const int num_localities = num_nodes * numa_config.get_num_numa_domains();
+    // To do: add an additional layer of support for assigning submeshes to NUMA domains
+    // const int num_localities = num_nodes * numa_config.get_num_numa_domains();
 
     std::unordered_map<int, double> element_weights;
     std::unordered_map<std::pair<int, int>, double> edge_weights;
@@ -101,7 +102,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
             partition2local_partition[p_n.first] = local_partition_counter[p_n.second]++;
         }
 
-        for (uint sm = 0; sm < num_nodes; ++sm) {
+        for (int sm = 0; sm < num_nodes; ++sm) {
             submeshes[sm].resize(local_partition_counter[sm]);
             for (uint i = 0; i < local_partition_counter[sm]; ++i) {
                 submeshes[sm][i]._mesh_name = mesh_meta._mesh_name + "_" + std::to_string(sm) + "_" + std::to_string(i);

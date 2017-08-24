@@ -33,9 +33,10 @@ int main() {
 
     std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
     std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
+    std::map<uint, std::map<uint, RawBoundaryType>> pre_distributed_interfaces;
 
     // generate boundaries
-    triangle.CreateRawBoundaries(pre_interfaces, pre_boundaries);
+    triangle.CreateRawBoundaries(pre_interfaces, pre_boundaries, pre_distributed_interfaces);
 
     std::vector<BoundaryType> boundaries;
 

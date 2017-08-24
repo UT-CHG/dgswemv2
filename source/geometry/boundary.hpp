@@ -23,9 +23,11 @@ class RawBoundary {
         : p(p), n_bound(n_bound), data(data), basis(basis), master(master), shape(shape) {}
 };
 
-template <uint dimension, class integration_type, class data_type, class boundary_type>
+template <uint dimension, class IntegrationType, class data_type, class boundary_type>
 class Boundary {
   public:
+    using integration_type = IntegrationType;
+
     data_type& data;
     boundary_type boundary_condition;
 
@@ -37,8 +39,10 @@ class Boundary {
 
   public:
     Boundary(const RawBoundary<dimension, data_type>&);
+    Boundary(const RawBoundary<dimension, data_type>&, boundary_type& bdry);
 
-    void ComputeUgp(const std::vector<double>&, std::vector<double>&);
+    void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
+    void ComputeUgp(const std::vector<double>& u, std::vector<double>::iterator u_gp_iter);
     double IntegrationPhi(uint, const std::vector<double>&);
 };
 
@@ -81,6 +85,20 @@ inline void Boundary<dimension, integration_type, data_type, boundary_type>::Com
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < u_gp.size(); gp++) {
             u_gp[gp] += u[dof] * this->phi_gp[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, class integration_type, class data_type, class boundary_type>
+inline void Boundary<dimension, integration_type, data_type, boundary_type>::ComputeUgp(
+    const std::vector<double>& u,
+    std::vector<double>::iterator u_gp_iter) {
+    uint num_gp = this->phi_gp[0].size();
+    std::fill(u_gp_iter, u_gp_iter + num_gp, 0.0);
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint gp = 0; gp < num_gp; gp++) {
+            *(u_gp_iter + gp) += u[dof] * this->phi_gp[dof][gp];
         }
     }
 }
