@@ -15,6 +15,7 @@ struct InputParameters {
     InputParameters(const std::string&);
     InputParameters(const std::string&, uint, uint);
 
+    void ReadMesh();
     void WriteTo(const std::string& output_filename);
 
     std::string mesh_file_name;

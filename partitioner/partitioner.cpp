@@ -59,8 +59,10 @@ int main(int argc, char** argv) {
     std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions, num_nodes, numa_config);
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {
-            std::string outname = input_mesh_str + "_" + std::to_string(static_cast<long long>(n)) + "_" +
-                                  std::to_string(static_cast<long long>(m));
+            std::string outname = input_mesh_str;
+            outname.erase(outname.size() - 3);
+            outname += "_" + std::to_string(static_cast<long long>(n)) + "_" +
+                       std::to_string(static_cast<long long>(m)) + ".14";
 
             submeshes[n][m].WriteTo(outname);
         }
@@ -69,7 +71,9 @@ int main(int argc, char** argv) {
     write_distributed_edge_metadata(input_mesh_str, input, mesh_meta, submeshes);
 
     // finish out by writing updated output file
-    std::string updated_input_filename = std::string(argv[1]) + "_parallelized";
+    std::string updated_input_filename = std::string(argv[1]);
+    updated_input_filename.erase(updated_input_filename.size() - 3);
+    updated_input_filename += "_parallelized.15";
     input.mesh_format = "Meta";
     input.WriteTo(updated_input_filename);
 

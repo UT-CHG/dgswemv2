@@ -102,7 +102,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
             partition2local_partition[p_n.first] = local_partition_counter[p_n.second]++;
         }
 
-        for (uint sm = 0; sm < num_nodes; ++sm) {
+        for (int sm = 0; sm < num_nodes; ++sm) {
             submeshes[sm].resize(local_partition_counter[sm]);
             for (uint i = 0; i < local_partition_counter[sm]; ++i) {
                 submeshes[sm][i]._mesh_name = mesh_meta._mesh_name + "_" + std::to_string(sm) + "_" + std::to_string(i);

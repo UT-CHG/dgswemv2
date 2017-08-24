@@ -3,35 +3,12 @@
 
 InputParameters::InputParameters(const std::string& input_string) {
     YAML::Node input_file = YAML::LoadFile(input_string);
-    this->Initialize(input_file);
-}
-
-InputParameters::InputParameters(const std::string& input_string, uint locality, uint thread) {
-    YAML::Node input_file = YAML::LoadFile(input_string);
-
-    YAML::Node raw_mesh = input_file["mesh"];
-    mesh_file_name = raw_mesh["file_name"].as<std::string>();
-    mesh_file_name.erase(mesh_file_name.size() - 3);
-    mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(thread) + ".14";
-    input_file["mesh"]["file_name"] = mesh_file_name;
-
-    this->Initialize(input_file);
-}
-
-void InputParameters::Initialize(YAML::Node& input_file) {
     // Process Mesh information
     {
         YAML::Node raw_mesh = input_file["mesh"];
         mesh_format = raw_mesh["format"].as<std::string>();
-        if (mesh_format == "Adcirc") {
-            mesh_file_name = raw_mesh["file_name"].as<std::string>();
-            AdcircFormat adcirc_file(mesh_file_name);
-            mesh_data = MeshMetaData(adcirc_file);
-        } else if (mesh_format == "Meta") {
-            mesh_file_name = raw_mesh["file_name"].as<std::string>();
-            mesh_data = MeshMetaData(mesh_file_name);
-
-        } else {
+        mesh_file_name = raw_mesh["file_name"].as<std::string>();
+        if (!((mesh_format == "Adcirc") || (mesh_format == "Meta"))) {
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
             throw std::logic_error(err_msg);
         }
@@ -56,6 +33,20 @@ void InputParameters::Initialize(YAML::Node& input_file) {
     }
 }
 
+InputParameters::InputParameters(const std::string& input_string, uint locality, uint thread)
+    : InputParameters(input_string) {
+    mesh_file_name.erase(mesh_file_name.size() - 3);
+    mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(thread) + ".14";
+}
+
+void InputParameters::ReadMesh() {
+    if (mesh_format == "Adcirc") {
+        AdcircFormat adcirc_file(mesh_file_name);
+        mesh_data = MeshMetaData(adcirc_file);
+    } else if (mesh_format == "Meta") {
+        mesh_data = MeshMetaData(mesh_file_name);
+    }
+}
 void InputParameters::WriteTo(const std::string& output_filename) {
     YAML::Emitter output;
     assert(output.good());
