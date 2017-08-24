@@ -15,6 +15,8 @@ list (APPEND DG_HYPER_SWE_SOURCES
 
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
 )
 
 include_directories(${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})

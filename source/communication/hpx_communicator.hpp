@@ -1,6 +1,12 @@
 #ifndef HPX_COMMUNICATOR_HPP
 #define HPX_COMMUNICATOR_HPP
 
+#include <hpx/hpx.hpp>
+#include <vector>
+
+using vec_type = std::vector<double>;
+HPX_REGISTER_CHANNEL_DECLARATION(vec_type);
+
 struct RankInterface {
     uint locality_id;
     uint sbmsh_id;
@@ -9,37 +15,33 @@ struct RankInterface {
     std::vector<uint> polynomial_order;
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
+
+    hpx::lcos::channel<vec_type> outgoing;
+    hpx::lcos::channel<vec_type> incoming;
+
+    inline void send(uint timestamp) { outgoing.set(send_buffer, timestamp); }
+
+    inline hpx::future<void> receive(uint timestamp) {
+        return incoming.get(timestamp)
+            .then([this](hpx::future<vec_type> msg_future) { this->receive_buffer = msg_future.get(); });
+    }
 };
 
-class HpxCommunicator {
-private:
+class HPXCommunicator {
+  private:
     std::vector<RankInterface> distributed_interfaces;
-    //std::unordered_map<uint> distributed_interface2rank;
+    // std::unordered_map<uint> distributed_interface2rank;
 
-public:
-    HpxCommunicator( const uint locality_id,
-                     const uint sbmsh_id,
-                     const std::string& distributed_interface_file );
+  public:
+    HPXCommunicator() = default;
+    HPXCommunicator(const uint locality_id, const uint sbmsh_id, const std::string& distributed_interface_file);
 
     void resize_buffer(uint locality_id, uint sbmsh_id, std::size_t sz);
 
-    inline const std::vector<RankInterface>& Get_distributed_interfaces() {
-        return distributed_interfaces;
-    }
+    inline const std::vector<RankInterface>& Get_distributed_interfaces() const { return distributed_interfaces; }
 
-    inline std::vector<double>::iterator Get_send_buffer_iterator(uint neigh, uint indx) {
-        assert( indx < distributed_interfaces.at(neigh).send_buffer.size() );
-        return distributed_interfaces.at(neigh).send_buffer.begin() + indx;
-    }
+    void send_all(uint timestamp);
 
-    inline std::vector<double>::reverse_iterator Get_receive_buffer_iterator(uint neigh, uint indx) {
-        assert( indx < distributed_interfaces.at(neigh).receive_buffer.size() );
-        return distributed_interfaces.at(neigh).receive_buffer.rbegin() + indx;
-    }
-
-    hpx::future<void> send_all();
-
-    hpx::future<void> receive_all();
-
+    hpx::future<void> receive_all(uint timestamp);
 };
 #endif
