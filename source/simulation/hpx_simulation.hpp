@@ -92,7 +92,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
             future = future.then([this, &volume_kernel, &source_kernel, &interface_kernel](auto&&) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-                log_file << this->mesh.GetMeshName() << " starting work on kernels before receive.\n";
+                log_file << this->mesh.GetMeshName() << " starting work on kernels before receive\n";
 
                 this->mesh.CallForEachElement(volume_kernel);
 
@@ -100,11 +100,15 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
                 this->mesh.CallForEachInterface(interface_kernel);
 
-                log_file << this->mesh.GetMeshName() << " finished work on kernels before receive.\n";
+                log_file << this->mesh.GetMeshName() << " finished work on kernels before receive\n";
             });
 
-            future = future.then([this, &receive_futures](auto&&) {
-                when_all(receive_futures)
+            future = future.then([this, timestamp, &receive_futures](auto&&) {
+		std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+		log_file << this->mesh.GetMeshName() << " starting to wait on receive with timestamp: " << timestamp << '\n';
+
+		when_all(receive_futures)
                     .then([this](auto&& ready_messages) {
                          std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -118,7 +122,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-                log_file << this->mesh.GetMeshName() << " starting work on kernels after receive.\n";
+                log_file << this->mesh.GetMeshName() << " starting work on kernels after receive\n";
 
                 this->mesh.CallForEachBoundary(boundary_kernel);
 
@@ -128,7 +132,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
                 ++(this->stepper);
 
-                log_file << this->mesh.GetMeshName() << " finished work on kernels after receive.\n";
+                log_file << this->mesh.GetMeshName() << " finished work on kernels after receive\n";
             });
 
             timestamp++;
