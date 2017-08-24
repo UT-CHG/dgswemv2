@@ -39,6 +39,40 @@ struct Boundary {
     std::vector<double> qy_numerical_flux_at_gp;
 };
 
+struct DistributedInterface {
+    DistributedInterface(uint n_gp,
+                         const uint ze_in_indx,
+                         const uint qx_in_indx,
+                         const uint qy_in_indx,
+                         const uint ze_ex_indx,
+                         const uint qx_ex_indx,
+                         const uint qy_ex_indx)
+        : ze_in_indx(ze_in_indx),
+          qx_in_indx(qx_in_indx),
+          qy_in_indx(qy_in_indx),
+          ze_ex_indx(ze_ex_indx),
+          qx_ex_indx(qx_ex_indx),
+          qy_ex_indx(qy_ex_indx),
+          bath_at_gp(n_gp),
+          ze_numerical_flux_at_gp(n_gp),
+          qx_numerical_flux_at_gp(n_gp),
+          qy_numerical_flux_at_gp(n_gp) {}
+
+    const uint ze_in_indx;
+    const uint qx_in_indx;
+    const uint qy_in_indx;
+
+    const uint ze_ex_indx;
+    const uint qx_ex_indx;
+    const uint qy_ex_indx;
+
+    std::vector<double> bath_at_gp;
+
+    std::vector<double> ze_numerical_flux_at_gp;
+    std::vector<double> qx_numerical_flux_at_gp;
+    std::vector<double> qy_numerical_flux_at_gp;
+};
+
 struct Internal {
     Internal(uint n_gp)
         : ze_flux_at_gp({std::vector<double>(n_gp), std::vector<double>(n_gp)}),

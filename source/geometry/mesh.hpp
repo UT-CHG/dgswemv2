@@ -35,8 +35,8 @@ class Mesh<std::tuple<Elements...>,
     DistributedInterfaceContainer distributed_interfaces;
 
   public:
-    Mesh(uint p, std::string mesh_name)
-        : mesh_name(mesh_name), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+    Mesh(uint p)
+        : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
     std::string& GetMeshName() { return this->mesh_name; }
     uint GetNumberElements() { return this->elements.size(); }

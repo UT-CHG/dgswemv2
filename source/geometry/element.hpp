@@ -35,7 +35,8 @@ class Element {
             const std::vector<uchar>&);
 
     void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
-                             std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&);
+                             std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&,
+                             std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&);
 
     uint GetID() { return this->ID; }
 
@@ -144,7 +145,9 @@ Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
 template <uint dimension, typename master_type, typename shape_type, typename data_type>
 void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
     std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_interfaces,
-    std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries) {
+    std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries,
+    std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_distributed_interfaces) {
+
     Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
     Shape::Shape<dimension>* my_shape = (Shape::Shape<dimension>*)(&this->shape);
@@ -152,6 +155,11 @@ void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries
     for (uint i = 0; i < this->boundary_type.size(); i++) {
         if (this->boundary_type[i] == INTERNAL) {
             pre_interfaces[this->ID]
+                .emplace(std::make_pair(this->neighbor_ID[i],
+                                        RawBoundary<dimension - 1, data_type>(
+                                            this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
+        } else if (this->boundary_type[i] == DISTRIBUTED) {
+            pre_distributed_interfaces[this->ID]
                 .emplace(std::make_pair(this->neighbor_ID[i],
                                         RawBoundary<dimension - 1, data_type>(
                                             this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));

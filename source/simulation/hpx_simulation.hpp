@@ -3,16 +3,16 @@
 
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
-#include "hpx_communicator.hpp"
+#include "communication/hpx_communicator.hpp"
 
 template <typename ProblemType>
 class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
   private:
-    const InputParameters input;
+    InputParameters input;
 
     Stepper stepper;
     typename ProblemType::mesh_type mesh;
-    std::vector<HPXCommunicator<ProblemType>> communicators;
+    HPXCommunicator comm;
 
     std::string log_file_name;
 
@@ -20,28 +20,34 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     HPXSimulation()
         : input(),
           stepper(input.rk.nstages, input.rk.order, input.dt),
-          mesh(input.polynomial_order, input.mesh_data._mesh_name) {}
-    HPXSimulation(std::string input_string, uint locality, uint thread)
-        : input(input_string, locality, thread),
+          mesh(input.polynomial_order) {}
+    HPXSimulation(std::string input_string, uint locality, uint sbmsh_id)
+        : input(input_string, locality, sbmsh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
-          mesh(input.polynomial_order, input.mesh_data._mesh_name) {
+          mesh(input.polynomial_order),
+        comm(locality, sbmsh_id, std::string(input.mesh_file_name + "_meta")) {
+
+        hpx::cout << "Hello from HPXSimulation constructor " << locality << " " << sbmsh_id << '\n';
+
+        input.ReadMesh();
+        {
+            std::string& mesh_name = mesh.GetMeshName();
+            mesh_name = input.mesh_data._mesh_name;
+        }
+
         this->log_file_name = "output/" + input.mesh_data._mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
                  << " mesh\n\n";
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
-
-        this->SetUpCommunication(locality, thread);
+        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, comm);
     }
 
     hpx::future<void> Run();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
 
   private:
-    void SetUpCommunication(uint, uint);
-
     void Send(uint, uint);
     std::vector<hpx::future<uint>> Receive(uint);
 };
@@ -109,7 +115,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 log_file << this->mesh.GetMeshName() << " starting to wait on receive with timestamp: " << timestamp
                          << '\n';
 
-                when_all(receive_futures)
+                /* when_all(receive_futures)
                     .then([this](auto&& ready_messages) {
                          std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -117,9 +123,13 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                              log_file << this->mesh.GetMeshName() << " received message: " << message.get() << '\n';
                          }
                      })
-                    .get();
+                     .get();*/
             });
-
+                            for (uint& message : messages) {
+                                log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
+                            }
+                        });
+            */
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -153,37 +163,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     return future;
 }
 
-template <typename ProblemType>
-void HPXSimulation<ProblemType>::SetUpCommunication(uint locality, uint thread) {
-    std::string in_location;
-    std::vector<std::string> out_locations;
-
-    in_location = std::to_string(locality) + '_' + std::to_string(thread);
-
-    // Here we need to find all out localities based on mesh info
-
-    // This is just to communicate between everyone(complete graph)
-    const uint n_localities = hpx::find_all_localities().size();
-    const uint n_threads = 4;
-
-    out_locations.reserve(n_localities * n_threads);
-
-    for (uint locality = 0; locality < n_localities; locality++) {
-        for (uint thread = 0; thread < n_threads; thread++) {
-            out_locations.push_back(std::to_string(locality) + '_' + std::to_string(thread));
-        }
-    }
-
-    out_locations.erase(std::remove(out_locations.begin(), out_locations.end(), in_location), out_locations.end());
-
-    this->communicators.reserve(out_locations.size());
-
-    for (std::string& out_location : out_locations) {
-        this->communicators.emplace_back(in_location, out_location);
-    }
-}
-
-template <typename ProblemType>
+/*template <typename ProblemType>
 void HPXSimulation<ProblemType>::Send(uint message, uint timestamp) {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -206,7 +186,7 @@ std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(uint timestam
     }
 
     return receive_futures;
-}
+    }*/
 
 template <typename ProblemType>
 class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<ProblemType>, HPXSimulation<ProblemType>> {
