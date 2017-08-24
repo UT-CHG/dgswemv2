@@ -104,11 +104,12 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
             });
 
             future = future.then([this, timestamp, &receive_futures](auto&&) {
-		std::ofstream log_file(this->log_file_name, std::ofstream::app);
+                std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-		log_file << this->mesh.GetMeshName() << " starting to wait on receive with timestamp: " << timestamp << '\n';
+                log_file << this->mesh.GetMeshName() << " starting to wait on receive with timestamp: " << timestamp
+                         << '\n';
 
-		when_all(receive_futures)
+                when_all(receive_futures)
                     .then([this](auto&& ready_messages) {
                          std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
