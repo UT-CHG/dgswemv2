@@ -28,6 +28,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         this->log_file_name = "output/" + input.mesh_data._mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
+
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
                  << " mesh" << std::endl << std::endl;
 
@@ -50,6 +51,10 @@ template <typename ProblemType>
 hpx::future<void> HPXSimulation<ProblemType>::Run() {
     // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
     // the nice std::for_each notation without having to define stepper within each element
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+    log_file << "Launching Simulation!" << std::endl << std::endl;
+
     uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
 
@@ -68,23 +73,24 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
             timestep_future = timestep_future.then([this, timestamp](hpx::future<void>&& timestep_future) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
+#ifdef VERBOSE
                 log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
                          << this->stepper.get_stage() << ')' << std::endl;
-
+#endif
                 std::vector<hpx::future<uint>> receive_futures = this->Receive(timestamp);
 
                 this->Send(this->stepper.get_t_at_curr_stage(), timestamp);
 
+#ifdef VERBOSE
                 log_file << "Starting work before receive" << std::endl;
+#endif
 
-                Stepper stepper_copy = this->stepper;
+                auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
-                auto volume_kernel = [stepper_copy](auto& elt) { ProblemType::volume_kernel(stepper_copy, elt); };
+                auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
 
-                auto source_kernel = [stepper_copy](auto& elt) { ProblemType::source_kernel(stepper_copy, elt); };
-
-                auto interface_kernel = [stepper_copy](auto& intface) {
-                    ProblemType::interface_kernel(stepper_copy, intface);
+                auto interface_kernel = [this](auto& intface) {
+                    ProblemType::interface_kernel(this->stepper, intface);
                 };
 
                 this->mesh.CallForEachElement(volume_kernel);
@@ -93,30 +99,31 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
                 this->mesh.CallForEachInterface(interface_kernel);
 
-                log_file << "Finished work before receive" << std::endl;
-
-                log_file << "Starting to wait on receive with timestamp: " << timestamp << std::endl;
+#ifdef VERBOSE
+                log_file << "Finished work before receive" << std::endl
+                         << "Starting to wait on receive with timestamp: " << timestamp << std::endl;
+#endif
 
                 return when_all(receive_futures).then([this](
                     hpx::future<std::vector<hpx::future<uint>>>&& ready_messages) {
                     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
+#ifdef VERBOSE
                     for (auto& message : ready_messages.get()) {
                         log_file << "Received message: " << message.get() << std::endl;
                     }
+#endif
 
+#ifdef VERBOSE
                     log_file << "Starting work after receive" << std::endl;
+#endif
 
-                    Stepper stepper_copy = this->stepper;
+                    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
-                    auto boundary_kernel = [stepper_copy](auto& bound) {
-                        ProblemType::boundary_kernel(stepper_copy, bound);
-                    };
+                    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-                    auto update_kernel = [stepper_copy](auto& elt) { ProblemType::update_kernel(stepper_copy, elt); };
-
-                    auto scrutinize_solution_kernel = [stepper_copy](auto& elt) {
-                        ProblemType::scrutinize_solution_kernel(stepper_copy, elt);
+                    auto scrutinize_solution_kernel = [this](auto& elt) {
+                        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
                     };
 
                     this->mesh.CallForEachBoundary(boundary_kernel);
@@ -127,7 +134,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
                     ++(this->stepper);
 
+#ifdef VERBOSE
                     log_file << "Finished work after receive" << std::endl << std::endl;
+#endif
                 });
             });
 
@@ -135,14 +144,14 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         }
 
         timestep_future = timestep_future.then([this, step](hpx::future<void>&& timestep_future) {
-            Stepper stepper_copy = this->stepper;
-
-            auto swap_states_kernel = [stepper_copy](auto& elt) { ProblemType::swap_states_kernel(stepper_copy, elt); };
+            auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
             this->mesh.CallForEachElement(swap_states_kernel);
 
             if (step % 360 == 0) {
-                std::cout << "Step: " << step << std::endl;
+                std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+                log_file << "Step: " << step << std::endl;
 
                 ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
                 ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
@@ -164,7 +173,7 @@ void HPXSimulation<ProblemType>::SetUpCommunication(uint locality, uint thread) 
 
     // This is just to communicate between everyone(complete graph)
     const uint n_localities = hpx::find_all_localities().size();
-    const uint n_threads = hpx::get_os_thread_count();
+    const uint n_threads = 4;  // hpx::get_os_thread_count();
 
     out_locations.reserve(n_localities * n_threads);
 
@@ -189,7 +198,9 @@ void HPXSimulation<ProblemType>::Send(uint message, uint timestamp) {
 
     for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
         communicator.Send(message, timestamp);
+#ifdef VERBOSE
         log_file << this->mesh.GetMeshName() << " sent message with time stamp: " << timestamp << std::endl;
+#endif
     }
 }
 
@@ -202,8 +213,10 @@ std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(uint timestam
 
     for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
         receive_futures.push_back(communicator.Receive(timestamp));
+#ifdef VERBOSE
         log_file << this->mesh.GetMeshName() << " posted receive for message with time stamp: " << timestamp
                  << std::endl;
+#endif
     }
 
     return receive_futures;

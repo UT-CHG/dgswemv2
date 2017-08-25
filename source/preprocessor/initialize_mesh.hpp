@@ -34,7 +34,9 @@ void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshM
             elt_id, mesh_data.GetNodalCoordinates(elt_id), it.second.neighbor_ID, it.second.boundary_type);
     }
 
-    std::cout << "Number of elements: " << mesh.GetNumberElements() << "\n";
+    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
+
+    log_file << "Number of elements: " << mesh.GetNumberElements() << std::endl;
 }
 
 template <typename ProblemType>
@@ -61,7 +63,9 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
         }
     }
 
-    std::cout << "Number of interfaces: " << mesh.GetNumberInterfaces() << "\n";
+    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
+
+    log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
 
     ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
 }

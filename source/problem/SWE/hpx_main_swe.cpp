@@ -53,8 +53,8 @@ int hpx_main(int argc, char* argv[]) {
 }
 
 hpx::future<void> local_main(std::string input_string) {
-    const uint n_threads = hpx::get_os_thread_count();
     const hpx::naming::id_type here = hpx::find_here();
+    const uint n_threads = 4;  // hpx::get_os_thread_count();
 
     std::vector<hpx::future<void>> futures;
     futures.reserve(n_threads);

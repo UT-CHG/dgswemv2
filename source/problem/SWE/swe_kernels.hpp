@@ -10,6 +10,8 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
 
+    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
+
     using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal>;
 
     for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
@@ -23,7 +25,7 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
                     mesh.template CreateBoundary<BoundaryTypeLand>(*itt);
                 }
 
-                std::cout << "Number of land boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_land << "\n";
+                log_file << "Number of land boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_land << std::endl;
 
                 break;
             case SWE::tidal:
@@ -35,11 +37,14 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
                     mesh.template CreateBoundary<BoundaryTypeTidal>(*itt);
                 }
 
-                std::cout << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal << "\n";
+                log_file << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal
+                         << std::endl;
 
                 break;
         }
     }
+
+    log_file << std::endl;
 }
 
 void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_data) {
