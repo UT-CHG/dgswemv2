@@ -2,6 +2,7 @@
 #define SWE_PROBLEM_HPP
 
 #include "swe_definitions.hpp"
+#include "swe_distributed.hpp"
 #include "swe_boundary_conditions.hpp"
 #include "swe_data.hpp"
 #include "../../geometry/mesh_definitions.hpp"
@@ -11,7 +12,7 @@ namespace SWE {
 struct Problem {
     typedef SWE::Data data_type;
 
-    typedef Geometry::MeshType<SWE::Data, SWE::Land, SWE::Tidal> mesh_type;
+    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal> mesh_type;
 
     // preprocessor kernels
     template <typename RawBoundaryType>
