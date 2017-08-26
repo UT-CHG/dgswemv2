@@ -19,7 +19,9 @@ struct Problem {
     static void create_boundaries_kernel(mesh_type&, std::map<uchar, std::vector<RawBoundaryType>>&);
 
     template <typename RawBoundaryType, typename Communicator>
-    static void create_distributed_interfaces_kernel(mesh_type&, const Communicator&, std::map<uint, RawBoundaryType>&);
+    static void create_distributed_interfaces_kernel(mesh_type&,
+                                                     Communicator&,
+                                                     std::map<uint, std::map<uint, RawBoundaryType>>&);
 
     static void initialize_data_kernel(mesh_type&, const MeshMetaData&);
 

@@ -35,8 +35,7 @@ class Mesh<std::tuple<Elements...>,
     DistributedInterfaceContainer distributed_interfaces;
 
   public:
-    Mesh(uint p)
-        : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+    Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
     std::string& GetMeshName() { return this->mesh_name; }
     uint GetNumberElements() { return this->elements.size(); }
@@ -65,7 +64,7 @@ class Mesh<std::tuple<Elements...>,
 
     template <typename T, typename... Args>
     void CreateDistributedInterface(Args&&... args) {
-        this->boundaries.template emplace_back<T>(std::forward<Args>(args)...);
+        this->distributed_interfaces.template emplace_back<T>(std::forward<Args>(args)...);
     }
 
     template <typename F>
