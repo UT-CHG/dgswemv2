@@ -84,12 +84,12 @@ void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_d
     });
 
     mesh.CallForEachInterface([](auto& intface) {
-        intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary.bath_at_gp);
-        intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary.bath_at_gp);
+        intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary[intface.nbound_in].bath_at_gp);
+        intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary[intface.nbound_ex].bath_at_gp);
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
-        bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary.bath_at_gp);
+        bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary[bound.nbound].bath_at_gp);
     });
 }
 
@@ -185,10 +185,10 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     const uint stage = stepper.get_stage();
 
     auto& state_in = intface.data_in.state[stage];
-    auto& boundary_in = intface.data_in.boundary;
+    auto& boundary_in = intface.data_in.boundary[intface.nbound_in];
 
     auto& state_ex = intface.data_ex.state[stage];
-    auto& boundary_ex = intface.data_ex.boundary;
+    auto& boundary_ex = intface.data_ex.boundary[intface.nbound_ex];
 
     intface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
     intface.ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
@@ -199,8 +199,8 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     intface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
 
     // assemble numerical fluxes
-    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(); ++gp) {
-        uint gp_ex = intface.data_in.get_ngp_boundary() - gp - 1;
+    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.nbound_in); ++gp) {
+        uint gp_ex = intface.data_in.get_ngp_boundary(intface.nbound_in) - gp - 1;
 
         LLF_flux(boundary_in.ze_at_gp[gp],
                  boundary_ex.ze_at_gp[gp_ex],
@@ -238,14 +238,14 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.get_stage();
 
     auto& state = bound.data.state[stage];
-    auto& boundary = bound.data.boundary;
+    auto& boundary = bound.data.boundary[bound.nbound];
 
     bound.ComputeUgp(state.ze, boundary.ze_at_gp);
     bound.ComputeUgp(state.qx, boundary.qx_at_gp);
     bound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
     double ze_ex, qx_ex, qy_ex;
-    for (uint gp = 0; gp < bound.data.get_ngp_boundary(); ++gp) {
+    for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.nbound); ++gp) {
         bound.boundary_condition.set_ex(stepper,
                                         bound.surface_normal[gp],
                                         boundary.ze_at_gp[gp],

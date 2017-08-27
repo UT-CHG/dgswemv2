@@ -139,6 +139,7 @@ Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
 
     this->data.set_ndof(this->master.phi_gp.size());
     this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
+    this->data.set_nbound(this->boundary_type.size());
 }
 
 template <uint dimension, typename master_type, typename shape_type, typename data_type>
