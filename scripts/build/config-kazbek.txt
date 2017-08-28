@@ -1,0 +1,32 @@
+BUILD_TYPE=Release
+MACHINE=ices-desktop
+#VERBOSE=true
+
+if [ "$MACHINE" == "ices-desktop" ]; then    
+	NUM_BUILDCORES=4
+    MODULES="c7 gcc/6.1 cmake/3.3.2 boost/1.61.0 openmpi/1.10.0"
+    CMAKE="/usr/bin/cmake /usr/lib64/cmake /usr/share/cmake /opt/apps/ossw/applications/cmake/cmake-3.3.2/c7/gcc-6.1/bin/cmake /usr/share/man/man1/cmake.1.gz"
+
+    WORK=~/UT-CHG
+fi
+
+if [ "$MACHINE" == "stampede2" ]; then
+    NUM_BUILDCORES=16
+    MODULES="xalt/1.7 TACC gcc/7.1.0 boost/1.64 cmake/3.8.2"
+    CMAKE="cmake"
+
+    VTUNE_MODULES="vtune/17.update4"
+    VTUNE_DIR=/opt/intel/vtune_amplifier_xe_2017.4.0.518798
+
+    CXX_COMPILER="/opt/apps/gcc/7.1.0/bin/g++"
+fi
+
+
+BUILD_PATH=$WORK/build
+INSTALL_PATH=$WORK/packages
+
+YAML_CPP_REPO_PATH=$WORK/yaml-cpp
+YAML_CPP_BUILD_PATH=$BUILD_PATH/yaml
+
+HPX_REPO_PATH=$WORK/hpx
+HPX_BUILD_PATH=$BUILD_PATH/hpx

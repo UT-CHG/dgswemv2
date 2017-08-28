@@ -79,12 +79,12 @@ struct Boundary {
 
 struct Data {
     void initialize() {
-        this->state = std::vector<State>{State(ndof)};
+        this->state = std::vector<State>{State(this->ndof)};
 
-        this->internal = Internal(ngp_internal);
+        this->internal = Internal(this->ngp_internal);
 
-        for(uint bound = 0; bound < this->nbound; nbound++ ){
-            this->boundary.push_back(Boundary(ngp_boundary[nbound]));
+        for(uint bound = 0; bound < this->nbound; bound++ ){
+	  this->boundary.push_back(Boundary(this->ngp_boundary[bound]));
         }
     }
 
@@ -109,7 +109,7 @@ struct Data {
     void set_ngp_internal(uint ngp) { this->ngp_internal = ngp; }
     void set_nbound(uint nbound) { 
         this->nbound = nbound; 
-        ngp_boundary.reserve(this->nbound); 
+        ngp_boundary.resize(this->nbound); 
     }
     void set_ngp_boundary(uint nbound, uint ngp) { this->ngp_boundary[nbound] = ngp; }
 

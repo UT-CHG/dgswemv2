@@ -1,22 +1,25 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
+#include "../preprocessor/input_parameters.hpp"
+#include "../preprocessor/initialize_mesh.hpp"
+
 template <typename ProblemType>
 class Simulation {
   private:
-    const InputParameters input;
+      const InputParameters input;
 
-    typename ProblemType::mesh_type mesh;
+   typename ProblemType::mesh_type mesh;
     Stepper stepper;
 
   public:
-    Simulation(std::string input_string)
+    Simulation(const std::string& input_string)
         : input(input_string),
           mesh(input.polynomial_order, input.mesh_data._mesh_name),
           stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
+            initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
     }
 
     void Run();
@@ -76,7 +79,16 @@ void Simulation<ProblemType>::Run() {
             ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
         }
-    }
+	}
+
+  	double residual_L2 = 0;
+	auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+		residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+	};
+
+	mesh.CallForEachElement(compute_residual_L2_kernel);
+
+	std::cout << "residual L2 norm: " << sqrt(residual_L2) << '\n';
 }
 
 #endif
