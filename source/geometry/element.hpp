@@ -4,328 +4,343 @@
 #include "boundary.hpp"
 
 namespace Geometry {
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	class Element {
-	public:
-		data_type data;
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+class Element {
+  public:
+    data_type data;
 
-	private:
-		uint ID;
-	public:
-		master_type& master;
-		shape_type shape;
-	private:
-		std::vector<uint> neighbor_ID;
-		std::vector<uchar> boundary_type;
+  private:
+    uint ID;
 
-		std::vector<Point<dimension>> gp_global_coordinates;
-		Array3D<double> dphi_fact;
+    master_type& master;
+    shape_type shape;
 
-		std::vector<double> int_fact;
-		Array2D<double> int_fact_phi;
-		Array3D<double> int_fact_dphi;
+    std::vector<uint> neighbor_ID;
+    std::vector<uchar> boundary_type;
 
-		std::pair<bool, Array2D<double>> m_inv;
+    std::vector<Point<dimension>> gp_global_coordinates;
+    Array3D<double> dphi_fact;
 
-	public:
-		Element(uint, master_type&, const std::vector<Point<dimension>>&,
-			const std::vector<uint>&, const std::vector<uchar>&);
+    std::vector<double> int_fact;
+    Array2D<double> int_fact_phi;
+    Array3D<double> int_fact_dphi;
 
-		void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
-			std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&);
+    std::pair<bool, Array2D<double>> m_inv;
 
-		uint GetID() { return this->ID; }
+  public:
+    Element(uint,
+            master_type&,
+            const std::vector<Point<dimension>>&,
+            const std::vector<uint>&,
+            const std::vector<uchar>&);
 
-		template<typename F>
-		std::vector<double> L2Projection(F f);
-		std::vector<double> L2Projection(const std::vector<double>&);
+    void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
+                             std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&);
 
-		template<typename F>
-		void ComputeFgp(F f, std::vector<double>&);
-		void ComputeUgp(const std::vector<double>&, std::vector<double>&);
-		void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
+    uint GetID() { return this->ID; }
 
-		double Integration(const std::vector<double>&);
-		double IntegrationPhi(uint, const std::vector<double>&);
-		double IntegrationDPhi(uint, uint, const std::vector<double>&);
+    template <typename F>
+    std::vector<double> L2Projection(F f);
+    std::vector<double> L2Projection(const std::vector<double>&);
 
-		std::vector<double> SolveLSE(const std::vector<double>&);
+    template <typename F>
+    void ComputeFgp(F f, std::vector<double>&);
+    void ComputeUgp(const std::vector<double>&, std::vector<double>&);
+    void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
 
-		void InitializeVTK(std::vector<Point<3>>&, Array2D<uint>&);
-		void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
-		void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
+    double Integration(const std::vector<double>&);
+    double IntegrationPhi(uint, const std::vector<double>&);
+    double IntegrationDPhi(uint, uint, const std::vector<double>&);
 
-		typedef master_type master_element_type;
-	};
+    std::vector<double> SolveLSE(const std::vector<double>&);
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
-		master_type& master, const std::vector<Point<dimension>>& nodal_coordinates,
-		const std::vector<uint>& neighbor_ID, const std::vector<uchar>& boundary_type) :
-		ID(ID), master(master), shape(shape_type(nodal_coordinates)),
-		neighbor_ID(std::move(neighbor_ID)), boundary_type(std::move(boundary_type))
-	{
-		//GLOBAL COORDINATES OF GPS
-		this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
+    void InitializeVTK(std::vector<Point<3>>&, Array2D<uint>&);
+    void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
+    void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
 
-		//DEFORMATION
-		std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
-		Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
+    typedef master_type master_element_type;
+};
 
-		if (det_J.size() == 1) { //constant Jacobian
-			//INTEGRATION OVER ELEMENT FACTORS
-			this->int_fact = this->master.integration_rule.first;
-			for (uint gp = 0; gp < this->int_fact.size(); gp++) {
-				this->int_fact[gp] *= std::abs(det_J[0]);
-			}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
+                                                                master_type& master,
+                                                                const std::vector<Point<dimension>>& nodal_coordinates,
+                                                                const std::vector<uint>& neighbor_ID,
+                                                                const std::vector<uchar>& boundary_type)
+    : ID(ID),
+      master(master),
+      shape(shape_type(nodal_coordinates)),
+      neighbor_ID(std::move(neighbor_ID)),
+      boundary_type(std::move(boundary_type)) {
+    // GLOBAL COORDINATES OF GPS
+    this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
 
-			//DIFFERENTIATION FACTORS
-			this->dphi_fact.resize(this->master.dphi_gp.size());
-			for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
-				this->dphi_fact[dof].resize(dimension);
-				for (uint dir = 0; dir < dimension; dir++) {
-					this->dphi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
-					for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
-						double dphi = 0;
-						for (uint z = 0; z < dimension; z++) {
-							dphi += this->master.dphi_gp[dof][z][gp] * J_inv[z][dir][0];
-						}
-						this->dphi_fact[dof][dir].push_back(dphi);
-					}
-				}
-			}
+    // DEFORMATION
+    std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
+    Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
 
-			//INTEGRATION FACTORS
-			this->int_fact_phi = this->master.int_fact_phi;
-			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-				for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
-					this->int_fact_phi[dof][gp] *= std::abs(det_J[0]);
-				}
-			}
+    if (det_J.size() == 1) {  // constant Jacobian
+        // INTEGRATION OVER ELEMENT FACTORS
+        this->int_fact = this->master.integration_rule.first;
+        for (uint gp = 0; gp < this->int_fact.size(); gp++) {
+            this->int_fact[gp] *= std::abs(det_J[0]);
+        }
 
-			this->int_fact_dphi.resize(this->master.int_fact_dphi.size());
-			for (uint dof = 0; dof < this->master.int_fact_dphi.size(); dof++) {
-				this->int_fact_dphi[dof].resize(dimension);
-				for (uint dir = 0; dir < dimension; dir++) {
-					this->int_fact_dphi[dof][dir].reserve(this->master.int_fact_dphi[dof][dir].size());
-					for (uint gp = 0; gp < this->master.int_fact_dphi[dof][dir].size(); gp++) {
-						double int_dphi = 0;
-						for (uint z = 0; z < dimension; z++) {
-							int_dphi += this->master.int_fact_dphi[dof][z][gp] * J_inv[z][dir][0];
-						}
-						int_dphi *= std::abs(det_J[0]);
-						this->int_fact_dphi[dof][dir].push_back(int_dphi);
-					}
-				}
-			}
+        // DIFFERENTIATION FACTORS
+        this->dphi_fact.resize(this->master.dphi_gp.size());
+        for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
+            this->dphi_fact[dof].resize(dimension);
+            for (uint dir = 0; dir < dimension; dir++) {
+                this->dphi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
+                for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
+                    double dphi = 0;
+                    for (uint z = 0; z < dimension; z++) {
+                        dphi += this->master.dphi_gp[dof][z][gp] * J_inv[z][dir][0];
+                    }
+                    this->dphi_fact[dof][dir].push_back(dphi);
+                }
+            }
+        }
 
-			//MASS MATRIX
-			this->m_inv = this->master.m_inv;
-			for (uint i = 0; i < this->m_inv.second.size(); i++) {
-				for (uint j = 0; j < this->m_inv.second[i].size(); j++) {
-					this->m_inv.second[i][j] /= std::abs(det_J[0]);
-				}
-			}
-		}
-		else {
-			//Placeholder for nonconstant Jacobian
-		}
+        // INTEGRATION FACTORS
+        this->int_fact_phi = this->master.int_fact_phi;
+        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+            for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
+                this->int_fact_phi[dof][gp] *= std::abs(det_J[0]);
+            }
+        }
 
-		this->data.set_ndof(this->master.phi_gp.size());
-		this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
-	}
+        this->int_fact_dphi.resize(this->master.int_fact_dphi.size());
+        for (uint dof = 0; dof < this->master.int_fact_dphi.size(); dof++) {
+            this->int_fact_dphi[dof].resize(dimension);
+            for (uint dir = 0; dir < dimension; dir++) {
+                this->int_fact_dphi[dof][dir].reserve(this->master.int_fact_dphi[dof][dir].size());
+                for (uint gp = 0; gp < this->master.int_fact_dphi[dof][dir].size(); gp++) {
+                    double int_dphi = 0;
+                    for (uint z = 0; z < dimension; z++) {
+                        int_dphi += this->master.int_fact_dphi[dof][z][gp] * J_inv[z][dir][0];
+                    }
+                    int_dphi *= std::abs(det_J[0]);
+                    this->int_fact_dphi[dof][dir].push_back(int_dphi);
+                }
+            }
+        }
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
-		std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_interfaces,
-		std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries)
-	{
-		Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
-		Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
-		Shape::Shape<dimension>* my_shape = (Shape::Shape<dimension>*)(&this->shape);
+        // MASS MATRIX
+        this->m_inv = this->master.m_inv;
+        for (uint i = 0; i < this->m_inv.second.size(); i++) {
+            for (uint j = 0; j < this->m_inv.second[i].size(); j++) {
+                this->m_inv.second[i][j] /= std::abs(det_J[0]);
+            }
+        }
+    } else {
+        // Placeholder for nonconstant Jacobian
+    }
 
-		for (uint i = 0; i < this->boundary_type.size(); i++) {
-			if (this->boundary_type[i] == INTERNAL) {
-				pre_interfaces[this->ID].emplace(
-					std::make_pair(this->neighbor_ID[i],
-						RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
-			}
-			else {
-				pre_boundaries[this->boundary_type[i]].emplace_back(
-					RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
-			}
-		}
-	}
+    this->data.set_ndof(this->master.phi_gp.size());
+    this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
+    this->data.set_nbound(this->boundary_type.size());
+}
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	template<typename F>
-	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(F f) {
-		std::vector<double> projection;
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
+    std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_interfaces,
+    std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries) {
+    Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
+    Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
+    Shape::Shape<dimension>* my_shape = (Shape::Shape<dimension>*)(&this->shape);
 
-		std::vector<double> f_vals(this->gp_global_coordinates.size());
+    for (uint i = 0; i < this->boundary_type.size(); i++) {
+        if (this->boundary_type[i] == INTERNAL) {
+            pre_interfaces[this->ID]
+                .emplace(std::make_pair(this->neighbor_ID[i],
+                                        RawBoundary<dimension - 1, data_type>(
+                                            this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
+        } else {
+            pre_boundaries[this->boundary_type[i]].emplace_back(
+                RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
+        }
+    }
+}
 
-		this->ComputeFgp(f, f_vals);
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+template <typename F>
+std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(F f) {
+    std::vector<double> projection;
 
-		if (this->m_inv.first) { //diagonal
-			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-				projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
-			}
-		}
-		else if (!(this->m_inv.first)) { //not diagonal
-			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-				projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[dof][dof]);
-			}
-		}
+    std::vector<double> f_vals(this->gp_global_coordinates.size());
 
-		return projection;
-	}
+    this->ComputeFgp(f, f_vals);
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(const std::vector<double>& nodal_values) {
-		std::vector<double> projection;
+    if (this->m_inv.first) {  // diagonal
+        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+            projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
+        }
+    } else if (!(this->m_inv.first)) {  // not diagonal
+        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+            projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[dof][dof]);
+        }
+    }
 
-		std::vector<double> interpolation = this->shape.InterpolateNodalValues(nodal_values, this->master.integration_rule.second);
+    return projection;
+}
 
-		if (this->m_inv.first) { //diagonal
-			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-				projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[0][dof]);
-			}
-		}
-		else if (!(this->m_inv.first)) { //not diagonal
-			for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-				projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[dof][dof]);
-			}
-		}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(
+    const std::vector<double>& nodal_values) {
+    std::vector<double> projection;
 
-		return projection;
-	}
+    std::vector<double> interpolation =
+        this->shape.InterpolateNodalValues(nodal_values, this->master.integration_rule.second);
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	template<typename F>
-	inline void Element<dimension, master_type, shape_type, data_type>::ComputeFgp(F f, std::vector<double>& f_gp) {
-		for (uint gp = 0; gp < f_gp.size(); gp++) {
-			f_gp[gp] = f(this->gp_global_coordinates[gp]);
-		}
-	}
+    if (this->m_inv.first) {  // diagonal
+        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+            projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[0][dof]);
+        }
+    } else if (!(this->m_inv.first)) {  // not diagonal
+        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+            projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[dof][dof]);
+        }
+    }
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp) {
-		std::fill(u_gp.begin(), u_gp.end(), 0.0);
+    return projection;
+}
 
-		for (uint dof = 0; dof < u.size(); dof++) {
-			for (uint gp = 0; gp < u_gp.size(); gp++) {
-				u_gp[gp] += u[dof] * this->master.phi_gp[dof][gp];
-			}
-		}
-	}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+template <typename F>
+inline void Element<dimension, master_type, shape_type, data_type>::ComputeFgp(F f, std::vector<double>& f_gp) {
+    for (uint gp = 0; gp < f_gp.size(); gp++) {
+        f_gp[gp] = f(this->gp_global_coordinates[gp]);
+    }
+}
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint dir, const std::vector<double>& u, std::vector<double>& du_gp) {
-		std::fill(du_gp.begin(), du_gp.end(), 0.0);
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(const std::vector<double>& u,
+                                                                               std::vector<double>& u_gp) {
+    std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
-		for (uint dof = 0; dof < u.size(); dof++) {
-			for (uint gp = 0; gp < du_gp.size(); gp++) {
-				du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
-			}
-		}
-	}
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint gp = 0; gp < u_gp.size(); gp++) {
+            u_gp[gp] += u[dof] * this->master.phi_gp[dof][gp];
+        }
+    }
+}
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline double Element<dimension, master_type, shape_type, data_type>::Integration(const std::vector<double>& u_gp) {
-		double integral = 0;
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint dir,
+                                                                                const std::vector<double>& u,
+                                                                                std::vector<double>& du_gp) {
+    std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
-		for (uint gp = 0; gp < u_gp.size(); gp++) {
-			integral += u_gp[gp] * this->int_fact[gp];
-		}
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint gp = 0; gp < du_gp.size(); gp++) {
+            du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
+        }
+    }
+}
 
-		return integral;
-	}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline double Element<dimension, master_type, shape_type, data_type>::Integration(const std::vector<double>& u_gp) {
+    double integral = 0;
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n, const std::vector<double>& u_gp) {
-		double integral = 0;
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_fact[gp];
+    }
 
-		for (uint gp = 0; gp < u_gp.size(); gp++) {
-			integral += u_gp[gp] * this->int_fact_phi[phi_n][gp];
-		}
+    return integral;
+}
 
-		return integral;
-	}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n,
+                                                                                     const std::vector<double>& u_gp) {
+    double integral = 0;
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir, uint phi_n, const std::vector<double>& u_gp) {
-		double integral = 0;
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_fact_phi[phi_n][gp];
+    }
 
-		for (uint gp = 0; gp < u_gp.size(); gp++) {
-			integral += u_gp[gp] * this->int_fact_dphi[phi_n][dir][gp];
-		}
+    return integral;
+}
 
-		return integral;
-	}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir,
+                                                                                      uint phi_n,
+                                                                                      const std::vector<double>& u_gp) {
+    double integral = 0;
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline std::vector<double> Element<dimension, master_type, shape_type, data_type>::SolveLSE(const std::vector<double>& rhs) {
-		std::vector<double> solution;
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_fact_dphi[phi_n][dir][gp];
+    }
 
-		if (this->m_inv.first) { //diagonal
-			for (uint i = 0; i < rhs.size(); i++) {
-				solution.push_back(this->m_inv.second[0][i] * rhs[i]);
-			}
-		}
-		else if (!(this->m_inv.first)) { //not diagonal
-			for (uint i = 0; i < this->m_inv.second.size(); i++) {
-				solution.push_back(0);
-				for (uint j = 0; j < rhs.size(); j++) {
-					solution[i] += this->m_inv.second[i][j] * rhs[j];
-				}
-			}
-		}
+    return integral;
+}
 
-		return solution;
-	}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline std::vector<double> Element<dimension, master_type, shape_type, data_type>::SolveLSE(
+    const std::vector<double>& rhs) {
+    std::vector<double> solution;
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	void Element<dimension, master_type, shape_type, data_type>::InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
-		this->shape.GetVTK(points, cells);
-	}
+    if (this->m_inv.first) {  // diagonal
+        for (uint i = 0; i < rhs.size(); i++) {
+            solution.push_back(this->m_inv.second[0][i] * rhs[i]);
+        }
+    } else if (!(this->m_inv.first)) {  // not diagonal
+        for (uint i = 0; i < this->m_inv.second.size(); i++) {
+            solution.push_back(0);
+            for (uint j = 0; j < rhs.size(); j++) {
+                solution[i] += this->m_inv.second[i][j] * rhs[j];
+            }
+        }
+    }
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline void Element<dimension, master_type, shape_type, data_type>::WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data) {
-		Array2D<double> temp = this->master.phi_postprocessor_cell;
+    return solution;
+}
 
-		for (uint dof = 0; dof < temp.size(); dof++) {
-			for (uint cell = 0; cell < temp[dof].size(); cell++) {
-				temp[dof][cell] *= u[dof];
-			}
-		}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+void Element<dimension, master_type, shape_type, data_type>::InitializeVTK(std::vector<Point<3>>& points,
+                                                                           Array2D<uint>& cells) {
+    this->shape.GetVTK(points, cells);
+}
 
-		for (uint dof = 1; dof < temp.size(); dof++) {
-			for (uint cell = 0; cell < temp[dof].size(); cell++) {
-				temp[0][cell] += temp[dof][cell];
-			}
-		}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline void Element<dimension, master_type, shape_type, data_type>::WriteCellDataVTK(const std::vector<double>& u,
+                                                                                     std::vector<double>& cell_data) {
+    Array2D<double> temp = this->master.phi_postprocessor_cell;
 
-		cell_data.insert(cell_data.end(), temp[0].begin(), temp[0].end());
-	}
+    for (uint dof = 0; dof < temp.size(); dof++) {
+        for (uint cell = 0; cell < temp[dof].size(); cell++) {
+            temp[dof][cell] *= u[dof];
+        }
+    }
 
-	template<uint dimension, typename master_type, typename shape_type, typename data_type>
-	inline void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data) {
-		Array2D<double> temp = this->master.phi_postprocessor_point;
+    for (uint dof = 1; dof < temp.size(); dof++) {
+        for (uint cell = 0; cell < temp[dof].size(); cell++) {
+            temp[0][cell] += temp[dof][cell];
+        }
+    }
 
-		for (uint dof = 0; dof < temp.size(); dof++) {
-			for (uint pt = 0; pt < temp[dof].size(); pt++) {
-				temp[dof][pt] *= u[dof];
-			}
-		}
+    cell_data.insert(cell_data.end(), temp[0].begin(), temp[0].end());
+}
 
-		for (uint dof = 1; dof < temp.size(); dof++) {
-			for (uint pt = 0; pt < temp[dof].size(); pt++) {
-				temp[0][pt] += temp[dof][pt];
-			}
-		}
+template <uint dimension, typename master_type, typename shape_type, typename data_type>
+inline void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(const std::vector<double>& u,
+                                                                                      std::vector<double>& point_data) {
+    Array2D<double> temp = this->master.phi_postprocessor_point;
 
-		point_data.insert(point_data.end(), temp[0].begin(), temp[0].end());
-	}
+    for (uint dof = 0; dof < temp.size(); dof++) {
+        for (uint pt = 0; pt < temp[dof].size(); pt++) {
+            temp[dof][pt] *= u[dof];
+        }
+    }
+
+    for (uint dof = 1; dof < temp.size(); dof++) {
+        for (uint pt = 0; pt < temp[dof].size(); pt++) {
+            temp[0][pt] += temp[dof][pt];
+        }
+    }
+
+    point_data.insert(point_data.end(), temp[0].begin(), temp[0].end());
+}
 }
 
 #endif
