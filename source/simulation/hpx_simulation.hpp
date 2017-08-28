@@ -173,7 +173,7 @@ void HPXSimulation<ProblemType>::SetUpCommunication(uint locality, uint thread) 
 
     // This is just to communicate between everyone(complete graph)
     const uint n_localities = hpx::find_all_localities().size();
-    const uint n_threads = 4;  // hpx::get_os_thread_count();
+    const uint n_threads = hpx::get_os_thread_count();
 
     out_locations.reserve(n_localities * n_threads);
 
