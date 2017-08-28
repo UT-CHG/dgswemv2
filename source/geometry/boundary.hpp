@@ -67,9 +67,8 @@ Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(
             }
         }
 
-        this->surface_normal =
-            Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary.shape.GetSurfaceNormal(raw_boundary.nbound, z_master).begin());
+        this->surface_normal = Array2D<double>(
+            integration_rule.first.size(), *raw_boundary.shape.GetSurfaceNormal(raw_boundary.nbound, z_master).begin());
     }
 
     this->nbound = raw_boundary.nbound;

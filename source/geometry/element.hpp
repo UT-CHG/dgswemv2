@@ -11,10 +11,12 @@ class Element {
 
   private:
     uint ID;
-    public:
+
+  public:
     master_type& master;
     shape_type shape;
-private:
+
+  private:
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 

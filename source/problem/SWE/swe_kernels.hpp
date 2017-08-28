@@ -48,10 +48,8 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
 }
 
 void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_data) {
-    mesh.CallForEachElement([](auto& elt) { 
-	elt.data.initialize();
-      });
-    
+    mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
+
     std::unordered_map<uint, std::vector<double>> bathymetry;
 
     for (const auto& elt : mesh_data._elements) {
@@ -84,7 +82,7 @@ void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_d
 
         elt.data.state[0].qy = elt.L2Projection(qy_init);
     });
-    
+
     mesh.CallForEachInterface([](auto& intface) {
         intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary[intface.nbound_in].bath_at_gp);
         intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary[intface.nbound_ex].bath_at_gp);
@@ -92,7 +90,7 @@ void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_d
 
     mesh.CallForEachBoundary([](auto& bound) {
         bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary[bound.nbound].bath_at_gp);
-	});
+    });
 }
 
 template <typename ElementType>
@@ -368,43 +366,43 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
     }
 }
 
-template<typename ElementType>
-	double Problem::compute_residual_L2_kernel(const Stepper& stepper, ElementType& elt) {
-		std::pair<std::vector<double>, std::vector<Point<2>>> rule = elt.master.integration.GetRule(20);
+template <typename ElementType>
+double Problem::compute_residual_L2_kernel(const Stepper& stepper, ElementType& elt) {
+    std::pair<std::vector<double>, std::vector<Point<2>>> rule = elt.master.integration.GetRule(20);
 
-		Array2D<double> Phi = elt.master.basis.GetPhi(elt.master.p, rule.second);
+    Array2D<double> Phi = elt.master.basis.GetPhi(elt.master.p, rule.second);
 
-		std::vector<double> est_ze_gp(rule.first.size());
-	    std::fill(est_ze_gp.begin(), est_ze_gp.end(), 0.0);
+    std::vector<double> est_ze_gp(rule.first.size());
+    std::fill(est_ze_gp.begin(), est_ze_gp.end(), 0.0);
 
-		for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-			for (uint gp = 0; gp < est_ze_gp.size(); gp++) {
-				est_ze_gp[gp] += Phi[dof][gp] * elt.data.state[0].ze[dof];
-			}
-		}
+    for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint gp = 0; gp < est_ze_gp.size(); gp++) {
+            est_ze_gp[gp] += Phi[dof][gp] * elt.data.state[0].ze[dof];
+        }
+    }
 
-		double t = stepper.get_t_at_curr_stage();
-		std::vector<Point<2>> gp_global = elt.shape.LocalToGlobalCoordinates(rule.second);
+    double t = stepper.get_t_at_curr_stage();
+    std::vector<Point<2>> gp_global = elt.shape.LocalToGlobalCoordinates(rule.second);
 
-		std::vector<double> true_ze_gp(rule.first.size());
+    std::vector<double> true_ze_gp(rule.first.size());
 
-		for (uint gp = 0; gp < true_ze_gp.size(); gp++) {
-			true_ze_gp[gp] = SWE::true_ze(t, gp_global[gp]);
-		}
+    for (uint gp = 0; gp < true_ze_gp.size(); gp++) {
+        true_ze_gp[gp] = SWE::true_ze(t, gp_global[gp]);
+    }
 
-		std::vector<double> sq_diff(rule.first.size());
+    std::vector<double> sq_diff(rule.first.size());
 
-		for (uint gp = 0; gp < sq_diff.size(); gp++) {
-			sq_diff[gp] = pow((true_ze_gp[gp] - est_ze_gp[gp]), 2);
-		}
+    for (uint gp = 0; gp < sq_diff.size(); gp++) {
+        sq_diff[gp] = pow((true_ze_gp[gp] - est_ze_gp[gp]), 2);
+    }
 
-		double L2 = 0;
+    double L2 = 0;
 
-		for (uint gp = 0; gp < sq_diff.size(); gp++) {
-			L2 += sq_diff[gp] * rule.first[gp];
-		}
+    for (uint gp = 0; gp < sq_diff.size(); gp++) {
+        L2 += sq_diff[gp] * rule.first[gp];
+    }
 
-	return L2*std::abs(elt.shape.GetJdet(rule.second)[0]);
+    return L2 * std::abs(elt.shape.GetJdet(rule.second)[0]);
 }
 
 template <typename ElementType>

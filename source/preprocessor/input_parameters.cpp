@@ -3,7 +3,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-InputParameters::InputParameters(const std::string& input_string) {    
+InputParameters::InputParameters(const std::string& input_string) {
     YAML::Node input_file = YAML::LoadFile(input_string);
 
     // Process Mesh information

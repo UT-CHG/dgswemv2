@@ -11,17 +11,17 @@ int main(int argc, char* argv[]) {
                   << "    /path/to/DG_HYPER_SWE input_file\n";
         return 1;
     } else {
-    std::string input_file = std::string(argv[1]);
-    
-    Simulation<SWE::Problem> simulation(input_file);
-     
-    auto t1 = std::chrono::high_resolution_clock::now();
-    simulation.Run();
-    auto t2 = std::chrono::high_resolution_clock::now();
+        std::string input_file = std::string(argv[1]);
 
-    std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-              << "\n";
+        Simulation<SWE::Problem> simulation(input_file);
 
-    return 0;
+        auto t1 = std::chrono::high_resolution_clock::now();
+        simulation.Run();
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+                  << "\n";
+
+        return 0;
     }
 }
