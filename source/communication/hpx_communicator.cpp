@@ -81,14 +81,22 @@ HPXCommunicator::HPXCommunicator(const uint locality_id,
     file.close();
 }
 
-void HPXCommunicator::resize_buffer(uint locality_id, uint sbmsh_id, std::size_t sz) {
-    for (RankInterface& rnk : distributed_interfaces) {
-        if (rnk.locality_id == locality_id && rnk.sbmsh_id == sbmsh_id) {
-            rnk.send_buffer.resize(sz);
-            rnk.receive_buffer.resize(sz);
-            return;
-        }
-    }
+std::vector<double>& HPXCommunicator::GetSendBufferReference(uint neighbor_id) {
+    return distributed_interfaces.at(neighbor_id).send_buffer;
+}
+
+std::vector<double>& HPXCommunicator::GetReceiveBufferReference(uint neighbor_id) {
+    return distributed_interfaces.at(neighbor_id).receive_buffer;
+}
+
+uint HPXCommunicator::GetNumNeighbors() { return distributed_interfaces.size(); }
+
+uint HPXCommunicator::GetNumEdges(uint neighbor) { return distributed_interfaces.at(neighbor).elements.size(); }
+
+std::tuple<uint, uint, uint> HPXCommunicator::GetElt_FaceID_PolynomialOrder(uint neighbor, uint edge) {
+    return std::make_tuple(distributed_interfaces[neighbor].elements[edge],
+                           distributed_interfaces[neighbor].face_ids[edge],
+                           distributed_interfaces[neighbor].polynomial_order[edge]);
 }
 
 void HPXCommunicator::send_all(uint timestamp) {

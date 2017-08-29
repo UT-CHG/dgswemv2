@@ -4,8 +4,6 @@
 #include "swe_LLF_flux.hpp"
 #include "swe_true_src_functions.hpp"
 
-#include "communication/hpx_communicator.hpp"
-
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
@@ -46,59 +44,64 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_interfaces_kernel(mesh_type& mesh,
-                                                   const Communicator& comm,
-                                                   std::map<uint, RawBoundaryType>& pre_boundaries) {
+                                                   Communicator& comm,
+                                                   std::map<uint, std::map<uint, RawBoundaryType>>& pre_boundaries) {
 
-    using DistributedInterfaceType = std::tuple_element<0, Geometry::DistributedInterface<SWE::Data>>::type;
+    using DistributedInterfaceType =
+        std::tuple_element<0, Geometry::DistributedInterface<SWE::Data, SWE::Distributed>>::type;
     using Integration = DistributedInterfaceType::integration_type;
 
     Integration integ;
 
-    const std::vector<RankInterface>& dist_interface_data = comm.Get_distributed_interfaces();
-    uint num_neighbors = dist_interface_data.size();
+    comm.ResizeBuffers(integ, 3);
 
-    std::vector<uint> buff_size(num_neighbors);
-    for (uint n = 0; n < num_neighbors; ++n) {
-        for (uint e = 0; e < dist_interface_data[n].elements.size(); ++e) {
-            buff_size[n] += 3 * integ.GetNumGP(dist_interface_data[n].polynomial_order[e]);
-        }
-    }
-
-    Array2D<uint> ze_in_indx(num_neighbors);
-    Array2D<uint> qx_in_indx(num_neighbors);
-    Array2D<uint> qy_in_indx(num_neighbors);
-
-    Array2D<uint> ze_ex_rindx(num_neighbors);
-    Array2D<uint> qx_ex_rindx(num_neighbors);
-    Array2D<uint> qy_ex_rindx(num_neighbors);
-
-    for (uint n = 0; n < num_neighbors; ++n) {
-        uint num_edges = dist_interface_data[n].elements.size();
-        ze_in_indx[n].reserve(num_edges);
-        qx_in_indx[n].reserve(num_edges);
-        qy_in_indx[n].reserve(num_edges);
-
-        ze_ex_rindx[n].reserve(num_edges);
-        qx_ex_rindx[n].reserve(num_edges);
-        qy_ex_rindx[n].reserve(num_edges);
-
+    for (uint n = 0; n < comm.GetNumNeighbors(); ++n) {
         uint curr_indx{0};
-        for (uint e = 0; e < num_edges; ++e) {
-            uint num_gp = integ.GetNumGP(dist_interface_data[n].polynomial_order[e]);
 
-            ze_in_indx[n].push_back(curr_indx);
-            qx_in_indx[n].push_back(num_gp + curr_indx);
-            qy_in_indx[n].push_back(2 * num_gp + curr_indx);
+        std::vector<double>& send_buff_ref = comm.GetSendBufferReference(n);
+        std::vector<double>& recv_buff_ref = comm.GetReceiveBufferReference(n);
 
-            ze_ex_rindx[n].push_back(2 * num_gp + curr_indx);
-            qx_ex_rindx[n].push_back(num_gp + curr_indx);
-            qy_ex_rindx[n].push_back(curr_indx);
+        uint buff_size = send_buff_ref.size();
+
+        for (uint e = 0; e < comm.GetNumEdges(n); ++e) {
+            uint elt;
+            uint fid;
+            uint p;
+            {
+                std::tuple<uint, uint, uint> tup = comm.GetElt_FaceID_PolynomialOrder(n, e);
+                elt = std::get<0>(tup);
+                fid = std::get<1>(tup);
+                p = std::get<2>(tup);
+            }
+
+            uint num_gp = integ.GetNumGP(p);
+
+            uint ze_in_indx = curr_indx;
+            uint qx_in_indx = num_gp + curr_indx;
+            uint qy_in_indx = 2 * num_gp + curr_indx;
+
+            uint ze_ex_rindx = buff_size - (num_gp + curr_indx);
+            uint qx_ex_rindx = buff_size - (2 * num_gp + curr_indx);
+            uint qy_ex_rindx = buff_size - (3 * num_gp + curr_indx);
+
+            SWE::Distributed buffs(send_buff_ref,
+                                   recv_buff_ref,
+                                   ze_in_indx,
+                                   qx_in_indx,
+                                   qy_in_indx,
+                                   ze_ex_rindx,
+                                   qx_ex_rindx,
+                                   qy_ex_rindx);
+
+            auto tmp_it = pre_boundaries.find(elt);
+            assert(tmp_it != pre_boundaries.end());
+            auto raw_bdry_iter = tmp_it->second.find(fid);
+            assert(raw_bdry_iter != tmp_it->second.end());
+
+            mesh.template CreateDistributedInterface<DistributedInterfaceType>(raw_bdry_iter->second, buffs);
 
             curr_indx += 3 * num_gp;
         }
-    }
-
-    for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
     }
 }
 

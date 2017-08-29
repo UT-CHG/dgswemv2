@@ -15,7 +15,7 @@ template <typename ProblemType>
 void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data, const Communicator& comm) {
+void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data, Communicator& comm) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data);
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, comm);
     initialize_mesh_VTK_geometry<ProblemType>(mesh);
@@ -38,7 +38,7 @@ void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshM
 }
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh, const Communicator& comm) {
+void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh, Communicator& comm) {
     using RawBoundaryType = RawBoundary<1, typename ProblemType::data_type>;
 
     using InterfaceType =

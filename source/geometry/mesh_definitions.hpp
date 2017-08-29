@@ -22,12 +22,14 @@ using InterfaceTypeTuple = std::tuple<Interface<1, Integration::GaussLegendre_1D
 template <typename Data, typename... BCs>
 using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, BCs>...>;
 
-template <typename Data>
-using DistributedInterface = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, std::tuple<>>>;
+template <typename Data, typename Distributed>
+using DistributedInterface = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, Distributed>>;
 
-template <typename Data, typename... BCs>
-using MeshType =
-    Mesh<ElementTypeTuple<Data>, InterfaceTypeTuple<Data>, BoundaryTypeTuple<Data, BCs...>, DistributedInterface<Data>>;
+template <typename Data, typename Distributed, typename... BCs>
+using MeshType = Mesh<ElementTypeTuple<Data>,
+                      InterfaceTypeTuple<Data>,
+                      BoundaryTypeTuple<Data, BCs...>,
+                      DistributedInterface<Data, Distributed>>;
 };
 
 #endif

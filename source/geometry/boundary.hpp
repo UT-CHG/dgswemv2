@@ -39,7 +39,7 @@ class Boundary {
 
   public:
     Boundary(const RawBoundary<dimension, data_type>&);
-    Boundary(const RawBoundary<dimension, data_type>&, boundary_type& bdry);
+    Boundary(const RawBoundary<dimension, data_type>&, boundary_type bdry);
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeUgp(const std::vector<double>& u, std::vector<double>::iterator u_gp_iter);
@@ -48,8 +48,9 @@ class Boundary {
 
 template <uint dimension, class integration_type, class data_type, class boundary_type>
 Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(
-    const RawBoundary<dimension, data_type>& raw_boundary)
-    : data(raw_boundary.data) {
+    const RawBoundary<dimension, data_type>& raw_boundary,
+    boundary_type bdry)
+    : data(raw_boundary.data), boundary_condition(std::move(bdry)) {
     integration_type integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p);
@@ -76,6 +77,11 @@ Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(
 
     this->data.set_ngp_boundary(integration_rule.first.size());
 }
+
+template <uint dimension, class integration_type, class data_type, class boundary_type>
+Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(
+    const RawBoundary<dimension, data_type>& raw_boundary)
+    : Boundary(raw_boundary, boundary_type()) {}
 
 template <uint dimension, class integration_type, class data_type, class boundary_type>
 inline void Boundary<dimension, integration_type, data_type, boundary_type>::ComputeUgp(const std::vector<double>& u,
