@@ -60,7 +60,14 @@ void local_main(std::string input_string) {
     futures.reserve(n_threads);
 
     for (uint thread = 0; thread < n_threads; thread++) {
-        futures.push_back(hpx::async<solve_mesh_action>(here, input_string, thread));
+        hpx::id_type here = hpx::find_here();
+
+        hpx::future<hpx::id_type> simulation_id =
+            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), thread);
+
+        HPXSimulationClient<SWE::Problem> simulation_client(std::move(simulation_id));
+
+        futures.push_back(simulation_client.Run());
     }
 
     hpx::wait_all(futures);
