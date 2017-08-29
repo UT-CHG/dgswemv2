@@ -44,31 +44,32 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_interfaces_kernel(mesh_type& mesh,
-                                                   Communicator& comm,
+                                                   Communicator& communicator,
                                                    std::map<uint, std::map<uint, RawBoundaryType>>& pre_boundaries) {
 
     using DistributedInterfaceType =
         std::tuple_element<0, Geometry::DistributedInterface<SWE::Data, SWE::Distributed>>::type;
+
     using Integration = DistributedInterfaceType::integration_type;
 
     Integration integ;
 
-    comm.ResizeBuffers(integ, 3);
+    communicator.ResizeBuffers(integ, 3);
 
-    for (uint n = 0; n < comm.GetNumNeighbors(); ++n) {
+    for (uint n = 0; n < communicator.GetNumNeighbors(); ++n) {
         uint curr_indx{0};
 
-        std::vector<double>& send_buff_ref = comm.GetSendBufferReference(n);
-        std::vector<double>& recv_buff_ref = comm.GetReceiveBufferReference(n);
+        std::vector<double>& send_buff_ref = communicator.GetSendBufferReference(n);
+        std::vector<double>& recv_buff_ref = communicator.GetReceiveBufferReference(n);
 
         uint buff_size = send_buff_ref.size();
 
-        for (uint e = 0; e < comm.GetNumEdges(n); ++e) {
+        for (uint e = 0; e < communicator.GetNumEdges(n); ++e) {
             uint elt;
             uint fid;
             uint p;
             {
-                std::tuple<uint, uint, uint> tup = comm.GetElt_FaceID_PolynomialOrder(n, e);
+                std::tuple<uint, uint, uint> tup = communicator.GetElt_FaceID_PolynomialOrder(n, e);
                 elt = std::get<0>(tup);
                 fid = std::get<1>(tup);
                 p = std::get<2>(tup);

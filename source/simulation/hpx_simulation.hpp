@@ -12,28 +12,20 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
     Stepper stepper;
     typename ProblemType::mesh_type mesh;
-    HPXCommunicator comm;
+    HPXCommunicator communicator;
 
     std::string log_file_name;
 
   public:
-    HPXSimulation()
-        : input(),
-          stepper(input.rk.nstages, input.rk.order, input.dt),
-          mesh(input.polynomial_order) {}
-    HPXSimulation(std::string input_string, uint locality, uint sbmsh_id)
-        : input(input_string, locality, sbmsh_id),
+    HPXSimulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    HPXSimulation(std::string input_string, uint locality, uint submesh_id)
+        : input(input_string, locality, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
-        comm(locality, sbmsh_id, std::string(input.mesh_file_name + "_meta")) {
-
-        hpx::cout << "Hello from HPXSimulation constructor " << locality << " " << sbmsh_id << '\n';
-
+          communicator(locality, submesh_id, std::string(input.mesh_file_name + "_meta")) {
         input.ReadMesh();
-        {
-            std::string& mesh_name = mesh.GetMeshName();
-            mesh_name = input.mesh_data._mesh_name;
-        }
+
+        mesh.SetMeshName(input.mesh_data._mesh_name);
 
         this->log_file_name = "output/" + input.mesh_data._mesh_name + "_log";
 
@@ -41,7 +33,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
                  << " mesh\n\n";
 
-        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, comm);
+        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator);
     }
 
     hpx::future<void> Run();
@@ -129,7 +121,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                                 log_file << this->mesh.GetMeshName() << " received message: " << message << '\n';
                             }
                         });
-            
+
             future = future.then([this, &boundary_kernel, &update_kernel, &scrutinize_solution_kernel](auto&&) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
@@ -148,16 +140,16 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
             timestamp++;*/
         }
-/*
-        future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
-            this->mesh.CallForEachElement(swap_states_kernel);
-            if (step % 360 == 0) {
-                std::cout << "Step: " << step << "\n";
+        /*
+                future = future.then([this, step, &swap_states_kernel](hpx::future<void>&&) {
+                    this->mesh.CallForEachElement(swap_states_kernel);
+                    if (step % 360 == 0) {
+                        std::cout << "Step: " << step << "\n";
 
-                // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-                // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-            }
-        });*/
+                        // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+                        // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+                    }
+                });*/
     }
 
     return future;
@@ -167,8 +159,8 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 void HPXSimulation<ProblemType>::Send(uint message, uint timestamp) {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-    for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
-        communicator.Send(message, timestamp);
+    for (HPXCommunicator<ProblemType>& communicatorunicator : this->communicatorunicators) {
+        communicatorunicator.Send(message, timestamp);
         log_file << this->mesh.GetMeshName() << " sent message with time stamp: " << timestamp << '\n';
     }
 }
@@ -178,10 +170,10 @@ std::vector<hpx::future<uint>> HPXSimulation<ProblemType>::Receive(uint timestam
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     std::vector<hpx::future<uint>> receive_futures;
-    receive_futures.reserve(this->communicators.size());
+    receive_futures.reserve(this->communicatorunicators.size());
 
-    for (HPXCommunicator<ProblemType>& communicator : this->communicators) {
-        receive_futures.push_back(communicator.Receive(timestamp));
+    for (HPXCommunicator<ProblemType>& communicatorunicator : this->communicatorunicators) {
+        receive_futures.push_back(communicatorunicator.Receive(timestamp));
         log_file << this->mesh.GetMeshName() << " posted receive for message with time stamp: " << timestamp << '\n';
     }
 

@@ -33,10 +33,10 @@ InputParameters::InputParameters(const std::string& input_string) {
     }
 }
 
-InputParameters::InputParameters(const std::string& input_string, uint locality, uint thread)
+InputParameters::InputParameters(const std::string& input_string, uint locality, uint submesh_id)
     : InputParameters(input_string) {
     mesh_file_name.erase(mesh_file_name.size() - 3);
-    mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(thread) + ".14";
+    mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(submesh_id) + ".14";
 }
 
 void InputParameters::ReadMesh() {
@@ -47,6 +47,7 @@ void InputParameters::ReadMesh() {
         mesh_data = MeshMetaData(mesh_file_name);
     }
 }
+
 void InputParameters::WriteTo(const std::string& output_filename) {
     YAML::Emitter output;
     assert(output.good());

@@ -9,7 +9,7 @@ HPX_REGISTER_CHANNEL_DECLARATION(vec_type);
 
 struct RankInterface {
     uint locality_id;
-    uint sbmsh_id;
+    uint submesh_id;
     std::vector<uint> elements;
     std::vector<uint> face_ids;
     std::vector<uint> polynomial_order;
@@ -33,7 +33,7 @@ class HPXCommunicator {
 
   public:
     HPXCommunicator() = default;
-    HPXCommunicator(const uint locality_id, const uint sbmsh_id, const std::string& distributed_interface_file);
+    HPXCommunicator(const uint locality_id, const uint submesh_id, const std::string& distributed_interface_file);
 
     template <typename IntegrationType>
     void ResizeBuffers(IntegrationType integration, const uint num_fields);

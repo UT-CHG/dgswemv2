@@ -37,7 +37,9 @@ class Mesh<std::tuple<Elements...>,
   public:
     Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
-    std::string& GetMeshName() { return this->mesh_name; }
+    void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
+    std::string GetMeshName() { return this->mesh_name; }
+
     uint GetNumberElements() { return this->elements.size(); }
     uint GetNumberInterfaces() { return this->interfaces.size(); }
     uint GetNumberBoundaries() { return this->boundaries.size(); }

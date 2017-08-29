@@ -6,7 +6,7 @@
 HPX_REGISTER_CHANNEL(vec_type);
 
 HPXCommunicator::HPXCommunicator(const uint locality_id,
-                                 const uint sbmsh_id,
+                                 const uint submesh_id,
                                  const std::string& distributed_interface_file) {
 
     std::ifstream file(distributed_interface_file.c_str());
@@ -23,7 +23,7 @@ HPXCommunicator::HPXCommunicator(const uint locality_id,
         std::stringstream ss(line);
         ss >> loc_A >> sbmsh_A >> loc_B >> sbmsh_B >> num_faces;
 
-        uint is_first = (loc_B == locality_id && sbmsh_B == sbmsh_id);
+        uint is_first = (loc_B == locality_id && sbmsh_B == submesh_id);
 
         RankInterface neigh_interface;
         neigh_interface.outgoing = hpx::lcos::channel<vec_type>(hpx::find_here());
@@ -33,13 +33,13 @@ HPXCommunicator::HPXCommunicator(const uint locality_id,
 
         if (is_first) {
             neigh_interface.locality_id = loc_B;
-            neigh_interface.sbmsh_id = sbmsh_B;
+            neigh_interface.submesh_id = sbmsh_B;
 
             in_location = std::to_string(loc_A) + "_" + std::to_string(sbmsh_A);
             out_location = std::to_string(loc_B) + "_" + std::to_string(sbmsh_B);
         } else {
             neigh_interface.locality_id = loc_A;
-            neigh_interface.sbmsh_id = sbmsh_A;
+            neigh_interface.submesh_id = sbmsh_A;
 
             in_location = std::to_string(loc_B) + "_" + std::to_string(sbmsh_B);
             out_location = std::to_string(loc_A) + "_" + std::to_string(sbmsh_A);

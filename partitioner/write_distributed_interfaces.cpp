@@ -78,19 +78,20 @@ void write_distributed_edge_metadata(const std::string& file_name,
         shared_faces[rnk_pair].push_back(std::move(dist_int));
     }
 
-    for ( uint loc_id = 0; loc_id < submeshes.size(); ++loc_id ) {
-        for ( uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id ) {
+    for (uint loc_id = 0; loc_id < submeshes.size(); ++loc_id) {
+        for (uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id) {
 
             std::string distributed_meta_filename = file_name;
-            distributed_meta_filename.erase( distributed_meta_filename.size() - 3);
-            std::ofstream file(distributed_meta_filename + '_' + std::to_string(loc_id) + '_' + std::to_string(sbmsh_id) + ".14_meta");
+            distributed_meta_filename.erase(distributed_meta_filename.size() - 3);
+            std::ofstream file(distributed_meta_filename + '_' + std::to_string(loc_id) + '_' +
+                               std::to_string(sbmsh_id) + ".14_meta");
             for (auto& sf : shared_faces) {
                 uint locA = sf.first.first % num_loc;
                 uint sbmshA = sf.first.first / num_loc;
 
                 uint locB = sf.first.second % num_loc;
                 uint sbmshB = sf.first.second / num_loc;
-                if ( ( locA == loc_id && sbmshA == sbmsh_id ) || ( locB == loc_id && sbmshB == sbmsh_id ) ) {
+                if ((locA == loc_id && sbmshA == sbmsh_id) || (locB == loc_id && sbmshB == sbmsh_id)) {
                     file << locA << " " << sbmshA << " " << locB << " " << sbmshB << " " << sf.second.size() << '\n';
                     for (auto& dist_int : sf.second) {
                         file << dist_int << '\n';
