@@ -19,11 +19,11 @@ class Simulation {
         initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
     }
 
-    void Run(double);
+    void Run();
 };
 
 template <typename ProblemType>
-void Simulation<ProblemType>::Run(double time_end) {
+void Simulation<ProblemType>::Run() {
     // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
     // the nice std::for_each notation without having to define stepper within each element
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
@@ -42,7 +42,7 @@ void Simulation<ProblemType>::Run(double time_end) {
         ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
 
-    uint nsteps = (uint)std::ceil(time_end / this->stepper.get_dt());
+    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };

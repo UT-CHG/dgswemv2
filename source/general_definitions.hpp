@@ -104,6 +104,8 @@ class Shape {
 };
 }
 
+#define VERBOSE
+
 #define PI 3.14159265359
 
 #define N_DIV 2                // postproc elem div

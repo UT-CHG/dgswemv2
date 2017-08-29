@@ -69,13 +69,13 @@ int main() {
     std::vector<Point<2>> gp_bound;
 
     Array2D<double> F_vals_bound(2);
-    F_vals_bound[0].resize(triangle.data.get_ngp_boundary());
-    F_vals_bound[1].resize(triangle.data.get_ngp_boundary());
+    F_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));
+    F_vals_bound[1].resize(triangle.data.get_ngp_boundary(0));
 
     Array2D<double> Fn_vals_bound(3);
-    Fn_vals_bound[0].resize(triangle.data.get_ngp_boundary());
-    Fn_vals_bound[1].resize(triangle.data.get_ngp_boundary());
-    Fn_vals_bound[2].resize(triangle.data.get_ngp_boundary());
+    Fn_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));
+    Fn_vals_bound[1].resize(triangle.data.get_ngp_boundary(0));
+    Fn_vals_bound[2].resize(triangle.data.get_ngp_boundary(0));
 
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
@@ -83,7 +83,7 @@ int main() {
         x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp_bound);
         y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp_bound);
 
-        for (uint gp = 0; gp < triangle.data.get_ngp_boundary(); gp++) {
+        for (uint gp = 0; gp < triangle.data.get_ngp_boundary(0); gp++) {
             F_vals_bound[GlobalCoord::x][gp] = std::pow(x[gp], 2);
             F_vals_bound[GlobalCoord::y][gp] = std::pow(y[gp], 2);
 
@@ -111,8 +111,8 @@ int main() {
     }
 
     std::vector<double> mod_vals(triangle.data.get_ndof());
-    std::vector<double> gp_vals(triangle.data.get_ngp_boundary());
-    std::vector<double> unit(triangle.data.get_ngp_boundary(), 1.0);
+    std::vector<double> gp_vals(triangle.data.get_ngp_boundary(0));
+    std::vector<double> unit(triangle.data.get_ngp_boundary(0), 1.0);
 
     // Check ComputeUgp
     for (uint dof = 0; dof < 66; dof++) {

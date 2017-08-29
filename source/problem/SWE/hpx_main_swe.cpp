@@ -61,34 +61,31 @@ int hpx_main(int argc, char* argv[]) {
 hpx::future<void> local_main(std::string input_string, std::string mesh_file_name) {
     const hpx::naming::id_type here = hpx::find_here();
 
-    uint locality_id = hpx::get_locality_id();
+    const uint locality_id = hpx::get_locality_id();
+
     std::vector<hpx::future<void>> futures;
 
     std::string mesh_file_prefix = mesh_file_name;
     mesh_file_prefix.erase(mesh_file_prefix.size() - 3);
     mesh_file_prefix += '_' + std::to_string(locality_id) + '_';
-    hpx::cout << mesh_file_prefix << '\n';
 
-    uint sbmsh_id = 0;
-    while (Utilities::file_exists(mesh_file_prefix + std::to_string(sbmsh_id) + ".14")) {
-        futures.push_back(hpx::async<solve_mesh_action>(here, input_string, sbmsh_id));
-        ++sbmsh_id;
+    uint submesh_id = 0;
+    while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
+        futures.push_back(hpx::async<solve_mesh_action>(here, input_string, submesh_id));
+        ++submesh_id;
     }
 
-    return hpx::when_all(futures);
+    hpx::wait_all(futures);
 }
 
-hpx::future<void> solve_mesh(std::string input_string, uint sbmsh_id) {
+hpx::future<void> solve_mesh(std::string input_string, uint submesh_id) {
     try {
-        hpx::id_type here = hpx::find_here();
+        const hpx::naming::id_type here = hpx::find_here();
 
-        hpx::cout << "About to make component " << sbmsh_id << '\n';
         hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), sbmsh_id);
+            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), submesh_id);
 
         HPXSimulationClient<SWE::Problem> simulation_client(std::move(simulation_id));
-
-        //     HPXSimulation<SWE::Problem> simulation_client(input_string, hpx::get_locality_id(), thread);
 
         return hpx::make_ready_future();
         // return simulation_client.Run(1800.);
