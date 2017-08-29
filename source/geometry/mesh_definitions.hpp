@@ -23,13 +23,13 @@ template <typename Data, typename... BCs>
 using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, BCs>...>;
 
 template <typename Data, typename Distributed>
-using DistributedInterface = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, Distributed>>;
+using DistributedBoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, Distributed>>;
 
 template <typename Data, typename Distributed, typename... BCs>
 using MeshType = Mesh<ElementTypeTuple<Data>,
                       InterfaceTypeTuple<Data>,
                       BoundaryTypeTuple<Data, BCs...>,
-                      DistributedInterface<Data, Distributed>>;
+                      DistributedBoundaryTypeTuple<Data, Distributed>>;
 };
 
 #endif

@@ -147,7 +147,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_interfaces,
     std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>& pre_boundaries,
-    std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_interfaces) {
+    std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries) {
 
     Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
@@ -159,7 +159,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
                 this->neighbor_ID[i],
                 RawBoundary<dimension - 1, DataType>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
         } else if (this->boundary_type[i] == DISTRIBUTED) {
-            pre_distributed_interfaces[this->ID].emplace(std::make_pair(
+            pre_distributed_boundaries[this->ID].emplace(std::make_pair(
                 this->neighbor_ID[i],
                 RawBoundary<dimension - 1, DataType>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
         } else {

@@ -48,14 +48,14 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
 }
 
 template <typename RawBoundaryType, typename Communicator>
-void Problem::create_distributed_interfaces_kernel(mesh_type& mesh,
+void Problem::create_distributed_boundaries_kernel(mesh_type& mesh,
                                                    Communicator& communicator,
                                                    std::map<uint, std::map<uint, RawBoundaryType>>& pre_boundaries) {
 
-    using DistributedInterfaceType =
-        std::tuple_element<0, Geometry::DistributedInterface<SWE::Data, SWE::Distributed>>::type;
+    using DistributedBoundaryType =
+        std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
-    using Integration = DistributedInterfaceType::BoundaryIntegrationType;
+    using Integration = DistributedBoundaryType::BoundaryIntegrationType;
 
     Integration integ;
 
@@ -104,14 +104,15 @@ void Problem::create_distributed_interfaces_kernel(mesh_type& mesh,
             auto raw_bdry_iter = tmp_it->second.find(fid);
             assert(raw_bdry_iter != tmp_it->second.end());
 
-            mesh.template CreateDistributedInterface<DistributedInterfaceType>(raw_bdry_iter->second, buffs);
+            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(raw_bdry_iter->second, buffs);
 
             curr_indx += 3 * num_gp;
         }
     }
+
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
-    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedInterfaces() << std::endl;
+    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 }
 
 void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_data) {

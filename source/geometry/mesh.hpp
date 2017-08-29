@@ -9,16 +9,16 @@ namespace Geometry {
 // Since elements types already come in a tuple. We can use specialization
 // to get easy access to the parameter packs for the element and edge types.
 template <typename ElementTypeTuple,
-          typename InteriorEdgeTypeTuple,
-          typename BoundaryEdgeTypeTuple,
-          typename DistributedEdgeTypeTuple>
+          typename InterfaceTypeTuple,
+          typename BoundaryTypeTuple,
+          typename DistributedBoundaryTypeTuple>
 class Mesh;
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedInterfaces>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
 class Mesh<std::tuple<Elements...>,
            std::tuple<Interfaces...>,
            std::tuple<Boundaries...>,
-           std::tuple<DistributedInterfaces...>> {
+           std::tuple<DistributedBoundaries...>> {
   private:
     std::string mesh_name;
 
@@ -26,13 +26,13 @@ class Mesh<std::tuple<Elements...>,
     using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
     using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
     using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
-    using DistributedInterfaceContainer = Utilities::HeterogeneousVector<DistributedInterfaces...>;
+    using DistributedBoundariesContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
     MasterElementTypes masters;
     ElementContainer elements;
     InterfaceContainer interfaces;
     BoundaryContainer boundaries;
-    DistributedInterfaceContainer distributed_interfaces;
+    DistributedBoundariesContainer distributed_boundaries;
 
   public:
     Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
@@ -43,7 +43,7 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberElements() { return this->elements.size(); }
     uint GetNumberInterfaces() { return this->interfaces.size(); }
     uint GetNumberBoundaries() { return this->boundaries.size(); }
-    uint GetNumberDistributedInterfaces() { return this->distributed_interfaces.size(); }
+    uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
     template <typename Element, typename... Args>
     void CreateElement(uint n, Args&&... args) {
@@ -64,9 +64,9 @@ class Mesh<std::tuple<Elements...>,
         this->boundaries.template emplace_back<Boundary>(std::forward<Args>(args)...);
     }
 
-    template <typename DistributedInterface, typename... Args>
-    void CreateDistributedInterface(Args&&... args) {
-        this->distributed_interfaces.template emplace_back<DistributedInterface>(std::forward<Args>(args)...);
+    template <typename DistributedBoundary, typename... Args>
+    void CreateDistributedBoundary(Args&&... args) {
+        this->distributed_boundaries.template emplace_back<DistributedBoundary>(std::forward<Args>(args)...);
     }
 
     template <typename F>
@@ -91,9 +91,9 @@ class Mesh<std::tuple<Elements...>,
     }
 
     template <typename F>
-    void CallForEachDistributedInterface(const F& f) {
-        Utilities::for_each_in_tuple(boundaries.data, [&f](auto& distributed_interface_vector) {
-            std::for_each(distributed_interface_vector.begin(), distributed_interface_vector.end(), f);
+    void CallForEachDistributedBoundary(const F& f) {
+        Utilities::for_each_in_tuple(distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
+            std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
         });
     }
 };
