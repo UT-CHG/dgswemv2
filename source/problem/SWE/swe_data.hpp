@@ -109,7 +109,7 @@ struct Data {
     void set_ngp_internal(uint ngp) { this->ngp_internal = ngp; }
     void set_nbound(uint nbound) {
         this->nbound = nbound;
-        ngp_boundary.reserve(this->nbound);
+        this->ngp_boundary = std::vector<uint>(this->nbound, 0);
     }
     void set_ngp_boundary(uint nbound, uint ngp) { this->ngp_boundary[nbound] = ngp; }
 

@@ -45,28 +45,28 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberBoundaries() { return this->boundaries.size(); }
     uint GetNumberDistributedInterfaces() { return this->distributed_interfaces.size(); }
 
-    template <typename T, typename... Args>
+    template <typename Element, typename... Args>
     void CreateElement(uint n, Args&&... args) {
-        using MasterType = typename T::master_element_type;
+        using MasterType = typename Element::ElementMasterType;
 
         MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
 
-        this->elements.template emplace<T>(n, T(n, master_elt, std::forward<Args>(args)...));
+        this->elements.template emplace<Element>(n, Element(n, master_elt, std::forward<Args>(args)...));
     }
 
-    template <typename T, typename... Args>
+    template <typename Interface, typename... Args>
     void CreateInterface(Args&&... args) {
-        this->interfaces.template emplace_back<T>(std::forward<Args>(args)...);
+        this->interfaces.template emplace_back<Interface>(std::forward<Args>(args)...);
     }
 
-    template <typename T, typename... Args>
+    template <typename Boundary, typename... Args>
     void CreateBoundary(Args&&... args) {
-        this->boundaries.template emplace_back<T>(std::forward<Args>(args)...);
+        this->boundaries.template emplace_back<Boundary>(std::forward<Args>(args)...);
     }
 
-    template <typename T, typename... Args>
+    template <typename DistributedInterface, typename... Args>
     void CreateDistributedInterface(Args&&... args) {
-        this->distributed_interfaces.template emplace_back<T>(std::forward<Args>(args)...);
+        this->distributed_interfaces.template emplace_back<DistributedInterface>(std::forward<Args>(args)...);
     }
 
     template <typename F>
@@ -77,22 +77,22 @@ class Mesh<std::tuple<Elements...>,
     }
 
     template <typename F>
-    void CallForEachInterface(F f) {
-        Utilities::for_each_in_tuple(interfaces.data, [f](auto& interface_vector) {
+    void CallForEachInterface(const F& f) {
+        Utilities::for_each_in_tuple(interfaces.data, [&f](auto& interface_vector) {
             std::for_each(interface_vector.begin(), interface_vector.end(), f);
         });
     }
 
     template <typename F>
-    void CallForEachBoundary(F f) {
-        Utilities::for_each_in_tuple(boundaries.data, [f](auto& boundary_vector) {
+    void CallForEachBoundary(const F& f) {
+        Utilities::for_each_in_tuple(boundaries.data, [&f](auto& boundary_vector) {
             std::for_each(boundary_vector.begin(), boundary_vector.end(), f);
         });
     }
 
     template <typename F>
-    void CallForEachDistributedInterface(F f) {
-        Utilities::for_each_in_tuple(boundaries.data, [f](auto& distributed_interface_vector) {
+    void CallForEachDistributedInterface(const F& f) {
+        Utilities::for_each_in_tuple(boundaries.data, [&f](auto& distributed_interface_vector) {
             std::for_each(distributed_interface_vector.begin(), distributed_interface_vector.end(), f);
         });
     }

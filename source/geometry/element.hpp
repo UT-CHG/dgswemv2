@@ -4,16 +4,16 @@
 #include "boundary.hpp"
 
 namespace Geometry {
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 class Element {
   public:
-    data_type data;
+    DataType data;
 
   private:
     uint ID;
 
-    master_type& master;
-    shape_type shape;
+    MasterType& master;
+    ShapeType shape;
 
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
@@ -29,14 +29,14 @@ class Element {
 
   public:
     Element(uint,
-            master_type&,
+            MasterType&,
             const std::vector<Point<dimension>>&,
             const std::vector<uint>&,
             const std::vector<uchar>&);
 
-    void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&,
-                             std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>&,
-                             std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>&);
+    void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>&,
+                             std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&,
+                             std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>&);
 
     uint GetID() { return this->ID; }
 
@@ -59,18 +59,18 @@ class Element {
     void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
     void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
 
-    typedef master_type master_element_type;
+    using ElementMasterType = MasterType;
 };
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
-                                                                master_type& master,
-                                                                const std::vector<Point<dimension>>& nodal_coordinates,
-                                                                const std::vector<uint>& neighbor_ID,
-                                                                const std::vector<uchar>& boundary_type)
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+Element<dimension, MasterType, ShapeType, DataType>::Element(uint ID,
+                                                             MasterType& master,
+                                                             const std::vector<Point<dimension>>& nodal_coordinates,
+                                                             const std::vector<uint>& neighbor_ID,
+                                                             const std::vector<uchar>& boundary_type)
     : ID(ID),
       master(master),
-      shape(shape_type(nodal_coordinates)),
+      shape(ShapeType(nodal_coordinates)),
       neighbor_ID(std::move(neighbor_ID)),
       boundary_type(std::move(boundary_type)) {
     // GLOBAL COORDINATES OF GPS
@@ -143,11 +143,11 @@ Element<dimension, master_type, shape_type, data_type>::Element(uint ID,
     this->data.set_nbound(this->boundary_type.size());
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries(
-    std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_interfaces,
-    std::map<uchar, std::vector<RawBoundary<dimension - 1, data_type>>>& pre_boundaries,
-    std::map<uint, std::map<uint, RawBoundary<dimension - 1, data_type>>>& pre_distributed_interfaces) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
+    std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_interfaces,
+    std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>& pre_boundaries,
+    std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_interfaces) {
 
     Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
@@ -155,25 +155,23 @@ void Element<dimension, master_type, shape_type, data_type>::CreateRawBoundaries
 
     for (uint i = 0; i < this->boundary_type.size(); i++) {
         if (this->boundary_type[i] == INTERNAL) {
-            pre_interfaces[this->ID]
-                .emplace(std::make_pair(this->neighbor_ID[i],
-                                        RawBoundary<dimension - 1, data_type>(
-                                            this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
+            pre_interfaces[this->ID].emplace(std::make_pair(
+                this->neighbor_ID[i],
+                RawBoundary<dimension - 1, DataType>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
         } else if (this->boundary_type[i] == DISTRIBUTED) {
-            pre_distributed_interfaces[this->ID]
-                .emplace(std::make_pair(this->neighbor_ID[i],
-                                        RawBoundary<dimension - 1, data_type>(
-                                            this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
+            pre_distributed_interfaces[this->ID].emplace(std::make_pair(
+                this->neighbor_ID[i],
+                RawBoundary<dimension - 1, DataType>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape)));
         } else {
             pre_boundaries[this->boundary_type[i]].emplace_back(
-                RawBoundary<dimension - 1, data_type>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
+                RawBoundary<dimension - 1, DataType>(this->master.p, i, this->data, *my_basis, *my_master, *my_shape));
         }
     }
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(F f) {
+std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(F f) {
     std::vector<double> projection;
 
     std::vector<double> f_vals(this->gp_global_coordinates.size());
@@ -193,8 +191,8 @@ std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Pr
     return projection;
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Projection(
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(
     const std::vector<double>& nodal_values) {
     std::vector<double> projection;
 
@@ -214,17 +212,17 @@ std::vector<double> Element<dimension, master_type, shape_type, data_type>::L2Pr
     return projection;
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline void Element<dimension, master_type, shape_type, data_type>::ComputeFgp(F f, std::vector<double>& f_gp) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(F f, std::vector<double>& f_gp) {
     for (uint gp = 0; gp < f_gp.size(); gp++) {
         f_gp[gp] = f(this->gp_global_coordinates[gp]);
     }
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(const std::vector<double>& u,
-                                                                               std::vector<double>& u_gp) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(const std::vector<double>& u,
+                                                                            std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -234,10 +232,10 @@ inline void Element<dimension, master_type, shape_type, data_type>::ComputeUgp(c
     }
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(uint dir,
-                                                                                const std::vector<double>& u,
-                                                                                std::vector<double>& du_gp) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(uint dir,
+                                                                             const std::vector<double>& u,
+                                                                             std::vector<double>& du_gp) {
     std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -247,8 +245,8 @@ inline void Element<dimension, master_type, shape_type, data_type>::ComputeDUgp(
     }
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline double Element<dimension, master_type, shape_type, data_type>::Integration(const std::vector<double>& u_gp) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline double Element<dimension, MasterType, ShapeType, DataType>::Integration(const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -258,9 +256,9 @@ inline double Element<dimension, master_type, shape_type, data_type>::Integratio
     return integral;
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline double Element<dimension, master_type, shape_type, data_type>::IntegrationPhi(uint phi_n,
-                                                                                     const std::vector<double>& u_gp) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(uint phi_n,
+                                                                                  const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -270,10 +268,10 @@ inline double Element<dimension, master_type, shape_type, data_type>::Integratio
     return integral;
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline double Element<dimension, master_type, shape_type, data_type>::IntegrationDPhi(uint dir,
-                                                                                      uint phi_n,
-                                                                                      const std::vector<double>& u_gp) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(uint dir,
+                                                                                   uint phi_n,
+                                                                                   const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -283,8 +281,8 @@ inline double Element<dimension, master_type, shape_type, data_type>::Integratio
     return integral;
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline std::vector<double> Element<dimension, master_type, shape_type, data_type>::SolveLSE(
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::SolveLSE(
     const std::vector<double>& rhs) {
     std::vector<double> solution;
 
@@ -304,15 +302,15 @@ inline std::vector<double> Element<dimension, master_type, shape_type, data_type
     return solution;
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-void Element<dimension, master_type, shape_type, data_type>::InitializeVTK(std::vector<Point<3>>& points,
-                                                                           Array2D<uint>& cells) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vector<Point<3>>& points,
+                                                                        Array2D<uint>& cells) {
     this->shape.GetVTK(points, cells);
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline void Element<dimension, master_type, shape_type, data_type>::WriteCellDataVTK(const std::vector<double>& u,
-                                                                                     std::vector<double>& cell_data) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(const std::vector<double>& u,
+                                                                                  std::vector<double>& cell_data) {
     Array2D<double> temp = this->master.phi_postprocessor_cell;
 
     for (uint dof = 0; dof < temp.size(); dof++) {
@@ -330,9 +328,9 @@ inline void Element<dimension, master_type, shape_type, data_type>::WriteCellDat
     cell_data.insert(cell_data.end(), temp[0].begin(), temp[0].end());
 }
 
-template <uint dimension, typename master_type, typename shape_type, typename data_type>
-inline void Element<dimension, master_type, shape_type, data_type>::WritePointDataVTK(const std::vector<double>& u,
-                                                                                      std::vector<double>& point_data) {
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(const std::vector<double>& u,
+                                                                                   std::vector<double>& point_data) {
     Array2D<double> temp = this->master.phi_postprocessor_point;
 
     for (uint dof = 0; dof < temp.size(); dof++) {

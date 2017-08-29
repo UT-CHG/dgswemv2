@@ -4,11 +4,11 @@
 #include "../general_definitions.hpp"
 
 namespace Master {
-template <class basis_type, class integration_type>
+template <class BasisType, class IntegrationType>
 class Triangle : public Master<2> {
   public:
-    basis_type basis;
-    integration_type integration;
+    BasisType basis;
+    IntegrationType integration;
 
   public:
     Triangle(uint);

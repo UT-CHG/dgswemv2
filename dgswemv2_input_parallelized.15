@@ -1,0 +1,15 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Meta
+  file_name: ../mesh_generators/rectangular_mesh.14
+timestepping:
+  dt: 1 #seconds
+  end_time: 180 #seconds
+  order: 2
+  nstages: 2
+polynomial_order: 1

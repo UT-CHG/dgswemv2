@@ -69,7 +69,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
     log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
 
     ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
-    ProblemType::create_distributed_interfaces_kernel(mesh, communicator, pre_distributed_interfaces);
+    // ProblemType::create_distributed_interfaces_kernel(mesh, communicator, pre_distributed_interfaces);
 }
 
 template <typename ProblemType>

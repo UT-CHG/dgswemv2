@@ -2,13 +2,13 @@
 #define CLASS_BOUNDARY_HPP
 
 namespace Geometry {
-template <uint dimension, class data_type>
+template <uint dimension, class DataType>
 class RawBoundary {
   public:
     uint p;
     uint nbound;
 
-    data_type& data;
+    DataType& data;
 
     Basis::Basis<dimension + 1>& basis;
     Master::Master<dimension + 1>& master;
@@ -16,20 +16,20 @@ class RawBoundary {
 
     RawBoundary(uint p,
                 uint nbound,
-                data_type& data,
+                DataType& data,
                 Basis::Basis<dimension + 1>& basis,
                 Master::Master<dimension + 1>& master,
                 Shape::Shape<dimension + 1>& shape)
         : p(p), nbound(nbound), data(data), basis(basis), master(master), shape(shape) {}
 };
 
-template <uint dimension, class IntegrationType, class data_type, class boundary_type>
+template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
 class Boundary {
   public:
-    uint nbound;
-    data_type& data;
+    BoundaryType boundary_condition;
 
-    boundary_type boundary_condition;
+    uint nbound;
+    DataType& data;
 
     Array2D<double> surface_normal;
 
@@ -38,21 +38,21 @@ class Boundary {
     Array2D<double> int_fact_phi;
 
   public:
-    Boundary(const RawBoundary<dimension, data_type>&, boundary_type boundary_condition = boundary_type());
+    Boundary(const RawBoundary<dimension, DataType>&, BoundaryType boundary_condition = BoundaryType());
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     double IntegrationPhi(uint, const std::vector<double>&);
 
   public:
-    using integration_type = IntegrationType;
+    using BoundaryIntegrationType = IntegrationType;
 };
 
-template <uint dimension, class integration_type, class data_type, class boundary_type>
-Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(
-    const RawBoundary<dimension, data_type>& raw_boundary,
-    boundary_type boundary_condition)
-    : data(raw_boundary.data), boundary_condition(std::move(boundary_condition)) {
-    integration_type integration;
+template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
+    const RawBoundary<dimension, DataType>& raw_boundary,
+    BoundaryType boundary_condition)
+    : boundary_condition(std::move(boundary_condition)), data(raw_boundary.data) {
+    IntegrationType integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p);
 
@@ -79,9 +79,9 @@ Boundary<dimension, integration_type, data_type, boundary_type>::Boundary(
     this->data.set_ngp_boundary(raw_boundary.nbound, integration_rule.first.size());
 }
 
-template <uint dimension, class integration_type, class data_type, class boundary_type>
-inline void Boundary<dimension, integration_type, data_type, boundary_type>::ComputeUgp(const std::vector<double>& u,
-                                                                                        std::vector<double>& u_gp) {
+template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeUgp(const std::vector<double>& u,
+                                                                                     std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -91,8 +91,8 @@ inline void Boundary<dimension, integration_type, data_type, boundary_type>::Com
     }
 }
 
-template <uint dimension, class integration_type, class data_type, class boundary_type>
-inline double Boundary<dimension, integration_type, data_type, boundary_type>::IntegrationPhi(
+template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::IntegrationPhi(
     uint phi_n,
     const std::vector<double>& u_gp) {
     double integral = 0;
@@ -104,13 +104,13 @@ inline double Boundary<dimension, integration_type, data_type, boundary_type>::I
     return integral;
 }
 
-template <uint dimension, class integration_type, class data_type>
+template <uint dimension, class IntegrationType, class DataType>
 class Interface {
   public:
     uint nbound_in;
     uint nbound_ex;
-    data_type& data_in;
-    data_type& data_ex;
+    DataType& data_in;
+    DataType& data_ex;
 
     Array2D<double> surface_normal;
 
@@ -121,7 +121,7 @@ class Interface {
     Array2D<double> int_fact_phi_ex;
 
   public:
-    Interface(const RawBoundary<dimension, data_type>&, const RawBoundary<dimension, data_type>&);
+    Interface(const RawBoundary<dimension, DataType>&, const RawBoundary<dimension, DataType>&);
 
     void ComputeUgpIN(const std::vector<double>&, std::vector<double>&);
     void ComputeUgpEX(const std::vector<double>&, std::vector<double>&);
@@ -129,13 +129,13 @@ class Interface {
     double IntegrationPhiEX(uint, const std::vector<double>&);
 };
 
-template <uint dimension, class integration_type, class data_type>
-Interface<dimension, integration_type, data_type>::Interface(const RawBoundary<dimension, data_type>& raw_boundary_in,
-                                                             const RawBoundary<dimension, data_type>& raw_boundary_ex)
+template <uint dimension, class IntegrationType, class DataType>
+Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
+                                                           const RawBoundary<dimension, DataType>& raw_boundary_ex)
     : data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) {
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
-    integration_type integration;
+    IntegrationType integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p);
 
     std::vector<Point<dimension + 1>> z_master =
@@ -173,9 +173,9 @@ Interface<dimension, integration_type, data_type>::Interface(const RawBoundary<d
     this->data_ex.set_ngp_boundary(raw_boundary_ex.nbound, integration_rule.first.size());
 }
 
-template <uint dimension, class integration_type, class data_type>
-inline void Interface<dimension, integration_type, data_type>::ComputeUgpIN(const std::vector<double>& u,
-                                                                            std::vector<double>& u_gp) {
+template <uint dimension, class IntegrationType, class DataType>
+inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpIN(const std::vector<double>& u,
+                                                                          std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -185,9 +185,9 @@ inline void Interface<dimension, integration_type, data_type>::ComputeUgpIN(cons
     }
 }
 
-template <uint dimension, class integration_type, class data_type>
-inline double Interface<dimension, integration_type, data_type>::IntegrationPhiIN(uint phi_n,
-                                                                                  const std::vector<double>& u_gp) {
+template <uint dimension, class IntegrationType, class DataType>
+inline double Interface<dimension, IntegrationType, DataType>::IntegrationPhiIN(uint phi_n,
+                                                                                const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
@@ -197,9 +197,9 @@ inline double Interface<dimension, integration_type, data_type>::IntegrationPhiI
     return integral;
 }
 
-template <uint dimension, class integration_type, class data_type>
-inline void Interface<dimension, integration_type, data_type>::ComputeUgpEX(const std::vector<double>& u,
-                                                                            std::vector<double>& u_gp) {
+template <uint dimension, class IntegrationType, class DataType>
+inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpEX(const std::vector<double>& u,
+                                                                          std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -209,9 +209,9 @@ inline void Interface<dimension, integration_type, data_type>::ComputeUgpEX(cons
     }
 }
 
-template <uint dimension, class integration_type, class data_type>
-inline double Interface<dimension, integration_type, data_type>::IntegrationPhiEX(uint phi_n,
-                                                                                  const std::vector<double>& u_gp) {
+template <uint dimension, class IntegrationType, class DataType>
+inline double Interface<dimension, IntegrationType, DataType>::IntegrationPhiEX(uint phi_n,
+                                                                                const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {

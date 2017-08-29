@@ -2,27 +2,27 @@
 #define MESH_UTILITIES_HPP
 
 namespace Geometry {
-template <typename E>
+template <typename Element>
 struct make_master_type;
 
-template <typename E>
-struct make_master_type<std::tuple<E>> {
-    typedef std::tuple<typename E::master_element_type> type;
+template <typename Element>
+struct make_master_type<std::tuple<Element>> {
+    typedef std::tuple<typename Element::ElementMasterType> type;
 };
 
-template <typename E, typename... Es>
-struct make_master_type<std::tuple<E, Es...>> {
-    typedef typename Utilities::tuple_join<std::tuple<typename E::master_element_type>,
+template <typename Element, typename... Es>
+struct make_master_type<std::tuple<Element, Es...>> {
+    typedef typename Utilities::tuple_join<std::tuple<typename Element::ElementMasterType>,
                                            typename make_master_type<std::tuple<Es...>>::type>::type type;
 };
 
-template <typename... M>
+template <typename... Master>
 struct master_maker;
 
-template <typename... M>
-struct master_maker<std::tuple<M...>> {
-    static std::tuple<M...> construct_masters(uint p) {
-        return std::make_tuple(M(p)...);
+template <typename... Master>
+struct master_maker<std::tuple<Master...>> {
+    static std::tuple<Master...> construct_masters(uint p) {
+        return std::make_tuple(Master(p)...);
     };
 };
 }

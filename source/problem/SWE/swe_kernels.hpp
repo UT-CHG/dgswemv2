@@ -55,7 +55,7 @@ void Problem::create_distributed_interfaces_kernel(mesh_type& mesh,
     using DistributedInterfaceType =
         std::tuple_element<0, Geometry::DistributedInterface<SWE::Data, SWE::Distributed>>::type;
 
-    using Integration = DistributedInterfaceType::integration_type;
+    using Integration = DistributedInterfaceType::BoundaryIntegrationType;
 
     Integration integ;
 
@@ -109,6 +109,9 @@ void Problem::create_distributed_interfaces_kernel(mesh_type& mesh,
             curr_indx += 3 * num_gp;
         }
     }
+    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
+
+    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedInterfaces() << std::endl;
 }
 
 void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_data) {

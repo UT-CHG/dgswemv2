@@ -33,10 +33,10 @@ InputParameters::InputParameters(const std::string& input_string) {
     }
 }
 
-InputParameters::InputParameters(const std::string& input_string, uint locality, uint submesh_id)
+InputParameters::InputParameters(const std::string& input_string, uint locality_id, uint submesh_id)
     : InputParameters(input_string) {
     mesh_file_name.erase(mesh_file_name.size() - 3);
-    mesh_file_name += '_' + std::to_string(locality) + '_' + std::to_string(submesh_id) + ".14";
+    mesh_file_name += '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id) + ".14";
 }
 
 void InputParameters::ReadMesh() {

@@ -75,7 +75,7 @@ hpx::future<void> local_main(std::string input_string, std::string mesh_file_nam
         ++submesh_id;
     }
 
-    hpx::wait_all(futures);
+    return hpx::when_all(futures);
 }
 
 hpx::future<void> solve_mesh(std::string input_string, uint submesh_id) {
@@ -87,8 +87,7 @@ hpx::future<void> solve_mesh(std::string input_string, uint submesh_id) {
 
         HPXSimulationClient<SWE::Problem> simulation_client(std::move(simulation_id));
 
-        return hpx::make_ready_future();
-        // return simulation_client.Run(1800.);
+        return simulation_client.Run();
     }
     catch (const std::exception& e) {
         std::cerr << "Exception caught\n";
