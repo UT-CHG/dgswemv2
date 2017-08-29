@@ -59,11 +59,11 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
     ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
-   hpx::future<void> timestep_future = hpx::make_ready_future();
-   uint timestamp = 0;
+    hpx::future<void> timestep_future = hpx::make_ready_future();
+    uint timestamp = 0;
 
     for (uint step = 1; step <= nsteps; step++) {
-        for (uint stage = 0; stage < n_stages; stage++) {     
+        for (uint stage = 0; stage < n_stages; stage++) {
             timestep_future = timestep_future.then([this, timestamp](hpx::future<void>&& timestep_future) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
@@ -101,25 +101,25 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 //        log_file << "Received message: " << message.get() << std::endl;
                 //   }
 
-                    log_file << "Starting work after receive" << std::endl;
+                log_file << "Starting work after receive" << std::endl;
 #endif
-                    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+                auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
-                    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
+                auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-                    auto scrutinize_solution_kernel = [this](auto& elt) {
-                        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-                    };
+                auto scrutinize_solution_kernel = [this](auto& elt) {
+                    ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+                };
 
-                    this->mesh.CallForEachBoundary(boundary_kernel);
+                this->mesh.CallForEachBoundary(boundary_kernel);
 
-                    this->mesh.CallForEachElement(update_kernel);
+                this->mesh.CallForEachElement(update_kernel);
 
-                    this->mesh.CallForEachElement(scrutinize_solution_kernel);
+                this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-                    ++(this->stepper);
+                ++(this->stepper);
 #ifdef VERBOSE
-                    log_file << "Finished work after receive" << std::endl << std::endl;
+                log_file << "Finished work after receive" << std::endl << std::endl;
 #endif
                 //});
             });
@@ -142,7 +142,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
             }
         });
     }
-    
+
     log_file << "Finished scheduling tasks!" << std::endl << std::endl;
 
     return timestep_future;
