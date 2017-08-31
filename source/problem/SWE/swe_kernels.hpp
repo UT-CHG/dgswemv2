@@ -106,7 +106,11 @@ void Problem::create_distributed_boundaries_kernel(
 }
 
 void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
-    mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
+    mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); 
+        std::cout << elt.data.get_ngp_boundary(0)
+        << elt.data.get_ngp_boundary(1);
+        << elt.data.get_ngp_boundary(2) << std::endl;
+    });
 
     std::unordered_map<uint, std::vector<double>> bathymetry;
 
