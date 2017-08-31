@@ -57,8 +57,8 @@ void Problem::create_distributed_boundaries_kernel(
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
     
     for (auto it = pre_distributed_boundaries.begin(); it != pre_distributed_boundaries.end(); it++){
-        for (auto itt = it.second.begin(); itt != it.second.end(); itt++){
-            log_file << it.first << ' ' << itt.first << std::endl;
+        for (auto itt = it->second.begin(); itt != it->second.end(); itt++){
+	  log_file << it->first << ' ' << itt->first << ' ' << itt->second.bound_id << std::endl;
         }
     }
 
@@ -92,7 +92,7 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp;
 
-            /*mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
+            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
                 pre_distributed_boundaries.at(element_id).at(bound_id),
                 SWE::Distributed(send_buffer_reference,
                                  receive_buffer_reference,
@@ -101,7 +101,7 @@ void Problem::create_distributed_boundaries_kernel(
                                  qy_in_index,
                                  ze_ex_index,
                                  qx_ex_index,
-                                 qy_ex_index));*/
+                                 qy_ex_index));
         }
 
         send_buffer_reference.resize(begin_index);
