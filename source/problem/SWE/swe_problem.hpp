@@ -2,7 +2,6 @@
 #define SWE_PROBLEM_HPP
 
 #include "swe_definitions.hpp"
-#include "swe_distributed.hpp"
 #include "swe_boundary_conditions.hpp"
 #include "swe_data.hpp"
 #include "../../geometry/mesh_definitions.hpp"

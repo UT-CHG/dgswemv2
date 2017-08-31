@@ -8,8 +8,12 @@
 #include "general_definitions.hpp"
 
 #include "simulation/stepper.hpp"
+
 #include "swe_problem.hpp"
-#include "swe_kernels.hpp"
+#include "swe_kernels_preprocessor.hpp"
+#include "swe_kernels_processor.hpp"
+#include "swe_kernels_postprocessor.hpp"
+
 #include "simulation/hpx_simulation.hpp"
 
 #include "preprocessor/input_parameters.hpp"

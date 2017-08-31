@@ -94,23 +94,3 @@ hpx::future<void> HPXCommunicator::ReceiveAll(uint timestamp) {
 
     return hpx::when_all(receive_futures);
 }
-
-/*
-std::vector<double>& HPXCommunicator::GetSendBufferReference(uint neighbor_id) {
-    return rank_boundaries.at(neighbor_id).send_buffer;
-}
-
-std::vector<double>& HPXCommunicator::GetReceiveBufferReference(uint neighbor_id) {
-    return rank_boundaries.at(neighbor_id).receive_buffer;
-}
-
-uint HPXCommunicator::GetNumNeighbors() { return rank_boundaries.size(); }
-
-uint HPXCommunicator::GetNumEdges(uint neighbor) { return rank_boundaries.at(neighbor).elements.size(); }
-
-std::tuple<uint, uint, uint> HPXCommunicator::GetElt_FaceID_PolynomialOrder(uint neighbor, uint edge) {
-    return std::make_tuple(rank_boundaries[neighbor].elements[edge],
-                           rank_boundaries[neighbor].bound_ids[edge],
-                           rank_boundaries[neighbor].p[edge]);
-}
-*/

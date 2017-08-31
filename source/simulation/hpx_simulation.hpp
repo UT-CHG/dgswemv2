@@ -122,7 +122,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
                     this->mesh.CallForEachElement(update_kernel);
 
-                    // this->mesh.CallForEachElement(scrutinize_solution_kernel);
+                    this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
                     ++(this->stepper);
 #ifdef VERBOSE

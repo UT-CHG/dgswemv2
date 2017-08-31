@@ -1,8 +1,7 @@
 #ifndef SWE_DATA_HPP
 #define SWE_DATA_HPP
 
-#include <array>
-#include <vector>
+#include "../../general_definitions.hpp"
 
 namespace SWE {
 struct State {
