@@ -149,6 +149,10 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& 
     mesh.CallForEachBoundary([](auto& bound) {
         bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary[bound.bound_id].bath_at_gp);
     });
+
+    mesh.CallForEachDistributedBoundary([](auto& dbound) {
+        dbound.ComputeUgp(dbound.data.state[0].bath, dbound.data.boundary[dbound.bound_id].bath_at_gp);
+    });
 }
 
 template <typename ElementType>
