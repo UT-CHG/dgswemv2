@@ -30,10 +30,10 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
-    for (const auto& it : mesh_data._elements) {
-        uint elt_id = it.first;
+    for (const auto& element_meta : mesh_data._elements) {
+        uint elt_id = element_meta.first;
         mesh.template CreateElement<ElementType>(
-            elt_id, mesh_data.GetNodalCoordinates(elt_id), it.second.neighbor_ID, it.second.boundary_type);
+            elt_id, mesh_data.GetNodalCoordinates(elt_id), element_meta.second.neighbor_ID, element_meta.second.boundary_type);
     }
 
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
