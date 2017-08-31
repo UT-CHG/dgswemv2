@@ -69,13 +69,13 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 #ifdef VERBOSE
                 log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
                          << this->stepper.get_stage() << ')' << std::endl;
-#endif
-//                std::vector<hpx::future<uint>> receive_futures = this->Receive(timestamp);
 
-//                this->Send(this->stepper.get_t_at_curr_stage(), timestamp);
-#ifdef VERBOSE
                 log_file << "Starting work before receive" << std::endl;
 #endif
+auto distributed_boundary_send_kernel = [this](auto& dbound) {
+    ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
+};
+
                 auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
                 auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -84,6 +84,10 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                     ProblemType::interface_kernel(this->stepper, intface);
                 };
 
+this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
+//                std::vector<hpx::future<uint>> receive_futures = this->Receive(timestamp);
+
+//                this->Send(this->stepper.get_t_at_curr_stage(), timestamp);
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
@@ -105,6 +109,10 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 #endif
                 auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
+                auto distributed_boundary_kernel = [this](auto& dbound) {
+                    ProblemType::distributed_boundary_kernel(this->stepper, dbound);
+                };
+
                 auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
                 auto scrutinize_solution_kernel = [this](auto& elt) {
@@ -112,6 +120,8 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 };
 
                 this->mesh.CallForEachBoundary(boundary_kernel);
+
+                this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
 
                 this->mesh.CallForEachElement(update_kernel);
 
