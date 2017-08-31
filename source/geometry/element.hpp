@@ -155,16 +155,18 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
         if (this->boundary_type[bound_id] == INTERNAL) {
-            pre_interfaces[this->ID].emplace(std::make_pair(
-                this->neighbor_ID[bound_id],
-                RawBoundary<dimension - 1, DataType>(this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
+            pre_interfaces[this->ID]
+                .emplace(std::make_pair(this->neighbor_ID[bound_id],
+                                        RawBoundary<dimension - 1, DataType>(
+                                            this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
         } else if (this->boundary_type[bound_id] == DISTRIBUTED) {
-            pre_distributed_boundaries[this->ID].emplace(std::make_pair(
-                bound_id,
-                RawBoundary<dimension - 1, DataType>(this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
+            pre_distributed_boundaries[this->ID]
+                .emplace(std::make_pair(bound_id,
+                                        RawBoundary<dimension - 1, DataType>(
+                                            this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
         } else {
-            pre_boundaries[this->boundary_type[bound_id]].emplace_back(
-                RawBoundary<dimension - 1, DataType>(this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
+            pre_boundaries[this->boundary_type[bound_id]].emplace_back(RawBoundary<dimension - 1, DataType>(
+                this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
         }
     }
 }
