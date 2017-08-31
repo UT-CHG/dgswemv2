@@ -53,12 +53,12 @@ void Problem::create_distributed_boundaries_kernel(
     ProblemMeshType& mesh,
     Communicator& communicator,
     std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries) {
-    
+
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-    
-    for (auto it = pre_distributed_boundaries.begin(); it != pre_distributed_boundaries.end(); it++){
-        for (auto itt = it->second.begin(); itt != it->second.end(); itt++){
-	  log_file << it->first << ' ' << itt->first << ' ' << itt->second.bound_id << std::endl;
+
+    for (auto it = pre_distributed_boundaries.begin(); it != pre_distributed_boundaries.end(); it++) {
+        for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+            log_file << it->first << ' ' << itt->first << ' ' << itt->second.bound_id << std::endl;
         }
     }
 
@@ -66,7 +66,7 @@ void Problem::create_distributed_boundaries_kernel(
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
     typename DistributedBoundaryType::BoundaryIntegrationType boundary_integration;
-    
+
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
@@ -107,7 +107,7 @@ void Problem::create_distributed_boundaries_kernel(
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
     }
-    
+
     log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 }
 
