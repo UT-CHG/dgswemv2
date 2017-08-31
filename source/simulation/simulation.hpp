@@ -49,8 +49,8 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(resize_data_container);
 
-    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
@@ -73,8 +73,8 @@ void Simulation<ProblemType>::Run() {
 
         if (step % 360 == 0) {
             std::cout << "Step: " << step << "\n";
-            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-            ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+            // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+            // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
         }
     }
 }

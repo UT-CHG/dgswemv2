@@ -152,6 +152,20 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
     log_file << std::endl << "Finished scheduling tasks!" << std::endl << std::endl;
 
+    timestep_future = timestep_future.then([this](hpx::future<void>&& timestep_future) {
+        double residual_L2 = 0;
+
+        auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+            residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+        };
+
+        mesh.CallForEachElement(compute_residual_L2_kernel);
+
+        std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+        log_file << "residual L2 norm: " << sqrt(residual_L2) << std::endl;
+    });
+
     return timestep_future;
 }
 

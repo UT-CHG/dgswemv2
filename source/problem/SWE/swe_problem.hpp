@@ -64,6 +64,9 @@ struct Problem {
 
     template <typename MeshType>
     static void write_modal_data_kernel(const Stepper&, MeshType&);
+
+    template <typename ElementType>
+    static double compute_residual_L2_kernel(const Stepper&, ElementType&);
 };
 }
 
