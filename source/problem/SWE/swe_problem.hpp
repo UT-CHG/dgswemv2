@@ -38,6 +38,12 @@ struct Problem {
     template <typename BoundaryType>
     static void boundary_kernel(const Stepper&, BoundaryType&);
 
+    template <typename DistributedBoundaryType>
+    static void distributed_boundary_send_kernel(const Stepper&, DistributedBoundaryType&);
+
+    template <typename DistributedBoundaryType>
+    static void distributed_boundary_kernel(const Stepper&, DistributedBoundaryType&);
+
     template <typename ElementType>
     static void update_kernel(const Stepper&, ElementType&);
 

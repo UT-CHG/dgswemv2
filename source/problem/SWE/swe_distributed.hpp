@@ -1,7 +1,7 @@
 #ifndef SWE_DISTRIBUTED_HPP
 #define SWE_DISTRIBUTED_HPP
 
-#include <vector>
+#include "../../general_definitions.hpp"
 
 namespace SWE {
 class Distributed {
@@ -35,6 +35,14 @@ class Distributed {
           qx_ex_index(qx_ex_index),
           qy_ex_index(qy_ex_index) {}
 
+    void SetEX(const std::vector<double>& ze_in, const std::vector<double>& qx_in, const std::vector<double>& qy_in) {
+        for (uint gp = 0; gp < ze_in.size(); gp++) {
+            this->send_buffer[ze_in_index + gp] = ze_in[gp];
+            this->send_buffer[qx_in_index + gp] = qx_in[gp];
+            this->send_buffer[qy_in_index + gp] = qy_in[gp];
+        }
+    }
+
     void GetEX(const Stepper& stepper,
                uint gp,
                const Array2D<double>& surface_normal,
@@ -48,14 +56,7 @@ class Distributed {
         qx_ex = this->receive_buffer[qx_ex_index - gp];
         qy_ex = this->receive_buffer[qy_ex_index - gp];
     }
-
-    void SetEX(const std::vector<double>& ze_in, const std::vector<double>& qx_in, const std::vector<double>& qy_in) {
-        for (uint gp = 0; gp < ze_in.size(); gp++) {
-            this->send_buffer[ze_in_index + gp] = ze_in[gp];
-            this->send_buffer[qx_in_index + gp] = qx_in[gp];
-            this->send_buffer[qy_in_index + gp] = qy_in[gp];
-        }
-    }
 };
 }
+
 #endif
