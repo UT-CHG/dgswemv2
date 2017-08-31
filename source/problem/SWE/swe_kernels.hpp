@@ -70,7 +70,7 @@ void Problem::create_distributed_boundaries_kernel(
         for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
             element_id = rank_boundary.elements.at(dboundary_id);
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
-            p = rank_boundary.p.at(dboundary_id);            
+            p = rank_boundary.p.at(dboundary_id);
             ngp = boundary_integration.GetNumGP(p);
 
             ze_in_index = begin_index;
@@ -83,19 +83,18 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp;
 
-            auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);            
+            auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
             pre_dboundary.p = p;
-            
-            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
-                pre_dboundary,
-                SWE::Distributed(send_buffer_reference,
-                                 receive_buffer_reference,
-                                 ze_in_index,
-                                 qx_in_index,
-                                 qy_in_index,
-                                 ze_ex_index,
-                                 qx_ex_index,
-                                 qy_ex_index));
+
+            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(pre_dboundary,
+                                                                             SWE::Distributed(send_buffer_reference,
+                                                                                              receive_buffer_reference,
+                                                                                              ze_in_index,
+                                                                                              qx_in_index,
+                                                                                              qy_in_index,
+                                                                                              ze_ex_index,
+                                                                                              qx_ex_index,
+                                                                                              qy_ex_index));
         }
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
@@ -306,14 +305,14 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
         bound.boundary_condition.GetEX(stepper,
-                                        gp,
-                                        bound.surface_normal,
-                                        boundary.ze_at_gp,
-                                        boundary.qx_at_gp,
-                                        boundary.qy_at_gp,
-                                        ze_ex,
-                                        qx_ex,
-                                        qy_ex);
+                                       gp,
+                                       bound.surface_normal,
+                                       boundary.ze_at_gp,
+                                       boundary.qx_at_gp,
+                                       boundary.qy_at_gp,
+                                       ze_ex,
+                                       qx_ex,
+                                       qy_ex);
 
         LLF_flux(boundary.ze_at_gp[gp],
                  ze_ex,

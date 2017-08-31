@@ -7,14 +7,14 @@ namespace SWE {
 class Land {
   public:
     void GetEX(const Stepper& stepper,
-                uint gp,
-                const Array2D<double>& surface_normal,
-                const std::vector<double>& ze_in,
-                const std::vector<double>& qx_in,
-                const std::vector<double>& qy_in,
-                double& ze_ex,
-                double& qx_ex,
-                double& qy_ex) {
+               uint gp,
+               const Array2D<double>& surface_normal,
+               const std::vector<double>& ze_in,
+               const std::vector<double>& qx_in,
+               const std::vector<double>& qy_in,
+               double& ze_ex,
+               double& qx_ex,
+               double& qy_ex) {
         double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
 
         n_x = surface_normal[gp][GlobalCoord::x];
@@ -37,14 +37,14 @@ class Land {
 class Tidal {
   public:
     void GetEX(const Stepper& stepper,
-                uint gp,
-                const Array2D<double>& surface_normal,
-                const std::vector<double>& ze_in,
-                const std::vector<double>& qx_in,
-                const std::vector<double>& qy_in,
-                double& ze_ex,
-                double& qx_ex,
-                double& qy_ex) {
+               uint gp,
+               const Array2D<double>& surface_normal,
+               const std::vector<double>& ze_in,
+               const std::vector<double>& qx_in,
+               const std::vector<double>& qy_in,
+               double& ze_ex,
+               double& qx_ex,
+               double& qy_ex) {
         double H_0 = 0.2763;
 
         // double H_ocean = H_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0)); //FOR TESTING TANH RAMP
