@@ -77,9 +77,9 @@ void Problem::create_distributed_boundaries_kernel(
             qx_in_index = begin_index + ngp;
             qy_in_index = begin_index + 2 * ngp;
 
-            ze_in_index = begin_index + ngp - 1;
-            qx_in_index = begin_index + 2 * ngp - 1;
-            qy_in_index = begin_index + 3 * ngp - 1;
+            ze_ex_index = begin_index + ngp - 1;
+            qx_ex_index = begin_index + 2 * ngp - 1;
+            qy_ex_index = begin_index + 3 * ngp - 1;
 
             begin_index += 3 * ngp;
 
@@ -350,7 +350,7 @@ void Problem::distributed_boundary_send_kernel(const Stepper& stepper, Distribut
 }
 
 template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound){
+void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.get_stage();
 
     auto& state = dbound.data.state[stage];
@@ -359,14 +359,14 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
         dbound.boundary_condition.GetEX(stepper,
-                                       gp,
-                                       dbound.surface_normal,
-                                       boundary.ze_at_gp,
-                                       boundary.qx_at_gp,
-                                       boundary.qy_at_gp,
-                                       ze_ex,
-                                       qx_ex,
-                                       qy_ex);
+                                        gp,
+                                        dbound.surface_normal,
+                                        boundary.ze_at_gp,
+                                        boundary.qx_at_gp,
+                                        boundary.qy_at_gp,
+                                        ze_ex,
+                                        qx_ex,
+                                        qy_ex);
 
         LLF_flux(boundary.ze_at_gp[gp],
                  ze_ex,
