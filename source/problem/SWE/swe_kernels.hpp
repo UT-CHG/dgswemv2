@@ -53,15 +53,6 @@ void Problem::create_distributed_boundaries_kernel(
     ProblemMeshType& mesh,
     Communicator& communicator,
     std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries) {
-
-    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-
-    for (auto it = pre_distributed_boundaries.begin(); it != pre_distributed_boundaries.end(); it++) {
-        for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-            log_file << it->first << ' ' << itt->first << ' ' << itt->second.bound_id << std::endl;
-        }
-    }
-
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
@@ -79,7 +70,7 @@ void Problem::create_distributed_boundaries_kernel(
         for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
             element_id = rank_boundary.elements.at(dboundary_id);
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
-            p = rank_boundary.p.at(dboundary_id);
+            p = rank_boundary.p.at(dboundary_id);            
             ngp = boundary_integration.GetNumGP(p);
 
             ze_in_index = begin_index;
@@ -92,8 +83,11 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp;
 
+            auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);            
+            pre_dboundary.p = p;
+            
             mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
-                pre_distributed_boundaries.at(element_id).at(bound_id),
+                pre_dboundary,
                 SWE::Distributed(send_buffer_reference,
                                  receive_buffer_reference,
                                  ze_in_index,
@@ -103,10 +97,11 @@ void Problem::create_distributed_boundaries_kernel(
                                  qx_ex_index,
                                  qy_ex_index));
         }
-
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
     }
+
+    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
     log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 }
@@ -310,11 +305,12 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
 
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
-        bound.boundary_condition.set_ex(stepper,
-                                        bound.surface_normal[gp],
-                                        boundary.ze_at_gp[gp],
-                                        boundary.qx_at_gp[gp],
-                                        boundary.qy_at_gp[gp],
+        bound.boundary_condition.GetEX(stepper,
+                                        gp,
+                                        bound.surface_normal,
+                                        boundary.ze_at_gp,
+                                        boundary.qx_at_gp,
+                                        boundary.qy_at_gp,
                                         ze_ex,
                                         qx_ex,
                                         qy_ex);

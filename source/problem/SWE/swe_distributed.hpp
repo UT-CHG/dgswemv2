@@ -9,49 +9,56 @@ class Distributed {
     std::vector<double>& send_buffer;
     std::vector<double>& receive_buffer;
 
-    uint send_ze_indx;
-    uint send_qx_indx;
-    uint send_qy_indx;
+    uint ze_in_index;
+    uint qx_in_index;
+    uint qy_in_index;
 
-    uint recv_ze_indx;
-    uint recv_qx_indx;
-    uint recv_qy_indx;
+    uint ze_ex_index;
+    uint qx_ex_index;
+    uint qy_ex_index;
 
   public:
-    Distributed(std::vector<double>& send_buf,
-                std::vector<double>& recv_buf,
-                uint send_ze_indx,
-                uint send_qx_indx,
-                uint send_qy_indx,
-                uint recv_ze_indx,
-                uint recv_qx_indx,
-                uint recv_qy_indx)
-        : send_buffer(send_buf),
-          receive_buffer(recv_buf),
-          send_ze_indx(send_ze_indx),
-          send_qx_indx(send_qx_indx),
-          send_qy_indx(send_qy_indx),
-          recv_ze_indx(recv_ze_indx),
-          recv_qx_indx(recv_qx_indx),
-          recv_qy_indx(recv_qy_indx) {}
+    Distributed(std::vector<double>& send_buffer,
+                std::vector<double>& receive_buffer,
+    uint ze_in_index,
+    uint qx_in_index,
+    uint qy_in_index,
+    uint ze_ex_index,
+    uint qx_ex_index,
+    uint qy_ex_index)
+        : send_buffer(send_buffer),
+          receive_buffer(recv_buffer),
+          ze_in_index(ze_in_index),
+          qx_in_index(qx_in_index),
+          qy_in_index(qy_in_index),
+          ze_ex_index(ze_ex_index),
+          qx_ex_index(qx_ex_index),
+          qy_ex_index(qy_ex_index) {}
 
-    inline std::vector<double>::iterator GetSendZeIterator() { return send_buffer.begin() + send_ze_indx; }
+        void GetEX(const Stepper& stepper,
+                uint gp,
+                const Array2D<double>& surface_normal,
+                const std::vector<double>& ze_in,
+                const std::vector<double>& qx_in,
+                const std::vector<double>& qy_in,
+                double& ze_ex,
+                double& qx_ex,
+                double& qy_ex){
+                    ze_ex = this->receive_buffer[ze_ex_index - gp];
+                    qx_ex = this->receive_buffer[qx_ex_index - gp];
+                    qy_ex = this->receive_buffer[qy_ex_index - gp];
+                }    
 
-    inline std::vector<double>::iterator GetSendQxIterator() { return send_buffer.begin() + send_qx_indx; }
-
-    inline std::vector<double>::iterator GetSendQyIterator() { return send_buffer.begin() + send_qy_indx; }
-
-    inline std::vector<double>::const_reverse_iterator GetReceiveZeRIterator() {
-        return receive_buffer.crbegin() + recv_ze_indx;
-    }
-
-    inline std::vector<double>::const_reverse_iterator GetReceiveQxRIterator() {
-        return receive_buffer.crbegin() + recv_qx_indx;
-    }
-
-    inline std::vector<double>::const_reverse_iterator GetReceiveQyRIterator() {
-        return receive_buffer.crbegin() + recv_qy_indx;
-    }
+        void SetEX(
+                const std::vector<double>& ze_in,
+                const std::vector<double>& qx_in,
+                const std::vector<double>& qy_in){
+                    for(uint gp=0; gp<ze_in.size();gp++){
+                        this->send_buffer[ze_in_index+gp] = ze_in[gp];
+                        this->send_buffer[qx_in_index+gp] = qx_in[gp];
+                        this->send_buffer[qy_in_index+gp] = qy_in[gp];
+                    }
+                }
 };
 }
 #endif
