@@ -80,7 +80,7 @@ void Problem::create_distributed_boundaries_kernel(
             ze_ex_index = begin_index + ngp - 1;
             qx_ex_index = begin_index + 2 * ngp - 1;
             qy_ex_index = begin_index + 3 * ngp - 1;
-
+	    	    
             begin_index += 3 * ngp;
 
             auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
@@ -346,7 +346,7 @@ void Problem::distributed_boundary_send_kernel(const Stepper& stepper, Distribut
     dbound.ComputeUgp(state.qx, boundary.qx_at_gp);
     dbound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
-    dbound.boundary_condition.SetEX(boundary.ze_at_gp, boundary.qx_at_gp, boundary.qz_at_gp);
+    dbound.boundary_condition.SetEX(boundary.ze_at_gp, boundary.qx_at_gp, boundary.qy_at_gp);
 }
 
 template <typename DistributedBoundaryType>
@@ -358,7 +358,8 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
 
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        dbound.boundary_condition.GetEX(stepper,
+      std::cout << dbound.data.get_ngp_boundary(dbound.bound_id) << std::endl;
+      dbound.boundary_condition.GetEX(stepper,
                                         gp,
                                         dbound.surface_normal,
                                         boundary.ze_at_gp,

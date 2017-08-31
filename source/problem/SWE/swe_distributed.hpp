@@ -52,9 +52,10 @@ class Distributed {
                double& ze_ex,
                double& qx_ex,
                double& qy_ex) {
-        ze_ex = this->receive_buffer[ze_ex_index - gp];
-        qx_ex = this->receive_buffer[qx_ex_index - gp];
-        qy_ex = this->receive_buffer[qy_ex_index - gp];
+      std::cout<< gp<<ze_ex_index - gp << std::endl;
+      ze_ex = this->receive_buffer[ze_ex_index - gp];
+      //qx_ex = this->receive_buffer[qx_ex_index - gp];
+      //qy_ex = this->receive_buffer[qy_ex_index - gp];
     }
 };
 }

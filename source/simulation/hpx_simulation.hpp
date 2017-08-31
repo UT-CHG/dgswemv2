@@ -72,9 +72,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 
                 log_file << "Starting work before receive" << std::endl;
 #endif
-auto distributed_boundary_send_kernel = [this](auto& dbound) {
-    ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
-};
+                auto distributed_boundary_send_kernel = [this](auto& dbound) {
+                    ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
+                };
 
                 auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
@@ -84,10 +84,10 @@ auto distributed_boundary_send_kernel = [this](auto& dbound) {
                     ProblemType::interface_kernel(this->stepper, intface);
                 };
 
-this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
-//                std::vector<hpx::future<uint>> receive_futures = this->Receive(timestamp);
+                this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
+                //                std::vector<hpx::future<uint>> receive_futures = this->Receive(timestamp);
 
-//                this->Send(this->stepper.get_t_at_curr_stage(), timestamp);
+                //                this->Send(this->stepper.get_t_at_curr_stage(), timestamp);
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
