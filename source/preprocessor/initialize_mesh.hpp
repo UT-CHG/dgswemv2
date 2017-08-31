@@ -6,16 +6,18 @@
 using namespace Geometry;
 
 template <typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::mesh_type&, const MeshMetaData& mesh_data);
+void initialize_mesh_elements(typename ProblemType::ProblemMeshType&, const MeshMetaData& mesh_data);
 
 template <typename ProblemType>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type&);
+void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType&);
 
 template <typename ProblemType>
-void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type&);
+void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType&);
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data, Communicator& communicator) {
+void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
+                     const MeshMetaData& mesh_data,
+                     Communicator& communicator) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data);
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator);
     initialize_mesh_VTK_geometry<ProblemType>(mesh);
@@ -24,9 +26,9 @@ void initialize_mesh(typename ProblemType::mesh_type& mesh, const MeshMetaData& 
 }
 
 template <typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshMetaData& mesh_data) {
+void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
     using ElementType =
-        typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::data_type>>::type;
+        typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
     for (const auto& it : mesh_data._elements) {
         uint elt_id = it.first;
@@ -40,11 +42,11 @@ void initialize_mesh_elements(typename ProblemType::mesh_type& mesh, const MeshM
 }
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh, Communicator& communicator) {
-    using RawBoundaryType = RawBoundary<1, typename ProblemType::data_type>;
+void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh, Communicator& communicator) {
+    using RawBoundaryType = RawBoundary<1, typename ProblemType::ProblemDataType>;
 
     using InterfaceType =
-        typename std::tuple_element<0, Geometry::InterfaceTypeTuple<typename ProblemType::data_type>>::type;
+        typename std::tuple_element<0, Geometry::InterfaceTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
     std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
     std::map<uchar, std::vector<RawBoundaryType>> pre_boundaries;
@@ -69,11 +71,11 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::mesh_type& mesh
     log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
 
     ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
-    // ProblemType::create_distributed_interfaces_kernel(mesh, communicator, pre_distributed_boundaries);
+    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries);
 }
 
 template <typename ProblemType>
-void initialize_mesh_VTK_geometry(typename ProblemType::mesh_type& mesh) {
+void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh) {
     std::vector<Point<3>> points;
     Array2D<uint> cells;
 

@@ -10,20 +10,20 @@
 
 namespace SWE {
 struct Problem {
-    typedef SWE::Data data_type;
+    typedef SWE::Data ProblemDataType;
 
-    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal> mesh_type;
+    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal> ProblemMeshType;
 
     // preprocessor kernels
     template <typename RawBoundaryType>
-    static void create_boundaries_kernel(mesh_type&, std::map<uchar, std::vector<RawBoundaryType>>&);
+    static void create_boundaries_kernel(ProblemMeshType&, std::map<uchar, std::vector<RawBoundaryType>>&);
 
     template <typename RawBoundaryType, typename Communicator>
-    static void create_distributed_boundaries_kernel(mesh_type&,
+    static void create_distributed_boundaries_kernel(ProblemMeshType&,
                                                      Communicator&,
                                                      std::map<uint, std::map<uint, RawBoundaryType>>&);
 
-    static void initialize_data_kernel(mesh_type&, const MeshMetaData&);
+    static void initialize_data_kernel(ProblemMeshType&, const MeshMetaData&);
 
     // processor kernels
     template <typename ElementType>

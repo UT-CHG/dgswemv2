@@ -3,115 +3,114 @@
 
 #include <hpx/include/iostreams.hpp>
 
-HPX_REGISTER_CHANNEL(vec_type);
+HPX_REGISTER_CHANNEL(array_double);
 
-HPXCommunicator::HPXCommunicator(const uint locality_id,
-                                 const uint submesh_id,
-                                 const std::string& distributed_interface_file) {
+HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
+                                 const uint locality_id,
+                                 const uint submesh_id) {
+    std::ifstream file(neighborhood_data_file);
 
-    std::ifstream file(distributed_interface_file.c_str());
     if (!file) {
-        throw std::logic_error("Error: Unable to find distributed interface file : " + distributed_interface_file +
-                               '\n');
+        throw std::logic_error("Error: Unable to find distributed boundary file : " + neighborhood_data_file + '\n');
     }
 
-    hpx::cout << "In communicator ctor: " << distributed_interface_file << '\n';
     std::string line;
-    uint loc_A, loc_B, sbmsh_A, sbmsh_B, num_faces;
+
+    uint locality_A, locality_B, submesh_A, submesh_B, n_dboubdaries;
+
     while (std::getline(file, line)) {
-        hpx::cout << "Hello " + line + "\n";
-        std::stringstream ss(line);
-        ss >> loc_A >> sbmsh_A >> loc_B >> sbmsh_B >> num_faces;
+        std::stringstream neighborhood_data(line);
 
-        uint is_first = (loc_B == locality_id && sbmsh_B == submesh_id);
+        neighborhood_data >> locality_A >> submesh_A >> locality_B >> submesh_B >> n_dboubdaries;
 
-        RankInterface neigh_interface;
-        neigh_interface.outgoing = hpx::lcos::channel<vec_type>(hpx::find_here());
+        HPXRankBoundary rank_boundary;
 
-        std::string in_location;
-        std::string out_location;
+        std::string my_location;
+        std::string neighbor_location;
 
-        if (is_first) {
-            neigh_interface.locality_id = loc_B;
-            neigh_interface.submesh_id = sbmsh_B;
+        if (locality_A == locality_id && submesh_A == submesh_id) {
+            rank_boundary.neighbor_locality_id = locality_B;
+            rank_boundary.neighbor_submesh_id = submesh_B;
 
-            in_location = std::to_string(loc_A) + "_" + std::to_string(sbmsh_A);
-            out_location = std::to_string(loc_B) + "_" + std::to_string(sbmsh_B);
+            my_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
+            neighbor_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
         } else {
-            neigh_interface.locality_id = loc_A;
-            neigh_interface.submesh_id = sbmsh_A;
+            rank_boundary.neighbor_locality_id = locality_A;
+            rank_boundary.neighbor_submesh_id = submesh_A;
 
-            in_location = std::to_string(loc_B) + "_" + std::to_string(sbmsh_B);
-            out_location = std::to_string(loc_A) + "_" + std::to_string(sbmsh_A);
+            my_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
+            neighbor_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
         }
 
-        std::string outgoing_channel_string = "channel_from_" + in_location + "_to_" + out_location;
-        std::string incoming_channel_string = "channel_from_" + out_location + "_to_" + in_location;
+        std::string outgoing_channel_string = "channel_from_" + my_location + "_to_" + neighbor_location;
+        std::string incoming_channel_string = "channel_from_" + neighbor_location + "_to_" + my_location;
 
-        hpx::cout << "Setting up outgoing channel: " << outgoing_channel_string << hpx::endl;
-        hpx::cout << "Setting up incoming channel: " << incoming_channel_string << hpx::endl;
+        rank_boundary.outgoing = hpx::lcos::channel<array_double>(hpx::find_here());
+        hpx::future<void> set_outgoing_channel = rank_boundary.outgoing.register_as(outgoing_channel_string);
 
-        hpx::future<void> set_out = neigh_interface.outgoing.register_as(outgoing_channel_string);
-        neigh_interface.incoming.connect_to(incoming_channel_string);
+        rank_boundary.incoming.connect_to(incoming_channel_string);
 
-        neigh_interface.elements.reserve(num_faces);
-        neigh_interface.face_ids.reserve(num_faces);
-        neigh_interface.polynomial_order.reserve(num_faces);
+        rank_boundary.elements.reserve(n_dboubdaries);
+        rank_boundary.bound_ids.reserve(n_dboubdaries);
+        rank_boundary.p.reserve(n_dboubdaries);
 
-        for (uint l = 0; l < num_faces; ++l) {
-            DistributedInterfaceMetaData dist_int;
-            file >> dist_int;
+        for (uint db = 0; db < n_dboubdaries; ++db) {
+            DistributedBoundaryMetaData dboundary_meta_data;
+
+            file >> dboundary_meta_data;
+
             file.ignore(1000, '\n');
-            if (is_first) {
-                neigh_interface.elements.push_back(dist_int.elements.first);
-                neigh_interface.face_ids.push_back(dist_int.face_id.first);
-                neigh_interface.polynomial_order.push_back(dist_int.polynomial_order);
+
+            if (locality_A == locality_id && submesh_A == submesh_id) {
+                rank_boundary.elements.push_back(dboundary_meta_data.elements.first);
+                rank_boundary.bound_ids.push_back(dboundary_meta_data.bound_ids.first);
+                rank_boundary.p.push_back(dboundary_meta_data.p);
             } else {
-                neigh_interface.elements.push_back(dist_int.elements.second);
-                neigh_interface.face_ids.push_back(dist_int.face_id.second);
-                neigh_interface.polynomial_order.push_back(dist_int.polynomial_order);
+                rank_boundary.elements.push_back(dboundary_meta_data.elements.second);
+                rank_boundary.bound_ids.push_back(dboundary_meta_data.bound_ids.second);
+                rank_boundary.p.push_back(dboundary_meta_data.p);
             }
         }
 
-        distributed_interfaces.push_back(std::move(neigh_interface));
+        rank_boundaries.push_back(std::move(rank_boundary));
 
-        set_out.get();
-    }
-
-    file.close();
-}
-
-std::vector<double>& HPXCommunicator::GetSendBufferReference(uint neighbor_id) {
-    return distributed_interfaces.at(neighbor_id).send_buffer;
-}
-
-std::vector<double>& HPXCommunicator::GetReceiveBufferReference(uint neighbor_id) {
-    return distributed_interfaces.at(neighbor_id).receive_buffer;
-}
-
-uint HPXCommunicator::GetNumNeighbors() { return distributed_interfaces.size(); }
-
-uint HPXCommunicator::GetNumEdges(uint neighbor) { return distributed_interfaces.at(neighbor).elements.size(); }
-
-std::tuple<uint, uint, uint> HPXCommunicator::GetElt_FaceID_PolynomialOrder(uint neighbor, uint edge) {
-    return std::make_tuple(distributed_interfaces[neighbor].elements[edge],
-                           distributed_interfaces[neighbor].face_ids[edge],
-                           distributed_interfaces[neighbor].polynomial_order[edge]);
-}
-
-void HPXCommunicator::send_all(uint timestamp) {
-    for (auto&& rnk : distributed_interfaces) {
-        rnk.send(timestamp);
+        set_outgoing_channel.get();
     }
 }
 
-hpx::future<void> HPXCommunicator::receive_all(uint timestamp) {
+void HPXCommunicator::SendAll(uint timestamp) {
+    for (auto& rank_boundary : rank_boundaries) {
+        rank_boundary.send(timestamp);
+    }
+}
+
+hpx::future<void> HPXCommunicator::ReceiveAll(uint timestamp) {
     std::vector<hpx::future<void>> receive_futures;
-    receive_futures.reserve(distributed_interfaces.size());
+    receive_futures.reserve(rank_boundaries.size());
 
-    for (auto&& rnk : distributed_interfaces) {
-        receive_futures.push_back(rnk.receive(timestamp));
+    for (auto& rank_boundary : rank_boundaries) {
+        receive_futures.push_back(rank_boundary.receive(timestamp));
     }
 
     return hpx::when_all(receive_futures);
 }
+
+/*
+std::vector<double>& HPXCommunicator::GetSendBufferReference(uint neighbor_id) {
+    return rank_boundaries.at(neighbor_id).send_buffer;
+}
+
+std::vector<double>& HPXCommunicator::GetReceiveBufferReference(uint neighbor_id) {
+    return rank_boundaries.at(neighbor_id).receive_buffer;
+}
+
+uint HPXCommunicator::GetNumNeighbors() { return rank_boundaries.size(); }
+
+uint HPXCommunicator::GetNumEdges(uint neighbor) { return rank_boundaries.at(neighbor).elements.size(); }
+
+std::tuple<uint, uint, uint> HPXCommunicator::GetElt_FaceID_PolynomialOrder(uint neighbor, uint edge) {
+    return std::make_tuple(rank_boundaries[neighbor].elements[edge],
+                           rank_boundaries[neighbor].bound_ids[edge],
+                           rank_boundaries[neighbor].p[edge]);
+}
+*/

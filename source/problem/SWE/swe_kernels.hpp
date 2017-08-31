@@ -4,9 +4,12 @@
 #include "swe_LLF_flux.hpp"
 #include "swe_true_src_functions.hpp"
 
+#include "../../communication/hpx_communicator.hpp"
+
 namespace SWE {
 template <typename RawBoundaryType>
-void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
+void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
+                                       std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
 
@@ -48,74 +51,89 @@ void Problem::create_boundaries_kernel(mesh_type& mesh, std::map<uchar, std::vec
 }
 
 template <typename RawBoundaryType, typename Communicator>
-void Problem::create_distributed_boundaries_kernel(mesh_type& mesh,
+void Problem::create_distributed_boundaries_kernel(ProblemMeshType& mesh,
                                                    Communicator& communicator,
                                                    std::map<uint, std::map<uint, RawBoundaryType>>& pre_boundaries) {
 
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
-    using Integration = DistributedBoundaryType::BoundaryIntegrationType;
+    typename DistributedBoundaryType::BoundaryIntegrationType boundary_integration;
+    /*
+        communicator.ResizeBuffers(integ, 3);
+    */
+    for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
+        uint curr_indx = 0;
 
-    Integration integ;
+        typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
-    communicator.ResizeBuffers(integ, 3);
+        std::vector<double>& send_buffer_reference = rank_boundary.send_buffer;
+        std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
 
-    for (uint n = 0; n < communicator.GetNumNeighbors(); ++n) {
-        uint curr_indx{0};
-
-        std::vector<double>& send_buff_ref = communicator.GetSendBufferReference(n);
-        std::vector<double>& recv_buff_ref = communicator.GetReceiveBufferReference(n);
-
-        uint buff_size = send_buff_ref.size();
-
-        for (uint e = 0; e < communicator.GetNumEdges(n); ++e) {
-            uint elt;
-            uint fid;
-            uint p;
-            {
-                std::tuple<uint, uint, uint> tup = communicator.GetElt_FaceID_PolynomialOrder(n, e);
-                elt = std::get<0>(tup);
-                fid = std::get<1>(tup);
-                p = std::get<2>(tup);
-            }
-
-            uint num_gp = integ.GetNumGP(p);
+        uint element_id, bound_id, p, ngp;
+        uint ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
+        
+        for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
+            element_id = rank_boundary.elements.at(dboundary_id);
+            bound_id = rank_boundary.bound_ids.at(dboundary_id);
+            p = rank_boundary.p.at(dboundary_id);
+            ngp = boundary_integration.GetNumGP(p);
 
             uint ze_in_indx = curr_indx;
             uint qx_in_indx = num_gp + curr_indx;
-            uint qy_in_indx = 2 * num_gp + curr_indx;
-
-            uint ze_ex_rindx = buff_size - (num_gp + curr_indx);
-            uint qx_ex_rindx = buff_size - (2 * num_gp + curr_indx);
-            uint qy_ex_rindx = buff_size - (3 * num_gp + curr_indx);
-
-            SWE::Distributed buffs(send_buff_ref,
-                                   recv_buff_ref,
-                                   ze_in_indx,
-                                   qx_in_indx,
-                                   qy_in_indx,
-                                   ze_ex_rindx,
-                                   qx_ex_rindx,
-                                   qy_ex_rindx);
-
-            auto tmp_it = pre_boundaries.find(elt);
-            assert(tmp_it != pre_boundaries.end());
-            auto raw_bdry_iter = tmp_it->second.find(fid);
-            assert(raw_bdry_iter != tmp_it->second.end());
-
-            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(raw_bdry_iter->second, buffs);
-
-            curr_indx += 3 * num_gp;
+            uint qy_in_indx = 2 * num_gp + curr_indx;          
         }
+        /*
+                      uint buff_size = send_buff_ref.size();
+
+                      for (uint e = 0; e < communicator.GetNumEdges(n); ++e) {
+                          uint elt;
+                          uint fid;
+                          uint p;
+                          {
+                              std::tuple<uint, uint, uint> tup = communicator.GetElt_FaceID_PolynomialOrder(n, e);
+                              elt = std::get<0>(tup);
+                              fid = std::get<1>(tup);
+                              p = std::get<2>(tup);
+                          }
+
+                          uint num_gp = integ.GetNumGP(p);
+
+                          uint ze_in_indx = curr_indx;
+                          uint qx_in_indx = num_gp + curr_indx;
+                          uint qy_in_indx = 2 * num_gp + curr_indx;
+
+                          uint ze_ex_rindx = buff_size - (num_gp + curr_indx);
+                          uint qx_ex_rindx = buff_size - (2 * num_gp + curr_indx);
+                          uint qy_ex_rindx = buff_size - (3 * num_gp + curr_indx);
+
+                          SWE::Distributed buffs(send_buff_ref,
+                                                 recv_buff_ref,
+                                                 ze_in_indx,
+                                                 qx_in_indx,
+                                                 qy_in_indx,
+                                                 ze_ex_rindx,
+                                                 qx_ex_rindx,
+                                                 qy_ex_rindx);
+
+                          auto tmp_it = pre_boundaries.find(elt);
+                          assert(tmp_it != pre_boundaries.end());
+                          auto raw_bdry_iter = tmp_it->second.find(fid);
+                          assert(raw_bdry_iter != tmp_it->second.end());
+
+                          mesh.template CreateDistributedBoundary<DistributedBoundaryType>(raw_bdry_iter->second,
+           buffs);
+
+                          curr_indx += 3 * num_gp;
+                      }*/
     }
 
-    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
+    //    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
-    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
+    //    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;*/
 }
 
-void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_data) {
+void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
     mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
     std::unordered_map<uint, std::vector<double>> bathymetry;
@@ -152,12 +170,12 @@ void Problem::initialize_data_kernel(mesh_type& mesh, const MeshMetaData& mesh_d
     });
 
     mesh.CallForEachInterface([](auto& intface) {
-        intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary[intface.nbound_in].bath_at_gp);
-        intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary[intface.nbound_ex].bath_at_gp);
+        intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary[intface.bound_id_in].bath_at_gp);
+        intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary[intface.bound_id_ex].bath_at_gp);
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
-        bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary[bound.nbound].bath_at_gp);
+        bound.ComputeUgp(bound.data.state[0].bath, bound.data.boundary[bound.bound_id].bath_at_gp);
     });
 }
 
@@ -253,10 +271,10 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     const uint stage = stepper.get_stage();
 
     auto& state_in = intface.data_in.state[stage];
-    auto& boundary_in = intface.data_in.boundary[intface.nbound_in];
+    auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
 
     auto& state_ex = intface.data_ex.state[stage];
-    auto& boundary_ex = intface.data_ex.boundary[intface.nbound_ex];
+    auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
     intface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
     intface.ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
@@ -267,8 +285,8 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     intface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
 
     // assemble numerical fluxes
-    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.nbound_in); ++gp) {
-        uint gp_ex = intface.data_in.get_ngp_boundary(intface.nbound_in) - gp - 1;
+    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
+        uint gp_ex = intface.data_in.get_ngp_boundary(intface.bound_id_in) - gp - 1;
 
         LLF_flux(boundary_in.ze_at_gp[gp],
                  boundary_ex.ze_at_gp[gp_ex],
@@ -306,14 +324,14 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.get_stage();
 
     auto& state = bound.data.state[stage];
-    auto& boundary = bound.data.boundary[bound.nbound];
+    auto& boundary = bound.data.boundary[bound.bound_id];
 
     bound.ComputeUgp(state.ze, boundary.ze_at_gp);
     bound.ComputeUgp(state.qx, boundary.qx_at_gp);
     bound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
     double ze_ex, qx_ex, qy_ex;
-    for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.nbound); ++gp) {
+    for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
         bound.boundary_condition.set_ex(stepper,
                                         bound.surface_normal[gp],
                                         boundary.ze_at_gp[gp],

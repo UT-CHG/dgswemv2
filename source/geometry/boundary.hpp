@@ -6,7 +6,7 @@ template <uint dimension, class DataType>
 class RawBoundary {
   public:
     uint p;
-    uint nbound;
+    uint bound_id;
 
     DataType& data;
 
@@ -15,12 +15,12 @@ class RawBoundary {
     Shape::Shape<dimension + 1>& shape;
 
     RawBoundary(uint p,
-                uint nbound,
+                uint bound_id,
                 DataType& data,
                 Basis::Basis<dimension + 1>& basis,
                 Master::Master<dimension + 1>& master,
                 Shape::Shape<dimension + 1>& shape)
-        : p(p), nbound(nbound), data(data), basis(basis), master(master), shape(shape) {}
+        : p(p), bound_id(bound_id), data(data), basis(basis), master(master), shape(shape) {}
 };
 
 template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
@@ -28,7 +28,7 @@ class Boundary {
   public:
     BoundaryType boundary_condition;
 
-    uint nbound;
+    uint bound_id;
     DataType& data;
 
     Array2D<double> surface_normal;
@@ -57,11 +57,11 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
         integration.GetRule(2 * raw_boundary.p);
 
     std::vector<Point<dimension + 1>> z_master =
-        raw_boundary.master.BoundaryToMasterCoordinates(raw_boundary.nbound, integration_rule.second);
+        raw_boundary.master.BoundaryToMasterCoordinates(raw_boundary.bound_id, integration_rule.second);
 
     this->phi_gp = raw_boundary.basis.GetPhi(raw_boundary.p, z_master);
 
-    std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(raw_boundary.nbound, z_master);
+    std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(raw_boundary.bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_phi = this->phi_gp;
@@ -71,12 +71,13 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
             }
         }
 
-        this->surface_normal = Array2D<double>(
-            integration_rule.first.size(), *raw_boundary.shape.GetSurfaceNormal(raw_boundary.nbound, z_master).begin());
+        this->surface_normal =
+            Array2D<double>(integration_rule.first.size(),
+                            *raw_boundary.shape.GetSurfaceNormal(raw_boundary.bound_id, z_master).begin());
     }
 
-    this->nbound = raw_boundary.nbound;
-    this->data.set_ngp_boundary(raw_boundary.nbound, integration_rule.first.size());
+    this->bound_id = raw_boundary.bound_id;
+    this->data.set_ngp_boundary(raw_boundary.bound_id, integration_rule.first.size());
 }
 
 template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
@@ -107,8 +108,8 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
 template <uint dimension, class IntegrationType, class DataType>
 class Interface {
   public:
-    uint nbound_in;
-    uint nbound_ex;
+    uint bound_id_in;
+    uint bound_id_ex;
     DataType& data_in;
     DataType& data_ex;
 
@@ -139,13 +140,13 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p);
 
     std::vector<Point<dimension + 1>> z_master =
-        raw_boundary_ex.master.BoundaryToMasterCoordinates(raw_boundary_ex.nbound, integration_rule.second);
+        raw_boundary_ex.master.BoundaryToMasterCoordinates(raw_boundary_ex.bound_id, integration_rule.second);
     this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master);
 
-    z_master = raw_boundary_in.master.BoundaryToMasterCoordinates(raw_boundary_in.nbound, integration_rule.second);
+    z_master = raw_boundary_in.master.BoundaryToMasterCoordinates(raw_boundary_in.bound_id, integration_rule.second);
     this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master);
 
-    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(raw_boundary_in.nbound, z_master);
+    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(raw_boundary_in.bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_phi_in = this->phi_gp_in;
@@ -164,13 +165,13 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
 
         this->surface_normal =
             Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary_in.shape.GetSurfaceNormal(raw_boundary_in.nbound, z_master).begin());
+                            *raw_boundary_in.shape.GetSurfaceNormal(raw_boundary_in.bound_id, z_master).begin());
     }
 
-    this->nbound_in = raw_boundary_in.nbound;
-    this->nbound_ex = raw_boundary_ex.nbound;
-    this->data_in.set_ngp_boundary(raw_boundary_in.nbound, integration_rule.first.size());
-    this->data_ex.set_ngp_boundary(raw_boundary_ex.nbound, integration_rule.first.size());
+    this->bound_id_in = raw_boundary_in.bound_id;
+    this->bound_id_ex = raw_boundary_ex.bound_id;
+    this->data_in.set_ngp_boundary(raw_boundary_in.bound_id, integration_rule.first.size());
+    this->data_ex.set_ngp_boundary(raw_boundary_ex.bound_id, integration_rule.first.size());
 }
 
 template <uint dimension, class IntegrationType, class DataType>

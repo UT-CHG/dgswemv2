@@ -11,18 +11,18 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     InputParameters input;
 
     Stepper stepper;
-    typename ProblemType::mesh_type mesh;
+    typename ProblemType::ProblemMeshType mesh;
     HPXCommunicator communicator;
 
     std::string log_file_name;
 
   public:
     HPXSimulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
-    HPXSimulation(std::string input_string, uint locality, uint submesh_id)
-        : input(input_string, locality, submesh_id),
+    HPXSimulation(std::string input_string, uint locality_id, uint submesh_id)
+        : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
-          communicator(locality, submesh_id, std::string(input.mesh_file_name + "_meta")) {
+          communicator(std::string(input.mesh_file_name + "_meta"), locality_id, submesh_id) {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data._mesh_name);
