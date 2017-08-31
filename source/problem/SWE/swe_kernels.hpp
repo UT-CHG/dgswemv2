@@ -53,7 +53,7 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(ProblemMeshType& mesh,
                                                    Communicator& communicator,
-                                                   std::map<uint, std::map<uint, RawBoundaryType>>& pre_boundaries) {
+                                                   std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries) {
 
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
@@ -63,74 +63,47 @@ void Problem::create_distributed_boundaries_kernel(ProblemMeshType& mesh,
         communicator.ResizeBuffers(integ, 3);
     */
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
-        uint curr_indx = 0;
-
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
         std::vector<double>& send_buffer_reference = rank_boundary.send_buffer;
         std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
 
-        uint element_id, bound_id, p, ngp;
-        uint ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
+        uint element_id, bound_id, p, ngp, ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
         
+        uint begin_index = 0;
         for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
             element_id = rank_boundary.elements.at(dboundary_id);
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
             p = rank_boundary.p.at(dboundary_id);
             ngp = boundary_integration.GetNumGP(p);
 
-            uint ze_in_indx = curr_indx;
-            uint qx_in_indx = num_gp + curr_indx;
-            uint qy_in_indx = 2 * num_gp + curr_indx;          
+            ze_in_index = begin_index;
+            qx_in_index = begin_index+ngp;
+            qy_in_index = begin_index+2*ngp;          
+
+            ze_in_index = begin_index + ngp-1;
+            qx_in_index = begin_index + 2*ngp-1;
+            qy_in_index = begin_index+ 3*ngp-1;
+
+            begin_index += 3*ngp;
+
+            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
+                pre_distributed_boundaries.at(element_id).at(bound_id),  SWE::Distributed(send_buffer_reference,
+                                                 receive_buffer_reference,
+                                                 ze_in_index,
+                                                 qx_in_index,
+                                                 qy_in_index,
+                                                 ze_ex_index,
+                                                 qx_ex_index,
+                                                 qy_ex_index));
         }
-        /*
-                      uint buff_size = send_buff_ref.size();
 
-                      for (uint e = 0; e < communicator.GetNumEdges(n); ++e) {
-                          uint elt;
-                          uint fid;
-                          uint p;
-                          {
-                              std::tuple<uint, uint, uint> tup = communicator.GetElt_FaceID_PolynomialOrder(n, e);
-                              elt = std::get<0>(tup);
-                              fid = std::get<1>(tup);
-                              p = std::get<2>(tup);
-                          }
-
-                          uint num_gp = integ.GetNumGP(p);
-
-                          uint ze_in_indx = curr_indx;
-                          uint qx_in_indx = num_gp + curr_indx;
-                          uint qy_in_indx = 2 * num_gp + curr_indx;
-
-                          uint ze_ex_rindx = buff_size - (num_gp + curr_indx);
-                          uint qx_ex_rindx = buff_size - (2 * num_gp + curr_indx);
-                          uint qy_ex_rindx = buff_size - (3 * num_gp + curr_indx);
-
-                          SWE::Distributed buffs(send_buff_ref,
-                                                 recv_buff_ref,
-                                                 ze_in_indx,
-                                                 qx_in_indx,
-                                                 qy_in_indx,
-                                                 ze_ex_rindx,
-                                                 qx_ex_rindx,
-                                                 qy_ex_rindx);
-
-                          auto tmp_it = pre_boundaries.find(elt);
-                          assert(tmp_it != pre_boundaries.end());
-                          auto raw_bdry_iter = tmp_it->second.find(fid);
-                          assert(raw_bdry_iter != tmp_it->second.end());
-
-                          mesh.template CreateDistributedBoundary<DistributedBoundaryType>(raw_bdry_iter->second,
-           buffs);
-
-                          curr_indx += 3 * num_gp;
-                      }*/
+        send_buffer_reference.resize(begin_index);
+        receive_buffer_reference.resize(begin_index);
     }
+        std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
-    //    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-
-    //    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;*/
+        log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 }
 
 void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
