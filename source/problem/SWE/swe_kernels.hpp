@@ -71,7 +71,7 @@ void Problem::create_distributed_boundaries_kernel(
             element_id = rank_boundary.elements.at(dboundary_id);
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
             p = rank_boundary.p.at(dboundary_id);
-            ngp = boundary_integration.GetNumGP(p);
+            ngp = boundary_integration.GetNumGP(2 * p);
 
             ze_in_index = begin_index;
             qx_in_index = begin_index + ngp;
@@ -80,7 +80,7 @@ void Problem::create_distributed_boundaries_kernel(
             ze_ex_index = begin_index + ngp - 1;
             qx_ex_index = begin_index + 2 * ngp - 1;
             qy_ex_index = begin_index + 3 * ngp - 1;
-	    	    
+
             begin_index += 3 * ngp;
 
             auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
@@ -106,11 +106,7 @@ void Problem::create_distributed_boundaries_kernel(
 }
 
 void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
-    mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); 
-        std::cout << elt.data.get_ngp_boundary(0)
-        << elt.data.get_ngp_boundary(1);
-        << elt.data.get_ngp_boundary(2) << std::endl;
-    });
+    mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
     std::unordered_map<uint, std::vector<double>> bathymetry;
 
@@ -362,8 +358,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
 
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-      std::cout << dbound.data.get_ngp_boundary(dbound.bound_id) << std::endl;
-      dbound.boundary_condition.GetEX(stepper,
+        dbound.boundary_condition.GetEX(stepper,
                                         gp,
                                         dbound.surface_normal,
                                         boundary.ze_at_gp,
