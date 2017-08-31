@@ -41,35 +41,10 @@ class HPXCommunicator {
     hpx::future<void> ReceiveAll(uint);
 
     uint GetRankBoundaryNumber() { return rank_boundaries.size(); }
-
     HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return rank_boundaries.at(rank_boundary_id); }
-    /*
-        template <typename IntegrationType>
-        void ResizeBuffers(IntegrationType integration, const uint num_fields);
 
-        std::vector<double>& GetSendBufferReference(uint neighbor_id);
-
-        std::vector<double>& GetReceiveBufferReference(uint neighbor_id);
-
-        uint GetNumNeighbors();
-
-        uint GetNumEdges(uint neighbor);
-
-        std::tuple<uint, uint, uint> GetElt_FaceID_PolynomialOrder(uint neighbor, uint edge);
-    */
+  public:
     using RankBoundaryType = HPXRankBoundary;
 };
-/*
-template <typename IntegrationType>
-void HPXCommunicator::ResizeBuffers(IntegrationType integration, const uint num_fields) {
-    for (auto& di : rank_boundaries) {
-        std::size_t sz = 0;
-        for (uint i = 0; i < di.elements.size(); ++i) {
-            sz += num_fields * integration.GetNumGP(di.p[i]);
-        }
-        di.send_buffer.resize(sz);
-        di.receive_buffer.resize(sz);
-    }
-}
-*/
+
 #endif

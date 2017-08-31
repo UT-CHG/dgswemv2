@@ -85,9 +85,11 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 };
 
                 this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
-                //                std::vector<hpx::future<uint>> receive_futures = this->Receive(timestamp);
+                
+                this->communicator.SendAll(timestamp);
+                
+                hpx::future<uint> receive_future = this->communicator.ReceiveAll(timestamp);
 
-                //                this->Send(this->stepper.get_t_at_curr_stage(), timestamp);
                 this->mesh.CallForEachElement(volume_kernel);
 
                 this->mesh.CallForEachElement(source_kernel);
@@ -97,14 +99,8 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 log_file << "Finished work before receive" << std::endl
                          << "Starting to wait on receive with timestamp: " << timestamp << std::endl;
 #endif
-                //return when_all(receive_futures).then([this](
-                //    hpx::future<std::vector<hpx::future<uint>>>&& ready_messages) {
-                //    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+                return receive_future.then([this](hpx::future<void>&& receive_future) {
 #ifdef VERBOSE
-                //    for (auto& message : ready_messages.get()) {
-                //        log_file << "Received message: " << message.get() << std::endl;
-                //   }
-
                 log_file << "Starting work after receive" << std::endl;
 #endif
                 auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
@@ -131,7 +127,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 #ifdef VERBOSE
                 log_file << "Finished work after receive" << std::endl << std::endl;
 #endif
-                //});
+                });
             });
 
             timestamp++;
