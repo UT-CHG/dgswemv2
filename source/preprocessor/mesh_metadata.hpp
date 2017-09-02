@@ -24,12 +24,6 @@ struct NodeMetaData {
     }
 };
 
-// ID: corresponds to the element ID
-// coordinates: correspond to the vertices of the element
-//   moving counter clockwise around the triangle
-// boundary type: coresponds to the type of the element edge (Interface, Tidal boundary, etc.)
-// neighbor_IDs: corresponds to the neighbor ID if it exists. If it does not exist the default ID is set to
-//   DEFAULT_ID as set in general_definitions.hpp
 struct ElementMetaData {
     ElementMetaData() = default;
     ElementMetaData(uint n_faces) : node_ids(n_faces), neighbor_ID(n_faces), boundary_type(n_faces) {}
@@ -37,6 +31,7 @@ struct ElementMetaData {
     std::vector<uint> node_ids;
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
+
     friend std::ostream& operator<<(std::ostream& s, const ElementMetaData& elt) {
         s << elt.node_ids.size();
         for (const auto& node_id : elt.node_ids) {
@@ -76,12 +71,12 @@ struct ElementMetaData {
 
         return s;
     }
-};
 
-inline bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
-    return (lhs.node_ids == rhs.node_ids) && (lhs.neighbor_ID == rhs.neighbor_ID) &&
-           (lhs.boundary_type == rhs.boundary_type);
-}
+    friend bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
+        return (lhs.node_ids == rhs.node_ids) && (lhs.neighbor_ID == rhs.neighbor_ID) &&
+               (lhs.boundary_type == rhs.boundary_type);
+    }
+};
 
 struct MeshMetaData {
     MeshMetaData() = default;  // why define default constructor?
@@ -92,9 +87,9 @@ struct MeshMetaData {
 
     std::vector<Point<3>> GetNodalCoordinates(uint elt_id) const;
 
-    std::string _mesh_name;
-    std::unordered_map<uint, ElementMetaData> _elements;
-    std::unordered_map<uint, NodeMetaData> _nodes;
+    std::string mesh_name;
+    std::unordered_map<uint, ElementMetaData> elements;
+    std::unordered_map<uint, NodeMetaData> nodes;
 };
 
 struct DistributedBoundaryMetaData {

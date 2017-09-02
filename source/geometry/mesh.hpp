@@ -35,7 +35,7 @@ class Mesh<std::tuple<Elements...>,
     std::string mesh_name;
 
   public:
-    Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+    Mesh(const uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
     std::string GetMeshName() { return this->mesh_name; }
@@ -46,7 +46,7 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
     template <typename ElementType, typename... Args>
-    void CreateElement(uint n, Args&&... args) {
+    void CreateElement(const uint n, Args&&... args) {
         using MasterType = typename ElementType::ElementMasterType;
 
         MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);

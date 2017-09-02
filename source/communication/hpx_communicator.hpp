@@ -32,13 +32,13 @@ class HPXCommunicator {
 
   public:
     HPXCommunicator() = default;
-    HPXCommunicator(const std::string&, uint, uint);
+    HPXCommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
 
-    void SendAll(uint);
-    hpx::future<void> ReceiveAll(uint);
+    void SendAll(const uint timestamp);
+    hpx::future<void> ReceiveAll(const uint timestamp);
 
-    uint GetRankBoundaryNumber() { return rank_boundaries.size(); }
-    HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return rank_boundaries.at(rank_boundary_id); }
+    uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
+    HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
 
   public:
     using RankBoundaryType = HPXRankBoundary;

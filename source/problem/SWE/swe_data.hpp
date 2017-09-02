@@ -6,7 +6,7 @@
 namespace SWE {
 struct State {
     State() = default;
-    State(uint ndof) : ze(ndof), qx(ndof), qy(ndof), bath(ndof), rhs_ze(ndof), rhs_qx(ndof), rhs_qy(ndof) {}
+    State(const uint ndof) : ze(ndof), qx(ndof), qy(ndof), bath(ndof), rhs_ze(ndof), rhs_qx(ndof), rhs_qy(ndof) {}
 
     std::vector<double> ze;
     std::vector<double> qx;
@@ -20,7 +20,7 @@ struct State {
 
 struct Internal {
     Internal() = default;
-    Internal(uint ngp)
+    Internal(const uint ngp)
         : ze_flux_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
           qx_flux_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
           qy_flux_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
@@ -56,7 +56,7 @@ struct Internal {
 
 struct Boundary {
     Boundary() = default;
-    Boundary(uint ngp)
+    Boundary(const uint ngp)
         : ze_at_gp(ngp),
           qx_at_gp(ngp),
           qy_at_gp(ngp),
@@ -82,12 +82,12 @@ struct Data {
 
         this->internal = Internal(this->ngp_internal);
 
-        for (uint bound = 0; bound < this->nbound; bound++) {
-            this->boundary.push_back(Boundary(this->ngp_boundary[bound]));
+        for (uint bound_id = 0; bound_id < this->nbound; bound_id++) {
+            this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
         }
     }
 
-    void resize(uint nstate) {
+    void resize(const uint nstate) {
         if ((this->state.size() - 1) < nstate) {
             this->state.insert(this->state.end(), nstate - (this->state.size() - 1), State(ndof));
         } else if ((this->state.size() - 1) > nstate) {
@@ -104,13 +104,13 @@ struct Data {
     uint get_nbound() { return this->nbound; }
     uint get_ngp_boundary(uint nbound) { return this->ngp_boundary[nbound]; }
 
-    void set_ndof(uint ndof) { this->ndof = ndof; }
-    void set_ngp_internal(uint ngp) { this->ngp_internal = ngp; }
-    void set_nbound(uint nbound) {
+    void set_ndof(const uint ndof) { this->ndof = ndof; }
+    void set_ngp_internal(const uint ngp) { this->ngp_internal = ngp; }
+    void set_nbound(const uint nbound) {
         this->nbound = nbound;
         this->ngp_boundary = std::vector<uint>(this->nbound, 0);
     }
-    void set_ngp_boundary(uint nbound, uint ngp) { this->ngp_boundary[nbound] = ngp; }
+    void set_ngp_boundary(const uint bound_id, const uint ngp) { this->ngp_boundary[bound_id] = ngp; }
 
   private:
     uint ndof;

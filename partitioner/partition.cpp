@@ -10,13 +10,15 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
                                                  const NumaConfiguration& numa_config) {
-    // To do: add an additional layer of support for assigning submeshes to NUMA domains
-    // const int num_localities = num_nodes * numa_config.get_num_numa_domains();
+    // To do: add an additional layer of support for assigning submeshes to NUMA
+    // domains
+    // const int num_localities = num_nodes *
+    // numa_config.get_num_numa_domains();
 
     std::unordered_map<int, double> element_weights;
     std::unordered_map<std::pair<int, int>, double> edge_weights;
 
-    for (const auto& elt : mesh_meta._elements) {
+    for (const auto& elt : mesh_meta.elements) {
         element_weights.insert(std::make_pair(elt.first, 1.));
 
         for (const uint neigh_id : elt.second.neighbor_ID) {
@@ -105,22 +107,23 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
         for (int sm = 0; sm < num_nodes; ++sm) {
             submeshes[sm].resize(local_partition_counter[sm]);
             for (uint i = 0; i < local_partition_counter[sm]; ++i) {
-                submeshes[sm][i]._mesh_name = mesh_meta._mesh_name + "_" + std::to_string(sm) + "_" + std::to_string(i);
+                submeshes[sm][i].mesh_name = mesh_meta.mesh_name + "_" + std::to_string(sm) + "_" + std::to_string(i);
             }
         }
     }
 
     {  // assemble submeshes
-        for (const auto& elt : mesh_meta._elements) {
+        for (const auto& elt : mesh_meta.elements) {
             uint partition = elt2partition.at(elt.first);
             uint rank = partition2node[partition];
             uint loc_part = partition2local_partition[partition];
 
-            // error here the partition in question is not actually the partition you are interested in.
-            submeshes[rank][loc_part]._elements.insert(elt);
+            // error here the partition in question is not actually the
+            // partition you are interested in.
+            submeshes[rank][loc_part].elements.insert(elt);
 
             for (uint id : elt.second.node_ids) {
-                submeshes[rank][loc_part]._nodes[id] = mesh_meta._nodes.at(id);
+                submeshes[rank][loc_part].nodes[id] = mesh_meta.nodes.at(id);
             }
         }
     }
@@ -139,16 +142,16 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                 uint rank_B = partition2node[part_B];
 
                 for (uint k = 0; k < 3; ++k) {
-                    if (elt_B == mesh_meta._elements.at(elt_A).neighbor_ID[k]) {
-                        ElementMetaData& curr_elt = submeshes[rank_A][loc_part_A]._elements.at(elt_A);
+                    if (elt_B == mesh_meta.elements.at(elt_A).neighbor_ID[k]) {
+                        ElementMetaData& curr_elt = submeshes[rank_A][loc_part_A].elements.at(elt_A);
                         curr_elt.neighbor_ID[k] = DEFAULT_ID;
                         curr_elt.boundary_type[k] = SWE::BoundaryConditions::distributed;
                     }
                 }
 
                 for (uint k = 0; k < 3; ++k) {
-                    if (elt_A == mesh_meta._elements.at(elt_B).neighbor_ID[k]) {
-                        ElementMetaData& curr_elt = submeshes[rank_B][loc_part_B]._elements.at(elt_B);
+                    if (elt_A == mesh_meta.elements.at(elt_B).neighbor_ID[k]) {
+                        ElementMetaData& curr_elt = submeshes[rank_B][loc_part_B].elements.at(elt_B);
                         curr_elt.neighbor_ID[k] = DEFAULT_ID;
                         curr_elt.boundary_type[k] = SWE::BoundaryConditions::distributed;
                     }

@@ -24,8 +24,10 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
-    // the nice std::for_each notation without having to define stepper within each element
+    // we write these gross looking wrapper functions to append the stepper in a
+    // way that allows us to keep the
+    // the nice std::for_each notation without having to define stepper within
+    // each element
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };

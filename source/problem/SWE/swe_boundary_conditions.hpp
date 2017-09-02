@@ -7,7 +7,7 @@ namespace SWE {
 class Land {
   public:
     void GetEX(const Stepper& stepper,
-               uint gp,
+               const uint gp,
                const Array2D<double>& surface_normal,
                const std::vector<double>& ze_in,
                const std::vector<double>& qx_in,
@@ -37,7 +37,7 @@ class Land {
 class Tidal {
   public:
     void GetEX(const Stepper& stepper,
-               uint gp,
+               const uint gp,
                const Array2D<double>& surface_normal,
                const std::vector<double>& ze_in,
                const std::vector<double>& qx_in,
@@ -47,11 +47,12 @@ class Tidal {
                double& qy_ex) {
         double H_0 = 0.2763;
 
-        // double H_ocean = H_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0)); //FOR TESTING TANH RAMP
+        // double H_ocean = H_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25
+        // * 86400.0)); //FOR TESTING TANH RAMP
         if (stepper.get_t_at_curr_stage() < 172800.0)
-            H_0 = H_0 * stepper.get_t_at_curr_stage() / 172800.0;  // LINEAR RAMPING
-        double H_ocean = H_0 * cos(2 * PI * stepper.get_t_at_curr_stage() /
-                                   43200.0);  // FOR TESTING M2 TIDAL WAVE WITH PERIOD OF 12HOURS
+            H_0 = H_0 * stepper.get_t_at_curr_stage() / 172800.0;                      // LINEAR RAMPING
+        double H_ocean = H_0 * cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0);  // FOR TESTING M2 TIDAL WAVE WITH
+                                                                                       // PERIOD OF 12HOURS
 
         ze_ex = H_ocean;
         qx_ex = qx_in[gp];
@@ -75,12 +76,12 @@ class Distributed {
   public:
     Distributed(std::vector<double>& send_buffer,
                 std::vector<double>& receive_buffer,
-                uint ze_in_index,
-                uint qx_in_index,
-                uint qy_in_index,
-                uint ze_ex_index,
-                uint qx_ex_index,
-                uint qy_ex_index)
+                const uint ze_in_index,
+                const uint qx_in_index,
+                const uint qy_in_index,
+                const uint ze_ex_index,
+                const uint qx_ex_index,
+                const uint qy_ex_index)
         : send_buffer(send_buffer),
           receive_buffer(receive_buffer),
           ze_in_index(ze_in_index),
@@ -99,7 +100,7 @@ class Distributed {
     }
 
     void GetEX(const Stepper& stepper,
-               uint gp,
+               const uint gp,
                const Array2D<double>& surface_normal,
                const std::vector<double>& ze_in,
                const std::vector<double>& qx_in,

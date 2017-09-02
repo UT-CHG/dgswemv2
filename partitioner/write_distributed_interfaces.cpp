@@ -13,7 +13,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
 
     std::unordered_set<std::pair<uint, uint>> faces;
     // assemble faces shared across elements
-    for (auto& elt : mesh_meta._elements) {
+    for (auto& elt : mesh_meta.elements) {
         for (auto& neigh : elt.second.neighbor_ID) {
             if (neigh != DEFAULT_ID) {
                 std::pair<uint, uint> edge_name{std::min(elt.first, neigh), std::max(elt.first, neigh)};
@@ -24,7 +24,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
     std::unordered_map<uint, uint> elt2partition;
     for (uint loc_id = 0; loc_id < submeshes.size(); ++loc_id) {
         for (uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id) {
-            for (auto& elt : submeshes[loc_id][sbmsh_id]._elements) {
+            for (auto& elt : submeshes[loc_id][sbmsh_id].elements) {
                 elt2partition.insert(std::make_pair(elt.first, loc_id + num_loc * sbmsh_id));
                 for (auto& neigh : elt.second.neighbor_ID) {
                     if (neigh != DEFAULT_ID) {
@@ -45,7 +45,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         uint rnkB = elt2partition.at(eltB);
 
         uint face_id_A{DEFAULT_ID};
-        const ElementMetaData& eltA_meta = mesh_meta._elements.at(eltA);
+        const ElementMetaData& eltA_meta = mesh_meta.elements.at(eltA);
         for (uint fid = 0; fid < eltA_meta.neighbor_ID.size(); ++fid) {
             if (eltB == eltA_meta.neighbor_ID[fid]) {
                 face_id_A = fid;
@@ -54,7 +54,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         assert(face_id_A != DEFAULT_ID);
 
         uint face_id_B{DEFAULT_ID};
-        const ElementMetaData& eltB_meta = mesh_meta._elements.at(eltB);
+        const ElementMetaData& eltB_meta = mesh_meta.elements.at(eltB);
         for (uint fid = 0; fid < eltB_meta.neighbor_ID.size(); ++fid) {
             if (eltA == eltB_meta.neighbor_ID[fid]) {
                 face_id_B = fid;

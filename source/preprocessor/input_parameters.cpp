@@ -33,7 +33,7 @@ InputParameters::InputParameters(const std::string& input_string) {
     }
 }
 
-InputParameters::InputParameters(const std::string& input_string, uint locality_id, uint submesh_id)
+InputParameters::InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id)
     : InputParameters(input_string) {
     mesh_file_name.erase(mesh_file_name.size() - 3);
     mesh_file_name += '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id) + ".14";
@@ -79,11 +79,13 @@ void InputParameters::WriteTo(const std::string& output_filename) {
     std::ofstream ofs(output_filename);
     assert(ofs);
 
-    ofs << "###############################################################################\n"
+    ofs << "###################################################################"
+           "############\n"
         << "#\n"
         << "#  DGSWEMv2 input file\n"
         << "#\n"
-        << "###############################################################################\n\n";
+        << "###################################################################"
+           "############\n\n";
 
     ofs << output.c_str();
 }

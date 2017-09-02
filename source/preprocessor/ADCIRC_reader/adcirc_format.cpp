@@ -49,7 +49,8 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                                               {nodes.at(elt.second[2])[0], nodes.at(elt.second[2])[1]},
                                               {nodes.at(elt.second[3])[0], nodes.at(elt.second[3])[1]}});
 
-            // note that point selection doesn't matter since the Jacobian is constant
+            // note that point selection doesn't matter since the Jacobian is
+            // constant
             if (!triangle.CheckJacobianPositive(Point<2>())) {
                 std::swap(elt.second[1], elt.second[3]);
             }

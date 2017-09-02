@@ -31,7 +31,8 @@ int main(int argc, char** argv) {
         error_found = error_found || local_error;
     }
 
-    std::cout << "Now we will pass in two bad meshes and see if exceptions get thrown\n";
+    std::cout << "Now we will pass in two bad meshes and see if exceptions get "
+                 "thrown\n";
     // try reading a file that doesn't exist
     {
         bool local_error{true};

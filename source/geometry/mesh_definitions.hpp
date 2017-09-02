@@ -1,8 +1,10 @@
-#ifndef MESH_DEFINITIONS_H
-#define MESH_DEFINITIONS_H
+#ifndef MESH_DEFINITIONS_HPP
+#define MESH_DEFINITIONS_HPP
 
 #include "mesh.hpp"
+#include "raw_boundary.hpp"
 #include "element.hpp"
+#include "interface.hpp"
 #include "boundary.hpp"
 
 #include "../master/master_elements_2D.hpp"

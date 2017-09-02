@@ -12,8 +12,8 @@ struct RKInput {
 
 struct InputParameters {
     InputParameters() = default;
-    InputParameters(const std::string&);
-    InputParameters(const std::string&, uint, uint);
+    InputParameters(const std::string& input_string);
+    InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
     void ReadMesh();
     void WriteTo(const std::string& output_filename);
@@ -31,8 +31,5 @@ struct InputParameters {
     double T_end;
 
     uint polynomial_order;
-
-  private:
-    void Initialize(YAML::Node& input_file);
 };
 #endif

@@ -40,9 +40,9 @@ namespace Basis {
 template <uint dimension>
 class Basis {
   public:
-    virtual Array2D<double> GetPhi(uint, const std::vector<Point<dimension>>&) = 0;
-    virtual Array3D<double> GetDPhi(uint, const std::vector<Point<dimension>>&) = 0;
-    virtual std::pair<bool, Array2D<double>> GetMinv(uint) = 0;
+    virtual Array2D<double> GetPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual Array3D<double> GetDPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
 };
 }
 
@@ -50,8 +50,8 @@ namespace Integration {
 template <uint dimension>
 class Integration {
   public:
-    virtual uint GetNumGP(uint p) = 0;
-    virtual std::pair<std::vector<double>, std::vector<Point<dimension>>> GetRule(uint p) = 0;
+    virtual uint GetNumGP(const uint p) = 0;
+    virtual std::pair<std::vector<double>, std::vector<Point<dimension>>> GetRule(const uint p) = 0;
 };
 }
 
@@ -75,10 +75,11 @@ class Master {
     Array2D<double> phi_postprocessor_point;
 
   public:
-    Master(uint p) : p(p) {}
+    Master(const uint p) : p(p) {}
 
-    virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(uint,
-                                                                      const std::vector<Point<dimension - 1>>&) = 0;
+    virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
+        const uint bound_id,
+        const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 };
 }
 
@@ -91,18 +92,18 @@ class Shape {
   public:
     Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
-    virtual bool CheckJacobianPositive(const Point<dimension>&) = 0;
+    virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
 
-    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>&) = 0;
-    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>&) = 0;
-    virtual std::vector<double> GetSurfaceJ(uint, const std::vector<Point<dimension>>&) = 0;
-    virtual Array2D<double> GetSurfaceNormal(uint, const std::vector<Point<dimension>>&) = 0;
+    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) = 0;
+    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
-    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>&,
-                                                       const std::vector<Point<dimension>>&) = 0;
-    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>&) = 0;
+    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
+                                                       const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
-    virtual void GetVTK(std::vector<Point<3>>&, Array2D<uint>&) = 0;
+    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 };
 }
 

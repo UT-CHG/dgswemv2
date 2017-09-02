@@ -110,7 +110,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& 
     std::unordered_map<uint, std::vector<double>> bathymetry;
 
     std::vector<double> bathymetry_temp;
-    for (const auto& elt : mesh_data._elements) {
+    for (const auto& elt : mesh_data.elements) {
         auto nodal_coordinates = mesh_data.GetNodalCoordinates(elt.first);
 
         for (auto& node_coordinate : nodal_coordinates) {

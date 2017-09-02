@@ -11,9 +11,9 @@ class Triangle : public Master<2> {
     IntegrationType integration;
 
   public:
-    Triangle(uint);
+    Triangle(const uint p);
 
-    std::vector<Point<2>> BoundaryToMasterCoordinates(uint, const std::vector<Point<1>>&);
+    std::vector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const std::vector<Point<1>>& z_boundary);
 
   private:
     std::vector<Point<2>> VTKPostCell();

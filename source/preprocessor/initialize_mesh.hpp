@@ -6,13 +6,13 @@
 using namespace Geometry;
 
 template <typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::ProblemMeshType&, const MeshMetaData& mesh_data);
+void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const MeshMetaData& mesh_data);
+
+template <typename ProblemType, typename Communicator>
+void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh, Communicator& communicator);
 
 template <typename ProblemType>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType&);
-
-template <typename ProblemType>
-void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType&);
+void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
@@ -31,7 +31,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
     std::vector<Point<2>> nodal_coords_temp;
-    for (const auto& element_meta : mesh_data._elements) {
+    for (const auto& element_meta : mesh_data.elements) {
         uint elt_id = element_meta.first;
 
         auto nodal_coordinates = mesh_data.GetNodalCoordinates(elt_id);

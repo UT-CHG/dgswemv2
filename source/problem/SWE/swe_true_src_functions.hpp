@@ -2,7 +2,7 @@
 #define SWE_TRUE_SRC_FUNCTIONS_HPP
 
 namespace SWE {
-double true_ze(double t, Point<2>& pt) {
+double true_ze(const double t, const Point<2>& pt) {
     double x1 = 40000.;
     double x2 = 83200.;
     double y1 = 10000.;
@@ -18,7 +18,7 @@ double true_ze(double t, Point<2>& pt) {
            (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
 }
 
-double true_qx(double t, Point<2>& pt) {
+double true_qx(const double t, const Point<2>& pt) {
     double x1 = 40000.;
     double x2 = 83200.;
     double y1 = 10000.;
@@ -34,7 +34,7 @@ double true_qx(double t, Point<2>& pt) {
            (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
 }
 
-double true_qy(double t, Point<2>& pt) {
+double true_qy(const double t, const Point<2>& pt) {
     double x1 = 40000.;
     double x2 = 83200.;
     double y1 = 10000.;
@@ -50,9 +50,9 @@ double true_qy(double t, Point<2>& pt) {
            (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
 }
 
-double source_ze(double t, Point<2>& pt) { return 0; }
+double source_ze(const double t, const Point<2>& pt) { return 0; }
 
-double source_qx(double t, Point<2>& pt) {
+double source_qx(const double t, const Point<2>& pt) {
     double x1 = 40000.;
     double x2 = 83200.;
     double y1 = 10000.;
@@ -96,7 +96,7 @@ double source_qx(double t, Point<2>& pt) {
                          (1. / cos(w * (-y1 + y2))));
 }
 
-double source_qy(double t, Point<2>& pt) {
+double source_qy(const double t, const Point<2>& pt) {
     double x1 = 40000.;
     double x2 = 83200.;
     double y1 = 10000.;

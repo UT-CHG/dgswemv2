@@ -2,7 +2,7 @@
 
 namespace Master {
 template <class BasisType, class IntegrationType>
-Triangle<BasisType, IntegrationType>::Triangle(uint p)
+Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     : Master<2>(p) {
     this->integration_rule = this->integration.GetRule(2 * this->p);
 
@@ -36,21 +36,21 @@ Triangle<BasisType, IntegrationType>::Triangle(uint p)
 
 template <class BasisType, class IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
-    uint boundary,
+    const uint bound_id,
     const std::vector<Point<1>>& z_boundary) {
     std::vector<Point<2>> z_master(z_boundary.size());
 
-    if (boundary == 0) {
+    if (bound_id == 0) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
             z_master[gp][LocalCoordTri::z1] = -z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = z_boundary[gp][LocalCoordTri::z1];
         }
-    } else if (boundary == 1) {
+    } else if (bound_id == 1) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
             z_master[gp][LocalCoordTri::z1] = -1;
             z_master[gp][LocalCoordTri::z2] = -z_boundary[gp][LocalCoordTri::z1];
         }
-    } else if (boundary == 2) {
+    } else if (bound_id == 2) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
             z_master[gp][LocalCoordTri::z1] = z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = -1;

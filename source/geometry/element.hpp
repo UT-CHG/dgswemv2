@@ -1,8 +1,6 @@
 #ifndef CLASS_ELEMENT_HPP
 #define CLASS_ELEMENT_HPP
 
-#include "boundary.hpp"
-
 namespace Geometry {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 class Element {
@@ -29,43 +27,44 @@ class Element {
     std::pair<bool, Array2D<double>> m_inv;
 
   public:
-    Element(uint,
-            MasterType&,
-            const std::vector<Point<dimension>>&,
-            const std::vector<uint>&,
-            const std::vector<uchar>&);
+    Element(const uint ID,
+            MasterType& master,
+            const std::vector<Point<dimension>>& nodal_coordinates,
+            const std::vector<uint>& neighbor_ID,
+            const std::vector<uchar>& boundary_type);
 
-    void CreateRawBoundaries(std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>&,
-                             std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&,
-                             std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>&);
+    void CreateRawBoundaries(
+        std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_interfaces,
+        std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>& pre_boundaries,
+        std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries);
 
     uint GetID() { return this->ID; }
 
     template <typename F>
     std::vector<double> L2Projection(const F& f);
-    std::vector<double> L2Projection(const std::vector<double>&);
+    std::vector<double> L2Projection(const std::vector<double>& nodal_values);
 
     template <typename F>
-    void ComputeFgp(const F& f, std::vector<double>&);
-    void ComputeUgp(const std::vector<double>&, std::vector<double>&);
-    void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
+    void ComputeFgp(const F& f, std::vector<double>& f_gp);
+    void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
+    void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
-    double Integration(const std::vector<double>&);
-    double IntegrationPhi(uint, const std::vector<double>&);
-    double IntegrationDPhi(uint, uint, const std::vector<double>&);
+    double Integration(const std::vector<double>& u_gp);
+    double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
+    double IntegrationDPhi(const uint dir, const uint dof, const std::vector<double>& u_gp);
 
-    std::vector<double> SolveLSE(const std::vector<double>&);
+    std::vector<double> SolveLSE(const std::vector<double>& rhs);
 
-    void InitializeVTK(std::vector<Point<3>>&, Array2D<uint>&);
-    void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
-    void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
+    void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
+    void WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data);
+    void WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data);
 
   public:
     using ElementMasterType = MasterType;
 };
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-Element<dimension, MasterType, ShapeType, DataType>::Element(uint ID,
+Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              MasterType& master,
                                                              const std::vector<Point<dimension>>& nodal_coordinates,
                                                              const std::vector<uint>& neighbor_ID,
@@ -236,7 +235,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(cons
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(uint dir,
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const uint dir,
                                                                              const std::vector<double>& u,
                                                                              std::vector<double>& du_gp) {
     std::fill(du_gp.begin(), du_gp.end(), 0.0);
@@ -260,25 +259,25 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::Integration(c
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(uint phi_n,
+inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
                                                                                   const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_phi[phi_n][gp];
+        integral += u_gp[gp] * this->int_fact_phi[dof][gp];
     }
 
     return integral;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(uint dir,
-                                                                                   uint phi_n,
+inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
+                                                                                   const uint dof,
                                                                                    const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_dphi[phi_n][dir][gp];
+        integral += u_gp[gp] * this->int_fact_dphi[dof][dir][gp];
     }
 
     return integral;

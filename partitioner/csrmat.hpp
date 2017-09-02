@@ -22,7 +22,8 @@ class CSRMat {
         }
         std::sort(_nodes.begin(), _nodes.end());
 
-        // use of intermediate edge_sets normalizes all edges to be bi-directional
+        // use of intermediate edge_sets normalizes all edges to be
+        // bi-directional
         std::unordered_map<int, std::unordered_set<int>> edge_sets;
         for (const auto& p : _edge_wgts_map) {
             int src = p.first.first, dst = p.first.second;

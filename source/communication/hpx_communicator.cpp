@@ -5,7 +5,9 @@
 
 HPX_REGISTER_CHANNEL(array_double);
 
-HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file, uint locality_id, uint submesh_id) {
+HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
+                                 const uint locality_id,
+                                 const uint submesh_id) {
     std::ifstream file(neighborhood_data_file);
 
     if (!file) {
@@ -64,23 +66,23 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file, uint
             }
         }
 
-        rank_boundaries.push_back(std::move(rank_boundary));
+        this->rank_boundaries.push_back(std::move(rank_boundary));
 
         set_outgoing_channel.get();
     }
 }
 
-void HPXCommunicator::SendAll(uint timestamp) {
-    for (auto& rank_boundary : rank_boundaries) {
+void HPXCommunicator::SendAll(const uint timestamp) {
+    for (auto& rank_boundary : this->rank_boundaries) {
         rank_boundary.send(timestamp);
     }
 }
 
-hpx::future<void> HPXCommunicator::ReceiveAll(uint timestamp) {
+hpx::future<void> HPXCommunicator::ReceiveAll(const uint timestamp) {
     std::vector<hpx::future<void>> receive_futures;
-    receive_futures.reserve(rank_boundaries.size());
+    receive_futures.reserve(this->rank_boundaries.size());
 
-    for (auto& rank_boundary : rank_boundaries) {
+    for (auto& rank_boundary : this->rank_boundaries) {
         receive_futures.push_back(rank_boundary.receive(timestamp));
     }
 

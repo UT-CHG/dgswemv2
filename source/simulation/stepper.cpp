@@ -279,7 +279,8 @@ Stepper::Stepper(uint nstages, uint order, double dt) : nstages(nstages), irk(0)
         double max_boa = 0.;
         for ( uint i = 0; i <= irk; ++irk ) {
         if (ark(irk,i) != 0) {
-            if (max_boa < brk[irk][i]/ark[irk][i]) { max_boa = brk[irk][i]/ark[irk][i]; }
+            if (max_boa < brk[irk][i]/ark[irk][i]) { max_boa =
+       brk[irk][i]/ark[irk][i]; }
         }
         }
         max_boa_dt[irk] = max_boa_dt*dt;

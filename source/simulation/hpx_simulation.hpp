@@ -18,16 +18,16 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
   public:
     HPXSimulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
-    HPXSimulation(const std::string& input_string, uint locality_id, uint submesh_id)
+    HPXSimulation(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
           communicator(std::string(input.mesh_file_name + "_meta"), locality_id, submesh_id) {
         input.ReadMesh();
 
-        mesh.SetMeshName(input.mesh_data._mesh_name);
+        mesh.SetMeshName(input.mesh_data.mesh_name);
 
-        this->log_file_name = "output/" + input.mesh_data._mesh_name + "_log";
+        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
 
