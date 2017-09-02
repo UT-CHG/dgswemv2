@@ -1,6 +1,10 @@
 #ifndef NUMA_CONFIGURATION_HPP
 #define NUMA_CONFIGURATION_HPP
 
+#include <iostream>
+#include <string>
+#include <vector>
+
 class NumaConfiguration {
   public:
     NumaConfiguration() = default;

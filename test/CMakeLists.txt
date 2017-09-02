@@ -197,3 +197,21 @@ timestepping:\n\
   nstages: 2\n\n\
 polynomial_order: 2"
 )
+
+add_executable(
+  test_partition_exe
+  test_partition.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/partition.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+)
+
+target_include_directories(test_partition_exe PRIVATE ${METIS_INCLUDE_DIRS})
+target_link_libraries(test_partition_exe ${METIS_LIBRARIES})
+
+add_test(
+  Unit_partition
+  test_partition_exe
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
+)
