@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
-project (DG_HYPER CXX)
+project (DG_HYPER CXX C)
 
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
+find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   # require at least intel 17.0
@@ -31,6 +32,7 @@ include_directories(source)
 #  Check for dependencies
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
+find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(HPX REQUIRED)
 
