@@ -19,6 +19,7 @@ class Element {
     std::vector<uchar> boundary_type;
 
     std::vector<Point<dimension>> gp_global_coordinates;
+
     Array3D<double> dphi_fact;
 
     std::vector<double> int_fact;
@@ -41,11 +42,11 @@ class Element {
     uint GetID() { return this->ID; }
 
     template <typename F>
-    std::vector<double> L2Projection(F f);
+    std::vector<double> L2Projection(const F& f);
     std::vector<double> L2Projection(const std::vector<double>&);
 
     template <typename F>
-    void ComputeFgp(F f, std::vector<double>&);
+    void ComputeFgp(const F& f, std::vector<double>&);
     void ComputeUgp(const std::vector<double>&, std::vector<double>&);
     void ComputeDUgp(uint, const std::vector<double>&, std::vector<double>&);
 
@@ -59,6 +60,7 @@ class Element {
     void WriteCellDataVTK(const std::vector<double>&, std::vector<double>&);
     void WritePointDataVTK(const std::vector<double>&, std::vector<double>&);
 
+  public:
     using ElementMasterType = MasterType;
 };
 
@@ -81,12 +83,6 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(uint ID,
     Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
 
     if (det_J.size() == 1) {  // constant Jacobian
-        // INTEGRATION OVER ELEMENT FACTORS
-        this->int_fact = this->master.integration_rule.first;
-        for (uint gp = 0; gp < this->int_fact.size(); gp++) {
-            this->int_fact[gp] *= std::abs(det_J[0]);
-        }
-
         // DIFFERENTIATION FACTORS
         this->dphi_fact.resize(this->master.dphi_gp.size());
         for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
@@ -103,7 +99,12 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(uint ID,
             }
         }
 
-        // INTEGRATION FACTORS
+        // INTEGRATION OVER ELEMENT FACTORS
+        this->int_fact = this->master.integration_rule.first;
+        for (uint gp = 0; gp < this->int_fact.size(); gp++) {
+            this->int_fact[gp] *= std::abs(det_J[0]);
+        }
+
         this->int_fact_phi = this->master.int_fact_phi;
         for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
             for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
@@ -173,7 +174,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(F f) {
+std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f) {
     std::vector<double> projection;
 
     std::vector<double> f_vals(this->gp_global_coordinates.size());
@@ -216,7 +217,7 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(F f, std::vector<double>& f_gp) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f, std::vector<double>& f_gp) {
     for (uint gp = 0; gp < f_gp.size(); gp++) {
         f_gp[gp] = f(this->gp_global_coordinates[gp]);
     }

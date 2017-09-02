@@ -7,22 +7,22 @@
 #include "../problem/SWE/swe_definitions.hpp"
 
 struct NodeMetaData {
-    Point<2> coordinates;  // maybe Point<3>
-    double bathymetry;     // this is somewhat problem specific to SWE, even mesh file specific to adcirc
+    Point<3> coordinates;
+
     friend std::ostream& operator<<(std::ostream& s, const NodeMetaData& node) {
         return s << std::setprecision(15) << node.coordinates[0] << " " << node.coordinates[1] << " "
-                 << node.bathymetry;
+                 << node.coordinates[3];
     }
 
     friend std::istream& operator>>(std::istream& s, NodeMetaData& node) {
-        return s >> node.coordinates[0] >> node.coordinates[1] >> node.bathymetry;
+        return s >> node.coordinates[0] >> node.coordinates[1] >> node.coordinates[3];
+    }
+
+    friend bool operator==(const NodeMetaData& lhs, const NodeMetaData& rhs) {
+        return (lhs.coordinates[0] == rhs.coordinates[0]) && (lhs.coordinates[1] == rhs.coordinates[1]) &&
+               (lhs.coordinates[3] == rhs.coordinates[3]);
     }
 };
-
-inline bool operator==(const NodeMetaData& lhs, const NodeMetaData& rhs) {
-    return (lhs.coordinates[0] == rhs.coordinates[0]) && (lhs.coordinates[1] == rhs.coordinates[1]) &&
-           (lhs.bathymetry == rhs.bathymetry);
-}
 
 // ID: corresponds to the element ID
 // coordinates: correspond to the vertices of the element
@@ -83,6 +83,20 @@ inline bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
            (lhs.boundary_type == rhs.boundary_type);
 }
 
+struct MeshMetaData {
+    MeshMetaData() = default;  // why define default constructor?
+    MeshMetaData(const AdcircFormat& mesh_file);
+    MeshMetaData(const std::string& file);  // read from file
+
+    void WriteTo(const std::string& file);  // write to file
+
+    std::vector<Point<3>> GetNodalCoordinates(uint elt_id) const;
+
+    std::string _mesh_name;
+    std::unordered_map<uint, ElementMetaData> _elements;
+    std::unordered_map<uint, NodeMetaData> _nodes;
+};
+
 struct DistributedBoundaryMetaData {
     std::pair<uint, uint> elements;
     std::pair<uint, uint> bound_ids;
@@ -97,21 +111,6 @@ struct DistributedBoundaryMetaData {
         return s >> dist_int.elements.first >> dist_int.elements.second >> dist_int.bound_ids.first >>
                dist_int.bound_ids.second >> dist_int.p;
     }
-};
-
-struct MeshMetaData {
-    MeshMetaData() = default;  // why define default constructor?
-    MeshMetaData(const AdcircFormat& mesh_file);
-    MeshMetaData(const std::string& file);  // read from file
-
-    void WriteTo(const std::string& file);  // write to file
-
-    std::vector<Point<2>> GetNodalCoordinates(uint elt_id) const;
-    std::vector<double> GetBathymetry(uint elt_id) const;
-
-    std::string _mesh_name;
-    std::unordered_map<uint, ElementMetaData> _elements;
-    std::unordered_map<uint, NodeMetaData> _nodes;
 };
 
 #endif

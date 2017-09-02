@@ -8,9 +8,6 @@ using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
 
 struct HPXRankBoundary {
-    uint neighbor_locality_id;
-    uint neighbor_submesh_id;
-
     std::vector<uint> elements;
     std::vector<uint> bound_ids;
     std::vector<uint> p;
@@ -35,7 +32,7 @@ class HPXCommunicator {
 
   public:
     HPXCommunicator() = default;
-    HPXCommunicator(const std::string&, const uint, const uint);
+    HPXCommunicator(const std::string&, uint, uint);
 
     void SendAll(uint);
     hpx::future<void> ReceiveAll(uint);

@@ -65,7 +65,6 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(uint 
 }
 
 uint Dunavant_2D::GetNumGP(uint p) {
-
     uint num_gp{0};
     switch (p) {
         case(1) :

@@ -8,7 +8,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             throw std::logic_error("ERROR in mesh_metadata.cpp: Node ID is negative; not supported\n");
         }
         uint ID = nod.first;
-        _nodes.insert({ID, {{nod.second[0], nod.second[1]}, nod.second[2]}});
+        _nodes.insert({ID, {nod.second[0], nod.second[1], nod.second[2]}});
     }
 
     for (const auto& elt : mesh_file.elements) {
@@ -122,20 +122,14 @@ void MeshMetaData::WriteTo(const std::string& file) {
     ofs.close();
 }
 
-std::vector<Point<2>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
+std::vector<Point<3>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
     const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
-    std::vector<Point<2>> nodal_coordinates(node_ids.size());
+ 
+    std::vector<Point<3>> nodal_coordinates(node_ids.size());
+ 
     for (uint indx = 0; indx < node_ids.size(); ++indx) {
         nodal_coordinates[indx] = _nodes.at(node_ids[indx]).coordinates;
     }
+    
     return nodal_coordinates;
-}
-
-std::vector<double> MeshMetaData::GetBathymetry(uint elt_id) const {
-    const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
-    std::vector<double> nodal_bathymetry(node_ids.size());
-    for (uint indx = 0; indx < node_ids.size(); ++indx) {
-        nodal_bathymetry[indx] = _nodes.at(node_ids[indx]).bathymetry;
-    }
-    return nodal_bathymetry;
 }

@@ -5,9 +5,7 @@
 
 HPX_REGISTER_CHANNEL(array_double);
 
-HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
-                                 const uint locality_id,
-                                 const uint submesh_id) {
+HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file, uint locality_id, uint submesh_id) {
     std::ifstream file(neighborhood_data_file);
 
     if (!file) {
@@ -29,15 +27,9 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
         std::string neighbor_location;
 
         if (locality_A == locality_id && submesh_A == submesh_id) {
-            rank_boundary.neighbor_locality_id = locality_B;
-            rank_boundary.neighbor_submesh_id = submesh_B;
-
             my_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
             neighbor_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
         } else {
-            rank_boundary.neighbor_locality_id = locality_A;
-            rank_boundary.neighbor_submesh_id = submesh_A;
-
             my_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
             neighbor_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
         }

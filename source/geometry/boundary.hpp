@@ -38,7 +38,7 @@ class Boundary {
     Array2D<double> int_fact_phi;
 
   public:
-    Boundary(const RawBoundary<dimension, DataType>&, BoundaryType boundary_condition = BoundaryType());
+    Boundary(const RawBoundary<dimension, DataType>&, const BoundaryType& boundary_condition = BoundaryType());
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     double IntegrationPhi(uint, const std::vector<double>&);
@@ -50,7 +50,7 @@ class Boundary {
 template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
-    BoundaryType boundary_condition)
+    const BoundaryType& boundary_condition)
     : boundary_condition(std::move(boundary_condition)), data(raw_boundary.data) {
     IntegrationType integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =

@@ -18,7 +18,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
   public:
     HPXSimulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
-    HPXSimulation(std::string input_string, uint locality_id, uint submesh_id)
+    HPXSimulation(const std::string& input_string, uint locality_id, uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
@@ -43,13 +43,11 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulation<ProblemType>::Run() {
-    // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
-    // the nice std::for_each notation without having to define stepper within each element
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
 
-    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
+    uint n_steps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
@@ -62,7 +60,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     hpx::future<void> timestep_future = hpx::make_ready_future();
     uint timestamp = 0;
 
-    for (uint step = 1; step <= nsteps; step++) {
+    for (uint step = 1; step <= n_steps; step++) {
         for (uint stage = 0; stage < n_stages; stage++) {
             timestep_future = timestep_future.then([this, timestamp](hpx::future<void>&& timestep_future) {
                 std::ofstream log_file(this->log_file_name, std::ofstream::app);

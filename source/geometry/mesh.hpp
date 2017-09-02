@@ -20,8 +20,6 @@ class Mesh<std::tuple<Elements...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>> {
   private:
-    std::string mesh_name;
-
     using MasterElementTypes = typename make_master_type<std::tuple<Elements...>>::type;
     using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
     using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
@@ -34,6 +32,8 @@ class Mesh<std::tuple<Elements...>,
     BoundaryContainer boundaries;
     DistributedBoundariesContainer distributed_boundaries;
 
+    std::string mesh_name;
+
   public:
     Mesh(uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
@@ -45,28 +45,28 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberBoundaries() { return this->boundaries.size(); }
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
-    template <typename Element, typename... Args>
+    template <typename ElementType, typename... Args>
     void CreateElement(uint n, Args&&... args) {
-        using MasterType = typename Element::ElementMasterType;
+        using MasterType = typename ElementType::ElementMasterType;
 
         MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
 
-        this->elements.template emplace<Element>(n, Element(n, master_elt, std::forward<Args>(args)...));
+        this->elements.template emplace<ElementType>(n, ElementType(n, master_elt, std::forward<Args>(args)...));
     }
 
-    template <typename Interface, typename... Args>
+    template <typename InterfaceType, typename... Args>
     void CreateInterface(Args&&... args) {
-        this->interfaces.template emplace_back<Interface>(std::forward<Args>(args)...);
+        this->interfaces.template emplace_back<InterfaceType>(std::forward<Args>(args)...);
     }
 
-    template <typename Boundary, typename... Args>
+    template <typename BoundaryType, typename... Args>
     void CreateBoundary(Args&&... args) {
-        this->boundaries.template emplace_back<Boundary>(std::forward<Args>(args)...);
+        this->boundaries.template emplace_back<BoundaryType>(std::forward<Args>(args)...);
     }
 
-    template <typename DistributedBoundary, typename... Args>
+    template <typename DistributedBoundaryType, typename... Args>
     void CreateDistributedBoundary(Args&&... args) {
-        this->distributed_boundaries.template emplace_back<DistributedBoundary>(std::forward<Args>(args)...);
+        this->distributed_boundaries.template emplace_back<DistributedBoundaryType>(std::forward<Args>(args)...);
     }
 
     template <typename F>
