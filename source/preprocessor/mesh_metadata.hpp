@@ -11,16 +11,16 @@ struct NodeMetaData {
 
     friend std::ostream& operator<<(std::ostream& s, const NodeMetaData& node) {
         return s << std::setprecision(15) << node.coordinates[0] << " " << node.coordinates[1] << " "
-                 << node.coordinates[3];
+                 << node.coordinates[2];
     }
 
     friend std::istream& operator>>(std::istream& s, NodeMetaData& node) {
-        return s >> node.coordinates[0] >> node.coordinates[1] >> node.coordinates[3];
+        return s >> node.coordinates[0] >> node.coordinates[1] >> node.coordinates[2];
     }
 
     friend bool operator==(const NodeMetaData& lhs, const NodeMetaData& rhs) {
         return (lhs.coordinates[0] == rhs.coordinates[0]) && (lhs.coordinates[1] == rhs.coordinates[1]) &&
-               (lhs.coordinates[3] == rhs.coordinates[3]);
+               (lhs.coordinates[2] == rhs.coordinates[2]);
     }
 };
 

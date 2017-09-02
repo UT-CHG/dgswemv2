@@ -7,6 +7,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         if (nod.first < 0) {
             throw std::logic_error("ERROR in mesh_metadata.cpp: Node ID is negative; not supported\n");
         }
+
         uint ID = nod.first;
         _nodes.insert({ID, {nod.second[0], nod.second[1], nod.second[2]}});
     }
@@ -124,12 +125,12 @@ void MeshMetaData::WriteTo(const std::string& file) {
 
 std::vector<Point<3>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
     const std::vector<uint>& node_ids = _elements.at(elt_id).node_ids;
- 
+
     std::vector<Point<3>> nodal_coordinates(node_ids.size());
- 
+
     for (uint indx = 0; indx < node_ids.size(); ++indx) {
         nodal_coordinates[indx] = _nodes.at(node_ids[indx]).coordinates;
     }
-    
+
     return nodal_coordinates;
 }

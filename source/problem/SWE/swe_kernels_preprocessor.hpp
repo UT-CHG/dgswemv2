@@ -58,7 +58,7 @@ void Problem::create_distributed_boundaries_kernel(
     typename DistributedBoundaryType::BoundaryIntegrationType boundary_integration;
 
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
-        const typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
+        typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
         std::vector<double>& send_buffer_reference = rank_boundary.send_buffer;
         std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
@@ -113,7 +113,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& 
     for (const auto& elt : mesh_data._elements) {
         auto nodal_coordinates = mesh_data.GetNodalCoordinates(elt.first);
 
-        for (auto& node_coordinate : nodal_coordinates){
+        for (auto& node_coordinate : nodal_coordinates) {
             bathymetry_temp.push_back(node_coordinate[GlobalCoord::z]);
         }
 

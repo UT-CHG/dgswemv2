@@ -36,14 +36,12 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const
 
         auto nodal_coordinates = mesh_data.GetNodalCoordinates(elt_id);
 
-        for (auto& node_coordinate : nodal_coordinates){
+        for (auto& node_coordinate : nodal_coordinates) {
             nodal_coords_temp.push_back({node_coordinate[GlobalCoord::x], node_coordinate[GlobalCoord::y]});
         }
 
-        mesh.template CreateElement<ElementType>(elt_id,
-                                                 nodal_coords_temp,
-                                                 element_meta.second.neighbor_ID,
-                                                 element_meta.second.boundary_type);
+        mesh.template CreateElement<ElementType>(
+            elt_id, nodal_coords_temp, element_meta.second.neighbor_ID, element_meta.second.boundary_type);
         nodal_coords_temp.clear();
     }
 
