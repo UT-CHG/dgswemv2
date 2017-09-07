@@ -123,7 +123,7 @@ if [ ! -d ${JEMALLOC_BUILD} ]; then
     set -e
     mkdir -p ${JEMALLOC_BUILD}
     cd ${JEMALLOC_BUILD}
-    wget http://www.canonware.com/download/jemalloc/jemalloc-3.6.0.tar.bz2
+    wget https://github.com/jemalloc/jemalloc/releases/download/3.6.0/jemalloc-3.6.0.tar.bz2
     tar xf jemalloc-3.6.0.tar.bz2
     cd jemalloc-3.6.0
     ./configure --prefix=$INSTALL_PATH
