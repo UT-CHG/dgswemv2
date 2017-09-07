@@ -67,19 +67,50 @@ hpx::future<void> local_main(std::string input_string, std::string mesh_file_nam
 
     const uint locality_id = hpx::get_locality_id();
 
-    std::vector<hpx::future<void>> futures;
-
     std::string mesh_file_prefix = mesh_file_name;
     mesh_file_prefix.erase(mesh_file_prefix.size() - 3);
     mesh_file_prefix += '_' + std::to_string(locality_id) + '_';
 
+    std::vector<HPXSimulationClient<SWE::Problem>> clients;
+
     uint submesh_id = 0;
+    std::vector<hpx::future<void>> timestep_futures;
+    /*
     while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
         futures.push_back(hpx::async<solve_mesh_action>(here, input_string, submesh_id));
         ++submesh_id;
-    }
+    }   
 
     return hpx::when_all(futures);
+    */
+    std::vector<hpx::future<uint>> launch_futures;
+
+    while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
+        hpx::future<hpx::id_type> simulation_id =
+            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), submesh_id);
+
+        clients.push_back(HPXSimulationClient<SWE::Problem>(std::move(simulation_id)));
+	
+	timestep_futures.push_back(hpx::make_ready_future());
+        
+	launch_futures.push_back(clients[submesh_id].Launch());
+
+	++submesh_id;
+    }
+ 
+    wait_all(launch_futures);
+    
+    uint nsteps = launch_futures.begin()->get();
+    
+    for (uint i = 1; i <= nsteps; i++) {
+        for (uint client = 0; client < clients.size(); client++) {
+            timestep_futures[client] = timestep_futures[client].then([&clients, client](auto&&) { return clients[client].Timestep(); });
+        }
+    }
+
+    hpx::wait_all(timestep_futures);
+
+    return hpx::make_ready_future();
 }
 
 hpx::future<void> solve_mesh(std::string input_string, uint submesh_id) {

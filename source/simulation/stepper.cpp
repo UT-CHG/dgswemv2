@@ -1,6 +1,7 @@
 #include "stepper.hpp"
 
-Stepper::Stepper(uint nstages, uint order, double dt) : nstages(nstages), irk(0), drk(nstages, 0), _t(0.), _dt(dt) {
+Stepper::Stepper(uint nstages, uint order, double dt)
+    : nstages(nstages), irk(0), drk(nstages, 0), step(0), timestamp(0), _t(0.), _dt(dt) {
     // Allocate the time stepping arrays
     ark.reserve(nstages);
     brk.reserve(nstages);
