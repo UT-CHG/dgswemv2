@@ -10,8 +10,8 @@ mesh:
 
 timestepping:
   dt: 1 #seconds
-  end_time: 3600 #seconds
-  order: 1
-  nstages: 1
+  end_time: 43200 #seconds
+  order: 2
+  nstages: 2
 
 polynomial_order: 1
