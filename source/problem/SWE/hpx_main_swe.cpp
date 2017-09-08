@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 }
 
 int hpx_main(int argc, char* argv[]) {
-    std::string input_file = std::string(argv[1]);
+    std::string input_string = std::string(argv[1]);
 
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
@@ -44,7 +44,7 @@ int hpx_main(int argc, char* argv[]) {
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
-        hpx::future<hpx::id_type> simulation_id = hpx::new_<hpx_simulation_swe_component>(locality, input_file);
+        hpx::future<hpx::id_type> simulation_id = hpx::new_<hpx_simulation_swe_component>(locality, string_file);
 
         simulation_clients.emplace_back(std::move(simulation_id));
     }
@@ -62,5 +62,5 @@ int hpx_main(int argc, char* argv[]) {
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << "\n";
 
-    return hpx::finalize();  // Handles HPX shutdown
+    return hpx::finalize();
 }

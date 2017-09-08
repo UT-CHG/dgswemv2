@@ -43,8 +43,8 @@ struct SimulationUnit : public hpx::components::simple_component_base<Simulation
     hpx::future<void> Stage();
     HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Stage, StageAction);
 
-    void Timestep();
-    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Timestep, TimestepAction);
+    void Step();
+    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Step, StepAction);
 };
 
 template <typename ProblemType>
@@ -130,7 +130,7 @@ hpx::future<void> SimulationUnit<ProblemType>::Stage() {
 }
 
 template <typename ProblemType>
-void SimulationUnit<ProblemType>::Timestep() {
+void SimulationUnit<ProblemType>::Step() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -164,8 +164,8 @@ class SimulationUnitClient
         return hpx::async<ActionType>(this->get_id());
     }
 
-    hpx::future<void> Timestep() {
-        using ActionType = typename SimulationUnit<ProblemType>::TimestepAction;
+    hpx::future<void> Step() {
+        using ActionType = typename SimulationUnit<ProblemType>::StepAction;
         return hpx::async<ActionType>(this->get_id());
     }
 };
@@ -230,7 +230,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
             simulation_futures[sim_id] =
                 simulation_futures[sim_id]
-                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Timestep(); });
+                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
 
