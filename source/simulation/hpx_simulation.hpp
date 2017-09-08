@@ -40,8 +40,11 @@ struct SimulationUnit : public hpx::components::simple_component_base<Simulation
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Launch, LaunchAction);
 
-    /*hpx::future<void> Timestep();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Timestep, TimestepAction);*/
+    hpx::future<void> Stage();
+    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Stage, StageAction);
+
+    void Timestep();
+    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Timestep, TimestepAction);
 };
 
 template <typename ProblemType>
@@ -61,6 +64,88 @@ void SimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
+hpx::future<void> SimulationUnit<ProblemType>::Stage() {
+            std::ofstream log_file(this->log_file_name, std::ofstream::app);
+#ifdef VERBOSE
+            log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
+                     << this->stepper.get_stage() << ')' << std::endl;
+
+            log_file << "Starting work before receive" << std::endl;
+#endif
+            auto distributed_boundary_send_kernel = [this](auto& dbound) {
+                ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
+            };
+
+            auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
+
+            auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
+
+            auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
+
+            hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
+            
+            this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
+
+            this->communicator.SendAll(this->stepper.get_timestamp());
+
+            this->mesh.CallForEachElement(volume_kernel);
+
+            this->mesh.CallForEachElement(source_kernel);
+
+            this->mesh.CallForEachInterface(interface_kernel);
+#ifdef VERBOSE
+            log_file << "Finished work before receive" << std::endl
+                     << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
+#endif
+            return receive_future.then([this](auto&&) {
+                std::ofstream log_file(this->log_file_name, std::ofstream::app);
+#ifdef VERBOSE
+                log_file << "Starting work after receive" << std::endl;
+#endif
+                auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+
+                auto distributed_boundary_kernel = [this](auto& dbound) {
+                    ProblemType::distributed_boundary_kernel(this->stepper, dbound);
+                };
+
+                auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
+
+                auto scrutinize_solution_kernel = [this](auto& elt) {
+                    ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+                };
+
+                this->mesh.CallForEachBoundary(boundary_kernel);
+
+                this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
+
+                this->mesh.CallForEachElement(update_kernel);
+
+                this->mesh.CallForEachElement(scrutinize_solution_kernel);
+
+                ++(this->stepper);
+#ifdef VERBOSE
+                log_file << "Finished work after receive" << std::endl << std::endl;
+#endif
+            });
+}
+
+template <typename ProblemType>
+hpx::future<void> SimulationUnit<ProblemType>::Timestep() {    
+    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
+
+    this->mesh.CallForEachElement(swap_states_kernel);
+
+    if (this->stepper.get_step() % 360 == 0) {
+        std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+        log_file << "Step: " << this->stepper.get_step() << std::endl;
+
+        ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+        ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    }
+}
+
+template <typename ProblemType>
 class SimulationUnitClient
     : hpx::components::client_base<SimulationUnitClient<ProblemType>, SimulationUnit<ProblemType>> {
   private:
@@ -68,15 +153,21 @@ class SimulationUnitClient
 
   public:
     SimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    
     hpx::future<void> Launch() {
         using ActionType = typename SimulationUnit<ProblemType>::LaunchAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
-    /*hpx::future<void> Timestep() {
+    hpx::future<void> Stage() {
+        using ActionType = typename HPXSimulation<ProblemType>::StageAction;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
+    hpx::future<void> Timestep() {
         using ActionType = typename HPXSimulation<ProblemType>::TimestepAction;
         return hpx::async<ActionType>(this->get_id());
-    }*/
+    }
 };
 
 template <typename ProblemType>
@@ -119,97 +210,6 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
 };
 
-/*template <typename ProblemType>
-hpx::future<void> HPXSimulation<ProblemType>::Timestep() {
-    uint n_stages = this->stepper.get_num_stages();
-
-    hpx::future<void> timestep_future = hpx::make_ready_future();
-
-    for (uint stage = 0; stage < n_stages; stage++) {
-        timestep_future = timestep_future.then([this](hpx::future<void>&& timestep_future) {
-            std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#ifdef VERBOSE
-            log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                     << this->stepper.get_stage() << ')' << std::endl;
-
-            log_file << "Starting work before receive" << std::endl;
-#endif
-            auto distributed_boundary_send_kernel = [this](auto& dbound) {
-                ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
-            };
-
-            auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
-
-            auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
-
-            auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
-
-            this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
-
-            this->communicator.SendAll(this->stepper.get_timestamp());
-
-            hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
-
-            this->mesh.CallForEachElement(volume_kernel);
-
-            this->mesh.CallForEachElement(source_kernel);
-
-            this->mesh.CallForEachInterface(interface_kernel);
-#ifdef VERBOSE
-            log_file << "Finished work before receive" << std::endl
-                     << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
-#endif
-            return receive_future.then([this](hpx::future<void>&& receive_future) {
-                std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#ifdef VERBOSE
-                log_file << "Starting work after receive" << std::endl;
-#endif
-                auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
-                auto distributed_boundary_kernel = [this](auto& dbound) {
-                    ProblemType::distributed_boundary_kernel(this->stepper, dbound);
-                };
-
-                auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
-
-                auto scrutinize_solution_kernel = [this](auto& elt) {
-                    ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-                };
-
-                this->mesh.CallForEachBoundary(boundary_kernel);
-
-                this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
-
-                this->mesh.CallForEachElement(update_kernel);
-
-                this->mesh.CallForEachElement(scrutinize_solution_kernel);
-
-                ++(this->stepper);
-#ifdef VERBOSE
-                log_file << "Finished work after receive" << std::endl << std::endl;
-#endif
-            });
-        });
-    }
-
-    timestep_future = timestep_future.then([this](hpx::future<void>&& timestep_future) {
-        auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
-        this->mesh.CallForEachElement(swap_states_kernel);
-
-        if (this->stepper.get_step() % 360 == 0) {
-            std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
-            log_file << "Step: " << this->stepper.get_step() << std::endl;
-
-            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-            ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-        }
-    });
-
-    return timestep_future;
-}*/
-
 template <typename ProblemType>
 hpx::future<void> HPXSimulation<ProblemType>::Run() {
     std::vector<hpx::future<void>> timestep_futures;// = this->simulation_unit_clients[0].Launch();
@@ -218,108 +218,16 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         timestep_futures.push_back(sim_unit_client.Launch());
     }
 
-    /*std::ofstream log_file(this->simulation_units[2].log_file_name, std::ofstream::app);
-
-    log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
-
-    auto resize_data_container = [this](auto& elt) { elt.data.resize(this->n_stages); };
-
-    this->simulation_units[2].mesh.CallForEachElement(resize_data_container);
-
-    ProblemType::write_VTK_data_kernel(this->simulation_units[2].stepper, this->simulation_units[2].mesh);
-    ProblemType::write_modal_data_kernel(this->simulation_units[2].stepper, this->simulation_units[2].mesh);
-    */
-    //hpx::future<void> timestep_future = hpx::make_ready_future();
-    /*
-    for (uint step = 1; step <= n_steps; step++) {
-        for (uint stage = 0; stage < n_stages; stage++) {
-            timestep_future = timestep_future.then([this](hpx::future<void>&& timestep_future) {
-                std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#ifdef VERBOSE
-                log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                         << this->stepper.get_stage() << ')' << std::endl;
-
-                log_file << "Starting work before receive" << std::endl;
-#endif
-                auto distributed_boundary_send_kernel = [this](auto& dbound) {
-                    ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
-                };
-
-                auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
-
-                auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
-
-                auto interface_kernel = [this](auto& intface) {
-                    ProblemType::interface_kernel(this->stepper, intface);
-                };
-
-                this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
-
-                this->communicator.SendAll(this->stepper.get_timestamp());
-
-                hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
-
-                this->mesh.CallForEachElement(volume_kernel);
-
-                this->mesh.CallForEachElement(source_kernel);
-
-                this->mesh.CallForEachInterface(interface_kernel);
-#ifdef VERBOSE
-                log_file << "Finished work before receive" << std::endl
-                         << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() <<
-std::endl;
-#endif
-                return receive_future.then([this](hpx::future<void>&& receive_future) {
-                    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#ifdef VERBOSE
-                    log_file << "Starting work after receive" << std::endl;
-#endif
-                    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
-                    auto distributed_boundary_kernel = [this](auto& dbound) {
-                        ProblemType::distributed_boundary_kernel(this->stepper, dbound);
-                    };
-
-                    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
-
-                    auto scrutinize_solution_kernel = [this](auto& elt) {
-                        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-                    };
-
-                    this->mesh.CallForEachBoundary(boundary_kernel);
-
-                    this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
-
-                    this->mesh.CallForEachElement(update_kernel);
-
-                    this->mesh.CallForEachElement(scrutinize_solution_kernel);
-
-                    ++(this->stepper);
-#ifdef VERBOSE
-                    log_file << "Finished work after receive" << std::endl << std::endl;
-#endif
-                });
+    for (uint step = 1; step < this->n_steps; step++) {
+        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+            timestep_futures[i] = timestep_futures[i].then([this, sim_id](auto&&){
+                return this->simulation_unit_clients[sim_id].Stage();
             });
-        }
-
-        timestep_future = timestep_future.then([this, step](hpx::future<void>&& timestep_future) {
-            auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
-            this->mesh.CallForEachElement(swap_states_kernel);
-
-            if (step % 360 == 0) {
-                std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
-                log_file << "Step: " << step << std::endl;
-
-                ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-                ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-            }
-        });
+        }    
     }
 
     log_file << std::endl << "Finished scheduling tasks!" << std::endl << std::endl;
-    */
+    
     return hpx::when_all(timestep_futures);
 }
 
@@ -330,16 +238,6 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 
   public:
     HPXSimulationClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
-
-    /*    hpx::future<uint> Launch() {
-            using ActionType = typename HPXSimulation<ProblemType>::LaunchAction;
-            return hpx::async<ActionType>(this->get_id());
-        }
-
-        hpx::future<void> Timestep() {
-            using ActionType = typename HPXSimulation<ProblemType>::TimestepAction;
-            return hpx::async<ActionType>(this->get_id());
-        }*/
 
     hpx::future<void> Run() {
         using ActionType = typename HPXSimulation<ProblemType>::RunAction;
