@@ -173,9 +173,9 @@ class SimulationUnitClient
 template <typename ProblemType>
 class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
   private:
-    uint n_stages;
     uint n_steps;
-
+    uint n_stages;
+    
     std::vector<SimulationUnitClient<ProblemType>> simulation_unit_clients;
 
   public:
@@ -212,21 +212,28 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulation<ProblemType>::Run() {
-    std::vector<hpx::future<void>> timestep_futures;  // = this->simulation_unit_clients[0].Launch();
+    std::vector<hpx::future<void>> simulation_futures;  // = this->simulation_unit_clients[0].Launch();
 
     for (auto& sim_unit_client : this->simulation_unit_clients) {
-        timestep_futures.push_back(sim_unit_client.Launch());
+        simulation_futures.push_back(sim_unit_client.Launch());
     }
 
     for (uint step = 1; step < this->n_steps; step++) {
-        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-            timestep_futures[sim_id] =
-                timestep_futures[sim_id]
+        for (uint stage = 0; stage < this->n_stages; stage++) {
+            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+            simulation_futures[sim_id] =
+                simulation_futures[sim_id]
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Stage(); });
+            }
         }
+        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+            simulation_futures[sim_id] =
+                simulation_futures[sim_id]
+                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Timestep(); });
+            }
     }
 
-    return hpx::when_all(timestep_futures);
+    return hpx::when_all(simulation_futures);
 }
 
 template <typename ProblemType>
