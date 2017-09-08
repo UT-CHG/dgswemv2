@@ -32,4 +32,5 @@ struct InputParameters {
 
     uint polynomial_order;
 };
+
 #endif

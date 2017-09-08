@@ -16,14 +16,9 @@
 
 #include "simulation/hpx_simulation.hpp"
 
-#include "preprocessor/input_parameters.hpp"
-#include "utilities/file_exists.hpp"
-
-hpx::future<void> local_main(std::string, std::string);
-HPX_PLAIN_ACTION(local_main, local_main_action);
-
-hpx::future<void> solve_mesh(std::string, uint);
-HPX_PLAIN_ACTION(solve_mesh, solve_mesh_action);
+using simulation_unit_swe = SimulationUnit<SWE::Problem>;
+using simulation_unit_swe_component = hpx::components::simple_component<SimulationUnit<SWE::Problem>>;
+HPX_REGISTER_COMPONENT(simulation_unit_swe_component, simulation_unit_swe);
 
 using hpx_simulation_swe = HPXSimulation<SWE::Problem>;
 using hpx_simulation_swe_component = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;
@@ -41,93 +36,31 @@ int main(int argc, char* argv[]) {
 
 int hpx_main(int argc, char* argv[]) {
     std::string input_file = std::string(argv[1]);
-    InputParameters inputs(input_file);
 
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
-    std::vector<hpx::future<void>> futures;
-    futures.reserve(localities.size());
+    std::vector<HPXSimulationClient<SWE::Problem>> simulation_clients;
+    simulation_clients.reserve(localities.size());
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (hpx::naming::id_type const& node : localities) {
-        futures.push_back(hpx::async<local_main_action>(node, input_file, inputs.mesh_file_name));
+    for (hpx::naming::id_type const& locality : localities) {
+        hpx::future<hpx::id_type> simulation_id = hpx::new_<hpx_simulation_swe_component>(locality, input_file);
+
+        simulation_clients.emplace_back(std::move(simulation_id));
     }
 
-    hpx::wait_all(futures);
+    std::vector<hpx::future<void>> run_futures;
+    run_futures.reserve(simulation_clients.size());
+
+    for (auto& sim_client : simulation_clients) {
+        run_futures.push_back(sim_client.Run());
+    }
+
+    hpx::wait_all(run_futures);
     auto t2 = std::chrono::high_resolution_clock::now();
 
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << "\n";
 
     return hpx::finalize();  // Handles HPX shutdown
-}
-
-hpx::future<void> local_main(std::string input_string, std::string mesh_file_name) {
-    const hpx::naming::id_type here = hpx::find_here();
-
-    const uint locality_id = hpx::get_locality_id();
-
-    std::string mesh_file_prefix = mesh_file_name;
-    mesh_file_prefix.erase(mesh_file_prefix.size() - 3);
-    mesh_file_prefix += '_' + std::to_string(locality_id) + '_';
-
-    std::vector<HPXSimulationClient<SWE::Problem>> clients;
-
-    uint submesh_id = 0;
-    std::vector<hpx::future<void>> timestep_futures;
-    /*
-    while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
-        futures.push_back(hpx::async<solve_mesh_action>(here, input_string, submesh_id));
-        ++submesh_id;
-    }   
-
-    return hpx::when_all(futures);
-    */
-    std::vector<hpx::future<uint>> launch_futures;
-
-    while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
-        hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), submesh_id);
-
-        clients.push_back(HPXSimulationClient<SWE::Problem>(std::move(simulation_id)));
-	
-	timestep_futures.push_back(hpx::make_ready_future());
-        
-	launch_futures.push_back(clients[submesh_id].Launch());
-
-	++submesh_id;
-    }
- 
-    wait_all(launch_futures);
-    
-    uint nsteps = launch_futures.begin()->get();
-    
-    for (uint i = 1; i <= nsteps; i++) {
-        for (uint client = 0; client < clients.size(); client++) {
-            timestep_futures[client] = timestep_futures[client].then([&clients, client](auto&&) { return clients[client].Timestep(); });
-        }
-    }
-
-    hpx::wait_all(timestep_futures);
-
-    return hpx::make_ready_future();
-}
-
-hpx::future<void> solve_mesh(std::string input_string, uint submesh_id) {
-    try {
-        const hpx::naming::id_type here = hpx::find_here();
-
-        hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), submesh_id);
-
-        HPXSimulationClient<SWE::Problem> simulation_client(std::move(simulation_id));
-
-        return simulation_client.Run();
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Exception caught\n";
-        std::cerr << "  " << e.what() << std::endl;
-
-        return hpx::make_ready_future();
-    }
 }
