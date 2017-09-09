@@ -1,8 +1,8 @@
 #ifndef HPX_COMMUNICATOR_HPP
 #define HPX_COMMUNICATOR_HPP
 
+#include "../general_definitions.hpp"
 #include <hpx/hpx.hpp>
-#include <vector>
 
 using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
