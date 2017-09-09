@@ -42,16 +42,25 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 
     if (bound_id == 0) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
+            assert( std::abs(z_boundary[gp][LocalCoordTri::z1])
+                    < 1 + 100*std::numeric_limits<decltype(z_boundary[gp][LocalCoordTri::z1])>::epsilon());
+
             z_master[gp][LocalCoordTri::z1] = -z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = z_boundary[gp][LocalCoordTri::z1];
         }
     } else if (bound_id == 1) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
+            assert( std::abs(z_boundary[gp][LocalCoordTri::z1])
+                    < 1 + 100*std::numeric_limits<decltype(z_boundary[gp][LocalCoordTri::z1])>::epsilon());
+
             z_master[gp][LocalCoordTri::z1] = -1;
             z_master[gp][LocalCoordTri::z2] = -z_boundary[gp][LocalCoordTri::z1];
         }
     } else if (bound_id == 2) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
+            assert( std::abs(z_boundary[gp][LocalCoordTri::z1])
+                    < 1 + 100*std::numeric_limits<decltype(z_boundary[gp][LocalCoordTri::z1])>::epsilon());
+
             z_master[gp][LocalCoordTri::z1] = z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = -1;
         }
