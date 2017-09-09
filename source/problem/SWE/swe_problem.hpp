@@ -1,9 +1,12 @@
 #ifndef SWE_PROBLEM_HPP
 #define SWE_PROBLEM_HPP
 
+#include "../../simulation/stepper.hpp"
+
 #include "swe_definitions.hpp"
 #include "swe_boundary_conditions.hpp"
 #include "swe_data.hpp"
+
 #include "../../geometry/mesh_definitions.hpp"
 #include "../../preprocessor/mesh_metadata.hpp"
 

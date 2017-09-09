@@ -8,7 +8,8 @@
 #include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
-struct SimulationUnit : public hpx::components::simple_component_base<SimulationUnit<ProblemType>> {
+class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
+private:
     InputParameters input;
 
     Stepper stepper;
@@ -16,9 +17,9 @@ struct SimulationUnit : public hpx::components::simple_component_base<Simulation
     HPXCommunicator communicator;
 
     std::string log_file_name;
-
-    SimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
-    SimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
+public:
+    HPXSimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
@@ -38,17 +39,17 @@ struct SimulationUnit : public hpx::components::simple_component_base<Simulation
     }
 
     void Launch();
-    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Launch, LaunchAction);
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
 
     hpx::future<void> Stage();
-    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Stage, StageAction);
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
 
     void Step();
-    HPX_DEFINE_COMPONENT_ACTION(SimulationUnit, Step, StepAction);
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
 };
 
 template <typename ProblemType>
-void SimulationUnit<ProblemType>::Launch() {
+void HPXSimulationUnit<ProblemType>::Launch() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
@@ -64,7 +65,7 @@ void SimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-hpx::future<void> SimulationUnit<ProblemType>::Stage() {
+hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
@@ -130,7 +131,7 @@ hpx::future<void> SimulationUnit<ProblemType>::Stage() {
 }
 
 template <typename ProblemType>
-void SimulationUnit<ProblemType>::Step() {
+void HPXSimulationUnit<ProblemType>::Step() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -146,26 +147,26 @@ void SimulationUnit<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
-class SimulationUnitClient
-    : hpx::components::client_base<SimulationUnitClient<ProblemType>, SimulationUnit<ProblemType>> {
+class HPXSimulationUnitClient
+    : hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>> {
   private:
-    using BaseType = hpx::components::client_base<SimulationUnitClient<ProblemType>, SimulationUnit<ProblemType>>;
+    using BaseType = hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>>;
 
   public:
-    SimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
 
     hpx::future<void> Launch() {
-        using ActionType = typename SimulationUnit<ProblemType>::LaunchAction;
+        using ActionType = typename HPXSimulationUnit<ProblemType>::LaunchAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<void> Stage() {
-        using ActionType = typename SimulationUnit<ProblemType>::StageAction;
+        using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<void> Step() {
-        using ActionType = typename SimulationUnit<ProblemType>::StepAction;
+        using ActionType = typename HPXSimulationUnit<ProblemType>::StepAction;
         return hpx::async<ActionType>(this->get_id());
     }
 };
@@ -176,7 +177,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     uint n_steps;
     uint n_stages;
 
-    std::vector<SimulationUnitClient<ProblemType>> simulation_unit_clients;
+    std::vector<HPXSimulationUnitClient<ProblemType>> simulation_unit_clients;
 
   public:
     HPXSimulation() = default;
@@ -196,11 +197,10 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         uint submesh_id = 0;
         while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
             hpx::future<hpx::id_type> simulation_unit_id =
-                hpx::new_<hpx::components::simple_component<SimulationUnit<ProblemType>>>(
+                hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
                     here, input_string, locality_id, submesh_id);
 
-            this->simulation_unit_clients.emplace_back(
-                SimulationUnitClient<ProblemType>(std::move(simulation_unit_id)));
+            this->simulation_unit_clients.emplace_back(std::move(simulation_unit_id));
 
             ++submesh_id;
         }

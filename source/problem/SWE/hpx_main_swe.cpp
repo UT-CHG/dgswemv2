@@ -7,8 +7,6 @@
 
 #include "general_definitions.hpp"
 
-#include "simulation/stepper.hpp"
-
 #include "swe_problem.hpp"
 #include "swe_kernels_preprocessor.hpp"
 #include "swe_kernels_processor.hpp"
@@ -16,8 +14,8 @@
 
 #include "simulation/hpx_simulation.hpp"
 
-using simulation_unit_swe = SimulationUnit<SWE::Problem>;
-using simulation_unit_swe_component = hpx::components::simple_component<SimulationUnit<SWE::Problem>>;
+using hpx_simulation_unit_swe = HPXSimulationUnit<SWE::Problem>;
+using hpx_simulation_unit_swe_component = hpx::components::simple_component<HPXSimulationUnit<SWE::Problem>>;
 HPX_REGISTER_COMPONENT(simulation_unit_swe_component, simulation_unit_swe);
 
 using hpx_simulation_swe = HPXSimulation<SWE::Problem>;
@@ -44,7 +42,7 @@ int hpx_main(int argc, char* argv[]) {
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
-        hpx::future<hpx::id_type> simulation_id = hpx::new_<hpx_simulation_swe_component>(locality, input_string);
+        hpx::future<hpx::id_type> simulation_id = hpx::new_<hpx::components::simple_component<HPXSimulation<SWE::Problem>>>(locality, input_string);
 
         simulation_clients.emplace_back(std::move(simulation_id));
     }
