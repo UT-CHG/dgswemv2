@@ -219,6 +219,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         simulation_futures.push_back(sim_unit_client.Launch());
     }
 
+<<<<<<< HEAD
     for (uint step = 1; step < this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {
             for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
@@ -236,6 +237,23 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     return hpx::when_all(simulation_futures);
+=======
+    timestep_future = timestep_future.then([this](hpx::future<void>&& timestep_future) {
+        double residual_L2 = 0;
+
+        auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+            residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+        };
+
+        mesh.CallForEachElement(compute_residual_L2_kernel);
+
+        std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+        log_file << "residual L2 norm: " << sqrt(residual_L2) << std::endl;
+    });
+
+    return timestep_future;
+>>>>>>> hpx_manufactured
 }
 
 template <typename ProblemType>

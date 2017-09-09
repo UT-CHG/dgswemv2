@@ -68,7 +68,14 @@ struct Problem {
     static void extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<uint, Array2D<double>>>& modal_data);
 
     template <typename MeshType>
+<<<<<<< HEAD
     static void write_modal_data_kernel(const Stepper& stepper, MeshType& mesh);
+=======
+    static void write_modal_data_kernel(const Stepper&, MeshType&);
+
+    template <typename ElementType>
+    static double compute_residual_L2_kernel(const Stepper&, ElementType&);
+>>>>>>> hpx_manufactured
 };
 }
 
