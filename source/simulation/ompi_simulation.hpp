@@ -8,7 +8,7 @@
 #include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
-class OOMPISimulationUnit {
+class OMPISimulationUnit {
   private:
     InputParameters input;
 
@@ -19,9 +19,8 @@ class OOMPISimulationUnit {
     std::string log_file_name;
 
   public:
-    OOMPISimulationUnit()
-        : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
-    OOMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
+    OMPISimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
@@ -41,12 +40,14 @@ class OOMPISimulationUnit {
     }
 
     void Launch();
-    void Stage();
+    void ExchangeData();
+    void PreReceiveStage();
+    void PostReceiveStage();
     void Step();
 };
 
 template <typename ProblemType>
-void OOMPISimulationUnit<ProblemType>::Launch() {
+void OMPISimulationUnit<ProblemType>::Launch() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
@@ -62,29 +63,34 @@ void OOMPISimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-void OOMPISimulationUnit<ProblemType>::Stage() {
+void OMPISimulationUnit<ProblemType>::ExchangeData() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
              << ')' << std::endl;
-
-    log_file << "Starting work before receive" << std::endl;
 #endif
     auto distributed_boundary_send_kernel = [this](auto& dbound) {
         ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
     };
 
+    this->communicator.ReceiveAll(this->stepper.get_timestamp());
+
+    this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
+
+    this->communicator.SendAll(this->stepper.get_timestamp());
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+#ifdef VERBOSE
+    log_file << "Starting work before receive" << std::endl;
+#endif
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
 
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
-
-    //this->communicator.ReceiveAll(this->stepper.get_timestamp());
-
-    this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
-
-    //this->communicator.SendAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachElement(volume_kernel);
 
@@ -92,12 +98,17 @@ void OOMPISimulationUnit<ProblemType>::Stage() {
 
     this->mesh.CallForEachInterface(interface_kernel);
 #ifdef VERBOSE
-    log_file << "Finished work before receive" << std::endl
-             << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
+    log_file << "Finished work before receive" << std::endl;
 #endif
+}
 
-    //this->communicator.WaitAllReceives(this->stepper.get_timestamp());
-
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+#ifdef VERBOSE
+    log_file << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
+#endif
+    this->communicator.WaitAllReceives(this->stepper.get_timestamp());
 #ifdef VERBOSE
     log_file << "Starting work after receive" << std::endl;
 #endif
@@ -119,9 +130,7 @@ void OOMPISimulationUnit<ProblemType>::Stage() {
 
     this->mesh.CallForEachElement(update_kernel);
 
-    //this->mesh.CallForEachElement(scrutinize_solution_kernel);
-
-    //this->communicator.WaitAllSends(this->stepper.get_timestamp());
+    this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
     ++(this->stepper);
 #ifdef VERBOSE
@@ -130,7 +139,7 @@ void OOMPISimulationUnit<ProblemType>::Stage() {
 }
 
 template <typename ProblemType>
-void OOMPISimulationUnit<ProblemType>::Step() {
+void OMPISimulationUnit<ProblemType>::Step() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -151,7 +160,7 @@ class OMPISimulation {
     uint n_steps;
     uint n_stages;
 
-    std::vector<OOMPISimulationUnit<ProblemType>*> simulation_units;
+    std::vector<OMPISimulationUnit<ProblemType>*> simulation_units;
 
   public:
     OMPISimulation() = default;
@@ -171,7 +180,7 @@ class OMPISimulation {
         uint submesh_id = 0;
         while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
             this->simulation_units.push_back(
-                new OOMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
+                new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;
         }
@@ -204,7 +213,15 @@ void OMPISimulation<ProblemType>::Run() {
         for (uint step = 1; step <= this->n_steps; step++) {
             for (uint stage = 0; stage < this->n_stages; stage++) {
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->Stage();
+                    this->simulation_units[sim_unit_id]->ExchangeData();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->PreReceiveStage();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->PostReceiveStage();
                 }
             }
 

@@ -18,18 +18,13 @@ struct OMPIRankBoundary {
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
 
-    MPI_Request send(uint timestamp) {
-        MPI_Request req;
-
-        MPI_Isend(&this->send_buffer.front(),
+    void send(uint timestamp) {
+        MPI_Bsend(&this->send_buffer.front(),
                   this->send_buffer.size(),
                   MPI_DOUBLE,
                   this->send_rank,
                   this->send_tag,
-                  MPI_COMM_WORLD,
-                  &req);
-
-        return req;
+                  MPI_COMM_WORLD);
     }
 
     MPI_Request receive(uint timestamp) {
@@ -51,10 +46,7 @@ class OMPICommunicator {
   private:
     std::vector<OMPIRankBoundary> rank_boundaries;
 
-    std::vector<MPI_Request> send_requests;
     std::vector<MPI_Request> receive_requests;
-
-    std::vector<MPI_Status> send_statuses;
     std::vector<MPI_Status> receive_statuses;
 
   public:
@@ -67,7 +59,6 @@ class OMPICommunicator {
     void SendAll(const uint timestamp);
     void ReceiveAll(const uint timestamp);
 
-    void WaitAllSends(const uint timestamp);
     void WaitAllReceives(const uint timestamp);
 
   public:

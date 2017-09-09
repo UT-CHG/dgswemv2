@@ -60,16 +60,13 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
         this->rank_boundaries.push_back(std::move(rank_boundary));
     }
 
-    this->send_requests.resize(this->GetRankBoundaryNumber());
     this->receive_requests.resize(this->GetRankBoundaryNumber());
-
-    this->send_statuses.resize(this->GetRankBoundaryNumber());
     this->receive_statuses.resize(this->GetRankBoundaryNumber());
 }
 
 void OMPICommunicator::SendAll(const uint timestamp) {
     for (uint rank_boundary_id = 0; rank_boundary_id < this->GetRankBoundaryNumber(); rank_boundary_id++) {
-        this->send_requests[rank_boundary_id] = this->rank_boundaries[rank_boundary_id].send(timestamp);
+        this->rank_boundaries[rank_boundary_id].send(timestamp);
     }
 }
 
@@ -77,10 +74,6 @@ void OMPICommunicator::ReceiveAll(const uint timestamp) {
     for (uint rank_boundary_id = 0; rank_boundary_id < this->GetRankBoundaryNumber(); rank_boundary_id++) {
         this->receive_requests[rank_boundary_id] = this->rank_boundaries[rank_boundary_id].receive(timestamp);
     }
-}
-
-void OMPICommunicator::WaitAllSends(const uint timestamp) {
-    MPI_Waitall(this->GetRankBoundaryNumber(), &this->send_requests.front(), &this->send_statuses.front());
 }
 
 void OMPICommunicator::WaitAllReceives(const uint timestamp) {
