@@ -57,7 +57,7 @@ void MPISimulationUnit<ProblemType>::Launch() {
     this->mesh.CallForEachElement(resize_data_container);
 
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    /*ProblemType::write_modal_data_kernel(this->stepper, this->mesh);*/
+    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 }
 
 template <typename ProblemType>
@@ -79,11 +79,11 @@ void MPISimulationUnit<ProblemType>::Stage() {
 
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
-    // hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
+    this->communicator.ReceiveAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
-    // this->communicator.SendAll(this->stepper.get_timestamp());
+    this->communicator.SendAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachElement(volume_kernel);
 
@@ -95,7 +95,7 @@ void MPISimulationUnit<ProblemType>::Stage() {
              << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
 #endif
 
-// MPI WAIT
+    this->communicator.WaitAllReceives(this->stepper.get_timestamp());
 
 #ifdef VERBOSE
     log_file << "Starting work after receive" << std::endl;
@@ -119,6 +119,8 @@ void MPISimulationUnit<ProblemType>::Stage() {
     this->mesh.CallForEachElement(update_kernel);
 
     this->mesh.CallForEachElement(scrutinize_solution_kernel);
+
+    this->communicator.WaitAllSends(this->stepper.get_timestamp());
 
     ++(this->stepper);
 #ifdef VERBOSE
@@ -182,7 +184,7 @@ void MPISimulation<ProblemType>::Run() {
         sim_unit->Launch();
     }
 
-    for (uint step = 1; step < this->n_steps; step++) {
+    for (uint step = 1; step <= this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {
             for (auto& sim_unit : this->simulation_units) {
                 sim_unit->Stage();

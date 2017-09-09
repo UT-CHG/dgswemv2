@@ -21,18 +21,15 @@ MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
 
         MPIRankBoundary rank_boundary;
 
-        std::string my_location;
-        std::string neighbor_location;
-
         if (locality_A == locality_id && submesh_A == submesh_id) {
             rank_boundary.send_rank = locality_B;
-            rank_boundary.receive_rank = locality_A;
+            rank_boundary.receive_rank = locality_B;
 
             rank_boundary.send_tag = (int)((unsigned short)submesh_A << 16 | (unsigned short)submesh_B);
             rank_boundary.receive_tag = (int)((unsigned short)submesh_B << 16 | (unsigned short)submesh_A);
         } else {
             rank_boundary.send_rank = locality_A;
-            rank_boundary.receive_rank = locality_B;
+            rank_boundary.receive_rank = locality_A;
 
             rank_boundary.send_tag = (int)((unsigned short)submesh_B << 16 | (unsigned short)submesh_A);
             rank_boundary.receive_tag = (int)((unsigned short)submesh_A << 16 | (unsigned short)submesh_B);
@@ -64,10 +61,10 @@ MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
     }
 
     this->send_requests.resize(this->GetRankBoundaryNumber());
-    this->receieve_requests.resize(this->GetRankBoundaryNumber());
-    
+    this->receive_requests.resize(this->GetRankBoundaryNumber());
+
     this->send_statuses.resize(this->GetRankBoundaryNumber());
-    this->receieve_statuses.resize(this->GetRankBoundaryNumber());
+    this->receive_statuses.resize(this->GetRankBoundaryNumber());
 }
 
 void MPICommunicator::SendAll(const uint timestamp) {
@@ -88,4 +85,4 @@ void MPICommunicator::WaitAllSends(const uint timestamp) {
 
 void MPICommunicator::WaitAllReceives(const uint timestamp) {
     MPI_Waitall(this->GetRankBoundaryNumber(), &this->receive_requests.front(), &this->receive_statuses.front());
-}        
+}

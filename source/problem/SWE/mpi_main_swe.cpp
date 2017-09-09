@@ -23,12 +23,14 @@ int main(int argc, char* argv[]) {
         MPISimulation<SWE::Problem> simulation(input_string);
 
         simulation.Run();
-        
+
+        MPI_Barrier(MPI_COMM_WORLD);
+
         MPI_Finalize();
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-            << "\n";
-        
+                  << "\n";
+
         return 0;
     }
 }

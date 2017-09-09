@@ -20,18 +20,30 @@ struct MPIRankBoundary {
 
     MPI_Request send(uint timestamp) {
         MPI_Request req;
-        
-        MPI_Isend(&this->send_buffer.front(), this->send_buffer.size(), MPI_DOUBLE, this->send_rank, this->send_tag, MPI_COMM_WORLD, &req);
-        
+
+        MPI_Isend(&this->send_buffer.front(),
+                  this->send_buffer.size(),
+                  MPI_DOUBLE,
+                  this->send_rank,
+                  this->send_tag,
+                  MPI_COMM_WORLD,
+                  &req);
+
         return req;
     }
 
-    void receive(uint timestamp) {
-      MPI_Request req;
-      
-      MPI_Irecv(&this->receive_buffer.front(), this->receive_buffer.size(), MPI_DOUBLE, this->receive_rank, this->receive_tag, MPI_COMM_WORLD, &req);
-      
-      return req;
+    MPI_Request receive(uint timestamp) {
+        MPI_Request req;
+
+        MPI_Irecv(&this->receive_buffer.front(),
+                  this->receive_buffer.size(),
+                  MPI_DOUBLE,
+                  this->receive_rank,
+                  this->receive_tag,
+                  MPI_COMM_WORLD,
+                  &req);
+
+        return req;
     }
 };
 
@@ -40,10 +52,10 @@ class MPICommunicator {
     std::vector<MPIRankBoundary> rank_boundaries;
 
     std::vector<MPI_Request> send_requests;
-    std::vector<MPI_Request> receieve_requests;
+    std::vector<MPI_Request> receive_requests;
 
     std::vector<MPI_Status> send_statuses;
-    std::vector<MPI_Status> receieve_statuses;
+    std::vector<MPI_Status> receive_statuses;
 
   public:
     MPICommunicator() = default;

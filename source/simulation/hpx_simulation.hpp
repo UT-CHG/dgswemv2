@@ -219,7 +219,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         simulation_futures.push_back(sim_unit_client.Launch());
     }
 
-    for (uint step = 1; step < this->n_steps; step++) {
+    for (uint step = 1; step <= this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {
             for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
                 simulation_futures[sim_id] =
