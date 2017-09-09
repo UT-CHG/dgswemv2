@@ -80,11 +80,11 @@ void OOMPISimulationUnit<ProblemType>::Stage() {
 
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
-    this->communicator.ReceiveAll(this->stepper.get_timestamp());
+    //this->communicator.ReceiveAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
-    this->communicator.SendAll(this->stepper.get_timestamp());
+    //this->communicator.SendAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachElement(volume_kernel);
 
@@ -96,7 +96,7 @@ void OOMPISimulationUnit<ProblemType>::Stage() {
              << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
 #endif
 
-    this->communicator.WaitAllReceives(this->stepper.get_timestamp());
+    //this->communicator.WaitAllReceives(this->stepper.get_timestamp());
 
 #ifdef VERBOSE
     log_file << "Starting work after receive" << std::endl;
@@ -119,9 +119,9 @@ void OOMPISimulationUnit<ProblemType>::Stage() {
 
     this->mesh.CallForEachElement(update_kernel);
 
-    this->mesh.CallForEachElement(scrutinize_solution_kernel);
+    //this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-    this->communicator.WaitAllSends(this->stepper.get_timestamp());
+    //this->communicator.WaitAllSends(this->stepper.get_timestamp());
 
     ++(this->stepper);
 #ifdef VERBOSE
@@ -182,19 +182,35 @@ class OMPISimulation {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
-    for (auto& sim_unit : this->simulation_units) {
-        sim_unit->Launch();
-    }
+#pragma omp parallel
+    {
+        uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
 
-    for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint stage = 0; stage < this->n_stages; stage++) {
-            for (auto& sim_unit : this->simulation_units) {
-                sim_unit->Stage();
-            }
+        n_threads = (uint)omp_get_num_threads();
+        thread_id = (uint)omp_get_thread_num();
+
+        sim_per_thread = this->simulation_units.size() / n_threads;
+
+        begin_sim_id = sim_per_thread * thread_id;
+        end_sim_id = sim_per_thread * (thread_id + 1);
+
+        if (end_sim_id > this->simulation_units.size())
+            end_sim_id = this->simulation_units.size();
+
+        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+            this->simulation_units[sim_unit_id]->Launch();
         }
 
-        for (auto& sim_unit : this->simulation_units) {
-            sim_unit->Step();
+        for (uint step = 1; step <= this->n_steps; step++) {
+            for (uint stage = 0; stage < this->n_stages; stage++) {
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->Stage();
+                }
+            }
+
+            for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                this->simulation_units[sim_unit_id]->Step();
+            }
         }
     }
 }
