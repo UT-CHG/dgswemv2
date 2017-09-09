@@ -1,9 +1,9 @@
-#include "mpi_communicator.hpp"
+#include "ompi_communicator.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
-MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
-                                 const uint locality_id,
-                                 const uint submesh_id) {
+OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
+                                   const uint locality_id,
+                                   const uint submesh_id) {
     std::ifstream file(neighborhood_data_file);
 
     if (!file) {
@@ -19,7 +19,7 @@ MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
 
         neighborhood_data >> locality_A >> submesh_A >> locality_B >> submesh_B >> n_dboubdaries;
 
-        MPIRankBoundary rank_boundary;
+        OMPIRankBoundary rank_boundary;
 
         if (locality_A == locality_id && submesh_A == submesh_id) {
             rank_boundary.send_rank = locality_B;
@@ -67,22 +67,22 @@ MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
     this->receive_statuses.resize(this->GetRankBoundaryNumber());
 }
 
-void MPICommunicator::SendAll(const uint timestamp) {
+void OMPICommunicator::SendAll(const uint timestamp) {
     for (uint rank_boundary_id = 0; rank_boundary_id < this->GetRankBoundaryNumber(); rank_boundary_id++) {
         this->send_requests[rank_boundary_id] = this->rank_boundaries[rank_boundary_id].send(timestamp);
     }
 }
 
-void MPICommunicator::ReceiveAll(const uint timestamp) {
+void OMPICommunicator::ReceiveAll(const uint timestamp) {
     for (uint rank_boundary_id = 0; rank_boundary_id < this->GetRankBoundaryNumber(); rank_boundary_id++) {
         this->receive_requests[rank_boundary_id] = this->rank_boundaries[rank_boundary_id].receive(timestamp);
     }
 }
 
-void MPICommunicator::WaitAllSends(const uint timestamp) {
+void OMPICommunicator::WaitAllSends(const uint timestamp) {
     MPI_Waitall(this->GetRankBoundaryNumber(), &this->send_requests.front(), &this->send_statuses.front());
 }
 
-void MPICommunicator::WaitAllReceives(const uint timestamp) {
+void OMPICommunicator::WaitAllReceives(const uint timestamp) {
     MPI_Waitall(this->GetRankBoundaryNumber(), &this->receive_requests.front(), &this->receive_statuses.front());
 }

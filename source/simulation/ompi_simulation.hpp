@@ -1,26 +1,27 @@
-#ifndef MPI_SIMULATION_HPP
-#define MPI_SIMULATION_HPP
+#ifndef OMPI_SIMULATION_HPP
+#define OMPI_SIMULATION_HPP
 
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
-#include "../communication/mpi_communicator.hpp"
+#include "../communication/ompi_communicator.hpp"
 
 #include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
-class MPISimulationUnit {
+class OOMPISimulationUnit {
   private:
     InputParameters input;
 
     Stepper stepper;
     typename ProblemType::ProblemMeshType mesh;
-    MPICommunicator communicator;
+    OMPICommunicator communicator;
 
     std::string log_file_name;
 
   public:
-    MPISimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
-    MPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
+    OOMPISimulationUnit()
+        : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    OOMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
@@ -36,7 +37,7 @@ class MPISimulationUnit {
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
                  << " mesh" << std::endl << std::endl;
 
-        initialize_mesh<ProblemType, MPICommunicator>(this->mesh, input.mesh_data, communicator);
+        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
     }
 
     void Launch();
@@ -45,7 +46,7 @@ class MPISimulationUnit {
 };
 
 template <typename ProblemType>
-void MPISimulationUnit<ProblemType>::Launch() {
+void OOMPISimulationUnit<ProblemType>::Launch() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
@@ -61,7 +62,7 @@ void MPISimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-void MPISimulationUnit<ProblemType>::Stage() {
+void OOMPISimulationUnit<ProblemType>::Stage() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
@@ -129,7 +130,7 @@ void MPISimulationUnit<ProblemType>::Stage() {
 }
 
 template <typename ProblemType>
-void MPISimulationUnit<ProblemType>::Step() {
+void OOMPISimulationUnit<ProblemType>::Step() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -145,16 +146,16 @@ void MPISimulationUnit<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
-class MPISimulation {
+class OMPISimulation {
   private:
     uint n_steps;
     uint n_stages;
 
-    std::vector<MPISimulationUnit<ProblemType>*> simulation_units;
+    std::vector<OOMPISimulationUnit<ProblemType>*> simulation_units;
 
   public:
-    MPISimulation() = default;
-    MPISimulation(const std::string& input_string) {
+    OMPISimulation() = default;
+    OMPISimulation(const std::string& input_string) {
         int locality_id;
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
@@ -169,7 +170,8 @@ class MPISimulation {
 
         uint submesh_id = 0;
         while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
-            this->simulation_units.push_back(new MPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
+            this->simulation_units.push_back(
+                new OOMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;
         }
@@ -179,7 +181,7 @@ class MPISimulation {
 };
 
 template <typename ProblemType>
-void MPISimulation<ProblemType>::Run() {
+void OMPISimulation<ProblemType>::Run() {
     for (auto& sim_unit : this->simulation_units) {
         sim_unit->Launch();
     }

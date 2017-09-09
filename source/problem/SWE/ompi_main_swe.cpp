@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <omp.h>
 
 #include "general_definitions.hpp"
 
@@ -7,7 +8,7 @@
 #include "swe_kernels_processor.hpp"
 #include "swe_kernels_postprocessor.hpp"
 
-#include "simulation/mpi_simulation.hpp"
+#include "simulation/ompi_simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -20,7 +21,7 @@ int main(int argc, char* argv[]) {
 
         std::string input_string = std::string(argv[1]);
 
-        MPISimulation<SWE::Problem> simulation(input_string);
+        OMPISimulation<SWE::Problem> simulation(input_string);
 
         simulation.Run();
 

@@ -16,14 +16,14 @@ list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 
-  ${PROJECT_SOURCE_DIR}/source/communication/mpi_communicator.cpp
+  ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
 )
 
 include_directories(${YAML_CPP_INCLUDE_DIR} ${MPI_C_INCLUDE_PATH})
 
 add_executable(
   DG_HYPER_SWE
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/mpi_main_swe.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/ompi_main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 

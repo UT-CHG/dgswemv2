@@ -1,10 +1,10 @@
-#ifndef MPI_COMMUNICATOR_HPP
-#define MPI_COMMUNICATOR_HPP
+#ifndef OMPI_COMMUNICATOR_HPP
+#define OMPI_COMMUNICATOR_HPP
 
 #include <mpi.h>
 #include "../general_definitions.hpp"
 
-struct MPIRankBoundary {
+struct OMPIRankBoundary {
     std::vector<uint> elements;
     std::vector<uint> bound_ids;
     std::vector<uint> p;
@@ -47,9 +47,9 @@ struct MPIRankBoundary {
     }
 };
 
-class MPICommunicator {
+class OMPICommunicator {
   private:
-    std::vector<MPIRankBoundary> rank_boundaries;
+    std::vector<OMPIRankBoundary> rank_boundaries;
 
     std::vector<MPI_Request> send_requests;
     std::vector<MPI_Request> receive_requests;
@@ -58,11 +58,11 @@ class MPICommunicator {
     std::vector<MPI_Status> receive_statuses;
 
   public:
-    MPICommunicator() = default;
-    MPICommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
+    OMPICommunicator() = default;
+    OMPICommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
 
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
-    MPIRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
+    OMPIRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
 
     void SendAll(const uint timestamp);
     void ReceiveAll(const uint timestamp);
@@ -71,7 +71,7 @@ class MPICommunicator {
     void WaitAllReceives(const uint timestamp);
 
   public:
-    using RankBoundaryType = MPIRankBoundary;
+    using RankBoundaryType = OMPIRankBoundary;
 };
 
 #endif
