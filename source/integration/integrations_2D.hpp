@@ -24,7 +24,7 @@ class Dunavant_2D : Integration<2> {
      * GetNumGP returns the number of quadrature points for a rule of strength p
      * without having to construct the rule.
      */
-    uint GetNumGP(const uint p)
+    uint GetNumGP(const uint p);
 
   private:
     std::vector<uint> PermutationData(const uint p);
