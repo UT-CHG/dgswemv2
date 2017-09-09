@@ -9,7 +9,7 @@
 
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
-private:
+  private:
     InputParameters input;
 
     Stepper stepper;
@@ -17,7 +17,8 @@ private:
     HPXCommunicator communicator;
 
     std::string log_file_name;
-public:
+
+  public:
     HPXSimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
