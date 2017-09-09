@@ -34,7 +34,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
-find_package(HPX REQUIRED)
+find_package(MPI REQUIRED)
 
 enable_testing()
 

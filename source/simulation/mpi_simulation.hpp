@@ -57,7 +57,7 @@ void MPISimulationUnit<ProblemType>::Launch() {
     this->mesh.CallForEachElement(resize_data_container);
 
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    /*ProblemType::write_modal_data_kernel(this->stepper, this->mesh);*/
 }
 
 template <typename ProblemType>
@@ -148,12 +148,13 @@ class MPISimulation {
     uint n_steps;
     uint n_stages;
 
-    std::vector<MPISimulationUnit<ProblemType>> simulation_units;
+    std::vector<MPISimulationUnit<ProblemType>*> simulation_units;
 
   public:
     MPISimulation() = default;
     MPISimulation(const std::string& input_string) {
-        const uint locality_id = 0;
+        int locality_id;
+        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
         InputParameters input(input_string);
 
@@ -166,7 +167,7 @@ class MPISimulation {
 
         uint submesh_id = 0;
         while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
-            this->simulation_units.emplace_back(input_string, locality_id, submesh_id);
+            this->simulation_units.push_back(new MPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;
         }
@@ -178,18 +179,18 @@ class MPISimulation {
 template <typename ProblemType>
 void MPISimulation<ProblemType>::Run() {
     for (auto& sim_unit : this->simulation_units) {
-        sim_unit.Launch();
+        sim_unit->Launch();
     }
 
     for (uint step = 1; step < this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                this->simulation_units[sim_id].Stage();
+            for (auto& sim_unit : this->simulation_units) {
+                sim_unit->Stage();
             }
         }
 
-        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-            this->simulation_units[sim_id].Step();
+        for (auto& sim_unit : this->simulation_units) {
+            sim_unit->Step();
         }
     }
 }

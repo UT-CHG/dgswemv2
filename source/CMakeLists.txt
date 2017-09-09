@@ -19,7 +19,7 @@ list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/communication/mpi_communicator.cpp
 )
 
-include_directories(${YAML_CPP_INCLUDE_DIR})
+include_directories(${YAML_CPP_INCLUDE_DIR} ${MPI_C_INCLUDE_PATH})
 
 add_executable(
   DG_HYPER_SWE
@@ -27,4 +27,4 @@ add_executable(
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES})
+target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${MPI_C_LIBRARIES})
