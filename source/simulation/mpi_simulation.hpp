@@ -79,11 +79,11 @@ void MPISimulationUnit<ProblemType>::Stage() {
 
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
-    //hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
+    // hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
-    //this->communicator.SendAll(this->stepper.get_timestamp());
+    // this->communicator.SendAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachElement(volume_kernel);
 
@@ -95,34 +95,34 @@ void MPISimulationUnit<ProblemType>::Stage() {
              << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
 #endif
 
-    //MPI WAIT
+// MPI WAIT
 
 #ifdef VERBOSE
-        log_file << "Starting work after receive" << std::endl;
+    log_file << "Starting work after receive" << std::endl;
 #endif
-        auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
-        auto distributed_boundary_kernel = [this](auto& dbound) {
-            ProblemType::distributed_boundary_kernel(this->stepper, dbound);
-        };
+    auto distributed_boundary_kernel = [this](auto& dbound) {
+        ProblemType::distributed_boundary_kernel(this->stepper, dbound);
+    };
 
-        auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
+    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-        auto scrutinize_solution_kernel = [this](auto& elt) {
-            ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-        };
+    auto scrutinize_solution_kernel = [this](auto& elt) {
+        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+    };
 
-        this->mesh.CallForEachBoundary(boundary_kernel);
+    this->mesh.CallForEachBoundary(boundary_kernel);
 
-        this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
+    this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
 
-        this->mesh.CallForEachElement(update_kernel);
+    this->mesh.CallForEachElement(update_kernel);
 
-        this->mesh.CallForEachElement(scrutinize_solution_kernel);
+    this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-        ++(this->stepper);
+    ++(this->stepper);
 #ifdef VERBOSE
-        log_file << "Finished work after receive" << std::endl << std::endl;
+    log_file << "Finished work after receive" << std::endl << std::endl;
 #endif
 }
 
@@ -151,9 +151,9 @@ class MPISimulation {
     std::vector<MPISimulationUnit<ProblemType>> simulation_units;
 
   public:
-    HPXSimulation() = default;
-    HPXSimulation(const std::string& input_string) {
-        const uint locality_id = 0; 
+    MPISimulation() = default;
+    MPISimulation(const std::string& input_string) {
+        const uint locality_id = 0;
 
         InputParameters input(input_string);
 
@@ -176,7 +176,7 @@ class MPISimulation {
 };
 
 template <typename ProblemType>
-void HPXSimulation<ProblemType>::Run() {
+void MPISimulation<ProblemType>::Run() {
     for (auto& sim_unit : this->simulation_units) {
         sim_unit.Launch();
     }

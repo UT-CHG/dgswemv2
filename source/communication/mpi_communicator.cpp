@@ -19,7 +19,7 @@ MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
 
         neighborhood_data >> locality_A >> submesh_A >> locality_B >> submesh_B >> n_dboubdaries;
 
-        HPXRankBoundary rank_boundary;
+        MPIRankBoundary rank_boundary;
 
         std::string my_location;
         std::string neighbor_location;
@@ -35,10 +35,10 @@ MPICommunicator::MPICommunicator(const std::string& neighborhood_data_file,
         std::string outgoing_channel_string = "channel_from_" + my_location + "_to_" + neighbor_location;
         std::string incoming_channel_string = "channel_from_" + neighbor_location + "_to_" + my_location;
 
-//        rank_boundary.outgoing = hpx::lcos::channel<array_double>(hpx::find_here());
-//        hpx::future<void> set_outgoing_channel = rank_boundary.outgoing.register_as(outgoing_channel_string);
+        //        rank_boundary.outgoing = hpx::lcos::channel<array_double>(hpx::find_here());
+        //        hpx::future<void> set_outgoing_channel = rank_boundary.outgoing.register_as(outgoing_channel_string);
 
-//        rank_boundary.incoming.connect_to(incoming_channel_string);
+        //        rank_boundary.incoming.connect_to(incoming_channel_string);
 
         rank_boundary.elements.reserve(n_dboubdaries);
         rank_boundary.bound_ids.reserve(n_dboubdaries);

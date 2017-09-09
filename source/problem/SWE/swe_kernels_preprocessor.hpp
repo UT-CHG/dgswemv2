@@ -3,8 +3,6 @@
 
 #include "swe_true_src_functions.hpp"
 
-#include "../../communication/hpx_communicator.hpp"
-
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(ProblemMeshType& mesh,

@@ -1,6 +1,8 @@
 #ifndef MPI_COMMUNICATOR_HPP
 #define MPI_COMMUNICATOR_HPP
 
+#include "../general_definitions.hpp"
+
 struct MPIRankBoundary {
     std::vector<uint> elements;
     std::vector<uint> bound_ids;
@@ -9,7 +11,8 @@ struct MPIRankBoundary {
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
 
-    void send(uint timestamp) { /*outgoing.set(send_buffer, timestamp);*/ }
+    void send(uint timestamp) {/*outgoing.set(send_buffer, timestamp);*/
+    }
 
     void receive(uint timestamp) {
         /*return incoming.get(timestamp)
