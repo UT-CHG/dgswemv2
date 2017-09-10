@@ -37,16 +37,55 @@ template <class type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 namespace Basis {
+/**
+ * Base class for the basis types over the element.
+ *
+ * @tparam dimension over the surface to be integrated
+ */
 template <uint dimension>
 class Basis {
   public:
+    /**
+     * Evaluate the basis function at points.
+     * Evaluate all basis functions evaluated at points up to polynomial order p.
+     * e.g. in the one dimensional case, p+1 functions will be evaluated, and in the two
+     * dimensional case (p+1)(p+2)/2 functions will be evaluated.
+     *
+     * @param p polynomial order
+     * @param points vector of points at which the basis functions are evaluated
+     * @return 2-dimensional array indexed as [dof][point]
+     */
     virtual Array2D<double> GetPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    /**
+     * Evaluate the gradients of the basis function at points.
+     * Evaluate gradients of all basis functions evaluated at points up to polynomial order p.
+     * e.g. in the one dimensional case, p+1 functions will be evaluated, and in the two
+     * dimensional case (p+1)(p+2)/2 functions will be evaluated.
+     *
+     * @param p polynomial order
+     * @param points vector of points at which the basis functions are evaluated
+     * @return 3-dimensional array indexed as [dof][point][coordinate] where coordinate
+     *         corresponds to the dimension in which the derivative is taken.
+     */
     virtual Array3D<double> GetDPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+
+    /**
+     * Obtain the inverted mass matrix of basis functions of polynomial order p.
+     *
+     * @param p polynomial order
+     * @param return a pair with a boolean, which states whether the basis is orthogonal,
+     *        and a 2-dimensional array corresponding to the mass matrix over the master element
+     */
     virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
 };
 }
 
 namespace Integration {
+/**
+ * Base class for Integration types over the element.
+ *
+ * @tparam dimension over the surface to be integrated
+ */
 template <uint dimension>
 class Integration {
   public:
