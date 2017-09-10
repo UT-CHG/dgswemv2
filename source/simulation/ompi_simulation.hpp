@@ -42,9 +42,12 @@ class OMPISimulationUnit {
     }
 
     void Launch();
+
     void ExchangeData();
     void PreReceiveStage();
     void PostReceiveStage();
+    void WaitAllSends();
+
     void Step();
 };
 
@@ -134,12 +137,15 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 
     this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-    this->communicator.WaitAllSends(this->stepper.get_timestamp());
-
     ++(this->stepper);
 #ifdef VERBOSE
     log_file << "Finished work after receive" << std::endl << std::endl;
 #endif
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::WaitAllSends() {
+    this->communicator.WaitAllSends(this->stepper.get_timestamp());    
 }
 
 template <typename ProblemType>
@@ -226,6 +232,10 @@ void OMPISimulation<ProblemType>::Run() {
 
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                     this->simulation_units[sim_unit_id]->PostReceiveStage();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->WaitAllSends();
                 }
             }
 
