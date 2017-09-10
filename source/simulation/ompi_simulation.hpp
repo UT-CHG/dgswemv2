@@ -145,7 +145,7 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::WaitAllSends() {
-    this->communicator.WaitAllSends(this->stepper.get_timestamp());    
+    this->communicator.WaitAllSends(this->stepper.get_timestamp());
 }
 
 template <typename ProblemType>
@@ -213,6 +213,8 @@ void OMPISimulation<ProblemType>::Run() {
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id = sim_per_thread * (thread_id + 1);
 
+        std::cout << begin_sim_id << ' ' << end_sim_id << std::endl;
+
         if (end_sim_id > this->simulation_units.size())
             end_sim_id = this->simulation_units.size();
 
@@ -237,6 +239,8 @@ void OMPISimulation<ProblemType>::Run() {
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                     this->simulation_units[sim_unit_id]->WaitAllSends();
                 }
+
+                MPI_Barrier(MPI_COMM_WORLD);
             }
 
             for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
