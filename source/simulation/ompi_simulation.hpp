@@ -37,6 +37,8 @@ class OMPISimulationUnit {
                  << " mesh" << std::endl << std::endl;
 
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
+
+        this->communicator.InitializeCommunication();
     }
 
     void Launch();
