@@ -50,7 +50,22 @@ namespace Integration {
 template <uint dimension>
 class Integration {
   public:
+    /**
+     * Returns the number of Gauss points required for a rule of strength p
+     * GetNumGP returns the number of quadrature points for a rule of strength p without
+     * without having to construct the rule.
+     *
+     * @param p Polynomial order for which the rule should return exact results.
+     * @return Pair of weights and quadrature points on the master triangle.
+     */
     virtual uint GetNumGP(const uint p) = 0;
+
+    /**
+     * Returns a vector of weights and quadrature points.
+     *
+     * @param p Polynomial order for which the rule should return exact results.
+     * @return Number of Gauss points
+     */
     virtual std::pair<std::vector<double>, std::vector<Point<dimension>>> GetRule(const uint p) = 0;
 };
 }
