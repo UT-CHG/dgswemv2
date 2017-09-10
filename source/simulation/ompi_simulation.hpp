@@ -134,6 +134,8 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 
     this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
+    this->communicator.WaitAllSends(this->stepper.get_timestamp());
+
     ++(this->stepper);
 #ifdef VERBOSE
     log_file << "Finished work after receive" << std::endl << std::endl;

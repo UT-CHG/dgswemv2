@@ -22,10 +22,10 @@ struct OMPIRankBoundary {
 class OMPICommunicator {
   private:
     std::vector<OMPIRankBoundary> rank_boundaries;
-    
+
     std::vector<MPI_Request> send_requests;
     std::vector<MPI_Request> receive_requests;
-    
+
   public:
     OMPICommunicator() = default;
     OMPICommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
@@ -34,21 +34,19 @@ class OMPICommunicator {
 
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     OMPIRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
-    
-    void SendAll(const uint timestamp) {
-        MPI_Startall(this->send_requests.size(), &this->send_requests.front(), MPI_STATUSES_IGNORE)
-    }
-  
+
+    void SendAll(const uint timestamp) { MPI_Startall(this->send_requests.size(), &this->send_requests.front()); }
+
     void ReceiveAll(const uint timestamp) {
-       MPI_Startall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE)
+        MPI_Startall(this->receive_requests.size(), &this->receive_requests.front());
     }
-  
+
     void WaitAllSends(const uint timestamp) {
-      MPI_Waitall(this->send_requests.size(), &this->send_requests.front(), MPI_STATUSES_IGNORE)
+        MPI_Waitall(this->send_requests.size(), &this->send_requests.front(), MPI_STATUSES_IGNORE);
     }
 
     void WaitAllReceives(const uint timestamp) {
-      MPI_Waitall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE)
+        MPI_Waitall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE);
     }
 
   public:

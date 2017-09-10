@@ -107,7 +107,7 @@ class Shape {
 };
 }
 
-#define VERBOSE
+//#define VERBOSE
 
 #define PI 3.14159265359
 

@@ -59,49 +59,29 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
 
         this->rank_boundaries.push_back(std::move(rank_boundary));
     }
-
-    this->receive_requests.resize(this->GetRankBoundaryNumber());
-    this->receive_statuses.resize(this->GetRankBoundaryNumber());
 }
 
 void OMPICommunicator::InitializeCommunication() {
-    for (auto& rank_boundary : this->rank_boundaries) {
-        MPI_Request request;
+    this->send_requests.resize(this->rank_boundaries.size());
+    this->receive_requests.resize(this->rank_boundaries.size());
+
+    for (uint rank_boundary_id = 0; rank_boundary_id < this->rank_boundaries.size(); rank_boundary_id++) {
+        OMPIRankBoundary& rank_boundary = this->rank_boundaries[rank_boundary_id];
 
         MPI_Send_init(&rank_boundary.send_buffer.front(),
-        rank_boundary.send_buffer.size(),
-        MPI_DOUBLE,
-        rank_boundary.send_rank,
-        rank_boundary.send_tag,
-        MPI_COMM_WORLD,
-        &request);
-
-        this->send_requests.push_back(std::move(request));
+                      rank_boundary.send_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.send_rank,
+                      rank_boundary.send_tag,
+                      MPI_COMM_WORLD,
+                      &this->send_requests.at(rank_boundary_id));
 
         MPI_Recv_init(&rank_boundary.receive_buffer.front(),
-        rank_boundary.receive_buffer.size(),
-        MPI_DOUBLE,
-        rank_boundary.receive_rank,
-        rank_boundary.receive_tag,
-        MPI_COMM_WORLD,
-        &request);
-
-        this->receive_requests.push_back(std::move(request));
+                      rank_boundary.receive_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.receive_rank,
+                      rank_boundary.receive_tag,
+                      MPI_COMM_WORLD,
+                      &this->receive_requests.at(rank_boundary_id));
     }
-}
-
-void OMPICommunicator::SendAll(const uint timestamp) {
-    for (uint rank_boundary_id = 0; rank_boundary_id < this->GetRankBoundaryNumber(); rank_boundary_id++) {
-        this->rank_boundaries[rank_boundary_id].send(timestamp);
-    }
-}
-
-void OMPICommunicator::ReceiveAll(const uint timestamp) {
-    for (uint rank_boundary_id = 0; rank_boundary_id < this->GetRankBoundaryNumber(); rank_boundary_id++) {
-        this->receive_requests[rank_boundary_id] = this->rank_boundaries[rank_boundary_id].receive(timestamp);
-    }
-}
-
-void OMPICommunicator::WaitAllReceives(const uint timestamp) {
-    MPI_Waitall(this->GetRankBoundaryNumber(), &this->receive_requests.front(), &this->receive_statuses.front());
 }
