@@ -59,12 +59,12 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
 
         this->rank_boundaries.push_back(std::move(rank_boundary));
     }
+
+    this->send_requests.resize(this->rank_boundaries.size());
+    this->receive_requests.resize(this->rank_boundaries.size());
 }
 
 void OMPICommunicator::InitializeCommunication() {
-    this->send_requests.resize(this->rank_boundaries.size());
-    this->receive_requests.resize(this->rank_boundaries.size());
-
     for (uint rank_boundary_id = 0; rank_boundary_id < this->rank_boundaries.size(); rank_boundary_id++) {
         OMPIRankBoundary& rank_boundary = this->rank_boundaries[rank_boundary_id];
 

@@ -17,7 +17,16 @@ int main(int argc, char* argv[]) {
         return 1;
     } else {
         auto t1 = std::chrono::high_resolution_clock::now();
-        MPI_Init(NULL, NULL);
+        int provided;
+        MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+
+        if (provided != MPI_THREAD_MULTIPLE) {
+            std::cerr << "MPI_THREAD_MULTIPLE is not provided!\n";
+
+            MPI_Abort(MPI_COMM_WORLD, MPI_ERR_OTHER);
+
+            return 1;
+        }
 
         std::string input_string = std::string(argv[1]);
 

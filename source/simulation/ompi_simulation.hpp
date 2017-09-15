@@ -208,15 +208,10 @@ void OMPISimulation<ProblemType>::Run() {
         n_threads = (uint)omp_get_num_threads();
         thread_id = (uint)omp_get_thread_num();
 
-        sim_per_thread = this->simulation_units.size() / n_threads;
+        sim_per_thread = (this->simulation_units.size() + n_threads - 1) / n_threads;
 
         begin_sim_id = sim_per_thread * thread_id;
-        end_sim_id = sim_per_thread * (thread_id + 1);
-
-        std::cout << begin_sim_id << ' ' << end_sim_id << std::endl;
-
-        if (end_sim_id > this->simulation_units.size())
-            end_sim_id = this->simulation_units.size();
+        end_sim_id = std::min(sim_per_thread * (thread_id + 1), (uint) this->simulation_units.size());
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
             this->simulation_units[sim_unit_id]->Launch();
@@ -239,8 +234,6 @@ void OMPISimulation<ProblemType>::Run() {
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                     this->simulation_units[sim_unit_id]->WaitAllSends();
                 }
-
-                MPI_Barrier(MPI_COMM_WORLD);
             }
 
             for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
