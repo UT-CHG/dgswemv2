@@ -1,18 +1,21 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
+#include "../preprocessor/input_parameters.hpp"
+#include "../preprocessor/initialize_mesh.hpp"
+
 template <typename ProblemType>
 class Simulation {
   private:
     const InputParameters input;
 
-    typename ProblemType::mesh_type mesh;
+    typename ProblemType::ProblemMeshType mesh;
     Stepper stepper;
 
   public:
     Simulation(std::string input_string)
         : input(input_string),
-          mesh(input.polynomial_order, input.mesh_data._mesh_name),
+          mesh(input.polynomial_order, input.mesh_data.mesh_name),
           stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
