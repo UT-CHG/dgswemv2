@@ -6,7 +6,7 @@
 
 mesh:
   format: Adcirc
-  file_name: ../mesh_generators/rectangular_mesh.14
+  file_name: build/mesh_generators/rectangular_mesh.14
 
 timestepping:
   dt: 1 #seconds
