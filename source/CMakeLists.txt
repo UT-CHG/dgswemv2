@@ -15,14 +15,23 @@ list (APPEND DG_HYPER_SWE_SOURCES
 
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
-
-  ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
 )
 
 add_executable(
-  DG_HYPER_SWE
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/ompi_main_swe.cpp
+  DG_HYPER_SWE_SERIAL
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries(DG_HYPER_SWE_SERIAL)
+
+if(USE_OMPI)
+  add_executable(
+    DG_HYPER_SWE_OMPI
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/ompi_main_swe.cpp
+    ${DG_HYPER_SWE_SOURCES}
+    ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
+  )
+
+  target_link_libraries(DG_HYPER_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_LIBRARIES})
+endif()

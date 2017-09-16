@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (DG_HYPER CXX C)
 
-option(SET_VERBOSE "Verbose MakeFile" OFF)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
+option(SET_VERBOSE "Verbose MakeFile" OFF)
 
 enable_testing()
 
@@ -36,6 +36,11 @@ if(USE_OMPI)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 
   include_directories(${MPI_CXX_INCLUDE_PATH})
+endif()
+
+if(USE_HPX)
+  find_package(HPX REQUIRED)  
+  include_directories(${HPX_INCLUDE_DIRS})
 endif()
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
