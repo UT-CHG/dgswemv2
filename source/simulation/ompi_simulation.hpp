@@ -24,8 +24,10 @@ class OMPISimulationUnit {
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
-          communicator(std::string(input.mesh_file_name + "_meta"), locality_id, submesh_id) {
+          communicator(input.mesh_file_name.substr(0,input.mesh_file_name.find_last_of('.')-1) + ".meta", locality_id, submesh_id) {
         input.ReadMesh();
+
+        std::cout << input.mesh_file_name.substr(0,input.mesh_file_name.find_last_of('.')-1) + ".meta";
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
 

@@ -8,6 +8,11 @@ InputParameters::InputParameters(const std::string& input_string) {
         YAML::Node raw_mesh = input_file["mesh"];
         mesh_format = raw_mesh["format"].as<std::string>();
         mesh_file_name = raw_mesh["file_name"].as<std::string>();
+
+        std::string path_to_input(argv[1]);
+        path_to_input = path_to_input.substr(0,path_to_input.find_last_of("/\\")+1);
+        mesh_file_name += path_to_input;
+     
         if (!((mesh_format == "Adcirc") || (mesh_format == "Meta"))) {
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
             throw std::logic_error(err_msg);
@@ -30,6 +35,7 @@ InputParameters::InputParameters(const std::string& input_string) {
 InputParameters::InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id)
     : InputParameters(input_string) {
     mesh_file_name.insert(mesh_file_name.find_last_of(".")-1, '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
+        std::cout << mesh_file_name << '\n';
 }
 
 void InputParameters::ReadMesh() {
