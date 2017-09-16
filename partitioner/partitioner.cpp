@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     InputParameters input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
     std::string path_to_input(argv[1]);
-    path_to_input = path_to_input.substr(0,path_to_input.find_last_of("/\\"));
+    path_to_input = path_to_input.substr(0,path_to_input.find_last_of("/\\")+1);
     std::string input_mesh_str(path_to_input + input.mesh_file_name);
     std::cout << "  Mesh Name: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
         std::string numa_str(argv[4]);
         numa_config = NumaConfiguration(numa_str);
         std::cout << "  NUMA configuration: " << numa_str << "n\n";
-    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
         numa_config = NumaConfiguration("default");
         std::cout << "  NUMA configuration: default (1 NUMA domain per node)\n\n";
     }
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
             
             outname += "_" + std::to_string(static_cast<long long>(n)) + "_" +
                        std::to_string(static_cast<long long>(m)) + ".meta";
-
+	    
             submeshes[n][m].WriteTo(outname);
         }
     }

@@ -23,7 +23,7 @@ add_executable(
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_include_directories(DG_HYPER_SWE_SERIAL  ${YAML_CPP_INCLUDE_DIR})  
+target_include_directories(DG_HYPER_SWE_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
 target_link_libraries(DG_HYPER_SWE_SERIAL ${YAML_CPP_LIBRARIES})
 
 if(USE_OMPI)
@@ -34,7 +34,7 @@ if(USE_OMPI)
     ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
   )
 
-  target_include_directories(DG_HYPER_SWE_OMPI  ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
+  target_include_directories(DG_HYPER_SWE_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
   target_link_libraries(DG_HYPER_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
 
   install(TARGETS DG_HYPER_SWE_OMPI DESTINATION bin)
@@ -54,7 +54,7 @@ if(USE_HPX)
     COMPONENT_DEPENDENCIES iostreams
   )
 
-  target_include_directories(DG_HYPER_SWE_HPX  ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
+  target_include_directories(DG_HYPER_SWE_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
   target_link_libraries(DG_HYPER_SWE_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
 
   install(TARGETS DG_HYPER_SWE_HPX DESTINATION bin)
