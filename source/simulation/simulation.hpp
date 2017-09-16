@@ -14,12 +14,12 @@ class Simulation {
 
   public:
     Simulation(std::string input_string)
-        : input(input_string),
-          mesh(input.polynomial_order, input.mesh_data.mesh_name),
-          stepper(input.rk.nstages, input.rk.order, input.dt) {
+        : input(input_string), mesh(input.polynomial_order), stepper(input.rk.nstages, input.rk.order, input.dt) {
         printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
+        std::tuple<> empty_comm;
+
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm);
     }
 
     void Run();

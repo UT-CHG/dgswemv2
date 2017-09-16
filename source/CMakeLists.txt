@@ -23,7 +23,7 @@ add_executable(
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_link_libraries(DG_HYPER_SWE_SERIAL)
+target_link_libraries(DG_HYPER_SWE_SERIAL ${YAML_CPP_LIBRARIES})
 
 if(USE_OMPI)
   add_executable(

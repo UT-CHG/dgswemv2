@@ -14,8 +14,8 @@ int main(int argc, char* argv[]) {
         return 1;
     } else {
         std::string input_file = std::string(argv[1]);
-        
-	Simulation<SWE::Problem> simulation(input_file);
+
+        Simulation<SWE::Problem> simulation(input_file);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();

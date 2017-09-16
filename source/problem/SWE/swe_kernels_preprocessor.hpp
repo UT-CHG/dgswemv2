@@ -45,6 +45,11 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
     }
 }
 
+template <typename RawBoundaryType>
+void Problem::create_distributed_boundaries_kernel(ProblemMeshType&,
+                                                   std::tuple<>&,
+                                                   std::map<uint, std::map<uint, RawBoundaryType>>&) {}
+
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
     ProblemMeshType& mesh,

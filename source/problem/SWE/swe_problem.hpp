@@ -21,6 +21,11 @@ struct Problem {
     static void create_boundaries_kernel(ProblemMeshType& mesh,
                                          std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries);
 
+    template <typename RawBoundaryType>
+    static void create_distributed_boundaries_kernel(ProblemMeshType&,
+                                                     std::tuple<>&,
+                                                     std::map<uint, std::map<uint, RawBoundaryType>>&);
+
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries_kernel(
         ProblemMeshType& mesh,
