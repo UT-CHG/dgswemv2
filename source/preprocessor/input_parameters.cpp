@@ -11,7 +11,7 @@ InputParameters::InputParameters(const std::string& input_string) {
 
         std::string path_to_input = input_string;
         path_to_input = path_to_input.substr(0, path_to_input.find_last_of("/\\") + 1);
-        mesh_file_name = path_to_input + mesh_file_name;
+        mesh_file_path = path_to_input + mesh_file_name;
 
         if (!((mesh_format == "Adcirc") || (mesh_format == "Meta"))) {
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
@@ -35,9 +35,9 @@ InputParameters::InputParameters(const std::string& input_string) {
 InputParameters::InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id)
     : InputParameters(input_string) {
     std::cout << "here\n";
-    mesh_file_name.insert(mesh_file_name.find_last_of(".") - 1,
+    mesh_file_path.insert(mesh_file_path.find_last_of(".") - 1,
                           '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
-    std::cout << mesh_file_name << '\n';
+    std::cout << mesh_file_path << '\n';
 }
 
 void InputParameters::ReadMesh() {
