@@ -19,12 +19,10 @@ list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
 )
 
-include_directories(${YAML_CPP_INCLUDE_DIR} ${MPI_C_INCLUDE_PATH})
-
 add_executable(
   DG_HYPER_SWE
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/ompi_main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${MPI_C_LIBRARIES})
+target_link_libraries(DG_HYPER_SWE ${YAML_CPP_LIBRARIES} ${MPI_LIBRARIES})
