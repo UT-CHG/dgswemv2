@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
-    std::string input_mesh_str(input.mesh_file_name);
-    std::cout << "  Mesh Name: " << input_mesh_str << '\n';
+    std::string input_mesh_str(input.mesh_file_path);
+    std::cout << "  Mesh Path: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
     int num_nodes = atoi(argv[3]);

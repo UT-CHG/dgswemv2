@@ -6,7 +6,7 @@
 
 mesh:
   format: Meta
-  file_name: ../../build/mesh_generators/rectangular_mesh.meta
+  file_name: build/mesh_generators/rectangular_mesh.meta
 timestepping:
   dt: 1
   end_time: 43200

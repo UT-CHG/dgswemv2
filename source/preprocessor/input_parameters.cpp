@@ -34,18 +34,16 @@ InputParameters::InputParameters(const std::string& input_string) {
 
 InputParameters::InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id)
     : InputParameters(input_string) {
-    std::cout << "here\n";
-    mesh_file_path.insert(mesh_file_path.find_last_of(".") - 1,
+    mesh_file_path.insert(mesh_file_path.find_last_of("."),
                           '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
-    std::cout << mesh_file_path << '\n';
 }
 
 void InputParameters::ReadMesh() {
     if (mesh_format == "Adcirc") {
-        AdcircFormat adcirc_file(mesh_file_name);
+        AdcircFormat adcirc_file(mesh_file_path);
         mesh_data = MeshMetaData(adcirc_file);
     } else if (mesh_format == "Meta") {
-        mesh_data = MeshMetaData(mesh_file_name);
+        mesh_data = MeshMetaData(mesh_file_path);
     }
 }
 
