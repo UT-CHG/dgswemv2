@@ -26,7 +26,7 @@ class Simulation {
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
 
-        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName()
                  << " mesh" << std::endl << std::endl;
 
         std::tuple<> empty_comm;
