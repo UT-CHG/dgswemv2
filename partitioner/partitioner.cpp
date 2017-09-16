@@ -36,17 +36,12 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    std::string path_to_input(argv[1]);
-    for (auto it=path_to_input.end();it!=path_to_input.begin();it--){
-        if(*it=='/') {
-            path_to_input.erase(it+1,path_to_input.end());
-            break;
-        }
-    }
 
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
+    std::string path_to_input(argv[1]);
+    path_to_input = path_to_input.substr(0,path_to_input.find_last_of("/\\"));
     std::string input_mesh_str(path_to_input + input.mesh_file_name);
     std::cout << "  Mesh Name: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
@@ -72,9 +67,10 @@ int main(int argc, char** argv) {
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {
             std::string outname = input_mesh_str;
-            outname.erase(outname.size() - 3);
+            outname = outname.substr(0,outname.find_last_of(".")-1);
+            
             outname += "_" + std::to_string(static_cast<long long>(n)) + "_" +
-                       std::to_string(static_cast<long long>(m)) + ".14";
+                       std::to_string(static_cast<long long>(m)) + ".meta";
 
             submeshes[n][m].WriteTo(outname);
         }

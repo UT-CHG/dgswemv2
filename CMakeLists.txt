@@ -39,8 +39,6 @@ if(USE_OMPI)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-
-  include_directories(${MPI_CXX_INCLUDE_PATH})
 endif()
 
 if(USE_HPX)
