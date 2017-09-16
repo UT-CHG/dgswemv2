@@ -35,8 +35,8 @@ class OMPISimulationUnit {
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
 
-        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName()
-                 << " mesh" << std::endl << std::endl;
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
+                 << std::endl << std::endl;
 
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
     }
