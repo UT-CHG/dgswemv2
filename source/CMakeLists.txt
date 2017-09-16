@@ -34,6 +34,8 @@ if(USE_OMPI)
   )
 
   target_link_libraries(DG_HYPER_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
+
+  install(TARGETS DG_HYPER_SWE_OMPI DESTINATION bin)
 endif()
 
 if(USE_HPX)
@@ -51,4 +53,8 @@ if(USE_HPX)
   )
 
   target_link_libraries(DG_HYPER_SWE_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+
+  install(TARGETS DG_HYPER_SWE_HPX DESTINATION bin)
 endif()
+
+install(TARGETS DG_HYPER_SWE_SERIAL DESTINATION bin)
