@@ -15,6 +15,7 @@ class Simulation {
     std::string log_file_name;
 
   public:
+    Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     Simulation(std::string input_string)
         : input(input_string), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {
         input.ReadMesh();

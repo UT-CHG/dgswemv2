@@ -25,12 +25,6 @@ InputParameters::InputParameters(const std::string& input_string) {
     }
 
     polynomial_order = input_file["polynomial_order"].as<uint>();
-    if (polynomial_order > 10) {
-        std::string err_msg =
-            "Error: Invalid polynomial order: " + std::to_string(polynomial_order) + " can be at most 10\n";
-
-        throw std::logic_error(err_msg);
-    }
 }
 
 InputParameters::InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id)

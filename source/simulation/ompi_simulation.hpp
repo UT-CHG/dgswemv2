@@ -37,8 +37,6 @@ class OMPISimulationUnit {
                  << " mesh" << std::endl << std::endl;
 
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
-
-        this->communicator.InitializeCommunication();
     }
 
     void Launch();
@@ -56,6 +54,8 @@ void OMPISimulationUnit<ProblemType>::Launch() {
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
+
+    this->communicator.InitializeCommunication();
 
     uint n_stages = this->stepper.get_num_stages();
 

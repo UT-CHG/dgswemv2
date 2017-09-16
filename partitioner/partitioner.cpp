@@ -36,10 +36,18 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    std::string path_to_input(argv[1].cstr());
+    for (auto it=path_to_input.end();it!=path_to_input.begin();it--){
+        if(*it=='/') {
+            path_to_input.erase(it,path_to_input.end());
+            break;
+        }
+    }
+
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
-    std::string input_mesh_str(input.mesh_file_name);
+    std::string input_mesh_str(path_to_input + input.mesh_file_name);
     std::cout << "  Mesh Name: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
@@ -51,7 +59,7 @@ int main(int argc, char** argv) {
         std::string numa_str(argv[4]);
         numa_config = NumaConfiguration(numa_str);
         std::cout << "  NUMA configuration: " << numa_str << "n\n";
-    } else {
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         numa_config = NumaConfiguration("default");
         std::cout << "  NUMA configuration: default (1 NUMA domain per node)\n\n";
     }
