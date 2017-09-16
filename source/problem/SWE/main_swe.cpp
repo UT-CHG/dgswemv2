@@ -1,10 +1,12 @@
 #include "../../general_definitions.hpp"
 
 #include "../../simulation/stepper.hpp"
+
 #include "swe_problem.hpp"
 #include "swe_kernels_preprocessor.hpp"
 #include "swe_kernels_processor.hpp"
 #include "swe_kernels_postprocessor.hpp"
+
 #include "../../simulation/simulation.hpp"
 
 int main(int argc, char* argv[]) {

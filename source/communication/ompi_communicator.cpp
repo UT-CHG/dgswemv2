@@ -1,5 +1,4 @@
 #include "ompi_communicator.hpp"
-#include "preprocessor/mesh_metadata.hpp"
 
 OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
                                    const uint locality_id,
