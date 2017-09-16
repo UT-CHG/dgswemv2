@@ -23,6 +23,11 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
+get_filename_component (default_prefix "../install" ABSOLUTE)
+set (CMAKE_INSTALL_PREFIX ${default_prefix} CACHE STRING
+      "Choose the installation directory; by default it installs in install."
+FORCE)
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 find_package(METIS REQUIRED)
@@ -48,7 +53,7 @@ if(SET_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE ON)
 endif()
 
-include_directories(source ${YAML_CPP_INCLUDE_DIR})
+include_directories(source ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
 
 add_subdirectory(source)
 add_subdirectory(test)
