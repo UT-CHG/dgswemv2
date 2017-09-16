@@ -43,7 +43,6 @@ endif()
 
 if(USE_HPX)
   find_package(HPX REQUIRED)  
-  include_directories(${HPX_INCLUDE_DIRS})
 endif()
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -51,7 +50,7 @@ if(SET_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE ON)
 endif()
 
-include_directories(source ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
+include_directories(source)
 
 add_subdirectory(source)
 add_subdirectory(test)
