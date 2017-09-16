@@ -5,4 +5,4 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/mesh_generators/rectangular_mesh_generator.cpp
 )
 
-install(TARGETS rectangular_mesh_generator DESTINATION bin/utilitites/partitioner)
+install(TARGETS rectangular_mesh_generator DESTINATION bin/utilities/mesh_generators)

@@ -18,4 +18,4 @@ add_executable(
 
 target_link_libraries(partitioner ${YAML_CPP_LIBRARIES} ${METIS_LIBRARIES})
 
-install(TARGETS partitioner DESTINATION bin/utilitites/partitioner)
+install(TARGETS partitioner DESTINATION bin/utilities/partitioner)

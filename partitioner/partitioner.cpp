@@ -36,10 +36,10 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    std::string path_to_input(argv[1].cstr());
+    std::string path_to_input(argv[1]);
     for (auto it=path_to_input.end();it!=path_to_input.begin();it--){
         if(*it=='/') {
-            path_to_input.erase(it,path_to_input.end());
+            path_to_input.erase(it+1,path_to_input.end());
             break;
         }
     }
