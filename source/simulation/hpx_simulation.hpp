@@ -24,7 +24,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
-          communicator(input.mesh_file_name.substr(0,input.mesh_file_name.find_last_of('.')-1) + ".meta", locality_id, submesh_id) {
+          communicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.') - 1) + ".meta",
+                       locality_id,
+                       submesh_id) {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);

@@ -24,10 +24,12 @@ class OMPISimulationUnit {
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
-          communicator(input.mesh_file_name.substr(0,input.mesh_file_name.find_last_of('.')-1) + ".meta", locality_id, submesh_id) {
+          communicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.') - 1) + ".meta",
+                       locality_id,
+                       submesh_id) {
         input.ReadMesh();
 
-        std::cout << input.mesh_file_name.substr(0,input.mesh_file_name.find_last_of('.')-1) + ".meta";
+        std::cout << input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.') - 1) + ".meta";
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
 
@@ -185,17 +187,17 @@ class OMPISimulation {
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
 
-        std::string mesh_file_prefix = input.mesh_file_name;
-        mesh_file_prefix.erase(mesh_file_prefix.size() - 3);
-        mesh_file_prefix += '_' + std::to_string(locality_id) + '_';
+	std::string submesh_file_prefix = input.mesh_file_name.substr(0,input.mesh_file_name.find_last_of('.')) + "_" + std::to_string(locality_id) +'_';
+	std::string submesh_file_postfix = input.mesh_file_name.substr(input.mesh_file_name.find_last_of('.'),input.mesh_file_name.size());
 
-        uint submesh_id = 0;
-        while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
+	uint submesh_id = 0;
+	std::cout << submesh_file_prefix + std::to_string(submesh_id)+submesh_file_postfix << '\n';
+        while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
             this->simulation_units.push_back(
                 new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;
-        }
+	    }
     }
 
     void Run();
