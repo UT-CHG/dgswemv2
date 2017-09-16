@@ -7,27 +7,28 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    const InputParameters input;
+    InputParameters input;
 
-    Stepper stepper;    
+    Stepper stepper;
     typename ProblemType::ProblemMeshType mesh;
 
-    std::string log_file_name;    
+    std::string log_file_name;
+
   public:
     Simulation(std::string input_string)
         : input(input_string), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {
-            input.ReadMesh();
-            
-                    mesh.SetMeshName(input.mesh_data.mesh_name);
-            
-                    this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
-            
-                    std::ofstream log_file(this->log_file_name, std::ofstream::out);
-            
-                    log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
-                             << " mesh" << std::endl << std::endl;
-                 
-                             std::tuple<> empty_comm;
+        input.ReadMesh();
+
+        mesh.SetMeshName(input.mesh_data.mesh_name);
+
+        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
+
+        std::ofstream log_file(this->log_file_name, std::ofstream::out);
+
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
+                 << " mesh" << std::endl << std::endl;
+
+        std::tuple<> empty_comm;
 
         initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm);
     }
@@ -88,10 +89,10 @@ void Simulation<ProblemType>::Run() {
 
         if (step % 360 == 0) {
             std::ofstream log_file(this->log_file_name, std::ofstream::app);
-            
-                    log_file << "Step: " << this->stepper.get_step() << std::endl;
 
-                    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+            log_file << "Step: " << this->stepper.get_step() << std::endl;
+
+            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
         }
     }
