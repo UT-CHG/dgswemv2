@@ -20,11 +20,11 @@ struct HeterogeneousVector {
         return size;
     }
 
-    template <typename T>
-    void emplace_back(T&& t) {
+    template <typename T, typename... Args>
+    void emplace_back(Args... args) {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousVector::emplace_back: Type not found");
 
-        std::get<index<T, TupleType>::value>(data).emplace_back(std::forward<T>(t));
+        std::get<index<T, TupleType>::value>(data).emplace_back(std::forward<Args>(args)...);
     }
 
     template <typename T>

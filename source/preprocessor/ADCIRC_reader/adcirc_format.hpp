@@ -25,7 +25,8 @@ class AdcircFormat {
     int NVEL;
 
     std::vector<int> IBTYPE;             // boundary type
-    std::vector<std::vector<int>> NBVV;  // node numbers on normal flow boundary segment k
+    std::vector<std::vector<int>> NBVV;  // node numbers on normal flow boundary
+                                         // segment k
 
   public:
     SWE::BoundaryConditions get_ibtype(std::array<int, 2>& node_pair) const {
@@ -41,8 +42,10 @@ class AdcircFormat {
             }
         }
 
-        throw std::logic_error("Error Boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
-                               std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+        throw std::logic_error(
+            "Error Boundary not found, unable to assign BOUNDARY_TYPE to given "
+            "node_pair (" +
+            std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
     }
 
     void write_to(const char* out_name) const;

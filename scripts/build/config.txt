@@ -4,11 +4,11 @@ MACHINE=stampede2
 
 if [ "$MACHINE" == "ices-desktop" ]; then
    echo "using ices-desktop"
-    NUM_BUILDCORES=16
-    MODULES="c7 gcc/6.1 cmake/3.3.2"
+    NUM_BUILDCORES=4
+    MODULES="c7 gcc/6.1 cmake/3.3.2 boost/1.61.0 openmpi/1.10.0"
     CMAKE="/usr/bin/cmake /usr/lib64/cmake /usr/share/cmake /opt/apps/ossw/applications/cmake/cmake-3.3.2/c7/gcc-6.1/bin/cmake /usr/share/man/man1/cmake.1.gz"
 
-    WORK=/workspace
+    WORK=/workspace/bremer
 fi
 
 if [ "$MACHINE" == "stampede2" ]; then

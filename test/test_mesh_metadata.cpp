@@ -5,17 +5,17 @@ const static auto is_equal = [](const MeshMetaData & meshA, const MeshMetaData &
 
     bool is_the_same{true};
 
-    if (meshA._mesh_name.compare(meshB._mesh_name) != 0) {
+    if (meshA.mesh_name.compare(meshB.mesh_name) != 0) {
         std::cerr << "Strings not equal\n";
         is_the_same = false;
     }
 
-    if (meshA._elements != meshB._elements) {
+    if (meshA.elements != meshB.elements) {
         std::cerr << "Elements not equal\n";
         is_the_same = false;
     }
 
-    if (meshA._nodes != meshB._nodes) {
+    if (meshA.nodes != meshB.nodes) {
         std::cerr << "Nodes not equal\n";
         is_the_same = false;
     }

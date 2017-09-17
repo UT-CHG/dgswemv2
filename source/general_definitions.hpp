@@ -24,8 +24,8 @@ typedef unsigned int uint;
 
 typedef unsigned char uchar;
 
-template <uint dim>
-using Point = std::array<double, dim>;
+template <uint dimension>
+using Point = std::array<double, dimension>;
 
 template <class type>
 using Array2D = std::vector<std::vector<type>>;
@@ -37,31 +37,31 @@ template <class type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 namespace Basis {
-template <uint dim>
+template <uint dimension>
 class Basis {
   public:
-    virtual Array2D<double> GetPhi(uint, const std::vector<Point<dim>>&) = 0;
-    virtual Array3D<double> GetDPhi(uint, const std::vector<Point<dim>>&) = 0;
-    virtual std::pair<bool, Array2D<double>> GetMinv(uint) = 0;
+    virtual Array2D<double> GetPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual Array3D<double> GetDPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
 };
 }
 
 namespace Integration {
-template <uint dim>
+template <uint dimension>
 class Integration {
   public:
-    virtual uint GetNumGP(uint p) = 0;
-    virtual std::pair<std::vector<double>, std::vector<Point<dim>>> GetRule(uint p) = 0;
+    virtual uint GetNumGP(const uint p) = 0;
+    virtual std::pair<std::vector<double>, std::vector<Point<dimension>>> GetRule(const uint p) = 0;
 };
 }
 
 namespace Master {
-template <uint dim>
+template <uint dimension>
 class Master {
   public:
     uint p;
 
-    std::pair<std::vector<double>, std::vector<Point<dim>>> integration_rule;
+    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule;
 
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
@@ -75,32 +75,35 @@ class Master {
     Array2D<double> phi_postprocessor_point;
 
   public:
-    Master(uint p) : p(p) {}
+    Master(const uint p) : p(p) {}
 
-    virtual std::vector<Point<dim>> BoundaryToMasterCoordinates(uint, const std::vector<Point<dim - 1>>&) = 0;
+    virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
+        const uint bound_id,
+        const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 };
 }
 
 namespace Shape {
-template <uint dim>
+template <uint dimension>
 class Shape {
   protected:
-    std::vector<Point<dim>> nodal_coordinates;
+    std::vector<Point<dimension>> nodal_coordinates;
 
   public:
-    Shape(const std::vector<Point<dim>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
+    Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
-    virtual bool CheckJacobianPositive(const Point<dim>&) = 0;
+    virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
 
-    virtual std::vector<double> GetJdet(const std::vector<Point<dim>>&) = 0;
-    virtual Array3D<double> GetJinv(const std::vector<Point<dim>>&) = 0;
-    virtual std::vector<double> GetSurfaceJ(uint, const std::vector<Point<dim>>&) = 0;
-    virtual Array2D<double> GetSurfaceNormal(uint, const std::vector<Point<dim>>&) = 0;
+    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) = 0;
+    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
-    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>&, const std::vector<Point<dim>>&) = 0;
-    virtual std::vector<Point<dim>> LocalToGlobalCoordinates(const std::vector<Point<dim>>&) = 0;
+    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
+                                                       const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
-    virtual void GetVTK(std::vector<Point<3>>&, Array2D<uint>&) = 0;
+    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 };
 }
 
@@ -108,7 +111,7 @@ class Shape {
 
 #define PI 3.14159265359
 
-#define N_DIV 2                // postproc elem div
+#define N_DIV 1                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
 #define INTERNAL 255           // max uchar as default bound type: internal
 #define DISTRIBUTED 254

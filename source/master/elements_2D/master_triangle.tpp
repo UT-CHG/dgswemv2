@@ -1,8 +1,8 @@
 #include "../master_elements_2D.hpp"
 
 namespace Master {
-template <class basis_type, class integration_type>
-Triangle<basis_type, integration_type>::Triangle(uint p)
+template <class BasisType, class IntegrationType>
+Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     : Master<2>(p) {
     this->integration_rule = this->integration.GetRule(2 * this->p);
 
@@ -34,23 +34,23 @@ Triangle<basis_type, integration_type>::Triangle(uint p)
     this->m_inv = this->basis.GetMinv(this->p);
 }
 
-template <class basis_type, class integration_type>
-std::vector<Point<2>> Triangle<basis_type, integration_type>::BoundaryToMasterCoordinates(
-    uint boundary,
+template <class BasisType, class IntegrationType>
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
+    const uint bound_id,
     const std::vector<Point<1>>& z_boundary) {
     std::vector<Point<2>> z_master(z_boundary.size());
 
-    if (boundary == 0) {
+    if (bound_id == 0) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
             z_master[gp][LocalCoordTri::z1] = -z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = z_boundary[gp][LocalCoordTri::z1];
         }
-    } else if (boundary == 1) {
+    } else if (bound_id == 1) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
             z_master[gp][LocalCoordTri::z1] = -1;
             z_master[gp][LocalCoordTri::z2] = -z_boundary[gp][LocalCoordTri::z1];
         }
-    } else if (boundary == 2) {
+    } else if (bound_id == 2) {
         for (uint gp = 0; gp < z_master.size(); gp++) {
             z_master[gp][LocalCoordTri::z1] = z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = -1;
@@ -60,8 +60,8 @@ std::vector<Point<2>> Triangle<basis_type, integration_type>::BoundaryToMasterCo
     return z_master;
 }
 
-template <class basis_type, class integration_type>
-std::vector<Point<2>> Triangle<basis_type, integration_type>::VTKPostCell() {
+template <class BasisType, class IntegrationType>
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
     std::vector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
 
     double dz = 2.0 / N_DIV;
@@ -85,8 +85,8 @@ std::vector<Point<2>> Triangle<basis_type, integration_type>::VTKPostCell() {
     return z_postprocessor_cell;
 }
 
-template <class basis_type, class integration_type>
-std::vector<Point<2>> Triangle<basis_type, integration_type>::VTKPostPoint() {
+template <class BasisType, class IntegrationType>
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() {
     std::vector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
 
     double dz = 2.0 / N_DIV;

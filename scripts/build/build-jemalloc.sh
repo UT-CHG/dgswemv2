@@ -88,9 +88,9 @@ else
 fi
 
 # Done setting up variables.
-
+JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
 if [ "$1" = "clean" ]; then
-    CLEAN_CMD="rm -rf ${SCRIPTPATH}/jemalloc"
+    CLEAN_CMD="rm -rf ${JEMALLOC_BUILD}"
 
     $START_BOLD
     echo "$0 clean:"
@@ -102,25 +102,28 @@ if [ "$1" = "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${SCRIPTPATH}/jemalloc"
+	echo "removing build directory ${JEMALLOC_BUILD}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
     fi
     exit 0
 fi
- 
+
 if [ ! -d $INSTALL_PATH ]; then
     echo "Creating install path..."
     mkdir -p ${INSTALL_PATH}
 fi
 
-JEMALLOC_BUILD="${BUILD_PATH}/jemalloc"
+for module in $MODULES; do
+    module load $module
+done
+
 if [ ! -d ${JEMALLOC_BUILD} ]; then
     set -e
     mkdir -p ${JEMALLOC_BUILD}
     cd ${JEMALLOC_BUILD}
-    wget http://www.canonware.com/download/jemalloc/jemalloc-3.6.0.tar.bz2
+    wget https://github.com/jemalloc/jemalloc/releases/download/3.6.0/jemalloc-3.6.0.tar.bz2
     tar xf jemalloc-3.6.0.tar.bz2
     cd jemalloc-3.6.0
     ./configure --prefix=$INSTALL_PATH

@@ -7,19 +7,31 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    const InputParameters input;
+    InputParameters input;
 
-    typename ProblemType::mesh_type mesh;
     Stepper stepper;
+    typename ProblemType::ProblemMeshType mesh;
+
+    std::string log_file_name;
 
   public:
-    Simulation(const std::string& input_string)
-        : input(input_string),
-          mesh(input.polynomial_order, input.mesh_data._mesh_name),
-          stepper(input.rk.nstages, input.rk.order, input.dt) {
-        printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
+    Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    Simulation(std::string input_string)
+        : input(input_string), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {
+        input.ReadMesh();
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
+        mesh.SetMeshName(input.mesh_data.mesh_name);
+
+        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
+
+        std::ofstream log_file(this->log_file_name, std::ofstream::out);
+
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
+                 << std::endl << std::endl;
+
+        std::tuple<> empty_comm;
+
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm);
     }
 
     void Run();
@@ -27,8 +39,10 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    // we write these gross looking wrapper functions to append the stepper in a way that allows us to keep the
-    // the nice std::for_each notation without having to define stepper within each element
+    // we write these gross looking wrapper functions to append the stepper in a
+    // way that allows us to keep the
+    // the nice std::for_each notation without having to define stepper within
+    // each element
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -52,8 +66,8 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(resize_data_container);
 
-    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
@@ -75,20 +89,20 @@ void Simulation<ProblemType>::Run() {
         this->mesh.CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
+<<<<<<< HEAD
             std::cout << "Step: " << step << "\n";
+            // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+            // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+=======
+            std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+            log_file << "Step: " << this->stepper.get_step() << std::endl;
+
             ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+>>>>>>> mpi
         }
     }
-
-    double residual_L2 = 0;
-    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
-        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    };
-
-    mesh.CallForEachElement(compute_residual_L2_kernel);
-
-    std::cout << "residual L2 norm: " << sqrt(residual_L2) << '\n';
 }
 
 #endif
