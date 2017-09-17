@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
-    std::string input_mesh_str(input.mesh_file_name);
-    std::cout << "  Mesh Name: " << input_mesh_str << '\n';
+    std::string input_mesh_str(input.mesh_file_path);
+    std::cout << "  Mesh Path: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
     int num_nodes = atoi(argv[3]);
@@ -64,9 +64,10 @@ int main(int argc, char** argv) {
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {
             std::string outname = input_mesh_str;
-            outname.erase(outname.size() - 3);
+            outname = outname.substr(0, outname.find_last_of("."));
+
             outname += "_" + std::to_string(static_cast<long long>(n)) + "_" +
-                       std::to_string(static_cast<long long>(m)) + ".14";
+                       std::to_string(static_cast<long long>(m)) + ".meta";
 
             submeshes[n][m].WriteTo(outname);
         }
@@ -78,6 +79,7 @@ int main(int argc, char** argv) {
     std::string updated_input_filename = std::string(argv[1]);
     updated_input_filename.erase(updated_input_filename.size() - 3);
     updated_input_filename += "_parallelized.15";
+    input.mesh_file_name = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of(".")) + ".meta";
     input.mesh_format = "Meta";
     input.WriteTo(updated_input_filename);
 

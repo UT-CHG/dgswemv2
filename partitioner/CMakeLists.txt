@@ -16,6 +16,7 @@ add_executable(
   ${PARTITIONER_SOURCES}
 )
 
-target_include_directories(partitioner PRIVATE ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
-
+target_include_directories(partitioner PRIVATE ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})  
 target_link_libraries(partitioner ${YAML_CPP_LIBRARIES} ${METIS_LIBRARIES})
+
+install(TARGETS partitioner DESTINATION bin/utilities/partitioner)

@@ -1,22 +1,37 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
+#include "../preprocessor/input_parameters.hpp"
+#include "../preprocessor/initialize_mesh.hpp"
+
 template <typename ProblemType>
 class Simulation {
   private:
-    const InputParameters input;
+    InputParameters input;
 
-    typename ProblemType::mesh_type mesh;
     Stepper stepper;
+    typename ProblemType::ProblemMeshType mesh;
+
+    std::string log_file_name;
 
   public:
+    Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     Simulation(std::string input_string)
-        : input(input_string),
-          mesh(input.polynomial_order, input.mesh_data._mesh_name),
-          stepper(input.rk.nstages, input.rk.order, input.dt) {
-        printf("Starting program with p=%d for %s mesh\n\n", input.polynomial_order, input.mesh_file_name.c_str());
+        : input(input_string), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {
+        input.ReadMesh();
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data);
+        mesh.SetMeshName(input.mesh_data.mesh_name);
+
+        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
+
+        std::ofstream log_file(this->log_file_name, std::ofstream::out);
+
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
+                 << std::endl << std::endl;
+
+        std::tuple<> empty_comm;
+
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm);
     }
 
     void Run();
@@ -74,9 +89,18 @@ void Simulation<ProblemType>::Run() {
         this->mesh.CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
+<<<<<<< HEAD
             std::cout << "Step: " << step << "\n";
             // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+=======
+            std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+            log_file << "Step: " << this->stepper.get_step() << std::endl;
+
+            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+            ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+>>>>>>> mpi
         }
     }
 }

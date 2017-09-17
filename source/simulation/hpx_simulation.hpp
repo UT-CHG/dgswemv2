@@ -24,7 +24,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
           mesh(input.polynomial_order),
-          communicator(std::string(input.mesh_file_name + "_meta"), locality_id, submesh_id) {
+          communicator(input.mesh_file_path.substr(0, input.mesh_file_path.find_last_of('.')) + ".dbmd",
+                       locality_id,
+                       submesh_id) {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
@@ -33,8 +35,8 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
 
-        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_file_name
-                 << " mesh" << std::endl << std::endl;
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
+                 << std::endl << std::endl;
 
         initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator);
     }
@@ -214,12 +216,14 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
 
-        std::string mesh_file_prefix = input.mesh_file_name;
-        mesh_file_prefix.erase(mesh_file_prefix.size() - 3);
-        mesh_file_prefix += '_' + std::to_string(locality_id) + '_';
+        std::string submesh_file_prefix = input.mesh_file_path.substr(0, input.mesh_file_path.find_last_of('.')) + "_" +
+                                          std::to_string(locality_id) + '_';
+        std::string submesh_file_postfix =
+            input.mesh_file_path.substr(input.mesh_file_path.find_last_of('.'), input.mesh_file_path.size());
 
         uint submesh_id = 0;
-        while (Utilities::file_exists(mesh_file_prefix + std::to_string(submesh_id) + ".14")) {
+
+        while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
             hpx::future<hpx::id_type> simulation_unit_id =
                 hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
                     here, input_string, locality_id, submesh_id);
@@ -242,7 +246,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         simulation_futures.push_back(sim_unit_client.Launch());
     }
 
-    for (uint step = 1; step < this->n_steps; step++) {
+    for (uint step = 1; step <= this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {
             for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
                 simulation_futures[sim_id] =
