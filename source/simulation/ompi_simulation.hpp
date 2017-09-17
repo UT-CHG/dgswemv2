@@ -261,7 +261,7 @@ void OMPISimulation<ProblemType>::Run() {
                 this->simulation_units[sim_unit_id]->Step();
             }
         }
-        
+
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
             this->simulation_units[sim_unit_id]->ResidualL2();
         }

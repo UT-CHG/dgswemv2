@@ -78,11 +78,6 @@ struct ElementMetaData {
     }
 };
 
-inline bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
-    return (lhs.node_ids == rhs.node_ids) && (lhs.neighbor_ID == rhs.neighbor_ID) &&
-           (lhs.boundary_type == rhs.boundary_type);
-}
-
 struct MeshMetaData {
     MeshMetaData() = default;  // why define default constructor?
     MeshMetaData(const AdcircFormat& mesh_file);
