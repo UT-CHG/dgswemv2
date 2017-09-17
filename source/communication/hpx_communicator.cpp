@@ -1,7 +1,4 @@
 #include "hpx_communicator.hpp"
-#include "preprocessor/mesh_metadata.hpp"
-
-#include <hpx/include/iostreams.hpp>
 
 HPX_REGISTER_CHANNEL(array_double);
 

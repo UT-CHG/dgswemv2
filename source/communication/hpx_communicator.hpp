@@ -2,7 +2,15 @@
 #define HPX_COMMUNICATOR_HPP
 
 #include "../general_definitions.hpp"
+<<<<<<< HEAD
 #include <hpx/hpx.hpp>
+=======
+
+#include <hpx/hpx.hpp>
+#include <hpx/include/iostreams.hpp>
+
+#include "preprocessor/mesh_metadata.hpp"
+>>>>>>> mpi
 
 using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
@@ -34,11 +42,11 @@ class HPXCommunicator {
     HPXCommunicator() = default;
     HPXCommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
 
-    void SendAll(const uint timestamp);
-    hpx::future<void> ReceiveAll(const uint timestamp);
-
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
+
+    void SendAll(const uint timestamp);
+    hpx::future<void> ReceiveAll(const uint timestamp);
 
   public:
     using RankBoundaryType = HPXRankBoundary;

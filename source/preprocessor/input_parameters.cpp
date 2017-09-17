@@ -8,6 +8,11 @@ InputParameters::InputParameters(const std::string& input_string) {
         YAML::Node raw_mesh = input_file["mesh"];
         mesh_format = raw_mesh["format"].as<std::string>();
         mesh_file_name = raw_mesh["file_name"].as<std::string>();
+
+        std::string path_to_input = input_string;
+        path_to_input = path_to_input.substr(0, path_to_input.find_last_of("/\\") + 1);
+        mesh_file_path = path_to_input + mesh_file_name;
+
         if (!((mesh_format == "Adcirc") || (mesh_format == "Meta"))) {
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
             throw std::logic_error(err_msg);
@@ -25,26 +30,20 @@ InputParameters::InputParameters(const std::string& input_string) {
     }
 
     polynomial_order = input_file["polynomial_order"].as<uint>();
-    if (polynomial_order > 10) {
-        std::string err_msg =
-            "Error: Invalid polynomial order: " + std::to_string(polynomial_order) + " can be at most 10\n";
-
-        throw std::logic_error(err_msg);
-    }
 }
 
 InputParameters::InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id)
     : InputParameters(input_string) {
-    mesh_file_name.erase(mesh_file_name.size() - 3);
-    mesh_file_name += '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id) + ".14";
+    mesh_file_path.insert(mesh_file_path.find_last_of("."),
+                          '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
 }
 
 void InputParameters::ReadMesh() {
     if (mesh_format == "Adcirc") {
-        AdcircFormat adcirc_file(mesh_file_name);
+        AdcircFormat adcirc_file(mesh_file_path);
         mesh_data = MeshMetaData(adcirc_file);
     } else if (mesh_format == "Meta") {
-        mesh_data = MeshMetaData(mesh_file_name);
+        mesh_data = MeshMetaData(mesh_file_path);
     }
 }
 

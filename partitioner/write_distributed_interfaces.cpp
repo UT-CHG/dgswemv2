@@ -82,9 +82,10 @@ void write_distributed_edge_metadata(const std::string& file_name,
         for (uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id) {
 
             std::string distributed_meta_filename = file_name;
-            distributed_meta_filename.erase(distributed_meta_filename.size() - 3);
+            distributed_meta_filename =
+                distributed_meta_filename.substr(0, distributed_meta_filename.find_last_of("."));
             std::ofstream file(distributed_meta_filename + '_' + std::to_string(loc_id) + '_' +
-                               std::to_string(sbmsh_id) + ".14_meta");
+                               std::to_string(sbmsh_id) + ".dbmd");
             for (auto& sf : shared_faces) {
                 uint locA = sf.first.first % num_loc;
                 uint sbmshA = sf.first.first / num_loc;
