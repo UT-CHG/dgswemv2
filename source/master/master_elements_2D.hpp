@@ -4,16 +4,16 @@
 #include "../general_definitions.hpp"
 
 namespace Master {
-template <class basis_type, class integration_type>
+template <class BasisType, class IntegrationType>
 class Triangle : public Master<2> {
   public:
-    basis_type basis;
-    integration_type integration;
+    BasisType basis;
+    IntegrationType integration;
 
   public:
-    Triangle(uint);
+    Triangle(const uint p);
 
-    std::vector<Point<2>> BoundaryToMasterCoordinates(uint, const std::vector<Point<1>>&);
+    std::vector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const std::vector<Point<1>>& z_boundary);
 
   private:
     std::vector<Point<2>> VTKPostCell();

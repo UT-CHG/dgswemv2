@@ -1,7 +1,9 @@
-#ifndef INPUT_HPP
-#define INPUT_HPP
+#ifndef INPUT_PARAMETERS_HPP
+#define INPUT_PARAMETERS_HPP
 
 #include "mesh_metadata.hpp"
+
+#include <yaml-cpp/yaml.h>
 
 struct RKInput {
     uint nstages;
@@ -9,9 +11,16 @@ struct RKInput {
 };
 
 struct InputParameters {
-    InputParameters(const char* input_string);
+    InputParameters() = default;
+    InputParameters(const std::string& input_string);
+    InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id);
+
+    void ReadMesh();
+    void WriteTo(const std::string& output_filename);
 
     std::string mesh_file_name;
+    std::string mesh_file_path;
+    std::string mesh_format;
     MeshMetaData mesh_data;
 
     // right now we only support SSPRK timestepping
@@ -24,4 +33,5 @@ struct InputParameters {
 
     uint polynomial_order;
 };
+
 #endif

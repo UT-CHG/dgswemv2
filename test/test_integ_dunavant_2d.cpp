@@ -14,6 +14,8 @@ int main() {
 
         rule = dunavant.GetRule(p);
 
+        uint num_gp = dunavant.GetNumGP(p);
+
         double num_integration = 0;
         for (uint gp = 0; gp < rule.first.size(); gp++) {
             num_integration += pow(rule.second[gp][GlobalCoord::x], p) * rule.first[gp];
@@ -24,6 +26,12 @@ int main() {
             std::cerr << "Error found in Dunavant 2D at " << std::to_string(p)
                       << " - integration true value: " << exact_integration
                       << ", integration computed value: " << num_integration << std::endl;
+        }
+
+        if (num_gp != rule.first.size()) {
+            any_error = true;
+            std::cerr << "Error found in Dunavant 2D at " << std::to_string(p) << " gp_vector has size "
+                      << rule.first.size() << " and return num_gp value " << num_gp << std::endl;
         }
     }
 

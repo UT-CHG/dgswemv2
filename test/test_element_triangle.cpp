@@ -99,7 +99,8 @@ int main() {
         if (!almost_equal(IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals), 1.e+04)) {
             error_found = true;
 
-            std::cerr << "Error found in Triangle element in IntegrationDPhi in x direction" << std::endl;
+            std::cerr << "Error found in Triangle element in IntegrationDPhi "
+                         "in x direction" << std::endl;
         }
     }
     // Add 7 more modes
@@ -107,7 +108,8 @@ int main() {
         if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
             error_found = true;
 
-            std::cerr << "Error found in Triangle element in IntegrationDPhi in y direction" << std::endl;
+            std::cerr << "Error found in Triangle element in IntegrationDPhi "
+                         "in y direction" << std::endl;
         }
     }
 
@@ -153,7 +155,8 @@ int main() {
                           triangle.IntegrationDPhi(GlobalCoord::x, dof, gp_vals))) {
             error_found = true;
 
-            std::cerr << "Error found in Triangle element in ComputeDUgp in x direction" << std::endl;
+            std::cerr << "Error found in Triangle element in ComputeDUgp in x "
+                         "direction" << std::endl;
         }
 
         triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
@@ -162,7 +165,8 @@ int main() {
                           triangle.IntegrationDPhi(GlobalCoord::y, dof, gp_vals))) {
             error_found = true;
 
-            std::cerr << "Error found in Triangle element in ComputeDUgp in y direction" << std::endl;
+            std::cerr << "Error found in Triangle element in ComputeDUgp in y "
+                         "direction" << std::endl;
         }
     }
 
