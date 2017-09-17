@@ -49,6 +49,8 @@ class OMPISimulationUnit {
     void WaitAllSends();
 
     void Step();
+
+    void ResidualL2();
 };
 
 template <typename ProblemType>
@@ -167,6 +169,21 @@ void OMPISimulationUnit<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::ResidualL2() {
+    double residual_L2 = 0;
+
+    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+    };
+
+    this->mesh.CallForEachElement(compute_residual_L2_kernel);
+
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+    log_file << "residual inner product: " << residual_L2 << std::endl;
+}
+
+template <typename ProblemType>
 class OMPISimulation {
   private:
     uint n_steps;
@@ -243,6 +260,10 @@ void OMPISimulation<ProblemType>::Run() {
             for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                 this->simulation_units[sim_unit_id]->Step();
             }
+        }
+        
+        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+            this->simulation_units[sim_unit_id]->ResidualL2();
         }
     }
 }

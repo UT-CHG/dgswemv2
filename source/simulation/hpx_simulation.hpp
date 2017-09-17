@@ -164,7 +164,7 @@ void HPXSimulationUnit<ProblemType>::ResidualL2() {
 
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
-    log_file << "residual L2 norm: " << sqrt(residual_L2) << std::endl;
+    log_file << "residual inner product: " << residual_L2 << std::endl;
 }
 
 template <typename ProblemType>

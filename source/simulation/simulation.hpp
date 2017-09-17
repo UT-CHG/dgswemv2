@@ -39,10 +39,8 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    // we write these gross looking wrapper functions to append the stepper in a
-    // way that allows us to keep the
-    // the nice std::for_each notation without having to define stepper within
-    // each element
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -66,8 +64,8 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(resize_data_container);
 
-    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
@@ -89,14 +87,22 @@ void Simulation<ProblemType>::Run() {
         this->mesh.CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
-            std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
             log_file << "Step: " << this->stepper.get_step() << std::endl;
 
             ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
         }
     }
+
+    double residual_L2 = 0;	
+
+    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {		
+         residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);		
+    };		
+ 		
+    mesh.CallForEachElement(compute_residual_L2_kernel);		
+ 		
+    log_file << "residual L2 norm: " << sqrt(residual_L2) << std::endl;
 }
 
 #endif
