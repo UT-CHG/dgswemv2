@@ -89,18 +89,12 @@ void Simulation<ProblemType>::Run() {
         this->mesh.CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
-<<<<<<< HEAD
-            std::cout << "Step: " << step << "\n";
-            // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-            // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-=======
             std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
             log_file << "Step: " << this->stepper.get_step() << std::endl;
 
             ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
->>>>>>> mpi
         }
     }
 }
