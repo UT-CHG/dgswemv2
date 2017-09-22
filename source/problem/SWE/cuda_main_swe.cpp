@@ -1,13 +1,13 @@
 #include "../../general_definitions.hpp"
 
-#include "../../simulation/stepper.hpp"
+#include "simulation/stepper.hpp"
 
 #include "swe_problem.hpp"
 #include "swe_kernels_preprocessor.hpp"
 #include "swe_kernels_processor.hpp"
 #include "swe_kernels_postprocessor.hpp"
 
-#include "simulation/serial_simulation.hpp"
+#include "simulation/cuda_simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        SerialSimulation<SWE::Problem> simulation(input_string);
+        CUDASimulationUnit<SWE::Problem> simulation(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();
