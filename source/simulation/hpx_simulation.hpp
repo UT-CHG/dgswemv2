@@ -34,6 +34,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
+	if ( !log_file ) {
+	  std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
+	}
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
@@ -69,8 +72,8 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
              << ')' << std::endl;
 
@@ -102,8 +105,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
              << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
 #endif
     return receive_future.then([this](auto&&) {
-        std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
+        std::ofstream log_file(this->log_file_name, std::ofstream::app);
         log_file << "Starting work after receive" << std::endl;
 #endif
         auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
