@@ -1,11 +1,10 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (DG_HYPER CXX C)
 
-
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
 option(USE_CUDA "Use CUDA" ON)
-option(SET_VERBOSE "Verbose MakeFile" ON)
+option(SET_VERBOSE "Verbose MakeFile" OFF)
 
 enable_testing()
 
