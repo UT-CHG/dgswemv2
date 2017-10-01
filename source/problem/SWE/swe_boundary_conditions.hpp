@@ -60,6 +60,33 @@ class Tidal {
     }
 };
 
+class Flow {
+public:
+  void GetEX(const Stepper& stepper,
+             const uint gp,
+             const Array2D<double>& surface_normal,
+             const std::vector<double>& ze_in,
+             const std::vector<double>& qx_in,
+             const std::vector<double>& qy_in,
+             double& ze_ex,
+             double& qx_ex,
+             double& qy_ex) {
+                double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
+                
+                        n_x = surface_normal[gp][GlobalCoord::x];
+                        n_y = surface_normal[gp][GlobalCoord::y];
+                        t_x = -n_y;
+                        t_y = n_x;
+                
+                        qn_ex = 0;
+                        qt_ex = 0;
+                
+                        ze_ex = ze_in[gp];
+                        qx_ex = qn_ex * n_x + qt_ex * t_x;
+                        qy_ex = qn_ex * n_y + qt_ex * t_y;
+                  }
+};
+
 class Distributed {
   private:
     std::vector<double>& send_buffer;

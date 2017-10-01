@@ -9,7 +9,8 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                                        std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
-
+    uint n_bound_old_flow = 0;
+    
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
     using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal>;
@@ -38,6 +39,19 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 }
 
                 log_file << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal
+                         << std::endl;
+
+                break;
+            case SWE::flow:
+                using BoundaryTypeFlow = typename std::tuple_element<2, BoundaryTypes>::type;
+
+                n_bound_old_flow = mesh.GetNumberBoundaries();
+
+                for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+                    mesh.template CreateBoundary<BoundaryTypeFlow>(*itt);
+                }
+
+                log_file << "Number of flow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_flow
                          << std::endl;
 
                 break;
