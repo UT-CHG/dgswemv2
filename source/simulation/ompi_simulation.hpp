@@ -1,6 +1,8 @@
 #ifndef OMPI_SIMULATION_HPP
 #define OMPI_SIMULATION_HPP
 
+#include "../general_definitions.hpp"
+
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "../communication/ompi_communicator.hpp"
@@ -179,7 +181,7 @@ class OMPISimulation {
     uint n_steps;
     uint n_stages;
 
-    std::vector<OMPISimulationUnit<ProblemType>*> simulation_units;
+    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
   public:
     OMPISimulation() = default;
@@ -200,7 +202,7 @@ class OMPISimulation {
         uint submesh_id = 0;
 
         while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-            this->simulation_units.push_back(
+            this->simulation_units.emplace_back(
                 new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;
