@@ -159,7 +159,7 @@ SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) 
                 case 0:
                 case 10:
                 case 20:
-                    return SWE::BoundaryConditions::tidal;
+                    return SWE::BoundaryConditions::land;
                 case 2:
                 case 12:
                 case 22:

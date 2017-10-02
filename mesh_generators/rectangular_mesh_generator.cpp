@@ -106,11 +106,11 @@ int main(int argc, const char* argv[]) {
     uint n_land = 0;
     uint n_tidal = 0;
     uint n_flow = 0;
-    
+
     uint n_land_node = 0;
     uint n_tidal_node = 0;
     uint n_flow_node = 0;
-    
+
     for (uint n_bound = 0; n_bound < 4; n_bound++) {
         if (boundaries[n_bound].type == 0) {
             n_land++;
@@ -121,7 +121,7 @@ int main(int argc, const char* argv[]) {
         } else if (boundaries[n_bound].type == 2) {
             n_flow++;
             n_flow_node += boundaries[n_bound].nodes.size();
-        }   
+        }
     }
 
     file << n_tidal << " = Number of open boundaries\n";
@@ -140,8 +140,8 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    file << n_land+n_flow << " = Number of normal boundaries\n";
-    file << n_land_node+n_flow_node << " = Total number of normal boundary nodes\n";
+    file << n_land + n_flow << " = Number of land boundaries\n";
+    file << n_land_node + n_flow_node << " = Total number of land boundary nodes\n";
 
     i = 1;
     for (uint n_bound = 0; n_bound < 4; n_bound++) {
@@ -155,7 +155,7 @@ int main(int argc, const char* argv[]) {
             i++;
         }
         if (boundaries[n_bound].type == 2) {
-            file << boundaries[n_bound].nodes.size() << " 2 = Number of nodes for flow boundary " << i << '\n';
+            file << boundaries[n_bound].nodes.size() << " 2 = Number of nodes for land boundary " << i << '\n';
 
             std::for_each(boundaries[n_bound].nodes.begin(), boundaries[n_bound].nodes.end(), [&file](uint val) {
                 file << val << '\n';
