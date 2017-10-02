@@ -3,4 +3,5 @@
 ################################################################################
 
 build/*
+scripts/build/config-kazbek.txt
 test/files_for_testing/sample_fort.14.out
