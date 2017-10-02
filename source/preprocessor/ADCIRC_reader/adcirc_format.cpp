@@ -145,7 +145,7 @@ void AdcircFormat::write_to(const char* out_name) const {
     }
 }
 
-inline SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) const {
+SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) const {
     for (auto& open_bdry : NBDV) {
         if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
             return SWE::BoundaryConditions::tidal;
@@ -155,23 +155,23 @@ inline SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node
     uint segment_id = 0;
     for (auto& land_bdry : NBVV) {
         if (has_edge(land_bdry.cbegin(), land_bdry.cend(), node_pair)) {
-            switch(IBTYPE[segment_id]){
+            switch (IBTYPE[segment_id]) {
                 case 0:
                 case 10:
                 case 20:
-                    return SWE::BoundaryConditions::tidal; 
+                    return SWE::BoundaryConditions::tidal;
                 case 2:
                 case 12:
                 case 22:
-                    return SWE::BoundaryConditions::flow; 
+                    return SWE::BoundaryConditions::flow;
                 default:
                     throw std::logic_error(
                         "Error Boundary type unknown, unable to assign BOUNDARY_TYPE to given "
                         "node_pair (" +
-                        std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");                            
+                        std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
             }
         }
-        
+
         segment_id++;
     }
 
@@ -181,9 +181,9 @@ inline SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node
         std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
 }
 
-inline bool AdcircFormat::has_edge(std::vector<int>::const_iterator cbegin,
-              std::vector<int>::const_iterator cend,
-              std::array<int, 2>& node_pair) const {
+bool AdcircFormat::has_edge(std::vector<int>::const_iterator cbegin,
+                            std::vector<int>::const_iterator cend,
+                            std::array<int, 2>& node_pair) const {
     auto it = std::find(cbegin, cend, node_pair[0]);
 
     if (it != cend) {

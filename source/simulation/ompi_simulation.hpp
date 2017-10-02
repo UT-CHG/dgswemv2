@@ -35,9 +35,9 @@ class OMPISimulationUnit {
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
 
-        if ( !log_file ) {
-	        std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
-	    }   
+        if (!log_file) {
+            std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
+        }
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;

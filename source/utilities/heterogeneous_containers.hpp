@@ -113,14 +113,14 @@ struct HeterogeneousMap {
 
         return std::get<index<T, TupleType>::value>(data).at(key);
     }
- 
+
     /**
      * const at implementation
      */
     template <typename T>
     const T& at(uint key) const {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousMap::at: Type not found");
-        
+
         return std::get<index<T, TupleType>::value>(data).at(key);
     }
 };
