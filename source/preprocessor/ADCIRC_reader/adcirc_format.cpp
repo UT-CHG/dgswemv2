@@ -49,7 +49,8 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                                               {nodes.at(elt.second[2])[0], nodes.at(elt.second[2])[1]},
                                               {nodes.at(elt.second[3])[0], nodes.at(elt.second[3])[1]}});
 
-            // note that point selection doesn't matter since the Jacobian is constant
+            // note that point selection doesn't matter since the Jacobian is
+            // constant
             if (!triangle.CheckJacobianPositive(Point<2>())) {
                 std::swap(elt.second[1], elt.second[3]);
             }
@@ -142,4 +143,66 @@ void AdcircFormat::write_to(const char* out_name) const {
             file << NBVV[n][i] << '\n';
         }
     }
+}
+
+SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) const {
+    for (auto& open_bdry : NBDV) {
+        if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
+            return SWE::BoundaryConditions::tidal;
+        }
+    }
+
+    uint segment_id = 0;
+    for (auto& land_bdry : NBVV) {
+        if (has_edge(land_bdry.cbegin(), land_bdry.cend(), node_pair)) {
+            switch (IBTYPE[segment_id]) {
+                case 0:
+                case 10:
+                case 20:
+                    return SWE::BoundaryConditions::land;
+                case 2:
+                case 12:
+                case 22:
+                    return SWE::BoundaryConditions::flow;
+                default:
+                    throw std::logic_error(
+                        "Error Boundary type unknown, unable to assign BOUNDARY_TYPE to given "
+                        "node_pair (" +
+                        std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+            }
+        }
+
+        segment_id++;
+    }
+
+    throw std::logic_error(
+        "Error Boundary not found, unable to assign BOUNDARY_TYPE to given "
+        "node_pair (" +
+        std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+}
+
+bool AdcircFormat::has_edge(std::vector<int>::const_iterator cbegin,
+                            std::vector<int>::const_iterator cend,
+                            std::array<int, 2>& node_pair) const {
+    auto it = std::find(cbegin, cend, node_pair[0]);
+
+    if (it != cend) {
+        // look at next element
+        if ((it + 1) != cend && *(it + 1) == node_pair[1]) {
+            return true;
+        }
+
+        // look at previous element unless we are at the first element
+        if (it != cbegin) {
+            if (*(it - 1) == node_pair[1]) {
+                return true;
+            }
+        }
+
+        // here you're not at the end of vector, but haven't found an edge
+        // so we must look through the tail
+        return has_edge(it + 1, cend, node_pair);
+    }
+
+    return false;
 }

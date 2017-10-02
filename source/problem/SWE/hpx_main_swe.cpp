@@ -5,18 +5,18 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 
-#include "../../general_definitions.hpp"
+#include "general_definitions.hpp"
 
-#include "../../simulation/stepper.hpp"
 #include "swe_problem.hpp"
-#include "swe_kernels.hpp"
-#include "../../simulation/hpx_simulation.hpp"
+#include "swe_kernels_preprocessor.hpp"
+#include "swe_kernels_processor.hpp"
+#include "swe_kernels_postprocessor.hpp"
 
-void local_main(std::string);
-HPX_PLAIN_ACTION(local_main, local_main_action);
+#include "simulation/hpx_simulation.hpp"
 
-hpx::future<void> solve_mesh(std::string, uint);
-HPX_PLAIN_ACTION(solve_mesh, solve_mesh_action);
+using hpx_simulation_unit_swe = HPXSimulationUnit<SWE::Problem>;
+using hpx_simulation_unit_swe_component = hpx::components::simple_component<HPXSimulationUnit<SWE::Problem>>;
+HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component, hpx_simulation_unit_swe);
 
 using hpx_simulation_swe = HPXSimulation<SWE::Problem>;
 using hpx_simulation_swe_component = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;
@@ -33,56 +33,33 @@ int main(int argc, char* argv[]) {
 }
 
 int hpx_main(int argc, char* argv[]) {
+    std::string input_string = std::string(argv[1]);
+
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
-    std::vector<hpx::future<void>> futures;
-    futures.reserve(localities.size());
+    std::vector<HPXSimulationClient<SWE::Problem>> simulation_clients;
+    simulation_clients.reserve(localities.size());
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (hpx::naming::id_type const& node : localities) {
-        futures.push_back(hpx::async<local_main_action>(node, std::string(argv[1])));
+    for (hpx::naming::id_type const& locality : localities) {
+        hpx::future<hpx::id_type> simulation_id =
+            hpx::new_<hpx::components::simple_component<HPXSimulation<SWE::Problem>>>(locality, input_string);
+
+        simulation_clients.emplace_back(std::move(simulation_id));
     }
 
-    hpx::wait_all(futures);
+    std::vector<hpx::future<void>> run_futures;
+    run_futures.reserve(simulation_clients.size());
+
+    for (auto& sim_client : simulation_clients) {
+        run_futures.push_back(sim_client.Run());
+    }
+
+    hpx::wait_all(run_futures);
     auto t2 = std::chrono::high_resolution_clock::now();
 
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << "\n";
 
-    return hpx::finalize();  // Handles HPX shutdown
-}
-
-void local_main(std::string input_string) {
-    const hpx::naming::id_type here = hpx::find_here();
-    const uint n_threads = 4;  // hpx::get_os_thread_count();
-
-    std::vector<hpx::future<void>> futures;
-    futures.reserve(n_threads);
-
-    for (uint thread = 0; thread < n_threads; thread++) {
-        futures.push_back(hpx::async<solve_mesh_action>(here, input_string, thread));
-    }
-
-    hpx::wait_all(futures);
-}
-
-hpx::future<void> solve_mesh(std::string input_string, uint thread) {
-    try {
-        hpx::id_type here = hpx::find_here();
-
-        hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx_simulation_swe_component>(here, input_string, hpx::get_locality_id(), thread);
-
-        HPXSimulationClient<SWE::Problem> simulation_client(std::move(simulation_id));
-
-        //     HPXSimulation<SWE::Problem> simulation_client(input_string, hpx::get_locality_id(), thread);
-
-        return simulation_client.Run();
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Exception caught\n";
-        std::cerr << "  " << e.what() << std::endl;
-
-        return hpx::make_ready_future();
-    }
+    return hpx::finalize();
 }

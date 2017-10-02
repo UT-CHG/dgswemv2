@@ -1,7 +1,7 @@
 #include "../integrations_2D.hpp"
 
 namespace Integration {
-std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(uint p) {
+std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
     if (p < 0 || p > 20) {
         printf("\n");
         printf("DUNAVANT 2D - Fatal error!\n");
@@ -64,8 +64,7 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(uint 
     return rule;
 }
 
-uint Dunavant_2D::GetNumGP(uint p) {
-
+uint Dunavant_2D::GetNumGP(const uint p) {
     uint num_gp{0};
     switch (p) {
         case(1) :
@@ -132,7 +131,7 @@ uint Dunavant_2D::GetNumGP(uint p) {
     return num_gp;
 }
 
-std::vector<uint> Dunavant_2D::PermutationData(uint p) {
+std::vector<uint> Dunavant_2D::PermutationData(const uint p) {
     std::vector<uint> permutations;
 
     if (p == 1) {
@@ -360,7 +359,7 @@ std::vector<uint> Dunavant_2D::PermutationData(uint p) {
     return permutations;
 }
 
-std::pair<std::vector<double>, std::vector<Point<3>>> Dunavant_2D::GPData(uint p) {
+std::pair<std::vector<double>, std::vector<Point<3>>> Dunavant_2D::GPData(const uint p) {
     std::pair<std::vector<double>, std::vector<Point<3>>> gp;
 
     if (p == 1) {

@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++14 -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 add_executable(
   test_tuple_helpers_exe
@@ -111,7 +111,7 @@ add_test(
 add_executable(
   test_rk_stepper_exe
   test_rk_stepper.cpp
-  ${PROJECT_SOURCE_DIR}/source/stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
 )
 
 add_test(
@@ -150,6 +150,20 @@ add_test(
 #  test_swe_boundaries_exe
 #)
 
+add_executable(
+  test_mesh_metadata_exe
+  test_mesh_metadata.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+)
+
+add_test(
+  Unit_mesh_metadata
+  test_mesh_metadata_exe
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
+)
+
 include_directories("${YAML_CPP_INCLUDE_DIR}")
 
 add_executable(
@@ -182,4 +196,22 @@ timestepping:\n\
   order: 2\n\
   nstages: 2\n\n\
 polynomial_order: 2"
+)
+
+add_executable(
+  test_partition_exe
+  test_partition.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/partition.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+)
+
+target_include_directories(test_partition_exe PRIVATE ${METIS_INCLUDE_DIRS})
+target_link_libraries(test_partition_exe ${METIS_LIBRARIES})
+
+add_test(
+  Unit_partition
+  test_partition_exe
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
 )

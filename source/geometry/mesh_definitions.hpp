@@ -1,8 +1,10 @@
-#ifndef MESH_DEFINITIONS_H
-#define MESH_DEFINITIONS_H
+#ifndef MESH_DEFINITIONS_HPP
+#define MESH_DEFINITIONS_HPP
 
 #include "mesh.hpp"
+#include "raw_boundary.hpp"
 #include "element.hpp"
+#include "interface.hpp"
 #include "boundary.hpp"
 
 #include "../master/master_elements_2D.hpp"
@@ -22,8 +24,14 @@ using InterfaceTypeTuple = std::tuple<Interface<1, Integration::GaussLegendre_1D
 template <typename Data, typename... BCs>
 using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, BCs>...>;
 
-template <typename Data, typename... BCs>
-using MeshType = Mesh<ElementTypeTuple<Data>, InterfaceTypeTuple<Data>, BoundaryTypeTuple<Data, BCs...>>;
+template <typename Data, typename Distributed>
+using DistributedBoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, Distributed>>;
+
+template <typename Data, typename Distributed, typename... BCs>
+using MeshType = Mesh<ElementTypeTuple<Data>,
+                      InterfaceTypeTuple<Data>,
+                      BoundaryTypeTuple<Data, BCs...>,
+                      DistributedBoundaryTypeTuple<Data, Distributed>>;
 };
 
 #endif
