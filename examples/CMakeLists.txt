@@ -19,7 +19,7 @@ list (APPEND DG_HYPER_SWE_SOURCES
 
 add_executable(
   swe_manufactured_solution_serial
-  ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/main_swe.cpp
+  ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/main_swe_manufactured.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 
