@@ -48,9 +48,10 @@ class Tidal {
         double ze_0 = 0.2763;
         double ze_amp = 0;
         // ze_amp = ze_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0)); // TANH RAMP
-        if (stepper.get_t_at_curr_stage() < 172800.0) ze_amp = ze_0 * stepper.get_t_at_curr_stage() / 172800.0; // LINEAR RAMPING
+        if (stepper.get_t_at_curr_stage() < 172800.0)
+            ze_amp = ze_0 * stepper.get_t_at_curr_stage() / 172800.0;  // LINEAR RAMPING
 
-        ze_ex = ze_amp * cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0); // M2
+        ze_ex = ze_amp * cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0);  // M2
         qx_ex = qx_in[gp];
         qy_ex = qy_in[gp];
     }
@@ -67,9 +68,9 @@ class Flow {
                double& ze_ex,
                double& qx_ex,
                double& qy_ex) {
-        double qn_0 = 0.75;
-        double qn_amp = 0;        
-        qn_amp = qn_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.5 * 86400.0)); // TANH RAMP
+        double qn_0 = -0.75;
+        double qn_amp = 0;
+        qn_amp = qn_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.5 * 86400.0));  // TANH RAMP
 
         double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
 
