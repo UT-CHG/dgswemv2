@@ -14,7 +14,7 @@ namespace SWE {
 struct Problem {
     typedef SWE::Data ProblemDataType;
 
-    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal> ProblemMeshType;
+    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal, SWE::Flow> ProblemMeshType;
 
     // preprocessor kernels
     template <typename RawBoundaryType>
