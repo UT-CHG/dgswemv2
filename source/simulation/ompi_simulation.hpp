@@ -1,6 +1,8 @@
 #ifndef OMPI_SIMULATION_HPP
 #define OMPI_SIMULATION_HPP
 
+#include "../general_definitions.hpp"
+
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "../communication/ompi_communicator.hpp"
@@ -34,6 +36,10 @@ class OMPISimulationUnit {
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
+
+        if (!log_file) {
+            std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
+        }
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
@@ -73,8 +79,9 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::ExchangeData() {
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
              << ')' << std::endl;
 #endif
@@ -91,8 +98,9 @@ void OMPISimulationUnit<ProblemType>::ExchangeData() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Starting work before receive" << std::endl;
 #endif
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
@@ -113,8 +121,9 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
 #endif
     this->communicator.WaitAllReceives(this->stepper.get_timestamp());
@@ -189,7 +198,7 @@ class OMPISimulation {
     uint n_steps;
     uint n_stages;
 
-    std::vector<OMPISimulationUnit<ProblemType>*> simulation_units;
+    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
   public:
     OMPISimulation() = default;
@@ -210,7 +219,7 @@ class OMPISimulation {
         uint submesh_id = 0;
 
         while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-            this->simulation_units.push_back(
+            this->simulation_units.emplace_back(
                 new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;
