@@ -11,13 +11,17 @@ Inputs::Inputs(YAML::Node& swe_node) {
 
     const std::string malformatted_bf_warning("  Warning bottom friction is mal-formatted. Using default parameters\n");
 
-    if (YAML::Node bf_node = swe_node["BottomFriction"]) {
+    if (YAML::Node bf_node = swe_node["bottom_friction"]) {
         if (bf_node["type"]) {
             std::string bf_str = bf_node["type"].as<std::string>();
             if (bf_str == "None") {
                 bottom_friction.type = BottomFrictionType::None;
             } else if (bf_str == "Chezy") {
-                if (bf_node["coefficient"] && (bf_node["coefficient"].as<double>() > 0.)) {
+                if (bf_node["coefficient"]) {
+                    if (bf_node["coefficient"].as<double>() < 0.) {
+                        const std::string err_msg("Error: Chezy friction coefficient must be postive\n");
+                        throw std::logic_error(err_msg);
+                    }
                     bottom_friction.type = BottomFrictionType::Chezy;
                     bottom_friction.coefficient = bf_node["coefficient"].as<double>();
                 } else {
@@ -36,7 +40,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
     const std::string malformatted_ic_warning(
         "  Warning initial conditions are mal-formatted. Using default parameters");
 
-    if (YAML::Node ic_node = swe_node["InitialConditions"]) {
+    if (YAML::Node ic_node = swe_node["initial_conditions"]) {
         if (ic_node["type"]) {
             std::string ic_str = ic_node["type"].as<std::string>();
             if (ic_str == "Constant") {

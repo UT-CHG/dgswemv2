@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -g")
 
 add_executable(
   test_tuple_helpers_exe
@@ -197,6 +197,19 @@ timestepping:\n\
   order: 2\n\
   nstages: 2\n\n\
 polynomial_order: 2"
+)
+
+add_executable(
+  test_swe_inputs_exe
+  test_swe_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
+)
+
+target_link_libraries(test_swe_inputs_exe ${YAML_CPP_LIBRARIES})
+
+add_test(
+  Unit_swe_inputs
+  test_swe_inputs_exe
 )
 
 add_executable(
