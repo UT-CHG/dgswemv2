@@ -32,7 +32,7 @@ class OMPISimulationUnit {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
+#ifdef VERBOSE
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -43,7 +43,7 @@ class OMPISimulationUnit {
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-
+#endif
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
     }
 
@@ -61,10 +61,11 @@ class OMPISimulationUnit {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::Launch() {
+#ifdef VERBOSE
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
-
+#endif
     this->communicator.InitializeCommunication();
 
     uint n_stages = this->stepper.get_num_stages();
@@ -73,8 +74,8 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 
     this->mesh.CallForEachElement(resize_data_container);
 
-    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 }
 
 template <typename ProblemType>
@@ -168,12 +169,13 @@ void OMPISimulationUnit<ProblemType>::Step() {
     this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->stepper.get_step() % 360 == 0) {
+#ifdef VERBOSE
         std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
         log_file << "Step: " << this->stepper.get_step() << std::endl;
-
-        ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-        ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
+        // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+        // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
     }
 }
 
@@ -271,9 +273,9 @@ void OMPISimulation<ProblemType>::Run() {
             }
         }
 
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+        /*for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
             this->simulation_units[sim_unit_id]->ResidualL2();
-        }
+        }*/
     }
 }
 

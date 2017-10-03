@@ -30,7 +30,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
+#ifdef VERBOSE
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -41,7 +41,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-
+#endif
         initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator);
     }
 
@@ -60,18 +60,19 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Launch() {
+#ifdef VERBOSE
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
-
+#endif
     uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
 
-    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 }
 
 template <typename ProblemType>
@@ -149,12 +150,13 @@ void HPXSimulationUnit<ProblemType>::Step() {
     this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->stepper.get_step() % 360 == 0) {
+#ifdef VERBOSE
         std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
         log_file << "Step: " << this->stepper.get_step() << std::endl;
-
-        ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-        ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
+        // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+        // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
     }
 }
 
@@ -268,11 +270,11 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         }
     }
 
-    for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+    /*for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
         simulation_futures[sim_id] =
             simulation_futures[sim_id]
                 .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].ResidualL2(); });
-    }
+    }*/
 
     return hpx::when_all(simulation_futures);
 }

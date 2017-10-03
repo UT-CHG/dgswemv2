@@ -9,7 +9,7 @@ mesh:
   file_name: build/mesh_generators/rectangular_mesh.meta
 timestepping:
   dt: 1
-  end_time: 43200
+  end_time: 12000
   order: 2
   nstages: 2
 polynomial_order: 1

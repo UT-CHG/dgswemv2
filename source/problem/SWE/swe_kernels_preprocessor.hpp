@@ -10,9 +10,9 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
     uint n_bound_old_flow = 0;
-
+#ifdef VERBOSE
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-
+#endif
     using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal, SWE::Flow>;
 
     for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
@@ -25,9 +25,9 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     mesh.template CreateBoundary<BoundaryTypeLand>(*itt);
                 }
-
+#ifdef VERBOSE
                 log_file << "Number of land boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_land << std::endl;
-
+#endif
                 break;
             case SWE::tidal:
                 using BoundaryTypeTidal = typename std::tuple_element<1, BoundaryTypes>::type;
@@ -37,10 +37,10 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     mesh.template CreateBoundary<BoundaryTypeTidal>(*itt);
                 }
-
+#ifdef VERBOSE
                 log_file << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal
                          << std::endl;
-
+#endif
                 break;
             case SWE::flow:
                 using BoundaryTypeFlow = typename std::tuple_element<2, BoundaryTypes>::type;
@@ -50,9 +50,9 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     mesh.template CreateBoundary<BoundaryTypeFlow>(*itt);
                 }
-
+#ifdef VERBOSE
                 log_file << "Number of flow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_flow << std::endl;
-
+#endif
                 break;
         }
     }
@@ -114,10 +114,11 @@ void Problem::create_distributed_boundaries_kernel(
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
     }
-
+#ifdef VERBOSE
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
     log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
+#endif
 }
 
 void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
