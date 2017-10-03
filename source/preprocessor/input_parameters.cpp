@@ -29,6 +29,11 @@ InputParameters::InputParameters(const std::string& input_string) {
         rk.order = time_stepping["nstages"].as<uint>();
     }
 
+    // Process Shallow water information
+    if ( YAML::Node swe_node = input_file["SWE"] ) {
+        swe_input = std::make_unique<SWE::Inputs>(swe_node);
+    }
+
     polynomial_order = input_file["polynomial_order"].as<uint>();
 }
 

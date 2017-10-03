@@ -173,6 +173,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
 )
 
 target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})

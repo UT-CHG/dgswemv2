@@ -3,6 +3,9 @@
 
 #include "mesh_metadata.hpp"
 
+//problem specific headers
+#include "problem/SWE/swe_inputs.hpp"
+
 #include <yaml-cpp/yaml.h>
 
 struct RKInput {
@@ -32,6 +35,9 @@ struct InputParameters {
     double T_end;
 
     uint polynomial_order;
+
+    //problem inputs
+    std::unique_ptr<SWE::Inputs> swe_input = nullptr;
 };
 
 #endif
