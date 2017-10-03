@@ -3,7 +3,7 @@
 
 #include "mesh_metadata.hpp"
 
-//problem specific headers
+// problem specific headers
 #include "problem/SWE/swe_inputs.hpp"
 
 #include <yaml-cpp/yaml.h>
@@ -36,7 +36,7 @@ struct InputParameters {
 
     uint polynomial_order;
 
-    //problem inputs
+    // problem inputs
     std::unique_ptr<SWE::Inputs> swe_input = nullptr;
 };
 
