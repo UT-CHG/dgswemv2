@@ -63,4 +63,38 @@ Inputs::Inputs(YAML::Node& swe_node) {
         std::cerr << "  Initial conditions unset; using default parameters\n";
     }
 }
+
+YAML::Node Inputs::as_yaml_node() {
+    YAML::Node ret;
+    ret["name"] = "swe";
+    ret["gravity"] = g;
+
+    YAML::Node bf_node;
+    switch (bottom_friction.type) {
+        case BottomFrictionType::None:
+            bf_node["type"] = "None";
+            break;
+        case BottomFrictionType::Chezy:
+            bf_node["type"] = "Chezy";
+            bf_node["coefficient"] = bottom_friction.coefficient;
+            break;
+    }
+    ret["bottom_friction"] = bf_node;
+
+    YAML::Node ic_node;
+    switch (initial_conditions.type) {
+        case InitialConditionsType::Constant:
+            ic_node["type"] = "Constant";
+            ic_node["initial_surface_height"] = initial_conditions.ze_initial;
+            ic_node["initial_momentum_x"] = initial_conditions.qx_initial;
+            ic_node["initial_momentum_y"] = initial_conditions.qy_initial;
+            break;
+        case InitialConditionsType::Function:
+            ic_node["type"] = "Function";
+            break;
+    }
+    ret["initial_conditions"] = ic_node;
+
+    return ret;
+}
 }

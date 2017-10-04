@@ -7,7 +7,7 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    InputParameters input;
+    InputParameters<typename ProblemType::InputType> input;
 
     Stepper stepper;
     typename ProblemType::ProblemMeshType mesh;
@@ -35,7 +35,7 @@ class Simulation {
 
         std::tuple<> empty_comm;
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm);
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm, input.problem_input);
     }
 
     void Run();

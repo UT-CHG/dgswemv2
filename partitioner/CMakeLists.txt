@@ -1,7 +1,6 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
 
 list (APPEND PARTITIONER_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/preprocessor/input_parameters.cpp
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
@@ -17,7 +16,7 @@ add_executable(
   ${PARTITIONER_SOURCES}
 )
 
-target_include_directories(partitioner PRIVATE ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})  
+target_include_directories(partitioner PRIVATE ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
 target_link_libraries(partitioner ${YAML_CPP_LIBRARIES} ${METIS_LIBRARIES})
 
 install(TARGETS partitioner DESTINATION bin/utilities/partitioner)

@@ -28,13 +28,16 @@ struct InitialConditions {
 };
 
 struct Inputs {
+    Inputs() = default;
+    Inputs(YAML::Node& swe_node);
+
+    YAML::Node as_yaml_node();
+
     double g = 9.81;
 
     BottomFriction bottom_friction;
 
     InitialConditions initial_conditions;
-
-    Inputs(YAML::Node& swe_node);
 };
 }
 #endif

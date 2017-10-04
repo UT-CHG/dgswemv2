@@ -17,12 +17,13 @@ void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh);
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      const MeshMetaData& mesh_data,
-                     Communicator& communicator) {
+                     Communicator& communicator,
+                     const typename ProblemType::InputType& problem_specific_input) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data);
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator);
     initialize_mesh_VTK_geometry<ProblemType>(mesh);
 
-    ProblemType::initialize_data_kernel(mesh, mesh_data);
+    ProblemType::initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 }
 
 template <typename ProblemType>
