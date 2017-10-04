@@ -208,7 +208,18 @@ timestepping:\n\
   end_time: 86400                 #in seconds\n\
   order: 2\n\
   nstages: 2\n\n\
-polynomial_order: 2"
+polynomial_order: 2\n\n
+problem:\n
+  name: swe\n
+  bottom_friction:\n
+    type: Chezy\n
+    coefficient: 0.001\n
+  gravity: 9.81\n
+  initial_conditions:\n
+    type: Constant\n
+    initial_surface_height: 10.0\n
+    initial_momentum_x: 0.0\n
+    initial_momentum_y: 0.0\n"
 )
 
 add_executable(

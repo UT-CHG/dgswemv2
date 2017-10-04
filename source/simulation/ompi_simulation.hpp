@@ -10,7 +10,7 @@
 template <typename ProblemType>
 class OMPISimulationUnit {
   private:
-    InputParameters input;
+    InputParameters<typename ProblemType::InputType> input;
 
     Stepper stepper;
     typename ProblemType::ProblemMeshType mesh;
@@ -42,7 +42,7 @@ class OMPISimulationUnit {
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
 
-        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
+        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
     void Launch();
@@ -187,7 +187,7 @@ class OMPISimulation {
         int locality_id;
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
-        InputParameters input(input_string);
+        InputParameters<typename ProblemType::InputType> input(input_string);
 
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
