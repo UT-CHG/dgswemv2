@@ -10,7 +10,7 @@
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
   private:
-    InputParameters input;
+    InputParameters<typename ProblemType::InputType> input;
 
     Stepper stepper;
     typename ProblemType::ProblemMeshType mesh;
@@ -42,7 +42,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
 
-        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator);
+        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
     void Launch();
@@ -194,7 +194,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         const uint locality_id = hpx::get_locality_id();
         const hpx::naming::id_type here = hpx::find_here();
 
-        InputParameters input(input_string);
+        InputParameters<typename ProblemType::InputType> input(input_string);
 
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;

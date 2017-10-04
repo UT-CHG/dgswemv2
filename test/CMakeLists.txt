@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -g")
 
 add_executable(
   test_tuple_helpers_exe
@@ -167,12 +167,25 @@ add_test(
 include_directories("${YAML_CPP_INCLUDE_DIR}")
 
 add_executable(
+  test_swe_inputs_exe
+  test_swe_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
+)
+
+target_link_libraries(test_swe_inputs_exe ${YAML_CPP_LIBRARIES})
+
+add_test(
+  Unit_swe_inputs
+  test_swe_inputs_exe
+)
+
+add_executable(
   test_input_parameters_exe
   test_input_parameters.cpp
-  ${PROJECT_SOURCE_DIR}/source/preprocessor/input_parameters.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
 )
 
 target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
@@ -195,7 +208,18 @@ timestepping:\n\
   end_time: 86400                 #in seconds\n\
   order: 2\n\
   nstages: 2\n\n\
-polynomial_order: 2"
+polynomial_order: 2\n\n
+problem:\n
+  name: swe\n
+  bottom_friction:\n
+    type: Chezy\n
+    coefficient: 0.001\n
+  gravity: 9.81\n
+  initial_conditions:\n
+    type: Constant\n
+    initial_surface_height: 10.0\n
+    initial_momentum_x: 0.0\n
+    initial_momentum_y: 0.0\n"
 )
 
 add_executable(

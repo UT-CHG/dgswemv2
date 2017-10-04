@@ -1,7 +1,7 @@
 #ifndef SWE_KERNELS_PREPROCESSOR_HPP
 #define SWE_KERNELS_PREPROCESSOR_HPP
 
-#include "swe_true_src_functions.hpp"
+#include "swe_initial_conditions_function.hpp"
 
 namespace SWE {
 template <typename RawBoundaryType>
@@ -120,7 +120,9 @@ void Problem::create_distributed_boundaries_kernel(
     log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 }
 
-void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
+void Problem::initialize_data_kernel(ProblemMeshType& mesh,
+                                     const MeshMetaData& mesh_data,
+                                     const Problem::InputType& problem_specific_input) {
     mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
     std::unordered_map<uint, std::vector<double>> bathymetry;

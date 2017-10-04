@@ -1,7 +1,7 @@
 #ifndef SWE_KERNELS_POSTPROCESSOR_HPP
 #define SWE_KERNELS_POSTPROCESSOR_HPP
 
-#include "swe_true_src_functions.hpp"
+#include "swe_initial_conditions_function.hpp"
 
 namespace SWE {
 template <typename ElementType>

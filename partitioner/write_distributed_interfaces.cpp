@@ -6,7 +6,7 @@
 #include <unordered_set>
 
 void write_distributed_edge_metadata(const std::string& file_name,
-                                     const InputParameters& input,
+                                     const InputParameters<>& input,
                                      const MeshMetaData& mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes) {
     std::size_t num_loc = submeshes.size();
