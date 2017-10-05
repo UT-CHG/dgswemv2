@@ -2,7 +2,6 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-documentation/*
 build/*
 test/files_for_testing/sample_fort.14.out
 test/files_for_testing/sample_fort.14.meta.out
