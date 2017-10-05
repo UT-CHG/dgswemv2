@@ -1,6 +1,12 @@
-#include "swe_cuda_kernels_processor.hpp"
+#include "swe_cuda_kernels.cuh"
 #include "swe_definitions.hpp"
-#include "swe_true_src_functions.hpp"
+#include "general_definitions.hpp"
+
+template <typename ElementType>
+void cuda_volume_kernel1(uint block_dim, uint thread_dim, ElementType& elt, uint n_gp) {
+    std::cout << "running" << std::endl;
+    cuda_volume_kernel1<ElementType><<<block_dim, thread_dim>>>(elt, n_gp);
+}
 
 template <typename ElementType>
 __global__ void cuda_volume_kernel1(ElementType& elt, uint n_gp) {
@@ -25,6 +31,13 @@ __global__ void cuda_volume_kernel1(ElementType& elt, uint n_gp) {
 }
 
 template <typename ElementType>
+void cuda_volume_kernel2(uint block_dim, uint thread_dim, ElementType& elt, uint stage,
+        uint n_dof) {
+    std::cout << "running" << std::endl;
+    cuda_volume_kernel2<ElementType><<<block_dim, thread_dim>>>(elt, stage, n_dof);
+}
+
+template <typename ElementType>
 __global__ void cuda_volume_kernel2(ElementType& elt, uint stage, uint n_dof) {
     auto& internal = elt.data.internal;
     auto& state = elt.data.state[stage];
@@ -41,6 +54,12 @@ __global__ void cuda_volume_kernel2(ElementType& elt, uint stage, uint n_dof) {
                 internal.qy_flux_at_gp[GlobalCoord::x]) + elt.IntegrationDPhi(GlobalCoord::y, dof,
                 internal.qy_flux_at_gp[GlobalCoord::y]);
     }
+}
+
+template <typename ElementType>
+void cuda_source_kernel1(uint block_dim, uint thread_dim, ElementType& elt, uint n_gp) {
+    std::cout << "running" << std::endl;
+    cuda_source_kernel1<ElementType><<<block_dim, thread_dim>>>(elt, n_gp);
 }
 
 template <typename ElementType>
@@ -65,6 +84,13 @@ __global__ void cuda_source_kernel1(ElementType& elt, uint n_gp) {
 }
 
 template <typename ElementType>
+void cuda_source_kernel2(uint block_dim, uint thread_dim, ElementType& elt, uint stage,
+        uint n_dof) {
+    std::cout << "running" << std::endl;
+    cuda_source_kernel2<ElementType><<<block_dim, thread_dim>>>(elt, stage, n_dof);
+}
+
+template <typename ElementType>
 __global__ void cuda_source_kernel2(ElementType& elt, uint stage, uint n_dof) {
     auto& internal = elt.data.internal;
     auto& state = elt.data.state[stage];
@@ -74,6 +100,12 @@ __global__ void cuda_source_kernel2(ElementType& elt, uint stage, uint n_dof) {
         state.rhs_qx[dof] += elt.IntegrationPhi(dof, internal.qx_source_term_at_gp);
         state.rhs_qy[dof] += elt.IntegrationPhi(dof, internal.qy_source_term_at_gp);
     }
+}
+
+template <typename InterfaceType>
+void cuda_interface_kernel1(uint block_dim, uint thread_dim, InterfaceType& interface, uint n_gp) {
+    std::cout << "running" << std::endl;
+    cuda_interface_kernel1<InterfaceType><<<block_dim, thread_dim>>>(interface, n_gp);
 }
 
 template <typename InterfaceType>
@@ -103,6 +135,13 @@ __global__ void cuda_interface_kernel1(InterfaceType& interface, uint n_gp) {
 }
 
 template <typename InterfaceType>
+void cuda_interface_kernel2(uint block_dim, uint thread_dim, InterfaceType& interface, uint stage,
+       uint n_dof) {
+    std::cout << "running" << std::endl;
+    cuda_interface_kernel2<InterfaceType><<<block_dim, thread_dim>>>(interface, stage, n_dof);
+}
+
+template <typename InterfaceType>
 __global__ void cuda_interface_kernel2(InterfaceType& interface, uint stage, uint n_dof) {
     uint dof = blockIdx.x * blockDim.x + threadIdx.x;
     auto& state_in = interface.data_in.state[stage];
@@ -115,6 +154,13 @@ __global__ void cuda_interface_kernel2(InterfaceType& interface, uint stage, uin
 }
 
 template <typename InterfaceType>
+void cuda_interface_kernel3(uint block_dim, uint thread_dim, InterfaceType& interface, uint stage,
+        uint n_dof) {
+    std::cout << "running" << std::endl;
+  cuda_interface_kernel3<InterfaceType><<<block_dim, thread_dim>>>(interface, stage, n_dof);
+}
+
+template <typename InterfaceType>
 __global__ void cuda_interface_kernel3(InterfaceType& interface, uint stage, uint n_dof) {
     uint dof = blockIdx.x * blockDim.x + threadIdx.x;
     auto& state_ex = interface.data_ex.state[stage];
@@ -124,6 +170,13 @@ __global__ void cuda_interface_kernel3(InterfaceType& interface, uint stage, uin
         state_ex.rhs_qx[dof] -= interface.IntegrationPhiEX(dof, boundary_ex.qx_numerical_flux_at_gp);
         state_ex.rhs_qy[dof] -= interface.IntegrationPhiEX(dof, boundary_ex.qy_numerical_flux_at_gp);
     }
+}
+
+template <typename BoundaryType>
+void cuda_boundary_kernel1(uint block_dim, uint thread_dim, const Stepper& stepper,
+        BoundaryType& bound, uint n_gp) {
+    std::cout << "running" << std::endl;
+    cuda_boundary_kernel1<BoundaryType><<<block_dim, thread_dim>>>(stepper, bound, n_gp);
 }
 
 template <typename BoundaryType>
@@ -142,6 +195,13 @@ __global__ void cuda_boundary_kernel1(const Stepper& stepper, BoundaryType& boun
 }
 
 template <typename BoundaryType>
+void cuda_boundary_kernel2(uint block_dim, uint thread_dim, const Stepper& stepper,
+        BoundaryType& bound, uint n_dof) {
+    std::cout << "running" << std::endl;
+    cuda_boundary_kernel2<BoundaryType><<<block_dim, thread_dim>>>(stepper, bound, n_dof);
+}
+
+template <typename BoundaryType>
 __global__ void cuda_boundary_kernel2(const Stepper& stepper, BoundaryType& bound, uint n_dof) {
     uint dof = blockIdx.x * blockDim.x + threadIdx.x;
     auto& boundary = bound.data.boundary[bound.bound_id];
@@ -152,6 +212,13 @@ __global__ void cuda_boundary_kernel2(const Stepper& stepper, BoundaryType& boun
         state.rhs_qx[dof] -= bound.IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
         state.rhs_qy[dof] -= bound.IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
     }
+}
+
+template <typename ElementType>
+void cuda_update_kernel(uint block_dim, uint thread_dim, const Stepper& stepper, ElementType& elt,
+        uint stage, uint n_dof) {
+    std::cout << "running" << std::endl;
+    cuda_update_kernel<ElementType><<<block_dim, thread_dim>>>(stepper, elt, stage, n_dof);
 }
 
 template <typename ElementType>
@@ -174,178 +241,3 @@ __global__ void cuda_update_kernel(const Stepper& stepper, ElementType& elt, uin
     }
 }
 
-template <typename ElementType>
-void SWE::CUDAProblem::volume_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
-    auto& state = elt.data.state[stage];
-    auto& internal = elt.data.internal;
-
-    // get state at Gauss points
-    elt.ComputeUgp(state.ze, internal.ze_at_gp);
-    elt.ComputeUgp(state.qx, internal.qx_at_gp);
-    elt.ComputeUgp(state.qy, internal.qy_at_gp);
-
-    // assemble flux
-    uint blocksPerGrid = (elt.data.get_ngp_internal() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_volume_kernel1<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(elt,
-            elt.data.get_ngp_internal());
-    blocksPerGrid = (elt.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_volume_kernel2<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(elt, stage,
-            elt.data.get_ndof());
-}
-
-template <typename ElementType>
-void SWE::CUDAProblem::source_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
-    auto& state = elt.data.state[stage];
-    auto& internal = elt.data.internal;
-    double t = stepper.get_t_at_curr_stage();
-    auto source_ze = [t](Point<2>& pt) { return SWE::source_ze(t, pt); };
-    auto source_qx = [t](Point<2>& pt) { return SWE::source_qx(t, pt); };
-    auto source_qy = [t](Point<2>& pt) { return SWE::source_qy(t, pt); };
-
-    elt.ComputeFgp(source_ze, internal.ze_source_term_at_gp);
-    elt.ComputeFgp(source_qx, internal.qx_source_term_at_gp);
-    elt.ComputeFgp(source_qy, internal.qy_source_term_at_gp);
-
-    // note we assume that the values at gauss points have already been computed
-
-    uint blocksPerGrid = (elt.data.get_ngp_internal() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_source_kernel1<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(elt,
-            elt.data.get_ngp_internal());
-    blocksPerGrid = (elt.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_source_kernel2<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(elt, stage,
-            elt.data.get_ndof());
-}
-
-template <typename InterfaceType>
-void SWE::CUDAProblem::interface_kernel(const Stepper& stepper, InterfaceType& interface) {
-    const uint stage = stepper.get_stage();
-    auto& state_in = interface.data_in.state[stage];
-    auto& state_ex = interface.data_ex.state[stage];
-    auto& boundary_in = interface.data_in.boundary[interface.bound_id_in];
-    auto& boundary_ex = interface.data_ex.boundary[interface.bound_id_ex];
-    interface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
-    interface.ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
-    interface.ComputeUgpIN(state_in.qy, boundary_in.qy_at_gp);
-
-    interface.ComputeUgpEX(state_ex.ze, boundary_ex.ze_at_gp);
-    interface.ComputeUgpEX(state_ex.qx, boundary_ex.qx_at_gp);
-    interface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
-
-    // assemble numerical fluxes
-    uint blocksPerGrid = (interface.data_in.get_ngp_boundary(interface.bound_id_in) +
-            THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_interface_kernel1<InterfaceType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(interface,
-            interface.data_in.get_ngp_boundary(interface.bound_id_in));
-
-    // now compute contributions to the righthand side
-    blocksPerGrid = (interface.data_in.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_interface_kernel2<InterfaceType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(interface, stage,
-            interface.data_in.get_ndof());
-    blocksPerGrid = (interface.data_ex.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_interface_kernel3<InterfaceType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(interface, stage,
-            interface.data_ex.get_ndof());
-}
-
-template <typename BoundaryType>
-void SWE::CUDAProblem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
-    const uint stage = stepper.get_stage();
-
-    auto& state = bound.data.state[stage];
-    auto& boundary = bound.data.boundary[bound.bound_id];
-
-    bound.ComputeUgp(state.ze, boundary.ze_at_gp);
-    bound.ComputeUgp(state.qx, boundary.qx_at_gp);
-    bound.ComputeUgp(state.qy, boundary.qy_at_gp);
-
-    uint blocksPerGrid = (bound.data.get_ngp_boundary(bound.bound_id) + THREADS_PER_BLOCK - 1) /
-            THREADS_PER_BLOCK;
-    cuda_boundary_kernel1<BoundaryType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(stepper, bound,
-            bound.data.get_ngp_boundary(bound.bound_id));
-
-    // now compute contributions to the righthand side
-    blocksPerGrid = (bound.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_boundary_kernel2<BoundaryType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(stepper, bound,
-            bound.data.get_ndof());
-}
-
-template <typename ElementType>
-void SWE::CUDAProblem::update_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
-
-    auto& state = elt.data.state;
-    auto& curr_state = elt.data.state[stage];
-    auto& next_state = elt.data.state[stage + 1];
-
-    curr_state.rhs_ze = elt.SolveLSE(curr_state.rhs_ze);
-    curr_state.rhs_qx = elt.SolveLSE(curr_state.rhs_qx);
-    curr_state.rhs_qy = elt.SolveLSE(curr_state.rhs_qy);
-
-    std::fill(next_state.ze.begin(), next_state.ze.end(), 0);
-    std::fill(next_state.qx.begin(), next_state.qx.end(), 0);
-    std::fill(next_state.qy.begin(), next_state.qy.end(), 0);
-
-    uint blocksPerGrid = (elt.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_update_kernel<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(stepper, elt, stage,
-            elt.data.get_ndof());
-}
-
-template <typename ElementType>
-void SWE::CUDAProblem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
-    uint n_stages = stepper.get_num_stages();
-    auto& state = elt.data.state;
-
-    std::swap(state[0].ze, state[n_stages].ze);
-    std::swap(state[0].qx, state[n_stages].qx);
-    std::swap(state[0].qy, state[n_stages].qy);
-}
-
-template <typename ElementType>
-void SWE::CUDAProblem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
-    uint stage = stepper.get_stage();
-
-    auto& state = elt.data.state[stage];
-
-    for (auto& ze_mode : state.ze) {
-        if (std::isnan(ze_mode)) {
-            std::cerr << "Error: found isnan ze at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-        }
-    }
-
-    for (auto& qx_mode : state.qx) {
-        if (std::isnan(qx_mode)) {
-            std::cerr << "Error: found isnan qx at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-        }
-    }
-
-    for (auto& qy_mode : state.qy) {
-        if (std::isnan(qy_mode)) {
-            std::cerr << "Error: found isnan qy at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-        }
-    }
-
-    for (auto& rhs_ze_mode : state.rhs_ze) {
-        if (std::isnan(rhs_ze_mode)) {
-            std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-        }
-    }
-
-    for (auto& rhs_qx_mode : state.rhs_qx) {
-        if (std::isnan(rhs_qx_mode)) {
-            std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-        }
-    }
-
-    for (auto& rhs_qy_mode : state.rhs_qy) {
-        if (std::isnan(rhs_qy_mode)) {
-            std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-        }
-    }
-}
