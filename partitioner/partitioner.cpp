@@ -14,7 +14,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const NumaConfiguration& numa_config);
 
 void write_distributed_edge_metadata(const std::string& file_name,
-                                     const InputParameters& input,
+                                     const InputParameters<>& input,
                                      const MeshMetaData& mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes);
 
@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "Mesh Partitioner Configuration\n";
-    InputParameters input(argv[1]);
+    InputParameters<> input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
     std::string input_mesh_str(input.mesh_file_path);
     std::cout << "  Mesh Path: " << input_mesh_str << '\n';

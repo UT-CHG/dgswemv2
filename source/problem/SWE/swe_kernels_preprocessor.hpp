@@ -1,7 +1,7 @@
 #ifndef SWE_KERNELS_PREPROCESSOR_HPP
 #define SWE_KERNELS_PREPROCESSOR_HPP
 
-#include "swe_true_src_functions.hpp"
+#include "swe_initial_conditions_function.hpp"
 
 namespace SWE {
 template <typename RawBoundaryType>
@@ -9,10 +9,11 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                                        std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
+    uint n_bound_old_flow = 0;
 
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
-    using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal>;
+    using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal, SWE::Flow>;
 
     for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
         switch (it->first) {
@@ -39,6 +40,18 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
 
                 log_file << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal
                          << std::endl;
+
+                break;
+            case SWE::flow:
+                using BoundaryTypeFlow = typename std::tuple_element<2, BoundaryTypes>::type;
+
+                n_bound_old_flow = mesh.GetNumberBoundaries();
+
+                for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+                    mesh.template CreateBoundary<BoundaryTypeFlow>(*itt);
+                }
+
+                log_file << "Number of flow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_flow << std::endl;
 
                 break;
         }
@@ -107,7 +120,9 @@ void Problem::create_distributed_boundaries_kernel(
     log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 }
 
-void Problem::initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
+void Problem::initialize_data_kernel(ProblemMeshType& mesh,
+                                     const MeshMetaData& mesh_data,
+                                     const Problem::InputType& problem_specific_input) {
     mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
     std::unordered_map<uint, std::vector<double>> bathymetry;

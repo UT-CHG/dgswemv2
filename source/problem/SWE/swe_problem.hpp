@@ -6,15 +6,18 @@
 #include "swe_definitions.hpp"
 #include "swe_boundary_conditions.hpp"
 #include "swe_data.hpp"
+#include "swe_inputs.hpp"
 
 #include "../../geometry/mesh_definitions.hpp"
 #include "../../preprocessor/mesh_metadata.hpp"
 
 namespace SWE {
 struct Problem {
+    typedef SWE::Inputs InputType;
+
     typedef SWE::Data ProblemDataType;
 
-    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal> ProblemMeshType;
+    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal, SWE::Flow> ProblemMeshType;
 
     // preprocessor kernels
     template <typename RawBoundaryType>
@@ -32,7 +35,9 @@ struct Problem {
         Communicator& communicator,
         std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh, const MeshMetaData& mesh_data);
+    static void initialize_data_kernel(ProblemMeshType& mesh,
+                                       const MeshMetaData& mesh_data,
+                                       const Problem::InputType& problem_specific_input);
 
     // processor kernels
     template <typename ElementType>

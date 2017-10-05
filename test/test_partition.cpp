@@ -11,7 +11,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const NumaConfiguration& numa_config);
 
 bool check_partition(const MeshMetaData& mesh, std::vector<std::vector<MeshMetaData>>& submeshes) {
-    bool error_found {false};
+    bool error_found{false};
     // 2 checks are performed in this unit test
     //  1.) Check that all the elements can be found in one of the submeshes
     {

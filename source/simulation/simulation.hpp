@@ -7,7 +7,7 @@
 template <typename ProblemType>
 class Simulation {
   protected:
-    InputParameters input;
+    InputParameters<typename ProblemType::InputType> input;
     Stepper stepper;
     typename ProblemType::ProblemMeshType mesh;
     std::ofstream log_file;
@@ -27,7 +27,7 @@ class Simulation {
         log_file << "Starting simulation with p=" << input.polynomial_order << " for "
                  << mesh.GetMeshName() << " mesh" << std::endl << std::endl;
         std::tuple<> empty_comm;
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm);
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm, input.problem_input);
     }
 
     ~Simulation() {

@@ -1,6 +1,8 @@
 #ifndef OMPI_SIMULATION_HPP
 #define OMPI_SIMULATION_HPP
 
+#include "../general_definitions.hpp"
+
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "../communication/ompi_communicator.hpp"
@@ -27,8 +29,7 @@ class OMPISimulationUnit : public Simulation<ProblemType> {
                 std::ofstream::out);
         log_file << "Starting simulation with p=" << input.polynomial_order << " for "
                  << mesh.GetMeshName() << " mesh" << std::endl << std::endl;
-
-        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
+        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
     void Launch();
@@ -60,6 +61,8 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::ExchangeData() {
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
              << ')' << std::endl;
 #endif
@@ -77,6 +80,8 @@ void OMPISimulationUnit<ProblemType>::ExchangeData() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Starting work before receive" << std::endl;
 #endif
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
@@ -98,6 +103,8 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp() << std::endl;
 #endif
     this->communicator.WaitAllReceives(this->stepper.get_timestamp());
@@ -155,7 +162,7 @@ class OMPISimulation {
     uint n_steps;
     uint n_stages;
 
-    std::vector<OMPISimulationUnit<ProblemType>*> simulation_units;
+    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
   public:
     OMPISimulation() = default;
@@ -163,7 +170,7 @@ class OMPISimulation {
         int locality_id;
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
-        InputParameters input(input_string);
+        InputParameters<typename ProblemType::InputType> input(input_string);
 
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
@@ -176,7 +183,7 @@ class OMPISimulation {
         uint submesh_id = 0;
 
         while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-            this->simulation_units.push_back(
+            this->simulation_units.emplace_back(
                 new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
             ++submesh_id;

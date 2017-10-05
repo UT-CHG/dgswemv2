@@ -27,7 +27,7 @@ class HPXSimulationUnit : public Simulation<ProblemType>,
         std::ofstream log_file("output/" + input.mesh_data.mesh_name + "_log", std::ofstream::out);
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator);
+        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
     void Launch();
@@ -57,6 +57,8 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 #ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
     log_file << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ',' << this->stepper.get_stage()
              << ')' << std::endl;
 
@@ -89,6 +91,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 #endif
     return receive_future.then([this](auto&&) {
 #ifdef VERBOSE
+        std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
         log_file << "Starting work after receive" << std::endl;
 #endif
         auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
@@ -171,7 +175,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         const uint locality_id = hpx::get_locality_id();
         const hpx::naming::id_type here = hpx::find_here();
 
-        InputParameters input(input_string);
+        InputParameters<typename ProblemType::InputType> input(input_string);
 
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;

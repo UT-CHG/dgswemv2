@@ -1,10 +1,8 @@
 #ifndef HETEROGENEOUS_CONTAINERS_HPP
 #define HETEROGENEOUS_CONTAINERS_HPP
 
+#include "../general_definitions.hpp"
 #include "tuple_helpers.hpp"
-
-#include <map>
-#include <vector>
 
 namespace Utilities {
 /**
@@ -111,6 +109,16 @@ struct HeterogeneousMap {
      */
     template <typename T>
     T& at(uint key) {
+        static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousMap::at: Type not found");
+
+        return std::get<index<T, TupleType>::value>(data).at(key);
+    }
+
+    /**
+     * const at implementation
+     */
+    template <typename T>
+    const T& at(uint key) const {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousMap::at: Type not found");
 
         return std::get<index<T, TupleType>::value>(data).at(key);

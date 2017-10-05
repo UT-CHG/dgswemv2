@@ -88,7 +88,6 @@ void for_each_in_tuple(std::tuple<Ts...>& t, F f) {
     for_each(t, f, gen_seq<sizeof...(Ts)>());
 }
 
-
 template <typename Tup1, typename Tup2>
 struct tuple_join;
 

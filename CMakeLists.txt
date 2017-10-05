@@ -60,6 +60,7 @@ endif()
 include_directories(source)
 
 add_subdirectory(source)
+add_subdirectory(examples)
 add_subdirectory(test)
 add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)

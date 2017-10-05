@@ -29,53 +29,14 @@ class AdcircFormat {
                                          // segment k
 
   public:
-    SWE::BoundaryConditions get_ibtype(std::array<int, 2>& node_pair) const {
-        for (auto& open_bdry : NBDV) {
-            if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
-                return SWE::BoundaryConditions::tidal;
-            }
-        }
-
-        for (auto& land_bdry : NBVV) {
-            if (has_edge(land_bdry.cbegin(), land_bdry.cend(), node_pair)) {
-                return SWE::BoundaryConditions::land;
-            }
-        }
-
-        throw std::logic_error(
-            "Error Boundary not found, unable to assign BOUNDARY_TYPE to given "
-            "node_pair (" +
-            std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
-    }
-
     void write_to(const char* out_name) const;
+
+    SWE::BoundaryConditions get_ibtype(std::array<int, 2>& node_pair) const;
 
   private:
     bool has_edge(std::vector<int>::const_iterator cbegin,
                   std::vector<int>::const_iterator cend,
-                  std::array<int, 2>& node_pair) const {
-        auto it = std::find(cbegin, cend, node_pair[0]);
-
-        if (it != cend) {
-            // look at next element
-            if ((it + 1) != cend && *(it + 1) == node_pair[1]) {
-                return true;
-            }
-
-            // look at previous element unless we are at the first element
-            if (it != cbegin) {
-                if (*(it - 1) == node_pair[1]) {
-                    return true;
-                }
-            }
-
-            // here you're not at the end of vector, but haven't found an edge
-            // so we must look through the tail
-            return has_edge(it + 1, cend, node_pair);
-        }
-
-        return false;
-    }
+                  std::array<int, 2>& node_pair) const;
 };
 
 #endif
