@@ -25,11 +25,11 @@ void ManufacturedProblem::source_kernel(const Stepper& stepper, ElementType& elt
 
     double t = stepper.get_t_at_curr_stage();
 
-    auto source_ze = [t](Point<2>& pt) { return SWE::source_ze(t, pt); };
+    const auto source_ze = [t](Point<2>& pt) { return SWE::source_ze(t, pt); };
 
-    auto source_qx = [t](Point<2>& pt) { return SWE::source_qx(t, pt); };
+    const auto source_qx = [t](Point<2>& pt) { return SWE::source_qx(t, pt); };
 
-    auto source_qy = [t](Point<2>& pt) { return SWE::source_qy(t, pt); };
+    const auto source_qy = [t](Point<2>& pt) { return SWE::source_qy(t, pt); };
 
     elt.ComputeFgp(source_ze, internal.ze_source_term_at_gp);
     elt.ComputeFgp(source_qx, internal.qx_source_term_at_gp);
@@ -40,9 +40,6 @@ void ManufacturedProblem::source_kernel(const Stepper& stepper, ElementType& elt
         // compute contribution of hydrostatic pressure
         internal.qx_source_term_at_gp[gp] += Global::g * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
         internal.qy_source_term_at_gp[gp] += Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.ze_at_gp[gp];
-
-        double u_at_gp = internal.qx_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
-        double v_at_gp = internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
     }
 
     for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
