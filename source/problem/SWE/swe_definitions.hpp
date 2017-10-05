@@ -1,9 +1,7 @@
 #ifndef SWE_DEFINITIONS_HPP
 #define SWE_DEFINITIONS_HPP
 
-#include "swe_data.hpp"
 #include "swe_boundary_conditions.hpp"
-#include "../../geometry/mesh_definitions.hpp"
 
 namespace SWE {
 namespace Global {
