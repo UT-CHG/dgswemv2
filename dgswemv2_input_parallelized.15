@@ -6,10 +6,21 @@
 
 mesh:
   format: Meta
-  file_name: build/mesh_generators/rectangular_mesh.meta
+  file_name: build/mesh_generators/rectangular_mesh_0_0.meta
 timestepping:
   dt: 1
-  end_time: 43200
-  order: 2
+  end_time: 32
   nstages: 2
+  order: 2
 polynomial_order: 1
+problem:
+  initial_conditions:
+    initial_momentum_x: 0.0
+    initial_surface_height: 10.0
+    type: Constant
+    initial_momentum_y: 0.0
+  gravity: 9.81
+  bottom_friction:
+    type: Chezy
+    coefficient: 0.001
+  name: swe
