@@ -290,42 +290,42 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
     auto& state = elt.data.state[stage];
 
     for (auto& ze_mode : state.ze) {
-        if (isnan(ze_mode)) {
+        if (std::isnan(ze_mode)) {
             std::cerr << "Error: found isnan ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
         }
     }
 
     for (auto& qx_mode : state.qx) {
-        if (isnan(qx_mode)) {
+        if (std::isnan(qx_mode)) {
             std::cerr << "Error: found isnan qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
         }
     }
 
     for (auto& qy_mode : state.qy) {
-        if (isnan(qy_mode)) {
+        if (std::isnan(qy_mode)) {
             std::cerr << "Error: found isnan qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
         }
     }
 
     for (auto& rhs_ze_mode : state.rhs_ze) {
-        if (isnan(rhs_ze_mode)) {
+        if (std::isnan(rhs_ze_mode)) {
             std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
         }
     }
 
     for (auto& rhs_qx_mode : state.rhs_qx) {
-        if (isnan(rhs_qx_mode)) {
+        if (std::isnan(rhs_qx_mode)) {
             std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
         }
     }
 
     for (auto& rhs_qy_mode : state.rhs_qy) {
-        if (isnan(rhs_qy_mode)) {
+        if (std::isnan(rhs_qy_mode)) {
             std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
         }
