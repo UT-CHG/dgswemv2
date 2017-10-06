@@ -8,6 +8,7 @@
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
+                                                 const int ranks_per_locality,
                                                  const NumaConfiguration& numa_config);
 
 bool check_partition(const MeshMetaData& mesh, std::vector<std::vector<MeshMetaData>>& submeshes) {
@@ -72,13 +73,19 @@ int main(int argc, char** argv) {
 
     std::cout << "Checking for 1 locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 1, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 1, 1, numa_config);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for 1 locality\n\n";
-    std::cout << "Checking for multiple localities...\n";
+    std::cout << "Checking for multiple localities with one rank per locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 2, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 2, 1, numa_config);
+        error_found = error_found || check_partition(meshA, submeshes);
+    }
+    std::cout << "...done checking for multiple localities\n";
+    std::cout << "Checking for multiple localities with multiple ranks per locality...\n";
+    {
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 8, 2, 2, numa_config);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for multiple localities\n";
