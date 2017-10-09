@@ -1,1 +1,166 @@
 \chapter{\texttt{dgswem} to \texttt{dgswem-v2} Look-up Table}
+
+\setlength\LTleft{-3.2cm}
+{ \scriptsize
+\begin{longtable}{ l | p{55mm} | p{86mm} }
+\hline
+\hline
+{\normalsize \texttt{dgswem} subroutine} & {\normalsize \texttt{dgswem-v2} equivalent function} & 
+{\normalsize Location in Repository }
+\tabularnewline \hline
+calc\_normal	& Shape::StraightTriangle::GetSurfaceNormal	& source/shape/shapes\_2D/shape\_straighttriangle.cpp
+\tabularnewline \hline
+check\_errors & Not supported &
+\tabularnewline \hline	
+coldstart & Not supported &
+\tabularnewline \hline	
+create\_edge\_data & initialize\_mesh\_interfaces\_boundaries & source/preprocessor/initialize\_mesh.hpp
+\tabularnewline \hline
+dg\_hydro\_timestep & Inlined	& source/simulation/simulation.hpp \newline source/hpx\_simulation.hpp \newline source/simulation/ompi\_simulation.hpp
+\tabularnewline \hline
+dg\_timestep	& Inlined & source/simulation/simulation.hpp \newline source/hpx\_simulation.hpp \newline source/simulation/ompi\_simulation.hpp
+\tabularnewline \hline
+dgswem & main & source/simulation/simulation.hpp \newline source/hpx\_simulation.hpp \newline source/simulation/ompi\_simulation.hpp
+\tabularnewline \hline
+ebarrier\_edge\_hydro	& Not supported &	
+\tabularnewline \hline
+edge\_int\_ldg\_hydro & Not supported &
+\tabularnewline \hline
+edge\_int\_ldg\_sediment & Not supported &	
+\tabularnewline \hline
+errorelevsum & Not supported &
+\tabularnewline \hline
+flow\_edge\_hydro & SWE::Flow::GetEX & source/problem/SWE/swe\_kernels\_boundary\_conditions.hpp
+\tabularnewline \hline
+flow\_edge\_ldg\_hydro	& Not supported &
+\tabularnewline \hline
+fort\_dg\_setup & Not supported &	
+\tabularnewline \hline
+Hllc\_flux & Not supported &
+\tabularnewline \hline
+hotstart & Not supported &	
+\tabularnewline \hline
+ibarrier\_edge\_hydro	& Not supported &	
+\tabularnewline \hline
+ibarrier\_fluxes & Not supported &
+\tabularnewline \hline
+internal\_edge\_hydro & SWE::Problem::interface\_kernel & source/problem/SWE/swe\_kernels\_processor.hpp
+\tabularnewline \hline
+internal\_edge\_ldg\_hydro & Not supported &
+\tabularnewline \hline
+land\_edge\_hydro & SWE::Land::GetEX & source/problem/SWE/swe\_kernels\_boundary\_conditions.hpp
+\tabularnewline \hline
+land\_edge\_ldg\_hydro & Not supported &
+\tabularnewline \hline
+LDG\_hydro & Not supported &
+\tabularnewline \hline
+llf\_flux & SWE::LLF\_flux & source/problem/SWE/swe\_LLF\_flux.hpp
+\tabularnewline \hline
+Message\_abort & Not supported	
+\tabularnewline \hline
+Message\_fini & Inlined & source/problem/SWE/ompi\_main\_swe.cpp
+\tabularnewline \hline
+message\_init & Inlined & source/problem/SWE/ompi\_main\_swe.cpp
+\tabularnewline \hline
+met\_forcing & Not supported	&
+\tabularnewline \hline
+msg\_blocksync\_finish & Not supported &	
+\tabularnewline \hline
+msg\_blocksync\_start & Not supported &
+\tabularnewline \hline
+msg\_start\_elem & OMPICommunicator:InitializeCommunication & source/communication/ompi\_communicator.cpp
+\tabularnewline \hline
+msg\_table\_elem & OMPICommunicator::OMPICommunicator & source/communication/ompi\_communicator.cpp
+\tabularnewline \hline
+msg\_types\_elem & Not supported &	
+\tabularnewline \hline
+ncp\_flux & Not supported &
+\tabularnewline \hline
+numerical\_flux & Inlined &	
+\tabularnewline \hline
+nws112interp\_region & Not supported	&
+\tabularnewline \hline
+nws12get & Not supported &
+\tabularnewline \hline
+nws12init & Not supported &
+\tabularnewline \hline
+nws12interp\_basin & Not supported &
+\tabularnewline \hline
+ocean\_edge\_hydro & Not supported &
+\tabularnewline \hline
+ocean\_edge\_hydro\_post & Not supported &
+\tabularnewline \hline
+ocean\_edge\_hydro\_strict	& Not supported &	
+\tabularnewline \hline
+ocean\_edge\_ldg\_hydro & Not supported &
+\tabularnewline \hline
+ocean\_flow\_edge\_hydro & Not supported &	
+\tabularnewline \hline
+orthobasis & Basis::Dubiner\_2D::GetPhi \newline Basis::Dubiner\_2D::GetDPhi &	source/basis/bases\_2D/basis\_dubiner\_2D.cpp
+\tabularnewline \hline
+orthobasis\_area & Basis::Dubiner\_2D::GetPhi \newline Basis::Dubiner\_2D::GetDPhi & source/basis/bases\_2D/basis\_dubiner\_2D.cpp
+\tabularnewline \hline
+orthobasis\_edge	& Basis::Dubiner\_2D::GetPhi & source/basis/bases\_2D/basis\_dubiner\_2D.cpp
+\tabularnewline \hline
+p\_enrichment & Not supported &
+\tabularnewline \hline
+para\_max & Not supported &	
+\tabularnewline \hline
+para\_min & Not supported &
+\tabularnewline \hline
+para\_sum & Not supported &	
+\tabularnewline \hline
+prep\_DG	& initialize\_mesh & source/preprocessor/initialize\_mesh.hpp
+\tabularnewline \hline
+prep\_slopelim & Not supported &	
+\tabularnewline \hline
+quad\_pts\_area & Integration::Dunabant\_2D::GetRule & 	source/integration/integrations\_2D/integration\_dunavant\_2D.cpp
+\tabularnewline \hline
+quad\_pts\_edge & Integration::GaussLegendre\_1D::GetRule & source/integration/integrations\_1D/integration\_gausslegendre\_1D.cpp
+\tabularnewline \hline
+radiation\_edge\_hydro & Not supported &
+\tabularnewline \hline
+radiation\_edge\_ldg\_hydro & Not supported &	
+\tabularnewline \hline
+read\_fixed\_fort\_dg & Not supported &
+\tabularnewline \hline
+read\_input & InputParameters::InputParameters & source/preprocessor/input\_parameters.hpp
+\tabularnewline \hline
+read\_keyword\_fort\_dg & Not supported & 
+\tabularnewline \hline
+rhs\_dg\_hydro & SWE::Problem::volume\_kernel \newline SWE::Problem::source::kernel & source/problem/SWE/swe\_kernels\_processor.hpp
+\tabularnewline \hline
+rhs\_ldg\_hydro & Not supported &	
+\tabularnewline \hline
+rk\_time	& Stepper::Stepper & source/simulation/stepper.cpp
+\tabularnewline \hline
+roe\_flux & Not supported &
+\tabularnewline \hline
+scrutinize\_solution & SWE::Problem::scrutinize\_solution\_kernel & source/problem/SWE/swe\_kernels\_processor.hpp
+\tabularnewline \hline
+sta\_basis & Integration::Dunabant\_2D::GetRule & source/integration/integrations\_2D/integration\_dunavant\_2D.cpp
+\tabularnewline \hline
+sta\_location & Not supported &	
+\tabularnewline \hline
+tidal\_potential	& Not supported &	
+\tabularnewline \hline
+updatei\_elem & Not supported &
+\tabularnewline \hline
+updatelz\_elem & Not supported &
+\tabularnewline \hline
+updatemz\_elem & Not supported &	
+\tabularnewline \hline
+updater\_elem & Not supported &	
+\tabularnewline \hline
+updater\_elem\_mod & OMPICommunicator::SendAll \newline OMPICommunicator::ReceiveAll \newline OMPICommunicator::WaitAllSends \newline OMPICommunicator::WaitAllReceives & source/communication/ompi\_communicator.hpp
+\tabularnewline \hline
+updater\_elem\_mod2 & OMPICommunicator::SendAll \newline OMPICommunicator::ReceiveAll \newline OMPICommunicator::WaitAllSends \newline OMPICommunicator::WaitAllReceives & source/communication/ompi\_communicator.hpp
+\tabularnewline \hline
+updater\_elem\_mod3 & OMPICommunicator::SendAll \newline OMPICommunicator::ReceiveAll \newline OMPICommunicator::WaitAllSends \newline OMPICommunicator::WaitAllReceives & source/communication/ompi\_communicator.hpp
+\tabularnewline \hline
+wetdry & Not supported	&
+\tabularnewline \hline
+write\_results & SWE::Problem::extract\_VTK\_data\_kernel \newline SWE::Problem::extract\_modal\_data\_kernel &	 source/problem/SWE/swe\_kernels\_postprocessor.hpp
+\tabularnewline \hline \hline
+\end{longtable}
+}
