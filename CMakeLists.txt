@@ -4,7 +4,7 @@ project (DG_HYPER CXX C)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
 option(USE_CUDA "Use CUDA" ON)
-option(SET_VERBOSE "Verbose MakeFile" OFF)
+option(SET_VERBOSE "Verbose MakeFile" ON)
 
 enable_testing()
 
@@ -37,7 +37,7 @@ find_package(yaml-cpp REQUIRED)
 if(USE_CUDA)
   find_package(CUDA REQUIRED)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -gencode arch=compute_60,code=sm_60 -std=c++11)
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -gencode arch=compute_60,code=sm_60 -std=c++14)
 endif()
 
 if(USE_OMPI)

@@ -8,58 +8,17 @@
 #ifndef SWE_CUDA_KERNELS_PROCESSOR_HPP_
 #define SWE_CUDA_KERNELS_PROCESSOR_HPP_
 
-#include "swe_problem.hpp"
+#include "swe_initial_conditions_function.hpp"
+#include "swe_cuda_kernels.cuh"
+#include "swe_cuda_problem.hpp"
 #include "swe_LLF_flux.hpp"
 
 #define THREADS_PER_BLOCK 1024
 namespace SWE {
 
-struct CUDAProblem : public SWE::Problem {
-    // processor kernels
-    template <typename ElementType>
-    static void volume_kernel(const Stepper& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void source_kernel(const Stepper& stepper, ElementType& elt);
-
-    template <typename InterfaceType>
-    static void interface_kernel(const Stepper& stepper, InterfaceType& intface);
-
-    template <typename BoundaryType>
-    static void boundary_kernel(const Stepper& stepper, BoundaryType& bound);
-
-    template <typename DistributedBoundaryType>
-    static void distributed_boundary_send_kernel(const Stepper& stepper, DistributedBoundaryType& dbound);
-
-    template <typename DistributedBoundaryType>
-    static void distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound);
-
-    template <typename ElementType>
-    static void update_kernel(const Stepper& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void swap_states_kernel(const Stepper& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt);
-
-    // postprocessor kernels
-    template <typename ElementType>
-    static void extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data);
-
-    template <typename MeshType>
-    static void write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh);
-
-    template <typename ElementType>
-    static void extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<uint, Array2D<double>>>& modal_data);
-
-    template <typename MeshType>
-    static void write_modal_data_kernel(const Stepper& stepper, MeshType& mesh);
-};
-
-
 template <typename ElementType>
 void CUDAProblem::volume_kernel(const Stepper& stepper, ElementType& elt) {
+    std::cout << "volume" << std::endl;
     const uint stage = stepper.get_stage();
     auto& state = elt.data.state[stage];
     auto& internal = elt.data.internal;
@@ -71,39 +30,42 @@ void CUDAProblem::volume_kernel(const Stepper& stepper, ElementType& elt) {
 
     // assemble flux
     uint blocksPerGrid = (elt.data.get_ngp_internal() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_volume_kernel1<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, elt,
-            elt.data.get_ngp_internal());
+    cuda_volume_kernel1<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(
+            internal_args(elt.data.internal), elt.data.get_ngp_internal());
     blocksPerGrid = (elt.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_volume_kernel2<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, elt, stage,
+    cuda_volume_kernel2<ElementType><<<blocksPerGrid, THREADS_PER_BLOCK>>>(
+            internal_args(elt.data.internal), state_args(elt.data.state[stage]), NULL, //elt.int_fact_dphi,
             elt.data.get_ndof());
 }
 
 template <typename ElementType>
 void CUDAProblem::source_kernel(const Stepper& stepper, ElementType& elt) {
+    std::cout << "source" << std::endl;
     const uint stage = stepper.get_stage();
     auto& state = elt.data.state[stage];
     auto& internal = elt.data.internal;
     double t = stepper.get_t_at_curr_stage();
-    auto source_ze = [t](Point<2>& pt) { return source_ze(t, pt); };
-    auto source_qx = [t](Point<2>& pt) { return source_qx(t, pt); };
-    auto source_qy = [t](Point<2>& pt) { return source_qy(t, pt); };
+    auto _source_ze = [&, t](Point<2>& pt) { return source_ze(t, pt); };
+    auto _source_qx = [&, t](Point<2>& pt) { return source_qx(t, pt); };
+    auto _source_qy = [&, t](Point<2>& pt) { return source_qy(t, pt); };
 
-    elt.ComputeFgp(source_ze, internal.ze_source_term_at_gp);
-    elt.ComputeFgp(source_qx, internal.qx_source_term_at_gp);
-    elt.ComputeFgp(source_qy, internal.qy_source_term_at_gp);
+    elt.ComputeFgp(_source_ze, internal.ze_source_term_at_gp);
+    elt.ComputeFgp(_source_qx, internal.qx_source_term_at_gp);
+    elt.ComputeFgp(_source_qy, internal.qy_source_term_at_gp);
 
     // note we assume that the values at gauss points have already been computed
 
     uint blocksPerGrid = (elt.data.get_ngp_internal() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_source_kernel1<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, elt,
-            elt.data.get_ngp_internal());
+    /*cuda_source_kernel1<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, elt,
+            elt.data.get_ngp_internal());*/
     blocksPerGrid = (elt.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_source_kernel2<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, elt, stage,
-            elt.data.get_ndof());
+    /*cuda_source_kernel2<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, elt, stage,
+            elt.data.get_ndof());*/
 }
 
 template <typename InterfaceType>
 void CUDAProblem::interface_kernel(const Stepper& stepper, InterfaceType& interface) {
+    std::cout << "interface" << std::endl;
     const uint stage = stepper.get_stage();
     auto& state_in = interface.data_in.state[stage];
     auto& state_ex = interface.data_ex.state[stage];
@@ -120,20 +82,21 @@ void CUDAProblem::interface_kernel(const Stepper& stepper, InterfaceType& interf
     // assemble numerical fluxes
     uint blocksPerGrid = (interface.data_in.get_ngp_boundary(interface.bound_id_in) +
             THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_interface_kernel1<InterfaceType>(blocksPerGrid, THREADS_PER_BLOCK, interface,
-            interface.data_in.get_ngp_boundary(interface.bound_id_in));
+    /*cuda_interface_kernel1<InterfaceType>(blocksPerGrid, THREADS_PER_BLOCK, interface,
+            interface.data_in.get_ngp_boundary(interface.bound_id_in));*/
 
     // now compute contributions to the righthand side
     blocksPerGrid = (interface.data_in.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_interface_kernel2<InterfaceType>(blocksPerGrid, THREADS_PER_BLOCK, interface, stage,
-            interface.data_in.get_ndof());
+    /*cuda_interface_kernel2<InterfaceType>(blocksPerGrid, THREADS_PER_BLOCK, interface, stage,
+            interface.data_in.get_ndof());*/
     blocksPerGrid = (interface.data_ex.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_interface_kernel3<InterfaceType>(blocksPerGrid, THREADS_PER_BLOCK, interface, stage,
-            interface.data_ex.get_ndof());
+    /*cuda_interface_kernel3<InterfaceType>(blocksPerGrid, THREADS_PER_BLOCK, interface, stage,
+            interface.data_ex.get_ndof());*/
 }
 
 template <typename BoundaryType>
 void CUDAProblem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
+    std::cout << "boundary" << std::endl;
     const uint stage = stepper.get_stage();
 
     auto& state = bound.data.state[stage];
@@ -145,17 +108,18 @@ void CUDAProblem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
 
     uint blocksPerGrid = (bound.data.get_ngp_boundary(bound.bound_id) + THREADS_PER_BLOCK - 1) /
             THREADS_PER_BLOCK;
-    cuda_boundary_kernel1<BoundaryType>(blocksPerGrid, THREADS_PER_BLOCK, stepper, bound,
-            bound.data.get_ngp_boundary(bound.bound_id));
+    /*cuda_boundary_kernel1<BoundaryType>(blocksPerGrid, THREADS_PER_BLOCK, stepper, bound,
+            bound.data.get_ngp_boundary(bound.bound_id));*/
 
     // now compute contributions to the righthand side
     blocksPerGrid = (bound.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_boundary_kernel2<BoundaryType>(blocksPerGrid, THREADS_PER_BLOCK, stepper, bound,
-            bound.data.get_ndof());
+    /*cuda_boundary_kernel2<BoundaryType>(blocksPerGrid, THREADS_PER_BLOCK, stepper, bound,
+            bound.data.get_ndof());*/
 }
 
 template <typename ElementType>
 void CUDAProblem::update_kernel(const Stepper& stepper, ElementType& elt) {
+    std::cout << "update" << std::endl;
     const uint stage = stepper.get_stage();
 
     auto& state = elt.data.state;
@@ -171,12 +135,13 @@ void CUDAProblem::update_kernel(const Stepper& stepper, ElementType& elt) {
     std::fill(next_state.qy.begin(), next_state.qy.end(), 0);
 
     uint blocksPerGrid = (elt.data.get_ndof() + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    cuda_update_kernel<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, stepper, elt, stage,
-            elt.data.get_ndof());
+    /*cuda_update_kernel<ElementType>(blocksPerGrid, THREADS_PER_BLOCK, stepper, elt, stage,
+            elt.data.get_ndof());*/
 }
 
 template <typename ElementType>
 void CUDAProblem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
+    std::cout << "swap" << std::endl;
     uint n_stages = stepper.get_num_stages();
     auto& state = elt.data.state;
 
@@ -187,6 +152,7 @@ void CUDAProblem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
 
 template <typename ElementType>
 void CUDAProblem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
+    std::cout << "scrutinize" << std::endl;
     uint stage = stepper.get_stage();
 
     auto& state = elt.data.state[stage];

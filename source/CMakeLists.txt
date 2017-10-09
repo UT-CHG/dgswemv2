@@ -28,8 +28,7 @@ target_link_libraries(DG_HYPER_SWE_SERIAL ${YAML_CPP_LIBRARIES})
 
 if(USE_CUDA)
   cuda_add_executable(DG_HYPER_SWE_CUDA
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/cuda_main_swe.cpp
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_cuda_kernels_processor.cu
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/cuda_main_swe.cu
     ${DG_HYPER_SWE_SOURCES}
   )
 
