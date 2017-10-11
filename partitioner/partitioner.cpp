@@ -11,6 +11,7 @@
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
+                                                 const int ranks_per_locality,
                                                  const NumaConfiguration& numa_config);
 
 void write_distributed_edge_metadata(const std::string& file_name,
@@ -26,11 +27,11 @@ int main(int argc, char** argv) {
     std::cout << "?????????????????????????????????????????????????????????????"
                  "????????\n\n";
 
-    if (argc < 4 || argc > 5) {
+    if (argc < 4 || argc > 6) {
         std::cout << "Usage:\n";
         std::cout << "  path/to/partitioner <input_file_name> <number of "
                      "partitions>\n";
-        std::cout << "                      <number of nodes> <NUMA "
+        std::cout << "                      <number of nodes> <ranks per locality>(optional) <NUMA "
                      "configuration>(optional)\n";
 
         return 0;
@@ -46,9 +47,15 @@ int main(int argc, char** argv) {
     int num_nodes = atoi(argv[3]);
     std::cout << "  Number of compute nodes: " << num_nodes << '\n';
 
+    int ranks_per_locality{1};
+    if (argc >= 5) {
+        ranks_per_locality = atoi(argv[4]);
+        std::cout << "  Number of ranks per locality: " << ranks_per_locality << '\n';
+    };
+
     NumaConfiguration numa_config;
-    if (argc == 5) {
-        std::string numa_str(argv[4]);
+    if (argc == 6) {
+        std::string numa_str(argv[5]);
         numa_config = NumaConfiguration(numa_str);
         std::cout << "  NUMA configuration: " << numa_str << "n\n";
     } else {
@@ -60,7 +67,8 @@ int main(int argc, char** argv) {
 
     AdcircFormat mesh(input_mesh_str);
     MeshMetaData mesh_meta(mesh);
-    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions, num_nodes, numa_config);
+    std::vector<std::vector<MeshMetaData>> submeshes =
+        partition(mesh_meta, num_partitions, num_nodes, ranks_per_locality, numa_config);
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {
             std::string outname = input_mesh_str;

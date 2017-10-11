@@ -9,6 +9,7 @@
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
+                                                 const int ranks_per_locality,
                                                  const NumaConfiguration& numa_config) {
     // To do: add an additional layer of support for assigning submeshes to NUMA
     // domains
@@ -91,20 +92,27 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     }
 
     std::unordered_map<int, int64_t> partition2node;
+    std::unordered_map<int, int64_t> partition2rank;
     const std::vector<int>& sbmshs_sorted = sbmsh_graph.node_ids();
     for (uint i = 0; i < sbmshs_sorted.size(); ++i) {
         partition2node.insert({sbmshs_sorted.at(i), sbmsh_part.at(i)});
     }
 
-    std::vector<std::vector<MeshMetaData>> submeshes(num_nodes);
+    std::vector<std::vector<MeshMetaData>> submeshes(num_nodes * ranks_per_locality);
     std::vector<uint> partition2local_partition(num_partitions);
     {
-        std::vector<uint> local_partition_counter(num_nodes, 0);
+        std::vector<uint> local_partition_counter(num_nodes * ranks_per_locality, 0);
+        std::vector<uint> local_rank_counter(num_nodes, 0);
         for (auto& p_n : partition2node) {
-            partition2local_partition[p_n.first] = local_partition_counter[p_n.second]++;
+            // Assign submeshes to ranks on a node, by cycling round robin through the meshes
+            const uint rank = local_rank_counter[p_n.second] + ranks_per_locality * p_n.second;
+            local_rank_counter[p_n.second] = (local_rank_counter[p_n.second] + 1) % ranks_per_locality;
+
+            partition2rank[p_n.first] = rank;
+            partition2local_partition[p_n.first] = local_partition_counter[rank]++;
         }
 
-        for (int sm = 0; sm < num_nodes; ++sm) {
+        for (int sm = 0; sm < submeshes.size(); ++sm) {
             submeshes[sm].resize(local_partition_counter[sm]);
             for (uint i = 0; i < local_partition_counter[sm]; ++i) {
                 submeshes[sm][i].mesh_name = mesh_meta.mesh_name + "_" + std::to_string(sm) + "_" + std::to_string(i);
@@ -115,7 +123,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     {  // assemble submeshes
         for (const auto& elt : mesh_meta.elements) {
             uint partition = elt2partition.at(elt.first);
-            uint rank = partition2node[partition];
+            uint rank = partition2rank[partition];
             uint loc_part = partition2local_partition[partition];
 
             // error here the partition in question is not actually the
@@ -134,12 +142,12 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                 uint elt_A = edg.first.first;
                 uint part_A = elt2partition.at(elt_A);
                 uint loc_part_A = partition2local_partition[part_A];
-                uint rank_A = partition2node[part_A];
+                uint rank_A = partition2rank[part_A];
 
                 uint elt_B = edg.first.second;
                 uint part_B = elt2partition.at(elt_B);
                 uint loc_part_B = partition2local_partition[part_B];
-                uint rank_B = partition2node[part_B];
+                uint rank_B = partition2rank[part_B];
 
                 for (uint k = 0; k < 3; ++k) {
                     if (elt_B == mesh_meta.elements.at(elt_A).neighbor_ID[k]) {
