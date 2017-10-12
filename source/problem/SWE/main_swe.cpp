@@ -7,7 +7,7 @@
 #include "swe_kernels_processor.hpp"
 #include "swe_kernels_postprocessor.hpp"
 
-#include "../../simulation/simulation.hpp"
+#include "simulation/serial_simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        Simulation<SWE::Problem> simulation(input_string);
+        SerialSimulation<SWE::Problem> simulation(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();

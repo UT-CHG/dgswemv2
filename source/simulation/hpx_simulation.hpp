@@ -4,22 +4,17 @@
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "communication/hpx_communicator.hpp"
+#include "simulation.hpp"
 
 #include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
-class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
+class HPXSimulationUnit : public Simulation<ProblemType>,
+        public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
   private:
-    InputParameters<typename ProblemType::InputType> input;
-
-    Stepper stepper;
-    typename ProblemType::ProblemMeshType mesh;
     HPXCommunicator communicator;
 
-    std::string log_file_name;
-
   public:
-    HPXSimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
@@ -28,20 +23,10 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
                        locality_id,
                        submesh_id) {
         input.ReadMesh();
-
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
-        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
-
-        std::ofstream log_file(this->log_file_name, std::ofstream::out);
-
-        if (!log_file) {
-            std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
-        }
-
+        std::ofstream log_file("output/" + input.mesh_data.mesh_name + "_log", std::ofstream::out);
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-
         initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
@@ -57,8 +42,6 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Launch() {
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
 
     uint n_stages = this->stepper.get_num_stages();
@@ -146,8 +129,6 @@ void HPXSimulationUnit<ProblemType>::Step() {
     this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->stepper.get_step() % 360 == 0) {
-        std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
         log_file << "Step: " << this->stepper.get_step() << std::endl;
 
         ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);

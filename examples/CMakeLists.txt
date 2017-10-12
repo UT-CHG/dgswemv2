@@ -23,8 +23,21 @@ add_executable(
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_include_directories(swe_manufactured_solution_serial PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_include_directories(swe_manufactured_solution_serial PRIVATE ${YAML_CPP_INCLUDE_DIR})
 target_link_libraries(swe_manufactured_solution_serial ${YAML_CPP_LIBRARIES})
+
+install(TARGETS swe_manufactured_solution_serial DESTINATION bin)
+
+if(USE_CUDA)
+  cuda_add_executable(swe_manufactured_solution_cuda
+  ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/cuda_main_swe_manufactured.cu
+    ${DG_HYPER_SWE_SOURCES}
+  )
+  target_include_directories(swe_manufactured_solution_cuda PRIVATE ${YAML_CPP_INCLUDE_DIR})
+  target_link_libraries(swe_manufactured_solution_cuda ${YAML_CPP_LIBRARIES})
+
+  install(TARGETS swe_manufactured_solution_cuda DESTINATION bin)
+endif()
 
 #if(USE_OMPI)
 #  add_executable(
@@ -34,7 +47,7 @@ target_link_libraries(swe_manufactured_solution_serial ${YAML_CPP_LIBRARIES})
 #    ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
 #  )
 
-#  target_include_directories(DG_HYPER_SWE_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
+#  target_include_directories(DG_HYPER_SWE_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})
 #  target_link_libraries(DG_HYPER_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
 
 #  install(TARGETS DG_HYPER_SWE_OMPI DESTINATION bin)
@@ -54,10 +67,9 @@ target_link_libraries(swe_manufactured_solution_serial ${YAML_CPP_LIBRARIES})
 #    COMPONENT_DEPENDENCIES iostreams
 #  )
 
-#  target_include_directories(DG_HYPER_SWE_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
+#  target_include_directories(DG_HYPER_SWE_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})
 #  target_link_libraries(DG_HYPER_SWE_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
 
 #  install(TARGETS DG_HYPER_SWE_HPX DESTINATION bin)
 #endif()
 
-install(TARGETS swe_manufactured_solution_serial DESTINATION bin)

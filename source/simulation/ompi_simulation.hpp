@@ -6,22 +6,16 @@
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "../communication/ompi_communicator.hpp"
+#include "simulation.hpp"
 
 #include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
-class OMPISimulationUnit {
+class OMPISimulationUnit : public Simulation<ProblemType> {
   private:
-    InputParameters<typename ProblemType::InputType> input;
-
-    Stepper stepper;
-    typename ProblemType::ProblemMeshType mesh;
     OMPICommunicator communicator;
 
-    std::string log_file_name;
-
   public:
-    OMPISimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
@@ -30,20 +24,11 @@ class OMPISimulationUnit {
                        locality_id,
                        submesh_id) {
         input.ReadMesh();
-
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
-        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
-
-        std::ofstream log_file(this->log_file_name, std::ofstream::out);
-
-        if (!log_file) {
-            std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
-        }
-
-        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
-                 << std::endl << std::endl;
-
+        log_file = std::ofstream("output/" + input.mesh_data.mesh_name + "_log",
+                std::ofstream::out);
+        log_file << "Starting simulation with p=" << input.polynomial_order << " for "
+                 << mesh.GetMeshName() << " mesh" << std::endl << std::endl;
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
@@ -59,8 +44,6 @@ class OMPISimulationUnit {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::Launch() {
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
 
     this->communicator.InitializeCommunication();
@@ -166,8 +149,6 @@ void OMPISimulationUnit<ProblemType>::Step() {
     this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->stepper.get_step() % 360 == 0) {
-        std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
         log_file << "Step: " << this->stepper.get_step() << std::endl;
 
         ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);

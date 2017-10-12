@@ -4,7 +4,7 @@
 
 #include "swe_manufactured_problem.hpp"
 
-#include "simulation/serial_simulation.hpp"
+#include "simulation/cuda_simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        SerialSimulation<SWE::ManufacturedProblem> simulation(input_string);
+        CUDASimulation<SWE::ManufacturedProblem> simulation(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();

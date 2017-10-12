@@ -31,7 +31,7 @@ int main(int argc, const char* argv[]) {
     uint m = std::stoi(argv[1]);
     uint n = std::stoi(argv[1]);
 
-    std::vector<uchar> boundary_type{0, 2, 0, 0};  // 0 - land, 1 - tidal, 2 - flow
+    std::vector<uchar> boundary_type{0, 0, 0, 0};  // 0 - land, 1 - tidal, 2 - flow
 
     double L = x2 - x1;
     double W = y2 - y1;
