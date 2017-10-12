@@ -14,8 +14,6 @@ class Simulation {
     Writer<ProblemType> writer;
     typename ProblemType::ProblemMeshType mesh;
 
-    std::string log_file_name;
-
   public:
     Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     Simulation(std::string input_string)
