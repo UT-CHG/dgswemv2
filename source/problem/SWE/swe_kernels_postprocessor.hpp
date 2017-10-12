@@ -16,7 +16,7 @@ void Problem::extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_da
 }
 
 template <typename MeshType>
-void Problem::write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh) {
+void Problem::write_VTK_data_kernel(MeshType& mesh, std::ofstream& raw_data_file) {
     Array2D<double> cell_data;
     Array2D<double> point_data;
 
@@ -29,66 +29,47 @@ void Problem::write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     mesh.CallForEachElement(extract_VTK_data_kernel);
 
-    std::string file_name = "output/" + mesh.GetMeshName() + "_raw_data.vtk";
-    std::ofstream file(file_name);
-
-    file << "CELL_DATA " << (*cell_data.begin()).size() << '\n';
-    file << "SCALARS ze_cell float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "CELL_DATA " << (*cell_data.begin()).size() << '\n';
+    raw_data_file << "SCALARS ze_cell float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = cell_data[0].begin(); it != cell_data[0].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "SCALARS qx_cell float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qx_cell float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = cell_data[1].begin(); it != cell_data[1].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "SCALARS qy_cell float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qy_cell float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = cell_data[2].begin(); it != cell_data[2].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "SCALARS bath_cell float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS bath_cell float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = cell_data[3].begin(); it != cell_data[3].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "POINT_DATA " << (*point_data.begin()).size() << '\n';
-    file << "SCALARS ze_point float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "POINT_DATA " << (*point_data.begin()).size() << '\n';
+    raw_data_file << "SCALARS ze_point float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = point_data[0].begin(); it != point_data[0].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "SCALARS qx_point float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qx_point float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = point_data[1].begin(); it != point_data[1].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "SCALARS qy_point float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qy_point float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = point_data[2].begin(); it != point_data[2].end(); it++)
-        file << *it << '\n';
+        raw_data_file << *it << '\n';
 
-    file << "SCALARS bath_point float 1\n";
-    file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS bath_point float 1\n";
+    raw_data_file << "LOOKUP_TABLE default\n";
     for (auto it = point_data[3].begin(); it != point_data[3].end(); it++)
-        file << *it << '\n';
-
-    file.close();
-
-    std::string file_name_geom = "output/" + mesh.GetMeshName() + "_geometry.vtk";
-    std::string file_name_data = "output/" + mesh.GetMeshName() + "_raw_data.vtk";
-
-    std::ifstream file_geom(file_name_geom, std::ios_base::binary);
-    std::ifstream file_data(file_name_data, std::ios_base::binary);
-
-    uint n_step = (uint)(stepper.get_t_at_curr_stage() / stepper.get_dt());
-
-    std::string file_name_merge = "output/" + mesh.GetMeshName() + "_data_" + std::to_string(n_step) + ".vtk";
-    std::ofstream file_merge(file_name_merge, std::ios_base::binary);
-
-    file_merge << file_geom.rdbuf() << file_data.rdbuf();
-    file_merge.close();
+        raw_data_file << *it << '\n';
 }
 
 template <typename ElementType>
@@ -98,7 +79,7 @@ void Problem::extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<
 }
 
 template <typename MeshType>
-void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
+void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, Array2D<double>>> modal_data;
 
     auto extract_modal_data_kernel = [&modal_data](auto& elt) { Problem::extract_modal_data_kernel(elt, modal_data); };
@@ -107,8 +88,8 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     std::ofstream file;
 
-    std::string file_name = "output/" + mesh.GetMeshName() + "_modal_ze.txt";
-    if (stepper.get_t_at_curr_stage() == 0.0) {
+    std::string file_name = output_path + mesh.GetMeshName() + "_modal_ze.txt";
+    if (stepper.get_step() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
@@ -123,8 +104,8 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    file_name = "output/" + mesh.GetMeshName() + "_modal_qx.txt";
-    if (stepper.get_t_at_curr_stage() == 0.0) {
+    file_name = output_path + mesh.GetMeshName() + "_modal_qx.txt";
+    if (stepper.get_step() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
@@ -139,8 +120,8 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    file_name = "output/" + mesh.GetMeshName() + "_modal_qy.txt";
-    if (stepper.get_t_at_curr_stage() == 0.0) {
+    file_name = output_path + mesh.GetMeshName() + "_modal_qy.txt";
+    if (stepper.get_step() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
@@ -155,8 +136,8 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh) {
 
     file.close();
 
-    file_name = "output/" + mesh.GetMeshName() + "_modal_bath.txt";
-    if (stepper.get_t_at_curr_stage() == 0.0) {
+    file_name = output_path + mesh.GetMeshName() + "_modal_bath.txt";
+    if (stepper.get_step() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);

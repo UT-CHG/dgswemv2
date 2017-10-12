@@ -9,21 +9,23 @@ template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const MeshMetaData& mesh_data);
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh, Communicator& communicator);
-
-template <typename ProblemType>
-void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh);
+void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
+                                           Communicator& communicator,
+                                           std::ofstream& log_file);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      const MeshMetaData& mesh_data,
                      Communicator& communicator,
-                     const typename ProblemType::InputType& problem_specific_input) {
+                     const typename ProblemType::InputType& problem_specific_input,
+                     std::ofstream& log_file) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data);
-    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator);
-#ifdef OUTPUT
-    initialize_mesh_VTK_geometry<ProblemType>(mesh);
-#endif
+
+    log_file << "Number of elements: " << mesh.GetNumberElements() << std::endl;
+    log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
+
+    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator, log_file);
+
     ProblemType::initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 }
 
@@ -46,15 +48,12 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const
             elt_id, nodal_coords_temp, element_meta.second.neighbor_ID, element_meta.second.boundary_type);
         nodal_coords_temp.clear();
     }
-#ifdef VERBOSE
-    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-
-    log_file << "Number of elements: " << mesh.GetNumberElements() << std::endl;
-#endif
 }
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh, Communicator& communicator) {
+void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
+                                           Communicator& communicator,
+                                           std::ofstream& log_file) {
     using RawBoundaryType = RawBoundary<1, typename ProblemType::ProblemDataType>;
 
     using InterfaceType =
@@ -77,77 +76,8 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
             it->second.erase(itt);
         }
     }
-#ifdef VERBOSE
-    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
-    log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
-#endif
-    ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
-    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries);
+    ProblemType::create_boundaries_kernel(mesh, pre_boundaries, log_file);
+    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, log_file);
 }
-
-template <typename ProblemType>
-void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh) {
-    std::vector<Point<3>> points;
-    Array2D<uint> cells;
-
-    mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });
-
-    std::string file_name = "output/" + mesh.GetMeshName() + "_geometry.vtk";
-    std::ofstream file(file_name);
-
-    file << "# vtk DataFile Version 3.0\n";
-    file << "OUTPUT DATA\n";
-    file << "ASCII\n";
-    file << "DATASET UNSTRUCTURED_GRID\n";
-    file << "POINTS " << points.size() << " float\n";
-
-    for (auto it = points.begin(); it != points.end(); it++) {
-        file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
-    }
-
-    uint n_cell_entries = 0;
-    for (auto it = cells.begin(); it != cells.end(); it++) {
-        switch ((*it)[0]) {
-            case VTKElementTypes::straight_triangle:
-                n_cell_entries += 4;
-                break;
-            default:
-                printf("\n");
-                printf("MESH InitializeVTK - Fatal error!\n");
-                printf("Undefined cell type = %d\n", (*it)[0]);
-                exit(1);
-        }
-    }
-
-    file << "CELLS " << cells.size() << ' ' << n_cell_entries << '\n';
-
-    uint n_nodes;
-
-    for (auto it = cells.begin(); it != cells.end(); it++) {
-        switch ((*it)[0]) {
-            case VTKElementTypes::straight_triangle:
-                file << 3 << '\t';
-                n_nodes = 3;
-                break;
-            default:
-                printf("\n");
-                printf("MESH InitializeVTK - Fatal error!\n");
-                printf("Undefined cell type = %d\n", (*it)[0]);
-                exit(1);
-        }
-
-        for (uint i = 1; i <= n_nodes; i++) {
-            file << (*it)[i] << '\t';
-        }
-        file << '\n';
-    }
-
-    file << "CELL_TYPES " << cells.size() << '\n';
-
-    for (auto it = cells.begin(); it != cells.end(); it++) {
-        file << (*it)[0] << '\n';
-    }
-}
-
 #endif

@@ -19,6 +19,15 @@ struct RKInput {
     uint order;
 };
 
+struct WriterInput {
+    bool write_output = false;
+    std::string output_path;
+    bool writing_vtk = false;
+    uint vtk_output_frequency;
+    bool writing_modal_output = false;
+    uint modal_output_frequency;
+};
+
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
     InputParameters() = default;
@@ -35,6 +44,8 @@ struct InputParameters {
 
     // right now we only support SSPRK timestepping
     RKInput rk;
+
+    WriterInput writer_input;
 
     // time parameters
     double dt;
@@ -53,7 +64,7 @@ template <typename ProblemInput>
 InputParameters<ProblemInput>::InputParameters(const std::string& input_string) {
     YAML::Node input_file = YAML::LoadFile(input_string);
     // Process Mesh information
-    {
+    if (input_file["mesh"]) {
         YAML::Node raw_mesh = input_file["mesh"];
         mesh_format = raw_mesh["format"].as<std::string>();
         mesh_file_name = raw_mesh["file_name"].as<std::string>();
@@ -66,6 +77,9 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
             throw std::logic_error(err_msg);
         }
+    } else {
+        std::string err_msg{"Error: Mesh YAML node not specified\n"};
+        throw std::logic_error(err_msg);
     }
 
     // Process timestepping information
@@ -78,8 +92,29 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
         rk.order = time_stepping["nstages"].as<uint>();
     }
 
+    // Process output information
+    if (input_file["output"]) {
+        writer_input.write_output = true;
+        YAML::Node out_node = input_file["output"];
+
+        writer_input.output_path = out_node["path"].as<std::string>();
+        if (writer_input.output_path.back() != '/') {
+            writer_input.output_path += "/";
+        }
+
+        if (out_node["vtk"]) {
+            writer_input.writing_vtk = true;
+            writer_input.vtk_output_frequency = out_node["vtk"]["frequency"].as<uint>();
+        }
+
+        if (out_node["modal"]) {
+            writer_input.writing_modal_output = true;
+            writer_input.modal_output_frequency = out_node["modal"]["frequency"].as<uint>();
+        }
+    }
+
     if (!input_file["problem"]) {
-        std::string err_msg("Error: Problem class not found\n");
+        std::string err_msg("Error: Problem node not found\n");
         throw std::logic_error(err_msg);
     }
     problem_input = problem_specific_ctor_helper(input_file);
