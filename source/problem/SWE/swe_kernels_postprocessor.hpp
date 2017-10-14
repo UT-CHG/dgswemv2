@@ -1,8 +1,6 @@
 #ifndef SWE_KERNELS_POSTPROCESSOR_HPP
 #define SWE_KERNELS_POSTPROCESSOR_HPP
 
-#include "swe_true_solution_functions.hpp"
-
 namespace SWE {
 template <typename ElementType>
 void Problem::extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {

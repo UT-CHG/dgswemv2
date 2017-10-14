@@ -1,8 +1,6 @@
 #ifndef SWE_KERNELS_PREPROCESSOR_HPP
 #define SWE_KERNELS_PREPROCESSOR_HPP
 
-#include "swe_initial_condition_functions.hpp"
-
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(ProblemMeshType& mesh,

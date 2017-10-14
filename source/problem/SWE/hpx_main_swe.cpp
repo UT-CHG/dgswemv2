@@ -8,11 +8,14 @@
 #include "general_definitions.hpp"
 
 #include "swe_problem.hpp"
+#include "swe_initial_condition_functions.hpp"
+#include "swe_source_functions.hpp"
+#include "swe_true_solution_functions.hpp"
 #include "swe_kernels_preprocessor.hpp"
 #include "swe_kernels_processor.hpp"
 #include "swe_kernels_postprocessor.hpp"
 
-#include "simulation/hpx_simulation.hpp"
+#include "../../simulation/hpx_simulation.hpp"
 
 using hpx_simulation_unit_swe = HPXSimulationUnit<SWE::Problem>;
 using hpx_simulation_unit_swe_component = hpx::components::simple_component<HPXSimulationUnit<SWE::Problem>>;
