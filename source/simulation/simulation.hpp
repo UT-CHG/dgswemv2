@@ -21,7 +21,7 @@ class Simulation {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-#ifdef VERBOSE
+
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -29,7 +29,7 @@ class Simulation {
         if (!log_file) {
             std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
         }
-
+#ifdef VERBOSE
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
 #endif
@@ -101,6 +101,19 @@ void Simulation<ProblemType>::Run() {
 #endif
         }
     }
+#ifdef RESL2
+    double residual_L2 = 0;
+
+    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+    };
+
+    this->mesh.CallForEachElement(compute_residual_L2_kernel);
+
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+    log_file << "residual inner product: " << residual_L2 << std::endl;
+#endif
 }
 
 #endif

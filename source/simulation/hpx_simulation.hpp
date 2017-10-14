@@ -30,7 +30,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-#ifdef VERBOSE
+
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -38,7 +38,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         if (!log_file) {
             std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
         }
-
+#ifdef VERBOSE
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
 #endif
@@ -272,13 +272,13 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
-
-    /*for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+#ifdef RESL2
+    for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
         simulation_futures[sim_id] =
             simulation_futures[sim_id]
                 .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].ResidualL2(); });
-    }*/
-
+    }
+#endif
     return hpx::when_all(simulation_futures);
 }
 
