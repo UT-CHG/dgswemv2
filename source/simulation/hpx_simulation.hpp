@@ -41,7 +41,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-
+#endif
         initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
     }
 
