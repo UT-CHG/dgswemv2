@@ -25,7 +25,7 @@ const static auto equal2 = [](const InputParameters<> & ipa, const InputParamete
     const YAML::Node& na = ipa.problem_input.node;
     const YAML::Node& nb = ipb.problem_input.node;
 
-    bool nodes_are_equal =
+    bool swe_nodes_are_equal =
         (na["name"].as<std::string>() == nb["name"].as<std::string>()) &&
         (na["bottom_friction"]["type"].as<std::string>() == nb["bottom_friction"]["type"].as<std::string>()) &&
         Utilities::almost_equal(na["bottom_friction"]["coefficient"].as<double>(),
@@ -39,11 +39,20 @@ const static auto equal2 = [](const InputParameters<> & ipa, const InputParamete
         Utilities::almost_equal(na["initial_conditions"]["initial_momentum_y"].as<double>(),
                                 nb["initial_conditions"]["initial_momentum_y"].as<double>());
 
+    const WriterInput& wa = ipa.writer_input;
+    const WriterInput& wb = ipb.writer_input;
+
+    bool output_nodes_are_equal = (wa.write_output == wb.write_output) && (wa.output_path == wb.output_path) &&
+                                  (wa.writing_vtk == wb.writing_vtk) &&
+                                  (wa.vtk_output_frequency == wb.vtk_output_frequency) &&
+                                  (wa.writing_modal_output == wb.writing_modal_output) &&
+                                  (wa.modal_output_frequency == wb.modal_output_frequency);
+
     return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
            (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
            Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
            (ipa.polynomial_order == ipb.polynomial_order) && (ipa.problem_input.node == ipb.problem_input.node) &&
-           nodes_are_equal;
+           swe_nodes_are_equal && output_nodes_are_equal;
 };
 
 int main(int argc, char** argv) {

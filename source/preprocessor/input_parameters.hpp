@@ -26,7 +26,23 @@ struct WriterInput {
     uint vtk_output_frequency;
     bool writing_modal_output = false;
     uint modal_output_frequency;
+
+    YAML::Node as_yaml_node();
 };
+
+inline YAML::Node WriterInput::as_yaml_node() {
+    YAML::Node ret;
+    if (write_output) {
+        ret["path"] = output_path;
+        if (writing_vtk) {
+            ret["vtk"]["frequency"] = vtk_output_frequency;
+        }
+        if (writing_modal_output) {
+            ret["modal"]["frequency"] = modal_output_frequency;
+        }
+    }
+    return ret;
+}
 
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
@@ -167,6 +183,8 @@ void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) 
     }
 
     output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
+
+    output << YAML::Key << "output" << YAML::Value << writer_input.as_yaml_node();
 
     output << YAML::Key << "problem" << YAML::Value << problem_input.as_yaml_node();
 
