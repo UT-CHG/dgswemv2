@@ -13,3 +13,14 @@ timestepping:
   order: 2
   nstages: 2
 polynomial_order: 1
+problem:
+  name: swe
+  bottom_friction:
+    type: Chezy
+    coefficient: 0.001
+  gravity: 9.81
+  initial_conditions:
+    type: Constant
+    initial_surface_height: 10.0
+    initial_momentum_x: 0.0
+    initial_momentum_y: 0.0

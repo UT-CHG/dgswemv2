@@ -13,7 +13,7 @@
 
 namespace SWE {
 struct Problem {
-    typedef SWE::Inputs ProblemInputType;
+    typedef SWE::Inputs InputType;
 
     typedef SWE::Data ProblemDataType;
 

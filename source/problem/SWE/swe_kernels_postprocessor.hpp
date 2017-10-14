@@ -1,7 +1,7 @@
 #ifndef SWE_KERNELS_POSTPROCESSOR_HPP
 #define SWE_KERNELS_POSTPROCESSOR_HPP
 
-#include "swe_true_solution_funtions.hpp"
+#include "swe_true_solution_functions.hpp"
 
 namespace SWE {
 template <typename ElementType>
@@ -179,7 +179,7 @@ double Problem::compute_residual_L2_kernel(const Stepper& stepper, ElementType& 
     double t = stepper.get_t_at_curr_stage();
 
     auto true_ze = [t](Point<2>& pt) { return SWE::true_ze(t, pt); };
-    
+
     return elt.ComputeResidualL2(true_ze, elt.data.state[0].ze);
 }
 }

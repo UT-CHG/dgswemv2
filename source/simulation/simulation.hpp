@@ -21,7 +21,7 @@ class Simulation {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-#ifdef VERBOSE
+
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -29,7 +29,7 @@ class Simulation {
         if (!log_file) {
             std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
         }
-
+#ifdef VERBOSE
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
 #endif
@@ -45,7 +45,7 @@ template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
 #ifdef VERBOSE
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#endif    
+#endif
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };

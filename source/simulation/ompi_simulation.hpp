@@ -32,7 +32,7 @@ class OMPISimulationUnit {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-#ifdef VERBOSE
+
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -40,7 +40,7 @@ class OMPISimulationUnit {
         if (!log_file) {
             std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
         }
-
+#ifdef VERBOSE
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
 #endif

@@ -1,5 +1,5 @@
 #ifndef SWE_TRUE_SOLUTION_FUNCTIONS_HPP
-#define SWE_TRUE_SOLUTIONTION_FUNCTIONS_HPP
+#define SWE_TRUE_SOLUTION_FUNCTIONS_HPP
 
 namespace SWE {
 inline double true_ze(const double t, const Point<2>& pt) {

@@ -12,7 +12,7 @@ class Element {
 
     MasterType& master;
     ShapeType shape;
-  
+
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
@@ -58,7 +58,7 @@ class Element {
     void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
     void WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data);
     void WritePointDataVTK(const std::vector<double>& u, std::vector<double>& point_data);
-    
+
     template <typename F>
     double ComputeResidualL2(const F& f, const std::vector<double>& u);
 
@@ -353,49 +353,51 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataV
     point_data.insert(point_data.end(), temp[0].begin(), temp[0].end());
 }
 
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-double ComputeResidualL2(const F& f, const std::vector<double>& u){
-        std::pair<std::vector<double>, std::vector<Point<2>>> rule = this->master.integration.GetRule(20);
-        //At this point we use maximum possible p for Dunavant integration
-    
-        Array2D<double> Phi = this->master.basis.GetPhi(this->master.p, rule.second);
-    
-        std::vector<double> u_gp(rule.first.size());
-        std::fill(u_gp.begin(), u_gp.end(), 0.0);
-    
-        for (uint dof = 0; dof < this->data.get_ndof(); dof++) {
-            for (uint gp = 0; gp < u_gp.size(); gp++) {
-                u_gp[gp] += Phi[dof][gp] * u[dof];
-            }
+double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f,
+                                                                              const std::vector<double>& u) {
+    std::pair<std::vector<double>, std::vector<Point<2>>> rule = this->master.integration.GetRule(20);
+    // At this point we use maximum possible p for Dunavant integration
+
+    Array2D<double> Phi = this->master.basis.GetPhi(this->master.p, rule.second);
+
+    std::vector<double> u_gp(rule.first.size());
+    std::fill(u_gp.begin(), u_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < this->data.get_ndof(); dof++) {
+        for (uint gp = 0; gp < u_gp.size(); gp++) {
+            u_gp[gp] += Phi[dof][gp] * u[dof];
         }
-    
-        std::vector<Point<2>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
-    
-        std::vector<double> f_gp(rule.first.size());
-    
-        for (uint gp = 0; gp < f_gp.size(); gp++) {
-            f_gp[gp] = f(gp_global[gp]);
-        }
-    
-        std::vector<double> sq_diff(rule.first.size());
-    
+    }
+
+    std::vector<Point<2>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
+
+    std::vector<double> f_gp(rule.first.size());
+
+    for (uint gp = 0; gp < f_gp.size(); gp++) {
+        f_gp[gp] = f(gp_global[gp]);
+    }
+
+    std::vector<double> sq_diff(rule.first.size());
+
+    for (uint gp = 0; gp < sq_diff.size(); gp++) {
+        sq_diff[gp] = pow((f_gp[gp] - u_gp[gp]), 2);
+    }
+
+    double L2 = 0;
+
+    if (this->shape.GetJdet(rule.second).size() == 1) {
         for (uint gp = 0; gp < sq_diff.size(); gp++) {
-            sq_diff[gp] = pow((f_gp[gp] - u_gp[gp]), 2);
+            L2 += sq_diff[gp] * rule.first[gp];
         }
-    
-        double L2 = 0;
 
-        if( this->shape.GetJdet(rule.second).size() == 1 ){
-            for (uint gp = 0; gp < sq_diff.size(); gp++) {
-                L2 += sq_diff[gp] * rule.first[gp];
-            }
+        L2 *= std::abs(this->shape.GetJdet(rule.second)[0]);
+    } else {
+        // Placeholder for nonconstant Jacobian
+    }
 
-            L2 *= std::abs(this->shape.GetJdet(rule.second)[0]);
-        } else {
-            // Placeholder for nonconstant Jacobian
-        }
-    
-        return L2;    
+    return L2;
 }
 }
 
