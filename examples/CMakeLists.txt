@@ -29,7 +29,7 @@ target_link_libraries(MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES})
 if(USE_OMPI)
   add_executable(
     MANUFACTURED_SOLUTION_OMPI
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/manufactured_ompi_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/manufactured_ompi_main_swe.cpp
     ${DG_HYPER_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
   )
@@ -43,7 +43,7 @@ endif()
 if(USE_HPX)
   add_executable(
     MANUFACTURED_SOLUTION_HPX
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/manufactured_hpx_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/manufactured_hpx_main_swe.cpp
     ${DG_HYPER_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )
