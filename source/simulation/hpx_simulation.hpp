@@ -156,7 +156,7 @@ void HPXSimulationUnit<ProblemType>::Step() {
 
         log_file << "Step: " << this->stepper.get_step() << std::endl;
 #endif
-#ifdef OUTPUT 
+#ifdef OUTPUT
         ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
         ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
 #endif
