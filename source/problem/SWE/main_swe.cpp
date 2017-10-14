@@ -1,4 +1,4 @@
-#include "../../general_definitions.hpp"
+#include "general_definitions.hpp"
 #include "swe_definitions.hpp"
 
 #include "swe_initial_condition_functions.hpp"
@@ -10,7 +10,7 @@
 #include "swe_kernels_processor.hpp"
 #include "swe_kernels_postprocessor.hpp"
 
-#include "../../simulation/simulation.hpp"
+#include "simulation/simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
