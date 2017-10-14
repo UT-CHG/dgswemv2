@@ -50,7 +50,6 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )
 
-
   hpx_setup_target(
     DG_HYPER_SWE_HPX
     COMPONENT_DEPENDENCIES iostreams

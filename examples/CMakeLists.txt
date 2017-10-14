@@ -26,38 +26,37 @@ add_executable(
 target_include_directories(MANUFACTURED_SOLUTION_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
 target_link_libraries(MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES})
 
-#if(USE_OMPI)
-#  add_executable(
-#    DG_HYPER_SWE_OMPI
-#    ${PROJECT_SOURCE_DIR}/source/problem/SWE/ompi_main_swe.cpp
-#    ${DG_HYPER_SWE_SOURCES}
-#    ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
-#  )
+if(USE_OMPI)
+  add_executable(
+    MANUFACTURED_SOLUTION_OMPI
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/manufactured_ompi_main_swe.cpp
+    ${DG_HYPER_SWE_SOURCES}
+    ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
+  )
 
-#  target_include_directories(DG_HYPER_SWE_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
-#  target_link_libraries(DG_HYPER_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
+  target_include_directories(MANUFACTURED_SOLUTION_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
+  target_link_libraries(MANUFACTURED_SOLUTION_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
 
-#  install(TARGETS DG_HYPER_SWE_OMPI DESTINATION bin)
-#endif()
+  install(TARGETS MANUFACTURED_SOLUTION_OMPI DESTINATION bin)
+endif()
 
-#if(USE_HPX)
-#  add_executable(
-#    DG_HYPER_SWE_HPX
-#    ${PROJECT_SOURCE_DIR}/source/problem/SWE/hpx_main_swe.cpp
-#    ${DG_HYPER_SWE_SOURCES}
-#    ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
-#  )
+if(USE_HPX)
+  add_executable(
+    MANUFACTURED_SOLUTION_HPX
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/manufactured_hpx_main_swe.cpp
+    ${DG_HYPER_SWE_SOURCES}
+    ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
+  )
 
+  hpx_setup_target(
+    MANUFACTURED_SOLUTION_HPX
+    COMPONENT_DEPENDENCIES iostreams
+  )
 
-#  hpx_setup_target(
-#    DG_HYPER_SWE_HPX
-#    COMPONENT_DEPENDENCIES iostreams
-#  )
+  target_include_directories(MANUFACTURED_SOLUTION_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
+  target_link_libraries(MANUFACTURED_SOLUTION_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
 
-#  target_include_directories(DG_HYPER_SWE_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
-#  target_link_libraries(DG_HYPER_SWE_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
-
-#  install(TARGETS DG_HYPER_SWE_HPX DESTINATION bin)
-#endif()
+  install(TARGETS MANUFACTURED_SOLUTION_HPX DESTINATION bin)
+endif()
 
 install(TARGETS MANUFACTURED_SOLUTION_SERIAL DESTINATION bin)
