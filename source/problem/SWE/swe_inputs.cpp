@@ -5,7 +5,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
     if (swe_node["gravity"]) {
         g = swe_node["gravity"].as<double>();
     }
-    std::cout << " Gravity due to acceleration set to " + std::to_string(g) + '\n';
+    //std::cout << " Gravity due to acceleration set to " + std::to_string(g) + '\n';
 
     const std::string malformatted_bf_warning("  Warning bottom friction is mal-formatted. Using default parameters\n");
 
