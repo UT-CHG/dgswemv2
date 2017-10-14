@@ -35,11 +35,18 @@ int main(int argc, char* argv[]) {
         simulation.Run();
 
         MPI_Barrier(MPI_COMM_WORLD);
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        int locality_id;
+        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+
+        if (locality_id == 0) {
+            std::cout << input_string << std::endl;
+            std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1)
+                                                         .count() << std::endl;
+        }
 
         MPI_Finalize();
-        auto t2 = std::chrono::high_resolution_clock::now();
-        std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-                  << "\n";
 
         return 0;
     }

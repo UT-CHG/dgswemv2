@@ -21,8 +21,9 @@ void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      const typename ProblemType::InputType& problem_specific_input) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data);
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator);
+#ifdef OUTPUT
     initialize_mesh_VTK_geometry<ProblemType>(mesh);
-
+#endif
     ProblemType::initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 }
 
@@ -45,10 +46,11 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const
             elt_id, nodal_coords_temp, element_meta.second.neighbor_ID, element_meta.second.boundary_type);
         nodal_coords_temp.clear();
     }
-
+#ifdef VERBOSE
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
     log_file << "Number of elements: " << mesh.GetNumberElements() << std::endl;
+#endif
 }
 
 template <typename ProblemType, typename Communicator>
@@ -75,11 +77,11 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
             it->second.erase(itt);
         }
     }
-
+#ifdef VERBOSE
     std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
 
     log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
-
+#endif
     ProblemType::create_boundaries_kernel(mesh, pre_boundaries);
     ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries);
 }

@@ -26,6 +26,8 @@ add_executable(
 target_include_directories(DG_HYPER_SWE_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
 target_link_libraries(DG_HYPER_SWE_SERIAL ${YAML_CPP_LIBRARIES})
 
+install(TARGETS DG_HYPER_SWE_SERIAL DESTINATION bin)
+
 if(USE_OMPI)
   add_executable(
     DG_HYPER_SWE_OMPI
@@ -59,5 +61,3 @@ if(USE_HPX)
 
   install(TARGETS DG_HYPER_SWE_HPX DESTINATION bin)
 endif()
-
-install(TARGETS DG_HYPER_SWE_SERIAL DESTINATION bin)

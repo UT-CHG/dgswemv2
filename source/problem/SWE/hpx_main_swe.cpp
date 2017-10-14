@@ -58,8 +58,9 @@ int hpx_main(int argc, char* argv[]) {
     hpx::wait_all(run_futures);
     auto t2 = std::chrono::high_resolution_clock::now();
 
+    std::cout << input_string << std::endl;
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-              << "\n";
+              << std::endl;
 
     return hpx::finalize();
 }

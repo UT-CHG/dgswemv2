@@ -30,7 +30,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
+#ifdef VERBOSE
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -41,8 +41,13 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
+<<<<<<< HEAD
 
         initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
+=======
+#endif
+        initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input.mesh_data, communicator);
+>>>>>>> origin/manufactured
     }
 
     void Launch();
@@ -53,22 +58,27 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
     void Step();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
+
+    void ResidualL2();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 };
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Launch() {
+#ifdef VERBOSE
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
-
+#endif
     uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
-
+#ifdef OUTPUT
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
     ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
 }
 
 template <typename ProblemType>
@@ -146,13 +156,31 @@ void HPXSimulationUnit<ProblemType>::Step() {
     this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->stepper.get_step() % 360 == 0) {
+#ifdef VERBOSE
         std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
         log_file << "Step: " << this->stepper.get_step() << std::endl;
-
+#endif
+#ifdef OUTPUT 
         ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
         ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
     }
+}
+
+template <typename ProblemType>
+void HPXSimulationUnit<ProblemType>::ResidualL2() {
+    double residual_L2 = 0;
+
+    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+    };
+
+    this->mesh.CallForEachElement(compute_residual_L2_kernel);
+
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+    log_file << "residual inner product: " << residual_L2 << std::endl;
 }
 
 template <typename ProblemType>
@@ -176,6 +204,11 @@ class HPXSimulationUnitClient
 
     hpx::future<void> Step() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::StepAction;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
+    hpx::future<void> ResidualL2() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::ResidualL2Action;
         return hpx::async<ActionType>(this->get_id());
     }
 };
@@ -244,6 +277,12 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
+
+    /*for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+        simulation_futures[sim_id] =
+            simulation_futures[sim_id]
+                .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].ResidualL2(); });
+    }*/
 
     return hpx::when_all(simulation_futures);
 }

@@ -32,7 +32,7 @@ class OMPISimulationUnit {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
+#ifdef VERBOSE
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -43,8 +43,13 @@ class OMPISimulationUnit {
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
+<<<<<<< HEAD
 
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
+=======
+#endif
+        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
+>>>>>>> origin/manufactured
     }
 
     void Launch();
@@ -55,14 +60,17 @@ class OMPISimulationUnit {
     void WaitAllSends();
 
     void Step();
+
+    void ResidualL2();
 };
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::Launch() {
+#ifdef VERBOSE
     std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
     log_file << std::endl << "Launching Simulation!" << std::endl << std::endl;
-
+#endif
     this->communicator.InitializeCommunication();
 
     uint n_stages = this->stepper.get_num_stages();
@@ -70,9 +78,10 @@ void OMPISimulationUnit<ProblemType>::Launch() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
-
+#ifdef OUTPUT
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
     ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
 }
 
 template <typename ProblemType>
@@ -166,13 +175,31 @@ void OMPISimulationUnit<ProblemType>::Step() {
     this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->stepper.get_step() % 360 == 0) {
+#ifdef VERBOSE
         std::ofstream log_file(this->log_file_name, std::ofstream::app);
 
         log_file << "Step: " << this->stepper.get_step() << std::endl;
-
+#endif
+#ifdef OUTPUT
         ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
         ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
     }
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::ResidualL2() {
+    double residual_L2 = 0;
+
+    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+    };
+
+    this->mesh.CallForEachElement(compute_residual_L2_kernel);
+
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+
+    log_file << "residual inner product: " << residual_L2 << std::endl;
 }
 
 template <typename ProblemType>
@@ -253,6 +280,10 @@ void OMPISimulation<ProblemType>::Run() {
                 this->simulation_units[sim_unit_id]->Step();
             }
         }
+
+        /*for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+            this->simulation_units[sim_unit_id]->ResidualL2();
+        }*/
     }
 }
 
