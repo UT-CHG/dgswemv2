@@ -21,7 +21,7 @@ class Simulation {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
-
+#ifdef VERBOSE
         this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
 
         std::ofstream log_file(this->log_file_name, std::ofstream::out);
@@ -32,7 +32,7 @@ class Simulation {
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-
+#endif
         std::tuple<> empty_comm;
 
         initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm, input.problem_input);
@@ -43,10 +43,9 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    // we write these gross looking wrapper functions to append the stepper in a
-    // way that allows us to keep the
-    // the nice std::for_each notation without having to define stepper within
-    // each element
+#ifdef VERBOSE
+    std::ofstream log_file(this->log_file_name, std::ofstream::app);
+#endif    
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -69,10 +68,10 @@ void Simulation<ProblemType>::Run() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
-
+#ifdef OUTPUT
     ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
     ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
-
+#endif
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
             this->mesh.CallForEachElement(volume_kernel);
@@ -93,12 +92,13 @@ void Simulation<ProblemType>::Run() {
         this->mesh.CallForEachElement(swap_states_kernel);
 
         if (step % 360 == 0) {
-            std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
+#ifdef VERBOSE
             log_file << "Step: " << this->stepper.get_step() << std::endl;
-
+#endif
+#ifdef OUTPUT
             ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
             ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
         }
     }
 }
