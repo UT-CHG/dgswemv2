@@ -73,9 +73,10 @@ void OMPISimulationUnit<ProblemType>::Launch() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
-
-    // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#ifdef OUTPUT
+    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
 }
 
 template <typename ProblemType>
@@ -174,8 +175,10 @@ void OMPISimulationUnit<ProblemType>::Step() {
 
         log_file << "Step: " << this->stepper.get_step() << std::endl;
 #endif
-        // ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-        // ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#ifdef OUTPUT
+        ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
+        ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+#endif
     }
 }
 

@@ -162,6 +162,7 @@ class Shape {
 }
 
 //#define VERBOSE
+#define OUTPUT
 
 #define PI 3.14159265359
 
