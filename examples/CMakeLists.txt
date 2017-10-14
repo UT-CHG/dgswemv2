@@ -18,13 +18,13 @@ list (APPEND DG_HYPER_SWE_SOURCES
 )
 
 add_executable(
-  swe_manufactured_solution_serial
-  ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/main_swe_manufactured.cpp
+  MANUFACTURED_SOLUTION_SERIAL
+  ${PROJECT_SOURCE_DIR}/examples/manufactured_solution/manufactured_main_swe.cpp
   ${DG_HYPER_SWE_SOURCES}
 )
 
-target_include_directories(swe_manufactured_solution_serial PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(swe_manufactured_solution_serial ${YAML_CPP_LIBRARIES})
+target_include_directories(MANUFACTURED_SOLUTION_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES})
 
 #if(USE_OMPI)
 #  add_executable(

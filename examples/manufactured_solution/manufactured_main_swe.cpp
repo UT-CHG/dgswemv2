@@ -1,10 +1,16 @@
-#include "general_definitions.hpp"
+#include "../../general_definitions.hpp"
+#include "swe_definitions.hpp"
 
-#include "simulation/stepper.hpp"
+#include "manufactured_swe_initial_condition_functions.hpp"
+#include "manufactured_swe_source_functions.hpp"
+#include "manufactured_swe_true_solution_functions.hpp"
 
-#include "swe_manufactured_problem.hpp"
+#include "swe_problem.hpp"
+#include "swe_kernels_preprocessor.hpp"
+#include "swe_kernels_processor.hpp"
+#include "swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation.hpp"
+#include "../../simulation/simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -14,7 +20,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        Simulation<SWE::ManufacturedProblem> simulation(input_string);
+        Simulation<SWE::Problem> simulation(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();
