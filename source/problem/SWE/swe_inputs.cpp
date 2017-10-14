@@ -1,7 +1,5 @@
 #include "swe_inputs.hpp"
 
-#include <iostream>
-
 namespace SWE {
 Inputs::Inputs(YAML::Node& swe_node) {
     if (swe_node["gravity"]) {

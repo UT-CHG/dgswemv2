@@ -1,10 +1,10 @@
-#ifndef SWE_INPUTS
-#define SWE_INPUTS
+#ifndef SWE_INPUTS_HPP
+#define SWE_INPUTS_HPP
 
 #include <yaml-cpp/yaml.h>
+#include "../../general_definitions.hpp"
 
 namespace SWE {
-
 enum class BottomFrictionType {
     None,
     Chezy
@@ -40,4 +40,5 @@ struct Inputs {
     InitialConditions initial_conditions;
 };
 }
+
 #endif
