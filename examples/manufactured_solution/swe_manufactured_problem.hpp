@@ -8,7 +8,7 @@
 #include "problem/SWE/swe_kernels_processor.hpp"
 #include "problem/SWE/swe_kernels_postprocessor.hpp"
 
-#include "swe_true_src_functions.hpp"
+#include "swe_source_functions.hpp"
 
 namespace SWE {
 struct ManufacturedProblem : Problem {
