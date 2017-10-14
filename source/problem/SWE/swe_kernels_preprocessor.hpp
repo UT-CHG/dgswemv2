@@ -1,7 +1,7 @@
 #ifndef SWE_KERNELS_PREPROCESSOR_HPP
 #define SWE_KERNELS_PREPROCESSOR_HPP
 
-#include "swe_initial_conditions_function.hpp"
+#include "swe_initial_condition_functions.hpp"
 
 namespace SWE {
 template <typename RawBoundaryType>
@@ -155,15 +155,15 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeDUgp(GlobalCoord::x, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_x_at_gp);
         elt.ComputeDUgp(GlobalCoord::y, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_y_at_gp);
 
-        auto ze_init = [](Point<2>& pt) { return SWE::true_ze(0, pt); };
+        auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
 
         elt.data.state[0].ze = elt.L2Projection(ze_init);
 
-        auto qx_init = [](Point<2>& pt) { return SWE::true_qx(0, pt); };
+        auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
 
         elt.data.state[0].qx = elt.L2Projection(qx_init);
 
-        auto qy_init = [](Point<2>& pt) { return SWE::true_qy(0, pt); };
+        auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
 
         elt.data.state[0].qy = elt.L2Projection(qy_init);
     });

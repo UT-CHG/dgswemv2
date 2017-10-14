@@ -2,6 +2,7 @@
 #define SWE_KERNELS_PROCESSOR_HPP
 
 #include "swe_LLF_flux.hpp"
+#include "swe_source_functions.hpp"
 
 namespace SWE {
 template <typename ElementType>
