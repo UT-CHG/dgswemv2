@@ -60,4 +60,4 @@ target_link_libraries(MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES})
 #  install(TARGETS DG_HYPER_SWE_HPX DESTINATION bin)
 #endif()
 
-install(TARGETS swe_manufactured_solution_serial DESTINATION bin)
+install(TARGETS MANUFACTURED_SOLUTION_SERIAL DESTINATION bin)
