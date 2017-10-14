@@ -2,6 +2,7 @@
 #include <omp.h>
 
 #include "general_definitions.hpp"
+#include "swe_definitions.hpp"
 
 #include "swe_initial_condition_functions.hpp"
 #include "swe_source_functions.hpp"

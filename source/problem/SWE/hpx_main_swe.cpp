@@ -6,7 +6,7 @@
 #include <hpx/include/lcos.hpp>
 
 #include "general_definitions.hpp"
-
+#include "swe_definitions.hpp"
 #include "swe_initial_condition_functions.hpp"
 #include "swe_source_functions.hpp"
 #include "swe_true_solution_functions.hpp"

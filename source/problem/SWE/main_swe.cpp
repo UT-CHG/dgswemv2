@@ -1,10 +1,10 @@
 #include "../../general_definitions.hpp"
-
-#include "../../simulation/stepper.hpp"
+#include "swe_definitions.hpp"
 
 #include "swe_initial_condition_functions.hpp"
 #include "swe_source_functions.hpp"
 #include "swe_true_solution_functions.hpp"
+
 #include "swe_problem.hpp"
 #include "swe_kernels_preprocessor.hpp"
 #include "swe_kernels_processor.hpp"
