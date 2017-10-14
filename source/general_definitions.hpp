@@ -163,6 +163,7 @@ class Shape {
 
 //#define VERBOSE
 //#define OUTPUT
+#define RESL2
 
 #define PI 3.14159265359
 

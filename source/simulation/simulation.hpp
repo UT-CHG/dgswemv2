@@ -101,6 +101,19 @@ void Simulation<ProblemType>::Run() {
 #endif
         }
     }
+#ifdef RESL2
+    double residual_L2 = 0;
+    
+        auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+            residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
+        };
+    
+        this->mesh.CallForEachElement(compute_residual_L2_kernel);
+    
+        std::ofstream log_file(this->log_file_name, std::ofstream::app);
+    
+        log_file << "residual inner product: " << residual_L2 << std::endl;
+#endif
 }
 
 #endif

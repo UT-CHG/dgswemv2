@@ -272,13 +272,13 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
-
+#ifdef RESL2
     for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
         simulation_futures[sim_id] =
             simulation_futures[sim_id]
                 .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].ResidualL2(); });
     }
-
+#endif
     return hpx::when_all(simulation_futures);
 }
 
