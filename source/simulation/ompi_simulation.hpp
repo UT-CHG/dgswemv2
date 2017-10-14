@@ -276,9 +276,9 @@ void OMPISimulation<ProblemType>::Run() {
             }
         }
 
-        /*for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
             this->simulation_units[sim_unit_id]->ResidualL2();
-        }*/
+        }
     }
 }
 
