@@ -43,13 +43,8 @@ class OMPISimulationUnit {
 
         log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
                  << std::endl << std::endl;
-<<<<<<< HEAD
 
         initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator, input.problem_input);
-=======
-#endif
-        initialize_mesh<ProblemType, OMPICommunicator>(this->mesh, input.mesh_data, communicator);
->>>>>>> origin/manufactured
     }
 
     void Launch();
