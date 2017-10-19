@@ -22,6 +22,13 @@ if [ "$MACHINE" == "stampede2" ]; then
     CXX_COMPILER="/opt/apps/gcc/7.1.0/bin/g++"
 fi
 
+if [ "$MACHINE" == "peano" ]; then
+    NUM_BUILDCORES=16
+    MODULES="gnu/5.4.0 mvapich2/2.2 boost/1.63.0 cmake/3.9.2"
+    CMAKE="cmake"
+
+    CXX_COMPILER="/opt/ohpc/pub/compiler/gcc/5.4.0/bin/g++"
+fi
 
 BUILD_PATH=$WORK/dgswemv2_local_build_${BUILD_TYPE}
 INSTALL_PATH=$WORK/dgswemv2_local_install_${BUILD_TYPE}
