@@ -67,7 +67,8 @@ int main(int argc, char** argv) {
 
     input.ReadMesh();
     MeshMetaData& mesh_meta = input.mesh_data;
-    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta, num_partitions, num_nodes, numa_config);
+    std::vector<std::vector<MeshMetaData>> submeshes =
+        partition(mesh_meta, num_partitions, num_nodes, ranks_per_locality, numa_config);
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {
             std::string outname = input_mesh_str;
