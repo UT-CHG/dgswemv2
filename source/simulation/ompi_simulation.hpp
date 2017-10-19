@@ -25,9 +25,9 @@ class OMPISimulationUnit {
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(input.rk.nstages, input.rk.order, input.dt),
-          writer(input),
+          writer(input, locality_id, submesh_id),
           mesh(input.polynomial_order),
-          communicator(input.mesh_file_path.substr(0, input.mesh_file_path.find_last_of('.')) + ".dbmd",
+          communicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd",
                        locality_id,
                        submesh_id) {
         input.ReadMesh();
@@ -191,10 +191,10 @@ class OMPISimulation {
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
 
-        std::string submesh_file_prefix = input.mesh_file_path.substr(0, input.mesh_file_path.find_last_of('.')) + "_" +
+        std::string submesh_file_prefix = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + "_" +
                                           std::to_string(locality_id) + '_';
         std::string submesh_file_postfix =
-            input.mesh_file_path.substr(input.mesh_file_path.find_last_of('.'), input.mesh_file_path.size());
+            input.mesh_file_name.substr(input.mesh_file_name.find_last_of('.'), input.mesh_file_name.size());
 
         uint submesh_id = 0;
 

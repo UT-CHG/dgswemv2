@@ -221,6 +221,7 @@ problem:\n\
     initial_momentum_x: 0.0\n\
     initial_momentum_y: 0.0\n\n\
 output:\n\
+  logfile: log\n\
   path: output/\n\
   vtk:\n\
     frequency: 100\n"

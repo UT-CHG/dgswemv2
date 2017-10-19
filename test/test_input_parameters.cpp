@@ -1,6 +1,27 @@
 #include "preprocessor/input_parameters.hpp"
 #include "utilities/almost_equal.hpp"
 
+const static auto equal_writer = [](const WriterInput & wa, const WriterInput & wb) -> bool {
+    bool output_nodes_are_equal = (wa.write_output == wb.write_output) && (wa.output_path == wb.output_path) &&
+                                  (wa.log_file_name == wb.log_file_name) && (wa.writing_vtk == wb.writing_vtk) &&
+                                  (wa.vtk_output_frequency == wb.vtk_output_frequency) &&
+                                  (wa.writing_modal_output == wb.writing_modal_output) &&
+                                  (wa.modal_output_frequency == wb.modal_output_frequency);
+
+    if (!output_nodes_are_equal) {
+        std::cerr << "write_output: " << wa.write_output << " : " << wb.write_output << '\n' << "              "
+                  << wa.output_path << " : " << wb.output_path << '\n' << "              " << wa.log_file_name << " : "
+                  << wb.log_file_name << '\n' << "              " << wa.writing_vtk << " : " << wb.writing_vtk << '\n'
+                  << "              " << wa.vtk_output_frequency << " : " << wb.vtk_output_frequency << '\n'
+                  << "              " << wa.writing_modal_output << " : " << wb.writing_modal_output << '\n'
+                  << "              " << wa.modal_output_frequency << " : " << wb.modal_output_frequency << '\n';
+
+        std::cerr << "Error: Writer Inputs not equal\n";
+    }
+
+    return output_nodes_are_equal;
+};
+
 const static auto equal = [](const InputParameters<typename SWE::Inputs> & ipa,
                              const InputParameters<typename SWE::Inputs> & ipb) -> bool {
 
@@ -15,10 +36,15 @@ const static auto equal = [](const InputParameters<typename SWE::Inputs> & ipa,
         Utilities::almost_equal(ia.initial_conditions.qx_initial, ib.initial_conditions.qx_initial) &&
         Utilities::almost_equal(ia.initial_conditions.qy_initial, ib.initial_conditions.qy_initial);
 
+    if (!inputs_are_equal) {
+        std::cerr << "Error: Problem Specific inputs not equal\n";
+    }
+
     return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
            (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
            Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
-           (ipa.polynomial_order == ipb.polynomial_order) && inputs_are_equal;
+           (ipa.polynomial_order == ipb.polynomial_order) && inputs_are_equal &&
+           equal_writer(ipa.writer_input, ipb.writer_input);
 };
 
 const static auto equal2 = [](const InputParameters<> & ipa, const InputParameters<> & ipb) -> bool {
@@ -39,20 +65,15 @@ const static auto equal2 = [](const InputParameters<> & ipa, const InputParamete
         Utilities::almost_equal(na["initial_conditions"]["initial_momentum_y"].as<double>(),
                                 nb["initial_conditions"]["initial_momentum_y"].as<double>());
 
-    const WriterInput& wa = ipa.writer_input;
-    const WriterInput& wb = ipb.writer_input;
-
-    bool output_nodes_are_equal = (wa.write_output == wb.write_output) && (wa.output_path == wb.output_path) &&
-                                  (wa.writing_vtk == wb.writing_vtk) &&
-                                  (wa.vtk_output_frequency == wb.vtk_output_frequency) &&
-                                  (wa.writing_modal_output == wb.writing_modal_output) &&
-                                  (wa.modal_output_frequency == wb.modal_output_frequency);
+    if (!swe_nodes_are_equal) {
+        std::cerr << "Error: Problem Specific inputs not equal\n";
+    }
 
     return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
            (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
            Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
-           (ipa.polynomial_order == ipb.polynomial_order) && (ipa.problem_input.node == ipb.problem_input.node) &&
-           swe_nodes_are_equal && output_nodes_are_equal;
+           (ipa.polynomial_order == ipb.polynomial_order) && swe_nodes_are_equal &&
+           equal_writer(ipa.writer_input, ipb.writer_input);
 };
 
 int main(int argc, char** argv) {
@@ -65,7 +86,7 @@ int main(int argc, char** argv) {
         try {
             InputParameters<typename SWE::Inputs> input(argv[1]);
             std::string output_file_name = std::string(argv[1]) + ".emitted";
-            std::cout << output_file_name << '\n';
+            std::cout << "Emitted filename: " << output_file_name << '\n';
             input.WriteTo(output_file_name);
 
             InputParameters<typename SWE::Inputs> input2(output_file_name);
@@ -89,11 +110,11 @@ int main(int argc, char** argv) {
         try {
             InputParameters<> input(argv[1]);
             std::string output_file_name = std::string(argv[1]) + ".emitted";
-            std::cout << output_file_name << '\n';
+            std::cout << "Emitted filename: " << output_file_name << '\n';
             input.WriteTo(output_file_name);
 
             InputParameters<> input2(output_file_name);
-            local_error = !equal2(input, input);
+            local_error = !equal2(input, input2);
 
             if (local_error) {
                 std::cerr << "Error found in correct file with anonymous input type\n";
