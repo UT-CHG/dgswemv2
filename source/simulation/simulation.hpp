@@ -36,9 +36,6 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-#ifdef VERBOSE
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#endif
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -98,9 +95,7 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
-    log_file << "residual inner product: " << residual_L2 << std::endl;
+    writer.get_log_file() << "residual inner product: " << residual_L2 << std::endl;
 #endif
 }
 
