@@ -1,0 +1,39 @@
+\documentclass[10pt,letterpaper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue}
+}
+\usepackage{longtable}
+\usepackage{tikz}
+\usetikzlibrary{trees,arrows}
+
+\begin{document}
+\title{ \texttt{dgswem-v2}: User's Guide}
+
+\maketitle
+\tableofcontents
+
+\input{chapters/introduction.tex}
+
+\input{chapters/mesh-class.tex}
+
+\input{chapters/problem-class.tex}
+
+\input{chapters/annotated-examples.tex}
+
+\input{chapters/input-format.tex}
+
+\input{chapters/dgswem-to-dgswemv2.tex}
+
+
+
+
+\end{document}

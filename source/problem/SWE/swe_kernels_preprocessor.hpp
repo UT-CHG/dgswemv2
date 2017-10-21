@@ -4,13 +4,12 @@
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
-                                       std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries) {
+                                       std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
+                                       std::ofstream& log_file) {
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
     uint n_bound_old_flow = 0;
-#ifdef VERBOSE
-    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-#endif
+
     using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal, SWE::Flow>;
 
     for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
@@ -59,13 +58,15 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
 template <typename RawBoundaryType>
 void Problem::create_distributed_boundaries_kernel(ProblemMeshType&,
                                                    std::tuple<>&,
-                                                   std::map<uint, std::map<uint, RawBoundaryType>>&) {}
+                                                   std::map<uint, std::map<uint, RawBoundaryType>>&,
+                                                   std::ofstream& log_file) {}
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
     ProblemMeshType& mesh,
     Communicator& communicator,
-    std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries) {
+    std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
+    std::ofstream& log_file) {
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
@@ -113,8 +114,6 @@ void Problem::create_distributed_boundaries_kernel(
         receive_buffer_reference.resize(begin_index);
     }
 #ifdef VERBOSE
-    std::ofstream log_file("output/" + mesh.GetMeshName() + "_log", std::ofstream::app);
-
     log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
 #endif
 }

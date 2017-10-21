@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters<> input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
-    std::string input_mesh_str(input.mesh_file_path);
+    std::string input_mesh_str(input.mesh_file_name);
     std::cout << "  Mesh Path: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
@@ -65,8 +65,8 @@ int main(int argc, char** argv) {
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    AdcircFormat mesh(input_mesh_str);
-    MeshMetaData mesh_meta(mesh);
+    input.ReadMesh();
+    MeshMetaData& mesh_meta = input.mesh_data;
     std::vector<std::vector<MeshMetaData>> submeshes =
         partition(mesh_meta, num_partitions, num_nodes, ranks_per_locality, numa_config);
     for (uint n = 0; n < submeshes.size(); ++n) {

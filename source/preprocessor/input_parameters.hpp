@@ -19,6 +19,35 @@ struct RKInput {
     uint order;
 };
 
+struct WriterInput {
+    bool write_output{false};
+    std::string output_path;
+    std::string log_file_name;
+    bool writing_vtk{false};
+    uint vtk_output_frequency{std::numeric_limits<uint>::max()};
+    bool writing_modal_output{false};
+    uint modal_output_frequency{std::numeric_limits<uint>::max()};
+
+    YAML::Node as_yaml_node();
+};
+
+inline YAML::Node WriterInput::as_yaml_node() {
+    YAML::Node ret;
+    if (write_output) {
+        ret["path"] = output_path;
+        if (!log_file_name.empty()) {
+            ret["logfile"] = log_file_name;
+        }
+        if (writing_vtk) {
+            ret["vtk"]["frequency"] = vtk_output_frequency;
+        }
+        if (writing_modal_output) {
+            ret["modal"]["frequency"] = modal_output_frequency;
+        }
+    }
+    return ret;
+}
+
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
     InputParameters() = default;
@@ -26,15 +55,17 @@ struct InputParameters {
     InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
     void ReadMesh();
+
     void WriteTo(const std::string& output_filename);
 
     std::string mesh_file_name;
-    std::string mesh_file_path;
     std::string mesh_format;
     MeshMetaData mesh_data;
 
     // right now we only support SSPRK timestepping
     RKInput rk;
+
+    WriterInput writer_input;
 
     // time parameters
     double dt;
@@ -53,19 +84,18 @@ template <typename ProblemInput>
 InputParameters<ProblemInput>::InputParameters(const std::string& input_string) {
     YAML::Node input_file = YAML::LoadFile(input_string);
     // Process Mesh information
-    {
+    if (input_file["mesh"]) {
         YAML::Node raw_mesh = input_file["mesh"];
         mesh_format = raw_mesh["format"].as<std::string>();
         mesh_file_name = raw_mesh["file_name"].as<std::string>();
-
-        std::string path_to_input = input_string;
-        path_to_input = path_to_input.substr(0, path_to_input.find_last_of("/\\") + 1);
-        mesh_file_path = path_to_input + mesh_file_name;
 
         if (!((mesh_format == "Adcirc") || (mesh_format == "Meta"))) {
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
             throw std::logic_error(err_msg);
         }
+    } else {
+        std::string err_msg{"Error: Mesh YAML node not specified\n"};
+        throw std::logic_error(err_msg);
     }
 
     // Process timestepping information
@@ -78,8 +108,32 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
         rk.order = time_stepping["nstages"].as<uint>();
     }
 
+    // Process output information
+    if (input_file["output"]) {
+        writer_input.write_output = true;
+        YAML::Node out_node = input_file["output"];
+        if (out_node["logfile"]) {
+            writer_input.log_file_name = out_node["logfile"].as<std::string>();
+        }
+
+        writer_input.output_path = out_node["path"].as<std::string>();
+        if (writer_input.output_path.back() != '/') {
+            writer_input.output_path += "/";
+        }
+
+        if (out_node["vtk"]) {
+            writer_input.writing_vtk = true;
+            writer_input.vtk_output_frequency = out_node["vtk"]["frequency"].as<uint>();
+        }
+
+        if (out_node["modal"]) {
+            writer_input.writing_modal_output = true;
+            writer_input.modal_output_frequency = out_node["modal"]["frequency"].as<uint>();
+        }
+    }
+
     if (!input_file["problem"]) {
-        std::string err_msg("Error: Problem class not found\n");
+        std::string err_msg("Error: Problem node not found\n");
         throw std::logic_error(err_msg);
     }
     problem_input = problem_specific_ctor_helper(input_file);
@@ -92,17 +146,17 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string,
                                                const uint locality_id,
                                                const uint submesh_id)
     : InputParameters(input_string) {
-    mesh_file_path.insert(mesh_file_path.find_last_of("."),
+    mesh_file_name.insert(mesh_file_name.find_last_of("."),
                           '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
 }
 
 template <typename ProblemInput>
 void InputParameters<ProblemInput>::ReadMesh() {
     if (mesh_format == "Adcirc") {
-        AdcircFormat adcirc_file(mesh_file_path);
+        AdcircFormat adcirc_file(mesh_file_name);
         mesh_data = MeshMetaData(adcirc_file);
     } else if (mesh_format == "Meta") {
-        mesh_data = MeshMetaData(mesh_file_path);
+        mesh_data = MeshMetaData(mesh_file_name);
     }
 }
 
@@ -132,6 +186,8 @@ void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) 
     }
 
     output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
+
+    output << YAML::Key << "output" << YAML::Value << writer_input.as_yaml_node();
 
     output << YAML::Key << "problem" << YAML::Value << problem_input.as_yaml_node();
 

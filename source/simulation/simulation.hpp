@@ -3,6 +3,7 @@
 
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
+#include "writer.hpp"
 
 template <typename ProblemType>
 class Simulation {
@@ -10,32 +11,24 @@ class Simulation {
     InputParameters<typename ProblemType::InputType> input;
 
     Stepper stepper;
+    Writer<ProblemType> writer;
     typename ProblemType::ProblemMeshType mesh;
-
-    std::string log_file_name;
 
   public:
     Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
     Simulation(std::string input_string)
-        : input(input_string), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {
+        : input(input_string),
+          stepper(input.rk.nstages, input.rk.order, input.dt),
+          writer(input),
+          mesh(input.polynomial_order) {
         input.ReadMesh();
 
         mesh.SetMeshName(input.mesh_data.mesh_name);
 
-        this->log_file_name = "output/" + input.mesh_data.mesh_name + "_log";
-
-        std::ofstream log_file(this->log_file_name, std::ofstream::out);
-
-        if (!log_file) {
-            std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
-        }
-#ifdef VERBOSE
-        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << mesh.GetMeshName() << " mesh"
-                 << std::endl << std::endl;
-#endif
         std::tuple<> empty_comm;
 
-        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm, input.problem_input);
+        initialize_mesh<ProblemType>(
+            this->mesh, input.mesh_data, empty_comm, input.problem_input, writer.get_log_file());
     }
 
     void Run();
@@ -43,9 +36,6 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-#ifdef VERBOSE
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-#endif
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -68,10 +58,11 @@ void Simulation<ProblemType>::Run() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
+
 #ifdef OUTPUT
-    ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-    ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+    writer.WriteFirstStep(this->stepper, this->mesh);
 #endif
+
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
             this->mesh.CallForEachElement(volume_kernel);
@@ -91,15 +82,9 @@ void Simulation<ProblemType>::Run() {
 
         this->mesh.CallForEachElement(swap_states_kernel);
 
-        if (step % 360 == 0) {
-#ifdef VERBOSE
-            log_file << "Step: " << this->stepper.get_step() << std::endl;
-#endif
 #ifdef OUTPUT
-            ProblemType::write_VTK_data_kernel(this->stepper, this->mesh);
-            ProblemType::write_modal_data_kernel(this->stepper, this->mesh);
+        writer.WriteOutput(this->stepper, mesh);
 #endif
-        }
     }
 #ifdef RESL2
     double residual_L2 = 0;
@@ -110,9 +95,7 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    std::ofstream log_file(this->log_file_name, std::ofstream::app);
-
-    log_file << "residual inner product: " << residual_L2 << std::endl;
+    writer.get_log_file() << "residual inner product: " << residual_L2 << std::endl;
 #endif
 }
 

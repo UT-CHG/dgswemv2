@@ -22,18 +22,21 @@ struct Problem {
     // preprocessor kernels
     template <typename RawBoundaryType>
     static void create_boundaries_kernel(ProblemMeshType& mesh,
-                                         std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries);
+                                         std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
+                                         std::ofstream& log_file);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries_kernel(ProblemMeshType&,
                                                      std::tuple<>&,
-                                                     std::map<uint, std::map<uint, RawBoundaryType>>&);
+                                                     std::map<uint, std::map<uint, RawBoundaryType>>&,
+                                                     std::ofstream&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries_kernel(
         ProblemMeshType& mesh,
         Communicator& communicator,
-        std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries);
+        std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
+        std::ofstream& log_file);
 
     static void initialize_data_kernel(ProblemMeshType& mesh,
                                        const MeshMetaData& mesh_data,
@@ -72,16 +75,15 @@ struct Problem {
     static void extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data);
 
     template <typename MeshType>
-    static void write_VTK_data_kernel(const Stepper& stepper, MeshType& mesh);
+    static void write_VTK_data_kernel(MeshType& mesh, std::ofstream& raw_data_file);
 
     template <typename ElementType>
     static void extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<uint, Array2D<double>>>& modal_data);
-
-    template <typename MeshType>
-    static void write_modal_data_kernel(const Stepper& stepper, MeshType& mesh);
-
     template <typename ElementType>
     static double compute_residual_L2_kernel(const Stepper& stepper, ElementType& elt);
+
+    template <typename MeshType>
+    static void write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, const std::string& output_path);
 };
 }
 
