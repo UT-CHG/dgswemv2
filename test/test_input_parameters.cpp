@@ -165,6 +165,31 @@ int main(int argc, char** argv) {
         error_found = error_found || local_error;
     }
 
+    // try a correct input file with no output node specified
+    std::cout << "Try a correct input file\n";
+    {
+        bool local_error{false};
+        try {
+            InputParameters<typename SWE::Inputs> input(argv[4]);
+            std::string output_file_name = std::string(argv[4]) + ".emitted";
+            std::cout << "Emitted filename: " << output_file_name << '\n';
+            input.WriteTo(output_file_name);
+
+            InputParameters<typename SWE::Inputs> input2(output_file_name);
+            local_error = !equal(input, input2);
+
+            if (local_error) {
+                std::cerr << "Error found in correct file with SWE::Inputs type\n";
+            }
+        }
+        catch (const std::exception& e) {
+            local_error = true;
+            std::cout << "Bad News: Exception was thrown ( " << e.what() << " )\n";
+        }
+
+        error_found = error_found || local_error;
+    }
+
     if (error_found) {
         return -1;
     }

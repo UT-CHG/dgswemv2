@@ -187,7 +187,9 @@ void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) 
 
     output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
 
-    output << YAML::Key << "output" << YAML::Value << writer_input.as_yaml_node();
+    if (writer_input.write_output) {
+        output << YAML::Key << "output" << YAML::Value << writer_input.as_yaml_node();
+    }
 
     output << YAML::Key << "problem" << YAML::Value << problem_input.as_yaml_node();
 

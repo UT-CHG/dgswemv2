@@ -196,6 +196,8 @@ add_test(
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/input_that_doesnt_exist.15
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/missing_field_input.15
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input_no_output.15
+
 )
 
 #Everytime Cmake is run, we generate an input file with correct build parameters
@@ -225,6 +227,29 @@ output:\n\
   path: output/\n\
   vtk:\n\
     frequency: 100\n"
+)
+
+file(WRITE files_for_testing/correct_input_no_output.15
+"mesh:\n\
+  format: Adcirc\n\
+  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\n\
+timestepping:\n\
+  dt: 1                           #in seconds\n\
+  end_time: 86400                 #in seconds\n\
+  order: 2\n\
+  nstages: 2\n\n\
+polynomial_order: 2\n\n\
+problem:\n\
+  name: swe\n\
+  bottom_friction:\n\
+    type: Chezy\n\
+    coefficient: 0.001\n\
+  gravity: 9.81\n\
+  initial_conditions:\n\
+    type: Constant\n\
+    initial_surface_height: 10.0\n\
+    initial_momentum_x: 0.0\n\
+    initial_momentum_y: 0.0\n"
 )
 
 add_executable(
