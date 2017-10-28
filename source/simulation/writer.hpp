@@ -7,23 +7,30 @@ template <typename ProblemType>
 class Writer {
   public:
     Writer() = default;
+    Writer(const InputParameters<typename ProblemType::InputType>& input);
     Writer(const InputParameters<typename ProblemType::InputType>& input,
-           const uint locality_id = std::numeric_limits<uint>::max(),
-           const uint submesh_id = std::numeric_limits<uint>::max());
+           const uint locality_id,
+           const uint submesh_id);
 
+    bool WritingLog() { return writing_log_file; }
+    bool WritingVerboseLog() { return (writing_log_file && verbose_log_file); }
+    std::ofstream& GetLogFile() { return log_file; }
+    void StartLog();
+
+    bool WritingOutput() { return writing_output; }
     void WriteFirstStep(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
-
     void WriteOutput(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
 
-    std::ofstream& get_log_file() { return log_file; }
-
   private:
+    bool writing_output;
     std::string output_path;
 
+    bool writing_log_file;
+    bool verbose_log_file;
     std::string log_file_name;
     std::ofstream log_file;
 
-    bool writing_vtk;
+    bool writing_vtk_output;
     int vtk_output_frequency;
     std::string vtk_file_name_geom;
     std::string vtk_file_name_raw;
@@ -31,51 +38,59 @@ class Writer {
     bool writing_modal_output;
     int modal_output_frequency;
 
-    void initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh);
+    void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
 };
+
+template <typename ProblemType>
+Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::InputType>& input)
+    : writing_output(input.writer_input.writing_output),
+      output_path(input.writer_input.output_path),
+      writing_log_file(input.writer_input.writing_log_file),
+      verbose_log_file(input.writer_input.verbose_log_file),
+      writing_vtk_output(input.writer_input.writing_vtk_output),
+      vtk_output_frequency(input.writer_input.vtk_output_frequency),
+      writing_modal_output(input.writer_input.writing_modal_output),
+      modal_output_frequency(input.writer_input.modal_output_frequency) {
+    if (writing_log_file) {
+        log_file_name = output_path + input.writer_input.log_file_name;
+    }
+}
 
 template <typename ProblemType>
 Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::InputType>& input,
                             const uint locality_id,
                             const uint submesh_id)
-    : output_path(input.writer_input.output_path),
-      writing_vtk(input.writer_input.writing_vtk),
-      vtk_output_frequency(input.writer_input.vtk_output_frequency),
-      writing_modal_output(input.writer_input.writing_modal_output),
-      modal_output_frequency(input.writer_input.modal_output_frequency) {
-    if (!input.writer_input.log_file_name.empty()) {
-        log_file_name = output_path + input.writer_input.log_file_name;
-        if (locality_id != std::numeric_limits<uint>::max() && submesh_id != std::numeric_limits<uint>::max()) {
-            log_file_name = log_file_name + '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id);
-        }
+    : Writer(input) {
+    if (writing_log_file) {
+        log_file_name = output_path + input.writer_input.log_file_name + '_' + std::to_string(locality_id) + '_' +
+                        std::to_string(submesh_id);
+    }
+}
 
-        log_file = std::ofstream(log_file_name, std::ofstream::out);
+template <typename ProblemType>
+void Writer<ProblemType>::StartLog() {
+    log_file = std::ofstream(log_file_name, std::ofstream::out);
 
-        if (!log_file) {
-            std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
-        }
-
-        log_file << "Starting simulation with p=" << input.polynomial_order << " for " << input.mesh_data.mesh_name
-                 << " mesh" << std::endl << std::endl;
+    if (!log_file) {
+        std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
     }
 }
 
 template <typename ProblemType>
 void Writer<ProblemType>::WriteFirstStep(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh) {
+    if (writing_vtk_output) {
+        vtk_file_name_geom = output_path + mesh.GetMeshName() + "_geometry.vtk";
+        vtk_file_name_raw = output_path + mesh.GetMeshName() + "_raw_data.vtk";
 
-    vtk_file_name_geom = output_path + mesh.GetMeshName() + "_geometry.vtk";
-    vtk_file_name_raw = output_path + mesh.GetMeshName() + "_raw_data.vtk";
+        this->InitializeMeshGeometryVTK(mesh);
+    }
 
-    this->initialize_mesh_VTK_geometry(mesh);
     this->WriteOutput(stepper, mesh);
 }
 
 template <typename ProblemType>
 void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh) {
-
-    if (writing_vtk && (stepper.get_step() % vtk_output_frequency == 0)) {
-
-        std::string file_name = output_path + mesh.GetMeshName() + "_raw_data.vtk";
+    if (writing_vtk_output && (stepper.get_step() % vtk_output_frequency == 0)) {
         std::ofstream raw_data_file(vtk_file_name_raw);
 
         ProblemType::write_VTK_data_kernel(mesh, raw_data_file);
@@ -97,7 +112,7 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
 }
 
 template <typename ProblemType>
-void Writer<ProblemType>::initialize_mesh_VTK_geometry(typename ProblemType::ProblemMeshType& mesh) {
+void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh) {
     std::vector<Point<3>> points;
     Array2D<uint> cells;
 
@@ -158,4 +173,5 @@ void Writer<ProblemType>::initialize_mesh_VTK_geometry(typename ProblemType::Pro
         file << (*it)[0] << '\n';
     }
 }
+
 #endif

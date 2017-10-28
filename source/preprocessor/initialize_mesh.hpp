@@ -2,35 +2,37 @@
 #define INITIALIZE_MESH_HPP
 
 #include "geometry/mesh_definitions.hpp"
+#include "simulation/writer.hpp"
 
 using namespace Geometry;
 
 template <typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const MeshMetaData& mesh_data);
+void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
+                              const MeshMetaData& mesh_data,
+                              Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
                                            Communicator& communicator,
-                                           std::ofstream& log_file);
+                                           Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      const MeshMetaData& mesh_data,
                      Communicator& communicator,
                      const typename ProblemType::InputType& problem_specific_input,
-                     std::ofstream& log_file) {
-    initialize_mesh_elements<ProblemType>(mesh, mesh_data);
+                     Writer<ProblemType>& writer) {
+    initialize_mesh_elements<ProblemType>(mesh, mesh_data, writer);
 
-    log_file << "Number of elements: " << mesh.GetNumberElements() << std::endl;
-    log_file << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
-
-    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator, log_file);
+    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator, writer);
 
     ProblemType::initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 }
 
 template <typename ProblemType>
-void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const MeshMetaData& mesh_data) {
+void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
+                              const MeshMetaData& mesh_data,
+                              Writer<ProblemType>& writer) {
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
@@ -48,12 +50,16 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh, const
             elt_id, nodal_coords_temp, element_meta.second.neighbor_ID, element_meta.second.boundary_type);
         nodal_coords_temp.clear();
     }
+
+    if (writer.WritingLog()) {
+        writer.GetLogFile() << "Number of elements: " << mesh.GetNumberElements() << std::endl;
+    }
 }
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
                                            Communicator& communicator,
-                                           std::ofstream& log_file) {
+                                           Writer<ProblemType>& writer) {
     using RawBoundaryType = RawBoundary<1, typename ProblemType::ProblemDataType>;
 
     using InterfaceType =
@@ -77,7 +83,12 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
         }
     }
 
-    ProblemType::create_boundaries_kernel(mesh, pre_boundaries, log_file);
-    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, log_file);
+    if (writer.WritingLog()) {
+        writer.GetLogFile() << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
+    }
+
+    ProblemType::create_boundaries_kernel(mesh, pre_boundaries, writer);
+    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, writer);
 }
+
 #endif

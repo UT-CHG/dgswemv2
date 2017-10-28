@@ -5,7 +5,7 @@ namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                                        std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
-                                       std::ofstream& log_file) {
+                                       Writer<SWE::Problem>& writer) {
     uint n_bound_old_land = 0;
     uint n_bound_old_tidal = 0;
     uint n_bound_old_flow = 0;
@@ -22,9 +22,12 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     mesh.template CreateBoundary<BoundaryTypeLand>(*itt);
                 }
-#ifdef VERBOSE
-                log_file << "Number of land boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_land << std::endl;
-#endif
+
+                if (writer.WritingLog()) {
+                    writer.GetLogFile() << "Number of land boundaries: " << mesh.GetNumberBoundaries() -
+                                                                                n_bound_old_land << std::endl;
+                }
+
                 break;
             case SWE::tidal:
                 using BoundaryTypeTidal = typename std::tuple_element<1, BoundaryTypes>::type;
@@ -34,10 +37,12 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     mesh.template CreateBoundary<BoundaryTypeTidal>(*itt);
                 }
-#ifdef VERBOSE
-                log_file << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal
-                         << std::endl;
-#endif
+
+                if (writer.WritingLog()) {
+                    writer.GetLogFile() << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() -
+                                                                                 n_bound_old_tidal << std::endl;
+                }
+
                 break;
             case SWE::flow:
                 using BoundaryTypeFlow = typename std::tuple_element<2, BoundaryTypes>::type;
@@ -47,9 +52,12 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     mesh.template CreateBoundary<BoundaryTypeFlow>(*itt);
                 }
-#ifdef VERBOSE
-                log_file << "Number of flow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_flow << std::endl;
-#endif
+
+                if (writer.WritingLog()) {
+                    writer.GetLogFile() << "Number of flow boundaries: " << mesh.GetNumberBoundaries() -
+                                                                                n_bound_old_flow << std::endl;
+                }
+
                 break;
         }
     }
@@ -59,14 +67,14 @@ template <typename RawBoundaryType>
 void Problem::create_distributed_boundaries_kernel(ProblemMeshType&,
                                                    std::tuple<>&,
                                                    std::map<uint, std::map<uint, RawBoundaryType>>&,
-                                                   std::ofstream& log_file) {}
+                                                   Writer<SWE::Problem>& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
     ProblemMeshType& mesh,
     Communicator& communicator,
     std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
-    std::ofstream& log_file) {
+    Writer<SWE::Problem>& writer) {
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
@@ -113,9 +121,11 @@ void Problem::create_distributed_boundaries_kernel(
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
     }
-#ifdef VERBOSE
-    log_file << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries() << std::endl;
-#endif
+
+    if (writer.WritingLog()) {
+        writer.GetLogFile() << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries()
+                            << std::endl;
+    }
 }
 
 void Problem::initialize_data_kernel(ProblemMeshType& mesh,

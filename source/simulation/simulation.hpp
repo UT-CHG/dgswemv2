@@ -15,20 +15,30 @@ class Simulation {
     typename ProblemType::ProblemMeshType mesh;
 
   public:
-    Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    Simulation()
+        : input(),
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          mesh(this->input.polynomial_order) {}
     Simulation(std::string input_string)
         : input(input_string),
-          stepper(input.rk.nstages, input.rk.order, input.dt),
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
           writer(input),
-          mesh(input.polynomial_order) {
-        input.ReadMesh();
+          mesh(this->input.polynomial_order) {
+        this->input.ReadMesh();
 
-        mesh.SetMeshName(input.mesh_data.mesh_name);
+        mesh.SetMeshName(this->input.mesh_data.mesh_name);
 
         std::tuple<> empty_comm;
 
+        if (this->writer.WritingLog()) {
+            this->writer.StartLog();
+
+            this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+        }
+
         initialize_mesh<ProblemType>(
-            this->mesh, input.mesh_data, empty_comm, input.problem_input, writer.get_log_file());
+            this->mesh, this->input.mesh_data, empty_comm, this->input.problem_input, this->writer);
     }
 
     void Run();
@@ -36,6 +46,8 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
+    this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -59,9 +71,9 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(resize_data_container);
 
-#ifdef OUTPUT
-    writer.WriteFirstStep(this->stepper, this->mesh);
-#endif
+    if (this->writer.WritingOutput()) {
+        this->writer.WriteFirstStep(this->stepper, this->mesh);
+    }
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
@@ -82,9 +94,9 @@ void Simulation<ProblemType>::Run() {
 
         this->mesh.CallForEachElement(swap_states_kernel);
 
-#ifdef OUTPUT
-        writer.WriteOutput(this->stepper, mesh);
-#endif
+        if (this->writer.WritingOutput()) {
+            this->writer.WriteOutput(this->stepper, mesh);
+        }
     }
 #ifdef RESL2
     double residual_L2 = 0;
@@ -95,7 +107,7 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    writer.get_log_file() << "residual inner product: " << residual_L2 << std::endl;
+    this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 #endif
 }
 

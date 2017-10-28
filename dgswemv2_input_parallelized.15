@@ -6,7 +6,7 @@
 
 mesh:
   format: Meta
-  file_name: build/mesh_generators/rectangular_mesh.meta
+  file_name: /h2/kazbek/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.meta
 timestepping:
   dt: 1
   end_time: 43200
@@ -24,3 +24,7 @@ problem:
     initial_surface_height: 10.0
     initial_momentum_x: 0.0
     initial_momentum_y: 0.0
+output:
+  path: output/
+  vtk:
+    frequency: 360

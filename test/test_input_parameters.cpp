@@ -2,19 +2,20 @@
 #include "utilities/almost_equal.hpp"
 
 const static auto equal_writer = [](const WriterInput & wa, const WriterInput & wb) -> bool {
-    bool output_nodes_are_equal = (wa.write_output == wb.write_output) && (wa.output_path == wb.output_path) &&
-                                  (wa.log_file_name == wb.log_file_name) && (wa.writing_vtk == wb.writing_vtk) &&
-                                  (wa.vtk_output_frequency == wb.vtk_output_frequency) &&
-                                  (wa.writing_modal_output == wb.writing_modal_output) &&
-                                  (wa.modal_output_frequency == wb.modal_output_frequency);
+    bool output_nodes_are_equal =
+        (wa.writing_output == wb.writing_output) && (wa.output_path == wb.output_path) &&
+        (wa.log_file_name == wb.log_file_name) && (wa.writing_vtk_output == wb.writing_vtk_output) &&
+        (wa.vtk_output_frequency == wb.vtk_output_frequency) && (wa.writing_modal_output == wb.writing_modal_output) &&
+        (wa.modal_output_frequency == wb.modal_output_frequency);
 
     if (!output_nodes_are_equal) {
-        std::cerr << "write_output: " << wa.write_output << " : " << wb.write_output << '\n' << "              "
+        std::cerr << "writing_output: " << wa.writing_output << " : " << wb.writing_output << '\n' << "              "
                   << wa.output_path << " : " << wb.output_path << '\n' << "              " << wa.log_file_name << " : "
-                  << wb.log_file_name << '\n' << "              " << wa.writing_vtk << " : " << wb.writing_vtk << '\n'
-                  << "              " << wa.vtk_output_frequency << " : " << wb.vtk_output_frequency << '\n'
-                  << "              " << wa.writing_modal_output << " : " << wb.writing_modal_output << '\n'
-                  << "              " << wa.modal_output_frequency << " : " << wb.modal_output_frequency << '\n';
+                  << wb.log_file_name << '\n' << "              " << wa.writing_vtk_output << " : "
+                  << wb.writing_vtk_output << '\n' << "              " << wa.vtk_output_frequency << " : "
+                  << wb.vtk_output_frequency << '\n' << "              " << wa.writing_modal_output << " : "
+                  << wb.writing_modal_output << '\n' << "              " << wa.modal_output_frequency << " : "
+                  << wb.modal_output_frequency << '\n';
 
         std::cerr << "Error: Writer Inputs not equal\n";
     }

@@ -20,11 +20,16 @@ struct RKInput {
 };
 
 struct WriterInput {
-    bool write_output{false};
+    bool writing_output{false};
     std::string output_path;
+
+    bool writing_log_file{false};
+    bool verbose_log_file{false};
     std::string log_file_name;
-    bool writing_vtk{false};
+
+    bool writing_vtk_output{false};
     uint vtk_output_frequency{std::numeric_limits<uint>::max()};
+
     bool writing_modal_output{false};
     uint modal_output_frequency{std::numeric_limits<uint>::max()};
 
@@ -33,12 +38,13 @@ struct WriterInput {
 
 inline YAML::Node WriterInput::as_yaml_node() {
     YAML::Node ret;
-    if (write_output) {
+    if (writing_output) {
         ret["path"] = output_path;
-        if (!log_file_name.empty()) {
-            ret["logfile"] = log_file_name;
+        if (writing_log_file) {
+            ret["logfile"]["name"] = log_file_name;
+            ret["logfile"]["verbose"] = verbose_log_file;
         }
-        if (writing_vtk) {
+        if (writing_vtk_output) {
             ret["vtk"]["frequency"] = vtk_output_frequency;
         }
         if (writing_modal_output) {
@@ -110,19 +116,22 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
 
     // Process output information
     if (input_file["output"]) {
-        writer_input.write_output = true;
         YAML::Node out_node = input_file["output"];
-        if (out_node["logfile"]) {
-            writer_input.log_file_name = out_node["logfile"].as<std::string>();
-        }
 
+        writer_input.writing_output = true;
         writer_input.output_path = out_node["path"].as<std::string>();
         if (writer_input.output_path.back() != '/') {
             writer_input.output_path += "/";
         }
 
+        if (out_node["logfile"]) {
+            writer_input.writing_log_file = true;
+            writer_input.verbose_log_file = out_node["logfile"]["verbose"].as<bool>();
+            writer_input.log_file_name = out_node["logfile"]["name"].as<std::string>();
+        }
+
         if (out_node["vtk"]) {
-            writer_input.writing_vtk = true;
+            writer_input.writing_vtk_output = true;
             writer_input.vtk_output_frequency = out_node["vtk"]["frequency"].as<uint>();
         }
 
@@ -187,11 +196,11 @@ void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) 
 
     output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
 
-    if (writer_input.write_output) {
+    output << YAML::Key << "problem" << YAML::Value << problem_input.as_yaml_node();
+
+    if (writer_input.writing_output) {
         output << YAML::Key << "output" << YAML::Value << writer_input.as_yaml_node();
     }
-
-    output << YAML::Key << "problem" << YAML::Value << problem_input.as_yaml_node();
 
     output << YAML::EndMap;
 

@@ -29,47 +29,47 @@ void Problem::write_VTK_data_kernel(MeshType& mesh, std::ofstream& raw_data_file
 
     mesh.CallForEachElement(extract_VTK_data_kernel);
 
-    raw_data_file << "CELL_DATA " << (*cell_data.begin()).size() << '\n';
-    raw_data_file << "SCALARS ze_cell float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "CELL_DATA " << (*cell_data.begin()).size() << std::endl;
+    raw_data_file << "SCALARS ze_cell float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[0].begin(); it != cell_data[0].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qx_cell float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qx_cell float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[1].begin(); it != cell_data[1].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qy_cell float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qy_cell float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[2].begin(); it != cell_data[2].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS bath_cell float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS bath_cell float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[3].begin(); it != cell_data[3].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "POINT_DATA " << (*point_data.begin()).size() << '\n';
-    raw_data_file << "SCALARS ze_point float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "POINT_DATA " << (*point_data.begin()).size() << std::endl;
+    raw_data_file << "SCALARS ze_point float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[0].begin(); it != point_data[0].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qx_point float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qx_point float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[1].begin(); it != point_data[1].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qy_point float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS qy_point float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[2].begin(); it != point_data[2].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS bath_point float 1\n";
-    raw_data_file << "LOOKUP_TABLE default\n";
+    raw_data_file << "SCALARS bath_point float 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[3].begin(); it != point_data[3].end(); it++)
-        raw_data_file << *it << '\n';
+        raw_data_file << *it << std::endl;
 }
 
 template <typename ElementType>
@@ -95,10 +95,10 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, co
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[0].begin(); itt != (*it).second[0].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
+            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
         }
     }
 
@@ -111,10 +111,10 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, co
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[1].begin(); itt != (*it).second[1].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
+            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
         }
     }
 
@@ -127,10 +127,10 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, co
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[2].begin(); itt != (*it).second[2].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
+            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
         }
     }
 
@@ -143,10 +143,10 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, co
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << '\n';
+    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[3].begin(); itt != (*it).second[3].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << '\n';
+            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
         }
     }
 

@@ -6,11 +6,11 @@
 
 mesh:
   format: Adcirc
-  file_name: build/mesh_generators/rectangular_mesh.14
+  file_name: /h2/kazbek/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.14
 
 timestepping:
-  dt: 1 #seconds
-  end_time: 43200 #seconds
+  dt: 1                           #in seconds
+  end_time: 43200                 #in seconds
   order: 2
   nstages: 2
 
@@ -27,3 +27,11 @@ problem:
     initial_surface_height: 10.0
     initial_momentum_x: 0.0
     initial_momentum_y: 0.0
+
+output:
+  path: output/
+#  logfile: 
+#    name: log
+#    verbose: false
+  vtk:
+    frequency: 360

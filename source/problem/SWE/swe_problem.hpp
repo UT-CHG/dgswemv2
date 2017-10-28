@@ -2,6 +2,7 @@
 #define SWE_PROBLEM_HPP
 
 #include "../../simulation/stepper.hpp"
+#include "../../simulation/writer.hpp"
 
 #include "swe_definitions.hpp"
 #include "swe_boundary_conditions.hpp"
@@ -23,20 +24,20 @@ struct Problem {
     template <typename RawBoundaryType>
     static void create_boundaries_kernel(ProblemMeshType& mesh,
                                          std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
-                                         std::ofstream& log_file);
+                                         Writer<SWE::Problem>& writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries_kernel(ProblemMeshType&,
                                                      std::tuple<>&,
                                                      std::map<uint, std::map<uint, RawBoundaryType>>&,
-                                                     std::ofstream&);
+                                                     Writer<SWE::Problem>&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries_kernel(
         ProblemMeshType& mesh,
         Communicator& communicator,
         std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
-        std::ofstream& log_file);
+        Writer<SWE::Problem>& writer);
 
     static void initialize_data_kernel(ProblemMeshType& mesh,
                                        const MeshMetaData& mesh_data,

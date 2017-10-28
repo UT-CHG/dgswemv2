@@ -19,21 +19,31 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     HPXCommunicator communicator;
 
   public:
-    HPXSimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    HPXSimulationUnit()
+        : input(),
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          mesh(this->input.polynomial_order) {}
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
-          stepper(input.rk.nstages, input.rk.order, input.dt),
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
           writer(input, locality_id, submesh_id),
-          mesh(input.polynomial_order),
-          communicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd",
+          mesh(this->input.polynomial_order),
+          communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
                        locality_id,
                        submesh_id) {
-        input.ReadMesh();
+        this->input.ReadMesh();
 
-        mesh.SetMeshName(input.mesh_data.mesh_name);
+        this->mesh.SetMeshName(this->input.mesh_data.mesh_name);
+
+        if (this->writer.WritingLog()) {
+            this->writer.StartLog();
+
+            this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+        }
 
         initialize_mesh<ProblemType, HPXCommunicator>(
-            this->mesh, input.mesh_data, communicator, input.problem_input, writer.get_log_file());
+            this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
     }
 
     void Launch();
@@ -51,27 +61,29 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Launch() {
-#ifdef VERBOSE
-    writer.get_log_file() << std::endl << "Launching Simulation!" << std::endl << std::endl;
-#endif
+    if (this->writer.WritingLog()) {
+        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+    }
+
+    if (this->writer.WritingOutput()) {
+        this->writer.WriteFirstStep(this->stepper, this->mesh);
+    }
+
     uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
-
-#ifdef OUTPUT
-    writer.WriteFirstStep(this->stepper, this->mesh);
-#endif
 }
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
-#ifdef VERBOSE
-    writer.get_log_file() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                          << this->stepper.get_stage() << ')' << std::endl << "Starting work before receive"
-                          << std::endl;
-#endif
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
+                                  << this->stepper.get_stage() << ')' << std::endl << "Starting work before receive"
+                                  << std::endl;
+    }
+
     auto distributed_boundary_send_kernel = [this](auto& dbound) {
         ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
     };
@@ -93,15 +105,18 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     this->mesh.CallForEachElement(source_kernel);
 
     this->mesh.CallForEachInterface(interface_kernel);
-#ifdef VERBOSE
-    writer.get_log_file() << "Finished work before receive" << std::endl
-                          << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
-                          << std::endl;
-#endif
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Finished work before receive" << std::endl
+                                  << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
+                                  << std::endl;
+    }
+
     return receive_future.then([this](auto&&) {
-#ifdef VERBOSE
-        writer.get_log_file() << "Starting work after receive" << std::endl;
-#endif
+        if (this->writer.WritingVerboseLog()) {
+            this->writer.GetLogFile() << "Starting work after receive" << std::endl;
+        }
+
         auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
         auto distributed_boundary_kernel = [this](auto& dbound) {
@@ -123,9 +138,10 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
         ++(this->stepper);
-#ifdef VERBOSE
-        writer.get_log_file() << "Finished work after receive" << std::endl << std::endl;
-#endif
+
+        if (this->writer.WritingVerboseLog()) {
+            this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
+        }
     });
 }
 
@@ -135,9 +151,9 @@ void HPXSimulationUnit<ProblemType>::Step() {
 
     this->mesh.CallForEachElement(swap_states_kernel);
 
-#ifdef OUTPUT
-    writer.WriteOutput(this->stepper, this->mesh);
-#endif
+    if (this->writer.WritingOutput()) {
+        this->writer.WriteOutput(this->stepper, this->mesh);
+    }
 }
 
 template <typename ProblemType>
@@ -150,7 +166,7 @@ void HPXSimulationUnit<ProblemType>::ResidualL2() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    writer.get_log_file() << "residual inner product: " << residual_L2 << std::endl;
+    this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 }
 
 template <typename ProblemType>

@@ -21,21 +21,31 @@ class OMPISimulationUnit {
     OMPICommunicator communicator;
 
   public:
-    OMPISimulationUnit() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    OMPISimulationUnit()
+        : input(),
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          mesh(this->input.polynomial_order) {}
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
-          stepper(input.rk.nstages, input.rk.order, input.dt),
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
           writer(input, locality_id, submesh_id),
-          mesh(input.polynomial_order),
-          communicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd",
+          mesh(this->input.polynomial_order),
+          communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
                        locality_id,
                        submesh_id) {
-        input.ReadMesh();
+        this->input.ReadMesh();
 
-        mesh.SetMeshName(input.mesh_data.mesh_name);
+        this->mesh.SetMeshName(this->input.mesh_data.mesh_name);
+
+        if (this->writer.WritingLog()) {
+            this->writer.StartLog();
+
+            this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+        }
 
         initialize_mesh<ProblemType, OMPICommunicator>(
-            this->mesh, input.mesh_data, communicator, input.problem_input, writer.get_log_file());
+            this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
     }
 
     void Launch();
@@ -52,9 +62,13 @@ class OMPISimulationUnit {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::Launch() {
-#ifdef VERBOSE
-    writer.get_log_file() << std::endl << "Launching Simulation!" << std::endl << std::endl;
-#endif
+    if (this->writer.WritingLog()) {
+        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+    }
+
+    if (this->writer.WritingOutput()) {
+        this->writer.WriteFirstStep(this->stepper, this->mesh);
+    }
 
     this->communicator.InitializeCommunication();
 
@@ -63,18 +77,15 @@ void OMPISimulationUnit<ProblemType>::Launch() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
 
     this->mesh.CallForEachElement(resize_data_container);
-
-#ifdef OUTPUT
-    writer.WriteFirstStep(this->stepper, this->mesh);
-#endif
 }
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::ExchangeData() {
-#ifdef VERBOSE
-    writer.get_log_file() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                          << this->stepper.get_stage() << ')' << std::endl;
-#endif
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
+                                  << this->stepper.get_stage() << ')' << std::endl;
+    }
+
     auto distributed_boundary_send_kernel = [this](auto& dbound) {
         ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
     };
@@ -88,9 +99,10 @@ void OMPISimulationUnit<ProblemType>::ExchangeData() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
-#ifdef VERBOSE
-    writer.get_log_file() << "Starting work before receive" << std::endl;
-#endif
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting work before receive" << std::endl;
+    }
+
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -102,21 +114,25 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
     this->mesh.CallForEachElement(source_kernel);
 
     this->mesh.CallForEachInterface(interface_kernel);
-#ifdef VERBOSE
-    writer.get_log_file() << "Finished work before receive" << std::endl;
-#endif
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Finished work before receive" << std::endl;
+    }
 }
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
-#ifdef VERBOSE
-    writer.get_log_file() << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
-                          << std::endl;
-#endif
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
+                                  << std::endl;
+    }
+
     this->communicator.WaitAllReceives(this->stepper.get_timestamp());
-#ifdef VERBOSE
-    writer.get_log_file() << "Starting work after receive" << std::endl;
-#endif
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting work after receive" << std::endl;
+    }
+
     auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
     auto distributed_boundary_kernel = [this](auto& dbound) {
@@ -138,9 +154,10 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
     this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
     ++(this->stepper);
-#ifdef VERBOSE
-    writer.get_log_file() << "Finished work after receive" << std::endl << std::endl;
-#endif
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
+    }
 }
 
 template <typename ProblemType>
@@ -154,9 +171,9 @@ void OMPISimulationUnit<ProblemType>::Step() {
 
     this->mesh.CallForEachElement(swap_states_kernel);
 
-#ifdef OUTPUT
-    writer.WriteOutput(this->stepper, mesh);
-#endif
+    if (this->writer.WritingOutput()) {
+        this->writer.WriteOutput(this->stepper, mesh);
+    }
 }
 
 template <typename ProblemType>
@@ -169,7 +186,7 @@ void OMPISimulationUnit<ProblemType>::ResidualL2() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    writer.get_log_file() << "residual inner product: " << residual_L2 << std::endl;
+    this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 }
 
 template <typename ProblemType>
