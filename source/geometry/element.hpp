@@ -49,6 +49,8 @@ class Element {
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
+    void ComputeUnode(const std::vector<double>& u, std::vector<double>& u_node);
+
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
     double IntegrationDPhi(const uint dir, const uint dof, const std::vector<double>& u_gp);
@@ -246,6 +248,18 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < du_gp.size(); gp++) {
             du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUnode(const std::vector<double>& u,
+                                                                              std::vector<double>& u_node) {
+    std::fill(u_node.begin(), u_node.end(), 0.0);
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint node = 0; node < u_node.size(); node++) {
+            u_node[node] += u[dof] * this->master.phi_node[dof][node];
         }
     }
 }

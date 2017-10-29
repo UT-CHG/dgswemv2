@@ -45,6 +45,9 @@ struct Problem {
 
     // processor kernels
     template <typename ElementType>
+    static void wetting_drying_kernel(ElementType& elt);
+
+    template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>

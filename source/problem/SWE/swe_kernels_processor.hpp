@@ -5,6 +5,12 @@
 
 namespace SWE {
 template <typename ElementType>
+void Problem::wetting_drying_kernel(ElementType& elt) {
+    auto& state = elt.data.state[stage];
+    auto& internal = elt.data.internal;
+}
+
+template <typename ElementType>
 void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.get_stage();
 

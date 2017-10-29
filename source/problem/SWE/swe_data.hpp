@@ -95,6 +95,8 @@ struct Data {
         }
     }
 
+    bool wet;
+
     std::vector<State> state;
     Internal internal;
     std::vector<Boundary> boundary;
