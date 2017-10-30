@@ -79,20 +79,18 @@ struct Boundary {
 struct WetDry {
     uint n_vrtx = 3;
     bool wet = true;
-    
+
     double bath_min;
 
     std::vector<double> ze_vrtx(3);
     std::vector<double> qx_vrtx(3);
     std::vector<double> qy_vrtx(3);
 
-    std::vector<double> bath_vrtx(3);   
+    std::vector<double> bath_vrtx(3);
 
-    std::vector<double> h_vrtx(3);   
-    std::vector<double> h_vrtx_temp(3);   
-}
-
-struct Data {
+    std::vector<double> h_vrtx(3);
+    std::vector<double> h_vrtx_temp(3);
+} struct Data {
     void initialize() {
         this->state = std::vector<State>{State(this->ndof)};
 

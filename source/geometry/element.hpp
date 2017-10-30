@@ -203,7 +203,7 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
     for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
         rhs.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
     }
-    
+
     return this->ApplyMinv(rhs);
 }
 
