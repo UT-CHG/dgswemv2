@@ -11,14 +11,13 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     auto& state = elt.data.state[stage];
     auto& wd_state = elt.data.wet_dry_state;
 
-    elt.ComputeUvrtx(state.ze, wd_state.ze_vrtx);
-    elt.ComputeUvrtx(state.bath, wd_state.bath_vrtx);
+    elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
 
-    for (uint vrtx = 0; vrtx < wd_state.n_vrtx; vrtx++) {
-        wd_state.h_vrtx[vrtx] = wd_state.ze_vrtx[vrtx] + wd_state.bath_vrtx[vrtx];
+    for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
     }
 
-    double h_avg = std::accumulate(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end(), 0.0) / wd_state.n_vrtx;
+    double h_avg = std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / elt.data.get_nvrtx();
 
     double H_0 = 0.01;
 
@@ -30,8 +29,8 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     } else {
         uint n_dry_vrtx = 0;
 
-        for (uint vrtx = 0; vrtx < wd_state.n_vrtx; vrtx++) {
-            if (wd_state.h_vrtx[vrtx] <= H_0)
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            if (wd_state.h_at_vrtx[vrtx] <= H_0)
                 n_dry_vrtx++;
         }
 
@@ -42,68 +41,66 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
                 check_element = true;
             }
         } else {
-            auto h_min_iter = std::min_element(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end());
-            uint h_min_vrtx = std::distance(wd_state.h_vrtx.begin(), h_max_iter);
+            auto h_min_iter = std::min_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
+            uint h_min_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
 
-            auto h_max_iter = std::max_element(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end());
-            uint h_max_vrtx = std::distance(wd_state.h_vrtx.begin(), h_max_iter);
+            auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
+            uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
 
             uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
 
-            wd_state.h_vrtx_temp[h_min_vrtx] = H_0;
-            wd_state.h_vrtx_temp[h_mid_vrtx] = std::max(
+            wd_state.h_at_vrtx_temp[h_min_vrtx] = H_0;
+            wd_state.h_at_vrtx_temp[h_mid_vrtx] = std::max(
                 H_0,
-                wd_state.h_vrtx[h_mid_vrtx] - (wd_state.h_vrtx_temp[h_min_vrtx] - wd_state.h_vrtx[h_min_vrtx]) / 2);
-            wd_state.h_vrtx_temp[h_min_vrtx] = wd_state.h_vrtx[h_max_vrtx] -
-                                               (wd_state.h_vrtx_temp[h_min_vrtx] - wd_state.h_vrtx[h_min_vrtx]) -
-                                               (wd_state.h_vrtx_temp[h_mid_vrtx] - wd_state.h_vrtx[h_mid_vrtx]);
+                wd_state.h_at_vrtx[h_mid_vrtx] - (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
+            wd_state.h_at_vrtx_temp[h_min_vrtx] = wd_state.h_at_vrtx[h_max_vrtx] -
+                                               (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
+                                               (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
 
-            h_vrtx = std::move(h_vrtx_temp);
+            h_at_vrtx = std::move(h_at_vrtx_temp);
 
             n_dry_vrtx = 0;
 
             double del_qx = 0;
             double del_qy = 0;
 
-            elt.ComputeUvrtx(state.qx, wd_state.qx_vrtx);
-            elt.ComputeUvrtx(state.qy, wd_state.qy_vrtx);
+            elt.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
+            elt.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
 
-            for (uint vrtx = 0; vrtx < wd_state.n_vrtx; vrtx++) {
-                if (wd_state.h_vrtx[vrtx] <= H_0) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                if (wd_state.h_at_vrtx[vrtx] <= H_0) {
                     n_dry_vrtx++;
 
-                    del_qx += wd_state.qx_vrtx[vrtx];
-                    del_qy += wd_state.qy_vrtx[vrtx];
+                    del_qx += wd_state.qx_at_vrtx[vrtx];
+                    del_qy += wd_state.qy_at_vrtx[vrtx];
 
-                    wd_state.qx_vrtx[vrtx] = 0;
-                    wd_state.qy_vrtx[vrtx] = 0;
+                    wd_state.qx_at_vrtx[vrtx] = 0;
+                    wd_state.qy_at_vrtx[vrtx] = 0;
                 }
             }
 
-            for (uint vrtx = 0; vrtx < wd_state.n_vrtx; vrtx++) {
-                wd_state.ze_vrtx[vrtx] = wd_state.h_vrtx[vrtx] - wd_state.bath_vrtx[vrtx];
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
-                if (wd_state.h_vrtx[vrtx] > H_0) {
-                    wd_state.qx_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
-                    wd_state.qy_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
+                if (wd_state.h_at_vrtx[vrtx] > H_0) {
+                    wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
+                    wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
                 }
             }
 
-            state.ze = elt.L2Projection(ze_vrtx);
-            state.qx = elt.L2Projection(qx_vrtx);
-            state.qy = elt.L2Projection(qy_vrtx);
+            state.ze = elt.L2Projection(ze_at_vrtx);
+            state.qx = elt.L2Projection(qx_at_vrtx);
+            state.qy = elt.L2Projection(qy_at_vrtx);
 
             check_element = true;
         }
     }
 
     if (check_element) {
-        wd_state.bath_min = *std::min_element(wd_state.bath_vrtx.begin(), wd_state.bath_vrtx.end());
+        auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
+        uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
 
-        auto h_max_iter = std::max_element(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end());
-        uint h_max_vrtx = std::distance(wd_state.h_vrtx.begin(), h_max_iter);
-
-        double ze_h_max_vrtx = wd_state.ze_vrtx[h_max_vrtx];
+        double ze_h_max_vrtx = wd_state.ze_at_vrtx[h_max_vrtx];
 
         if (ze_h_max_vrtx > H_0 - wd_state.bath_min) {
             wd_state.wet = true;
@@ -115,13 +112,16 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     if (set_dry_element) {
         wd_state.wet = false;
 
-        for (uint vrtx = 0; vrtx < wd_state.ze_vrtx.size(); vrtx++) {
-            wd_state.ze_vrtx[vrtx] = h_avg - wd_state.bath_vrtx[vrtx];
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
         }
 
-        state.ze = elt.L2Projection(ze_vrtx);
+        state.ze = elt.L2Projection(ze_at_vrtx);
         std::fill(state.qx.begin(), state.qy.end(), 0.0);
         std::fill(state.qx.begin(), state.qy.end(), 0.0);
+        std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
+        std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
+        std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
     };
 }
 
@@ -158,7 +158,7 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
     }
 
     // skip dof = 0, which is a constant and thus trivially 0 NOT ALWAYS!
-    for (uint dof = 1; dof < elt.data.get_ndof(); ++dof) {
+    for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
         state.rhs_ze[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.ze_flux_at_gp[GlobalCoord::x]) +
                             elt.IntegrationDPhi(GlobalCoord::y, dof, internal.ze_flux_at_gp[GlobalCoord::y]);
 

@@ -77,21 +77,39 @@ struct Boundary {
 };
 
 struct WetDry {
-    uint n_vrtx = 3;
-    bool wet = true;
+    WetDry() = default;
+    WetDry(const uint nvrtx)
+        : ze_at_vrtx(nvrtx),
+          qx_at_vrtx(nvrtx),
+          qy_at_vrtx(nvrtx),
+          bath_at_vrtx(nvrtx),
+          h_at_vrtx(nvrtx),
+          h_at_vrtx_temp(nvrtx) {}
+      
+    bool wet;
 
     double bath_min;
 
-    std::vector<double> ze_vrtx(3);
-    std::vector<double> qx_vrtx(3);
-    std::vector<double> qy_vrtx(3);
+    std::vector<double> ze_at_vrtx;
+    std::vector<double> qx_at_vrtx;
+    std::vector<double> qy_at_vrtx;
 
-    std::vector<double> bath_vrtx(3);
+    std::vector<double> bath_at_vrtx;
 
-    std::vector<double> h_vrtx(3);
-    std::vector<double> h_vrtx_temp(3);
-} struct Data {
+    std::vector<double> h_at_vrtx;
+    std::vector<double> h_at_vrtx_temp;
+};
+
+struct Data {
+    WetDry wet_dry_state;
+    
+    std::vector<State> state;
+    Internal internal;
+    std::vector<Boundary> boundary;
+
     void initialize() {
+        this->wet_dry_state = WetDry(this->nvrtx);
+
         this->state = std::vector<State>{State(this->ndof)};
 
         this->internal = Internal(this->ngp_internal);
@@ -109,17 +127,13 @@ struct WetDry {
         }
     }
 
-    WetDry wet_dry_state;
-
-    std::vector<State> state;
-    Internal internal;
-    std::vector<Boundary> boundary;
-
+    uint get_nvrtx() { return this->nvrtx;}
     uint get_ndof() { return this->ndof; }
     uint get_ngp_internal() { return this->ngp_internal; }
     uint get_nbound() { return this->nbound; }
     uint get_ngp_boundary(uint nbound) { return this->ngp_boundary[nbound]; }
 
+    void set_nvrtx(const uint nvrtx) {this->nvrtx = nvrtx;}
     void set_ndof(const uint ndof) { this->ndof = ndof; }
     void set_ngp_internal(const uint ngp) { this->ngp_internal = ngp; }
     void set_nbound(const uint nbound) {
@@ -129,6 +143,7 @@ struct WetDry {
     void set_ngp_boundary(const uint bound_id, const uint ngp) { this->ngp_boundary[bound_id] = ngp; }
 
   private:
+    uint nvrtx;
     uint ndof;
     uint ngp_internal;
     uint nbound;

@@ -143,6 +143,7 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
         // Placeholder for nonconstant Jacobian
     }
 
+    this->data.set_nvrtx((*this->master.phi_vrtx.begin()).size());
     this->data.set_ndof(this->master.phi_gp.size());
     this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
     this->data.set_nbound(this->boundary_type.size());

@@ -155,6 +155,10 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
         }
 
+        elt.data.wet_dry_state.bath_at_vrtx = bathymetry[id];
+        elt.data.wet_dry_state.bath_min = 
+            *std::min_element(elt.data.wet_dry_state.bath_at_vrtx.begin(), elt.data.wet_dry_state.bath_at_vrtx.end());
+
         elt.data.state[0].bath = elt.L2Projection(bathymetry[id]);
 
         elt.ComputeUgp(elt.data.state[0].bath, elt.data.internal.bath_at_gp);
