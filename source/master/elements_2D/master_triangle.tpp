@@ -10,7 +10,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
 
     std::vector<Point<2>> vrtx{{-1.0, -1.0}, {1.0, -1.0}, {-1.0, 1.0}};
-    this->phi_vrtx = this->basis.GetDPhi(this->p, vrtx);
+    this->phi_vrtx = this->basis.GetPhi(this->p, vrtx);
 
     std::vector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
     this->phi_postprocessor_cell = this->basis.GetPhi(this->p, z_postprocessor_cell);

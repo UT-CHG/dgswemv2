@@ -60,7 +60,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
                 (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
                 (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
 
-            h_at_vrtx = std::move(h_at_vrtx_temp);
+            wd_state.h_at_vrtx = std::move(wd_state.h_at_vrtx_temp);
 
             n_dry_vrtx = 0;
 
@@ -91,9 +91,9 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
                 }
             }
 
-            state.ze = elt.L2Projection(ze_at_vrtx);
-            state.qx = elt.L2Projection(qx_at_vrtx);
-            state.qy = elt.L2Projection(qy_at_vrtx);
+            state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+            state.qx = elt.L2Projection(wd_state.qx_at_vrtx);
+            state.qy = elt.L2Projection(wd_state.qy_at_vrtx);
 
             check_element = true;
         }
@@ -119,7 +119,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
         }
 
-        state.ze = elt.L2Projection(ze_at_vrtx);
+        state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
         std::fill(state.qx.begin(), state.qy.end(), 0.0);
         std::fill(state.qx.begin(), state.qy.end(), 0.0);
         std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
