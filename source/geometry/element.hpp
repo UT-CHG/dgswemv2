@@ -187,7 +187,7 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
     this->ComputeFgp(f, f_vals);
 
     for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-        rhs.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
+        rhs.push_back(this->IntegrationPhi(dof, f_vals));
     }
 
     return this->ApplyMinv(rhs);
@@ -202,7 +202,7 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
         this->shape.InterpolateNodalValues(nodal_values, this->master.integration_rule.second);
 
     for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-        rhs.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
+        rhs.push_back(this->IntegrationPhi(dof, interpolation));
     }
 
     return this->ApplyMinv(rhs);

@@ -1,6 +1,7 @@
 #ifndef SWE_KERNELS_PROCESSOR_HPP
 #define SWE_KERNELS_PROCESSOR_HPP
 
+#include "../../general_definitions.hpp"
 #include "swe_LLF_flux.hpp"
 
 namespace SWE {
@@ -42,7 +43,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             }
         } else {
             auto h_min_iter = std::min_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
-            uint h_min_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
+            uint h_min_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_min_iter);
 
             auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
             uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);

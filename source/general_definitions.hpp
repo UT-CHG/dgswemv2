@@ -10,6 +10,7 @@
 #include <cmath>
 #include <functional>
 #include <algorithm>
+#include <numeric>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
