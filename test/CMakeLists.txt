@@ -119,17 +119,6 @@ add_test(
   test_rk_stepper_exe
 )
 
-#add_executable(
-#  test_triangulation_exe
-#  test_triangulation.cpp
-#  ${PROJECT_SOURCE_DIR}/src/writer/triangulation.cpp
-#)
-
-#add_test(
-#  Unit_triangulation
-#  test_triangulation_exe
-#)
-
 add_executable(
   test_llf_flux_exe
   test_llf_flux.cpp
@@ -140,15 +129,21 @@ add_test(
   test_llf_flux_exe
 )
 
-#add_executable(
-#  test_swe_boundaries_exe
-#  test_swe_boundaries.cpp
-#)
+add_executable(
+  test_wetting_drying_exe
+  test_wetting_drying.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
+)
 
-#add_test(
-#  Uint_test_land_boundary.cpp
-#  test_swe_boundaries_exe
-#)
+add_test(
+  Unit_wetting_drying
+  test_wetting_drying_exe
+)
 
 add_executable(
   test_mesh_metadata_exe

@@ -1,7 +1,6 @@
 #ifndef SWE_KERNELS_PROCESSOR_HPP
 #define SWE_KERNELS_PROCESSOR_HPP
 
-#include "../../general_definitions.hpp"
 #include "swe_LLF_flux.hpp"
 
 namespace SWE {
@@ -20,18 +19,22 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
     double h_avg = std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / elt.data.get_nvrtx();
 
-    double H_0 = 0.01;
-
     bool set_dry_element = false;
     bool check_element = false;
 
-    if (h_avg <= H_0) {
+    if (h_avg <= Global::h_o) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
+        }
+
+        state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+
         set_dry_element = true;
     } else {
         uint n_dry_vrtx = 0;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= H_0)
+            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o)
                 n_dry_vrtx++;
         }
 
@@ -50,28 +53,30 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
 
-            wd_state.h_at_vrtx_temp[h_min_vrtx] = H_0;
+            wd_state.h_at_vrtx_temp[h_min_vrtx] = Global::h_o;
+
             wd_state.h_at_vrtx_temp[h_mid_vrtx] =
-                std::max(H_0,
+                std::max(Global::h_o,
                          wd_state.h_at_vrtx[h_mid_vrtx] -
                              (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
-            wd_state.h_at_vrtx_temp[h_min_vrtx] =
+
+            wd_state.h_at_vrtx_temp[h_max_vrtx] =
                 wd_state.h_at_vrtx[h_max_vrtx] -
                 (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
                 (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
 
-            wd_state.h_at_vrtx = std::move(wd_state.h_at_vrtx_temp);
+            wd_state.h_at_vrtx = wd_state.h_at_vrtx_temp;
 
             n_dry_vrtx = 0;
-
-            double del_qx = 0;
-            double del_qy = 0;
 
             elt.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
             elt.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
 
+            double del_qx = 0;
+            double del_qy = 0;
+
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                if (wd_state.h_at_vrtx[vrtx] <= H_0) {
+                if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
                     n_dry_vrtx++;
 
                     del_qx += wd_state.qx_at_vrtx[vrtx];
@@ -85,7 +90,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
-                if (wd_state.h_at_vrtx[vrtx] > H_0) {
+                if (wd_state.h_at_vrtx[vrtx] > Global::h_o) {
                     wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
                     wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
                 }
@@ -105,7 +110,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
         double ze_h_max_vrtx = wd_state.ze_at_vrtx[h_max_vrtx];
 
-        if (ze_h_max_vrtx > H_0 - wd_state.bath_min) {
+        if (ze_h_max_vrtx > Global::h_o - wd_state.bath_min) {
             wd_state.wet = true;
         } else {
             set_dry_element = true;
@@ -115,13 +120,8 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     if (set_dry_element) {
         wd_state.wet = false;
 
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
-        }
-
-        state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
-        std::fill(state.qx.begin(), state.qy.end(), 0.0);
-        std::fill(state.qx.begin(), state.qy.end(), 0.0);
+        std::fill(state.qx.begin(), state.qx.end(), 0.0);
+        std::fill(state.qy.begin(), state.qy.end(), 0.0);
         std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
         std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
         std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);

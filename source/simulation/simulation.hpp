@@ -64,6 +64,8 @@ void Simulation<ProblemType>::Run() {
         ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
 
+    auto wetting_drying_kernel = [this](auto& elt) { ProblemType::wetting_drying_kernel(this->stepper, elt); };
+
     uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
 
@@ -88,6 +90,8 @@ void Simulation<ProblemType>::Run() {
             this->mesh.CallForEachElement(update_kernel);
 
             this->mesh.CallForEachElement(scrutinize_solution_kernel);
+
+            this->mesh.CallForEachElement(wetting_drying_kernel);
 
             ++(this->stepper);
         }
