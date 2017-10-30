@@ -5,9 +5,126 @@
 
 namespace SWE {
 template <typename ElementType>
-void Problem::wetting_drying_kernel(ElementType& elt) {
+void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
+    const uint stage = stepper.get_stage();
+    
     auto& state = elt.data.state[stage];
-    auto& internal = elt.data.internal;
+    auto& wd_state = elt.data.wet_dry_state;
+
+    elt.ComputeUvrtx(state.ze, wd_state.ze_vrtx);
+    elt.ComputeUvrtx(state.bath, wd_state.bath_vrtx);
+
+    for(uint vrtx=0; vrtx<wd_state.n_vrtx; vrtx++){
+        wd_state.h_vrtx[vrtx] = wd_state.ze_vrtx[vrtx]+wd_state.bath_vrtx[vrtx];
+    }
+
+    double h_avg = std::accumulate(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end(), 0.0)/wd_state.n_vrtx;
+
+    double H_0 = 0.01;
+
+    bool set_dry_element = false;
+    bool check_element = false;
+
+    if (h_avg <= H_0){
+        set_dry_element = true;
+    } else {
+        uint n_dry_vrtx = 0;
+
+        for(uint vrtx=0; vrtx<wd_state.n_vrtx; vrtx++){
+            if(wd_state.h_vrtx[vrtx] <= H_0) n_dry_vrtx++;
+        }
+        
+        if(n_dry_vrtx == 0) {
+            if(wd_state.wet){
+                wd_state.wet = true;                
+            } else {
+                check_element = true;
+            }
+        } else {
+            auto h_min_iter = std::min_element(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end());       
+            uint h_min_vrtx = std::distance(wd_state.h_vrtx.begin(),h_max_iter);
+                
+            auto h_max_iter = std::max_element(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end());       
+            uint h_max_vrtx = std::distance(wd_state.h_vrtx.begin(),h_max_iter);
+
+            uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
+
+            wd_state.h_vrtx_temp[h_min_vrtx] = H_0;
+            wd_state.h_vrtx_temp[h_mid_vrtx] = 
+                std::max(H_0, 
+                    wd_state.h_vrtx[h_mid_vrtx]-
+                    (wd_state.h_vrtx_temp[h_min_vrtx]-wd_state.h_vrtx[h_min_vrtx])/2
+                );
+            wd_state.h_vrtx_temp[h_min_vrtx] = 
+                wd_state.h_vrtx[h_max_vrtx]-
+                (wd_state.h_vrtx_temp[h_min_vrtx]-wd_state.h_vrtx[h_min_vrtx])-
+                (wd_state.h_vrtx_temp[h_mid_vrtx]-wd_state.h_vrtx[h_mid_vrtx]);   
+                
+            h_vrtx = std::move(h_vrtx_temp);
+            
+            n_dry_vrtx = 0;
+            
+            double del_qx=0;
+            double del_qy=0;
+
+            elt.ComputeUvrtx(state.qx, wd_state.qx_vrtx);
+            elt.ComputeUvrtx(state.qy, wd_state.qy_vrtx);           
+
+            for(uint vrtx=0; vrtx<wd_state.n_vrtx; vrtx++){
+                if(wd_state.h_vrtx[vrtx] <= H_0) {
+                    n_dry_vrtx++;
+
+                    del_qx += wd_state.qx_vrtx[vrtx];
+                    del_qy += wd_state.qy_vrtx[vrtx];
+
+                    wd_state.qx_vrtx[vrtx] = 0;
+                    wd_state.qy_vrtx[vrtx] = 0;
+                }
+            }
+    
+            for(uint vrtx=0; vrtx<wd_state.n_vrtx; vrtx++){
+                wd_state.ze_vrtx[vrtx] = wd_state.h_vrtx[vrtx] - wd_state.bath_vrtx[vrtx];
+
+                if(wd_state.h_vrtx[vrtx] > H_0) {
+                    wd_state.qx_vrtx[vrtx] += del_qx/(3-n_dry_vrtx);
+                    wd_state.qy_vrtx[vrtx] += del_qy/(3-n_dry_vrtx);
+                }
+            }
+
+            state.ze = elt.L2Projection(ze_vrtx);
+            state.qx = elt.L2Projection(qx_vrtx);
+            state.qy = elt.L2Projection(qy_vrtx);
+
+            check_element=true;
+        } 
+    }
+
+    if(check_element){
+        wd_state.bath_min = *std::min_element(wd_state.bath_vrtx.begin(),wd_state.bath_vrtx.end());
+        
+        auto h_max_iter = std::max_element(wd_state.h_vrtx.begin(), wd_state.h_vrtx.end());       
+        uint h_max_vrtx = std::distance(wd_state.h_vrtx.begin(),h_max_iter);
+        
+        double ze_h_max_vrtx = wd_state.ze_vrtx[h_max_vrtx];
+
+        if(ze_h_max_vrtx > H_0 - wd_state.bath_min) {
+            wd_state.wet = true;            
+        } else {
+            set_dry_element=true;
+        }
+    };
+
+    if(set_dry_element) {
+        wd_state.wet = false;
+
+        for(uint vrtx=0; vrtx<wd_state.ze_vrtx.size(); vrtx++){
+            wd_state.ze_vrtx[vrtx] = h_avg - wd_state.bath_vrtx[vrtx];
+        }
+            
+        state.ze = elt.L2Projection(ze_vrtx);
+        std::fill(state.qx.begin(),state.qy.end(),0.0);    
+        std::fill(state.qx.begin(),state.qy.end(),0.0);    
+    };
 }
 
 template <typename ElementType>
@@ -24,21 +141,21 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
 
     // assemble flux
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-        internal.water_column_hgt_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+        internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
 
         internal.ze_flux_at_gp[GlobalCoord::x][gp] = internal.qx_at_gp[gp];
         internal.ze_flux_at_gp[GlobalCoord::y][gp] = internal.qy_at_gp[gp];
 
         internal.qx_flux_at_gp[GlobalCoord::x][gp] =
-            std::pow(internal.qx_at_gp[gp], 2) / internal.water_column_hgt_at_gp[gp] +
+            std::pow(internal.qx_at_gp[gp], 2) / internal.h_at_gp[gp] +
             Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
         internal.qx_flux_at_gp[GlobalCoord::y][gp] =
-            internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
+            internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.h_at_gp[gp];
 
         internal.qy_flux_at_gp[GlobalCoord::x][gp] =
-            internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
+            internal.qx_at_gp[gp] * internal.qy_at_gp[gp] / internal.h_at_gp[gp];
         internal.qy_flux_at_gp[GlobalCoord::y][gp] =
-            std::pow(internal.qy_at_gp[gp], 2) / internal.water_column_hgt_at_gp[gp] +
+            std::pow(internal.qy_at_gp[gp], 2) / internal.h_at_gp[gp] +
             Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
     }
 
@@ -80,11 +197,11 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
         internal.qx_source_term_at_gp[gp] += Global::g * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
         internal.qy_source_term_at_gp[gp] += Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.ze_at_gp[gp];
 
-        double u_at_gp = internal.qx_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
-        double v_at_gp = internal.qy_at_gp[gp] / internal.water_column_hgt_at_gp[gp];
+        double u_at_gp = internal.qx_at_gp[gp] / internal.h_at_gp[gp];
+        double v_at_gp = internal.qy_at_gp[gp] / internal.h_at_gp[gp];
 
         // compute bottom friction contribution
-        double bottom_friction_stress = Global::Cf * std::hypot(u_at_gp, v_at_gp) / internal.water_column_hgt_at_gp[gp];
+        double bottom_friction_stress = Global::Cf * std::hypot(u_at_gp, v_at_gp) / internal.h_at_gp[gp];
 
         internal.qx_source_term_at_gp[gp] -= bottom_friction_stress * internal.qx_at_gp[gp];
         internal.qy_source_term_at_gp[gp] -= bottom_friction_stress * internal.qy_at_gp[gp];
@@ -257,9 +374,9 @@ void Problem::update_kernel(const Stepper& stepper, ElementType& elt) {
     auto& curr_state = elt.data.state[stage];
     auto& next_state = elt.data.state[stage + 1];
 
-    curr_state.rhs_ze = elt.SolveLSE(curr_state.rhs_ze);
-    curr_state.rhs_qx = elt.SolveLSE(curr_state.rhs_qx);
-    curr_state.rhs_qy = elt.SolveLSE(curr_state.rhs_qy);
+    curr_state.rhs_ze = elt.ApplyMinv(curr_state.rhs_ze);
+    curr_state.rhs_qx = elt.ApplyMinv(curr_state.rhs_qx);
+    curr_state.rhs_qy = elt.ApplyMinv(curr_state.rhs_qy);
 
     std::fill(next_state.ze.begin(), next_state.ze.end(), 0);
     std::fill(next_state.qx.begin(), next_state.qx.end(), 0);

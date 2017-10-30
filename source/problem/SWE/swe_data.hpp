@@ -33,7 +33,7 @@ struct Internal {
           bath_at_gp(ngp),
           bath_deriv_wrt_x_at_gp(ngp),
           bath_deriv_wrt_y_at_gp(ngp),
-          water_column_hgt_at_gp(ngp) {}
+          h_at_gp(ngp) {}
 
     std::array<std::vector<double>, 2> ze_flux_at_gp;
     std::array<std::vector<double>, 2> qx_flux_at_gp;
@@ -51,7 +51,7 @@ struct Internal {
     std::vector<double> bath_deriv_wrt_x_at_gp;
     std::vector<double> bath_deriv_wrt_y_at_gp;
 
-    std::vector<double> water_column_hgt_at_gp;
+    std::vector<double> h_at_gp;
 };
 
 struct Boundary {
@@ -76,6 +76,22 @@ struct Boundary {
     std::vector<double> qy_numerical_flux_at_gp;
 };
 
+struct WetDry {
+    uint n_vrtx = 3;
+    bool wet = true;
+    
+    double bath_min;
+
+    std::vector<double> ze_vrtx(3);
+    std::vector<double> qx_vrtx(3);
+    std::vector<double> qy_vrtx(3);
+
+    std::vector<double> bath_vrtx(3);   
+
+    std::vector<double> h_vrtx(3);   
+    std::vector<double> h_vrtx_temp(3);   
+}
+
 struct Data {
     void initialize() {
         this->state = std::vector<State>{State(this->ndof)};
@@ -95,7 +111,7 @@ struct Data {
         }
     }
 
-    bool wet;
+    WetDry wet_dry_state;
 
     std::vector<State> state;
     Internal internal;

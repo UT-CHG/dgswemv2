@@ -120,6 +120,8 @@ class Master {
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
 
+    Array2D<double> phi_vrtx;
+
     Array2D<double> int_fact_phi;
     Array3D<double> int_fact_dphi;
 

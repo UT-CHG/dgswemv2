@@ -113,7 +113,7 @@ int main() {
         }
     }
 
-    // Check ComputeUgp and SolveLSE
+    // Check ComputeUgp and ApplyMinv
     std::vector<double> mod_vals(triangle.data.get_ndof());
     std::vector<double> gp_vals(triangle.data.get_ngp_internal());
 
@@ -126,10 +126,10 @@ int main() {
         for (uint doff = 0; doff < 66; doff++) {
             if (dof == doff) {
                 if (!almost_equal(
-                         (1. / triangle.IntegrationPhi(doff, gp_vals)), triangle.SolveLSE(mod_vals)[dof], 1.e+03)) {
+                         (1. / triangle.IntegrationPhi(doff, gp_vals)), triangle.ApplyMinv(mod_vals)[dof], 1.e+03)) {
                     error_found = true;
 
-                    std::cerr << "Error found in Triangle element in SolveLSE" << std::endl;
+                    std::cerr << "Error found in Triangle element in ApplyMinv" << std::endl;
                 }
             } else {
                 if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals), 0.0)) {
