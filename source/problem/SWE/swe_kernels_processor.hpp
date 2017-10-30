@@ -50,12 +50,14 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
 
             wd_state.h_at_vrtx_temp[h_min_vrtx] = H_0;
-            wd_state.h_at_vrtx_temp[h_mid_vrtx] = std::max(
-                H_0,
-                wd_state.h_at_vrtx[h_mid_vrtx] - (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
-            wd_state.h_at_vrtx_temp[h_min_vrtx] = wd_state.h_at_vrtx[h_max_vrtx] -
-                                               (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
-                                               (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
+            wd_state.h_at_vrtx_temp[h_mid_vrtx] =
+                std::max(H_0,
+                         wd_state.h_at_vrtx[h_mid_vrtx] -
+                             (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
+            wd_state.h_at_vrtx_temp[h_min_vrtx] =
+                wd_state.h_at_vrtx[h_max_vrtx] -
+                (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
+                (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
 
             h_at_vrtx = std::move(h_at_vrtx_temp);
 

@@ -156,7 +156,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
 
         elt.data.wet_dry_state.bath_at_vrtx = bathymetry[id];
-        elt.data.wet_dry_state.bath_min = 
+        elt.data.wet_dry_state.bath_min =
             *std::min_element(elt.data.wet_dry_state.bath_at_vrtx.begin(), elt.data.wet_dry_state.bath_at_vrtx.end());
 
         elt.data.state[0].bath = elt.L2Projection(bathymetry[id]);

@@ -85,7 +85,7 @@ struct WetDry {
           bath_at_vrtx(nvrtx),
           h_at_vrtx(nvrtx),
           h_at_vrtx_temp(nvrtx) {}
-      
+
     bool wet;
 
     double bath_min;
@@ -102,7 +102,7 @@ struct WetDry {
 
 struct Data {
     WetDry wet_dry_state;
-    
+
     std::vector<State> state;
     Internal internal;
     std::vector<Boundary> boundary;
@@ -127,13 +127,13 @@ struct Data {
         }
     }
 
-    uint get_nvrtx() { return this->nvrtx;}
+    uint get_nvrtx() { return this->nvrtx; }
     uint get_ndof() { return this->ndof; }
     uint get_ngp_internal() { return this->ngp_internal; }
     uint get_nbound() { return this->nbound; }
     uint get_ngp_boundary(uint nbound) { return this->ngp_boundary[nbound]; }
 
-    void set_nvrtx(const uint nvrtx) {this->nvrtx = nvrtx;}
+    void set_nvrtx(const uint nvrtx) { this->nvrtx = nvrtx; }
     void set_ndof(const uint ndof) { this->ndof = ndof; }
     void set_ngp_internal(const uint ngp) { this->ngp_internal = ngp; }
     void set_nbound(const uint nbound) {
