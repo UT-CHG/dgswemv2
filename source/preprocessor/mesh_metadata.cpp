@@ -58,10 +58,10 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             uint faceB_id = edge.second.second.second;
 
             elements.at(eltA_id).neighbor_ID[faceA_id] = eltB_id;
-            elements.at(eltA_id).boundary_type[faceA_id] = SWE::BoundaryConditions::internal;
+            elements.at(eltA_id).boundary_type[faceA_id] = INTERNAL;
 
             elements.at(eltB_id).neighbor_ID[faceB_id] = eltA_id;
-            elements.at(eltB_id).boundary_type[faceB_id] = SWE::BoundaryConditions::internal;
+            elements.at(eltB_id).boundary_type[faceB_id] = INTERNAL;
         } else {
             // treat boundary conditions
             uint elt_id = edge.second.first.first;
