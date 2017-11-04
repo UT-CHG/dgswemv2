@@ -198,6 +198,8 @@ int main() {
     }
 
     // Some nodes dry element of flood-type
+    wd_state.wet = false;  // To do check_element
+
     wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
     wd_state.ze_at_vrtx[2] = 3.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[2];
@@ -264,6 +266,8 @@ int main() {
     }
 
     // Some nodes dry element of dam-break-type
+    wd_state.wet = false;  // To do check_element
+
     wd_state.ze_at_vrtx[0] = 3.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[0];
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
     wd_state.ze_at_vrtx[2] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[2];

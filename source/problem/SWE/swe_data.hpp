@@ -89,6 +89,7 @@ struct WetDry {
     bool wet;
 
     double bath_min;
+    double water_volume;
 
     std::vector<double> ze_at_vrtx;
     std::vector<double> qx_at_vrtx;

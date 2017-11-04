@@ -177,6 +177,19 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
 
         elt.data.state[0].qy = elt.L2Projection(qy_init);
+
+        // for testing initialize wet element
+        elt.data.wet_dry_state.wet = true;
+
+        elt.ComputeUgp(elt.data.state[0].ze, elt.data.internal.ze_at_gp);
+        elt.ComputeUgp(elt.data.state[0].qx, elt.data.internal.qx_at_gp);
+        elt.ComputeUgp(elt.data.state[0].qy, elt.data.internal.qy_at_gp);
+
+        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+            elt.data.internal.h_at_gp[gp] = elt.data.internal.ze_at_gp[gp] + elt.data.internal.bath_at_gp[gp];
+        }
+
+        elt.data.wet_dry_state.water_volume = elt.Integration(elt.data.internal.h_at_gp);
     });
 
     mesh.CallForEachInterface([](auto& intface) {
