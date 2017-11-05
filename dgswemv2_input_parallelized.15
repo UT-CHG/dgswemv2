@@ -27,4 +27,4 @@ problem:
 output:
   path: output/
   vtk:
-    frequency: 360
+    frequency: 1

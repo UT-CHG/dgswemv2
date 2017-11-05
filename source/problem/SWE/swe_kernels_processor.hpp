@@ -332,17 +332,17 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     gp_ex = ngp - gp - 1;
 
-                    LLF_flux_zero_g(boundary_ex.ze_at_gp[gp],
-                                    boundary_in.ze_at_gp[gp_ex],
-                                    boundary_ex.qx_at_gp[gp],
-                                    boundary_in.qx_at_gp[gp_ex],
-                                    boundary_ex.qy_at_gp[gp],
-                                    boundary_in.qy_at_gp[gp_ex],
-                                    boundary_ex.bath_at_gp[gp],
-                                    intface.surface_normal_ex[gp],
-                                    boundary_ex.ze_numerical_flux_at_gp[gp],
-                                    boundary_ex.qx_numerical_flux_at_gp[gp],
-                                    boundary_ex.qy_numerical_flux_at_gp[gp]);
+                    LLF_flux_zero_g(boundary_ex.ze_at_gp[gp_ex],
+                                    boundary_in.ze_at_gp[gp],
+                                    boundary_ex.qx_at_gp[gp_ex],
+                                    boundary_in.qx_at_gp[gp],
+                                    boundary_ex.qy_at_gp[gp_ex],
+                                    boundary_in.qy_at_gp[gp],
+                                    boundary_ex.bath_at_gp[gp_ex],
+                                    intface.surface_normal_ex[gp_ex],
+                                    boundary_ex.ze_numerical_flux_at_gp[gp_ex],
+                                    boundary_ex.qx_numerical_flux_at_gp[gp_ex],
+                                    boundary_ex.qy_numerical_flux_at_gp[gp_ex]);
                 }
 
                 net_volume_flux_in = intface.IntegrationIN(boundary_in.ze_numerical_flux_at_gp);

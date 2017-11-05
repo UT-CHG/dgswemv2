@@ -178,18 +178,37 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
         elt.data.state[0].qy = elt.L2Projection(qy_init);
 
-        // for testing initialize wet element
-        elt.data.wet_dry_state.wet = true;
+        // for testing initialize wet/dry element
+        auto& state = elt.data.state[0];
+        auto& wd_state = elt.data.wet_dry_state;
 
-        elt.ComputeUgp(elt.data.state[0].ze, elt.data.internal.ze_at_gp);
-        elt.ComputeUgp(elt.data.state[0].qx, elt.data.internal.qx_at_gp);
-        elt.ComputeUgp(elt.data.state[0].qy, elt.data.internal.qy_at_gp);
+        if (state.bath[0] < 0) {
+            wd_state.wet = false;
 
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            elt.data.internal.h_at_gp[gp] = elt.data.internal.ze_at_gp[gp] + elt.data.internal.bath_at_gp[gp];
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                wd_state.ze_at_vrtx[vrtx] = Global::h_o - wd_state.bath_at_vrtx[vrtx];
+            }
+
+            state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+            std::fill(state.qx.begin(), state.qx.end(), 0.0);
+            std::fill(state.qy.begin(), state.qy.end(), 0.0);
+
+            std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
+            std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
+            std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
+        } else {
+            wd_state.wet = true;
+
+            elt.ComputeUgp(state.ze, elt.data.internal.ze_at_gp);
+            elt.ComputeUgp(state.qx, elt.data.internal.qx_at_gp);
+            elt.ComputeUgp(state.qy, elt.data.internal.qy_at_gp);
+
+            for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+                elt.data.internal.h_at_gp[gp] = elt.data.internal.ze_at_gp[gp] + elt.data.internal.bath_at_gp[gp];
+            }
+
+            wd_state.water_volume = elt.Integration(elt.data.internal.h_at_gp);
         }
-
-        elt.data.wet_dry_state.water_volume = elt.Integration(elt.data.internal.h_at_gp);
     });
 
     mesh.CallForEachInterface([](auto& intface) {

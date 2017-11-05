@@ -2,7 +2,7 @@
 #define SWE_INITIAL_CONDITION_FUNCTIONS_HPP
 
 namespace SWE {
-inline double ic_ze(const double t, const Point<2>& pt) { return 0; }
+inline double ic_ze(const double t, const Point<2>& pt) { return 0.01; }
 
 inline double ic_qx(const double t, const Point<2>& pt) { return 0; }
 

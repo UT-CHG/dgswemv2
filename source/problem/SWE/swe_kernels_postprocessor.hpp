@@ -1,6 +1,8 @@
 #ifndef SWE_KERNELS_POSTPROCESSOR_HPP
 #define SWE_KERNELS_POSTPROCESSOR_HPP
 
+#include "../../general_definitions.hpp"
+
 namespace SWE {
 template <typename ElementType>
 void Problem::extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data) {
@@ -29,44 +31,68 @@ void Problem::write_VTK_data_kernel(MeshType& mesh, std::ofstream& raw_data_file
 
     mesh.CallForEachElement(extract_VTK_data_kernel);
 
+    std::vector<uint> elt_id_data;
+    std::vector<bool> wd_data;
+
+    auto extract_element_data_kernel = [&elt_id_data, &wd_data](auto& elt) {
+        for (uint cell = 0; cell < N_DIV * N_DIV; cell++) {
+            elt_id_data.push_back(elt.GetID());
+            wd_data.push_back(elt.data.wet_dry_state.wet);
+        }
+    };
+
+    mesh.CallForEachElement(extract_element_data_kernel);
+
     raw_data_file << "CELL_DATA " << (*cell_data.begin()).size() << std::endl;
-    raw_data_file << "SCALARS ze_cell float 1" << std::endl;
+
+    raw_data_file << "SCALARS ze_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[0].begin(); it != cell_data[0].end(); it++)
         raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qx_cell float 1" << std::endl;
+    raw_data_file << "SCALARS qx_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[1].begin(); it != cell_data[1].end(); it++)
         raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qy_cell float 1" << std::endl;
+    raw_data_file << "SCALARS qy_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[2].begin(); it != cell_data[2].end(); it++)
         raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS bath_cell float 1" << std::endl;
+    raw_data_file << "SCALARS bath_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = cell_data[3].begin(); it != cell_data[3].end(); it++)
         raw_data_file << *it << std::endl;
 
+    raw_data_file << "SCALARS ID unsigned_int 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
+    for (auto it = elt_id_data.begin(); it != elt_id_data.end(); it++)
+        raw_data_file << *it << std::endl;
+
+    raw_data_file << "SCALARS wet_dry bit 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
+    for (auto it = wd_data.begin(); it != wd_data.end(); it++)
+        raw_data_file << *it << std::endl;
+
     raw_data_file << "POINT_DATA " << (*point_data.begin()).size() << std::endl;
-    raw_data_file << "SCALARS ze_point float 1" << std::endl;
+
+    raw_data_file << "SCALARS ze_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[0].begin(); it != point_data[0].end(); it++)
         raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qx_point float 1" << std::endl;
+    raw_data_file << "SCALARS qx_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[1].begin(); it != point_data[1].end(); it++)
         raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS qy_point float 1" << std::endl;
+    raw_data_file << "SCALARS qy_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[2].begin(); it != point_data[2].end(); it++)
         raw_data_file << *it << std::endl;
 
-    raw_data_file << "SCALARS bath_point float 1" << std::endl;
+    raw_data_file << "SCALARS bath_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = point_data[3].begin(); it != point_data[3].end(); it++)
         raw_data_file << *it << std::endl;
