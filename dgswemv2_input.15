@@ -10,7 +10,7 @@ mesh:
 
 timestepping:
   dt: 1                           #in seconds
-  end_time: 180000                 #in seconds
+  end_time: 144200                 #in seconds
   order: 2
   nstages: 2
 
