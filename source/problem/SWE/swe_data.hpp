@@ -97,12 +97,15 @@ struct WetDry {
     std::vector<double> h_at_vrtx_temp;
 };
 
-struct SlopeLimit{
+struct SlopeLimit {
     SlopeLimit() = default;
     SlopeLimit(const uint nbound)
         : alpha_1(nbound),
           alpha_2(nbound),
           r_sq(nbound),
+          ze_at_vrtx(nbound),
+          qx_at_vrtx(nbound),
+          qy_at_vrtx(nbound),
           ze_at_midpts(nbound),
           qx_at_midpts(nbound),
           qy_at_midpts(nbound),
@@ -111,7 +114,7 @@ struct SlopeLimit{
           qx_at_baryctr_neigh(nbound),
           qy_at_baryctr_neigh(nbound),
           bath_at_baryctr_neigh(nbound) {}
-    
+
     std::vector<double> alpha_1;
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
@@ -120,6 +123,10 @@ struct SlopeLimit{
     double qx_at_baryctr;
     double qy_at_baryctr;
     double bath_at_baryctr;
+
+    std::vector<double> ze_at_vrtx;
+    std::vector<double> qx_at_vrtx;
+    std::vector<double> qy_at_vrtx;
 
     std::vector<double> ze_at_midpts;
     std::vector<double> qx_at_midpts;
@@ -131,15 +138,14 @@ struct SlopeLimit{
     std::vector<double> qy_at_baryctr_neigh;
     std::vector<double> bath_at_baryctr_neigh;
 
-    std::vector<double> w_midpt_characteristic(3);
-    Array2D<double> w_baryctr_characteristic(3, std::vector<double>(3));
+    std::vector<double> w_midpt_char = std::vector<double>(3);
+    Array2D<double> w_baryctr_char = Array2D<double>(3, std::vector<double>(3));
 
-    std::vector<double> delta_characteristic(3);
-    std::vector<double> delta_hat(3);
-    Array2D<double> delta(3, std::vector<double>(3));
+    std::vector<double> delta_char = std::vector<double>(3);
+    Array2D<double> delta = Array2D<double>(3, std::vector<double>(3));
 
-    Array2D<double> L(3, std::vector<double>(3));
-    Array2D<double> R(3, std::vector<double>(3));
+    Array2D<double> L = Array2D<double>(3, std::vector<double>(3));
+    Array2D<double> R = Array2D<double>(3, std::vector<double>(3));
 };
 
 struct Data {

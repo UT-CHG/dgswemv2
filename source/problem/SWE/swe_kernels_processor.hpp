@@ -184,101 +184,103 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     auto& state = elt.data.state[stage];
     auto& sl_state = elt.data.slope_limit_state;
 
-    for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
+    for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
         uint element_1 = bound;
-        uint element_2 = (bound+1)%3;
-        
-        //COMPUTE L,R HERE
+        uint element_2 = (bound + 1) % 3;
 
-        for(uint var=0; var<3; var++){
-            sl_state.w_midpt_characteristic[var] =
-                sl_state.L[var][0]*sl_state.ze_at_midpts[bound] + 
-                sl_state.L[var][1]*sl_state.qx_at_midpts[bound] + 
-                sl_state.L[var][2]*sl_state.qy_at_midpts[bound]; 
-            
-            sl_state.w_baryctr_characteristic[var][0] = 
-                sl_state.L[var][0]*sl_state.ze_at_baryctr + 
-                sl_state.L[var][1]*sl_state.qx_at_baryctr + 
-                sl_state.L[var][2]*sl_state.qy_at_baryctr; 
-            
-            sl_state.w_baryctr_characteristic[var][1] = 
-                sl_state.L[var][0]*sl_state.ze_at_baryctr_neigh[element_1] + 
-                sl_state.L[var][1]*sl_state.qx_at_baryctr_neigh[element_1] + 
-                sl_state.L[var][2]*sl_state.qy_at_baryctr_neigh[element_1]; 
-            
-            sl_state.w_baryctr_characteristic[var][2] = 
-                sl_state.L[var][0]*sl_state.ze_at_baryctr_neigh[element_2] + 
-                sl_state.L[var][1]*sl_state.qx_at_baryctr_neigh[element_2] + 
-                sl_state.L[var][2]*sl_state.qy_at_baryctr_neigh[element_2]; 
+        // COMPUTE L,R HERE
+
+        for (uint var = 0; var < 3; var++) {
+            sl_state.w_midpt_char[var] = sl_state.L[var][0] * sl_state.ze_at_midpts[bound] +
+                                         sl_state.L[var][1] * sl_state.qx_at_midpts[bound] +
+                                         sl_state.L[var][2] * sl_state.qy_at_midpts[bound];
+
+            sl_state.w_baryctr_char[var][0] = sl_state.L[var][0] * sl_state.ze_at_baryctr +
+                                              sl_state.L[var][1] * sl_state.qx_at_baryctr +
+                                              sl_state.L[var][2] * sl_state.qy_at_baryctr;
+
+            sl_state.w_baryctr_char[var][1] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_1] +
+                                              sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_1] +
+                                              sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_1];
+
+            sl_state.w_baryctr_char[var][2] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_2] +
+                                              sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_2] +
+                                              sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_2];
         }
-        
+
         double w_tilda;
         double w_delta;
 
         double M = 50;
         double nu = 1.5;
 
-        for(uint var=0; var<3; var++){
-            w_tilda=
-            sl_state.w_midpt_characteristic[var]-
-            sl_state.w_baryctr_characteristic[var][0];
+        for (uint var = 0; var < 3; var++) {
+            w_tilda = sl_state.w_midpt_char[var] - sl_state.w_baryctr_char[var][0];
 
-            w_delta=
-            sl_state.alpha_1[bound]*(
-                sl_state.w_baryctr_characteristic[var][1]-
-                sl_state.w_baryctr_characteristic[var][0]
-            ) +
-            sl_state.alpha_2[bound]*(
-                sl_state.w_baryctr_characteristic[var][2]-
-                sl_state.w_baryctr_characteristic[var][0]
-            );
-        
-            if (std::abs(w_tilda) =< M*r_sq[bound]) {
-                sl_state.delta_characteristic[var] = w_tilda;
-            } else if(std::signbit(w_tilda) == std::signbit(w_delta)) {
-               sl_state. delta_characteristic[var] = 
-                    std::copysign(1.0, w_tilda)*
-                    std::min(std::abs(w_tilda),std::abs(nu*w_delta));
+            w_delta = sl_state.alpha_1[bound] * (sl_state.w_baryctr_char[var][1] - sl_state.w_baryctr_char[var][0]) +
+                      sl_state.alpha_2[bound] * (sl_state.w_baryctr_char[var][2] - sl_state.w_baryctr_char[var][0]);
+
+            // TVB modified minmod
+            if (std::abs(w_tilda) <= M * sl_state.r_sq[bound]) {
+                sl_state.delta_char[var] = w_tilda;
+            } else if (std::signbit(w_tilda) == std::signbit(w_delta)) {
+                sl_state.delta_char[var] =
+                    std::copysign(1.0, w_tilda) * std::min(std::abs(w_tilda), std::abs(nu * w_delta));
             } else {
-                sl_state.delta_characteristic[var] = 0.0;
-            }   
+                sl_state.delta_char[var] = 0.0;
+            }
         }
 
-        for(uint var=0; var<3; var++){
-            sl_state.delta[var][bound] = 
-                sl_state.R[var][0]*sl_state.delta_characteristic[0]+
-                sl_state.R[var][1]*sl_state.delta_characteristic[1]+
-                sl_state.R[var][2]*sl_state.delta_characteristic[2];                
+        for (uint var = 0; var < 3; var++) {
+            sl_state.delta[var][bound] = sl_state.R[var][0] * sl_state.delta_char[0] +
+                                         sl_state.R[var][1] * sl_state.delta_char[1] +
+                                         sl_state.R[var][2] * sl_state.delta_char[2];
         }
     }
-    
-    for(uint var=0; var<3; var++){
-        double positive = 0.0;
-        double negative = 0.0;
 
-        for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
-            positive += std::max(0.0, sl_state.delta[var][bound]);
-            negatove += std::max(0.0, -sl_state.delta[var][bound])
+    for (uint var = 0; var < 3; var++) {
+        double delta_sum = 0.0;
+
+        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+            delta_sum += sl_state.delta[var][bound];
         }
 
-        if (positive == 0.0 && negative == 0.0) {
-            for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
-                delta_hat[bound] = 0.0;
+        if (delta_sum != 0.0) {
+            double positive = 0.0;
+            double negative = 0.0;
+
+            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                positive += std::max(0.0, sl_state.delta[var][bound]);
+                negative += std::max(0.0, -sl_state.delta[var][bound]);
             }
-        } else {
-            double theta_positive = std::min(1.0, negative/positive);
-            double theta_negative = std::min(1.0, positive/negative);
-            
-            for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
-                delta_hat[bound] = 
-                    theta_positive*
-                    std::max(0.0, sl_state.delta[var][bound]) -
-                    theta_negative*
-                    std::max(0.0, -sl_state.delta[var][bound])
-                    ;
+
+            double theta_positive = std::min(1.0, negative / positive);
+            double theta_negative = std::min(1.0, positive / negative);
+
+            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                sl_state.delta[var][bound] = theta_positive * std::max(0.0, sl_state.delta[var][bound]) -
+                                             theta_negative * std::max(0.0, -sl_state.delta[var][bound]);
             }
         }
     }
+
+    Array2D<double> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+
+    for (uint vrtx = 0; vrtx < 3; vrtx++) {
+        sl_state.ze_at_vrtx[vrtx] = sl_state.ze_at_baryctr;
+        sl_state.qx_at_vrtx[vrtx] = sl_state.qx_at_baryctr;
+        sl_state.qy_at_vrtx[vrtx] = sl_state.qy_at_baryctr;
+
+        for (uint bound = 0; elt.data.get_nbound(); bound++) {
+            sl_state.ze_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[0][bound];
+            sl_state.qx_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[1][bound];
+            sl_state.qy_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[2][bound];
+        }
+    }
+
+    state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
+    state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
+    state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
 }
 
 template <typename ElementType>

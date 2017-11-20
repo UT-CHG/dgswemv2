@@ -151,37 +151,41 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachElement([&bathymetry](auto& elt) {
         uint id = elt.GetID();
 
+        auto& state = elt.data.state[0];
+        auto& internal = elt.data.internal;
+        auto& wd_state = elt.data.wet_dry_state;
+        auto& sl_state = elt.data.slope_limit_state;
+
         if (!bathymetry.count(id)) {
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
         }
 
-        elt.data.wet_dry_state.bath_at_vrtx = bathymetry[id];
-        elt.data.wet_dry_state.bath_min =
-            *std::min_element(elt.data.wet_dry_state.bath_at_vrtx.begin(), elt.data.wet_dry_state.bath_at_vrtx.end());
+        state.bath = elt.L2Projection(bathymetry[id]);
 
-        elt.data.state[0].bath = elt.L2Projection(bathymetry[id]);
+        elt.ComputeUgp(state.bath, internal.bath_at_gp);
 
-        elt.ComputeUgp(elt.data.state[0].bath, elt.data.internal.bath_at_gp);
-
-        elt.ComputeDUgp(GlobalCoord::x, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_x_at_gp);
-        elt.ComputeDUgp(GlobalCoord::y, elt.data.state[0].bath, elt.data.internal.bath_deriv_wrt_y_at_gp);
+        elt.ComputeDUgp(GlobalCoord::x, state.bath, internal.bath_deriv_wrt_x_at_gp);
+        elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
         auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
 
-        elt.data.state[0].ze = elt.L2Projection(ze_init);
+        state.ze = elt.L2Projection(ze_init);
 
         auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
 
-        elt.data.state[0].qx = elt.L2Projection(qx_init);
+        state.qx = elt.L2Projection(qx_init);
 
         auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
 
-        elt.data.state[0].qy = elt.L2Projection(qy_init);
+        state.qy = elt.L2Projection(qy_init);
+
+        wd_state.bath_at_vrtx = bathymetry[id];
+        wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
+
+        elt.ComputeUbaryctr(state.bath, sl_state.bath_at_baryctr);
+        elt.ComputeUmidpts(state.bath, sl_state.bath_at_midpts);
 
         // for testing initialize wet/dry element
-        auto& state = elt.data.state[0];
-        auto& wd_state = elt.data.wet_dry_state;
-
         if (state.bath[0] < 0) {
             wd_state.wet = false;
 
@@ -199,21 +203,33 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         } else {
             wd_state.wet = true;
 
-            elt.ComputeUgp(state.ze, elt.data.internal.ze_at_gp);
-            elt.ComputeUgp(state.qx, elt.data.internal.qx_at_gp);
-            elt.ComputeUgp(state.qy, elt.data.internal.qy_at_gp);
+            elt.ComputeUgp(state.ze, internal.ze_at_gp);
+            elt.ComputeUgp(state.qx, internal.qx_at_gp);
+            elt.ComputeUgp(state.qy, internal.qy_at_gp);
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-                elt.data.internal.h_at_gp[gp] = elt.data.internal.ze_at_gp[gp] + elt.data.internal.bath_at_gp[gp];
+                internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
             }
 
-            wd_state.water_volume = elt.Integration(elt.data.internal.h_at_gp);
+            wd_state.water_volume = elt.Integration(internal.h_at_gp);
         }
     });
 
     mesh.CallForEachInterface([](auto& intface) {
-        intface.ComputeUgpIN(intface.data_in.state[0].bath, intface.data_in.boundary[intface.bound_id_in].bath_at_gp);
-        intface.ComputeUgpEX(intface.data_ex.state[0].bath, intface.data_ex.boundary[intface.bound_id_ex].bath_at_gp);
+        auto& state_in = intface.data_in.state[0];
+        auto& state_ex = intface.data_ex.state[0];
+
+        auto& sl_state_in = intface.data_in.slope_limit_state;
+        auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
+
+        auto& sl_state_ex = intface.data_ex.slope_limit_state;
+        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+
+        intface.ComputeUgpIN(state_in.bath, boundary_in.bath_at_gp);
+        intface.ComputeUgpEX(state_ex.bath, boundary_ex.bath_at_gp);
+
+        sl_state_in.bath_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.bath_at_baryctr;
+        sl_state_ex.bath_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.bath_at_baryctr;
     });
 
     mesh.CallForEachBoundary([](auto& bound) {

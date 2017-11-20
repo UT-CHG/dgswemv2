@@ -49,7 +49,7 @@ class Element {
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
-    void ComputeUbaryctr(const std::vector<double>& u, double& u_ baryctr);
+    void ComputeUbaryctr(const std::vector<double>& u, double& u_baryctr);
     void ComputeUmidpts(const std::vector<double>& u, std::vector<double>& u_midpts);
     void ComputeUvrtx(const std::vector<double>& u, std::vector<double>& u_vrtx);
 
@@ -245,17 +245,17 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUbaryctr(const std::vector<double>& u,
-                                                                              double& u_baryctr) {
-    u_baryctr=0.0;
+                                                                                 double& u_baryctr) {
+    u_baryctr = 0.0;
 
     for (uint dof = 0; dof < u.size(); dof++) {
-            u_baryctr += u[dof] * this->master.phi_baryctr[dof];
+        u_baryctr += u[dof] * this->master.phi_baryctr[dof];
     }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUmidpts(const std::vector<double>& u,
-                                                                              std::vector<double>& u_midpts) {
+                                                                                std::vector<double>& u_midpts) {
     std::fill(u_midpts.begin(), u_midpts.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
