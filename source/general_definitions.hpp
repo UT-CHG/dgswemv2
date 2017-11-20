@@ -121,6 +121,8 @@ class Master {
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
 
+    std::vector<double> phi_baryctr;
+    Array2D<double> phi_midpts;
     Array2D<double> phi_vrtx;
 
     Array2D<double> int_fact_phi;

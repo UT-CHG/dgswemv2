@@ -9,6 +9,17 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     this->phi_gp = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
 
+    std::vector<Point<2>> baryctr{{-1.0/3.0, -1.0/3.0}};
+    Array2D<double> baryctr_array2d = this->basis.GetPhi(this->p, baryctr);
+
+    this->phi_baryctr.resize(baryctr_array2d.size());
+    for (uint dof=0; dof<phi_baryctr.size(); dof++){
+        this->phi_baryctr[dof] = baryctr_array2d[dof][0];
+    }
+
+    std::vector<Point<2>> midpts{{0.0, 0.0}, {-1.0, 0.0}, {0.0, -1.0}};
+    this->phi_midpts = this->basis.GetPhi(this->p, midpts);
+
     std::vector<Point<2>> vrtx{{-1.0, -1.0}, {1.0, -1.0}, {-1.0, 1.0}};
     this->phi_vrtx = this->basis.GetPhi(this->p, vrtx);
 

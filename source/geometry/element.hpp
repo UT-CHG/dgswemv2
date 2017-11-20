@@ -49,6 +49,8 @@ class Element {
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
+    void ComputeUbaryctr(const std::vector<double>& u, double& u_ baryctr);
+    void ComputeUmidpts(const std::vector<double>& u, std::vector<double>& u_midpts);
     void ComputeUvrtx(const std::vector<double>& u, std::vector<double>& u_vrtx);
 
     double Integration(const std::vector<double>& u_gp);
@@ -144,9 +146,9 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
     }
 
     this->data.set_nvrtx((*this->master.phi_vrtx.begin()).size());
+    this->data.set_nbound(this->boundary_type.size());
     this->data.set_ndof(this->master.phi_gp.size());
     this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
-    this->data.set_nbound(this->boundary_type.size());
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -237,6 +239,28 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < du_gp.size(); gp++) {
             du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUbaryctr(const std::vector<double>& u,
+                                                                              double& u_baryctr) {
+    u_baryctr=0.0;
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+            u_baryctr += u[dof] * this->master.phi_baryctr[dof];
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUmidpts(const std::vector<double>& u,
+                                                                              std::vector<double>& u_midpts) {
+    std::fill(u_midpts.begin(), u_midpts.end(), 0.0);
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint midpt = 0; midpt < u_midpts.size(); midpt++) {
+            u_midpts[midpt] += u[dof] * this->master.phi_midpts[dof][midpt];
         }
     }
 }

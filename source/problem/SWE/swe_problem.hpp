@@ -48,6 +48,15 @@ struct Problem {
     static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
+    static void slope_limiting_prepare_kernel(const Stepper& stepper, ElementType& elt);
+
+    template <typename InterfaceType>
+    static void slope_limiting_interface_kernel(const Stepper& stepper, InterfaceType& intface);
+
+    template <typename ElementType>
+    static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt);
+
+    template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>

@@ -148,6 +148,140 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 }
 
 template <typename ElementType>
+void Problem::slope_limiting_prepare_kernel(const Stepper& stepper, ElementType& elt) {
+    const uint stage = stepper.get_stage();
+
+    auto& state = elt.data.state[stage];
+    auto& sl_state = elt.data.slope_limit_state;
+
+    elt.ComputeUbaryctr(state.ze, sl_state.ze_at_baryctr);
+    elt.ComputeUbaryctr(state.qx, sl_state.qx_at_baryctr);
+    elt.ComputeUbaryctr(state.qy, sl_state.qy_at_baryctr);
+
+    elt.ComputeUmidpts(state.ze, sl_state.ze_at_midpts);
+    elt.ComputeUmidpts(state.qx, sl_state.qx_at_midpts);
+    elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
+}
+
+template <typename InterfaceType>
+void Problem::slope_limiting_interface_kernel(const Stepper& stepper, InterfaceType& intface) {
+    auto& sl_state_in = intface.data_in.slope_limit_state;
+    auto& sl_state_ex = intface.data_ex.slope_limit_state;
+
+    sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.ze_at_baryctr;
+    sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qx_at_baryctr;
+    sl_state_in.qy_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qy_at_baryctr;
+
+    sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.ze_at_baryctr;
+    sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qx_at_baryctr;
+    sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qy_at_baryctr;
+}
+
+template <typename ElementType>
+void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
+    const uint stage = stepper.get_stage();
+
+    auto& state = elt.data.state[stage];
+    auto& sl_state = elt.data.slope_limit_state;
+
+    for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
+        uint element_1 = bound;
+        uint element_2 = (bound+1)%3;
+        
+        //COMPUTE L,R HERE
+
+        for(uint var=0; var<3; var++){
+            sl_state.w_midpt_characteristic[var] =
+                sl_state.L[var][0]*sl_state.ze_at_midpts[bound] + 
+                sl_state.L[var][1]*sl_state.qx_at_midpts[bound] + 
+                sl_state.L[var][2]*sl_state.qy_at_midpts[bound]; 
+            
+            sl_state.w_baryctr_characteristic[var][0] = 
+                sl_state.L[var][0]*sl_state.ze_at_baryctr + 
+                sl_state.L[var][1]*sl_state.qx_at_baryctr + 
+                sl_state.L[var][2]*sl_state.qy_at_baryctr; 
+            
+            sl_state.w_baryctr_characteristic[var][1] = 
+                sl_state.L[var][0]*sl_state.ze_at_baryctr_neigh[element_1] + 
+                sl_state.L[var][1]*sl_state.qx_at_baryctr_neigh[element_1] + 
+                sl_state.L[var][2]*sl_state.qy_at_baryctr_neigh[element_1]; 
+            
+            sl_state.w_baryctr_characteristic[var][2] = 
+                sl_state.L[var][0]*sl_state.ze_at_baryctr_neigh[element_2] + 
+                sl_state.L[var][1]*sl_state.qx_at_baryctr_neigh[element_2] + 
+                sl_state.L[var][2]*sl_state.qy_at_baryctr_neigh[element_2]; 
+        }
+        
+        double w_tilda;
+        double w_delta;
+
+        double M = 50;
+        double nu = 1.5;
+
+        for(uint var=0; var<3; var++){
+            w_tilda=
+            sl_state.w_midpt_characteristic[var]-
+            sl_state.w_baryctr_characteristic[var][0];
+
+            w_delta=
+            sl_state.alpha_1[bound]*(
+                sl_state.w_baryctr_characteristic[var][1]-
+                sl_state.w_baryctr_characteristic[var][0]
+            ) +
+            sl_state.alpha_2[bound]*(
+                sl_state.w_baryctr_characteristic[var][2]-
+                sl_state.w_baryctr_characteristic[var][0]
+            );
+        
+            if (std::abs(w_tilda) =< M*r_sq[bound]) {
+                sl_state.delta_characteristic[var] = w_tilda;
+            } else if(std::signbit(w_tilda) == std::signbit(w_delta)) {
+               sl_state. delta_characteristic[var] = 
+                    std::copysign(1.0, w_tilda)*
+                    std::min(std::abs(w_tilda),std::abs(nu*w_delta));
+            } else {
+                sl_state.delta_characteristic[var] = 0.0;
+            }   
+        }
+
+        for(uint var=0; var<3; var++){
+            sl_state.delta[var][bound] = 
+                sl_state.R[var][0]*sl_state.delta_characteristic[0]+
+                sl_state.R[var][1]*sl_state.delta_characteristic[1]+
+                sl_state.R[var][2]*sl_state.delta_characteristic[2];                
+        }
+    }
+    
+    for(uint var=0; var<3; var++){
+        double positive = 0.0;
+        double negative = 0.0;
+
+        for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
+            positive += std::max(0.0, sl_state.delta[var][bound]);
+            negatove += std::max(0.0, -sl_state.delta[var][bound])
+        }
+
+        if (positive == 0.0 && negative == 0.0) {
+            for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
+                delta_hat[bound] = 0.0;
+            }
+        } else {
+            double theta_positive = std::min(1.0, negative/positive);
+            double theta_negative = std::min(1.0, positive/negative);
+            
+            for (uint bound=0; bound<elt.data.get_nbound(); bound++) {
+                delta_hat[bound] = 
+                    theta_positive*
+                    std::max(0.0, sl_state.delta[var][bound]) -
+                    theta_negative*
+                    std::max(0.0, -sl_state.delta[var][bound])
+                    ;
+            }
+        }
+    }
+}
+
+template <typename ElementType>
 void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
 
