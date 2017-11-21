@@ -252,7 +252,7 @@ void Problem::initialize_sl_data_kernel(ProblemMeshType& mesh) {
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         sl_state.midpts_coord = elt.GetShape().GetMidpointCoordinates();
 
-        for (uint bound = 0; bound < elt.data.get_nbound(); nbound++) {
+        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
             sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
         }
     });
@@ -283,7 +283,7 @@ void Problem::initialize_sl_data_kernel(ProblemMeshType& mesh) {
         auto& sl_state = elt.data.slope_limit_state;
 
         Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
-        std::vector<double> b = std::vector(2);
+        std::vector<double> b(2);
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
             uint element_1 = bound;
