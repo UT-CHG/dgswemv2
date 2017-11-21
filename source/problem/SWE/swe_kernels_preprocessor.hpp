@@ -252,7 +252,7 @@ void Problem::initialize_sl_data_kernel(ProblemMeshType& mesh) {
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         sl_state.midpts_coord = elt.GetShape().GetMidpointCoordinates();
 
-        for(uint bound=0;bound<elt.data.get_nbound();nbound++){
+        for (uint bound = 0; bound < elt.data.get_nbound(); nbound++) {
             sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
         }
     });

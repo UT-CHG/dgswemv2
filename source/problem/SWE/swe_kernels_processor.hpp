@@ -212,8 +212,12 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
             sl_state.R[1][2] = u - c * sl_state.surface_normal[bound][GlobalCoord::x];
             sl_state.R[2][2] = v - c * sl_state.surface_normal[bound][GlobalCoord::y];
 
-            double det = sl_state.R[0][0] * sl_state.R[1][1] * sl_state.R[2][2] + sl_state.R[0][1] * sl_state.R[1][2] * sl_state.R[2][0] + sl_state.R[0][2] * sl_state.R[1][0] * sl_state.R[2][1] -
-                         sl_state.R[0][0] * sl_state.R[1][2] * sl_state.R[2][1] - sl_state.R[0][1] * sl_state.R[1][0] * sl_state.R[2][2] - sl_state.R[0][2] * sl_state.R[1][1] * sl_state.R[2][0];
+            double det = sl_state.R[0][0] * sl_state.R[1][1] * sl_state.R[2][2] +
+                         sl_state.R[0][1] * sl_state.R[1][2] * sl_state.R[2][0] +
+                         sl_state.R[0][2] * sl_state.R[1][0] * sl_state.R[2][1] -
+                         sl_state.R[0][0] * sl_state.R[1][2] * sl_state.R[2][1] -
+                         sl_state.R[0][1] * sl_state.R[1][0] * sl_state.R[2][2] -
+                         sl_state.R[0][2] * sl_state.R[1][1] * sl_state.R[2][0];
 
             sl_state.L[0][0] = (sl_state.R[1][1] * sl_state.R[2][2] - sl_state.R[1][2] * sl_state.R[2][1]) / det;
             sl_state.L[1][0] = (sl_state.R[1][2] * sl_state.R[2][0] - sl_state.R[1][0] * sl_state.R[2][2]) / det;
