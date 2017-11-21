@@ -39,6 +39,7 @@ class Element {
         std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries);
 
     uint GetID() { return this->ID; }
+    ShapeType& GetShape() { return this->shape; }
 
     template <typename F>
     std::vector<double> L2Projection(const F& f);

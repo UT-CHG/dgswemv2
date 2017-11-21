@@ -7,8 +7,8 @@ template <typename ProblemType>
 class Writer {
   public:
     Writer() = default;
-    Writer(const InputParameters<typename ProblemType::InputType>& input);
-    Writer(const InputParameters<typename ProblemType::InputType>& input,
+    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input);
+    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
            const uint locality_id,
            const uint submesh_id);
 
@@ -42,7 +42,7 @@ class Writer {
 };
 
 template <typename ProblemType>
-Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::InputType>& input)
+Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemInputType>& input)
     : writing_output(input.writer_input.writing_output),
       output_path(input.writer_input.output_path),
       writing_log_file(input.writer_input.writing_log_file),
@@ -57,7 +57,7 @@ Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::InputTyp
 }
 
 template <typename ProblemType>
-Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::InputType>& input,
+Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
                             const uint locality_id,
                             const uint submesh_id)
     : Writer(input) {

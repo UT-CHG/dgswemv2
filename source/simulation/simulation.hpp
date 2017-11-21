@@ -8,7 +8,7 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    InputParameters<typename ProblemType::InputType> input;
+    InputParameters<typename ProblemType::ProblemInputType> input;
 
     Stepper stepper;
     Writer<ProblemType> writer;

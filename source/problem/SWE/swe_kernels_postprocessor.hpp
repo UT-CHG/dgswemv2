@@ -17,8 +17,7 @@ void Problem::extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_da
     elt.WritePointDataVTK(elt.data.state[0].bath, point_data[3]);
 }
 
-template <typename MeshType>
-void Problem::write_VTK_data_kernel(MeshType& mesh, std::ofstream& raw_data_file) {
+void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
     Array2D<double> cell_data;
     Array2D<double> point_data;
 
@@ -104,8 +103,7 @@ void Problem::extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<
                                                                      elt.data.state[0].qy, elt.data.state[0].bath}));
 }
 
-template <typename MeshType>
-void Problem::write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, const std::string& output_path) {
+void Problem::write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, Array2D<double>>> modal_data;
 
     auto extract_modal_data_kernel = [&modal_data](auto& elt) { Problem::extract_modal_data_kernel(elt, modal_data); };

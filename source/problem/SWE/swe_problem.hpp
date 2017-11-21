@@ -14,7 +14,7 @@
 
 namespace SWE {
 struct Problem {
-    typedef SWE::Inputs InputType;
+    typedef SWE::Inputs ProblemInputType;
 
     typedef SWE::Data ProblemDataType;
 
@@ -41,20 +41,16 @@ struct Problem {
 
     static void initialize_data_kernel(ProblemMeshType& mesh,
                                        const MeshMetaData& mesh_data,
-                                       const Problem::InputType& problem_specific_input);
+                                       const ProblemInputType& problem_specific_input);
+
+    static void initialize_wd_data_kernel(ProblemMeshType& mesh);
+
+    static void initialize_sl_data_kernel(ProblemMeshType& mesh);
 
     // processor kernels
-    template <typename ElementType>
-    static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
+    static void wetting_drying_kernel(const Stepper& stepper, ProblemMeshType& mesh);
 
-    template <typename ElementType>
-    static void slope_limiting_prepare_kernel(const Stepper& stepper, ElementType& elt);
-
-    template <typename InterfaceType>
-    static void slope_limiting_interface_kernel(const Stepper& stepper, InterfaceType& intface);
-
-    template <typename ElementType>
-    static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt);
+    static void slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh);
 
     template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);
@@ -87,16 +83,15 @@ struct Problem {
     template <typename ElementType>
     static void extract_VTK_data_kernel(ElementType& elt, Array2D<double>& cell_data, Array2D<double>& point_data);
 
-    template <typename MeshType>
-    static void write_VTK_data_kernel(MeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
     template <typename ElementType>
     static void extract_modal_data_kernel(ElementType& elt, std::vector<std::pair<uint, Array2D<double>>>& modal_data);
+
+    static void write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& mesh, const std::string& output_path);
+
     template <typename ElementType>
     static double compute_residual_L2_kernel(const Stepper& stepper, ElementType& elt);
-
-    template <typename MeshType>
-    static void write_modal_data_kernel(const Stepper& stepper, MeshType& mesh, const std::string& output_path);
 };
 }
 

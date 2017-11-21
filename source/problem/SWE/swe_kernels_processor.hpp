@@ -4,8 +4,8 @@
 #include "swe_LLF_flux.hpp"
 
 namespace SWE {
-template <typename ElementType>
-void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
+void Problem::wetting_drying_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
+    mesh.CallForEachElement([&stepper](auto& elt){
     const uint stage = stepper.get_stage();
 
     auto& state = elt.data.state[stage];
@@ -145,50 +145,91 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
         wd_state.water_volume = elt.Integration(internal.h_at_gp);
     }
+    });
 }
 
-template <typename ElementType>
-void Problem::slope_limiting_prepare_kernel(const Stepper& stepper, ElementType& elt) {
+void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
+    mesh.CallForEachElement([&stepper](auto& elt){
+        const uint stage = stepper.get_stage();
+
+        auto& state = elt.data.state[stage];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        elt.ComputeUbaryctr(state.ze, sl_state.ze_at_baryctr);
+        elt.ComputeUbaryctr(state.qx, sl_state.qx_at_baryctr);
+        elt.ComputeUbaryctr(state.qy, sl_state.qy_at_baryctr);
+
+        elt.ComputeUmidpts(state.ze, sl_state.ze_at_midpts);
+        elt.ComputeUmidpts(state.qx, sl_state.qx_at_midpts);
+        elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
+    });
+
+    mesh.CallForEachInterface([](auto& intface){
+        auto& sl_state_in = intface.data_in.slope_limit_state;
+        auto& sl_state_ex = intface.data_ex.slope_limit_state;
+
+        sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.ze_at_baryctr;
+        sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qx_at_baryctr;
+        sl_state_in.qy_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qy_at_baryctr;
+
+        sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.ze_at_baryctr;
+        sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qx_at_baryctr;
+        sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qy_at_baryctr;
+    });
+
+    mesh.CallForEachBoundary([](auto& bound) {
+        auto& sl_state = bound.data.slope_limit_state;
+
+        sl_state.ze_at_baryctr_neigh[bound.bound_id] = sl_state.ze_at_baryctr;
+        sl_state.qx_at_baryctr_neigh[bound.bound_id] = sl_state.qx_at_baryctr;
+        sl_state.qy_at_baryctr_neigh[bound.bound_id] = sl_state.qy_at_baryctr;
+    });
+
+    mesh.CallForEachElement([&stepper](auto& elt){
     const uint stage = stepper.get_stage();
 
     auto& state = elt.data.state[stage];
     auto& sl_state = elt.data.slope_limit_state;
 
-    elt.ComputeUbaryctr(state.ze, sl_state.ze_at_baryctr);
-    elt.ComputeUbaryctr(state.qx, sl_state.qx_at_baryctr);
-    elt.ComputeUbaryctr(state.qy, sl_state.qy_at_baryctr);
-
-    elt.ComputeUmidpts(state.ze, sl_state.ze_at_midpts);
-    elt.ComputeUmidpts(state.qx, sl_state.qx_at_midpts);
-    elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
-}
-
-template <typename InterfaceType>
-void Problem::slope_limiting_interface_kernel(const Stepper& stepper, InterfaceType& intface) {
-    auto& sl_state_in = intface.data_in.slope_limit_state;
-    auto& sl_state_ex = intface.data_ex.slope_limit_state;
-
-    sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.ze_at_baryctr;
-    sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qx_at_baryctr;
-    sl_state_in.qy_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qy_at_baryctr;
-
-    sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.ze_at_baryctr;
-    sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qx_at_baryctr;
-    sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qy_at_baryctr;
-}
-
-template <typename ElementType>
-void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
-
-    auto& state = elt.data.state[stage];
-    auto& sl_state = elt.data.slope_limit_state;
+    double u = sl_state.qx_at_baryctr/(sl_state.ze_at_baryctr+sl_state.bath_at_baryctr);
+    double v = sl_state.qy_at_baryctr/(sl_state.ze_at_baryctr+sl_state.bath_at_baryctr);
+    double c = std::sqrt(Global::g*(sl_state.ze_at_baryctr+sl_state.bath_at_baryctr));
 
     for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
         uint element_1 = bound;
         uint element_2 = (bound + 1) % 3;
 
-        // COMPUTE L,R HERE
+        sl_state.R[0][0] = 1.0;
+        sl_state.R[1][0] = u + c * sl_state.n[bound][GlobalCoord::x];
+        sl_state.R[2][0] = v + c * sl_state.n[bound][GlobalCoord::y];
+
+        sl_state.R[0][1] = 0.0;
+        sl_state.R[1][1] = -sl_state.n[bound][GlobalCoord::y];
+        sl_state.R[2][1] = sl_state.n[bound][GlobalCoord::x];
+
+        sl_state.R[0][2] = 1.0;
+        sl_state.R[1][2] = u - c * sl_state.n[bound][GlobalCoord::x];
+        sl_state.R[2][2] = v - c * sl_state.n[bound][GlobalCoord::y];
+
+        double det = 
+            R[0][0]*R[1][1]*R[2][2]+
+            R[0][1]*R[1][2]*R[2][0]+
+            R[0][2]*R[1][0]*R[2][1]-
+            R[0][0]*R[1][2]*R[2][1]-
+            R[0][1]*R[1][0]*R[2][2]-
+            R[0][2]*R[1][1]*R[2][0];
+
+        sl_state.L[0][0] = (R[1][1]*R[2][2]-R[1][2]*R[2][1])/det;
+        sl_state.L[1][0] = (R[1][2]*R[2][0]-R[1][0]*R[2][2])/det;
+        sl_state.L[2][0] = (R[1][0]*R[2][1]-R[1][1]*R[2][0])/det;
+
+        sl_state.L[0][1] = (R[0][2]*R[2][1]-R[0][1]*R[2][2])/det;
+        sl_state.L[1][1] = (R[0][0]*R[2][2]-R[0][2]*R[2][0])/det;
+        sl_state.L[2][1] = (R[0][1]*R[2][0]-R[0][0]*R[2][1])/det;
+
+        sl_state.L[0][2] = (R[0][1]*R[1][2]-R[0][2]*R[1][1])/det;
+        sl_state.L[1][2] = (R[0][2]*R[1][0]-R[0][0]*R[1][2])/det;
+        sl_state.L[2][2] = (R[0][0]*R[1][1]-R[0][1]*R[1][0])/det;
 
         for (uint var = 0; var < 3; var++) {
             sl_state.w_midpt_char[var] = sl_state.L[var][0] * sl_state.ze_at_midpts[bound] +
@@ -281,6 +322,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
     state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
     state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
+    });
 }
 
 template <typename ElementType>

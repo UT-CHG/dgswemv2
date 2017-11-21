@@ -100,7 +100,9 @@ struct WetDry {
 struct SlopeLimit {
     SlopeLimit() = default;
     SlopeLimit(const uint nbound)
-        : alpha_1(nbound),
+        : midpts_coord(nbound),
+          baryctr_coord_neigh(nbound),
+          alpha_1(nbound),
           alpha_2(nbound),
           r_sq(nbound),
           ze_at_vrtx(nbound),
@@ -115,6 +117,10 @@ struct SlopeLimit {
           qy_at_baryctr_neigh(nbound),
           bath_at_baryctr_neigh(nbound) {}
 
+    Point<2> baryctr_coord;
+    std::vector<Point<2>> midpts_coord;
+    std::vector<Point<2>> baryctr_coord_neigh;
+    
     std::vector<double> alpha_1;
     std::vector<double> alpha_2;
     std::vector<double> r_sq;

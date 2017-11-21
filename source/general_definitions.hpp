@@ -153,6 +153,9 @@ class Shape {
 
     virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
 
+    virtual Point<dimension> GetBarycentricCoordinates() = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
+
     virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) = 0;
     virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) = 0;
     virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
