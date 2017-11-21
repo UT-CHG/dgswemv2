@@ -5,151 +5,152 @@
 
 namespace SWE {
 void Problem::wetting_drying_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
-    mesh.CallForEachElement([&stepper](auto& elt){
-    const uint stage = stepper.get_stage();
+    mesh.CallForEachElement([&stepper](auto& elt) {
+        const uint stage = stepper.get_stage();
 
-    auto& state = elt.data.state[stage];
-    auto& wd_state = elt.data.wet_dry_state;
-    auto& internal = elt.data.internal;
+        auto& state = elt.data.state[stage];
+        auto& wd_state = elt.data.wet_dry_state;
+        auto& internal = elt.data.internal;
 
-    elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
-
-    for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-        wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
-    }
-
-    double h_avg = std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / elt.data.get_nvrtx();
-
-    bool set_wet_element = false;
-    bool set_dry_element = false;
-    bool check_element = false;
-
-    if (h_avg <= Global::h_o) {
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
-        }
-
-        state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
-
-        set_dry_element = true;
-    } else {
-        uint n_dry_vrtx = 0;
+        elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o)
-                n_dry_vrtx++;
+            wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
         }
 
-        if (n_dry_vrtx == 0) {
-            if (wd_state.wet) {
-                set_wet_element = true;
-            } else {
-                check_element = true;
-            }
-        } else {
-            auto h_min_iter = std::min_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
-            uint h_min_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_min_iter);
+        double h_avg =
+            std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / elt.data.get_nvrtx();
 
-            auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
-            uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
+        bool set_wet_element = false;
+        bool set_dry_element = false;
+        bool check_element = false;
 
-            uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
-
-            wd_state.h_at_vrtx_temp[h_min_vrtx] = Global::h_o;
-
-            wd_state.h_at_vrtx_temp[h_mid_vrtx] =
-                std::max(Global::h_o,
-                         wd_state.h_at_vrtx[h_mid_vrtx] -
-                             (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
-
-            wd_state.h_at_vrtx_temp[h_max_vrtx] =
-                wd_state.h_at_vrtx[h_max_vrtx] -
-                (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
-                (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
-
-            wd_state.h_at_vrtx = wd_state.h_at_vrtx_temp;
-
-            elt.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-            elt.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
-
-            double del_qx = 0;
-            double del_qy = 0;
-
-            n_dry_vrtx = 0;
-
+        if (h_avg <= Global::h_o) {
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
-                    n_dry_vrtx++;
-
-                    del_qx += wd_state.qx_at_vrtx[vrtx];
-                    del_qy += wd_state.qy_at_vrtx[vrtx];
-
-                    wd_state.qx_at_vrtx[vrtx] = 0;
-                    wd_state.qy_at_vrtx[vrtx] = 0;
-                }
-            }
-
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
-
-                if (wd_state.h_at_vrtx[vrtx] > Global::h_o) {
-                    wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
-                    wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
-                }
+                wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
             }
 
             state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
-            state.qx = elt.L2Projection(wd_state.qx_at_vrtx);
-            state.qy = elt.L2Projection(wd_state.qy_at_vrtx);
 
-            if (wd_state.wet) {
-                set_wet_element = true;
-            } else {
-                check_element = true;
+            set_dry_element = true;
+        } else {
+            uint n_dry_vrtx = 0;
+
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                if (wd_state.h_at_vrtx[vrtx] <= Global::h_o)
+                    n_dry_vrtx++;
             }
+
+            if (n_dry_vrtx == 0) {
+                if (wd_state.wet) {
+                    set_wet_element = true;
+                } else {
+                    check_element = true;
+                }
+            } else {
+                auto h_min_iter = std::min_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
+                uint h_min_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_min_iter);
+
+                auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
+                uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
+
+                uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
+
+                wd_state.h_at_vrtx_temp[h_min_vrtx] = Global::h_o;
+
+                wd_state.h_at_vrtx_temp[h_mid_vrtx] =
+                    std::max(Global::h_o,
+                             wd_state.h_at_vrtx[h_mid_vrtx] -
+                                 (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
+
+                wd_state.h_at_vrtx_temp[h_max_vrtx] =
+                    wd_state.h_at_vrtx[h_max_vrtx] -
+                    (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) -
+                    (wd_state.h_at_vrtx_temp[h_mid_vrtx] - wd_state.h_at_vrtx[h_mid_vrtx]);
+
+                wd_state.h_at_vrtx = wd_state.h_at_vrtx_temp;
+
+                elt.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
+                elt.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
+
+                double del_qx = 0;
+                double del_qy = 0;
+
+                n_dry_vrtx = 0;
+
+                for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                    if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
+                        n_dry_vrtx++;
+
+                        del_qx += wd_state.qx_at_vrtx[vrtx];
+                        del_qy += wd_state.qy_at_vrtx[vrtx];
+
+                        wd_state.qx_at_vrtx[vrtx] = 0;
+                        wd_state.qy_at_vrtx[vrtx] = 0;
+                    }
+                }
+
+                for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                    wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
+
+                    if (wd_state.h_at_vrtx[vrtx] > Global::h_o) {
+                        wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
+                        wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
+                    }
+                }
+
+                state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+                state.qx = elt.L2Projection(wd_state.qx_at_vrtx);
+                state.qy = elt.L2Projection(wd_state.qy_at_vrtx);
+
+                if (wd_state.wet) {
+                    set_wet_element = true;
+                } else {
+                    check_element = true;
+                }
+            }
+
+            if (check_element) {
+                auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
+                uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
+
+                double ze_h_max_vrtx = wd_state.ze_at_vrtx[h_max_vrtx];
+
+                if (ze_h_max_vrtx > Global::h_o - wd_state.bath_min) {
+                    set_wet_element = true;
+                } else {
+                    set_dry_element = true;
+                }
+            };
         }
 
-        if (check_element) {
-            auto h_max_iter = std::max_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
-            uint h_max_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_max_iter);
+        if (set_dry_element) {
+            wd_state.wet = false;
 
-            double ze_h_max_vrtx = wd_state.ze_at_vrtx[h_max_vrtx];
+            std::fill(state.qx.begin(), state.qx.end(), 0.0);
+            std::fill(state.qy.begin(), state.qy.end(), 0.0);
 
-            if (ze_h_max_vrtx > Global::h_o - wd_state.bath_min) {
-                set_wet_element = true;
-            } else {
-                set_dry_element = true;
+            std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
+            std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
+            std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
+        } else if (set_wet_element) {
+            wd_state.wet = true;
+
+            elt.ComputeUgp(state.ze, internal.ze_at_gp);
+            elt.ComputeUgp(state.qx, internal.qx_at_gp);
+            elt.ComputeUgp(state.qy, internal.qy_at_gp);
+
+            for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+                internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
             }
-        };
-    }
 
-    if (set_dry_element) {
-        wd_state.wet = false;
-
-        std::fill(state.qx.begin(), state.qx.end(), 0.0);
-        std::fill(state.qy.begin(), state.qy.end(), 0.0);
-
-        std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
-        std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
-        std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
-    } else if (set_wet_element) {
-        wd_state.wet = true;
-
-        elt.ComputeUgp(state.ze, internal.ze_at_gp);
-        elt.ComputeUgp(state.qx, internal.qx_at_gp);
-        elt.ComputeUgp(state.qy, internal.qy_at_gp);
-
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+            wd_state.water_volume = elt.Integration(internal.h_at_gp);
         }
-
-        wd_state.water_volume = elt.Integration(internal.h_at_gp);
-    }
     });
 }
 
 void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
-    mesh.CallForEachElement([&stepper](auto& elt){
+    mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.get_stage();
 
         auto& state = elt.data.state[stage];
@@ -164,7 +165,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
     });
 
-    mesh.CallForEachInterface([](auto& intface){
+    mesh.CallForEachInterface([](auto& intface) {
         auto& sl_state_in = intface.data_in.slope_limit_state;
         auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
@@ -185,143 +186,139 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         sl_state.qy_at_baryctr_neigh[bound.bound_id] = sl_state.qy_at_baryctr;
     });
 
-    mesh.CallForEachElement([&stepper](auto& elt){
-    const uint stage = stepper.get_stage();
+    mesh.CallForEachElement([&stepper](auto& elt) {
+        const uint stage = stepper.get_stage();
 
-    auto& state = elt.data.state[stage];
-    auto& sl_state = elt.data.slope_limit_state;
+        auto& state = elt.data.state[stage];
+        auto& sl_state = elt.data.slope_limit_state;
 
-    double u = sl_state.qx_at_baryctr/(sl_state.ze_at_baryctr+sl_state.bath_at_baryctr);
-    double v = sl_state.qy_at_baryctr/(sl_state.ze_at_baryctr+sl_state.bath_at_baryctr);
-    double c = std::sqrt(Global::g*(sl_state.ze_at_baryctr+sl_state.bath_at_baryctr));
-
-    for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-        uint element_1 = bound;
-        uint element_2 = (bound + 1) % 3;
-
-        sl_state.R[0][0] = 1.0;
-        sl_state.R[1][0] = u + c * sl_state.n[bound][GlobalCoord::x];
-        sl_state.R[2][0] = v + c * sl_state.n[bound][GlobalCoord::y];
-
-        sl_state.R[0][1] = 0.0;
-        sl_state.R[1][1] = -sl_state.n[bound][GlobalCoord::y];
-        sl_state.R[2][1] = sl_state.n[bound][GlobalCoord::x];
-
-        sl_state.R[0][2] = 1.0;
-        sl_state.R[1][2] = u - c * sl_state.n[bound][GlobalCoord::x];
-        sl_state.R[2][2] = v - c * sl_state.n[bound][GlobalCoord::y];
-
-        double det = 
-            R[0][0]*R[1][1]*R[2][2]+
-            R[0][1]*R[1][2]*R[2][0]+
-            R[0][2]*R[1][0]*R[2][1]-
-            R[0][0]*R[1][2]*R[2][1]-
-            R[0][1]*R[1][0]*R[2][2]-
-            R[0][2]*R[1][1]*R[2][0];
-
-        sl_state.L[0][0] = (R[1][1]*R[2][2]-R[1][2]*R[2][1])/det;
-        sl_state.L[1][0] = (R[1][2]*R[2][0]-R[1][0]*R[2][2])/det;
-        sl_state.L[2][0] = (R[1][0]*R[2][1]-R[1][1]*R[2][0])/det;
-
-        sl_state.L[0][1] = (R[0][2]*R[2][1]-R[0][1]*R[2][2])/det;
-        sl_state.L[1][1] = (R[0][0]*R[2][2]-R[0][2]*R[2][0])/det;
-        sl_state.L[2][1] = (R[0][1]*R[2][0]-R[0][0]*R[2][1])/det;
-
-        sl_state.L[0][2] = (R[0][1]*R[1][2]-R[0][2]*R[1][1])/det;
-        sl_state.L[1][2] = (R[0][2]*R[1][0]-R[0][0]*R[1][2])/det;
-        sl_state.L[2][2] = (R[0][0]*R[1][1]-R[0][1]*R[1][0])/det;
-
-        for (uint var = 0; var < 3; var++) {
-            sl_state.w_midpt_char[var] = sl_state.L[var][0] * sl_state.ze_at_midpts[bound] +
-                                         sl_state.L[var][1] * sl_state.qx_at_midpts[bound] +
-                                         sl_state.L[var][2] * sl_state.qy_at_midpts[bound];
-
-            sl_state.w_baryctr_char[var][0] = sl_state.L[var][0] * sl_state.ze_at_baryctr +
-                                              sl_state.L[var][1] * sl_state.qx_at_baryctr +
-                                              sl_state.L[var][2] * sl_state.qy_at_baryctr;
-
-            sl_state.w_baryctr_char[var][1] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_1] +
-                                              sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_1] +
-                                              sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_1];
-
-            sl_state.w_baryctr_char[var][2] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_2] +
-                                              sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_2] +
-                                              sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_2];
-        }
-
-        double w_tilda;
-        double w_delta;
-
-        double M = 50;
-        double nu = 1.5;
-
-        for (uint var = 0; var < 3; var++) {
-            w_tilda = sl_state.w_midpt_char[var] - sl_state.w_baryctr_char[var][0];
-
-            w_delta = sl_state.alpha_1[bound] * (sl_state.w_baryctr_char[var][1] - sl_state.w_baryctr_char[var][0]) +
-                      sl_state.alpha_2[bound] * (sl_state.w_baryctr_char[var][2] - sl_state.w_baryctr_char[var][0]);
-
-            // TVB modified minmod
-            if (std::abs(w_tilda) <= M * sl_state.r_sq[bound]) {
-                sl_state.delta_char[var] = w_tilda;
-            } else if (std::signbit(w_tilda) == std::signbit(w_delta)) {
-                sl_state.delta_char[var] =
-                    std::copysign(1.0, w_tilda) * std::min(std::abs(w_tilda), std::abs(nu * w_delta));
-            } else {
-                sl_state.delta_char[var] = 0.0;
-            }
-        }
-
-        for (uint var = 0; var < 3; var++) {
-            sl_state.delta[var][bound] = sl_state.R[var][0] * sl_state.delta_char[0] +
-                                         sl_state.R[var][1] * sl_state.delta_char[1] +
-                                         sl_state.R[var][2] * sl_state.delta_char[2];
-        }
-    }
-
-    for (uint var = 0; var < 3; var++) {
-        double delta_sum = 0.0;
+        double u = sl_state.qx_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
+        double v = sl_state.qy_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
+        double c = std::sqrt(Global::g * (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr));
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-            delta_sum += sl_state.delta[var][bound];
-        }
+            uint element_1 = bound;
+            uint element_2 = (bound + 1) % 3;
 
-        if (delta_sum != 0.0) {
-            double positive = 0.0;
-            double negative = 0.0;
+            sl_state.R[0][0] = 1.0;
+            sl_state.R[1][0] = u + c * sl_state.n[bound][GlobalCoord::x];
+            sl_state.R[2][0] = v + c * sl_state.n[bound][GlobalCoord::y];
 
-            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                positive += std::max(0.0, sl_state.delta[var][bound]);
-                negative += std::max(0.0, -sl_state.delta[var][bound]);
+            sl_state.R[0][1] = 0.0;
+            sl_state.R[1][1] = -sl_state.n[bound][GlobalCoord::y];
+            sl_state.R[2][1] = sl_state.n[bound][GlobalCoord::x];
+
+            sl_state.R[0][2] = 1.0;
+            sl_state.R[1][2] = u - c * sl_state.n[bound][GlobalCoord::x];
+            sl_state.R[2][2] = v - c * sl_state.n[bound][GlobalCoord::y];
+
+            double det = R[0][0] * R[1][1] * R[2][2] + R[0][1] * R[1][2] * R[2][0] + R[0][2] * R[1][0] * R[2][1] -
+                         R[0][0] * R[1][2] * R[2][1] - R[0][1] * R[1][0] * R[2][2] - R[0][2] * R[1][1] * R[2][0];
+
+            sl_state.L[0][0] = (R[1][1] * R[2][2] - R[1][2] * R[2][1]) / det;
+            sl_state.L[1][0] = (R[1][2] * R[2][0] - R[1][0] * R[2][2]) / det;
+            sl_state.L[2][0] = (R[1][0] * R[2][1] - R[1][1] * R[2][0]) / det;
+
+            sl_state.L[0][1] = (R[0][2] * R[2][1] - R[0][1] * R[2][2]) / det;
+            sl_state.L[1][1] = (R[0][0] * R[2][2] - R[0][2] * R[2][0]) / det;
+            sl_state.L[2][1] = (R[0][1] * R[2][0] - R[0][0] * R[2][1]) / det;
+
+            sl_state.L[0][2] = (R[0][1] * R[1][2] - R[0][2] * R[1][1]) / det;
+            sl_state.L[1][2] = (R[0][2] * R[1][0] - R[0][0] * R[1][2]) / det;
+            sl_state.L[2][2] = (R[0][0] * R[1][1] - R[0][1] * R[1][0]) / det;
+
+            for (uint var = 0; var < 3; var++) {
+                sl_state.w_midpt_char[var] = sl_state.L[var][0] * sl_state.ze_at_midpts[bound] +
+                                             sl_state.L[var][1] * sl_state.qx_at_midpts[bound] +
+                                             sl_state.L[var][2] * sl_state.qy_at_midpts[bound];
+
+                sl_state.w_baryctr_char[var][0] = sl_state.L[var][0] * sl_state.ze_at_baryctr +
+                                                  sl_state.L[var][1] * sl_state.qx_at_baryctr +
+                                                  sl_state.L[var][2] * sl_state.qy_at_baryctr;
+
+                sl_state.w_baryctr_char[var][1] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_1] +
+                                                  sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_1] +
+                                                  sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_1];
+
+                sl_state.w_baryctr_char[var][2] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_2] +
+                                                  sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_2] +
+                                                  sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_2];
             }
 
-            double theta_positive = std::min(1.0, negative / positive);
-            double theta_negative = std::min(1.0, positive / negative);
+            double w_tilda;
+            double w_delta;
 
-            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                sl_state.delta[var][bound] = theta_positive * std::max(0.0, sl_state.delta[var][bound]) -
-                                             theta_negative * std::max(0.0, -sl_state.delta[var][bound]);
+            double M = 50;
+            double nu = 1.5;
+
+            for (uint var = 0; var < 3; var++) {
+                w_tilda = sl_state.w_midpt_char[var] - sl_state.w_baryctr_char[var][0];
+
+                w_delta =
+                    sl_state.alpha_1[bound] * (sl_state.w_baryctr_char[var][1] - sl_state.w_baryctr_char[var][0]) +
+                    sl_state.alpha_2[bound] * (sl_state.w_baryctr_char[var][2] - sl_state.w_baryctr_char[var][0]);
+
+                // TVB modified minmod
+                if (std::abs(w_tilda) <= M * sl_state.r_sq[bound]) {
+                    sl_state.delta_char[var] = w_tilda;
+                } else if (std::signbit(w_tilda) == std::signbit(w_delta)) {
+                    sl_state.delta_char[var] =
+                        std::copysign(1.0, w_tilda) * std::min(std::abs(w_tilda), std::abs(nu * w_delta));
+                } else {
+                    sl_state.delta_char[var] = 0.0;
+                }
+            }
+
+            for (uint var = 0; var < 3; var++) {
+                sl_state.delta[var][bound] = sl_state.R[var][0] * sl_state.delta_char[0] +
+                                             sl_state.R[var][1] * sl_state.delta_char[1] +
+                                             sl_state.R[var][2] * sl_state.delta_char[2];
             }
         }
-    }
 
-    Array2D<double> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+        for (uint var = 0; var < 3; var++) {
+            double delta_sum = 0.0;
 
-    for (uint vrtx = 0; vrtx < 3; vrtx++) {
-        sl_state.ze_at_vrtx[vrtx] = sl_state.ze_at_baryctr;
-        sl_state.qx_at_vrtx[vrtx] = sl_state.qx_at_baryctr;
-        sl_state.qy_at_vrtx[vrtx] = sl_state.qy_at_baryctr;
+            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                delta_sum += sl_state.delta[var][bound];
+            }
 
-        for (uint bound = 0; elt.data.get_nbound(); bound++) {
-            sl_state.ze_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[0][bound];
-            sl_state.qx_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[1][bound];
-            sl_state.qy_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[2][bound];
+            if (delta_sum != 0.0) {
+                double positive = 0.0;
+                double negative = 0.0;
+
+                for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                    positive += std::max(0.0, sl_state.delta[var][bound]);
+                    negative += std::max(0.0, -sl_state.delta[var][bound]);
+                }
+
+                double theta_positive = std::min(1.0, negative / positive);
+                double theta_negative = std::min(1.0, positive / negative);
+
+                for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                    sl_state.delta[var][bound] = theta_positive * std::max(0.0, sl_state.delta[var][bound]) -
+                                                 theta_negative * std::max(0.0, -sl_state.delta[var][bound]);
+                }
+            }
         }
-    }
 
-    state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
-    state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
-    state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
+        Array2D<double> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+
+        for (uint vrtx = 0; vrtx < 3; vrtx++) {
+            sl_state.ze_at_vrtx[vrtx] = sl_state.ze_at_baryctr;
+            sl_state.qx_at_vrtx[vrtx] = sl_state.qx_at_baryctr;
+            sl_state.qy_at_vrtx[vrtx] = sl_state.qy_at_baryctr;
+
+            for (uint bound = 0; elt.data.get_nbound(); bound++) {
+                sl_state.ze_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[0][bound];
+                sl_state.qx_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[1][bound];
+                sl_state.qy_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[2][bound];
+            }
+        }
+
+        state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
+        state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
+        state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
     });
 }
 

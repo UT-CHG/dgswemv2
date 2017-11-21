@@ -120,7 +120,7 @@ struct SlopeLimit {
     Point<2> baryctr_coord;
     std::vector<Point<2>> midpts_coord;
     std::vector<Point<2>> baryctr_coord_neigh;
-    
+
     std::vector<double> alpha_1;
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
