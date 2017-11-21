@@ -48,7 +48,8 @@ struct Problem {
     static void initialize_sl_data_kernel(ProblemMeshType& mesh);
 
     // processor kernels
-    static void wetting_drying_kernel(const Stepper& stepper, ProblemMeshType& mesh);
+    template <typename ElementType>
+    static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
 
     static void slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh);
 

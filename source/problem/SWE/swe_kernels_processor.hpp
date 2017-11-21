@@ -4,8 +4,8 @@
 #include "swe_LLF_flux.hpp"
 
 namespace SWE {
-void Problem::wetting_drying_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
-    mesh.CallForEachElement([&stepper](auto& elt) {
+template <typename ElementType>
+void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         const uint stage = stepper.get_stage();
 
         auto& state = elt.data.state[stage];
@@ -146,7 +146,6 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ProblemMeshType& mes
 
             wd_state.water_volume = elt.Integration(internal.h_at_gp);
         }
-    });
 }
 
 void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
