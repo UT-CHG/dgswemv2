@@ -26,14 +26,12 @@ void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
     std::vector<uint> elt_id_data;
     std::vector<bool> wd_data;
 
-    auto extract_element_data_kernel = [&elt_id_data, &wd_data](auto& elt) {
+    mesh.CallForEachElement([&elt_id_data, &wd_data](auto& elt) {
         for (uint cell = 0; cell < N_DIV * N_DIV; cell++) {
             elt_id_data.push_back(elt.GetID());
             wd_data.push_back(elt.data.wet_dry_state.wet);
         }
-    };
-
-    mesh.CallForEachElement(extract_element_data_kernel);
+    });
 
     raw_data_file << "CELL_DATA " << (*cell_data.begin()).size() << std::endl;
 
