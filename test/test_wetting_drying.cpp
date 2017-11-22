@@ -4,9 +4,9 @@
 
 #include "simulation/stepper.hpp"
 
-#include "problem/SWE/swe_source_functions.hpp"
+#include "problem/SWE/function_files/swe_source_functions.hpp"
 #include "problem/SWE/swe_problem.hpp"
-#include "problem/SWE/swe_kernels_processor.hpp"
+#include "problem/SWE/kernels_processor/swe_kernels_processor.hpp"
 
 int main() {
     using Utilities::almost_equal;
