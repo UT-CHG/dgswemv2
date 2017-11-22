@@ -4,7 +4,6 @@
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 namespace SWE {
-template <typename ElementType>
 template <typename InterfaceType>
 void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     auto& wd_state_in = intface.data_in.wet_dry_state;
