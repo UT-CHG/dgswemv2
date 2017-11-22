@@ -46,8 +46,10 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
-
+    if (this->writer.WritingLog()) {
+        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+    }
+    
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };

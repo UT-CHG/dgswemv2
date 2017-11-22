@@ -35,6 +35,9 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
         }
 
+        state.bath - bathymetry[id];
+        wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
+
         state.bath = elt.L2Projection(bathymetry[id]);
 
         elt.ComputeUgp(state.bath, internal.bath_at_gp);
@@ -59,8 +62,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         auto& state_in = intface.data_in.state[0];
         auto& state_ex = intface.data_ex.state[0];
 
-        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
+        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
         intface.ComputeUgpIN(state_in.bath, boundary_in.bath_at_gp);
         intface.ComputeUgpEX(state_ex.bath, boundary_ex.bath_at_gp);

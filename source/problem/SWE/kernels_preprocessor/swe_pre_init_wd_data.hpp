@@ -8,8 +8,8 @@ void Problem::initialize_wd_data_kernel(ProblemMeshType& mesh) {
         auto& internal = elt.data.internal;
         auto& wd_state = elt.data.wet_dry_state;
 
-        elt.ComputeUvrtx(state.bath, wd_state.bath_at_vrtx);
-        wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
+        //elt.ComputeUvrtx(state.bath, wd_state.bath_at_vrtx);
+        //wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
 
         // for testing initialize wet/dry element
         if (state.bath[0] < 0) {
