@@ -7,9 +7,10 @@ namespace SWE {
 void Problem::write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, Array2D<double>>> modal_data;
 
-    mesh.CallForEachElement([&modal_data](auto& elt) { 
-        modal_data.push_back(std::make_pair(elt.GetID(), Array2D<double>{elt.data.state[0].ze, elt.data.state[0].qx,
-                                                                     elt.data.state[0].qy, elt.data.state[0].bath}));
+    mesh.CallForEachElement([&modal_data](auto& elt) {
+        modal_data.push_back(std::make_pair(
+            elt.GetID(),
+            Array2D<double>{elt.data.state[0].ze, elt.data.state[0].qx, elt.data.state[0].qy, elt.data.state[0].bath}));
     });
 
     std::ofstream file;

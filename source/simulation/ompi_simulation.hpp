@@ -10,7 +10,6 @@
 
 #include "writer.hpp"
 
-
 template <typename ProblemType>
 class OMPISimulationUnit {
   private:

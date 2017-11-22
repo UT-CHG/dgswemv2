@@ -13,7 +13,6 @@
 #include "../kernels_processor/swe_kernels_processor.hpp"
 #include "../kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
-
 #include "../../../simulation/ompi_simulation.hpp"
 
 int main(int argc, char* argv[]) {
