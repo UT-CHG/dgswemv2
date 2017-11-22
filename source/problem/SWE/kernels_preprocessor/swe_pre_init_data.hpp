@@ -1,6 +1,9 @@
 #ifndef SWE_PRE_INIT_DATA_HPP
 #define SWE_PRE_INIT_DATA_HPP
 
+#include "swe_pre_init_wd_data.hpp"
+#include "swe_pre_init_sl_data.hpp"
+
 namespace SWE {
 void Problem::initialize_data_kernel(ProblemMeshType& mesh,
                                      const MeshMetaData& mesh_data,
@@ -73,6 +76,10 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         dbound.ComputeUgp(dbound.data.state[0].bath, dbound.data.boundary[dbound.bound_id].bath_at_gp);
     });
+
+    Problem::initialize_wd_data_kernel(mesh);
+
+    //Problem::initialize_sl_data_kernel(mesh);
 }
 }
 
