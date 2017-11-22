@@ -1,4 +1,4 @@
-#include "problem/SWE/swe_inputs.hpp"
+#include "problem/SWE/input/swe_inputs.hpp"
 
 #include "utilities/almost_equal.hpp"
 
