@@ -1,6 +1,3 @@
-#include "general_definitions.hpp"
-#include "swe_definitions.hpp"
-
 #include "../../../general_definitions.hpp"
 #include "../swe_definitions.hpp"
 

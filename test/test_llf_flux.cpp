@@ -1,6 +1,6 @@
 #include "utilities/almost_equal.hpp"
 
-#include "problem/SWE/swe_LLF_flux.hpp"
+#include "problem/SWE/swe_numerical_fluxes.hpp"
 
 #include <iostream>
 
