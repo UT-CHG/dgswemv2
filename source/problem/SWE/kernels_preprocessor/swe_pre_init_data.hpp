@@ -36,7 +36,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
         }
 
-        state.bath - bathymetry[id];
+        state.bath = bathymetry[id];
         wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
 
         state.bath = elt.L2Projection(bathymetry[id]);
