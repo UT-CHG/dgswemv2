@@ -1,16 +1,19 @@
 #include "general_definitions.hpp"
 #include "swe_definitions.hpp"
 
-#include "swe_initial_condition_functions.hpp"
-#include "swe_source_functions.hpp"
-#include "swe_true_solution_functions.hpp"
+#include "../../../general_definitions.hpp"
+#include "../swe_definitions.hpp"
 
-#include "swe_problem.hpp"
-#include "swe_kernels_preprocessor.hpp"
-#include "swe_kernels_processor.hpp"
-#include "swe_kernels_postprocessor.hpp"
+#include "../function_files/swe_initial_condition_functions.hpp"
+#include "../function_files/swe_source_functions.hpp"
+#include "../function_files/swe_true_solution_functions.hpp"
 
-#include "simulation/simulation.hpp"
+#include "../swe_problem.hpp"
+#include "../kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "../kernels_processor/swe_kernels_processor.hpp"
+#include "../kernels_postprocessor/swe_kernels_postprocessor.hpp"
+
+#include "../../../simulation/simulation.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

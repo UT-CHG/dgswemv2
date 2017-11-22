@@ -5,9 +5,9 @@
 #include "../../simulation/writer.hpp"
 
 #include "swe_definitions.hpp"
-#include "swe_boundary_conditions.hpp"
-#include "swe_data.hpp"
-#include "swe_inputs.hpp"
+#include "boundary_conditions/swe_boundary_conditions.hpp"
+#include "data/swe_data.hpp"
+#include "input/swe_inputs.hpp"
 
 #include "../../geometry/mesh_definitions.hpp"
 #include "../../preprocessor/mesh_metadata.hpp"

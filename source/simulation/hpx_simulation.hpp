@@ -1,12 +1,14 @@
 #ifndef HPX_SIMULATION_HPP
 #define HPX_SIMULATION_HPP
 
+#include "../general_definitions.hpp"
+
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
-#include "communication/hpx_communicator.hpp"
-#include "writer.hpp"
+#include "../communication/hpx_communicator.hpp"
+#include "../utilities/file_exists.hpp"
 
-#include "utilities/file_exists.hpp"
+#include "writer.hpp"
 
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {

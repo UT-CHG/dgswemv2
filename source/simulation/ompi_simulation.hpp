@@ -6,9 +6,10 @@
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "../communication/ompi_communicator.hpp"
+#include "../utilities/file_exists.hpp"
+
 #include "writer.hpp"
 
-#include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
 class OMPISimulationUnit {

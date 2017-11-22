@@ -1,7 +1,7 @@
-#ifndef LLF_FLUX_HPP
-#define LLF_FLUX_HPP
+#ifndef SWE_LLF_FLUX_HPP
+#define SWE_LLF_FLUX_HPP
 
-#include "swe_definitions.hpp"
+#include "../swe_definitions.hpp"
 
 namespace SWE {
 // The normal points form the interior side (in) to the exterior side (ex)

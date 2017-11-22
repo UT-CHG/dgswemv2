@@ -1,11 +1,10 @@
 #ifndef OMPI_COMMUNICATOR_HPP
 #define OMPI_COMMUNICATOR_HPP
 
-#include "../general_definitions.hpp"
-
 #include <mpi.h>
 
-#include "preprocessor/mesh_metadata.hpp"
+#include "../general_definitions.hpp"
+#include "../preprocessor/mesh_metadata.hpp"
 
 struct OMPIRankBoundary {
     std::vector<uint> elements;
