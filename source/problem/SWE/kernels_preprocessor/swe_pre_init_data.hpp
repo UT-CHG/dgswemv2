@@ -30,6 +30,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
         auto& state = elt.data.state[0];
         auto& internal = elt.data.internal;
+        auto& wd_state = elt.data.wet_dry_state;
 
         if (!bathymetry.count(id)) {
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
