@@ -79,7 +79,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     Problem::initialize_wd_data_kernel(mesh);
 
-    // Problem::initialize_sl_data_kernel(mesh);
+    Problem::initialize_sl_data_kernel(mesh);
 }
 }
 
