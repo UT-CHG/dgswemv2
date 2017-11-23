@@ -53,7 +53,7 @@ int main(int argc, const char* argv[]) {
 
             nodes[j * (m + 1) + i].coord[0] = x1 + dx * i;
             nodes[j * (m + 1) + i].coord[1] = y1 + dy * j;
-            nodes[j * (m + 1) + i].coord[2] = -1 + (6.0 / 90000) * nodes[j * (m + 1) + i].coord[0];
+            nodes[j * (m + 1) + i].coord[2] = 2; //-1 + (6.0 / 90000) * nodes[j * (m + 1) + i].coord[0];
         }
     }
 
