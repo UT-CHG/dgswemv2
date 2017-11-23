@@ -12,8 +12,11 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
         auto& state = elt.data.state[stage];
         auto& internal = elt.data.internal;
 
+        elt.ComputeUgp(state.ze, internal.ze_at_gp);
+        elt.ComputeUgp(state.qx, internal.qx_at_gp);
+        elt.ComputeUgp(state.qy, internal.qy_at_gp);
+
         // assemble flux
-        // note we assume that the values at gauss points have already been computed
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             internal.ze_flux_at_gp[GlobalCoord::x][gp] = internal.qx_at_gp[gp];
             internal.ze_flux_at_gp[GlobalCoord::y][gp] = internal.qy_at_gp[gp];
