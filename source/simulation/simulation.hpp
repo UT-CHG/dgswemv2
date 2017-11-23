@@ -95,6 +95,8 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh.CallForEachElement(wetting_drying_kernel);
 
+            ProblemType::slope_limiting_kernel(this->stepper, this->mesh);
+
             ++(this->stepper);
         }
 
