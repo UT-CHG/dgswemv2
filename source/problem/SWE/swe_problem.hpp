@@ -49,11 +49,6 @@ struct Problem {
 
     // processor kernels
     template <typename ElementType>
-    static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
-
-    static void slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh);
-
-    template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
@@ -75,10 +70,25 @@ struct Problem {
     static void update_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void swap_states_kernel(const Stepper& stepper, ElementType& elt);
+    static void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt);
+    static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
+
+template <typename ElementType>
+static void slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt)
+
+template <typename InterfaceType>
+static void slope_limiting_prepare_interface_kernel(const Stepper& stepper, InterfaceType& intface)
+
+template <typename BoundaryType>
+static void slope_limiting_prepare_boundary_kernel(const Stepper& stepper, BoundaryType& bound)
+
+template <typename ElementType>
+static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt)
+
+    template <typename ElementType>
+    static void swap_states_kernel(const Stepper& stepper, ElementType& elt);
 
     // postprocessor kernels
     template <typename ElementType>

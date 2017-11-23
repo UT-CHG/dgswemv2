@@ -2,8 +2,8 @@
 #define SWE_PROC_SLOPE_LIMIT_HPP
 
 namespace SWE {
-void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
-    mesh.CallForEachElement([&stepper](auto& elt) {
+template <typename ElementType>
+void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt) {
         const uint stage = stepper.get_stage();
 
         auto& state = elt.data.state[stage];
@@ -16,9 +16,10 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         elt.ComputeUmidpts(state.ze, sl_state.ze_at_midpts);
         elt.ComputeUmidpts(state.qx, sl_state.qx_at_midpts);
         elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
-    });
+}
 
-    mesh.CallForEachInterface([](auto& intface) {
+template <typename InterfaceType>
+void Problem::slope_limiting_prepare_interface_kernel(const Stepper& stepper, InterfaceType& intface) {
         auto& sl_state_in = intface.data_in.slope_limit_state;
         auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
@@ -29,17 +30,19 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.ze_at_baryctr;
         sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qx_at_baryctr;
         sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qy_at_baryctr;
-    });
+}
 
-    mesh.CallForEachBoundary([](auto& bound) {
+template <typename BoundaryType>
+void Problem::slope_limiting_prepare_boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
         auto& sl_state = bound.data.slope_limit_state;
 
         sl_state.ze_at_baryctr_neigh[bound.bound_id] = sl_state.ze_at_baryctr;
         sl_state.qx_at_baryctr_neigh[bound.bound_id] = sl_state.qx_at_baryctr;
         sl_state.qy_at_baryctr_neigh[bound.bound_id] = sl_state.qy_at_baryctr;
-    });
+}
 
-    mesh.CallForEachElement([&stepper](auto& elt) {
+template <typename ElementType>
+void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
         const uint stage = stepper.get_stage();
 
         auto& state = elt.data.state[stage];
@@ -176,7 +179,6 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
         state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
         state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
-    });
 }
 }
 

@@ -60,13 +60,23 @@ void Simulation<ProblemType>::Run() {
 
     auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
     auto scrutinize_solution_kernel = [this](auto& elt) {
         ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
 
+    // THIS SECTION IS PROBLEM SPECIFIC AND NEEDS TO BE AGGREGATED AS SOME OTHER KIND OF KERNEL
     auto wetting_drying_kernel = [this](auto& elt) { ProblemType::wetting_drying_kernel(this->stepper, elt); };
+
+    auto slope_limiting_prepare_element_kernel = [this](auto& elt) { ProblemType::slope_limiting_prepare_element_kernel(this->stepper, elt); };
+    
+    auto slope_limiting_prepare_interface_kernel = [this](auto& intface) { ProblemType::slope_limiting_prepare_interface_kernel(this->stepper, intface); };
+    
+    auto slope_limiting_prepare_boundary_kernel = [this](auto& bound) { ProblemType::slope_limiting_prepare_boundary_kernel(this->stepper, bound); };
+    
+    auto slope_limiting_kernel = [this](auto& elt) { ProblemType::slope_limiting_kernel(this->stepper, elt); };
+    // THIS SECTION IS PROBLEM SPECIFIC AND NEEDS TO BE AGGREGATED AS SOME OTHER KIND OF KERNEL
+
+    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
@@ -93,9 +103,17 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
+            // THIS SECTION IS PROBLEM SPECIFIC AND NEEDS TO BE AGGREGATED AS SOME OTHER KIND OF KERNEL
             this->mesh.CallForEachElement(wetting_drying_kernel);
 
-            ProblemType::slope_limiting_kernel(this->stepper, this->mesh);
+            this->mesh.CallForEachElement(slope_limiting_prepare_element_kernel);
+
+            this->mesh.CallForEachInterface(slope_limiting_prepare_interface_kernel);
+
+            this->mesh.CallForEachBoundary(slope_limiting_prepare_boundary_kernel);
+
+            this->mesh.CallForEachElement(slope_limiting_kernel);
+            // THIS SECTION IS PROBLEM SPECIFIC AND NEEDS TO BE AGGREGATED AS SOME OTHER KIND OF KERNEL
 
             ++(this->stepper);
         }
