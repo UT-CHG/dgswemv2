@@ -34,7 +34,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         if (!bathymetry.count(id)) {
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
         }
-        
+
         state.bath = elt.L2Projection(bathymetry[id]);
 
         elt.ComputeUgp(state.bath, internal.bath_at_gp);

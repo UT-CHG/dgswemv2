@@ -134,13 +134,13 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         wd_state.wet = true;
     }
 
-        elt.ComputeUgp(state.ze, internal.ze_at_gp);
+    elt.ComputeUgp(state.ze, internal.ze_at_gp);
 
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
-        }
+    for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+        internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+    }
 
-        wd_state.water_volume = elt.Integration(internal.h_at_gp);
+    wd_state.water_volume = elt.Integration(internal.h_at_gp);
 }
 }
 

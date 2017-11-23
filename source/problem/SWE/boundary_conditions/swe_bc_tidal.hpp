@@ -17,9 +17,9 @@ class Tidal {
                double& qx_ex,
                double& qy_ex) {
         double ze_0 = 0.2763;
-        double ze_amp = 0;
+        double ze_amp = ze_0;
 
-        ze_amp = ze_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0));  // TANH RAMP
+        // ze_amp = ze_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0));  // TANH RAMP
         /*if (stepper.get_t_at_curr_stage() < 43200.0) {
             ze_amp = ze_0 * stepper.get_t_at_curr_stage() / 43200.0;  // LINEAR RAMPING
         } else {

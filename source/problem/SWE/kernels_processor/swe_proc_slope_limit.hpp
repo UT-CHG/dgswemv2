@@ -18,7 +18,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
     });
 
-/*    mesh.CallForEachInterface([](auto& intface) {
+    mesh.CallForEachInterface([](auto& intface) {
         auto& sl_state_in = intface.data_in.slope_limit_state;
         auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
@@ -166,7 +166,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
             sl_state.qx_at_vrtx[vrtx] = sl_state.qx_at_baryctr;
             sl_state.qy_at_vrtx[vrtx] = sl_state.qy_at_baryctr;
 
-            for (uint bound = 0; elt.data.get_nbound(); bound++) {
+            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
                 sl_state.ze_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[0][bound];
                 sl_state.qx_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[1][bound];
                 sl_state.qy_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[2][bound];
@@ -176,7 +176,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ProblemMeshType& mes
         state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
         state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
         state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
-    });*/
+    });
 }
 }
 
