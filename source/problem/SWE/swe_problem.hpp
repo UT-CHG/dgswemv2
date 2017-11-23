@@ -75,19 +75,14 @@ struct Problem {
     template <typename ElementType>
     static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
 
-template <typename ElementType>
-static void slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt)
-
-template <typename InterfaceType>
-static void slope_limiting_prepare_interface_kernel(const Stepper& stepper, InterfaceType& intface)
-
-template <typename BoundaryType>
-static void slope_limiting_prepare_boundary_kernel(const Stepper& stepper, BoundaryType& bound)
-
-template <typename ElementType>
-static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt)
-
     template <typename ElementType>
+    static void slope_limiting_prepare_element_kernel(const Stepper& stepper,
+                                                      ElementType& elt) template <typename InterfaceType>
+    static void slope_limiting_prepare_interface_kernel(const Stepper& stepper,
+                                                        InterfaceType& intface) template <typename BoundaryType>
+    static void slope_limiting_prepare_boundary_kernel(const Stepper& stepper,
+                                                       BoundaryType& bound) template <typename ElementType>
+    static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt) template <typename ElementType>
     static void swap_states_kernel(const Stepper& stepper, ElementType& elt);
 
     // postprocessor kernels

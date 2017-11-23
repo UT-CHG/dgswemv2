@@ -67,12 +67,18 @@ void Simulation<ProblemType>::Run() {
     // THIS SECTION IS PROBLEM SPECIFIC AND NEEDS TO BE AGGREGATED AS SOME OTHER KIND OF KERNEL
     auto wetting_drying_kernel = [this](auto& elt) { ProblemType::wetting_drying_kernel(this->stepper, elt); };
 
-    auto slope_limiting_prepare_element_kernel = [this](auto& elt) { ProblemType::slope_limiting_prepare_element_kernel(this->stepper, elt); };
-    
-    auto slope_limiting_prepare_interface_kernel = [this](auto& intface) { ProblemType::slope_limiting_prepare_interface_kernel(this->stepper, intface); };
-    
-    auto slope_limiting_prepare_boundary_kernel = [this](auto& bound) { ProblemType::slope_limiting_prepare_boundary_kernel(this->stepper, bound); };
-    
+    auto slope_limiting_prepare_element_kernel = [this](auto& elt) {
+        ProblemType::slope_limiting_prepare_element_kernel(this->stepper, elt);
+    };
+
+    auto slope_limiting_prepare_interface_kernel = [this](auto& intface) {
+        ProblemType::slope_limiting_prepare_interface_kernel(this->stepper, intface);
+    };
+
+    auto slope_limiting_prepare_boundary_kernel = [this](auto& bound) {
+        ProblemType::slope_limiting_prepare_boundary_kernel(this->stepper, bound);
+    };
+
     auto slope_limiting_kernel = [this](auto& elt) { ProblemType::slope_limiting_kernel(this->stepper, elt); };
     // THIS SECTION IS PROBLEM SPECIFIC AND NEEDS TO BE AGGREGATED AS SOME OTHER KIND OF KERNEL
 
