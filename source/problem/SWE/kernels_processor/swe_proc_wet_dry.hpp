@@ -18,8 +18,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
     double h_avg = std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / elt.data.get_nvrtx();
 
-    bool set_wet_element = false;
-    bool set_dry_element = false;
+    bool set_wet_element = true;
     bool check_element = false;
 
     if (h_avg <= Global::h_o) {
@@ -29,7 +28,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
         state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
 
-        set_dry_element = true;
+        set_wet_element = false;
     } else {
         uint n_dry_vrtx = 0;
 
@@ -39,9 +38,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         }
 
         if (n_dry_vrtx == 0) {
-            if (wd_state.wet) {
-                set_wet_element = true;
-            } else {
+            if (!wd_state.wet) {
                 check_element = true;
             }
         } else {
@@ -100,9 +97,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             state.qx = elt.L2Projection(wd_state.qx_at_vrtx);
             state.qy = elt.L2Projection(wd_state.qy_at_vrtx);
 
-            if (wd_state.wet) {
-                set_wet_element = true;
-            } else {
+            if (!wd_state.wet) {
                 check_element = true;
             }
         }
@@ -113,15 +108,15 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             double ze_h_max_vrtx = wd_state.ze_at_vrtx[h_max_vrtx];
 
-            if (ze_h_max_vrtx > Global::h_o - wd_state.bath_min) {
-                set_wet_element = true;
-            } else {
-                set_dry_element = true;
+            if (ze_h_max_vrtx <= Global::h_o - wd_state.bath_min) {
+                set_wet_element = false;
             }
         };
     }
 
-    if (set_dry_element) {
+    if (set_wet_element) {
+        wd_state.wet = true;
+    } else {
         wd_state.wet = false;
 
         std::fill(state.qx.begin(), state.qx.end(), 0.0);
@@ -130,10 +125,8 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
         std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
         std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
-    } else if (set_wet_element) {
-        wd_state.wet = true;
     }
-
+    
     elt.ComputeUgp(state.ze, internal.ze_at_gp);
 
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
