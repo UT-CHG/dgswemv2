@@ -16,7 +16,7 @@ class Tidal {
                double& ze_ex,
                double& qx_ex,
                double& qy_ex) {
-        double ze_0 = 0.2763;
+        double ze_0 = 0.3;
         double ze_amp = ze_0;
 
         ze_amp = ze_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0));  // TANH RAMP
@@ -26,7 +26,7 @@ class Tidal {
             ze_amp = ze_0;
         }*/
 
-        ze_ex = 0.01 + ze_amp;  //* cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0);  // M2
+        ze_ex = ze_amp;  //* cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0);  // M2
         qx_ex = qx_in[gp];
         qy_ex = qy_in[gp];
     }

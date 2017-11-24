@@ -1,5 +1,5 @@
-#ifndef SWE_PROC_SLOPE_LIMIT_HPP
-#define SWE_PROC_SLOPE_LIMIT_HPP
+#ifndef SWE_POST_SLOPE_LIMIT_HPP
+#define SWE_POST_SLOPE_LIMIT_HPP
 
 namespace SWE {
 template <typename ElementType>

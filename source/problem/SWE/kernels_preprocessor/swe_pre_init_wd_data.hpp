@@ -20,17 +20,17 @@ void Problem::initialize_wd_data_kernel(ProblemMeshType& mesh) {
         bool set_wet_element = true;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if(wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
+            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
                 wd_state.ze_at_vrtx[vrtx] = Global::h_o - wd_state.bath_at_vrtx[vrtx];
 
                 set_wet_element = false;
             }
         }
 
-        if(set_wet_element) {
+        if (set_wet_element) {
             wd_state.wet = true;
         } else {
-            wd_state.wet = false;            
+            wd_state.wet = false;
 
             state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
             std::fill(state.qx.begin(), state.qx.end(), 0.0);

@@ -6,7 +6,7 @@
 
 #include "problem/SWE/function_files/swe_source_functions.hpp"
 #include "problem/SWE/swe_problem.hpp"
-#include "problem/SWE/kernels_processor/swe_kernels_processor.hpp"
+#include "problem/SWE/kernels_postprocessor/swe_post_wet_dry.hpp"
 
 int main() {
     using Utilities::almost_equal;

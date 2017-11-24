@@ -7,7 +7,5 @@
 #include "swe_proc_bound.hpp"
 #include "swe_proc_dbound.hpp"
 #include "swe_proc_update.hpp"
-#include "swe_proc_wet_dry.hpp"
-#include "swe_proc_slope_limit.hpp"
 
 #endif

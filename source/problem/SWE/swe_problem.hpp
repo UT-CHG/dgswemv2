@@ -6,8 +6,8 @@
 
 #include "swe_definitions.hpp"
 #include "boundary_conditions/swe_boundary_conditions.hpp"
-#include "data/swe_data.hpp"
-#include "input/swe_inputs.hpp"
+#include "data_structure/swe_data.hpp"
+#include "problem_input/swe_inputs.hpp"
 
 #include "../../geometry/mesh_definitions.hpp"
 #include "../../preprocessor/mesh_metadata.hpp"
@@ -73,6 +73,12 @@ struct Problem {
     static void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
+    static void swap_states_kernel(const Stepper& stepper, ElementType& elt);
+
+    // postprocessor kernels
+    static void step_postprocessor_kernel(const Stepper& stepper, ProblemMeshType& mesh);
+
+    template <typename ElementType>
     static void wetting_drying_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
@@ -87,10 +93,6 @@ struct Problem {
     template <typename ElementType>
     static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt);
 
-    template <typename ElementType>
-    static void swap_states_kernel(const Stepper& stepper, ElementType& elt);
-
-    // postprocessor kernels
     static void write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
     static void write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& mesh, const std::string& output_path);
