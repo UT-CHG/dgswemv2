@@ -6,9 +6,9 @@
 #include "manufactured_swe_true_solution_functions.hpp"
 
 #include "problem/SWE/swe_problem.hpp"
-#include "problem/SWE/swe_kernels_preprocessor.hpp"
-#include "problem/SWE/swe_kernels_processor.hpp"
-#include "problem/SWE/swe_kernels_postprocessor.hpp"
+#include "problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "problem/SWE/kernels_processor/swe_kernels_processor.hpp"
+#include "problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/simulation.hpp"
 

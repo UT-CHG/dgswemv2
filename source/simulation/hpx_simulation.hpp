@@ -1,17 +1,19 @@
 #ifndef HPX_SIMULATION_HPP
 #define HPX_SIMULATION_HPP
 
+#include "../general_definitions.hpp"
+
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
-#include "communication/hpx_communicator.hpp"
-#include "writer.hpp"
+#include "../communication/hpx_communicator.hpp"
+#include "../utilities/file_exists.hpp"
 
-#include "utilities/file_exists.hpp"
+#include "writer.hpp"
 
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
   private:
-    InputParameters<typename ProblemType::InputType> input;
+    InputParameters<typename ProblemType::ProblemInputType> input;
 
     Stepper stepper;
     Writer<ProblemType> writer;
@@ -94,6 +96,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
+    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+
     hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
@@ -106,6 +110,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
     this->mesh.CallForEachInterface(interface_kernel);
 
+    this->mesh.CallForEachBoundary(boundary_kernel);
+
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work before receive" << std::endl
                                   << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
@@ -117,8 +123,6 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
             this->writer.GetLogFile() << "Starting work after receive" << std::endl;
         }
 
-        auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
         auto distributed_boundary_kernel = [this](auto& dbound) {
             ProblemType::distributed_boundary_kernel(this->stepper, dbound);
         };
@@ -128,8 +132,6 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         auto scrutinize_solution_kernel = [this](auto& elt) {
             ProblemType::scrutinize_solution_kernel(this->stepper, elt);
         };
-
-        this->mesh.CallForEachBoundary(boundary_kernel);
 
         this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
 
@@ -213,7 +215,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
         const uint locality_id = hpx::get_locality_id();
         const hpx::naming::id_type here = hpx::find_here();
 
-        InputParameters<typename ProblemType::InputType> input(input_string);
+        InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;

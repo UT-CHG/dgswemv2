@@ -6,14 +6,14 @@
 #include "../preprocessor/input_parameters.hpp"
 #include "../preprocessor/initialize_mesh.hpp"
 #include "../communication/ompi_communicator.hpp"
-#include "writer.hpp"
+#include "../utilities/file_exists.hpp"
 
-#include "utilities/file_exists.hpp"
+#include "writer.hpp"
 
 template <typename ProblemType>
 class OMPISimulationUnit {
   private:
-    InputParameters<typename ProblemType::InputType> input;
+    InputParameters<typename ProblemType::ProblemInputType> input;
 
     Stepper stepper;
     Writer<ProblemType> writer;
@@ -109,11 +109,15 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
 
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
+    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+
     this->mesh.CallForEachElement(volume_kernel);
 
     this->mesh.CallForEachElement(source_kernel);
 
     this->mesh.CallForEachInterface(interface_kernel);
+
+    this->mesh.CallForEachBoundary(boundary_kernel);
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work before receive" << std::endl;
@@ -133,8 +137,6 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
         this->writer.GetLogFile() << "Starting work after receive" << std::endl;
     }
 
-    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
     auto distributed_boundary_kernel = [this](auto& dbound) {
         ProblemType::distributed_boundary_kernel(this->stepper, dbound);
     };
@@ -144,8 +146,6 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
     auto scrutinize_solution_kernel = [this](auto& elt) {
         ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
-
-    this->mesh.CallForEachBoundary(boundary_kernel);
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
 
@@ -203,7 +203,7 @@ class OMPISimulation {
         int locality_id;
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
-        InputParameters<typename ProblemType::InputType> input(input_string);
+        InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
         this->n_steps = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;

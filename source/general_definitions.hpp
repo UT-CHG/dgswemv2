@@ -10,6 +10,7 @@
 #include <cmath>
 #include <functional>
 #include <algorithm>
+#include <numeric>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
@@ -120,6 +121,10 @@ class Master {
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
 
+    std::vector<double> phi_baryctr;
+    Array2D<double> phi_midpts;
+    Array2D<double> phi_vrtx;
+
     Array2D<double> int_fact_phi;
     Array3D<double> int_fact_dphi;
 
@@ -147,6 +152,9 @@ class Shape {
     Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
     virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
+
+    virtual Point<dimension> GetBarycentricCoordinates() = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
 
     virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) = 0;
     virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) = 0;

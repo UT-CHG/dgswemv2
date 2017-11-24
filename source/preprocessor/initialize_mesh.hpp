@@ -20,7 +20,7 @@ template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      const MeshMetaData& mesh_data,
                      Communicator& communicator,
-                     const typename ProblemType::InputType& problem_specific_input,
+                     const typename ProblemType::ProblemInputType& problem_specific_input,
                      Writer<ProblemType>& writer) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data, writer);
 

@@ -8,7 +8,7 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    InputParameters<typename ProblemType::InputType> input;
+    InputParameters<typename ProblemType::ProblemInputType> input;
 
     Stepper stepper;
     Writer<ProblemType> writer;
@@ -46,7 +46,9 @@ class Simulation {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+    if (this->writer.WritingLog()) {
+        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+    }
 
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
@@ -58,11 +60,11 @@ void Simulation<ProblemType>::Run() {
 
     auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
     auto scrutinize_solution_kernel = [this](auto& elt) {
         ProblemType::scrutinize_solution_kernel(this->stepper, elt);
     };
+
+    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
@@ -89,13 +91,15 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
+            ProblemType::step_postprocessor_kernel(this->stepper, this->mesh);
+
             ++(this->stepper);
         }
 
         this->mesh.CallForEachElement(swap_states_kernel);
 
         if (this->writer.WritingOutput()) {
-            this->writer.WriteOutput(this->stepper, mesh);
+            this->writer.WriteOutput(this->stepper, this->mesh);
         }
     }
 #ifdef RESL2

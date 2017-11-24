@@ -1,8 +1,8 @@
 #ifndef SWE_INPUTS_HPP
 #define SWE_INPUTS_HPP
 
+#include "../../../general_definitions.hpp"
 #include <yaml-cpp/yaml.h>
-#include "../../general_definitions.hpp"
 
 namespace SWE {
 enum class BottomFrictionType {

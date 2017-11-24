@@ -39,6 +39,7 @@ class Element {
         std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries);
 
     uint GetID() { return this->ID; }
+    ShapeType& GetShape() { return this->shape; }
 
     template <typename F>
     std::vector<double> L2Projection(const F& f);
@@ -49,11 +50,15 @@ class Element {
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
+    void ComputeUbaryctr(const std::vector<double>& u, double& u_baryctr);
+    void ComputeUmidpts(const std::vector<double>& u, std::vector<double>& u_midpts);
+    void ComputeUvrtx(const std::vector<double>& u, std::vector<double>& u_vrtx);
+
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
     double IntegrationDPhi(const uint dir, const uint dof, const std::vector<double>& u_gp);
 
-    std::vector<double> SolveLSE(const std::vector<double>& rhs);
+    std::vector<double> ApplyMinv(const std::vector<double>& rhs);
 
     void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
     void WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data);
@@ -141,9 +146,10 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
         // Placeholder for nonconstant Jacobian
     }
 
+    this->data.set_nvrtx((*this->master.phi_vrtx.begin()).size());
+    this->data.set_nbound(this->boundary_type.size());
     this->data.set_ndof(this->master.phi_gp.size());
     this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
-    this->data.set_nbound(this->boundary_type.size());
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -177,44 +183,32 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
 std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f) {
-    std::vector<double> projection;
+    std::vector<double> rhs;
 
     std::vector<double> f_vals(this->gp_global_coordinates.size());
 
     this->ComputeFgp(f, f_vals);
 
-    if (this->m_inv.first) {  // diagonal
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[0][dof]);
-        }
-    } else if (!(this->m_inv.first)) {  // not diagonal
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            projection.push_back(this->IntegrationPhi(dof, f_vals) * this->m_inv.second[dof][dof]);
-        }
+    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+        rhs.push_back(this->IntegrationPhi(dof, f_vals));
     }
 
-    return projection;
+    return this->ApplyMinv(rhs);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(
     const std::vector<double>& nodal_values) {
-    std::vector<double> projection;
+    std::vector<double> rhs;
 
     std::vector<double> interpolation =
         this->shape.InterpolateNodalValues(nodal_values, this->master.integration_rule.second);
 
-    if (this->m_inv.first) {  // diagonal
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[0][dof]);
-        }
-    } else if (!(this->m_inv.first)) {  // not diagonal
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            projection.push_back(this->IntegrationPhi(dof, interpolation) * this->m_inv.second[dof][dof]);
-        }
+    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+        rhs.push_back(this->IntegrationPhi(dof, interpolation));
     }
 
-    return projection;
+    return this->ApplyMinv(rhs);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -246,6 +240,40 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < du_gp.size(); gp++) {
             du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUbaryctr(const std::vector<double>& u,
+                                                                                 double& u_baryctr) {
+    u_baryctr = 0.0;
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        u_baryctr += u[dof] * this->master.phi_baryctr[dof];
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUmidpts(const std::vector<double>& u,
+                                                                                std::vector<double>& u_midpts) {
+    std::fill(u_midpts.begin(), u_midpts.end(), 0.0);
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint midpt = 0; midpt < u_midpts.size(); midpt++) {
+            u_midpts[midpt] += u[dof] * this->master.phi_midpts[dof][midpt];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUvrtx(const std::vector<double>& u,
+                                                                              std::vector<double>& u_vrtx) {
+    std::fill(u_vrtx.begin(), u_vrtx.end(), 0.0);
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint vrtx = 0; vrtx < u_vrtx.size(); vrtx++) {
+            u_vrtx[vrtx] += u[dof] * this->master.phi_vrtx[dof][vrtx];
         }
     }
 }
@@ -287,7 +315,7 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDP
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::SolveLSE(
+inline std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(
     const std::vector<double>& rhs) {
     std::vector<double> solution;
 

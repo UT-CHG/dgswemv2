@@ -5,6 +5,38 @@ bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
     return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 }
 
+Point<2> StraightTriangle::GetBarycentricCoordinates() {
+    Point<2> baryctr_coord;
+
+    baryctr_coord[GlobalCoord::x] =
+        (this->nodal_coordinates[0][GlobalCoord::x] + this->nodal_coordinates[1][GlobalCoord::x] +
+         this->nodal_coordinates[2][GlobalCoord::x]) /
+        3.0;
+
+    baryctr_coord[GlobalCoord::y] =
+        (this->nodal_coordinates[0][GlobalCoord::y] + this->nodal_coordinates[1][GlobalCoord::y] +
+         this->nodal_coordinates[2][GlobalCoord::y]) /
+        3.0;
+
+    return baryctr_coord;
+}
+
+std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
+    std::vector<Point<2>> midpoint_coord(3);
+
+    for (uint midpt = 0; midpt < 3; midpt++) {
+        midpoint_coord[midpt][GlobalCoord::x] = (this->nodal_coordinates[(midpt + 1) % 3][GlobalCoord::x] +
+                                                 this->nodal_coordinates[(midpt + 2) % 3][GlobalCoord::x]) /
+                                                2.0;
+
+        midpoint_coord[midpt][GlobalCoord::y] = (this->nodal_coordinates[(midpt + 1) % 3][GlobalCoord::y] +
+                                                 this->nodal_coordinates[(midpt + 2) % 3][GlobalCoord::y]) /
+                                                2.0;
+    }
+
+    return midpoint_coord;
+}
+
 std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) {
     std::vector<double> J_det;
 
