@@ -8,8 +8,6 @@
 
 namespace SWE {
 void Problem::step_postprocessor_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
-    auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
-
     auto slope_limiting_prepare_element_kernel = [&stepper](auto& elt) {
         Problem::slope_limiting_prepare_element_kernel(stepper, elt);
     };
@@ -24,7 +22,7 @@ void Problem::step_postprocessor_kernel(const Stepper& stepper, ProblemMeshType&
 
     auto slope_limiting_kernel = [&stepper](auto& elt) { Problem::slope_limiting_kernel(stepper, elt); };
 
-    mesh.CallForEachElement(wetting_drying_kernel);
+    auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
 
     mesh.CallForEachElement(slope_limiting_prepare_element_kernel);
 
@@ -33,6 +31,8 @@ void Problem::step_postprocessor_kernel(const Stepper& stepper, ProblemMeshType&
     mesh.CallForEachBoundary(slope_limiting_prepare_boundary_kernel);
 
     mesh.CallForEachElement(slope_limiting_kernel);
+
+    mesh.CallForEachElement(wetting_drying_kernel);
 }
 }
 

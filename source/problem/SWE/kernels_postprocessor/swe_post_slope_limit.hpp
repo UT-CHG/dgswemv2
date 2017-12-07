@@ -108,7 +108,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
         double w_tilda;
         double w_delta;
 
-        double M = 50;
+        double M = 0.0e-7;
         double nu = 1.5;
 
         for (uint var = 0; var < 3; var++) {
