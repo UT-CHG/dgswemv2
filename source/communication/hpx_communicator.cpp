@@ -85,3 +85,20 @@ hpx::future<void> HPXCommunicator::ReceiveAll(const uint timestamp) {
 
     return hpx::when_all(receive_futures);
 }
+
+void HPXCommunicator::SendPostprocAll(const uint timestamp) {
+    for (auto& rank_boundary : this->rank_boundaries) {
+        rank_boundary.send_postproc(timestamp);
+    }
+}
+
+hpx::future<void> HPXCommunicator::ReceivePostprocAll(const uint timestamp) {
+    std::vector<hpx::future<void>> receive_futures;
+    receive_futures.reserve(this->rank_boundaries.size());
+
+    for (auto& rank_boundary : this->rank_boundaries) {
+        receive_futures.push_back(rank_boundary.receive_postproc(timestamp));
+    }
+
+    return hpx::when_all(receive_futures);
+}

@@ -6,11 +6,11 @@
 
 mesh:
   format: Adcirc
-  file_name: /h2/kazbek/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.14
+  file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.14
 
 timestepping:
   dt: 1                           #in seconds
-  end_time: 144200                 #in seconds
+  end_time: 5                 #in seconds
   order: 2
   nstages: 2
 

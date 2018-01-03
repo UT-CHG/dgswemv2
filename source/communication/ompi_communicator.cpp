@@ -61,6 +61,9 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
 
     this->send_requests.resize(this->rank_boundaries.size());
     this->receive_requests.resize(this->rank_boundaries.size());
+
+    this->send_postproc_requests.resize(this->rank_boundaries.size());
+    this->receive_postproc_requests.resize(this->rank_boundaries.size());
 }
 
 void OMPICommunicator::InitializeCommunication() {
@@ -82,5 +85,21 @@ void OMPICommunicator::InitializeCommunication() {
                       rank_boundary.receive_tag,
                       MPI_COMM_WORLD,
                       &this->receive_requests.at(rank_boundary_id));
+
+        MPI_Send_init(&rank_boundary.send_postproc_buffer.front(),
+                      rank_boundary.send_postproc_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.send_rank,
+                      rank_boundary.send_tag,
+                      MPI_COMM_WORLD,
+                      &this->send_postproc_requests.at(rank_boundary_id));
+
+        MPI_Recv_init(&rank_boundary.receive_postproc_buffer.front(),
+                      rank_boundary.receive_postproc_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.receive_rank,
+                      rank_boundary.receive_tag,
+                      MPI_COMM_WORLD,
+                      &this->receive_postproc_requests.at(rank_boundary_id));
     }
 }

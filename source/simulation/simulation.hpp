@@ -91,7 +91,7 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-            ProblemType::step_postprocessor_kernel(this->stepper, this->mesh);
+            ProblemType::postprocessor_serial_kernel(this->stepper, this->mesh);
 
             ++(this->stepper);
         }

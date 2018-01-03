@@ -55,6 +55,11 @@ class OMPISimulationUnit {
     void PostReceiveStage();
     void WaitAllSends();
 
+    void ExchangePostprocData();
+    void PreReceivePostprocStage();
+    void PostReceivePostprocStage();
+    void WaitAllPostprocSends();
+
     void Step();
 
     void ResidualL2();
@@ -84,6 +89,8 @@ void OMPISimulationUnit<ProblemType>::ExchangeData() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
                                   << this->stepper.get_stage() << ')' << std::endl;
+
+        this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
 
     auto distributed_boundary_send_kernel = [this](auto& dbound) {
@@ -153,8 +160,6 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 
     this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
-    ++(this->stepper);
-
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
     }
@@ -163,6 +168,59 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::WaitAllSends() {
     this->communicator.WaitAllSends(this->stepper.get_timestamp());
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::ExchangePostprocData() {
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
+    }
+
+    this->communicator.ReceivePostprocAll(this->stepper.get_timestamp());
+
+    ProblemType::postprocessor_parallel_pre_send_kernel(this->stepper, this->mesh);
+
+    this->communicator.SendPostprocAll(this->stepper.get_timestamp());
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::PreReceivePostprocStage() {
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
+    }
+
+    ProblemType::postprocessor_parallel_pre_receive_kernel(this->stepper, this->mesh);
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Finished postprocessor work before receive" << std::endl;
+    }
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::PostReceivePostprocStage() {
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting to wait on postprocessor receive with timestamp: " << this->stepper.get_timestamp()
+                                  << std::endl;
+    }
+
+    this->communicator.WaitAllPostprocReceives(this->stepper.get_timestamp());
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
+    }
+
+    ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
+
+    ++(this->stepper);
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Finished postprocessor work after receive" << std::endl << std::endl;
+    }
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::WaitAllPostprocSends() {
+    this->communicator.WaitAllPostprocSends(this->stepper.get_timestamp());
 }
 
 template <typename ProblemType>
@@ -260,6 +318,22 @@ void OMPISimulation<ProblemType>::Run() {
 
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                     this->simulation_units[sim_unit_id]->WaitAllSends();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->ExchangePostprocData();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->PreReceivePostprocStage();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->PostReceivePostprocStage();
+                }
+
+                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+                    this->simulation_units[sim_unit_id]->WaitAllPostprocSends();
                 }
             }
 

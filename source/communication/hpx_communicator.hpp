@@ -21,11 +21,21 @@ struct HPXRankBoundary {
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
 
+    std::vector<double> send_postproc_buffer;
+    std::vector<double> receive_postproc_buffer;
+
     void send(uint timestamp) { outgoing.set(send_buffer, timestamp); }
 
     hpx::future<void> receive(uint timestamp) {
         return incoming.get(timestamp)
             .then([this](hpx::future<array_double> msg_future) { this->receive_buffer = msg_future.get(); });
+    }
+
+    void send_postproc(uint timestamp) { outgoing.set(send_postproc_buffer, timestamp); }
+
+    hpx::future<void> receive_postproc(uint timestamp) {
+        return incoming.get(timestamp)
+            .then([this](hpx::future<array_double> msg_future) { this->receive_postproc_buffer = msg_future.get(); });
     }
 };
 
@@ -42,6 +52,9 @@ class HPXCommunicator {
 
     void SendAll(const uint timestamp);
     hpx::future<void> ReceiveAll(const uint timestamp);
+
+    void SendPostprocAll(const uint timestamp);
+    hpx::future<void> ReceivePostprocAll(const uint timestamp);
 
   public:
     using RankBoundaryType = HPXRankBoundary;

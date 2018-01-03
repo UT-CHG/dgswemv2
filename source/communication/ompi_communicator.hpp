@@ -19,6 +19,9 @@ struct OMPIRankBoundary {
 
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
+
+    std::vector<double> send_postproc_buffer;
+    std::vector<double> receive_postproc_buffer;
 };
 
 class OMPICommunicator {
@@ -27,6 +30,9 @@ class OMPICommunicator {
 
     std::vector<MPI_Request> send_requests;
     std::vector<MPI_Request> receive_requests;
+
+    std::vector<MPI_Request> send_postproc_requests;
+    std::vector<MPI_Request> receive_postproc_requests;
 
   public:
     OMPICommunicator() = default;
@@ -49,6 +55,20 @@ class OMPICommunicator {
 
     void WaitAllReceives(const uint timestamp) {
         MPI_Waitall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE);
+    }
+
+    void SendPostprocAll(const uint timestamp) { MPI_Startall(this->send_postproc_requests.size(), &this->send_postproc_requests.front()); }
+
+    void ReceivePostprocAll(const uint timestamp) {
+        MPI_Startall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front());
+    }
+
+    void WaitAllPostprocSends(const uint timestamp) {
+        MPI_Waitall(this->send_postproc_requests.size(), &this->send_postproc_requests.front(), MPI_STATUSES_IGNORE);
+    }
+
+    void WaitAllPostprocReceives(const uint timestamp) {
+        MPI_Waitall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front(), MPI_STATUSES_IGNORE);
     }
 
   public:

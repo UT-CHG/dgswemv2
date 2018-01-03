@@ -25,9 +25,17 @@ void Problem::create_distributed_boundaries_kernel(
         std::vector<double>& send_buffer_reference = rank_boundary.send_buffer;
         std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
 
+        std::vector<double>& send_postproc_buffer_reference = rank_boundary.send_postproc_buffer;
+        std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
+
         uint element_id, bound_id, p, ngp, ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
 
+        uint ze_at_baryctr_in_index, qx_at_baryctr_in_index, qy_at_baryctr_in_index, bath_at_baryctr_in_index;
+        uint ze_at_baryctr_ex_index, qx_at_baryctr_ex_index, qy_at_baryctr_ex_index, bath_at_baryctr_ex_index;
+
         uint begin_index = 0;
+        uint begin_index_postproc = 0;
+        
         for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
             element_id = rank_boundary.elements.at(dboundary_id);
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
@@ -44,21 +52,47 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp;
 
+            ze_at_baryctr_in_index = begin_index_postproc;
+            qx_at_baryctr_in_index = begin_index_postproc + 1;
+            qy_at_baryctr_in_index = begin_index_postproc + 2;
+            bath_at_baryctr_in_index = begin_index_postproc + 3;
+
+            ze_at_baryctr_ex_index = begin_index_postproc;
+            qx_at_baryctr_ex_index = begin_index_postproc + 1;
+            qy_at_baryctr_ex_index = begin_index_postproc + 2;
+            bath_at_baryctr_ex_index = begin_index_postproc + 3;
+
+            begin_index_postproc += 4;
+
             auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
             pre_dboundary.p = p;
 
             mesh.template CreateDistributedBoundary<DistributedBoundaryType>(pre_dboundary,
                                                                              SWE::Distributed(send_buffer_reference,
                                                                                               receive_buffer_reference,
+                                                                                              send_postproc_buffer_reference,
+                                                                                              receive_postproc_buffer_reference,
                                                                                               ze_in_index,
                                                                                               qx_in_index,
                                                                                               qy_in_index,
                                                                                               ze_ex_index,
                                                                                               qx_ex_index,
-                                                                                              qy_ex_index));
+                                                                                              qy_ex_index,
+            ze_at_baryctr_in_index,
+            qx_at_baryctr_in_index,
+            qy_at_baryctr_in_index,
+            bath_at_baryctr_in_index,
+            ze_at_baryctr_ex_index,
+            qx_at_baryctr_ex_index,
+            qy_at_baryctr_ex_index,
+            bath_at_baryctr_ex_index));
         }
+
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
+
+        send_postproc_buffer_reference.resize(begin_index_postproc);
+        receive_postproc_buffer_reference.resize(begin_index_postproc);
     }
 
     if (writer.WritingLog()) {

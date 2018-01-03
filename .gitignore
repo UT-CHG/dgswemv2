@@ -13,3 +13,4 @@ test/files_for_testing/correct_input_no_output.15.emitted
 scripts/build/config-kazbek.txt
 documentation/html
 documentation/latex
+.DS_Store
