@@ -199,8 +199,8 @@ void OMPISimulationUnit<ProblemType>::PreReceivePostprocStage() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceivePostprocStage() {
     if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Starting to wait on postprocessor receive with timestamp: " << this->stepper.get_timestamp()
-                                  << std::endl;
+        this->writer.GetLogFile() << "Starting to wait on postprocessor receive with timestamp: "
+                                  << this->stepper.get_timestamp() << std::endl;
     }
 
     this->communicator.WaitAllPostprocReceives(this->stepper.get_timestamp());

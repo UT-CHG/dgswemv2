@@ -35,7 +35,7 @@ class Distributed {
     Distributed(std::vector<double>& send_buffer,
                 std::vector<double>& receive_buffer,
                 std::vector<double>& send_postproc_buffer,
-                std::vector<double>& receive_postproc_buffer,                
+                std::vector<double>& receive_postproc_buffer,
                 const uint ze_in_index,
                 const uint qx_in_index,
                 const uint qy_in_index,
@@ -59,7 +59,7 @@ class Distributed {
           qy_in_index(qy_in_index),
           ze_ex_index(ze_ex_index),
           qx_ex_index(qx_ex_index),
-          qy_ex_index(qy_ex_index), 
+          qy_ex_index(qy_ex_index),
           ze_at_baryctr_in_index(ze_at_baryctr_in_index),
           qx_at_baryctr_in_index(qx_at_baryctr_in_index),
           qy_at_baryctr_in_index(qy_at_baryctr_in_index),
@@ -91,14 +91,20 @@ class Distributed {
         qy_ex = this->receive_buffer[qy_ex_index - gp];
     }
 
-    void SetPostprocEX(const double ze_at_baryctr_in, const double qx_at_baryctr_in, const double qy_at_baryctr_in, const double bath_at_baryctr_in) {
-            this->send_postproc_buffer[ze_at_baryctr_in_index] = ze_at_baryctr_in;
-            this->send_postproc_buffer[qx_at_baryctr_in_index] = qx_at_baryctr_in;
-            this->send_postproc_buffer[qy_at_baryctr_in_index] = qy_at_baryctr_in;
-            this->send_postproc_buffer[bath_at_baryctr_in_index] = bath_at_baryctr_in;
+    void SetPostprocEX(const double ze_at_baryctr_in,
+                       const double qx_at_baryctr_in,
+                       const double qy_at_baryctr_in,
+                       const double bath_at_baryctr_in) {
+        this->send_postproc_buffer[ze_at_baryctr_in_index] = ze_at_baryctr_in;
+        this->send_postproc_buffer[qx_at_baryctr_in_index] = qx_at_baryctr_in;
+        this->send_postproc_buffer[qy_at_baryctr_in_index] = qy_at_baryctr_in;
+        this->send_postproc_buffer[bath_at_baryctr_in_index] = bath_at_baryctr_in;
     }
 
-    void GetPostprocEX(double& ze_at_baryctr_ex, double& qx_at_baryctr_ex, double& qy_at_baryctr_ex, double& bath_at_baryctr_ex) {
+    void GetPostprocEX(double& ze_at_baryctr_ex,
+                       double& qx_at_baryctr_ex,
+                       double& qy_at_baryctr_ex,
+                       double& bath_at_baryctr_ex) {
         ze_at_baryctr_ex = this->receive_postproc_buffer[ze_at_baryctr_ex_index];
         qx_at_baryctr_ex = this->receive_postproc_buffer[qx_at_baryctr_ex_index];
         qy_at_baryctr_ex = this->receive_postproc_buffer[qy_at_baryctr_ex_index];

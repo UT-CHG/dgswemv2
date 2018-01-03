@@ -28,11 +28,11 @@ int main(int argc, const char* argv[]) {
     double y1 = 10000. + 43200. * 1.;
     double y2 = 53200. + 43200. * 1.;
 
-    //double x1 = 0;
-    //double x2 = 90000;
+    // double x1 = 0;
+    // double x2 = 90000;
 
-    //double y1 = 0;
-    //double y2 = 6000;
+    // double y1 = 0;
+    // double y2 = 6000;
 
     double L = x2 - x1;
     double W = y2 - y1;
@@ -53,7 +53,7 @@ int main(int argc, const char* argv[]) {
 
             nodes[j * (m + 1) + i].coord[0] = x1 + dx * i;
             nodes[j * (m + 1) + i].coord[1] = y1 + dy * j;
-            nodes[j * (m + 1) + i].coord[2] = 2; //-1 + (6.0 / 90000) * nodes[j * (m + 1) + i].coord[0];
+            nodes[j * (m + 1) + i].coord[2] = 2;  //-1 + (6.0 / 90000) * nodes[j * (m + 1) + i].coord[0];
         }
     }
 

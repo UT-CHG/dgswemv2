@@ -45,16 +45,19 @@ template <typename DistributedBoundaryType>
 void Problem::slope_limiting_distributed_boundary_send_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
     auto& sl_state = dbound.data.slope_limit_state;
 
-    dbound.boundary_condition.SetPostprocEX(sl_state.ze_at_baryctr, sl_state.qx_at_baryctr, 
-                                            sl_state.qy_at_baryctr, sl_state.bath_at_baryctr);
+    dbound.boundary_condition.SetPostprocEX(
+        sl_state.ze_at_baryctr, sl_state.qx_at_baryctr, sl_state.qy_at_baryctr, sl_state.bath_at_baryctr);
 }
 
 template <typename DistributedBoundaryType>
-void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper,
+                                                                 DistributedBoundaryType& dbound) {
     auto& sl_state = dbound.data.slope_limit_state;
 
-    dbound.boundary_condition.GetPostprocEX(sl_state.ze_at_baryctr_neigh[dbound.bound_id], sl_state.qx_at_baryctr_neigh[dbound.bound_id], 
-                                            sl_state.qy_at_baryctr_neigh[dbound.bound_id], sl_state.bath_at_baryctr_neigh[dbound.bound_id]);    
+    dbound.boundary_condition.GetPostprocEX(sl_state.ze_at_baryctr_neigh[dbound.bound_id],
+                                            sl_state.qx_at_baryctr_neigh[dbound.bound_id],
+                                            sl_state.qy_at_baryctr_neigh[dbound.bound_id],
+                                            sl_state.bath_at_baryctr_neigh[dbound.bound_id]);
 }
 
 template <typename ElementType>

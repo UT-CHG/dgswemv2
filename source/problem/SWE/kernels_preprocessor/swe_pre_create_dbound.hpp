@@ -35,7 +35,7 @@ void Problem::create_distributed_boundaries_kernel(
 
         uint begin_index = 0;
         uint begin_index_postproc = 0;
-        
+
         for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
             element_id = rank_boundary.elements.at(dboundary_id);
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
@@ -67,25 +67,26 @@ void Problem::create_distributed_boundaries_kernel(
             auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
             pre_dboundary.p = p;
 
-            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(pre_dboundary,
-                                                                             SWE::Distributed(send_buffer_reference,
-                                                                                              receive_buffer_reference,
-                                                                                              send_postproc_buffer_reference,
-                                                                                              receive_postproc_buffer_reference,
-                                                                                              ze_in_index,
-                                                                                              qx_in_index,
-                                                                                              qy_in_index,
-                                                                                              ze_ex_index,
-                                                                                              qx_ex_index,
-                                                                                              qy_ex_index,
-            ze_at_baryctr_in_index,
-            qx_at_baryctr_in_index,
-            qy_at_baryctr_in_index,
-            bath_at_baryctr_in_index,
-            ze_at_baryctr_ex_index,
-            qx_at_baryctr_ex_index,
-            qy_at_baryctr_ex_index,
-            bath_at_baryctr_ex_index));
+            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
+                pre_dboundary,
+                SWE::Distributed(send_buffer_reference,
+                                 receive_buffer_reference,
+                                 send_postproc_buffer_reference,
+                                 receive_postproc_buffer_reference,
+                                 ze_in_index,
+                                 qx_in_index,
+                                 qy_in_index,
+                                 ze_ex_index,
+                                 qx_ex_index,
+                                 qy_ex_index,
+                                 ze_at_baryctr_in_index,
+                                 qx_at_baryctr_in_index,
+                                 qy_at_baryctr_in_index,
+                                 bath_at_baryctr_in_index,
+                                 ze_at_baryctr_ex_index,
+                                 qx_at_baryctr_ex_index,
+                                 qy_at_baryctr_ex_index,
+                                 bath_at_baryctr_ex_index));
         }
 
         send_buffer_reference.resize(begin_index);

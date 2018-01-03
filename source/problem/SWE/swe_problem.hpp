@@ -97,15 +97,17 @@ struct Problem {
     static void slope_limiting_prepare_boundary_kernel(const Stepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void slope_limiting_distributed_boundary_send_kernel(const Stepper& stepper, DistributedBoundaryType& dbound);
+    static void slope_limiting_distributed_boundary_send_kernel(const Stepper& stepper,
+                                                                DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    static void slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound);
+    static void slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper,
+                                                                   DistributedBoundaryType& dbound);
 
     template <typename ElementType>
     static void slope_limiting_kernel(const Stepper& stepper, ElementType& elt);
 
-    //writing output kernels
+    // writing output kernels
     static void write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
     static void write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& mesh, const std::string& output_path);

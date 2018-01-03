@@ -57,7 +57,9 @@ class OMPICommunicator {
         MPI_Waitall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE);
     }
 
-    void SendPostprocAll(const uint timestamp) { MPI_Startall(this->send_postproc_requests.size(), &this->send_postproc_requests.front()); }
+    void SendPostprocAll(const uint timestamp) {
+        MPI_Startall(this->send_postproc_requests.size(), &this->send_postproc_requests.front());
+    }
 
     void ReceivePostprocAll(const uint timestamp) {
         MPI_Startall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front());
@@ -68,7 +70,8 @@ class OMPICommunicator {
     }
 
     void WaitAllPostprocReceives(const uint timestamp) {
-        MPI_Waitall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front(), MPI_STATUSES_IGNORE);
+        MPI_Waitall(
+            this->receive_postproc_requests.size(), &this->receive_postproc_requests.front(), MPI_STATUSES_IGNORE);
     }
 
   public:
