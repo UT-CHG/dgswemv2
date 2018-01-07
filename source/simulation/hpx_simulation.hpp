@@ -76,7 +76,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
     this->communicator.SendPreprocAll(this->stepper.get_timestamp());
 
     return receive_future.then([this](auto&&) {
-        ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+        ProblemType::initialize_data_parallel_post_receive_kernel(
+            this->mesh, this->input.mesh_data, this->input.problem_input);
     });
 }
 
@@ -192,8 +193,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished postprocessor work before receive" << std::endl
-                                  << "Starting to wait on postprocessor receive with timestamp: " << this->stepper.get_timestamp()
-                                  << std::endl;
+                                  << "Starting to wait on postprocessor receive with timestamp: "
+                                  << this->stepper.get_timestamp() << std::endl;
     }
 
     return receive_future.then([this](auto&&) {
@@ -324,11 +325,11 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         simulation_futures.push_back(sim_unit_client.Preprocessor());
     }
 
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] =
-                    simulation_futures[sim_id]
-                        .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Launch(); });
-            }
+    for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+        simulation_futures[sim_id] =
+            simulation_futures[sim_id]
+                .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Launch(); });
+    }
 
     for (uint step = 1; step <= this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {

@@ -32,7 +32,7 @@ void Problem::create_distributed_boundaries_kernel(
         std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
 
         uint element_id, bound_id, p, ngp, ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
-        uint ze_at_baryctr_index, qx_at_baryctr_index, qy_at_baryctr_index, bath_at_baryctr_index; 
+        uint ze_at_baryctr_index, qx_at_baryctr_index, qy_at_baryctr_index, bath_at_baryctr_index;
         uint x_at_baryctr_index, y_at_baryctr_index;
 
         uint begin_index_preproc = 0;
@@ -44,10 +44,10 @@ void Problem::create_distributed_boundaries_kernel(
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
             p = rank_boundary.p.at(dboundary_id);
             ngp = boundary_integration.GetNumGP(2 * p);
-            
-            x_at_baryctr_index = begin_index_preproc; 
+
+            x_at_baryctr_index = begin_index_preproc;
             y_at_baryctr_index = begin_index_preproc + 1;
-            
+
             begin_index_preproc += 2;
 
             ze_in_index = begin_index;
@@ -78,7 +78,7 @@ void Problem::create_distributed_boundaries_kernel(
                                  receive_buffer_reference,
                                  send_postproc_buffer_reference,
                                  receive_postproc_buffer_reference,
-                                 x_at_baryctr_index, 
+                                 x_at_baryctr_index,
                                  y_at_baryctr_index,
                                  ze_in_index,
                                  qx_in_index,

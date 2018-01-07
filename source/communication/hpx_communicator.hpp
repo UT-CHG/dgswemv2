@@ -33,7 +33,7 @@ struct HPXRankBoundary {
         return incoming.get(timestamp)
             .then([this](hpx::future<array_double> msg_future) { this->receive_preproc_buffer = msg_future.get(); });
     }
-    
+
     void send(uint timestamp) { outgoing.set(send_buffer, timestamp); }
 
     hpx::future<void> receive(uint timestamp) {

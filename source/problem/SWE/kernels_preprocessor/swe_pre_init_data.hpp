@@ -70,7 +70,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         bound.ComputeUgp(state.bath, boundary.bath_at_gp);
     });
 
-    //WETTING-DRYING INITIALIZE
+    // WETTING-DRYING INITIALIZE
 
     mesh.CallForEachElement([](auto& elt) {
         auto& state = elt.data.state[0];
@@ -119,7 +119,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         wd_state.water_volume = elt.Integration(internal.h_at_gp);
     });
 
-    //SLOPE LIMIT INITIALIZE
+    // SLOPE LIMIT INITIALIZE
 
     mesh.CallForEachElement([](auto& elt) {
         auto& state = elt.data.state[0];
@@ -187,8 +187,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 }
 
 void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input) {
+                                                       const MeshMetaData& mesh_data,
+                                                       const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
     std::unordered_map<uint, std::vector<double>> bathymetry;
@@ -258,7 +258,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
         dbound.ComputeUgp(dbound.data.state[0].bath, dbound.data.boundary[dbound.bound_id].bath_at_gp);
     });
 
-    //WETTING-DRYING INITIALIZE
+    // WETTING-DRYING INITIALIZE
 
     mesh.CallForEachElement([](auto& elt) {
         auto& state = elt.data.state[0];
@@ -307,7 +307,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
         wd_state.water_volume = elt.Integration(internal.h_at_gp);
     });
 
-    //SLOPE LIMIT INITIALIZE
+    // SLOPE LIMIT INITIALIZE
 
     mesh.CallForEachElement([](auto& elt) {
         auto& state = elt.data.state[0];
@@ -349,18 +349,19 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
 
-        dbound.boundary_condition.SetPreprocEX(sl_state.baryctr_coord[GlobalCoord::x], sl_state.baryctr_coord[GlobalCoord::y]);
+        dbound.boundary_condition.SetPreprocEX(sl_state.baryctr_coord[GlobalCoord::x],
+                                               sl_state.baryctr_coord[GlobalCoord::y]);
     });
 }
 
 void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input) {
+                                                           const MeshMetaData& mesh_data,
+                                                           const ProblemInputType& problem_specific_input) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
 
-        dbound.boundary_condition.GetPreprocEX(sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::x], 
-                                            sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::y]);
+        dbound.boundary_condition.GetPreprocEX(sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::x],
+                                               sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::y]);
     });
 
     mesh.CallForEachElement([](auto& elt) {

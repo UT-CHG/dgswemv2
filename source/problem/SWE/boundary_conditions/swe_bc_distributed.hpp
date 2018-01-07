@@ -69,15 +69,13 @@ class Distributed {
           qx_at_baryctr_index(qx_at_baryctr_index),
           qy_at_baryctr_index(qy_at_baryctr_index),
           bath_at_baryctr_index(bath_at_baryctr_index) {}
-    
-    void SetPreprocEX(const double x_at_baryctr_in,
-                       const double y_at_baryctr_in) {
+
+    void SetPreprocEX(const double x_at_baryctr_in, const double y_at_baryctr_in) {
         this->send_preproc_buffer[x_at_baryctr_index] = x_at_baryctr_in;
         this->send_preproc_buffer[y_at_baryctr_index] = y_at_baryctr_in;
     }
 
-    void GetPreprocEX(double& x_at_baryctr_ex,
-                       double& y_at_baryctr_ex) {
+    void GetPreprocEX(double& x_at_baryctr_ex, double& y_at_baryctr_ex) {
         x_at_baryctr_ex = this->receive_preproc_buffer[x_at_baryctr_index];
         y_at_baryctr_ex = this->receive_preproc_buffer[y_at_baryctr_index];
     }

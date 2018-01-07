@@ -6,7 +6,7 @@ template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.get_stage();
 
-    auto& state = elt.data.state[stage+1];
+    auto& state = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;
 
     elt.ComputeUbaryctr(state.ze, sl_state.ze_at_baryctr);
@@ -64,7 +64,7 @@ template <typename ElementType>
 void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.get_stage();
 
-    auto& state = elt.data.state[stage+1];
+    auto& state = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;
 
     double u = sl_state.qx_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
@@ -74,12 +74,10 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     std::ofstream file;
     std::string file_name = "test_data" + std::to_string(stage) + ".txt";
 
-        file = std::ofstream(file_name, std::ios::app);
+    file = std::ofstream(file_name, std::ios::app);
 
-        file << elt.GetID() << '\t'
-             << sl_state.qx_at_baryctr_neigh[0] << '\t'
-             << sl_state.qx_at_baryctr_neigh[1] << '\t'
-             << sl_state.qx_at_baryctr_neigh[2] << std::endl;                
+    file << elt.GetID() << '\t' << sl_state.qx_at_baryctr_neigh[0] << '\t' << sl_state.qx_at_baryctr_neigh[1] << '\t'
+         << sl_state.qx_at_baryctr_neigh[2] << std::endl;
 
     for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
         uint element_1 = bound;

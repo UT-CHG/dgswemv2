@@ -46,9 +46,10 @@ class OMPISimulationUnit {
 
         initialize_mesh<ProblemType, OMPICommunicator>(
             this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
-                            
-        ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
-                
+
+        ProblemType::initialize_data_parallel_pre_send_kernel(
+            this->mesh, this->input.mesh_data, this->input.problem_input);
+
         this->communicator.InitializeCommunication();
 
         this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
@@ -80,7 +81,8 @@ template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.get_timestamp());
 
-    ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+    ProblemType::initialize_data_parallel_post_receive_kernel(
+        this->mesh, this->input.mesh_data, this->input.problem_input);
 }
 
 template <typename ProblemType>

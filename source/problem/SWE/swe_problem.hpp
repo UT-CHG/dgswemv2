@@ -44,12 +44,12 @@ struct Problem {
                                        const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input);
+                                                         const MeshMetaData& mesh_data,
+                                                         const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input);
+                                                             const MeshMetaData& mesh_data,
+                                                             const ProblemInputType& problem_specific_input);
 
     // processor kernels
     template <typename ElementType>
