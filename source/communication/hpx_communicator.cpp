@@ -69,6 +69,23 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
     }
 }
 
+void HPXCommunicator::SendPreprocAll(const uint timestamp) {
+    for (auto& rank_boundary : this->rank_boundaries) {
+        rank_boundary.send_preproc(timestamp);
+    }
+}
+
+hpx::future<void> HPXCommunicator::ReceivePreprocAll(const uint timestamp) {
+    std::vector<hpx::future<void>> receive_futures;
+    receive_futures.reserve(this->rank_boundaries.size());
+
+    for (auto& rank_boundary : this->rank_boundaries) {
+        receive_futures.push_back(rank_boundary.receive_preproc(timestamp));
+    }
+
+    return hpx::when_all(receive_futures);
+}
+
 void HPXCommunicator::SendAll(const uint timestamp) {
     for (auto& rank_boundary : this->rank_boundaries) {
         rank_boundary.send(timestamp);

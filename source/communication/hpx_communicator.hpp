@@ -18,12 +18,22 @@ struct HPXRankBoundary {
     hpx::lcos::channel<array_double> outgoing;
     hpx::lcos::channel<array_double> incoming;
 
+    std::vector<double> send_preproc_buffer;
+    std::vector<double> receive_preproc_buffer;
+
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
 
     std::vector<double> send_postproc_buffer;
     std::vector<double> receive_postproc_buffer;
 
+    void send_preproc(uint timestamp) { outgoing.set(send_preproc_buffer, timestamp); }
+
+    hpx::future<void> receive_preproc(uint timestamp) {
+        return incoming.get(timestamp)
+            .then([this](hpx::future<array_double> msg_future) { this->receive_preproc_buffer = msg_future.get(); });
+    }
+    
     void send(uint timestamp) { outgoing.set(send_buffer, timestamp); }
 
     hpx::future<void> receive(uint timestamp) {
@@ -49,6 +59,9 @@ class HPXCommunicator {
 
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
+
+    void SendPreprocAll(const uint timestamp);
+    hpx::future<void> ReceivePreprocAll(const uint timestamp);
 
     void SendAll(const uint timestamp);
     hpx::future<void> ReceiveAll(const uint timestamp);

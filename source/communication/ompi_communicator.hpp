@@ -17,6 +17,9 @@ struct OMPIRankBoundary {
     int send_tag;
     int receive_tag;
 
+    std::vector<double> send_preproc_buffer;
+    std::vector<double> receive_preproc_buffer;
+
     std::vector<double> send_buffer;
     std::vector<double> receive_buffer;
 
@@ -27,6 +30,9 @@ struct OMPIRankBoundary {
 class OMPICommunicator {
   private:
     std::vector<OMPIRankBoundary> rank_boundaries;
+
+    std::vector<MPI_Request> send_preproc_requests;
+    std::vector<MPI_Request> receive_preproc_requests;
 
     std::vector<MPI_Request> send_requests;
     std::vector<MPI_Request> receive_requests;
@@ -42,6 +48,23 @@ class OMPICommunicator {
 
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     OMPIRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
+
+    void SendPreprocAll(const uint timestamp) {
+        MPI_Startall(this->send_preproc_requests.size(), &this->send_preproc_requests.front());
+    }
+
+    void ReceivePreprocAll(const uint timestamp) {
+        MPI_Startall(this->receive_preproc_requests.size(), &this->receive_preproc_requests.front());
+    }
+
+    void WaitAllPreprocSends(const uint timestamp) {
+        MPI_Waitall(this->send_preproc_requests.size(), &this->send_preproc_requests.front(), MPI_STATUSES_IGNORE);
+    }
+
+    void WaitAllPreprocReceives(const uint timestamp) {
+        MPI_Waitall(
+            this->receive_preproc_requests.size(), &this->receive_preproc_requests.front(), MPI_STATUSES_IGNORE);
+    }
 
     void SendAll(const uint timestamp) { MPI_Startall(this->send_requests.size(), &this->send_requests.front()); }
 

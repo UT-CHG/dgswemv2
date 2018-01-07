@@ -39,6 +39,8 @@ class Simulation {
 
         initialize_mesh<ProblemType>(
             this->mesh, this->input.mesh_data, empty_comm, this->input.problem_input, this->writer);
+
+        ProblemType::initialize_data_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
     }
 
     void Run();

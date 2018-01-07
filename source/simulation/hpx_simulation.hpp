@@ -48,11 +48,17 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
             this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
     }
 
+    hpx::future<void> Preprocessor();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
+
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
 
     hpx::future<void> Stage();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
+
+    hpx::future<void> Postprocessor();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Postprocessor, PostprocessorAction);
 
     void Step();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
@@ -60,6 +66,19 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     void ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 };
+
+template <typename ProblemType>
+hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
+    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
+
+    ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+
+    this->communicator.SendPreprocAll(this->stepper.get_timestamp());
+
+    return receive_future.then([this](auto&&) {
+        ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+    });
+}
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Launch() {
@@ -98,11 +117,19 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
     auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
 
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Exchanging data" << std::endl;
+    }
+
     hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
     this->communicator.SendAll(this->stepper.get_timestamp());
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting work before receive" << std::endl;
+    }
 
     this->mesh.CallForEachElement(volume_kernel);
 
@@ -139,10 +166,47 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
         this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
+        if (this->writer.WritingVerboseLog()) {
+            this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
+        }
+    });
+}
+
+template <typename ProblemType>
+hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
+    }
+
+    hpx::future<void> receive_future = this->communicator.ReceivePostprocAll(this->stepper.get_timestamp());
+
+    ProblemType::postprocessor_parallel_pre_send_kernel(this->stepper, this->mesh);
+
+    this->communicator.SendPostprocAll(this->stepper.get_timestamp());
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
+    }
+
+    ProblemType::postprocessor_parallel_pre_receive_kernel(this->stepper, this->mesh);
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Finished postprocessor work before receive" << std::endl
+                                  << "Starting to wait on postprocessor receive with timestamp: " << this->stepper.get_timestamp()
+                                  << std::endl;
+    }
+
+    return receive_future.then([this](auto&&) {
+        if (this->writer.WritingVerboseLog()) {
+            this->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
+        }
+
+        ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
+
         ++(this->stepper);
 
         if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
+            this->writer.GetLogFile() << "Finished postprocessor work after receive" << std::endl << std::endl;
         }
     });
 }
@@ -180,6 +244,11 @@ class HPXSimulationUnitClient
   public:
     HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
 
+    hpx::future<void> Preprocessor() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::PreprocessorAction;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
     hpx::future<void> Launch() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::LaunchAction;
         return hpx::async<ActionType>(this->get_id());
@@ -187,6 +256,11 @@ class HPXSimulationUnitClient
 
     hpx::future<void> Stage() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
+    hpx::future<void> Postprocessor() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::PostprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
@@ -247,8 +321,14 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     std::vector<hpx::future<void>> simulation_futures;
 
     for (auto& sim_unit_client : this->simulation_unit_clients) {
-        simulation_futures.push_back(sim_unit_client.Launch());
+        simulation_futures.push_back(sim_unit_client.Preprocessor());
     }
+
+            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+                simulation_futures[sim_id] =
+                    simulation_futures[sim_id]
+                        .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Launch(); });
+            }
 
     for (uint step = 1; step <= this->n_steps; step++) {
         for (uint stage = 0; stage < this->n_stages; stage++) {
@@ -256,6 +336,12 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 simulation_futures[sim_id] =
                     simulation_futures[sim_id]
                         .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Stage(); });
+            }
+
+            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+                simulation_futures[sim_id] =
+                    simulation_futures[sim_id]
+                        .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Postprocessor(); });
             }
         }
 

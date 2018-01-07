@@ -43,9 +43,13 @@ struct Problem {
                                        const MeshMetaData& mesh_data,
                                        const ProblemInputType& problem_specific_input);
 
-    static void initialize_wd_data_kernel(ProblemMeshType& mesh);
+    static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
+                                       const MeshMetaData& mesh_data,
+                                       const ProblemInputType& problem_specific_input);
 
-    static void initialize_sl_data_kernel(ProblemMeshType& mesh);
+    static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
+                                       const MeshMetaData& mesh_data,
+                                       const ProblemInputType& problem_specific_input);
 
     // processor kernels
     template <typename ElementType>

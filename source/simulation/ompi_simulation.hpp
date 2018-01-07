@@ -46,7 +46,18 @@ class OMPISimulationUnit {
 
         initialize_mesh<ProblemType, OMPICommunicator>(
             this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
+                            
+        ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+                
+        this->communicator.InitializeCommunication();
+
+        this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
+
+        this->communicator.SendPreprocAll(this->stepper.get_timestamp());
     }
+
+    void PostReceivePrerocStage();
+    void WaitAllPreprocSends();
 
     void Launch();
 
@@ -66,6 +77,18 @@ class OMPISimulationUnit {
 };
 
 template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
+    this->communicator.WaitAllPreprocReceives(this->stepper.get_timestamp());
+
+    ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+}
+
+template <typename ProblemType>
+void OMPISimulationUnit<ProblemType>::WaitAllPreprocSends() {
+    this->communicator.WaitAllPreprocSends(this->stepper.get_timestamp());
+}
+
+template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::Launch() {
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
@@ -74,8 +97,6 @@ void OMPISimulationUnit<ProblemType>::Launch() {
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
-
-    this->communicator.InitializeCommunication();
 
     uint n_stages = this->stepper.get_num_stages();
 
@@ -297,6 +318,14 @@ void OMPISimulation<ProblemType>::Run() {
 
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id = std::min(sim_per_thread * (thread_id + 1), (uint) this->simulation_units.size());
+
+        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+            this->simulation_units[sim_unit_id]->PostReceivePrerocStage();
+        }
+
+        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
+            this->simulation_units[sim_unit_id]->WaitAllPreprocSends();
+        }
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
             this->simulation_units[sim_unit_id]->Launch();

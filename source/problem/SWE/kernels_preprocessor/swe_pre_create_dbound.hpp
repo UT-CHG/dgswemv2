@@ -22,6 +22,9 @@ void Problem::create_distributed_boundaries_kernel(
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
+        std::vector<double>& send_preproc_buffer_reference = rank_boundary.send_preproc_buffer;
+        std::vector<double>& receive_preproc_buffer_reference = rank_boundary.receive_preproc_buffer;
+
         std::vector<double>& send_buffer_reference = rank_boundary.send_buffer;
         std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
 
@@ -29,10 +32,10 @@ void Problem::create_distributed_boundaries_kernel(
         std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
 
         uint element_id, bound_id, p, ngp, ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
+        uint ze_at_baryctr_index, qx_at_baryctr_index, qy_at_baryctr_index, bath_at_baryctr_index; 
+        uint x_at_baryctr_index, y_at_baryctr_index;
 
-        uint ze_at_baryctr_in_index, qx_at_baryctr_in_index, qy_at_baryctr_in_index, bath_at_baryctr_in_index;
-        uint ze_at_baryctr_ex_index, qx_at_baryctr_ex_index, qy_at_baryctr_ex_index, bath_at_baryctr_ex_index;
-
+        uint begin_index_preproc = 0;
         uint begin_index = 0;
         uint begin_index_postproc = 0;
 
@@ -41,6 +44,11 @@ void Problem::create_distributed_boundaries_kernel(
             bound_id = rank_boundary.bound_ids.at(dboundary_id);
             p = rank_boundary.p.at(dboundary_id);
             ngp = boundary_integration.GetNumGP(2 * p);
+            
+            x_at_baryctr_index = begin_index_preproc; 
+            y_at_baryctr_index = begin_index_preproc + 1;
+            
+            begin_index_preproc += 2;
 
             ze_in_index = begin_index;
             qx_in_index = begin_index + ngp;
@@ -52,15 +60,10 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp;
 
-            ze_at_baryctr_in_index = begin_index_postproc;
-            qx_at_baryctr_in_index = begin_index_postproc + 1;
-            qy_at_baryctr_in_index = begin_index_postproc + 2;
-            bath_at_baryctr_in_index = begin_index_postproc + 3;
-
-            ze_at_baryctr_ex_index = begin_index_postproc;
-            qx_at_baryctr_ex_index = begin_index_postproc + 1;
-            qy_at_baryctr_ex_index = begin_index_postproc + 2;
-            bath_at_baryctr_ex_index = begin_index_postproc + 3;
+            ze_at_baryctr_index = begin_index_postproc;
+            qx_at_baryctr_index = begin_index_postproc + 1;
+            qy_at_baryctr_index = begin_index_postproc + 2;
+            bath_at_baryctr_index = begin_index_postproc + 3;
 
             begin_index_postproc += 4;
 
@@ -69,25 +72,28 @@ void Problem::create_distributed_boundaries_kernel(
 
             mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
                 pre_dboundary,
-                SWE::Distributed(send_buffer_reference,
+                SWE::Distributed(send_preproc_buffer_reference,
+                                 receive_preproc_buffer_reference,
+                                 send_buffer_reference,
                                  receive_buffer_reference,
                                  send_postproc_buffer_reference,
                                  receive_postproc_buffer_reference,
+                                 x_at_baryctr_index, 
+                                 y_at_baryctr_index,
                                  ze_in_index,
                                  qx_in_index,
                                  qy_in_index,
                                  ze_ex_index,
                                  qx_ex_index,
                                  qy_ex_index,
-                                 ze_at_baryctr_in_index,
-                                 qx_at_baryctr_in_index,
-                                 qy_at_baryctr_in_index,
-                                 bath_at_baryctr_in_index,
-                                 ze_at_baryctr_ex_index,
-                                 qx_at_baryctr_ex_index,
-                                 qy_at_baryctr_ex_index,
-                                 bath_at_baryctr_ex_index));
+                                 ze_at_baryctr_index,
+                                 qx_at_baryctr_index,
+                                 qy_at_baryctr_index,
+                                 bath_at_baryctr_index));
         }
+
+        send_preproc_buffer_reference.resize(begin_index_preproc);
+        receive_preproc_buffer_reference.resize(begin_index_preproc);
 
         send_buffer_reference.resize(begin_index);
         receive_buffer_reference.resize(begin_index);
