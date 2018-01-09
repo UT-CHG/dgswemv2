@@ -27,11 +27,12 @@ int main() {
 
     ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<unsigned char>(0));
     triangle.data.initialize();
+    triangle.data.resize(1);
 
     Stepper stepper(1, 1, 1);
 
     auto& wd_state = triangle.data.wet_dry_state;
-    auto& state = triangle.data.state[0];
+    auto& state = triangle.data.state[1];
 
     wd_state.bath_at_vrtx[0] = 1.;
     wd_state.bath_at_vrtx[1] = 2.;
