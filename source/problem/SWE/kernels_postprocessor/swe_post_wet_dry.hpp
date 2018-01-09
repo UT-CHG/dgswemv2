@@ -6,7 +6,7 @@ template <typename ElementType>
 void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.get_stage();
 
-    auto& state = elt.data.state[stage];
+    auto& state = elt.data.state[stage + 1];
     auto& wd_state = elt.data.wet_dry_state;
     auto& internal = elt.data.internal;
 

@@ -71,14 +71,6 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     double v = sl_state.qy_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
     double c = std::sqrt(Global::g * (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr));
 
-    std::ofstream file;
-    std::string file_name = "test_data" + std::to_string(stage) + ".txt";
-
-    file = std::ofstream(file_name, std::ios::app);
-
-    file << elt.GetID() << '\t' << sl_state.qx_at_baryctr_neigh[0] << '\t' << sl_state.qx_at_baryctr_neigh[1] << '\t'
-         << sl_state.qx_at_baryctr_neigh[2] << std::endl;
-
     for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
         uint element_1 = bound;
         uint element_2 = (bound + 1) % 3;
@@ -135,7 +127,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
         double w_tilda;
         double w_delta;
 
-        double M = 0.0;
+        double M = 1e-8;
         double nu = 1.5;
 
         for (uint var = 0; var < 3; var++) {

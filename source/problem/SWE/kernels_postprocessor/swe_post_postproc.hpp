@@ -70,9 +70,13 @@ void Problem::postprocessor_parallel_post_receive_kernel(const Stepper& stepper,
 
     auto slope_limiting_kernel = [&stepper](auto& elt) { Problem::slope_limiting_kernel(stepper, elt); };
 
+    auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
+
     mesh.CallForEachDistributedBoundary(slope_limiting_prepare_distributed_boundary_kernel);
 
     mesh.CallForEachElement(slope_limiting_kernel);
+
+    mesh.CallForEachElement(wetting_drying_kernel);
 }
 }
 

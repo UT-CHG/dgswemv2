@@ -9,7 +9,7 @@ mesh:
   file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.meta
 timestepping:
   dt: 1
-  end_time: 43200
+  end_time: 172800
   order: 2
   nstages: 2
 polynomial_order: 1
@@ -26,8 +26,5 @@ problem:
     initial_momentum_y: 0.0
 output:
   path: output/
- # logfile:
- #   name: log
- #   verbose: true
   vtk:
     frequency: 360

@@ -31,7 +31,8 @@ void Problem::create_distributed_boundaries_kernel(
         std::vector<double>& send_postproc_buffer_reference = rank_boundary.send_postproc_buffer;
         std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
 
-        uint element_id, bound_id, p, ngp, ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
+        uint element_id, bound_id, p, ngp;
+        uint wet_dry_index, ze_in_index, qx_in_index, qy_in_index, ze_ex_index, qx_ex_index, qy_ex_index;
         uint ze_at_baryctr_index, qx_at_baryctr_index, qy_at_baryctr_index, bath_at_baryctr_index;
         uint x_at_baryctr_index, y_at_baryctr_index;
 
@@ -50,15 +51,17 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index_preproc += 2;
 
-            ze_in_index = begin_index;
-            qx_in_index = begin_index + ngp;
-            qy_in_index = begin_index + 2 * ngp;
+            wet_dry_index = begin_index;
 
-            ze_ex_index = begin_index + ngp - 1;
-            qx_ex_index = begin_index + 2 * ngp - 1;
-            qy_ex_index = begin_index + 3 * ngp - 1;
+            ze_in_index = begin_index + 1; 
+            qx_in_index = begin_index + ngp + 1;
+            qy_in_index = begin_index + 2 * ngp + 1;
 
-            begin_index += 3 * ngp;
+            ze_ex_index = begin_index + ngp;
+            qx_ex_index = begin_index + 2 * ngp;
+            qy_ex_index = begin_index + 3 * ngp;
+
+            begin_index += 3 * ngp + 1;
 
             ze_at_baryctr_index = begin_index_postproc;
             qx_at_baryctr_index = begin_index_postproc + 1;
@@ -80,6 +83,7 @@ void Problem::create_distributed_boundaries_kernel(
                                  receive_postproc_buffer_reference,
                                  x_at_baryctr_index,
                                  y_at_baryctr_index,
+                                 wet_dry_index,
                                  ze_in_index,
                                  qx_in_index,
                                  qy_in_index,

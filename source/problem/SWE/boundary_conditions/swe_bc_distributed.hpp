@@ -19,6 +19,8 @@ class Distributed {
     uint x_at_baryctr_index;
     uint y_at_baryctr_index;
 
+    uint wet_dry_index;
+
     uint ze_in_index;
     uint qx_in_index;
     uint qy_in_index;
@@ -41,6 +43,7 @@ class Distributed {
                 std::vector<double>& receive_postproc_buffer,
                 const uint x_at_baryctr_index,
                 const uint y_at_baryctr_index,
+                const uint wet_dry_index,
                 const uint ze_in_index,
                 const uint qx_in_index,
                 const uint qy_in_index,
@@ -59,6 +62,7 @@ class Distributed {
           receive_postproc_buffer(receive_postproc_buffer),
           x_at_baryctr_index(x_at_baryctr_index),
           y_at_baryctr_index(y_at_baryctr_index),
+          wet_dry_index(wet_dry_index),
           ze_in_index(ze_in_index),
           qx_in_index(qx_in_index),
           qy_in_index(qy_in_index),
@@ -78,6 +82,14 @@ class Distributed {
     void GetPreprocEX(double& x_at_baryctr_ex, double& y_at_baryctr_ex) {
         x_at_baryctr_ex = this->receive_preproc_buffer[x_at_baryctr_index];
         y_at_baryctr_ex = this->receive_preproc_buffer[y_at_baryctr_index];
+    }
+
+    void SetWetDryEX(const bool wet_in) {
+        this->send_buffer[wet_dry_index] = (double)wet_in;
+    }
+
+    void GetWetDryEX(bool& wet_ex) {
+        wet_ex = (bool)this->receive_buffer[wet_dry_index];
     }
 
     void SetEX(const std::vector<double>& ze_in, const std::vector<double>& qx_in, const std::vector<double>& qy_in) {
