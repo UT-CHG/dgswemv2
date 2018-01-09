@@ -23,7 +23,7 @@ void Problem::distributed_boundary_send_kernel(const Stepper& stepper, Distribut
 template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
     auto& wd_state_in = dbound.data.wet_dry_state;
-    
+
     bool wet_ex;
     dbound.boundary_condition.GetWetDryEX(wet_ex);
 
@@ -108,14 +108,14 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
             } else if (!wd_state_in.wet) {  // water flowing to dry IN element
                 for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
                     dbound.boundary_condition.GetEX(stepper,
-                                            gp,
-                                            dbound.surface_normal,
-                                            boundary.ze_at_gp,
-                                            boundary.qx_at_gp,
-                                            boundary.qy_at_gp,
-                                            ze_ex,
-                                            qx_ex,
-                                            qy_ex);
+                                                    gp,
+                                                    dbound.surface_normal,
+                                                    boundary.ze_at_gp,
+                                                    boundary.qx_at_gp,
+                                                    boundary.qy_at_gp,
+                                                    ze_ex,
+                                                    qx_ex,
+                                                    qy_ex);
 
                     LLF_flux_zero_g(boundary.ze_at_gp[gp],
                                     ze_ex,

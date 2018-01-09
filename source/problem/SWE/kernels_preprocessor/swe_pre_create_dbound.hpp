@@ -53,7 +53,7 @@ void Problem::create_distributed_boundaries_kernel(
 
             wet_dry_index = begin_index;
 
-            ze_in_index = begin_index + 1; 
+            ze_in_index = begin_index + 1;
             qx_in_index = begin_index + ngp + 1;
             qy_in_index = begin_index + 2 * ngp + 1;
 
