@@ -10,6 +10,8 @@ enum Pattern : uchar {
 };
 
 struct MeshGeneratorInput {
+    std::string mesh_name;
+
     double x1;
     double x2;
     double y1;
@@ -49,7 +51,7 @@ void zigzag_pattern_tri(uint, uint, std::vector<element>&);
 void checker_pattern_tri(uint, uint, std::vector<element>&);
 
 int main(int argc, const char* argv[]) {
-    if ( argc != 2 ) {
+    if (argc != 2) {
         std::cout << "Usage:\n"
                   << "    rectangular_mesh_generator <input file>\n";
         exit(1);
@@ -74,23 +76,24 @@ int main(int argc, const char* argv[]) {
 
             nodes[j * (m + 1) + i].coord[0] = input.x1 + dx * i;
             nodes[j * (m + 1) + i].coord[1] = input.y1 + dy * j;
-            nodes[j * (m + 1) + i].coord[2] = bathymetry_function(nodes[j * (m+1) + i].coord[0],
-                                                                  nodes[j * (m+1) + i].coord[1]);;
+            nodes[j * (m + 1) + i].coord[2] =
+                bathymetry_function(nodes[j * (m + 1) + i].coord[0], nodes[j * (m + 1) + i].coord[1]);
+            ;
         }
     }
 
     std::vector<element> elements(2 * m * n);
 
-    switch ( input.pattern ) {
-    case simple:
-        simple_pattern_tri(m, n, elements);
-        break;
-    case zigzag:
-        zigzag_pattern_tri(m, n, elements);
-        break;
-    case checker:
-        checker_pattern_tri(m, n, elements);
-        break;
+    switch (input.pattern) {
+        case simple:
+            simple_pattern_tri(m, n, elements);
+            break;
+        case zigzag:
+            zigzag_pattern_tri(m, n, elements);
+            break;
+        case checker:
+            checker_pattern_tri(m, n, elements);
+            break;
     }
 
     std::vector<boundary> boundaries(4);
@@ -115,8 +118,7 @@ int main(int argc, const char* argv[]) {
         boundaries[3].nodes[i] = i * (m + 1);
     }
 
-    std::string file_name = "rectangular_mesh.14";
-    std::ofstream file(file_name);
+    std::ofstream file(input.mesh_name);
 
     file << std::fixed << std::setprecision(12);
     file << "rectangle\n";
@@ -213,96 +215,96 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) {
         throw std::logic_error(err_msg);
     };
 
-    if ( yaml_input["x1"] ) {
+    if (yaml_input["x1"]) {
         this->x1 = yaml_input["x1"].as<double>();
     } else {
         throw_missing_node("x1");
     }
 
-    if ( yaml_input["x2"] ) {
+    if (yaml_input["x2"]) {
         this->x2 = yaml_input["x2"].as<double>();
     } else {
         throw_missing_node("x2");
     }
 
-    if ( yaml_input["y1"] ) {
+    if (yaml_input["y1"]) {
         this->y1 = yaml_input["y1"].as<double>();
     } else {
         throw_missing_node("y1");
     }
 
-    if ( yaml_input["y2"] ) {
+    if (yaml_input["y2"]) {
         this->y2 = yaml_input["y2"].as<double>();
     } else {
         throw_missing_node("y2");
     }
 
-    if ( yaml_input["num_x_subdivisions"] ) {
+    if (yaml_input["num_x_subdivisions"]) {
         this->num_x_subdivisions = yaml_input["num_x_subdivisions"].as<uint>();
     } else {
         throw_missing_node("num_x_subdivisions");
     }
 
-    if ( yaml_input["num_y_subdivisions"] ) {
+    if (yaml_input["num_y_subdivisions"]) {
         this->num_y_subdivisions = yaml_input["num_y_subdivisions"].as<uint>();
     } else {
         throw_missing_node("num_y_subdivisions");
     }
 
-    if ( yaml_input["pattern"] ) {
+    if (yaml_input["pattern"]) {
         this->pattern = static_cast<Pattern>(yaml_input["pattern"].as<uint>());
-        if ( this->pattern > 2 ) {
-            throw std::logic_error("Error: invalid pattern ("+std::to_string(this->pattern)+") specified");
+        if (this->pattern > 2) {
+            throw std::logic_error("Error: invalid pattern (" + std::to_string(this->pattern) + ") specified");
         }
     } else {
         throw_missing_node("pattern");
     }
 
-    if ( yaml_input["boundary_type"] ) {
+    if (yaml_input["boundary_type"]) {
         YAML::Node yaml_boundaries = yaml_input["boundary_type"];
-        if ( !( yaml_boundaries.IsSequence() && yaml_boundaries.size() == 4 ) ) {
+        if (!(yaml_boundaries.IsSequence() && yaml_boundaries.size() == 4)) {
             std::string err_msg{"Error: please check that the boundaries node is a sequence with 4 members"};
             throw std::logic_error(err_msg);
         }
 
-        for ( auto it = yaml_boundaries.begin(); it != yaml_boundaries.end(); ++it) {
-            this->boundary_type.push_back( it->as<uint>() );
+        for (auto it = yaml_boundaries.begin(); it != yaml_boundaries.end(); ++it) {
+            this->boundary_type.push_back(it->as<uint>());
         }
 
     } else {
         throw_missing_node("boundary_type");
     }
 
+    this->mesh_name = yaml_input["mesh_name"] ? yaml_input["mesh_name"].as<std::string>() : "rectangular_mesh.14";
+
     this->Summarize();
 }
 
 void MeshGeneratorInput::Summarize() {
     std::cout << "MeshGenerator Input\n"
-              << "  x1: " << this->x1 << '\n'
-              << "  x2: " << this->x2 << '\n'
-              << "  y1: " << this->y1 << '\n'
-              << "  y2: " << this->y2 << '\n'
-              << '\n'
-              << "  num_x_subdivisions: " << num_x_subdivisions << '\n'
+              << "  x1: " << this->x1 << '\n' << "  x2: " << this->x2 << '\n' << "  y1: " << this->y1 << '\n'
+              << "  y2: " << this->y2 << '\n' << '\n' << "  num_x_subdivisions: " << num_x_subdivisions << '\n'
               << "  num_y_subdivisions: " << num_y_subdivisions << "\n\n";
 
-    switch ( this->pattern ) {
-    case simple:
-        std::cout << "  pattern: simple\n\n";
-        break;
-    case zigzag:
-        std::cout << "  pattern: zizag\n\n";
-        break;
-    case checker:
-        std::cout << "  pattern: checker\n\n";
-        break;
+    switch (this->pattern) {
+        case simple:
+            std::cout << "  pattern: simple\n\n";
+            break;
+        case zigzag:
+            std::cout << "  pattern: zizag\n\n";
+            break;
+        case checker:
+            std::cout << "  pattern: checker\n\n";
+            break;
     }
 
     std::cout << "  boundary_type: [";
-    for ( uint bdry : this->boundary_type ) {
-        std:: cout << ' ' << bdry;
+    for (uint bdry : this->boundary_type) {
+        std::cout << ' ' << bdry;
     }
-    std::cout << " ]\n";
+    std::cout << " ]\n\n";
+
+    std::cout << "  mesh name: " << this->mesh_name << '\n';
 }
 
 void simple_pattern_tri(uint m, uint n, std::vector<element>& elements) {
