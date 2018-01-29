@@ -25,6 +25,9 @@
 #include <time.h>
 
 #include "edge_types.hpp"
+#ifdef HAS_HPX
+#include "simulation/load_balancer/serialization_headers.hpp"
+#endif
 
 using uchar = unsigned char;
 

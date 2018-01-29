@@ -338,3 +338,20 @@ add_test(
   test_partition_exe
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
 )
+
+if(USE_HPX)
+  add_executable(
+    test_swe_serialization_exe
+    test_swe_serialization.cpp
+  )
+
+  set_target_properties(test_swe_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_swe_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_swe_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_swe_serialization
+    test_swe_serialization_exe
+  )
+endif()
