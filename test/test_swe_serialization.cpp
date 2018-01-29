@@ -133,7 +133,118 @@ bool test_swe_data_internal() {
         );
 
     return error_found;
+}
 
+bool test_swe_data_slope_limit() {
+    const std::size_t nbound{10};
+    SWE::SlopeLimit o_sl(nbound);
+
+    double counter{1};
+    for ( uint i = 0; i < nbound; ++i ) {
+        for ( uint dim = 0; dim < 2; ++i ) {
+            o_sl.surface_normal[i][dim] = counter++;
+            o_sl.midpts_coord[i][dim] = counter++;
+            o_sl.baryctr_coord_neigh[i][dim] = counter++;
+        }
+
+        o_sl.alpha_1[i] = counter++;
+        o_sl.alpha_2[i] = counter++;
+        o_sl.r_sq[i] = counter++;
+
+        o_sl.ze_at_vrtx[i] = counter++;
+        o_sl.qx_at_vrtx[i] = counter++;
+        o_sl.qy_at_vrtx[i] = counter++;
+
+        o_sl.ze_at_midpts[i] = counter++;
+        o_sl.qx_at_midpts[i] = counter++;
+        o_sl.qy_at_midpts[i] = counter++;
+        o_sl.bath_at_midpts[i] = counter++;
+
+        o_sl.ze_at_baryctr_neigh[i] = counter++;
+        o_sl.qx_at_baryctr_neigh[i] = counter++;
+        o_sl.qy_at_baryctr_neigh[i] = counter++;
+        o_sl.bath_at_baryctr_neigh[i] = counter++;
+    }
+
+
+    for ( uint j = 0; j < 3; ++j ) {
+        o_sl.w_midpt_char[j] = counter++;
+        o_sl.delta_char[j] = counter++;
+
+        for ( uint c = 0; c < 3; ++c ) {
+            o_sl.w_baryctr_char[c][j] = counter++;
+            o_sl.delta[c][j] = counter++;
+            o_sl.L[c][j] = counter++;
+            o_sl.R[c][j] = counter++;
+        }
+    }
+
+    o_sl.baryctr_coord[0] = counter++;
+    o_sl.baryctr_coord[1] = counter++;
+
+    o_sl.ze_at_baryctr = counter++;
+    o_sl.qx_at_baryctr = counter++;
+    o_sl.qy_at_baryctr = counter++;
+    o_sl.bath_at_baryctr = counter++;
+
+    std::vector<char> buffer;
+    hpx::serialization::output_archive o_archive(buffer);
+    o_archive << o_sl;
+
+    hpx::serialization::input_archive i_archive(buffer);
+    SWE::SlopeLimit i_sl;
+    i_archive >> i_sl;
+
+    bool error_found{false};
+
+    for ( uint i = 0; i < nbound; ++i ) {
+        error_found |= !double_vectors_are_same(o_sl.surface_normal[i], i_sl.surface_normal[i]);
+
+        error_found |= !almost_equal(o_sl.midpts_coord[i][0], i_sl.midpts_coord[i][0]);
+        error_found |= !almost_equal(o_sl.midpts_coord[i][1], i_sl.midpts_coord[i][1]);
+
+        error_found |= !almost_equal(o_sl.baryctr_coord_neigh[i][0], i_sl.baryctr_coord_neigh[i][0]);
+        error_found |= !almost_equal(o_sl.baryctr_coord_neigh[i][1], i_sl.baryctr_coord_neigh[i][1]);
+    }
+
+    error_found |= !double_vectors_are_same(o_sl.w_midpt_char, i_sl.w_midpt_char);
+    error_found |= !double_vectors_are_same(o_sl.delta_char, i_sl.delta_char);
+
+    for ( uint c = 0; c < 3; ++c ) {
+        error_found |= !double_vectors_are_same(o_sl.w_baryctr_char[c], i_sl.w_baryctr_char[c]);
+        error_found |= !double_vectors_are_same(o_sl.delta[c], i_sl.delta[c]);
+        error_found |= !double_vectors_are_same(o_sl.L[c], i_sl.L[c]);
+        error_found |= !double_vectors_are_same(o_sl.R[c], i_sl.R[c]);
+    }
+
+    error_found |= !double_vectors_are_same(o_sl.alpha_1, i_sl.alpha_1);
+    error_found |= !double_vectors_are_same(o_sl.alpha_2, i_sl.alpha_2);
+    error_found |= !double_vectors_are_same(o_sl.r_sq, i_sl.r_sq);
+
+
+    error_found |= !double_vectors_are_same(o_sl.ze_at_vrtx, i_sl.ze_at_vrtx);
+    error_found |= !double_vectors_are_same(o_sl.qx_at_vrtx, i_sl.qx_at_vrtx);
+    error_found |= !double_vectors_are_same(o_sl.qy_at_vrtx, i_sl.qy_at_vrtx);
+
+    error_found |= !double_vectors_are_same(o_sl.ze_at_midpts, i_sl.ze_at_midpts);
+    error_found |= !double_vectors_are_same(o_sl.qx_at_midpts, i_sl.qx_at_midpts);
+    error_found |= !double_vectors_are_same(o_sl.qy_at_midpts, i_sl.qy_at_midpts);
+    error_found |= !double_vectors_are_same(o_sl.bath_at_midpts, i_sl.bath_at_midpts);
+
+    error_found |= !double_vectors_are_same(o_sl.ze_at_baryctr_neigh, i_sl.ze_at_baryctr_neigh);
+    error_found |= !double_vectors_are_same(o_sl.qx_at_baryctr_neigh, i_sl.qx_at_baryctr_neigh);
+    error_found |= !double_vectors_are_same(o_sl.qy_at_baryctr_neigh, i_sl.qy_at_baryctr_neigh);
+    error_found |= !double_vectors_are_same(o_sl.bath_at_baryctr_neigh, i_sl.bath_at_baryctr_neigh);
+
+    error_found |= !( almost_equal(o_sl.baryctr_coord[0],i_sl.baryctr_coord[0]));
+    error_found |= !( almost_equal(o_sl.baryctr_coord[1],i_sl.baryctr_coord[1]));
+
+    error_found |= !almost_equal(o_sl.ze_at_baryctr, i_sl.ze_at_baryctr);
+    error_found |= !almost_equal(o_sl.qx_at_baryctr, i_sl.qx_at_baryctr);
+    error_found |= !almost_equal(o_sl.qy_at_baryctr, i_sl.qy_at_baryctr);
+    error_found |= !almost_equal(o_sl.bath_at_baryctr, i_sl.bath_at_baryctr);
+
+                                 return error_found;
 }
 
 int main() {
