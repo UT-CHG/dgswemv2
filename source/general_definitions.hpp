@@ -22,6 +22,10 @@
 #include <unordered_map>
 #include <tuple>
 
+#ifdef HAS_HPX
+#include "simulation/load_balancer/serialization_headers.hpp"
+#endif
+
 typedef unsigned int uint;
 
 typedef unsigned char uchar;
