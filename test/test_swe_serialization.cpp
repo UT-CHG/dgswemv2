@@ -244,7 +244,7 @@ bool test_swe_data_slope_limit() {
     error_found |= !almost_equal(o_sl.qy_at_baryctr, i_sl.qy_at_baryctr);
     error_found |= !almost_equal(o_sl.bath_at_baryctr, i_sl.bath_at_baryctr);
 
-                                 return error_found;
+    return error_found;
 }
 
 int main() {
