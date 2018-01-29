@@ -141,7 +141,7 @@ bool test_swe_data_slope_limit() {
 
     double counter{1};
     for ( uint i = 0; i < nbound; ++i ) {
-        for ( uint dim = 0; dim < 2; ++i ) {
+        for ( uint dim = 0; dim < 2; ++dim ) {
             o_sl.surface_normal[i][dim] = counter++;
             o_sl.midpts_coord[i][dim] = counter++;
             o_sl.baryctr_coord_neigh[i][dim] = counter++;
@@ -263,6 +263,11 @@ int main() {
 
     if ( test_swe_data_internal() ) {
         std::cerr << "Error: Serialization of SWE::Internal produces incorrect output\n";
+        error_found = true;
+    }
+
+    if ( test_swe_data_slope_limit() ) {
+        std::cerr << "Error:Serialization of SWE::SlopeLimit produces incorrect output\n";
         error_found = true;
     }
 
