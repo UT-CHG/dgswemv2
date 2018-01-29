@@ -83,6 +83,59 @@ bool test_swe_data_state() {
     return error_found;
 }
 
+bool test_swe_data_internal() {
+    const std::size_t ngp{4};
+    SWE::Internal o_int(ngp);
+
+    for ( uint i = 0; i < ngp; ++i ) {
+        o_int.ze_flux_at_gp[0][i] = i;
+        o_int.ze_flux_at_gp[1][i] = i + 1*ngp;
+        o_int.qx_flux_at_gp[0][i] = i + 2*ngp;
+        o_int.qx_flux_at_gp[1][i] = i + 3*ngp;
+        o_int.qy_flux_at_gp[0][i] = i + 4*ngp;
+        o_int.qy_flux_at_gp[1][i] = i + 5*ngp;
+
+        o_int.ze_source_term_at_gp[i] = i + 6*ngp;
+        o_int.qx_source_term_at_gp[i] = i + 7*ngp;
+        o_int.qy_source_term_at_gp[i] = i + 8*ngp;
+
+        o_int.ze_at_gp[i] = i +  9*ngp;
+        o_int.qx_at_gp[i] = i + 10*ngp;
+        o_int.qy_at_gp[i] = i + 11*ngp;
+        o_int.bath_at_gp[i] = i + 12*ngp;
+        o_int.h_at_gp[i] = i + 13*ngp;
+
+        o_int.bath_deriv_wrt_x_at_gp[i] = i + 14*ngp;
+        o_int.bath_deriv_wrt_y_at_gp[i] = i + 15*ngp;
+    }
+
+    std::vector<char> buffer;
+    hpx::serialization::output_archive o_archive(buffer);
+    o_archive << o_int;
+
+    hpx::serialization::input_archive i_archive(buffer);
+    SWE::Internal i_int;
+    i_archive >> i_int;
+
+    bool error_found = !( double_vectors_are_same(o_int.ze_flux_at_gp[0],i_int.ze_flux_at_gp[0]) &&
+                          double_vectors_are_same(o_int.ze_flux_at_gp[1],i_int.ze_flux_at_gp[1]) &&
+                          double_vectors_are_same(o_int.qx_flux_at_gp[0],i_int.qx_flux_at_gp[0]) &&
+                          double_vectors_are_same(o_int.qx_flux_at_gp[1],i_int.qx_flux_at_gp[1]) &&
+                          double_vectors_are_same(o_int.qy_flux_at_gp[0],i_int.qy_flux_at_gp[0]) &&
+                          double_vectors_are_same(o_int.qy_flux_at_gp[1],i_int.qy_flux_at_gp[1]) &&
+                          double_vectors_are_same(o_int.ze_source_term_at_gp, i_int.ze_source_term_at_gp) &&
+                          double_vectors_are_same(o_int.qx_source_term_at_gp, i_int.qx_source_term_at_gp) &&
+                          double_vectors_are_same(o_int.qy_source_term_at_gp, i_int.qy_source_term_at_gp) &&
+                          double_vectors_are_same(o_int.bath_at_gp,i_int.bath_at_gp) &&
+                          double_vectors_are_same(o_int.h_at_gp, i_int.h_at_gp) &&
+                          double_vectors_are_same(o_int.bath_deriv_wrt_x_at_gp, i_int.bath_deriv_wrt_x_at_gp) &&
+                          double_vectors_are_same(o_int.bath_deriv_wrt_y_at_gp, i_int.bath_deriv_wrt_y_at_gp)
+        );
+
+    return error_found;
+
+}
+
 int main() {
 
     bool error_found{false};
@@ -94,6 +147,11 @@ int main() {
 
     if ( test_swe_data_state() ) {
         std::cerr << "Error: Serialization of SWE::State produces incorrect output\n";
+        error_found = true;
+    }
+
+    if ( test_swe_data_internal() ) {
+        std::cerr << "Error: Serialization of SWE::Internal produces incorrect output\n";
         error_found = true;
     }
 

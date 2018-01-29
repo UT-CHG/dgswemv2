@@ -48,5 +48,4 @@ struct Internal {
 };
 }
 }
-
 #endif
