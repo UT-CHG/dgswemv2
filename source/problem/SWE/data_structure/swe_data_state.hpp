@@ -16,7 +16,19 @@ struct State {
     std::vector<double> rhs_ze;
     std::vector<double> rhs_qx;
     std::vector<double> rhs_qy;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
+
+#ifdef HAS_HPX
+template <typename Archive>
+void State::serialize(Archive& ar, unsigned) {
+    ar & ze & qx & qy & bath & rhs_ze & rhs_qx & rhs_qy;
+}
+#endif
 }
 
 #endif
