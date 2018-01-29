@@ -25,6 +25,8 @@ bool test_swe_data_boundary() {
         o_bdry.ze_numerical_flux_at_gp[i] = i + 3*ngp;
         o_bdry.qx_numerical_flux_at_gp[i] = i + 4*ngp;
         o_bdry.qy_numerical_flux_at_gp[i] = i + 5*ngp;
+
+        o_bdry.bath_at_gp[i] = i + 6*ngp;
     }
 
     std::vector<char> buffer;
@@ -41,6 +43,7 @@ bool test_swe_data_boundary() {
                           && double_vectors_are_same(o_bdry.ze_numerical_flux_at_gp,i_bdry.ze_numerical_flux_at_gp)
                           && double_vectors_are_same(o_bdry.qx_numerical_flux_at_gp,i_bdry.qx_numerical_flux_at_gp)
                           && double_vectors_are_same(o_bdry.qy_numerical_flux_at_gp,i_bdry.qy_numerical_flux_at_gp)
+                          && double_vectors_are_same(o_bdry.bath_at_gp,i_bdry.bath_at_gp)
         );
 
     return error_found;
