@@ -68,6 +68,18 @@ add_test(
 )
 
 add_executable(
+  test_integ_gausslegendre_2d_exe
+  test_integ_gausslegendre_2d.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_gausslegendre_2D.cpp
+)
+
+add_test(
+  Unit_integ_gausslegendre_2d
+  test_integ_gausslegendre_2d_exe
+)
+
+
+add_executable(
   test_shape_straight_triangle_exe
   test_shape_straight_triangle.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
