@@ -27,7 +27,7 @@ int main() {
 
     ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<unsigned char>(0));
     triangle.data.initialize();
-    triangle.data.resize(1);
+    triangle.data.resize(2);
 
     Stepper stepper(1, 1, 1);
 

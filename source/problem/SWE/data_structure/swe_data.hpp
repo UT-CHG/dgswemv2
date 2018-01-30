@@ -33,10 +33,10 @@ struct Data {
     }
 
     void resize(const uint nstate) {
-        if ((this->state.size() - 1) < nstate) {
-            this->state.insert(this->state.end(), nstate - (this->state.size() - 1), State(ndof));
-        } else if ((this->state.size() - 1) > nstate) {
-            this->state.erase(this->state.end() - ((this->state.size() - 1) - nstate), this->state.end());
+      if (this->state.size() < nstate) {
+            this->state.insert(this->state.end(), nstate - this->state.size(), State(ndof));
+        } else if (this->state.size() > nstate) {
+            this->state.erase(this->state.end() - (this->state.size() - nstate), this->state.end());
         }
     }
 

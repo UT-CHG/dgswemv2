@@ -102,7 +102,7 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 
     uint n_stages = this->stepper.get_num_stages();
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
+    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages+1); };
 
     this->mesh.CallForEachElement(resize_data_container);
 }
