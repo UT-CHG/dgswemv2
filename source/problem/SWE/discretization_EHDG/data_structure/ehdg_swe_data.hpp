@@ -61,7 +61,21 @@ struct Data {
     uint ndof;
     uint ngp_internal;
     std::vector<uint> ngp_boundary;
+
+#ifdef HAS_HPX
+  public:
+    template<typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
+
+#ifdef HAS_HPX
+template<typename Archive>
+void Data::serialize(Archive& ar, unsigned) {
+    ar & nvrtx & nbound & ndof & ngp_internal & ngp_boundary & state & internal & boundary & wet_dry_state
+        & slope_limit_state;
+}
+#endif
 }
 }
 
