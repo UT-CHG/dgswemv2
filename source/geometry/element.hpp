@@ -5,6 +5,9 @@ namespace Geometry {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 class Element {
   public:
+    using ElementMasterType = MasterType;
+
+  public:
     DataType data;
 
   private:
@@ -42,6 +45,8 @@ class Element {
             const std::vector<uint>& node_ID,
             const std::vector<uint>& neighbor_ID,
             const std::vector<uchar>& boundary_type);
+
+    void SetMaster(MasterType& master);
 
     void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
                                  pre_specialized_interfaces);
@@ -87,8 +92,10 @@ class Element {
     template <typename F>
     double ComputeResidualL2(const F& f, const std::vector<double>& u);
 
-  public:
-    using ElementMasterType = MasterType;
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -99,11 +106,17 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              const std::vector<uint>& neighbor_ID,
                                                              const std::vector<uchar>& boundary_type)
     : ID(ID),
-      master(&master),
       shape(ShapeType(nodal_coordinates)),
       node_ID(node_ID),
       neighbor_ID(neighbor_ID),
       boundary_type(boundary_type) {
+    SetMaster(master);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& master_) {
+    this->master = &master_;
+
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master->integration_rule.second);
 
@@ -119,15 +132,15 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
 
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
-        this->dchi_gp.resize(this->master.dchi_gp.size());
-        for (uint dof = 0; dof < this->master.dchi_gp.size(); dof++) {
+        this->dchi_gp.resize(this->master->dchi_gp.size());
+        for (uint dof = 0; dof < this->master->dchi_gp.size(); dof++) {
             this->dchi_gp[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->dchi_gp[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
-                for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
+                this->dchi_gp[dof][dir].reserve(this->master->dphi_gp[dof][dir].size());
+                for (uint gp = 0; gp < this->master->dphi_gp[dof][dir].size(); gp++) {
                     double dchi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        dchi += this->master.dchi_gp[dof][z] * J_inv[z][dir][0];
+                        dchi += this->master->dchi_gp[dof][z] * J_inv[z][dir][0];
                     }
                     this->dchi_gp[dof][dir].push_back(dchi);
                 }
@@ -258,7 +271,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const std::vector<double>& u,
                                                                                       std::vector<double>& u_lin) {
     if (const_J) {
-        this->master.basis.ProjectBasisToLinear(u, u_lin);
+        this->master->basis.ProjectBasisToLinear(u, u_lin);
     } else {
         // Placeholder for nonconstant Jacobian
     }
@@ -268,7 +281,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<double>& u_lin,
                                                                                       std::vector<double>& u) {
     if (const_J) {
-        this->master.basis.ProjectLinearToBasis(u_lin, u);
+        this->master->basis.ProjectLinearToBasis(u_lin, u);
     } else {
         // Placeholder for nonconstant Jacobian
     }
@@ -521,6 +534,12 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 
     return L2;
 }
+#ifdef HAS_HPX
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename Archive>
+void Element<dimension, MasterType, ShapeType, DataType>::serialize(Archive& ar,unsigned) {
+    ar & data & ID & shape & neighbor_ID & boundary_type;
 }
-
+#endif
+}
 #endif
