@@ -1,11 +1,12 @@
 #include "../shapes_2D.hpp"
 
 namespace Shape {
-bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
+bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) const {
     return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 }
 
-Point<2> StraightTriangle::GetBarycentricCoordinates() {
+Point<2> StraightTriangle::GetBarycentricCoordinates() const {
+    assert(this->nodal_coordinates.size() > 0);
     Point<2> baryctr_coord;
 
     baryctr_coord[GlobalCoord::x] =
@@ -21,7 +22,7 @@ Point<2> StraightTriangle::GetBarycentricCoordinates() {
     return baryctr_coord;
 }
 
-std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
+std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() const {
     std::vector<Point<2>> midpoint_coord(3);
 
     for (uint midpt = 0; midpt < 3; midpt++) {
@@ -37,7 +38,8 @@ std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
     return midpoint_coord;
 }
 
-std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) {
+std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) const {
+    assert(this->nodal_coordinates.size() > 0);
     std::vector<double> J_det;
 
     Array2D<double> J(2);
@@ -54,7 +56,8 @@ std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& point
     return J_det;
 }
 
-Array3D<double> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
+Array3D<double> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) const {
+    assert(this->nodal_coordinates.size() > 0);
     Array3D<double> J_inv(2);
     J_inv[0].resize(2);
     J_inv[1].resize(2);
@@ -78,7 +81,8 @@ Array3D<double> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
     return J_inv;
 }
 
-std::vector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) {
+std::vector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) const {
+    assert(this->nodal_coordinates.size() > 0);
     std::vector<double> surface_J;
 
     surface_J.push_back(sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
@@ -92,7 +96,8 @@ std::vector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std
     return surface_J;
 }
 
-Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points) {
+Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points) const {
+    assert(this->nodal_coordinates.size() > 0);
     Array2D<double> surface_normal(1);
 
     Array2D<double> J(2);
@@ -125,7 +130,8 @@ Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const st
 }
 
 std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                                             const std::vector<Point<2>>& points) {
+                                                             const std::vector<Point<2>>& points) const {
+    assert(this->nodal_coordinates.size() > 0);
     std::vector<double> interpolation;
 
     interpolation.reserve(points.size());
@@ -142,7 +148,8 @@ std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<d
     return interpolation;
 }
 
-std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
+std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) const {
+    assert(this->nodal_coordinates.size() > 0);
     std::vector<Point<2>> global_coordinates(points.size());
 
     std::vector<double> x = this->InterpolateNodalValues(
@@ -163,7 +170,8 @@ std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vect
     return global_coordinates;
 }
 
-void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
+void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const {
+    assert(this->nodal_coordinates.size() > 0);
     uint number_pt = points.size();
 
     double z1;

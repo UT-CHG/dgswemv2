@@ -304,4 +304,20 @@ if(USE_HPX)
     Unit_swe_serialization
     test_swe_serialization_exe
   )
+
+  add_executable(
+    test_shape_serialization_exe
+    test_shape_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  )
+
+  set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_shape_serialization
+    test_shape_serialization_exe
+  )
 endif()
