@@ -13,7 +13,7 @@ template <typename BasisType, typename IntegrationType>
 class Triangle : public Master<2> {
   public:
     /**
-     * The basis used over the elment.
+     * The basis used over the element.
      */
     BasisType basis;
 

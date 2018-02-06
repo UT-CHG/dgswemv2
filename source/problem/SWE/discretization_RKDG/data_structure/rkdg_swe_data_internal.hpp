@@ -47,13 +47,13 @@ struct Internal {
     std::vector<double> bath_deriv_wrt_y_at_gp;
 
 #ifdef HAS_HPX
-    template<typename Archive>
+    template <typename Archive>
     void serialize(Archive& ar, unsigned);
 #endif
 };
 
 #ifdef HAS_HPX
-template<typename Archive>
+template <typename Archive>
 void Internal::serialize(Archive& ar, unsigned) {
     ar & ze_flux_at_gp
        & qx_flux_at_gp
