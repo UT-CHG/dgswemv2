@@ -88,11 +88,11 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
-        auto& state_in = intface.data_in.state[0];
-        auto& state_ex = intface.data_ex.state[0];
+        auto& state_in = intface.data_in->state[0];
+        auto& state_ex = intface.data_ex->state[0];
 
-        auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+        auto& boundary_in = intface.data_in->boundary[intface.bound_id_in];
+        auto& boundary_ex = intface.data_ex->boundary[intface.bound_id_ex];
 
         auto& sp_in = intface.data_in.spherical_projection;
         auto& sp_ex = intface.data_ex.spherical_projection;
@@ -263,8 +263,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachInterface([](auto& intface) {
-        auto& sl_state_in = intface.data_in.slope_limit_state;
-        auto& sl_state_ex = intface.data_ex.slope_limit_state;
+        auto& sl_state_in = intface.data_in->slope_limit_state;
+        auto& sl_state_ex = intface.data_ex->slope_limit_state;
 
         sl_state_in.baryctr_coord_neigh[intface.bound_id_in] = sl_state_ex.baryctr_coord;
         sl_state_ex.baryctr_coord_neigh[intface.bound_id_ex] = sl_state_in.baryctr_coord;

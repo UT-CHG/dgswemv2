@@ -7,8 +7,8 @@ class Interface {
   public:
     SpecializationType specialization;
 
-    DataType& data_in;
-    DataType& data_ex;
+    DataType* data_in;
+    DataType* data_ex;
 
     uint bound_id_in;
     uint bound_id_ex;
@@ -65,8 +65,8 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     const RawBoundary<dimension, DataType>& raw_boundary_ex,
     const SpecializationType& specialization)
     : specialization(specialization),
-      data_in(raw_boundary_in.data),
-      data_ex(raw_boundary_ex.data),
+      data_in(&raw_boundary_in.data),
+      data_ex(&raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
       node_ID_in(raw_boundary_in.node_ID),
@@ -150,8 +150,8 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         }
     }
 
-    this->data_in.set_ngp_boundary(this->bound_id_in, integration_rule.first.size());
-    this->data_ex.set_ngp_boundary(this->bound_id_ex, integration_rule.first.size());
+    this->data_in->set_ngp_boundary(this->bound_id_in, integration_rule.first.size());
+    this->data_ex->set_ngp_boundary(this->bound_id_ex, integration_rule.first.size());
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
