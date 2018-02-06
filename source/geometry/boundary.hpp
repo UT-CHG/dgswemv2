@@ -8,7 +8,7 @@ class Boundary {
     BoundaryType boundary_condition;
 
     uint bound_id;
-    DataType& data;
+    DataType* data;
 
     Array2D<double> surface_normal;
 
@@ -33,7 +33,7 @@ template <uint dimension, class IntegrationType, class DataType, class BoundaryT
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
     const BoundaryType& boundary_condition)
-    : boundary_condition(std::move(boundary_condition)), data(raw_boundary.data) {
+    : boundary_condition(std::move(boundary_condition)), data(&raw_boundary.data) {
     IntegrationType integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p);
@@ -64,7 +64,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     }
 
     this->bound_id = raw_boundary.bound_id;
-    this->data.set_ngp_boundary(raw_boundary.bound_id, integration_rule.first.size());
+    this->data->set_ngp_boundary(raw_boundary.bound_id, integration_rule.first.size());
 }
 
 template <uint dimension, class IntegrationType, class DataType, class BoundaryType>

@@ -8,8 +8,8 @@ template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_send_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.get_stage();
 
-    auto& state = dbound.data.state[stage];
-    auto& boundary = dbound.data.boundary[dbound.bound_id];
+    auto& state = dbound.data->state[stage];
+    auto& boundary = dbound.data->boundary[dbound.bound_id];
 
     dbound.ComputeUgp(state.ze, boundary.ze_at_gp);
     dbound.ComputeUgp(state.qx, boundary.qx_at_gp);
@@ -17,12 +17,12 @@ void Problem::distributed_boundary_send_kernel(const Stepper& stepper, Distribut
 
     dbound.boundary_condition.SetEX(boundary.ze_at_gp, boundary.qx_at_gp, boundary.qy_at_gp);
 
-    dbound.boundary_condition.SetWetDryEX(dbound.data.wet_dry_state.wet);
+    dbound.boundary_condition.SetWetDryEX(dbound.data->wet_dry_state.wet);
 }
 
 template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
-    auto& wd_state_in = dbound.data.wet_dry_state;
+    auto& wd_state_in = dbound.data->wet_dry_state;
 
     bool wet_ex;
     dbound.boundary_condition.GetWetDryEX(wet_ex);
@@ -31,11 +31,11 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
         const uint stage = stepper.get_stage();
         const double dt = stepper.get_dt();
 
-        auto& state = dbound.data.state[stage];
-        auto& boundary = dbound.data.boundary[dbound.bound_id];
+        auto& state = dbound.data->state[stage];
+        auto& boundary = dbound.data->boundary[dbound.bound_id];
 
         double ze_ex, qx_ex, qy_ex;
-        for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+        for (uint gp = 0; gp < dbound.data->get_ngp_boundary(dbound.bound_id); ++gp) {
             dbound.boundary_condition.GetEX(stepper,
                                             gp,
                                             dbound.surface_normal,
@@ -80,7 +80,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                 // Reflective Boundary on IN element side
                 SWE::Land land_boundary;
 
-                for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+                for (uint gp = 0; gp < dbound.data->get_ngp_boundary(dbound.bound_id); ++gp) {
                     land_boundary.GetEX(stepper,
                                         gp,
                                         dbound.surface_normal,
@@ -106,7 +106,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
 
                 net_volume_flux_in = 0;
             } else if (!wd_state_in.wet) {  // water flowing to dry IN element
-                for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+                for (uint gp = 0; gp < dbound.data->get_ngp_boundary(dbound.bound_id); ++gp) {
                     dbound.boundary_condition.GetEX(stepper,
                                                     gp,
                                                     dbound.surface_normal,
@@ -138,7 +138,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
         wd_state_in.water_volume -= net_volume_flux_in * dt;
 
         // now compute contributions to the righthand side
-        for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
+        for (uint dof = 0; dof < dbound.data->get_ndof(); ++dof) {
             state.rhs_ze[dof] -= dbound.IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);
             state.rhs_qx[dof] -= dbound.IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
             state.rhs_qy[dof] -= dbound.IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
