@@ -63,11 +63,11 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachInterface([](auto& intface) {
-        auto& state_in = intface.data_in.state[0];
-        auto& state_ex = intface.data_ex.state[0];
+        auto& state_in = intface.data_in->state[0];
+        auto& state_ex = intface.data_ex->state[0];
 
-        auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+        auto& boundary_in = intface.data_in->boundary[intface.bound_id_in];
+        auto& boundary_ex = intface.data_ex->boundary[intface.bound_id_ex];
 
         intface.ComputeUgpIN(state_in.bath, boundary_in.bath_at_gp);
         intface.ComputeUgpEX(state_ex.bath, boundary_ex.bath_at_gp);
@@ -204,8 +204,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachInterface([](auto& intface) {
-        auto& sl_state_in = intface.data_in.slope_limit_state;
-        auto& sl_state_ex = intface.data_ex.slope_limit_state;
+        auto& sl_state_in = intface.data_in->slope_limit_state;
+        auto& sl_state_ex = intface.data_ex->slope_limit_state;
 
         sl_state_in.bath_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.bath_at_baryctr;
         sl_state_ex.bath_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.bath_at_baryctr;
