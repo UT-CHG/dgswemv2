@@ -7,7 +7,7 @@ class Boundary {
   public:
     BoundaryType boundary_condition;
 
-    DataType& data;
+    DataType* data;
 
     uint bound_id;
     std::vector<uint> node_ID;
@@ -46,7 +46,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
     const BoundaryType& boundary_condition)
     : boundary_condition(boundary_condition),
-      data(raw_boundary.data),
+      data(&raw_boundary.data),
       bound_id(raw_boundary.bound_id),
       node_ID(raw_boundary.node_ID),
       master(raw_boundary.master),

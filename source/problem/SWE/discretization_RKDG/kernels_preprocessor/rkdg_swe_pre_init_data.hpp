@@ -118,8 +118,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
-        auto& state    = bound.data.state[0];
-        auto& boundary = bound.data.boundary[bound.bound_id];
+        auto& state    = bound.data->state[0];
+        auto& boundary = bound.data->boundary[bound.bound_id];
         auto& sp       = bound.data.spherical_projection;
 
         bound.ComputeUgp(state.bath, boundary.bath_at_gp);
@@ -271,7 +271,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
-        auto& sl_state = bound.data.slope_limit_state;
+        auto& sl_state = bound.data->slope_limit_state;
 
         sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::x] =
             2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
@@ -340,8 +340,96 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
         }
     });
 
+    // WETTING-DRYING INITIALIZE
+
+    mesh.CallForEachElement([](auto& elt) {
+        auto& state = elt.data.state[0];
+        auto& internal = elt.data.internal;
+        auto& wd_state = elt.data.wet_dry_state;
+
+        elt.ComputeUvrtx(state.bath, wd_state.bath_at_vrtx);
+        wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
+
+        elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
+
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
+        }
+
+        bool set_wet_element = true;
+
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
+                wd_state.ze_at_vrtx[vrtx] = Global::h_o - wd_state.bath_at_vrtx[vrtx];
+
+                set_wet_element = false;
+            }
+        }
+
+        if (set_wet_element) {
+            wd_state.wet = true;
+        } else {
+            wd_state.wet = false;
+
+            state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+            std::fill(state.qx.begin(), state.qx.end(), 0.0);
+            std::fill(state.qy.begin(), state.qy.end(), 0.0);
+
+            std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
+            std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
+            std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
+        }
+
+        elt.ComputeUgp(state.ze, internal.ze_at_gp);
+
+        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+            internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+        }
+
+        wd_state.water_volume = elt.Integration(internal.h_at_gp);
+    });
+
+    // SLOPE LIMIT INITIALIZE
+
+    mesh.CallForEachElement([](auto& elt) {
+        auto& state = elt.data.state[0];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        elt.ComputeUbaryctr(state.bath, sl_state.bath_at_baryctr);
+        elt.ComputeUmidpts(state.bath, sl_state.bath_at_midpts);
+
+        sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
+        sl_state.midpts_coord = elt.GetShape().GetMidpointCoordinates();
+
+        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+            sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
+        }
+    });
+
+    mesh.CallForEachInterface([](auto& intface) {
+        auto& sl_state_in = intface.data_in->slope_limit_state;
+        auto& sl_state_ex = intface.data_ex->slope_limit_state;
+
+        sl_state_in.bath_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.bath_at_baryctr;
+        sl_state_ex.bath_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.bath_at_baryctr;
+
+        sl_state_in.baryctr_coord_neigh[intface.bound_id_in] = sl_state_ex.baryctr_coord;
+        sl_state_ex.baryctr_coord_neigh[intface.bound_id_ex] = sl_state_in.baryctr_coord;
+    });
+
+    mesh.CallForEachBoundary([](auto& bound) {
+        auto& sl_state = bound.data->slope_limit_state;
+
+        sl_state.bath_at_baryctr_neigh[bound.bound_id] = sl_state.bath_at_baryctr;
+
+        sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::x] =
+            2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
+        sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::y] =
+            2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+    });
+
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& sl_state = dbound.data.slope_limit_state;
+        auto& sl_state = dbound.data->slope_limit_state;
 
         dbound.boundary_condition.exchanger.SetPreprocEX(sl_state.baryctr_coord[GlobalCoord::x],
                                                          sl_state.baryctr_coord[GlobalCoord::y]);
@@ -350,7 +438,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
 
 void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& sl_state = dbound.data.slope_limit_state;
+        auto& sl_state = dbound.data->slope_limit_state;
 
         dbound.boundary_condition.exchanger.GetPreprocEX(sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::x],
                                                          sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::y]);
