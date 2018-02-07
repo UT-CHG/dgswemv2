@@ -5,10 +5,13 @@ namespace Geometry {
 template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
 class Boundary {
   public:
+    using BoundaryIntegrationType = IntegrationType;
+
+  public:
     BoundaryType boundary_condition;
 
     uint bound_id;
-    DataType* data;
+    DataType* data = nullptr;
 
     Array2D<double> surface_normal;
 
@@ -25,8 +28,10 @@ class Boundary {
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
 
-  public:
-    using BoundaryIntegrationType = IntegrationType;
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
@@ -103,6 +108,18 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
 
     return integral;
 }
-}
 
+#ifdef HAS_HPX
+template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+template<typename Archive>
+void Boundary<dimension, IntegrationType, DataType, BoundaryType>::serialize(Archive& ar, unsigned) {
+    ar & boundary_condition
+       & bound_id
+       & surface_normal
+       & phi_gp
+       & int_fact
+       & int_fact_phi;
+}
+#endif
+}
 #endif

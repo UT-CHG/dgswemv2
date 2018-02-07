@@ -7,8 +7,8 @@ class Interface {
   public:
     uint bound_id_in;
     uint bound_id_ex;
-    DataType* data_in;
-    DataType* data_ex;
+    DataType* data_in = nullptr;
+    DataType* data_ex = nullptr;
 
     Array2D<double> surface_normal_in;
     Array2D<double> surface_normal_ex;
@@ -22,6 +22,7 @@ class Interface {
     Array2D<double> int_fact_phi_ex;
 
   public:
+    Interface() = default;
     Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
               const RawBoundary<dimension, DataType>& raw_boundary_ex);
 
@@ -31,12 +32,18 @@ class Interface {
     double IntegrationEX(const std::vector<double>& u_gp);
     double IntegrationPhiIN(const uint dof, const std::vector<double>& u_gp);
     double IntegrationPhiEX(const uint dof, const std::vector<double>& u_gp);
+
+#ifdef HAS_HPX
+    template<typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 template <uint dimension, class IntegrationType, class DataType>
 Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
                                                            const RawBoundary<dimension, DataType>& raw_boundary_ex)
-    : data_in(&raw_boundary_in.data), data_ex(&raw_boundary_ex.data) {
+    : bound_id_in(raw_boundary_in.bound_id), bound_id_ex(raw_boundary_ex.bound_id), data_in(&raw_boundary_in.data),
+      data_ex(&raw_boundary_ex.data) {
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
     IntegrationType integration;
@@ -92,8 +99,6 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
         }
     }
 
-    this->bound_id_in = raw_boundary_in.bound_id;
-    this->bound_id_ex = raw_boundary_ex.bound_id;
     this->data_in->set_ngp_boundary(raw_boundary_in.bound_id, integration_rule.first.size());
     this->data_ex->set_ngp_boundary(raw_boundary_ex.bound_id, integration_rule.first.size());
 }
@@ -167,6 +172,21 @@ inline double Interface<dimension, IntegrationType, DataType>::IntegrationPhiEX(
 
     return integral;
 }
+#ifdef HAS_HPX
+template <uint dimension, class IntegrationType, class DataType>
+template<typename Archive>
+void Interface<dimension, IntegrationType, DataType>::serialize(Archive& ar, unsigned){
+    ar & bound_id_in
+       & bound_id_ex
+       & surface_normal_in
+       & surface_normal_ex
+       & phi_gp_in
+       & phi_gp_ex
+       & int_fact_in
+       & int_fact_ex
+       & int_fact_phi_in
+       & int_fact_phi_ex;
 }
-
+#endif
+}
 #endif

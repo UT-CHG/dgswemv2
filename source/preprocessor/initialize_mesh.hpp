@@ -82,12 +82,12 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
         }
     }
 
+    ProblemType::create_boundaries_kernel(mesh, pre_boundaries, writer);
+    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, writer);
+
     if (writer.WritingLog()) {
         writer.GetLogFile() << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
     }
-
-    ProblemType::create_boundaries_kernel(mesh, pre_boundaries, writer);
-    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, writer);
 }
 
 #endif
