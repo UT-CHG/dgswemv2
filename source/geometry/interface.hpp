@@ -7,8 +7,8 @@ class Interface {
   public:
     SpecializationType specialization;
 
-    DataType* data_in;
-    DataType* data_ex;
+    DataType* data_in = nullptr;
+    DataType* data_ex = nullptr;
 
     uint bound_id_in;
     uint bound_id_ex;
@@ -38,6 +38,7 @@ class Interface {
     Array2D<double> int_phi_fact_ex;
 
   public:
+    Interface() = default;
     Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
               const RawBoundary<dimension, DataType>& raw_boundary_ex,
               const SpecializationType& specialization = SpecializationType());
@@ -54,6 +55,11 @@ class Interface {
     double IntegrationEX(const std::vector<double>& u_gp);
     double IntegrationPhiIN(const uint dof, const std::vector<double>& u_gp);
     double IntegrationPhiEX(const uint dof, const std::vector<double>& u_gp);
+
+#ifdef HAS_HPX
+    template<typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 
   public:
     using InterfaceIntegrationType = IntegrationType;
@@ -281,6 +287,21 @@ inline double Interface<dimension, IntegrationType, DataType, SpecializationType
 
     return integral;
 }
+#ifdef HAS_HPX
+template <uint dimension, class IntegrationType, class DataType>
+template<typename Archive>
+void Interface<dimension, IntegrationType, DataType>::serialize(Archive& ar, unsigned){
+    ar & bound_id_in
+       & bound_id_ex
+       & surface_normal_in
+       & surface_normal_ex
+       & phi_gp_in
+       & phi_gp_ex
+       & int_fact_in
+       & int_fact_ex
+       & int_fact_phi_in
+       & int_fact_phi_ex;
 }
-
+#endif
+}
 #endif
