@@ -4,8 +4,6 @@
 #include "geometry/mesh_definitions.hpp"
 #include "simulation/writer.hpp"
 
-using namespace Geometry;
-
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
                               const MeshMetaData& mesh_data,
@@ -58,7 +56,7 @@ template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
                                            Communicator& communicator,
                                            Writer<ProblemType>& writer) {
-    using RawBoundaryType = RawBoundary<1, typename ProblemType::ProblemDataType>;
+    using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
 
     using InterfaceType =
         typename std::tuple_element<0, Geometry::InterfaceTypeTuple<typename ProblemType::ProblemDataType>>::type;
