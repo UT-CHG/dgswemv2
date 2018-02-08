@@ -33,10 +33,6 @@ class Land {
         qx_ex = qn_ex * n_x + qt_ex * t_x;
         qy_ex = qn_ex * n_y + qt_ex * t_y;
     }
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {}
-#endif
 };
 }
 
