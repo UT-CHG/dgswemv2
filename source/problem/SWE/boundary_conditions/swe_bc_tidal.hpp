@@ -31,10 +31,6 @@ class Tidal {
         qx_ex = qx_in[gp];
         qy_ex = qy_in[gp];
     }
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {}
-#endif
 };
 }
 

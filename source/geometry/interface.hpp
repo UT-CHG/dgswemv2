@@ -287,21 +287,5 @@ inline double Interface<dimension, IntegrationType, DataType, SpecializationType
 
     return integral;
 }
-#ifdef HAS_HPX
-template <uint dimension, class IntegrationType, class DataType>
-template<typename Archive>
-void Interface<dimension, IntegrationType, DataType>::serialize(Archive& ar, unsigned){
-    ar & bound_id_in
-       & bound_id_ex
-       & surface_normal_in
-       & surface_normal_ex
-       & phi_gp_in
-       & phi_gp_ex
-       & int_fact_in
-       & int_fact_ex
-       & int_fact_phi_in
-       & int_fact_phi_ex;
-}
-#endif
 }
 #endif
