@@ -4,7 +4,10 @@
 #include "general_definitions.hpp"
 
 struct Stepper {
-    Stepper(uint nstages, uint order, double dt);
+    Stepper()=default;
+    Stepper(uint nstages, uint order, double dt, double t0 = 0.);
+
+    void InitializeCoefficients();
 
     uint get_num_stages() const { return nstages; }
 
@@ -32,7 +35,8 @@ struct Stepper {
         return *this;
     }
 
-    const uint nstages;
+    uint order;
+    uint nstages;
     uint irk;
 
     std::vector<std::vector<double>> ark;
@@ -43,7 +47,31 @@ struct Stepper {
     uint step;
     uint timestamp;
     double _t;
-    const double _dt;
+    double _dt;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void save(Archive& ar, unsigned) const;
+
+    template <typename Archive>
+    void load(Archive& ar, unsigned);
+
+    HPX_SERIALIZATION_SPLIT_MEMBER()
+#endif
 };
 
+#ifdef HAS_HPX
+template<typename Archive>
+void Stepper::save(Archive& ar, unsigned) const {
+    ar & order & nstages & irk & _dt & timestamp & _t;
+}
+
+template<typename Archive>
+void Stepper::load(Archive& ar, unsigned) {
+    ar & order & nstages & irk & _dt & timestamp & _t;
+
+    step = timestamp/nstages;
+    InitializeCoefficients();
+}
+#endif
 #endif

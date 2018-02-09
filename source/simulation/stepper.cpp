@@ -1,11 +1,16 @@
 #include "stepper.hpp"
 
-Stepper::Stepper(uint nstages, uint order, double dt)
-    : nstages(nstages), irk(0), drk(nstages, 0), step(0), timestamp(0), _t(0.), _dt(dt) {
+Stepper::Stepper(uint nstages, uint order, double dt, double t0 /*= 0.*/)
+    : order(order), nstages(nstages), irk(0), step(0), timestamp(0), _t(t0), _dt(dt) {
+    InitializeCoefficients();
+}
+
+Stepper::InitializeCoefficients() {
     // Allocate the time stepping arrays
     ark.reserve(nstages);
     brk.reserve(nstages);
     crk.reserve(nstages);
+    drk = std::vector<double>(nstages, 0);
 
     for (uint step = 1; step <= nstages; ++step) {
         ark.emplace_back(std::vector<double>(step, 0));

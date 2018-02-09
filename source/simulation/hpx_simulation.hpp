@@ -45,8 +45,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
   public:
     HPXSimulationUnit()
         : input(),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          mesh(this->input.polynomial_order) {}
+          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt) {}
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
