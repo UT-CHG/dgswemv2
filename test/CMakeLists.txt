@@ -340,4 +340,29 @@ if(USE_HPX)
     Unit_element_serialization
     test_element_serialization_exe
   )
+
+  add_executable(
+    test_mesh_serialization_exe
+    test_mesh_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+    ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+    ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+    ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+    ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+    ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+    ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  )
+
+  set_target_properties(test_mesh_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_mesh_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
+
+
+  add_test(
+    Unit_mesh_serialization
+    test_mesh_serialization_exe
+    ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
+  )
 endif()

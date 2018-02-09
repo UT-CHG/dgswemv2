@@ -75,6 +75,12 @@ void for_each(T&& t, F f, seq<Is...>) {
     ignore(unused);
 }
 
+template< typename T, typename F, int... Is>
+void for_each(const T&& t, F f, seq<Is...>) {
+    auto unused = {(f(std::get<Is>(t)), 0)...};
+    ignore(unused);
+}
+
 /**
  * Apply the unary function F to each member of the tuple std::tuple<Ts...>.
  * This implementation is based on
@@ -87,6 +93,13 @@ template <typename... Ts, typename F>
 void for_each_in_tuple(std::tuple<Ts...>& t, F f) {
     for_each(t, f, gen_seq<sizeof...(Ts)>());
 }
+
+//const reference overload for for_each_in_tuple
+template<typename... Ts, typename F>
+void for_each_in_tuple(const std::tuple<Ts...>& t, F f) {
+    for_each(t,f, gen_seq<sizeof...(Ts)>());
+}
+
 
 template <typename Tup1, typename Tup2>
 struct tuple_join;

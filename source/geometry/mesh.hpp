@@ -27,6 +27,8 @@ class Mesh<std::tuple<Elements...>,
     using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
     using DistributedBoundariesContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
+    uint p;
+
     MasterElementTypes masters;
     ElementContainer elements;
     InterfaceContainer interfaces;
@@ -36,7 +38,8 @@ class Mesh<std::tuple<Elements...>,
     std::string mesh_name;
 
   public:
-    Mesh(const uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+    Mesh()=default;
+    Mesh(const uint p) : p(p), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
     std::string GetMeshName() { return this->mesh_name; }
@@ -97,6 +100,37 @@ class Mesh<std::tuple<Elements...>,
             std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
         });
     }
+
+#ifdef HAS_HPX
+    template <typename Archive>
+     void save(Archive& ar, unsigned) const {
+        ar & mesh_name & p;
+        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
+                ar & element_map;
+        });
+    }
+
+    template <typename Archive>
+     void load(Archive& ar, unsigned) {
+        ar & mesh_name & p;
+
+        masters = master_maker<MasterElementTypes>::construct_masters(p);
+
+        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
+                ar & element_map;
+        });
+
+        CallForEachElement([this](auto& element) {
+                using MasterType = typename std::remove_reference<decltype(element)>::type::ElementMasterType;
+
+                MasterType& master_elt = std::get<Utilities::index<
+                    MasterType, MasterElementTypes>::value>(this->masters);
+                element.SetMaster(master_elt);
+            });
+    }
+
+    HPX_SERIALIZATION_SPLIT_MEMBER()
+#endif
 };
 }
 

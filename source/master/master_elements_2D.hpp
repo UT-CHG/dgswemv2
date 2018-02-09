@@ -24,6 +24,11 @@ class Triangle : public Master<2> {
 
   public:
     /**
+     * Default constructor
+     */
+    Triangle()=default;
+
+    /**
      * Construct a master triangle with polynomial order p.
      *
      * @param p Polynomial order
