@@ -6,17 +6,16 @@
 
 \usepackage{xcolor}
 \usepackage{listings}
-\lstset{basicstyle=\ttfamily,
-  showstringspaces=false,
-  commentstyle=\color{red},
-  keywordstyle=\color{blue}
-}
+
 \usepackage{longtable}
 \usepackage{tikz}
 \usetikzlibrary{trees,arrows}
 
+\usepackage{todonotes}
+\input{preamble.tex}
+
 \begin{document}
-\title{ \texttt{dgswem-v2}: User's Guide}
+\title{ \pkg{dgswem-v2}: User's Guide}
 
 \maketitle
 \tableofcontents
@@ -32,8 +31,5 @@
 \input{chapters/input-format.tex}
 
 \input{chapters/dgswem-to-dgswemv2.tex}
-
-
-
 
 \end{document}
