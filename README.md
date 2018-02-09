@@ -54,11 +54,12 @@ Assuming that `${INSTALL_PATH}` is the path defined in the configuration file. T
 ```
 Note that there are some additional options, which will create additional targets. These typically require additional dependencies.
 
-| CMake Option | Description                                                           |
-| ------------ | --------------------------------------------------------------------- |
-| USE_OMPI     | Enables MPI OpenMP parallelization; builds target `DG_HYPER_SWE_OMPI` |
-| USE_HPX      | Enables HPX parallelization; builds target `DG_HYPER_SWE_HPX`         |
-| SET_VERBOSE  | Set the makefile compilation output to Verbose                        |
+| CMake Option   | Description                                                           |
+| -------------- | --------------------------------------------------------------------- |
+| USE_OMPI       | Enables MPI OpenMP parallelization; builds target `DG_HYPER_SWE_OMPI` |
+| USE_HPX        | Enables HPX parallelization; builds target `DG_HYPER_SWE_HPX`         |
+| SET_VERBOSE    | Set the makefile compilation output to Verbose                        |
+| BUILD_EXAMPLES | Build additional executables to run the examples                      |
 
 Note that the two parallel targets are not mutually exclusive. Cmake should be able to build the two targets without any conflicts.
 
