@@ -71,6 +71,20 @@ std::pair<bool, Array2D<double>> Dubiner_2D::GetMinv(const uint p) {
     return m_inv;
 }
 
+inline void Dubiner_2D::ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) {
+    u_lin[0] = u[0] - u[1] - u[2];
+    u_lin[1] = u[0] - u[1] + u[2];
+    u_lin[2] = u[0] + 2.0*u[1];
+}
+
+inline void Dubiner_2D::ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) {
+    std::fill(u.begin(), u.end(), 0.0);
+    
+    u[0] = (u_lin[0] + u_lin[1] + u_lin[2])/3.0;
+    u[1] = (-u_lin[0] - u_lin[1] + 2.0*u_lin[2])/6.0;
+    u[2] = (-u_lin[0] + u_lin[1])/2.0;
+}
+
 std::vector<double> Dubiner_2D::ComputePhi(const uint p,
                                            const uint q,
                                            const std::vector<double>& n1,

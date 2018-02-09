@@ -10,7 +10,9 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& internal = elt.data.internal;
 
-    elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
+    elt.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+
+    elt.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
 
     for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
         wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
@@ -26,8 +28,8 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
         }
-
-        state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+    
+        elt.ProjectLinearToBasis(wd_state.ze_at_vrtx, state.ze);
 
         set_dry_element = true;
     } else {
@@ -68,8 +70,11 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             wd_state.h_at_vrtx = wd_state.h_at_vrtx_temp;
 
-            elt.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-            elt.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
+            elt.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
+            elt.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
+
+            elt.ComputeLinearUvrtx(wd_state.qx_lin, wd_state.qx_at_vrtx);
+            elt.ComputeLinearUvrtx(wd_state.qy_lin, wd_state.qy_at_vrtx);
 
             double del_qx = 0;
             double del_qy = 0;
@@ -96,9 +101,9 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
                 }
             }
 
-            state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
-            state.qx = elt.L2Projection(wd_state.qx_at_vrtx);
-            state.qy = elt.L2Projection(wd_state.qy_at_vrtx);
+            elt.ProjectLinearToBasis(wd_state.ze_at_vrtx, state.ze);
+            elt.ProjectLinearToBasis(wd_state.qx_at_vrtx, state.qx);
+            elt.ProjectLinearToBasis(wd_state.qy_at_vrtx, state.qy);
 
             if (wd_state.wet) {
                 set_wet_element = true;

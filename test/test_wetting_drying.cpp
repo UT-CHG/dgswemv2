@@ -25,7 +25,7 @@ int main() {
     MasterType master(10);
     ShapeType shape(vrtxs);
 
-    ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<unsigned char>(0));
+    ElementType triangle(0, master, vrtxs, std::vector<uint>(3), std::vector<unsigned char>(3));
     triangle.data.initialize();
     triangle.data.resize(2);
 
@@ -58,9 +58,13 @@ int main() {
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
-    triangle.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
-    triangle.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-    triangle.ComputeUvrtx(state.qx, wd_state.qy_at_vrtx);
+    triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+    triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
+    triangle.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
+
+    triangle.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qx_lin, wd_state.qx_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qy_lin, wd_state.qy_at_vrtx);
 
     if (wd_state.wet) {
         error_found = true;
@@ -112,9 +116,13 @@ int main() {
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
-    triangle.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
-    triangle.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-    triangle.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
+    triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+    triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
+    triangle.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
+
+    triangle.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qx_lin, wd_state.qx_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qy_lin, wd_state.qy_at_vrtx);
 
     if (!wd_state.wet) {
         error_found = true;
@@ -163,9 +171,13 @@ int main() {
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
-    triangle.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
-    triangle.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-    triangle.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
+    triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+    triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
+    triangle.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
+
+    triangle.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qx_lin, wd_state.qx_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qy_lin, wd_state.qy_at_vrtx);
 
     if (wd_state.wet) {
         error_found = true;
@@ -217,10 +229,14 @@ int main() {
     state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
+    
+    triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+    triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
+    triangle.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
 
-    triangle.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
-    triangle.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-    triangle.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qx_lin, wd_state.qx_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qy_lin, wd_state.qy_at_vrtx);
 
     if (wd_state.wet) {
         error_found = true;
@@ -286,9 +302,13 @@ int main() {
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
-    triangle.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
-    triangle.ComputeUvrtx(state.qx, wd_state.qx_at_vrtx);
-    triangle.ComputeUvrtx(state.qy, wd_state.qy_at_vrtx);
+    triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+    triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
+    triangle.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
+
+    triangle.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qx_lin, wd_state.qx_at_vrtx);
+    triangle.ComputeLinearUvrtx(wd_state.qy_lin, wd_state.qy_at_vrtx);
 
     if (!wd_state.wet) {
         error_found = true;

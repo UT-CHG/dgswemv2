@@ -9,20 +9,6 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     this->phi_gp = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
 
-    std::vector<Point<2>> baryctr{{-1.0 / 3.0, -1.0 / 3.0}};
-    Array2D<double> baryctr_array2d = this->basis.GetPhi(this->p, baryctr);
-
-    this->phi_baryctr.resize(baryctr_array2d.size());
-    for (uint dof = 0; dof < phi_baryctr.size(); dof++) {
-        this->phi_baryctr[dof] = baryctr_array2d[dof][0];
-    }
-
-    std::vector<Point<2>> midpts{{0.0, 0.0}, {-1.0, 0.0}, {0.0, -1.0}};
-    this->phi_midpts = this->basis.GetPhi(this->p, midpts);
-
-    std::vector<Point<2>> vrtx{{-1.0, -1.0}, {1.0, -1.0}, {-1.0, 1.0}};
-    this->phi_vrtx = this->basis.GetPhi(this->p, vrtx);
-
     std::vector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
     this->phi_postprocessor_cell = this->basis.GetPhi(this->p, z_postprocessor_cell);
 
@@ -78,6 +64,33 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
     }
 
     return z_master;
+}
+
+template <class BasisType, class IntegrationType>
+inline void Triangle<BasisType, IntegrationType>::ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) {
+    this->basis.ProjectBasisToLinear(u, u_lin);
+}
+
+template <class BasisType, class IntegrationType>
+inline void Triangle<BasisType, IntegrationType>::ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) {
+    this->basis.ProjectLinearToBasis(u_lin, u);
+}
+
+template <class BasisType, class IntegrationType>
+inline void Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr) {
+    u_lin_baryctr = (u_lin[0]+u_lin[1]+u_lin[2])/3.0;
+}
+
+template <class BasisType, class IntegrationType>
+inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts) {
+    u_lin_midpts[0] = (u_lin[1]+u_lin[2])/2.0;
+    u_lin_midpts[1] = (u_lin[2]+u_lin[0])/2.0;
+    u_lin_midpts[2] = (u_lin[0]+u_lin[1])/2.0;
+}
+
+template <class BasisType, class IntegrationType>
+inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx) {
+    u_lin_vrtx = u_lin;
 }
 
 template <class BasisType, class IntegrationType>

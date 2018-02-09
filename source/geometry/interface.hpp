@@ -80,12 +80,9 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
             Array2D<double>(integration_rule.first.size(),
                             *raw_boundary_in.shape.GetSurfaceNormal(raw_boundary_in.bound_id, z_master).begin());
 
-        this->surface_normal_ex.resize(2);
-
+        this->surface_normal_ex = this->surface_normal_in;
+ 
         uint ngp = this->surface_normal_ex.size();
-        this->surface_normal_ex[GlobalCoord::x].resize(ngp);
-        this->surface_normal_ex[GlobalCoord::y].resize(ngp);
-
         uint gp_ex = 0;
         for (uint gp = 0; gp < this->surface_normal_ex.size(); gp++) {
             gp_ex = ngp - gp - 1;

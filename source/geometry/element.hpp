@@ -12,7 +12,7 @@ class Element {
 
     MasterType& master;
     ShapeType shape;
-
+    
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
@@ -20,6 +20,7 @@ class Element {
 
     Array3D<double> dphi_fact;
 
+    bool const_J;
     std::vector<double> int_fact;
     Array2D<double> int_fact_phi;
     Array3D<double> int_fact_dphi;
@@ -45,14 +46,17 @@ class Element {
     std::vector<double> L2Projection(const F& f);
     std::vector<double> L2Projection(const std::vector<double>& nodal_values);
 
+    void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin);
+    void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u);
+    
     template <typename F>
     void ComputeFgp(const F& f, std::vector<double>& f_gp);
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
-    void ComputeUbaryctr(const std::vector<double>& u, double& u_baryctr);
-    void ComputeUmidpts(const std::vector<double>& u, std::vector<double>& u_midpts);
-    void ComputeUvrtx(const std::vector<double>& u, std::vector<double>& u_vrtx);
+    void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr);
+    void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts);
+    void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx);
 
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
@@ -89,7 +93,9 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
     std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
     Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
 
-    if (det_J.size() == 1) {  // constant Jacobian
+    this->const_J = (det_J.size() == 1);
+
+    if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
         this->dphi_fact.resize(this->master.dphi_gp.size());
         for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
@@ -146,7 +152,7 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
         // Placeholder for nonconstant Jacobian
     }
 
-    this->data.set_nvrtx((*this->master.phi_vrtx.begin()).size());
+    this->data.set_nvrtx(this->boundary_type.size());
     this->data.set_nbound(this->boundary_type.size());
     this->data.set_ndof(this->master.phi_gp.size());
     this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
@@ -212,6 +218,24 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) {
+    if(const_J) {
+        this->master.ProjectBasisToLinear(u, u_lin);
+    } else {
+        // Placeholder for nonconstant Jacobian
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) {
+    if(const_J) {
+        this->master.ProjectLinearToBasis(u_lin, u);
+    } else {
+        // Placeholder for nonconstant Jacobian
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f, std::vector<double>& f_gp) {
     for (uint gp = 0; gp < f_gp.size(); gp++) {
@@ -245,37 +269,21 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUbaryctr(const std::vector<double>& u,
-                                                                                 double& u_baryctr) {
-    u_baryctr = 0.0;
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        u_baryctr += u[dof] * this->master.phi_baryctr[dof];
-    }
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin,
+                                                                                 double& u_lin_baryctr) {
+    this->master.ComputeLinearUbaryctr(u_lin, u_lin_baryctr);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUmidpts(const std::vector<double>& u,
-                                                                                std::vector<double>& u_midpts) {
-    std::fill(u_midpts.begin(), u_midpts.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint midpt = 0; midpt < u_midpts.size(); midpt++) {
-            u_midpts[midpt] += u[dof] * this->master.phi_midpts[dof][midpt];
-        }
-    }
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(const std::vector<double>& u_lin,
+                                                                                std::vector<double>& u_lin_midpts) {
+    this->master.ComputeLinearUmidpts(u_lin, u_lin_midpts);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUvrtx(const std::vector<double>& u,
-                                                                              std::vector<double>& u_vrtx) {
-    std::fill(u_vrtx.begin(), u_vrtx.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint vrtx = 0; vrtx < u_vrtx.size(); vrtx++) {
-            u_vrtx[vrtx] += u[dof] * this->master.phi_vrtx[dof][vrtx];
-        }
-    }
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
+                                                                              std::vector<double>& u_lin_vrtx) {
+    this->master.ComputeLinearUvrtx(u_lin, u_lin_vrtx);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -415,7 +423,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 
     double L2 = 0;
 
-    if (this->shape.GetJdet(rule.second).size() == 1) {
+    if (const_J) {
         for (uint gp = 0; gp < sq_diff.size(); gp++) {
             L2 += sq_diff[gp] * rule.first[gp];
         }

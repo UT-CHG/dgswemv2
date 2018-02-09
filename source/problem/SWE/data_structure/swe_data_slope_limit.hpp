@@ -13,6 +13,9 @@ struct SlopeLimit {
           alpha_1(nbound),
           alpha_2(nbound),
           r_sq(nbound),
+          ze_lin(nbound),
+          qx_lin(nbound),
+          qy_lin(nbound),
           ze_at_vrtx(nbound),
           qx_at_vrtx(nbound),
           qy_at_vrtx(nbound),
@@ -34,6 +37,10 @@ struct SlopeLimit {
     std::vector<double> alpha_1;
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
+
+    std::vector<double> ze_lin;
+    std::vector<double> qx_lin;
+    std::vector<double> qy_lin;
 
     double ze_at_baryctr;
     double qx_at_baryctr;

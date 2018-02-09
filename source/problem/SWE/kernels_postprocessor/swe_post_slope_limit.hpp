@@ -1,6 +1,8 @@
 #ifndef SWE_POST_SLOPE_LIMIT_HPP
 #define SWE_POST_SLOPE_LIMIT_HPP
 
+#include "utilities/almost_equal.hpp"
+
 namespace SWE {
 template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt) {
@@ -9,13 +11,17 @@ void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, Elem
     auto& state = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;
 
-    elt.ComputeUbaryctr(state.ze, sl_state.ze_at_baryctr);
-    elt.ComputeUbaryctr(state.qx, sl_state.qx_at_baryctr);
-    elt.ComputeUbaryctr(state.qy, sl_state.qy_at_baryctr);
+    elt.ProjectBasisToLinear(state.ze, sl_state.ze_lin);
+    elt.ProjectBasisToLinear(state.qx, sl_state.qx_lin);
+    elt.ProjectBasisToLinear(state.qy, sl_state.qy_lin);
 
-    elt.ComputeUmidpts(state.ze, sl_state.ze_at_midpts);
-    elt.ComputeUmidpts(state.qx, sl_state.qx_at_midpts);
-    elt.ComputeUmidpts(state.qy, sl_state.qy_at_midpts);
+    elt.ComputeLinearUbaryctr(sl_state.ze_lin, sl_state.ze_at_baryctr);
+    elt.ComputeLinearUbaryctr(sl_state.qx_lin, sl_state.qx_at_baryctr);
+    elt.ComputeLinearUbaryctr(sl_state.qy_lin, sl_state.qy_at_baryctr);
+
+    elt.ComputeLinearUmidpts(sl_state.ze_lin, sl_state.ze_at_midpts);
+    elt.ComputeLinearUmidpts(sl_state.qx_lin, sl_state.qx_at_midpts);
+    elt.ComputeLinearUmidpts(sl_state.qy_lin, sl_state.qy_at_midpts);
 }
 
 template <typename InterfaceType>
@@ -194,9 +200,25 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
         }
     }
 
-    state.ze = elt.L2Projection(sl_state.ze_at_vrtx);
-    state.qx = elt.L2Projection(sl_state.qx_at_vrtx);
-    state.qy = elt.L2Projection(sl_state.qy_at_vrtx);
+    std::vector<bool> limit(3, false);
+
+    for (uint vrtx = 0; vrtx < 3; vrtx++) {
+        if(Utilities::almost_equal(sl_state.ze_at_vrtx[vrtx], sl_state.ze_lin[vrtx])){
+            limit[0] = true;
+        }
+
+        if(Utilities::almost_equal(sl_state.qx_at_vrtx[vrtx], sl_state.qx_lin[vrtx])){
+            limit[1] = true;
+        }
+
+        if(Utilities::almost_equal(sl_state.qy_at_vrtx[vrtx], sl_state.qy_lin[vrtx])){
+            limit[2] = true;
+        }
+    }
+
+    if(limit[0]) elt.ProjectLinearToBasis(sl_state.ze_at_vrtx, state.ze);
+    if(limit[1]) elt.ProjectLinearToBasis(sl_state.qx_at_vrtx, state.qx);
+    if(limit[2]) elt.ProjectLinearToBasis(sl_state.qy_at_vrtx, state.qy);
 }
 }
 

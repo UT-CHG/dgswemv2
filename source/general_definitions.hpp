@@ -78,6 +78,9 @@ class Basis {
      *        and a 2-dimensional array corresponding to the mass matrix over the master element
      */
     virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
+
+    virtual void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) = 0;
+    virtual void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) = 0;
 };
 }
 
@@ -121,10 +124,6 @@ class Master {
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
 
-    std::vector<double> phi_baryctr;
-    Array2D<double> phi_midpts;
-    Array2D<double> phi_vrtx;
-
     Array2D<double> int_fact_phi;
     Array3D<double> int_fact_dphi;
 
@@ -139,6 +138,13 @@ class Master {
     virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
         const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
+
+    virtual void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) = 0;
+    virtual void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) = 0;
+
+    virtual void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr) = 0;
+    virtual void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts) = 0;
+    virtual void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx) = 0;
 };
 }
 

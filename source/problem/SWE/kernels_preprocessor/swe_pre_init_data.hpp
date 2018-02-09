@@ -72,15 +72,20 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     // WETTING-DRYING INITIALIZE
 
-    mesh.CallForEachElement([](auto& elt) {
+    mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& state = elt.data.state[0];
         auto& internal = elt.data.internal;
         auto& wd_state = elt.data.wet_dry_state;
 
-        elt.ComputeUvrtx(state.bath, wd_state.bath_at_vrtx);
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            wd_state.bath_at_vrtx[vrtx] = bathymetry[elt.GetID()][vrtx];
+        }
+
         wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
 
-        elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
+        elt.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+
+        elt.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
@@ -101,7 +106,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         } else {
             wd_state.wet = false;
 
-            state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+            elt.ProjectLinearToBasis(wd_state.ze_at_vrtx, state.ze);
             std::fill(state.qx.begin(), state.qx.end(), 0.0);
             std::fill(state.qy.begin(), state.qy.end(), 0.0);
 
@@ -121,12 +126,17 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     // SLOPE LIMIT INITIALIZE
 
-    mesh.CallForEachElement([](auto& elt) {
-        auto& state = elt.data.state[0];
+    mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        elt.ComputeUbaryctr(state.bath, sl_state.bath_at_baryctr);
-        elt.ComputeUmidpts(state.bath, sl_state.bath_at_midpts);
+        std::vector<double> bath_lin(elt.data.get_nvrtx());
+
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            bath_lin[vrtx] = bathymetry[elt.GetID()][vrtx];
+        }
+
+        elt.ComputeLinearUbaryctr(bath_lin, sl_state.bath_at_baryctr);
+        elt.ComputeLinearUmidpts(bath_lin, sl_state.bath_at_midpts);
 
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         sl_state.midpts_coord = elt.GetShape().GetMidpointCoordinates();
@@ -255,20 +265,28 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        dbound.ComputeUgp(dbound.data.state[0].bath, dbound.data.boundary[dbound.bound_id].bath_at_gp);
+        auto& state = dbound.data.state[0];
+        auto& boundary = dbound.data.boundary[dbound.bound_id];
+
+        dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
     });
 
     // WETTING-DRYING INITIALIZE
 
-    mesh.CallForEachElement([](auto& elt) {
+    mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& state = elt.data.state[0];
         auto& internal = elt.data.internal;
         auto& wd_state = elt.data.wet_dry_state;
 
-        elt.ComputeUvrtx(state.bath, wd_state.bath_at_vrtx);
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            wd_state.bath_at_vrtx[vrtx] = bathymetry[elt.GetID()][vrtx];
+        }
+
         wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
 
-        elt.ComputeUvrtx(state.ze, wd_state.ze_at_vrtx);
+        elt.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+
+        elt.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
@@ -289,7 +307,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
         } else {
             wd_state.wet = false;
 
-            state.ze = elt.L2Projection(wd_state.ze_at_vrtx);
+            elt.ProjectLinearToBasis(wd_state.ze_at_vrtx, state.ze);
             std::fill(state.qx.begin(), state.qx.end(), 0.0);
             std::fill(state.qy.begin(), state.qy.end(), 0.0);
 
@@ -309,12 +327,17 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
 
     // SLOPE LIMIT INITIALIZE
 
-    mesh.CallForEachElement([](auto& elt) {
-        auto& state = elt.data.state[0];
+    mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        elt.ComputeUbaryctr(state.bath, sl_state.bath_at_baryctr);
-        elt.ComputeUmidpts(state.bath, sl_state.bath_at_midpts);
+        std::vector<double> bath_lin(elt.data.get_nvrtx());
+
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            bath_lin[vrtx] = bathymetry[elt.GetID()][vrtx];
+        }
+
+        elt.ComputeLinearUbaryctr(bath_lin, sl_state.bath_at_baryctr);
+        elt.ComputeLinearUmidpts(bath_lin, sl_state.bath_at_midpts);
 
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         sl_state.midpts_coord = elt.GetShape().GetMidpointCoordinates();
