@@ -1,0 +1,37 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Adcirc
+  file_name: rectangular_mesh.14
+
+timestepping:
+  dt: 1                           #in seconds
+  end_time: 3600                #in seconds
+  order: 2
+  nstages: 2
+
+polynomial_order: 1
+
+problem:
+  name: swe
+  bottom_friction:
+    type: Chezy
+    coefficient: 0.001
+  gravity: 9.81
+  initial_conditions:
+    type: Constant
+    initial_surface_height: 10.0
+    initial_momentum_x: 0.0
+    initial_momentum_y: 0.0
+
+output:
+  path: output/
+  logfile:
+    name: log
+    verbose: true
+  vtk:
+    frequency: 360
