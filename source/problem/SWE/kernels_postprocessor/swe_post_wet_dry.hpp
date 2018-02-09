@@ -28,7 +28,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
         }
-    
+
         elt.ProjectLinearToBasis(wd_state.ze_at_vrtx, state.ze);
 
         set_dry_element = true;

@@ -81,7 +81,7 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
                             *raw_boundary_in.shape.GetSurfaceNormal(raw_boundary_in.bound_id, z_master).begin());
 
         this->surface_normal_ex = this->surface_normal_in;
- 
+
         uint ngp = this->surface_normal_ex.size();
         uint gp_ex = 0;
         for (uint gp = 0; gp < this->surface_normal_ex.size(); gp++) {

@@ -12,7 +12,7 @@ class Element {
 
     MasterType& master;
     ShapeType shape;
-    
+
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
@@ -48,7 +48,7 @@ class Element {
 
     void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin);
     void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u);
-    
+
     template <typename F>
     void ComputeFgp(const F& f, std::vector<double>& f_gp);
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
@@ -218,8 +218,9 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) {
-    if(const_J) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const std::vector<double>& u,
+                                                                                      std::vector<double>& u_lin) {
+    if (const_J) {
         this->master.ProjectBasisToLinear(u, u_lin);
     } else {
         // Placeholder for nonconstant Jacobian
@@ -227,8 +228,9 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToL
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) {
-    if(const_J) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<double>& u_lin,
+                                                                                      std::vector<double>& u) {
+    if (const_J) {
         this->master.ProjectLinearToBasis(u_lin, u);
     } else {
         // Placeholder for nonconstant Jacobian
@@ -270,19 +272,20 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin,
-                                                                                 double& u_lin_baryctr) {
+                                                                                       double& u_lin_baryctr) {
     this->master.ComputeLinearUbaryctr(u_lin, u_lin_baryctr);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(const std::vector<double>& u_lin,
-                                                                                std::vector<double>& u_lin_midpts) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(
+    const std::vector<double>& u_lin,
+    std::vector<double>& u_lin_midpts) {
     this->master.ComputeLinearUmidpts(u_lin, u_lin_midpts);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
-                                                                              std::vector<double>& u_lin_vrtx) {
+                                                                                    std::vector<double>& u_lin_vrtx) {
     this->master.ComputeLinearUvrtx(u_lin, u_lin_vrtx);
 }
 

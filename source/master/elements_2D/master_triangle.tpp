@@ -67,29 +67,34 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 }
 
 template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) {
+inline void Triangle<BasisType, IntegrationType>::ProjectBasisToLinear(const std::vector<double>& u,
+                                                                       std::vector<double>& u_lin) {
     this->basis.ProjectBasisToLinear(u, u_lin);
 }
 
 template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) {
+inline void Triangle<BasisType, IntegrationType>::ProjectLinearToBasis(const std::vector<double>& u_lin,
+                                                                       std::vector<double>& u) {
     this->basis.ProjectLinearToBasis(u_lin, u);
 }
 
 template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr) {
-    u_lin_baryctr = (u_lin[0]+u_lin[1]+u_lin[2])/3.0;
+inline void Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin,
+                                                                        double& u_lin_baryctr) {
+    u_lin_baryctr = (u_lin[0] + u_lin[1] + u_lin[2]) / 3.0;
 }
 
 template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts) {
-    u_lin_midpts[0] = (u_lin[1]+u_lin[2])/2.0;
-    u_lin_midpts[1] = (u_lin[2]+u_lin[0])/2.0;
-    u_lin_midpts[2] = (u_lin[0]+u_lin[1])/2.0;
+inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std::vector<double>& u_lin,
+                                                                       std::vector<double>& u_lin_midpts) {
+    u_lin_midpts[0] = (u_lin[1] + u_lin[2]) / 2.0;
+    u_lin_midpts[1] = (u_lin[2] + u_lin[0]) / 2.0;
+    u_lin_midpts[2] = (u_lin[0] + u_lin[1]) / 2.0;
 }
 
 template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx) {
+inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
+                                                                     std::vector<double>& u_lin_vrtx) {
     u_lin_vrtx = u_lin;
 }
 

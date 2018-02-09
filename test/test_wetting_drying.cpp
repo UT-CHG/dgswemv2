@@ -229,7 +229,7 @@ int main() {
     state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
-    
+
     triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
     triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
     triangle.ProjectBasisToLinear(state.qy, wd_state.qy_lin);
