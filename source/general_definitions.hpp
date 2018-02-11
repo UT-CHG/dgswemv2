@@ -169,8 +169,6 @@ class Shape {
 };
 }
 
-//#define RESL2
-
 #define PI 3.14159265359
 
 #define N_DIV 1                // postproc elem div

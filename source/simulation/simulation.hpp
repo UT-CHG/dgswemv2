@@ -113,7 +113,7 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
+    std::cout << "residual inner product: " << residual_L2 << std::endl;
 #endif
 }
 
