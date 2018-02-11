@@ -1,6 +1,8 @@
 #ifndef SWE_INITIAL_CONDITION_FUNCTIONS_HPP
 #define SWE_INITIAL_CONDITION_FUNCTIONS_HPP
 
+#include "utilities/ignore.hpp"
+
 namespace SWE {
 inline double ic_ze(const double t, const Point<2>& pt) {
     constexpr double x1 = 40000.;
@@ -10,6 +12,7 @@ inline double ic_ze(const double t, const Point<2>& pt) {
 
     constexpr double Ho = 2.;
     constexpr double zo = 0.25;
+    Utilities::ignore(Ho);
 
     constexpr double w = 2 * PI / 43200.;
     constexpr double tau = 0;
@@ -26,6 +29,7 @@ inline double ic_qx(const double t, const Point<2>& pt) {
 
     constexpr double Ho = 2.;
     constexpr double zo = 0.25;
+    Utilities::ignore(Ho);
 
     constexpr double w = 2 * PI / 43200.;
     constexpr double tau = 0;
@@ -42,6 +46,7 @@ inline double ic_qy(const double t, const Point<2>& pt) {
 
     constexpr double Ho = 2.;
     constexpr double zo = 0.25;
+    Utilities::ignore(Ho);
 
     constexpr double w = 2 * PI / 43200.;
     constexpr double tau = 0;
