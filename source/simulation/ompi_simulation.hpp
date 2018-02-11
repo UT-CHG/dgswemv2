@@ -74,7 +74,7 @@ class OMPISimulationUnit {
 
     void Step();
 
-    void ResidualL2();
+    double ResidualL2();
 };
 
 template <typename ProblemType>
@@ -258,7 +258,7 @@ void OMPISimulationUnit<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
-void OMPISimulationUnit<ProblemType>::ResidualL2() {
+double OMPISimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -268,6 +268,7 @@ void OMPISimulationUnit<ProblemType>::ResidualL2() {
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
+    return residual_L2;
 }
 
 template <typename ProblemType>
@@ -275,13 +276,13 @@ class OMPISimulation {
   private:
     uint n_steps;
     uint n_stages;
+    int locality_id;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
   public:
     OMPISimulation() = default;
     OMPISimulation(const std::string& input_string) {
-        int locality_id;
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
         InputParameters<typename ProblemType::ProblemInputType> input(input_string);
@@ -372,12 +373,30 @@ void OMPISimulation<ProblemType>::Run() {
                 this->simulation_units[sim_unit_id]->Step();
             }
         }
+    } //close omp parallel region
+
 #ifdef RESL2
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->ResidualL2();
-        }
-#endif
+    double global_l2{0};
+
+    double residual_l2{0};
+    for (auto& sim_unit : this->simulation_units) {
+        residual_l2 += sim_unit->ResidualL2();
     }
+
+    MPI_Reduce(
+        &residual_l2,
+        &global_l2,
+        1,
+        MPI_DOUBLE,
+        MPI_SUM,
+        0,
+        MPI_COMM_WORLD);
+
+    if ( locality_id == 0 ) {
+        std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_L2) << std::endl;
+    }
+#endif
+
 }
 
 #endif
