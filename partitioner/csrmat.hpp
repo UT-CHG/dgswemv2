@@ -40,7 +40,7 @@ class CSRMat {
     }
 
     size_t size() const { return _nodes.size(); }
-    const std::vector<int>& node_ids() const { return _nodes; }
+    const std::vector<int>& node_ID() const { return _nodes; }
     int get(int index) const { return _nodes[index]; }
     NodeW node_weight(int id) const { return _node_wgts_map.at(id); }
 
@@ -104,7 +104,7 @@ class CSRMat {
         return result;
     }
 
-    std::vector<int> idxs_to_node_ids(std::vector<int> idxs) const {
+    std::vector<int> idxs_to_node_ID(std::vector<int> idxs) const {
         std::vector<int> result;
         for (auto idx : idxs) {
             result.push_back(_nodes[idx]);
@@ -200,11 +200,11 @@ void summarize_vec(std::vector<T> vec) {
     mota::Say() << "\b\b)";
 }
 
-inline std::vector<double> get_node_weights(const std::vector<int>& node_ids,
+inline std::vector<double> get_node_weights(const std::vector<int>& node_ID,
                                             const std::vector<std::function<double(int)>>& cons) {
     std::vector<double> result;
-    result.reserve(node_ids.size() * cons.size());
-    for (auto id : node_ids) {
+    result.reserve(node_ID.size() * cons.size());
+    for (auto id : node_ID) {
         for (auto lam : cons) {
             result.push_back(lam(id));
         }
@@ -233,7 +233,7 @@ std::vector<int64_t> metis_part(const CSRMat<NodeW>& mat,
     std::vector<double> tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);
     // set up weights vectorse
 
-    std::vector<int64_t> node_wgts = scale_to_int64(get_node_weights(mat.node_ids(), cons)),
+    std::vector<int64_t> node_wgts = scale_to_int64(get_node_weights(mat.node_ID(), cons)),
                          edge_wgts = scale_to_int64(mat.edge_wgts());
     // check parameters
 

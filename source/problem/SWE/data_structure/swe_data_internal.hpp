@@ -10,6 +10,9 @@ struct Internal {
         : ze_flux_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
           qx_flux_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
           qy_flux_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
+          tau_s_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
+          dp_atm_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
+          dtidal_pot_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
           ze_source_term_at_gp(ngp),
           qx_source_term_at_gp(ngp),
           qy_source_term_at_gp(ngp),
@@ -24,6 +27,10 @@ struct Internal {
     std::array<std::vector<double>, 2> ze_flux_at_gp;
     std::array<std::vector<double>, 2> qx_flux_at_gp;
     std::array<std::vector<double>, 2> qy_flux_at_gp;
+
+    std::array<std::vector<double>, 2> tau_s_at_gp;
+    std::array<std::vector<double>, 2> dp_atm_at_gp;
+    std::array<std::vector<double>, 2> dtidal_pot_at_gp;
 
     std::vector<double> ze_source_term_at_gp;
     std::vector<double> qx_source_term_at_gp;

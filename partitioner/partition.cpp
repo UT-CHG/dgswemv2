@@ -38,7 +38,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, cons, 1.05);
 
     std::unordered_map<int, int64_t> elt2partition;
-    const std::vector<int>& elts_sorted = mesh_graph.node_ids();
+    const std::vector<int>& elts_sorted = mesh_graph.node_ID();
     for (uint i = 0; i < elts_sorted.size(); ++i) {
         elt2partition.insert({elts_sorted.at(i), mesh_part.at(i)});
     }
@@ -93,7 +93,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
 
     std::unordered_map<int, int64_t> partition2node;
     std::unordered_map<int, int64_t> partition2rank;
-    const std::vector<int>& sbmshs_sorted = sbmsh_graph.node_ids();
+    const std::vector<int>& sbmshs_sorted = sbmsh_graph.node_ID();
     for (uint i = 0; i < sbmshs_sorted.size(); ++i) {
         partition2node.insert({sbmshs_sorted.at(i), sbmsh_part.at(i)});
     }
@@ -130,7 +130,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
             // partition you are interested in.
             submeshes[rank][loc_part].elements.insert(elt);
 
-            for (uint id : elt.second.node_ids) {
+            for (uint id : elt.second.node_ID) {
                 submeshes[rank][loc_part].nodes[id] = mesh_meta.nodes.at(id);
             }
         }

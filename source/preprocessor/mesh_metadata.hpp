@@ -25,15 +25,15 @@ struct NodeMetaData {
 
 struct ElementMetaData {
     ElementMetaData() = default;
-    ElementMetaData(uint n_faces) : node_ids(n_faces), neighbor_ID(n_faces), boundary_type(n_faces) {}
+    ElementMetaData(uint n_faces) : node_ID(n_faces), neighbor_ID(n_faces), boundary_type(n_faces) {}
 
-    std::vector<uint> node_ids;
+    std::vector<uint> node_ID;
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
     friend std::ostream& operator<<(std::ostream& s, const ElementMetaData& elt) {
-        s << elt.node_ids.size();
-        for (const auto& node_id : elt.node_ids) {
+        s << elt.node_ID.size();
+        for (const auto& node_id : elt.node_ID) {
             s << " " << node_id;
         }
 
@@ -52,12 +52,12 @@ struct ElementMetaData {
         uint n_faces;
         s >> n_faces;
 
-        elt.node_ids.resize(n_faces);
+        elt.node_ID.resize(n_faces);
         elt.neighbor_ID.resize(n_faces);
         elt.boundary_type.resize(n_faces);
 
         for (uint i = 0; i < n_faces; ++i) {
-            s >> elt.node_ids[i];
+            s >> elt.node_ID[i];
         }
 
         for (uint i = 0; i < n_faces; ++i) {
@@ -72,7 +72,7 @@ struct ElementMetaData {
     }
 
     friend bool operator==(const ElementMetaData& lhs, const ElementMetaData& rhs) {
-        return (lhs.node_ids == rhs.node_ids) && (lhs.neighbor_ID == rhs.neighbor_ID) &&
+        return (lhs.node_ID == rhs.node_ID) && (lhs.neighbor_ID == rhs.neighbor_ID) &&
                (lhs.boundary_type == rhs.boundary_type);
     }
 };

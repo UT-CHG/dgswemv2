@@ -25,7 +25,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         elements.insert({ID, ElementMetaData(3)});
 
         for (uint i = 0; i < 3; ++i) {
-            elements.at(ID).node_ids[i] = elt.second[i + 1];
+            elements.at(ID).node_ID[i] = elt.second[i + 1];
         }
     }
 
@@ -128,12 +128,12 @@ void MeshMetaData::WriteTo(const std::string& file) {
 }
 
 std::vector<Point<3>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
-    const std::vector<uint>& node_ids = elements.at(elt_id).node_ids;
+    const std::vector<uint>& node_ID = elements.at(elt_id).node_ID;
 
-    std::vector<Point<3>> nodal_coordinates(node_ids.size());
+    std::vector<Point<3>> nodal_coordinates(node_ID.size());
 
-    for (uint indx = 0; indx < node_ids.size(); ++indx) {
-        nodal_coordinates[indx] = nodes.at(node_ids[indx]).coordinates;
+    for (uint indx = 0; indx < node_ID.size(); ++indx) {
+        nodal_coordinates[indx] = nodes.at(node_ID[indx]).coordinates;
     }
 
     return nodal_coordinates;

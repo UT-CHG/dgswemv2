@@ -47,9 +47,6 @@ class Triangle : public Master<2> {
      */
     std::vector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const std::vector<Point<1>>& z_boundary);
 
-    void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin);
-    void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u);
-
     void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr);
     void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts);
     void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx);

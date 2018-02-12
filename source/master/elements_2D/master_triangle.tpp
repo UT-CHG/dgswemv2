@@ -4,7 +4,21 @@ namespace Master {
 template <class BasisType, class IntegrationType>
 Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     : Master<2>(p) {
+    this->nvrtx = 3;
+    this->nbound = 3;
+
     this->integration_rule = this->integration.GetRule(2 * this->p);
+
+    this->psi_gp = Array2D<double>(3, std::vector<double>(this->integration_rule.first.size()));
+
+    for (uint gp = 0; gp < this->integration_rule.first.size(); gp++) {
+        this->psi_gp[0][gp] = -(this->integration_rule.second[gp][LocalCoordTri::z1]
+                                +this->integration_rule.second[gp][LocalCoordTri::z2])/2.0;
+        this->psi_gp[1][gp] = (1+this->integration_rule.second[gp][LocalCoordTri::z1])/2.0;
+        this->psi_gp[2][gp] = (1+this->integration_rule.second[gp][LocalCoordTri::z2])/2.0;
+    }
+
+    this->dpsi = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};
 
     this->phi_gp = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
@@ -64,18 +78,6 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
     }
 
     return z_master;
-}
-
-template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ProjectBasisToLinear(const std::vector<double>& u,
-                                                                       std::vector<double>& u_lin) {
-    this->basis.ProjectBasisToLinear(u, u_lin);
-}
-
-template <class BasisType, class IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ProjectLinearToBasis(const std::vector<double>& u_lin,
-                                                                       std::vector<double>& u) {
-    this->basis.ProjectLinearToBasis(u_lin, u);
 }
 
 template <class BasisType, class IntegrationType>

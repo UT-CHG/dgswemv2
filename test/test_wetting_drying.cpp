@@ -16,6 +16,9 @@ int main() {
     using ShapeType = Shape::StraightTriangle;
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
+    // the whole test is designed for h_0 = 0.01
+    SWE::Global::h_o = 0.01;
+
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);
     vrtxs[0] = {-0.5, 0.};
@@ -25,7 +28,7 @@ int main() {
     MasterType master(10);
     ShapeType shape(vrtxs);
 
-    ElementType triangle(0, master, vrtxs, std::vector<uint>(3), std::vector<unsigned char>(3));
+    ElementType triangle(0, master, vrtxs, std::vector<uint>(3), std::vector<uint>(3), std::vector<unsigned char>(3));
     triangle.data.initialize();
     triangle.data.resize(2);
 

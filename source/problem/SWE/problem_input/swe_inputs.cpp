@@ -5,34 +5,9 @@ Inputs::Inputs(YAML::Node& swe_node) {
     if (swe_node["gravity"]) {
         g = swe_node["gravity"].as<double>();
     }
-    // std::cout << " Gravity due to acceleration set to " + std::to_string(g) + '\n';
 
-    const std::string malformatted_bf_warning("  Warning bottom friction is mal-formatted. Using default parameters\n");
-
-    if (YAML::Node bf_node = swe_node["bottom_friction"]) {
-        if (bf_node["type"]) {
-            std::string bf_str = bf_node["type"].as<std::string>();
-            if (bf_str == "None") {
-                bottom_friction.type = BottomFrictionType::None;
-            } else if (bf_str == "Chezy") {
-                if (bf_node["coefficient"]) {
-                    if (bf_node["coefficient"].as<double>() < 0.) {
-                        const std::string err_msg("Error: Chezy friction coefficient must be postive\n");
-                        throw std::logic_error(err_msg);
-                    }
-                    bottom_friction.type = BottomFrictionType::Chezy;
-                    bottom_friction.coefficient = bf_node["coefficient"].as<double>();
-                } else {
-                    std::cerr << malformatted_bf_warning;
-                }
-            } else {
-                std::cerr << "  Unable to determine bottom friction type; using default parameters\n";
-            }
-        } else {
-            std::cerr << malformatted_bf_warning;
-        }
-    } else {
-        std::cout << "  Bottom Friction unset; using default parameters\n";
+    if (swe_node["h_o"]) {
+        h_o = swe_node["h_o"].as<double>();
     }
 
     const std::string malformatted_ic_warning(
@@ -60,24 +35,134 @@ Inputs::Inputs(YAML::Node& swe_node) {
     } else {
         std::cerr << "  Initial conditions unset; using default parameters\n";
     }
+
+    const std::string malformatted_fsource_warning("  Warning function source is mal-formatted. Using default parameters\n");
+
+    if (YAML::Node func_source = swe_node["function_source"]) {
+        if (func_source["type"]) {
+            std::string func_source_str = func_source["type"].as<std::string>();
+            if (func_source_str == "None") {
+                function_source.type = FunctionSourceType::None;
+            } else if (func_source_str == "Test") {
+                function_source.type = FunctionSourceType::Test;
+            } else {
+                std::cerr << malformatted_fsource_warning;
+            }
+        } else {
+            std::cerr << malformatted_fsource_warning;
+        }
+    } else {
+        std::cout << malformatted_fsource_warning;
+    }
+
+    const std::string malformatted_bf_warning("  Warning bottom friction is mal-formatted. Using default parameters\n");
+
+    if (YAML::Node bf_node = swe_node["bottom_friction"]) {
+        if (bf_node["type"]) {
+            std::string bf_str = bf_node["type"].as<std::string>();
+            if (bf_str == "None") {
+                bottom_friction.type = BottomFrictionType::None;
+            } else if (bf_str == "Chezy") {
+                if (bf_node["coefficient"]) {
+                    if (bf_node["coefficient"].as<double>() < 0.) {
+                        const std::string err_msg("Error: Chezy friction coefficient must be postive\n");
+                        throw std::logic_error(err_msg);
+                    }
+                    bottom_friction.type = BottomFrictionType::Chezy;
+                    bottom_friction.coefficient = bf_node["coefficient"].as<double>();
+                } else {
+                    std::cerr << malformatted_bf_warning;
+                }
+            } else if (bf_str == "Manning") {
+                if (bf_node["coefficient"] && bf_node["input_file"]) {
+                    if (bf_node["coefficient"].as<double>() < 0.) {
+                        const std::string err_msg("Error: Chezy friction coefficient must be postive\n");
+                        throw std::logic_error(err_msg);
+                    }
+                    bottom_friction.type = BottomFrictionType::Manning;
+                    bottom_friction.coefficient = bf_node["coefficient"].as<double>();
+                    bottom_friction.manning_data_file = bf_node["input_file"].as<std::string>();                    
+                } else {
+                    std::cerr << malformatted_bf_warning;
+                }
+            } else {
+                std::cerr << malformatted_bf_warning;
+            }
+        } else {
+            std::cerr << malformatted_bf_warning;
+        }
+    } else {
+        std::cout << malformatted_bf_warning;
+    }
+
+    const std::string malformatted_meteo_warning("  Warning meteo forcing is mal-formatted. Using default parameters\n");
+
+    if (YAML::Node meteo = swe_node["meteo_forcing"]) {
+        if (meteo["type"]) {
+            std::string meteo_str = meteo["type"].as<std::string>();
+            if (meteo_str == "None") {
+                meteo_forcing.type = MeteoForcingType::None;
+            } else if (meteo_str == "Test") {
+                if (meteo["input_file"]) {
+                    meteo_forcing.type = MeteoForcingType::Test;
+                    meteo_forcing.meteo_data_file = meteo["input_file"].as<std::string>();
+                } else {
+                    std::cerr << malformatted_meteo_warning;
+                }
+            } else {
+                std::cerr << malformatted_meteo_warning;
+            }
+        } else {
+            std::cerr << malformatted_meteo_warning;
+        }
+    } else {
+        std::cout << malformatted_meteo_warning;
+    }
+
+    const std::string malformatted_tidal_warning("  Warning tidal potential forcing is mal-formatted. Using default parameters\n");
+
+    if (YAML::Node tidal = swe_node["tidal_potential"]) {
+        if (tidal["type"]) {
+            std::string tidal_str = tidal["type"].as<std::string>();
+            if (tidal_str == "None") {
+                tidal_potential.type = TidalPotentialType::None;
+            } else if (tidal_str == "Test") {
+                tidal_potential.type = TidalPotentialType::Test;
+            } else {
+                std::cerr << malformatted_tidal_warning;
+            }
+        } else {
+            std::cerr << malformatted_tidal_warning;
+        }
+    } else {
+        std::cout << malformatted_tidal_warning;
+    }
+
+    const std::string malformatted_coriolis_warning("  Warning coriolis forcing is mal-formatted. Using default parameters\n");
+
+    if (YAML::Node coriolis_node = swe_node["coriolis"]) {
+        if (coriolis_node["type"]) {
+            std::string coriolis_str = coriolis_node["type"].as<std::string>();
+            if (coriolis_str == "None") {
+                coriolis.type = CoriolisType::None;
+            } else if (coriolis_str == "Test") {
+                coriolis.type = CoriolisType::Test;
+            } else {
+                std::cerr << malformatted_coriolis_warning;
+            }
+        } else {
+            std::cerr << malformatted_coriolis_warning;
+        }
+    } else {
+        std::cout << malformatted_coriolis_warning;
+    }
 }
 
 YAML::Node Inputs::as_yaml_node() {
     YAML::Node ret;
     ret["name"] = "swe";
     ret["gravity"] = g;
-
-    YAML::Node bf_node;
-    switch (bottom_friction.type) {
-        case BottomFrictionType::None:
-            bf_node["type"] = "None";
-            break;
-        case BottomFrictionType::Chezy:
-            bf_node["type"] = "Chezy";
-            bf_node["coefficient"] = bottom_friction.coefficient;
-            break;
-    }
-    ret["bottom_friction"] = bf_node;
+    ret["h_o"] = h_o;
 
     YAML::Node ic_node;
     switch (initial_conditions.type) {
@@ -92,6 +177,68 @@ YAML::Node Inputs::as_yaml_node() {
             break;
     }
     ret["initial_conditions"] = ic_node;
+
+    YAML::Node func_src_node;
+    switch (function_source.type) {
+        case FunctionSourceType::None:
+            func_src_node["type"] = "None";
+            break;
+        case FunctionSourceType::Test:
+            func_src_node["type"] = "Test";
+            break;
+    }
+    ret["function_source"] = func_src_node;
+
+    YAML::Node bf_node;
+    switch (bottom_friction.type) {
+        case BottomFrictionType::None:
+            bf_node["type"] = "None";
+            break;
+        case BottomFrictionType::Chezy:
+            bf_node["type"] = "Chezy";
+            bf_node["coefficient"] = bottom_friction.coefficient;
+            break;
+        case BottomFrictionType::Manning:
+            bf_node["type"] = "Manning";
+            bf_node["coefficient"] = bottom_friction.coefficient;
+            bf_node["input_file"] = bottom_friction.manning_data_file;
+            break;
+    }
+    ret["bottom_friction"] = bf_node;
+
+    YAML::Node meteo_node;
+    switch (meteo_forcing.type) {
+        case MeteoForcingType::None:
+            bf_node["type"] = "None";
+            break;
+        case MeteoForcingType::Test:
+            bf_node["type"] = "Test";
+            bf_node["input_file"] = meteo_forcing.meteo_data_file;
+            break;
+    }
+    ret["meteo_forcing"] = meteo_node;
+
+    YAML::Node tide_node;
+    switch (tidal_potential.type) {
+        case TidalPotentialType::None:
+            tide_node["type"] = "None";
+            break;
+        case TidalPotentialType::Test:
+            tide_node["type"] = "Test";
+            break;
+    }
+    ret["tidal_potential"] = tide_node;
+
+    YAML::Node coriolis_node;
+    switch (coriolis.type) {
+        case CoriolisType::None:
+            coriolis_node["type"] = "None";
+            break;
+        case CoriolisType::Test:
+            coriolis_node["type"] = "Test";
+            break;
+    }
+    ret["coriolis"] = coriolis_node;
 
     return ret;
 }

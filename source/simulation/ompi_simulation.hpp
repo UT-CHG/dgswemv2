@@ -33,6 +33,8 @@ class OMPISimulationUnit {
           communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
                        locality_id,
                        submesh_id) {
+        ProblemType::initialize_problem_parameters(this->input.problem_input);
+
         this->input.ReadMesh();
 
         this->mesh.SetMeshName(this->input.mesh_data.mesh_name);

@@ -68,7 +68,7 @@ int main() {
     MasterType master(10);
     ShapeType shape(vrtxs);
 
-    ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<unsigned char>(0));
+    ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<uint>(0), std::vector<unsigned char>(0));
 
     // Check integrations
     Integration::Dunavant_2D integ;

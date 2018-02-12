@@ -43,7 +43,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
         }
 
         mesh.template CreateElement<ElementType>(
-            elt_id, nodal_coords_temp, element_meta.second.neighbor_ID, element_meta.second.boundary_type);
+            elt_id, nodal_coords_temp, element_meta.second.node_ID , element_meta.second.neighbor_ID, element_meta.second.boundary_type);
         nodal_coords_temp.clear();
     }
 

@@ -46,9 +46,10 @@ bool test_configuration(const int configuration,
 int main() {
     using Utilities::almost_equal;
 
-    static_assert(almost_equal(SWE::Global::g, 9.81),
-                  "Error: this test was designed for a static"
-                  "gravity of 9.81\n");
+    if(!almost_equal(SWE::Global::g, 9.81)) {
+        std::cerr << "Error: this test was designed for a static gravity of 9.81\n";
+        return 1;
+    }
 
     bool error_found = false;
 

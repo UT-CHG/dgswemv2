@@ -6,6 +6,7 @@
 #include "swe_data_state.hpp"
 #include "swe_data_internal.hpp"
 #include "swe_data_boundary.hpp"
+#include "swe_data_source.hpp"
 #include "swe_data_wet_dry.hpp"
 #include "swe_data_slope_limit.hpp"
 
@@ -15,10 +16,14 @@ struct Data {
     Internal internal;
     std::vector<Boundary> boundary;
 
+    Source source;
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 
+
     void initialize() {
+        this->source = Source(this->nvrtx);
+
         this->wet_dry_state = WetDry(this->nvrtx);
 
         this->slope_limit_state = SlopeLimit(this->nbound);

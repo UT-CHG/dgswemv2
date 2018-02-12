@@ -27,6 +27,7 @@ int main() {
     ElementType triangle(0,
                          master,
                          vrtxs,
+                         std::vector<uint>{0, 0, 0},
                          std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
                          std::vector<unsigned char>{SWE::BoundaryConditions::land, SWE::BoundaryConditions::land,
                                                     SWE::BoundaryConditions::land});

@@ -13,11 +13,13 @@ class Element {
     MasterType& master;
     ShapeType shape;
 
+    std::vector<uint> node_ID;
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
     std::vector<Point<dimension>> gp_global_coordinates;
 
+    Array3D<double> dpsi_fact;
     Array3D<double> dphi_fact;
 
     bool const_J;
@@ -31,6 +33,7 @@ class Element {
     Element(const uint ID,
             MasterType& master,
             const std::vector<Point<dimension>>& nodal_coordinates,
+            const std::vector<uint>& node_ID,
             const std::vector<uint>& neighbor_ID,
             const std::vector<uchar>& boundary_type);
 
@@ -41,6 +44,9 @@ class Element {
 
     uint GetID() { return this->ID; }
     ShapeType& GetShape() { return this->shape; }
+
+    std::vector<uint>& GetNodeID() { return this->node_ID; }
+    std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     template <typename F>
     std::vector<double> L2Projection(const F& f);
@@ -54,6 +60,8 @@ class Element {
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeDUgp(const uint dir, const std::vector<double>& u, std::vector<double>& du_gp);
 
+    void ComputeLinearUgp(const std::vector<double>& u_lin, std::vector<double>& u_lin_gp);
+    void ComputeLinearDUgp(const uint dir, const std::vector<double>& u_lin, std::vector<double>& du_lin_gp);
     void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr);
     void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts);
     void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx);
@@ -79,11 +87,13 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              MasterType& master,
                                                              const std::vector<Point<dimension>>& nodal_coordinates,
+                                                             const std::vector<uint>& node_ID,
                                                              const std::vector<uint>& neighbor_ID,
                                                              const std::vector<uchar>& boundary_type)
     : ID(ID),
       master(master),
       shape(ShapeType(nodal_coordinates)),
+      node_ID(std::move(node_ID)),
       neighbor_ID(std::move(neighbor_ID)),
       boundary_type(std::move(boundary_type)) {
     // GLOBAL COORDINATES OF GPS
@@ -97,6 +107,21 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
 
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
+        this->dpsi_fact.resize(this->master.dpsi.size());
+        for (uint dof = 0; dof < this->master.dpsi.size(); dof++) {
+            this->dpsi_fact[dof].resize(dimension);
+            for (uint dir = 0; dir < dimension; dir++) {
+                this->dpsi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
+                for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
+                    double dpsi = 0;
+                    for (uint z = 0; z < dimension; z++) {
+                        dpsi += this->master.dpsi[dof][z] * J_inv[z][dir][0];
+                    }
+                    this->dpsi_fact[dof][dir].push_back(dpsi);
+                }
+            }
+        }        
+
         this->dphi_fact.resize(this->master.dphi_gp.size());
         for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
             this->dphi_fact[dof].resize(dimension);
@@ -152,8 +177,8 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
         // Placeholder for nonconstant Jacobian
     }
 
-    this->data.set_nvrtx(this->boundary_type.size());
-    this->data.set_nbound(this->boundary_type.size());
+    this->data.set_nvrtx(this->master.nvrtx);
+    this->data.set_nbound(this->master.nbound);
     this->data.set_ndof(this->master.phi_gp.size());
     this->data.set_ngp_internal((*this->master.phi_gp.begin()).size());
 }
@@ -221,7 +246,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const std::vector<double>& u,
                                                                                       std::vector<double>& u_lin) {
     if (const_J) {
-        this->master.ProjectBasisToLinear(u, u_lin);
+        this->master.basis.ProjectBasisToLinear(u, u_lin);
     } else {
         // Placeholder for nonconstant Jacobian
     }
@@ -231,7 +256,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<double>& u_lin,
                                                                                       std::vector<double>& u) {
     if (const_J) {
-        this->master.ProjectLinearToBasis(u_lin, u);
+        this->master.basis.ProjectLinearToBasis(u_lin, u);
     } else {
         // Placeholder for nonconstant Jacobian
     }
@@ -266,6 +291,28 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < du_gp.size(); gp++) {
             du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin, std::vector<double>& u_lin_gp){
+    std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_lin.size(); dof++) {
+        for (uint gp = 0; gp < u_lin_gp.size(); gp++) {
+            u_lin_gp[gp] += u_lin[dof] * this->master.psi_gp[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(const uint dir, const std::vector<double>& u_lin, std::vector<double>& du_lin_gp){
+    std::fill(du_lin_gp.begin(), du_lin_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_lin.size(); dof++) {
+        for (uint gp = 0; gp < du_lin_gp.size(); gp++) {
+            du_lin_gp[gp] += u_lin[dof] * this->dpsi_fact[dof][dir][gp];
         }
     }
 }

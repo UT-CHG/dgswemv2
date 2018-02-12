@@ -21,6 +21,8 @@ struct Problem {
     typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal, SWE::Flow> ProblemMeshType;
 
     // preprocessor kernels
+    static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
+
     template <typename RawBoundaryType>
     static void create_boundaries_kernel(ProblemMeshType& mesh,
                                          std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
@@ -52,6 +54,8 @@ struct Problem {
                                                              const ProblemInputType& problem_specific_input);
 
     // processor kernels
+    static void parse_source_data(const Stepper& stepper, ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+
     template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);
 

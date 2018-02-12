@@ -119,7 +119,13 @@ class Master {
   public:
     uint p;
 
+    uint nvrtx;
+    uint nbound;
+
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule;
+
+    Array2D<double> psi_gp;
+    Array2D<double> dpsi;
 
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
@@ -139,9 +145,6 @@ class Master {
         const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 
-    virtual void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) = 0;
-    virtual void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) = 0;
-
     virtual void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr) = 0;
     virtual void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts) = 0;
     virtual void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx) = 0;
@@ -151,7 +154,7 @@ class Master {
 namespace Shape {
 template <uint dimension>
 class Shape {
-  protected:
+  public:
     std::vector<Point<dimension>> nodal_coordinates;
 
   public:

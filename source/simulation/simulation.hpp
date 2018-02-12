@@ -24,6 +24,8 @@ class Simulation {
           stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
           writer(input),
           mesh(this->input.polynomial_order) {
+        ProblemType::initialize_problem_parameters(this->input.problem_input);
+
         this->input.ReadMesh();
 
         mesh.SetMeshName(this->input.mesh_data.mesh_name);
@@ -78,6 +80,8 @@ void Simulation<ProblemType>::Run() {
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
+
+    ProblemType::parse_source_data(this->stepper, this->mesh, this->input.problem_input);
 
     for (uint step = 1; step <= nsteps; ++step) {
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
