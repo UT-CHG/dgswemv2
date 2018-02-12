@@ -2,6 +2,7 @@
 #define GENERAL_DEFINITIONS
 
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -174,8 +175,6 @@ class Shape {
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 };
 }
-
-//#define RESL2
 
 #define PI 3.14159265359
 
