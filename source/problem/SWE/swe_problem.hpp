@@ -54,7 +54,9 @@ struct Problem {
                                                              const ProblemInputType& problem_specific_input);
 
     // processor kernels
-    static void parse_source_data(const Stepper& stepper, ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    static void parse_source_data(const Stepper& stepper,
+                                  ProblemMeshType& mesh,
+                                  const ProblemInputType& problem_specific_input);
 
     template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);

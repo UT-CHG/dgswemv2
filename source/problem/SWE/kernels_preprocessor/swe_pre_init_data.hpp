@@ -72,46 +72,49 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     // SOURCE TERMS INITIALIZE
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
-    std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
+        std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
 
-    uint node_ID;
-    double manning_n;
-    std::map<uint, double> node_manning_n;
+        uint node_ID;
+        double manning_n;
+        std::map<uint, double> node_manning_n;
 
-    std::string line;
-    while (std::getline(manning_file, line)) {
-        std::istringstream input_string(line);
+        std::string line;
+        while (std::getline(manning_file, line)) {
+            std::istringstream input_string(line);
 
-        if (!(input_string >> node_ID >> manning_n)) break;
+            if (!(input_string >> node_ID >> manning_n))
+                break;
 
-        node_manning_n[node_ID] = manning_n;
-    }
-
-    mesh.CallForEachElement([&node_manning_n](auto& elt) {
-        std::vector<uint>& node_ID = elt.GetNodeID();
-
-        //# of node != # of vrtx in case we have an iso-p element with p>1 
-        //I assume we will have values only at vrtx in files
-        for (uint vrtx=0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            elt.data.source.manning_n[vrtx] = node_manning_n[node_ID[vrtx]];
+            node_manning_n[node_ID] = manning_n;
         }
 
-        elt.data.source.manning = true;
-        elt.data.source.g_manning_n_sq = 
-            Global::g * std::pow(std::accumulate(elt.data.source.manning_n.begin(), elt.data.source.manning_n.end(), 0.0)/
-            elt.data.source.manning_n.size(), 2);
-    });
+        mesh.CallForEachElement([&node_manning_n](auto& elt) {
+            std::vector<uint>& node_ID = elt.GetNodeID();
+
+            //# of node != # of vrtx in case we have an iso-p element with p>1
+            // I assume we will have values only at vrtx in files
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                elt.data.source.manning_n[vrtx] = node_manning_n[node_ID[vrtx]];
+            }
+
+            elt.data.source.manning = true;
+            elt.data.source.g_manning_n_sq =
+                Global::g *
+                std::pow(std::accumulate(elt.data.source.manning_n.begin(), elt.data.source.manning_n.end(), 0.0) /
+                             elt.data.source.manning_n.size(),
+                         2);
+        });
     }
 
     if (problem_specific_input.coriolis.type != SWE::CoriolisType::None) {
-    mesh.CallForEachElement([](auto& elt) {
-        //# of node != # of vrtx in case we have an iso-p element with p>1 
-        //I assume we will have values only at vrtx in files
-        for (uint vrtx=0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::x];
-            elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::y];
-        }
-    });
+        mesh.CallForEachElement([](auto& elt) {
+            //# of node != # of vrtx in case we have an iso-p element with p>1
+            // I assume we will have values only at vrtx in files
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::x];
+                elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::y];
+            }
+        });
     }
 
     // WETTING-DRYING INITIALIZE
@@ -222,11 +225,16 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
-            if((elt.GetBoundaryType()[element_1] != SWE::BoundaryConditions::distributed) && (elt.GetBoundaryType()[element_2] != SWE::BoundaryConditions::distributed)) {
-                A[0][0] = sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][0] = sl_state.baryctr_coord_neigh[element_1][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
-                A[0][1] = sl_state.baryctr_coord_neigh[element_2][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][1] = sl_state.baryctr_coord_neigh[element_2][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+            if ((elt.GetBoundaryType()[element_1] != SWE::BoundaryConditions::distributed) &&
+                (elt.GetBoundaryType()[element_2] != SWE::BoundaryConditions::distributed)) {
+                A[0][0] =
+                    sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
+                A[1][0] =
+                    sl_state.baryctr_coord_neigh[element_1][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+                A[0][1] =
+                    sl_state.baryctr_coord_neigh[element_2][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
+                A[1][1] =
+                    sl_state.baryctr_coord_neigh[element_2][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
 
                 b[0] = sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 b[1] = sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
@@ -247,7 +255,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
                                                        const ProblemInputType& problem_specific_input) {
 
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
-    
+
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& state = dbound.data.state[0];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -283,11 +291,16 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
-            if((elt.GetBoundaryType()[element_1] == SWE::BoundaryConditions::distributed) || (elt.GetBoundaryType()[element_2] == SWE::BoundaryConditions::distributed)) {
-                A[0][0] = sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][0] = sl_state.baryctr_coord_neigh[element_1][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
-                A[0][1] = sl_state.baryctr_coord_neigh[element_2][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][1] = sl_state.baryctr_coord_neigh[element_2][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+            if ((elt.GetBoundaryType()[element_1] == SWE::BoundaryConditions::distributed) ||
+                (elt.GetBoundaryType()[element_2] == SWE::BoundaryConditions::distributed)) {
+                A[0][0] =
+                    sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
+                A[1][0] =
+                    sl_state.baryctr_coord_neigh[element_1][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+                A[0][1] =
+                    sl_state.baryctr_coord_neigh[element_2][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
+                A[1][1] =
+                    sl_state.baryctr_coord_neigh[element_2][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
 
                 b[0] = sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 b[1] = sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];

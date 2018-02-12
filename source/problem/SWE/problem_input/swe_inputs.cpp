@@ -36,7 +36,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
         std::cerr << "  Initial conditions unset; using default parameters\n";
     }
 
-    const std::string malformatted_fsource_warning("  Warning function source is mal-formatted. Using default parameters\n");
+    const std::string malformatted_fsource_warning(
+        "  Warning function source is mal-formatted. Using default parameters\n");
 
     if (YAML::Node func_source = swe_node["function_source"]) {
         if (func_source["type"]) {
@@ -81,7 +82,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
                     }
                     bottom_friction.type = BottomFrictionType::Manning;
                     bottom_friction.coefficient = bf_node["coefficient"].as<double>();
-                    bottom_friction.manning_data_file = bf_node["input_file"].as<std::string>();                    
+                    bottom_friction.manning_data_file = bf_node["input_file"].as<std::string>();
                 } else {
                     std::cerr << malformatted_bf_warning;
                 }
@@ -95,7 +96,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
         std::cout << malformatted_bf_warning;
     }
 
-    const std::string malformatted_meteo_warning("  Warning meteo forcing is mal-formatted. Using default parameters\n");
+    const std::string malformatted_meteo_warning(
+        "  Warning meteo forcing is mal-formatted. Using default parameters\n");
 
     if (YAML::Node meteo = swe_node["meteo_forcing"]) {
         if (meteo["type"]) {
@@ -119,7 +121,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
         std::cout << malformatted_meteo_warning;
     }
 
-    const std::string malformatted_tidal_warning("  Warning tidal potential forcing is mal-formatted. Using default parameters\n");
+    const std::string malformatted_tidal_warning(
+        "  Warning tidal potential forcing is mal-formatted. Using default parameters\n");
 
     if (YAML::Node tidal = swe_node["tidal_potential"]) {
         if (tidal["type"]) {
@@ -138,7 +141,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
         std::cout << malformatted_tidal_warning;
     }
 
-    const std::string malformatted_coriolis_warning("  Warning coriolis forcing is mal-formatted. Using default parameters\n");
+    const std::string malformatted_coriolis_warning(
+        "  Warning coriolis forcing is mal-formatted. Using default parameters\n");
 
     if (YAML::Node coriolis_node = swe_node["coriolis"]) {
         if (coriolis_node["type"]) {

@@ -120,7 +120,7 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                     this->dpsi_fact[dof][dir].push_back(dpsi);
                 }
             }
-        }        
+        }
 
         this->dphi_fact.resize(this->master.dphi_gp.size());
         for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
@@ -296,7 +296,8 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin, std::vector<double>& u_lin_gp){
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin,
+                                                                                  std::vector<double>& u_lin_gp) {
     std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
@@ -307,7 +308,9 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUg
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(const uint dir, const std::vector<double>& u_lin, std::vector<double>& du_lin_gp){
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(const uint dir,
+                                                                                   const std::vector<double>& u_lin,
+                                                                                   std::vector<double>& du_lin_gp) {
     std::fill(du_lin_gp.begin(), du_lin_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {

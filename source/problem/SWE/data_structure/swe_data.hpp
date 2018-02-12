@@ -20,7 +20,6 @@ struct Data {
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 
-
     void initialize() {
         this->source = Source(this->nvrtx);
 

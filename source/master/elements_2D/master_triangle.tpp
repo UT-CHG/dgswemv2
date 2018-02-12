@@ -12,10 +12,11 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     this->psi_gp = Array2D<double>(3, std::vector<double>(this->integration_rule.first.size()));
 
     for (uint gp = 0; gp < this->integration_rule.first.size(); gp++) {
-        this->psi_gp[0][gp] = -(this->integration_rule.second[gp][LocalCoordTri::z1]
-                                +this->integration_rule.second[gp][LocalCoordTri::z2])/2.0;
-        this->psi_gp[1][gp] = (1+this->integration_rule.second[gp][LocalCoordTri::z1])/2.0;
-        this->psi_gp[2][gp] = (1+this->integration_rule.second[gp][LocalCoordTri::z2])/2.0;
+        this->psi_gp[0][gp] = -(this->integration_rule.second[gp][LocalCoordTri::z1] +
+                                this->integration_rule.second[gp][LocalCoordTri::z2]) /
+                              2.0;
+        this->psi_gp[1][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z1]) / 2.0;
+        this->psi_gp[2][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
     }
 
     this->dpsi = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};

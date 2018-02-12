@@ -12,7 +12,7 @@ namespace SourceTerms {
 static bool function_source = false;
 static bool bottom_friction = false;
 static bool meteo_forcing = false;
-static bool tidal_potential = false;    
+static bool tidal_potential = false;
 static bool coriolis = false;
 }
 

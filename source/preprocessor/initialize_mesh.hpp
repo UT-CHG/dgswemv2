@@ -42,8 +42,11 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
             nodal_coords_temp.push_back({node_coordinate[GlobalCoord::x], node_coordinate[GlobalCoord::y]});
         }
 
-        mesh.template CreateElement<ElementType>(
-            elt_id, nodal_coords_temp, element_meta.second.node_ID , element_meta.second.neighbor_ID, element_meta.second.boundary_type);
+        mesh.template CreateElement<ElementType>(elt_id,
+                                                 nodal_coords_temp,
+                                                 element_meta.second.node_ID,
+                                                 element_meta.second.neighbor_ID,
+                                                 element_meta.second.boundary_type);
         nodal_coords_temp.clear();
     }
 
