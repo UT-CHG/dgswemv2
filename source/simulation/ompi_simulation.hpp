@@ -102,7 +102,7 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 
     uint n_stages = this->stepper.get_num_stages();
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages+1); };
+    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
     this->mesh.CallForEachElement(resize_data_container);
 }
@@ -374,7 +374,7 @@ void OMPISimulation<ProblemType>::Run() {
                 this->simulation_units[sim_unit_id]->Step();
             }
         }
-    } //close omp parallel region
+    }  // close omp parallel region
 }
 
 template <typename ProblemType>
@@ -386,16 +386,9 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
         residual_l2 += sim_unit->ResidualL2();
     }
 
-    MPI_Reduce(
-        &residual_l2,
-        &global_l2,
-        1,
-        MPI_DOUBLE,
-        MPI_SUM,
-        0,
-        MPI_COMM_WORLD);
+    MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    if ( locality_id == 0 ) {
+    if (locality_id == 0) {
         std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
 }

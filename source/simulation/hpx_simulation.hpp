@@ -13,21 +13,21 @@
 #include "writer.hpp"
 
 template <typename ClientType>
-hpx::future<double> ComputeL2Residual( std::vector<ClientType>& clients ) {
+hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
     std::vector<hpx::future<double>> res_futures;
 
     for (uint id = 0; id < clients.size(); id++) {
         res_futures.push_back(clients[id].ResidualL2());
     }
 
-    return hpx::when_all(res_futures).then([](auto&& res_futures)->double {
-            std::vector<double> res = hpx::util::unwrap(res_futures.get());
-            double combined_res{0};
-            for ( double r : res ) {
-                combined_res += r;
-            }
-            return combined_res;
-        });
+    return hpx::when_all(res_futures).then([](auto && res_futures)->double {
+        std::vector<double> res = hpx::util::unwrap(res_futures.get());
+        double combined_res{0};
+        for (double r : res) {
+            combined_res += r;
+        }
+        return combined_res;
+    });
 }
 
 template <typename ProblemType>
@@ -113,7 +113,7 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 
     uint n_stages = this->stepper.get_num_stages();
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages+1); };
+    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
     this->mesh.CallForEachElement(resize_data_container);
 }
