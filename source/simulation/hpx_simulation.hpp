@@ -8,7 +8,27 @@
 #include "../communication/hpx_communicator.hpp"
 #include "../utilities/file_exists.hpp"
 
+#include <hpx/util/unwrapped.hpp>
+
 #include "writer.hpp"
+
+template <typename ClientType>
+hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
+    std::vector<hpx::future<double>> res_futures;
+
+    for (uint id = 0; id < clients.size(); id++) {
+        res_futures.push_back(clients[id].ResidualL2());
+    }
+
+    return hpx::when_all(res_futures).then([](auto && res_futures)->double {
+        std::vector<double> res = hpx::util::unwrap(res_futures.get());
+        double combined_res{0};
+        for (double r : res) {
+            combined_res += r;
+        }
+        return combined_res;
+    });
+}
 
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
@@ -65,7 +85,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     void Step();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
 
-    void ResidualL2();
+    double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 };
 
@@ -226,7 +246,7 @@ void HPXSimulationUnit<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::ResidualL2() {
+double HPXSimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -236,6 +256,8 @@ void HPXSimulationUnit<ProblemType>::ResidualL2() {
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
+
+    return residual_L2;
 }
 
 template <typename ProblemType>
@@ -272,7 +294,7 @@ class HPXSimulationUnitClient
         return hpx::async<ActionType>(this->get_id());
     }
 
-    hpx::future<void> ResidualL2() {
+    hpx::future<double> ResidualL2() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::ResidualL2Action;
         return hpx::async<ActionType>(this->get_id());
     }
@@ -317,6 +339,9 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
     hpx::future<void> Run();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
+
+    hpx::future<double> ResidualL2();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, ResidualL2, ResidualL2Action);
 };
 
 template <typename ProblemType>
@@ -354,14 +379,12 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
-#ifdef RESL2
-    for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-        simulation_futures[sim_id] =
-            simulation_futures[sim_id]
-                .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].ResidualL2(); });
-    }
-#endif
     return hpx::when_all(simulation_futures);
+}
+
+template <typename ProblemType>
+hpx::future<double> HPXSimulation<ProblemType>::ResidualL2() {
+    return ComputeL2Residual(this->simulation_unit_clients);
 }
 
 template <typename ProblemType>
@@ -374,6 +397,11 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 
     hpx::future<void> Run() {
         using ActionType = typename HPXSimulation<ProblemType>::RunAction;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
+    hpx::future<double> ResidualL2() {
+        using ActionType = typename HPXSimulation<ProblemType>::ResidualL2Action;
         return hpx::async<ActionType>(this->get_id());
     }
 };
