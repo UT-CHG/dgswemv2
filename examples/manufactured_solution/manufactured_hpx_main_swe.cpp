@@ -66,5 +66,9 @@ int hpx_main(int argc, char* argv[]) {
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << std::endl;
 
+    hpx::future<double> globalResidualL2 = ComputeL2Residual( simulation_clients );
+    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) 
+              << std::endl;
+
     return hpx::finalize();
 }

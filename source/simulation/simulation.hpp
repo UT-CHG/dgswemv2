@@ -44,6 +44,7 @@ class Simulation {
     }
 
     void Run();
+    void ComputeL2Residual();
 };
 
 template <typename ProblemType>
@@ -104,7 +105,10 @@ void Simulation<ProblemType>::Run() {
             this->writer.WriteOutput(this->stepper, this->mesh);
         }
     }
-#ifdef RESL2
+}
+
+template <typename ProblemType>
+void Simulation<ProblemType>::ComputeL2Residual() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -114,7 +118,6 @@ void Simulation<ProblemType>::Run() {
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
-#endif
 }
 
 #endif

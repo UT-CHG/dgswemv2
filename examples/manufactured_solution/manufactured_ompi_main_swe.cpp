@@ -50,6 +50,8 @@ int main(int argc, char* argv[]) {
                                                          .count() << std::endl;
         }
 
+        simulation.ComputeL2Residual();
+
         MPI_Finalize();
 
         return 0;

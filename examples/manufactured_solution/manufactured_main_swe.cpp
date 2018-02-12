@@ -29,6 +29,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
                   << "\n";
 
+        simulation.ComputeL2Residual();
+
         return 0;
     }
 }

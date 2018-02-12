@@ -306,6 +306,7 @@ class OMPISimulation {
     }
 
     void Run();
+    void ComputeL2Residual();
 };
 
 template <typename ProblemType>
@@ -374,8 +375,10 @@ void OMPISimulation<ProblemType>::Run() {
             }
         }
     } //close omp parallel region
+}
 
-#ifdef RESL2
+template <typename ProblemType>
+void OMPISimulation<ProblemType>::ComputeL2Residual() {
     double global_l2{0};
 
     double residual_l2{0};
@@ -393,10 +396,8 @@ void OMPISimulation<ProblemType>::Run() {
         MPI_COMM_WORLD);
 
     if ( locality_id == 0 ) {
-        std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_L2) << std::endl;
+        std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
-#endif
-
 }
 
 #endif
