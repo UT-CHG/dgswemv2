@@ -46,6 +46,7 @@ enum class MeteoForcingType {
 struct MeteoForcing {
     MeteoForcingType type = MeteoForcingType::None;
     std::string meteo_data_file;
+    double frequency;
 };
 
 enum class TidalPotentialType {

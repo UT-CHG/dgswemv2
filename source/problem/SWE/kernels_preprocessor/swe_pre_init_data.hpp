@@ -22,7 +22,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         bathymetry_temp.clear();
     }
 
-    mesh.CallForEachElement([&bathymetry](auto& elt) {
+    mesh.CallForEachElement([&bathymetry, &problem_specific_input](auto& elt) {
         uint id = elt.GetID();
 
         auto& state = elt.data.state[0];
@@ -39,17 +39,27 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeDUgp(GlobalCoord::x, state.bath, internal.bath_deriv_wrt_x_at_gp);
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
-        auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
+        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
+            uint n_node = elt.GetShape().nodal_coordinates.size();
 
-        state.ze = elt.L2Projection(ze_init);
+            std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
+            state.ze = elt.L2Projection(ze_node);
 
-        auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
+            std::vector<double> qx_node(n_node, problem_specific_input.initial_conditions.qx_initial);
+            state.qx = elt.L2Projection(qx_node);
 
-        state.qx = elt.L2Projection(qx_init);
+            std::vector<double> qy_node(n_node, problem_specific_input.initial_conditions.qy_initial);
+            state.qy = elt.L2Projection(qy_node);
+        } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
+            auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
+            state.ze = elt.L2Projection(ze_init);
 
-        auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
+            auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
+            state.qx = elt.L2Projection(qx_init);
 
-        state.qy = elt.L2Projection(qy_init);
+            auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
+            state.qy = elt.L2Projection(qy_init);
+        }
     });
 
     mesh.CallForEachInterface([](auto& intface) {

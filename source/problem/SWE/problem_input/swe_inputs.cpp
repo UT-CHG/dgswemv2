@@ -105,9 +105,10 @@ Inputs::Inputs(YAML::Node& swe_node) {
             if (meteo_str == "None") {
                 meteo_forcing.type = MeteoForcingType::None;
             } else if (meteo_str == "Test") {
-                if (meteo["input_file"]) {
+                if (meteo["input_file"] && meteo["frequency"]) {
                     meteo_forcing.type = MeteoForcingType::Test;
                     meteo_forcing.meteo_data_file = meteo["input_file"].as<std::string>();
+                    meteo_forcing.frequency = meteo["frequency"].as<double>();
                 } else {
                     std::cerr << malformatted_meteo_warning;
                 }
@@ -218,6 +219,7 @@ YAML::Node Inputs::as_yaml_node() {
         case MeteoForcingType::Test:
             meteo_node["type"] = "Test";
             meteo_node["input_file"] = meteo_forcing.meteo_data_file;
+            meteo_node["frequency"] = meteo_forcing.frequency;
             break;
     }
     ret["meteo_forcing"] = meteo_node;
