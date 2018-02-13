@@ -32,7 +32,7 @@ int main() {
     };
 
     for (auto& pair : rk_pairs) {
-        Stepper rk_stepper(pair.first, pair.second, dt);
+        Stepper rk_stepper(pair.first, pair.second, dt, dt*nsteps);
 
         double t = 0;
 

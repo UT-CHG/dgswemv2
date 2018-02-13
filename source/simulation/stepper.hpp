@@ -5,7 +5,7 @@
 
 struct Stepper {
     Stepper()=default;
-    Stepper(uint nstages, uint order, double dt, double t0 = 0.);
+    Stepper(uint nstages, uint order, double dt, double Tend, double t0 = 0.);
 
     void InitializeCoefficients();
 
@@ -48,6 +48,7 @@ struct Stepper {
     uint timestamp;
     double _t;
     double _dt;
+    double Tend;
 
 #ifdef HAS_HPX
     template <typename Archive>
@@ -63,12 +64,12 @@ struct Stepper {
 #ifdef HAS_HPX
 template<typename Archive>
 void Stepper::save(Archive& ar, unsigned) const {
-    ar & order & nstages & irk & _dt & timestamp & _t;
+    ar & order & nstages & irk & _dt & timestamp & _t & Tend;
 }
 
 template<typename Archive>
 void Stepper::load(Archive& ar, unsigned) {
-    ar & order & nstages & irk & _dt & timestamp & _t;
+    ar & order & nstages & irk & _dt & timestamp & _t & Tend;
 
     step = timestamp/nstages;
     InitializeCoefficients();
