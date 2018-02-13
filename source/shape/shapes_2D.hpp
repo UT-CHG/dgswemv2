@@ -11,6 +11,7 @@ class StraightTriangle : public Shape<2> {
 
     bool CheckJacobianPositive(const Point<2>& point) const;
 
+    std::vector<Point<2>>& GetNodalCoordinates();
     Point<2> GetBarycentricCoordinates() const;
     std::vector<Point<2>> GetMidpointCoordinates() const;
 

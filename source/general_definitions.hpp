@@ -163,6 +163,7 @@ class Shape {
   public:
     virtual bool CheckJacobianPositive(const Point<dimension>& point) const = 0;
 
+    virtual std::vector<Point<dimension>>& GetNodalCoordinates() = 0;
     virtual Point<dimension> GetBarycentricCoordinates() const = 0;
     virtual std::vector<Point<dimension>> GetMidpointCoordinates() const = 0;
 

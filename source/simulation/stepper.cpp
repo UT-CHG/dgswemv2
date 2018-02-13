@@ -5,7 +5,7 @@ Stepper::Stepper(uint nstages, uint order, double dt, double t0 /*= 0.*/)
     InitializeCoefficients();
 }
 
-Stepper::InitializeCoefficients() {
+void Stepper::InitializeCoefficients() {
     // Allocate the time stepping arrays
     ark.reserve(nstages);
     brk.reserve(nstages);
