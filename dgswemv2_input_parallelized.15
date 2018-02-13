@@ -23,15 +23,18 @@ problem:
     initial_momentum_x: 0.0
     initial_momentum_y: 0.0
   function_source:
-    type: None
+    type: Test
   bottom_friction:
     type: None
+    coefficient: 0.001
+    input_file: manning.test
   meteo_forcing:
-    type: None
+    type: Test
+    input_file: weather.test
   tidal_potential:
-    type: None
+    type: Test
   coriolis:
-    type: None
+    type: Test
 output:
   path: output/
   vtk:

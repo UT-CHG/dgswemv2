@@ -208,15 +208,26 @@ timestepping:\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
-  bottom_friction:\n\
-    type: Chezy\n\
-    coefficient: 0.001\n\
   gravity: 9.81\n\
+  h_o: 0.001\n\
   initial_conditions:\n\
     type: Constant\n\
     initial_surface_height: 10.0\n\
     initial_momentum_x: 0.0\n\
-    initial_momentum_y: 0.0\n\n\
+    initial_momentum_y: 0.0\n\
+  function_source:\n\
+    type: Test\n\  
+  bottom_friction:\n\
+    type: Manning\n\
+    coefficient: 0.001\n\
+    input_file: manning.test\n\
+  meteo_forcing:\n\
+    type: Test\n\
+    input_file: weather.test\n\
+  tidal_potential:\n\
+    type: Test\n\
+  coriolis:\n\
+    type: Test\n\n\
 output:\n\
   logfile:\n\
     name: log\n\
@@ -238,15 +249,26 @@ timestepping:\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
-  bottom_friction:\n\
-    type: Chezy\n\
-    coefficient: 0.001\n\
   gravity: 9.81\n\
+  h_o: 0.001\n\
   initial_conditions:\n\
     type: Constant\n\
     initial_surface_height: 10.0\n\
     initial_momentum_x: 0.0\n\
-    initial_momentum_y: 0.0\n"
+    initial_momentum_y: 0.0\n\
+  function_source:\n\
+    type: Test\n\  
+  bottom_friction:\n\
+    type: Manning\n\
+    coefficient: 0.001\n\
+    input_file: manning.test\n\
+  meteo_forcing:\n\
+    type: Test\n\
+    input_file: weather.test\n\
+  tidal_potential:\n\
+    type: Test\n\
+  coriolis:\n\
+    type: Test\n"
 )
 
 add_executable(

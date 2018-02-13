@@ -213,11 +213,11 @@ YAML::Node Inputs::as_yaml_node() {
     YAML::Node meteo_node;
     switch (meteo_forcing.type) {
         case MeteoForcingType::None:
-            bf_node["type"] = "None";
+            meteo_node["type"] = "None";
             break;
         case MeteoForcingType::Test:
-            bf_node["type"] = "Test";
-            bf_node["input_file"] = meteo_forcing.meteo_data_file;
+            meteo_node["type"] = "Test";
+            meteo_node["input_file"] = meteo_forcing.meteo_data_file;
             break;
     }
     ret["meteo_forcing"] = meteo_node;
