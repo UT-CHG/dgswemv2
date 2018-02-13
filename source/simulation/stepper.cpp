@@ -1,7 +1,7 @@
 #include "stepper.hpp"
 
-Stepper::Stepper(uint nstages, uint order, double dt, double Tend, double t0 /*= 0.*/)
-    : order(order), nstages(nstages), irk(0), step(0), timestamp(0), _t(t0), _dt(dt), Tend(Tend) {
+Stepper::Stepper(uint nstages, uint order, double dt, double T_end, double t0 /*= 0.*/)
+    : order(order), nstages(nstages), irk(0), step(0), timestamp(0), _t(t0), _dt(dt), T_end(T_end) {
     InitializeCoefficients();
 }
 

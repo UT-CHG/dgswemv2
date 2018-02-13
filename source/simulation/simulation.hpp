@@ -8,31 +8,31 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    InputParameters<typename ProblemType::ProblemInputType> input;
-
     Stepper stepper;
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
     typename ProblemType::ProblemMeshType mesh;
+    typename ProblemType::ProblemInputType problem_input;
 
   public:
-    Simulation()
-        : input(),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          mesh(this->input.polynomial_order) {}
-    Simulation(std::string input_string)
-        : input(input_string),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          writer(input),
-          parser(input),
-          mesh(this->input.polynomial_order) {
-        ProblemType::initialize_problem_parameters(this->input.problem_input);
+    Simulation(std::string input_string) {
+        InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-        this->input.ReadMesh();
+        this->stepper = Stepper(input.rk.nstages, input.rk.order, input.dt, input.T_end);
+        this->problem_input = typename ProblemType::ProblemInputType(input.problem_input);
+        this->writer = Writer<ProblemType>(input);
+        this->parser = typename ProblemType::ProblemParserType(input);
+        this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
 
-        mesh.SetMeshName(this->input.mesh_data.mesh_name);
+        ProblemType::initialize_problem_parameters(this->problem_input);
+
+        input.ReadMesh();
+        mesh.SetMeshName(input.mesh_data.mesh_name);
 
         std::tuple<> empty_comm;
+        initialize_mesh<ProblemType>(this->mesh, input.mesh_data, empty_comm, this->problem_input, this->writer);
+
+        ProblemType::initialize_data_kernel(this->mesh, input.mesh_data, this->problem_input);
 
         if (this->writer.WritingLog()) {
             this->writer.StartLog();
@@ -40,11 +40,6 @@ class Simulation {
             this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
                                       << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
         }
-
-        initialize_mesh<ProblemType>(
-            this->mesh, this->input.mesh_data, empty_comm, this->input.problem_input, this->writer);
-
-        ProblemType::initialize_data_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
     }
 
     void Run();
@@ -73,7 +68,7 @@ void Simulation<ProblemType>::Run() {
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
-    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
+    uint nsteps = (uint)std::ceil(this->stepper.T_end / this->stepper.get_dt());
     uint n_stages = this->stepper.get_num_stages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
@@ -83,6 +78,8 @@ void Simulation<ProblemType>::Run() {
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
+
+    ProblemType::parse_source_data(this->stepper, this->mesh, this->problem_input);
 
     for (uint step = 1; step <= nsteps; ++step) {
         if (this->parser.ParsingInput()) {

@@ -5,7 +5,7 @@
 
 struct Stepper {
     Stepper()=default;
-    Stepper(uint nstages, uint order, double dt, double Tend, double t0 = 0.);
+    Stepper(uint nstages, uint order, double dt, double T_end, double t0 = 0.);
 
     void InitializeCoefficients();
 
@@ -48,7 +48,7 @@ struct Stepper {
     uint timestamp;
     double _t;
     double _dt;
-    double Tend;
+    double T_end;
 
 #ifdef HAS_HPX
     template <typename Archive>
