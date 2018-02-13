@@ -320,9 +320,9 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
-        auto& state    = dbound.data.state[0];
-        auto& boundary = dbound.data.boundary[dbound.bound_id];
-        auto& sp       = dbound.data.spherical_projection;
+        auto& state    = dbound.data->state[0];
+        auto& boundary = dbound.data->boundary[dbound.bound_id];
+        auto& sp       = dbound.data->spherical_projection;
 
         dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
 

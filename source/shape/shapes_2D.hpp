@@ -10,6 +10,7 @@ class StraightTriangle : public Shape<2> {
 
     std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID);
 
+    std::vector<Point<2>>& GetNodalCoordinates();
     Point<2> GetBarycentricCoordinates() const;
     std::vector<Point<2>> GetMidpointCoordinates() const;
 

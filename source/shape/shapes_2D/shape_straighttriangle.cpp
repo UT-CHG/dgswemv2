@@ -19,6 +19,10 @@ std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const
     return bound_node_ID;
 }
 
+std::vector<Point<2>>& StraightTriangle::GetNodalCoordinates() {
+    return this->nodal_coordinates;
+}
+
 Point<2> StraightTriangle::GetBarycentricCoordinates() const {
     assert(this->nodal_coordinates.size() > 0);
     Point<2> baryctr_coord;
