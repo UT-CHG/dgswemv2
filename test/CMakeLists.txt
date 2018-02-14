@@ -365,4 +365,21 @@ if(USE_HPX)
     test_mesh_serialization_exe
     ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
   )
+
+  add_executable(
+    test_stepper_serialization_exe
+    test_stepper_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
+  )
+
+  set_target_properties(test_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_stepper_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_stepper_serialization
+    test_stepper_serialization_exe
+  )
+
 endif()
