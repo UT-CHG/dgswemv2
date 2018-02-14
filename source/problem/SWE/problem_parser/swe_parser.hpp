@@ -18,7 +18,7 @@ class Parser {
     Parser(const InputParameters<SWE::Inputs>& input);
     Parser(const InputParameters<SWE::Inputs>& input,
            const uint locality_id,
-           const uint submesh_id); //this is for partitioned input files
+           const uint submesh_id);  // this is for partitioned input files
 
     bool ParsingInput() { return parsing_input; }
 
@@ -26,26 +26,23 @@ class Parser {
     void ParseInput(const Stepper& stepper, MeshType& mesh);
 
   private:
-    void ParseMeteoInput(); 
+    void ParseMeteoInput();
 };
 
 Parser::Parser(const InputParameters<SWE::Inputs>& input) {
     this->parsing_input = input.problem_input.parse_input;
 
     meteo_forcing_type = input.problem_input.meteo_forcing.type;
-    meteo_parse_frequency = (uint)std::ceil(input.problem_input.meteo_forcing.frequency/input.dt);
+    meteo_parse_frequency = (uint)std::ceil(input.problem_input.meteo_forcing.frequency / input.dt);
     this->meteo_data_file = input.problem_input.meteo_forcing.meteo_data_file;
 }
 
-Parser::Parser(const InputParameters<SWE::Inputs>& input,
-           const uint locality_id,
-           const uint submesh_id) : Parser(input) {
-
-}
+Parser::Parser(const InputParameters<SWE::Inputs>& input, const uint locality_id, const uint submesh_id)
+    : Parser(input) {}
 
 template <typename MeshType>
 void Parser::ParseInput(const Stepper& stepper, MeshType& mesh) {
-    if(SWE::SourceTerms::meteo_forcing){
+    if (SWE::SourceTerms::meteo_forcing) {
         if (stepper.get_step() % this->meteo_parse_frequency == 0) {
             this->ParseMeteoInput();
         }
@@ -56,7 +53,7 @@ void Parser::ParseInput(const Stepper& stepper, MeshType& mesh) {
             //# of node != # of vrtx in case we have an iso-p element with p>1
             // I assume we will have values only at vrtx in files
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                elt.data.source.tau_s[GlobalCoord::x][vrtx] = -0.00005*this->node_meteo_data[node_ID[vrtx]][0];
+                elt.data.source.tau_s[GlobalCoord::x][vrtx] = -0.00005 * this->node_meteo_data[node_ID[vrtx]][0];
                 elt.data.source.tau_s[GlobalCoord::y][vrtx] = this->node_meteo_data[node_ID[vrtx]][1];
 
                 elt.data.source.p_atm[vrtx] = this->node_meteo_data[node_ID[vrtx]][2];
@@ -65,7 +62,7 @@ void Parser::ParseInput(const Stepper& stepper, MeshType& mesh) {
     }
 }
 
-void Parser::ParseMeteoInput() { 
+void Parser::ParseMeteoInput() {
     if (this->meteo_forcing_type == SWE::MeteoForcingType::Test) {
         std::ifstream meteo_file(this->meteo_data_file);
 

@@ -36,7 +36,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     InputParameters<typename ProblemType::ProblemInputType> input;
 
     Stepper stepper;
-    
+
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
     typename ProblemType::ProblemMeshType mesh;
