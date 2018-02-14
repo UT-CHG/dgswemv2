@@ -53,7 +53,7 @@ void Parser::ParseInput(const Stepper& stepper, MeshType& mesh) {
             //# of node != # of vrtx in case we have an iso-p element with p>1
             // I assume we will have values only at vrtx in files
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                elt.data.source.tau_s[GlobalCoord::x][vrtx] = -0.00005 * this->node_meteo_data[node_ID[vrtx]][0];
+                elt.data.source.tau_s[GlobalCoord::x][vrtx] = this->node_meteo_data[node_ID[vrtx]][0];
                 elt.data.source.tau_s[GlobalCoord::y][vrtx] = this->node_meteo_data[node_ID[vrtx]][1];
 
                 elt.data.source.p_atm[vrtx] = this->node_meteo_data[node_ID[vrtx]][2];
