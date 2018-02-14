@@ -32,7 +32,7 @@ int main() {
     triangle.data.initialize();
     triangle.data.resize(2);
 
-    Stepper stepper(1, 1, 1);
+    Stepper stepper(1, 1, 1, 1);
 
     auto& wd_state = triangle.data.wet_dry_state;
     auto& state = triangle.data.state[1];
