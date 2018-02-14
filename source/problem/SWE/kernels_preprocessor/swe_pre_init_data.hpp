@@ -283,7 +283,6 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
 }
 
 void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
-                                                           const MeshMetaData& mesh_data,
                                                            const ProblemInputType& problem_specific_input) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data->slope_limit_state;

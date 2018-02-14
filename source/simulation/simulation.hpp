@@ -19,7 +19,7 @@ class Simulation {
         InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
         this->stepper = Stepper(input.rk.nstages, input.rk.order, input.dt, input.T_end);
-        this->problem_input = typename ProblemType::ProblemInputType(input.problem_input);
+        this->problem_input = input.problem_input;
         this->writer = Writer<ProblemType>(input);
         this->parser = typename ProblemType::ProblemParserType(input);
         this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
