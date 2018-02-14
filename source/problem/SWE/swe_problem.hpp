@@ -8,6 +8,7 @@
 #include "boundary_conditions/swe_boundary_conditions.hpp"
 #include "data_structure/swe_data.hpp"
 #include "problem_input/swe_inputs.hpp"
+#include "problem_parser/swe_parser.hpp"
 
 #include "../../geometry/mesh_definitions.hpp"
 #include "../../preprocessor/mesh_metadata.hpp"
@@ -19,6 +20,8 @@ struct Problem {
     typedef SWE::Data ProblemDataType;
 
     typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal, SWE::Flow> ProblemMeshType;
+
+    typedef SWE::Parser ProblemParserType;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
@@ -54,10 +57,6 @@ struct Problem {
                                                              const ProblemInputType& problem_specific_input);
 
     // processor kernels
-    static void parse_source_data(const Stepper& stepper,
-                                  ProblemMeshType& mesh,
-                                  const ProblemInputType& problem_specific_input);
-
     template <typename ElementType>
     static void volume_kernel(const Stepper& stepper, ElementType& elt);
 

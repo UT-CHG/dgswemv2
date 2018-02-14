@@ -107,6 +107,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
             } else if (meteo_str == "Test") {
                 if (meteo["input_file"] && meteo["frequency"]) {
                     meteo_forcing.type = MeteoForcingType::Test;
+
+                    parse_input = true;
                     meteo_forcing.meteo_data_file = meteo["input_file"].as<std::string>();
                     meteo_forcing.frequency = meteo["frequency"].as<double>();
                 } else {

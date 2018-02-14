@@ -76,6 +76,8 @@ struct Inputs {
     double g = 9.81;
     double h_o = 0.01;
 
+    bool parse_input = false;
+
     InitialConditions initial_conditions;
 
     FunctionSource function_source;

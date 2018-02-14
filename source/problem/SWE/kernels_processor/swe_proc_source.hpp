@@ -2,41 +2,6 @@
 #define SWE_PROC_SOURCE_HPP
 
 namespace SWE {
-void Problem::parse_source_data(const Stepper& stepper,
-                                ProblemMeshType& mesh,
-                                const ProblemInputType& problem_specific_input) {
-    if (problem_specific_input.meteo_forcing.type == SWE::MeteoForcingType::Test) {
-        std::ifstream meteo_file(problem_specific_input.meteo_forcing.meteo_data_file);
-
-        uint node_id;
-        std::vector<double> meteo_data(3);
-        std::map<uint, std::vector<double>> node_meteo_data;
-
-        std::string line;
-        while (std::getline(meteo_file, line)) {
-            std::istringstream input_string(line);
-
-            if (!(input_string >> node_id >> meteo_data[0] >> meteo_data[1] >> meteo_data[2]))
-                break;
-
-            node_meteo_data[node_id] = meteo_data;
-        }
-
-        mesh.CallForEachElement([&node_meteo_data](auto& elt) {
-            std::vector<uint>& node_ID = elt.GetNodeID();
-
-            //# of node != # of vrtx in case we have an iso-p element with p>1
-            // I assume we will have values only at vrtx in files
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                elt.data.source.tau_s[GlobalCoord::x][vrtx] = node_meteo_data[node_ID[vrtx]][0];
-                elt.data.source.tau_s[GlobalCoord::y][vrtx] = node_meteo_data[node_ID[vrtx]][1];
-
-                elt.data.source.p_atm[vrtx] = node_meteo_data[node_ID[vrtx]][2];
-            }
-        });
-    }
-}
-
 template <typename ElementType>
 void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;

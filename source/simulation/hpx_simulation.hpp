@@ -36,7 +36,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     InputParameters<typename ProblemType::ProblemInputType> input;
 
     Stepper stepper;
+    
     Writer<ProblemType> writer;
+    typename ProblemType::ProblemParserType parser;
     typename ProblemType::ProblemMeshType mesh;
     HPXCommunicator communicator;
 
@@ -49,6 +51,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         : input(input_string, locality_id, submesh_id),
           stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
           writer(input, locality_id, submesh_id),
+          parser(input, locality_id, submesh_id),
           mesh(this->input.polynomial_order),
           communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
                        locality_id,
@@ -75,6 +78,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
+
+    void Parse();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Parse, ParseAction);
 
     hpx::future<void> Stage();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
@@ -118,6 +124,13 @@ void HPXSimulationUnit<ProblemType>::Launch() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
     this->mesh.CallForEachElement(resize_data_container);
+}
+
+template <typename ProblemType>
+void HPXSimulationUnit<ProblemType>::Parse() {
+    if (this->parser.ParsingInput()) {
+        this->parser.ParseInput(this->stepper, this->mesh);
+    }
 }
 
 template <typename ProblemType>
@@ -279,6 +292,11 @@ class HPXSimulationUnitClient
         return hpx::async<ActionType>(this->get_id());
     }
 
+    hpx::future<void> Parse() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::ParseAction;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
     hpx::future<void> Stage() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
         return hpx::async<ActionType>(this->get_id());
@@ -359,6 +377,12 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
+        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+            simulation_futures[sim_id] =
+                simulation_futures[sim_id]
+                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Parse(); });
+        }
+
         for (uint stage = 0; stage < this->n_stages; stage++) {
             for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
                 simulation_futures[sim_id] =

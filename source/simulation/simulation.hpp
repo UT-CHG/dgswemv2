@@ -12,6 +12,7 @@ class Simulation {
 
     Stepper stepper;
     Writer<ProblemType> writer;
+    typename ProblemType::ProblemParserType parser;
     typename ProblemType::ProblemMeshType mesh;
 
   public:
@@ -23,6 +24,7 @@ class Simulation {
         : input(input_string),
           stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
           writer(input),
+          parser(input),
           mesh(this->input.polynomial_order) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
@@ -82,9 +84,11 @@ void Simulation<ProblemType>::Run() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    ProblemType::parse_source_data(this->stepper, this->mesh, this->input.problem_input);
-
     for (uint step = 1; step <= nsteps; ++step) {
+        if (this->parser.ParsingInput()) {
+            this->parser.ParseInput(this->stepper, this->mesh);
+        }
+
         for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
             this->mesh.CallForEachElement(volume_kernel);
 

@@ -21,7 +21,7 @@ problem:
   gravity: 9.81
   h_o: 0.01
   initial_conditions:
-    type: Function
+    type: Constant
     initial_surface_height: 0.0
     initial_momentum_x: 0.0
     initial_momentum_y: 0.0
@@ -32,9 +32,9 @@ problem:
     coefficient: 0.001
     input_file: manning.test
   meteo_forcing:
-    type: None
+    type: Test
     input_file: weather.test
-    frequency: 900
+    frequency: 172800
   tidal_potential:
     type: None
   coriolis:

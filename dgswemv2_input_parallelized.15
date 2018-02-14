@@ -19,11 +19,11 @@ problem:
   h_o: 0.01
   initial_conditions:
     type: Constant
-    initial_surface_height: 10.0
+    initial_surface_height: 0.0
     initial_momentum_x: 0.0
     initial_momentum_y: 0.0
   function_source:
-    type: Test
+    type: None
   bottom_friction:
     type: None
     coefficient: 0.001
@@ -31,10 +31,11 @@ problem:
   meteo_forcing:
     type: Test
     input_file: weather.test
+    frequency: 172800
   tidal_potential:
-    type: Test
+    type: None
   coriolis:
-    type: Test
+    type: None
 output:
   path: output/
   vtk:

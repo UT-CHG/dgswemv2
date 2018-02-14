@@ -9,4 +9,4 @@ num_y_subdivisions: 6
 
 pattern: 0
 
-boundary_type: [0, 0, 0, 0]
+boundary_type: [0, 1, 0, 0]
