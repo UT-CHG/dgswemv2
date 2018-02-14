@@ -13,33 +13,32 @@
 template <typename ProblemType>
 class OMPISimulationUnit {
   private:
-    InputParameters<typename ProblemType::ProblemInputType> input;
-
     Stepper stepper;
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
     typename ProblemType::ProblemMeshType mesh;
+    typename ProblemType::ProblemInputType problem_input;
     OMPICommunicator communicator;
 
   public:
-    OMPISimulationUnit()
-        : input(),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          mesh(this->input.polynomial_order) {}
-    OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
-        : input(input_string, locality_id, submesh_id),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          writer(input, locality_id, submesh_id),
-          parser(input, locality_id, submesh_id),
-          mesh(this->input.polynomial_order),
-          communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
-                       locality_id,
-                       submesh_id) {
-        ProblemType::initialize_problem_parameters(this->input.problem_input);
+    OMPISimulationUnit() = default;
+    OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id) {
+        InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
-        this->input.ReadMesh();
+        this->stepper = Stepper(input.rk.nstages, input.rk.order, input.dt, input.T_end);
+        this->problem_input = input.problem_input;
+        this->writer = Writer<ProblemType>(input, locality_id, submesh_id);
+        this->parser = typename ProblemType::ProblemParserType(input, locality_id, submesh_id),
 
-        this->mesh.SetMeshName(this->input.mesh_data.mesh_name);
+        this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+        this->communicator = OMPICommunicator(
+            input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd", locality_id, submesh_id);
+
+        ProblemType::initialize_problem_parameters(this->problem_input);
+
+        input.ReadMesh();
+
+        this->mesh.SetMeshName(input.mesh_data.mesh_name);
 
         if (this->writer.WritingLog()) {
             this->writer.StartLog();
@@ -49,19 +48,16 @@ class OMPISimulationUnit {
         }
 
         initialize_mesh<ProblemType, OMPICommunicator>(
-            this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
+            this->mesh, input.mesh_data, this->communicator, this->problem_input, this->writer);
 
-        ProblemType::initialize_data_parallel_pre_send_kernel(
-            this->mesh, this->input.mesh_data, this->input.problem_input);
+        ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_data, this->problem_input);
 
         this->communicator.InitializeCommunication();
-
         this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
-
         this->communicator.SendPreprocAll(this->stepper.get_timestamp());
     }
 
-    void PostReceivePrerocStage();
+    void PostReceivePreprocStage();
     void WaitAllPreprocSends();
 
     void Launch();
@@ -84,11 +80,10 @@ class OMPISimulationUnit {
 };
 
 template <typename ProblemType>
-void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
+void OMPISimulationUnit<ProblemType>::PostReceivePreprocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.get_timestamp());
 
-    ProblemType::initialize_data_parallel_post_receive_kernel(
-        this->mesh, this->input.mesh_data, this->input.problem_input);
+    ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh, this->problem_input);
 }
 
 template <typename ProblemType>
@@ -338,7 +333,7 @@ void OMPISimulation<ProblemType>::Run() {
         end_sim_id = std::min(sim_per_thread * (thread_id + 1), (uint) this->simulation_units.size());
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->PostReceivePrerocStage();
+            this->simulation_units[sim_unit_id]->PostReceivePreprocStage();
         }
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
