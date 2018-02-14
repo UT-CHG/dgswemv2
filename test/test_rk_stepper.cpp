@@ -46,8 +46,8 @@ int main() {
         std::vector<State> rhs(pair.first);
 
         for (uint step = 0; step < nsteps; ++step) {
-            for (uint stage = 0; stage < rk_stepper.GetNumStages(); ++stage) {
-                rhs[stage]   = compute_rhs(y[stage], t + rk_stepper.drk[stage] * dt);
+            for (uint stage = 0; stage < rk_stepper.get_num_stages(); ++stage) {
+                rhs[stage] = compute_rhs(y[stage], rk_stepper.get_t_at_curr_stage());
                 y[stage + 1] = {0, 0};
                 for (uint s = 0; s < stage + 1; ++s) {
                     y[stage + 1][0] += rk_stepper.ark[stage][s] * y[s][0] + dt * rk_stepper.brk[stage][s] * rhs[s][0];
@@ -56,9 +56,10 @@ int main() {
                 }
                 ++rk_stepper;
             }
-            std::swap(y[0], y[rk_stepper.GetNumStages()]);
-            t += dt;
+            std::swap(y[0], y[rk_stepper.get_num_stages()]);
         }
+
+        double t = rk_stepper.get_t_at_curr_stage();
 
         std::cout << "At time: " << t << "\n";
         std::cout << "Got: " << std::setprecision(14) << y[0][0] << " Should be: " << std::sin(t) + 0.5 * t << "\n";
