@@ -10,7 +10,7 @@ mesh:
 
 timestepping:
   dt: 1                           #in seconds
-  end_time: 172800                #in seconds
+  end_time: 43200                #in seconds
   order: 2
   nstages: 2
 
@@ -21,18 +21,18 @@ problem:
   gravity: 9.81
   h_o: 0.01
   initial_conditions:
-    type: Constant
+    type: Function
     initial_surface_height: 0.0
     initial_momentum_x: 0.0
     initial_momentum_y: 0.0
   function_source:
-    type: None  
+    type: Test  
   bottom_friction:
     type: None
     coefficient: 0.001
     input_file: manning.test
   meteo_forcing:
-    type: Test
+    type: None
     input_file: weather.test
     frequency: 172800
   tidal_potential:

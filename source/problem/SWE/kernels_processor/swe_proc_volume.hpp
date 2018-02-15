@@ -18,6 +18,8 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
 
         // assemble flux
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+            internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+
             internal.ze_flux_at_gp[GlobalCoord::x][gp] = internal.qx_at_gp[gp];
             internal.ze_flux_at_gp[GlobalCoord::y][gp] = internal.qy_at_gp[gp];
 

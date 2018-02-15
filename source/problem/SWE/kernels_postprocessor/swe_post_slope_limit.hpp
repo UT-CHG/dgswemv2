@@ -203,15 +203,15 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     std::vector<bool> limit(3, false);
 
     for (uint vrtx = 0; vrtx < 3; vrtx++) {
-        if (Utilities::almost_equal(sl_state.ze_at_vrtx[vrtx], sl_state.ze_lin[vrtx])) {
+        if (std::abs((sl_state.ze_at_vrtx[vrtx]-sl_state.ze_lin[vrtx])/sl_state.ze_lin[vrtx]) > 1.0e-6) {
             limit[0] = true;
         }
 
-        if (Utilities::almost_equal(sl_state.qx_at_vrtx[vrtx], sl_state.qx_lin[vrtx])) {
+        if (std::abs((sl_state.qx_at_vrtx[vrtx]-sl_state.qx_lin[vrtx])/sl_state.qy_lin[vrtx]) > 1.0e-6) {
             limit[1] = true;
         }
 
-        if (Utilities::almost_equal(sl_state.qy_at_vrtx[vrtx], sl_state.qy_lin[vrtx])) {
+        if (std::abs((sl_state.qy_at_vrtx[vrtx]-sl_state.qy_lin[vrtx])/sl_state.qy_lin[vrtx]) > 1.0e-6) {
             limit[2] = true;
         }
     }
