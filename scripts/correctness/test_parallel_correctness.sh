@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DGSWEMV2_ROOT="${WORK}/dgswemv2"
+DGSWEMV2_ROOT="${HOME}/dgswemv2"
 
 echo "Building mesh for manufactured solution..."
 cd $DGSWEMV2_ROOT/mesh_generators
