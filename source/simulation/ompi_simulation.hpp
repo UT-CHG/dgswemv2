@@ -281,7 +281,7 @@ double OMPISimulationUnit<ProblemType>::ResidualL2() {
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
-    
+
     return residual_L2;
 }
 
