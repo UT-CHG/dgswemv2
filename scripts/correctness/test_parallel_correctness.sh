@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DGSWEMV2_ROOT="${HOME}/dgswemv2"
+DGSWEMV2_ROOT="${WORK}/dgswemv2"
 
 echo "Building mesh for manufactured solution..."
 cd $DGSWEMV2_ROOT/mesh_generators
@@ -26,7 +26,10 @@ echo "Setting up runtime files..."
 cd $HOME
 mkdir -p dgswemv2_test
 cp -r $DGSWEMV2_ROOT/examples/manufactured_solution/input_files/* dgswemv2_test
+
 cd dgswemv2_test
+#Halve the manufactured solution run time to shorten circleci test time
+sed -i 's/  end_time: 3600                #in seconds/  end_time: 1800/g' dgswemv2_input.15
 $DGSWEMV2_ROOT/build/mesh_generators/rectangular_mesh_generator mesh_generator_input.yml
 
 echo "Running Serial Test case..."

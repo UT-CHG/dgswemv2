@@ -23,6 +23,10 @@ if __name__=='__main__':
 
             if not any_match:
                 print 'ERROR!!! No L2 error found for '+bt+' build.'
+                with open(bt+'.out') as ff:
+                    for ll in ff:
+                        print ll
+
                 exit(1)
 
     max_error = max([ error['serial'], error['hpx'], error['ompi'] ])
