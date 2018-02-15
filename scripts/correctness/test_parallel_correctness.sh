@@ -41,9 +41,10 @@ $DGSWEMV2_ROOT/build/examples/MANUFACTURED_SOLUTION_HPX dgswemv2_input_paralleli
 
 echo "Running MPI Test case..."
 rm rectangular_mesh_*
-OMP_NUM_THREADS="1"
 $DGSWEMV2_ROOT/build/partitioner/partitioner dgswemv2_input.15 2 1 2
-mpirun -np 2 $DGSWEMV2_ROOT/build/examples/MANUFACTURED_SOLUTION_OMPI dgswemv2_input_parallelized.15 &> ompi.out
+#Since OpenMPI does not by default support MPI_THREAD_MULTIPLE
+# we set OMP_NUM_THREADS=1
+OMP_NUM_THREADS=1 mpirun -np 2 $DGSWEMV2_ROOT/build/examples/MANUFACTURED_SOLUTION_OMPI dgswemv2_input_parallelized.15 &> ompi.out
 
 python $DGSWEMV2_ROOT/scripts/correctness/compare_l2_errors.py
 exit $?
