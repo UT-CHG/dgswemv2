@@ -26,10 +26,12 @@ int main(int argc, char* argv[]) {
         MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
         if (provided != MPI_THREAD_MULTIPLE ) {
-          if ( provided != MPI_THREAD_SINGLE && omp_get_max_threads() == 1) {
-              std::cerr << "Running flat MPI\n";
-            } else {
-              std::cerr << "MPI_THREAD_MULTIPLE is not provided!\n";
+          if ( omp_get_max_threads() > 1) {
+              std::cerr << "dgswemv2 with ompi parallelization was submitted with more than \n"
+                        << "1 thread per MPI rank and MPI_THREAD_MULTIPLE is not provided!\n"
+                        << "Please either find an MPI implementation that supports MPI_THREAD_MULTIPLE,\n"
+                        << " or resubmit the job with one thread per MPI rank and set the\n"
+                        << " environment variable OMP_NUM_THREADS=1\n";
               MPI_Abort(MPI_COMM_WORLD, MPI_ERR_OTHER);
               return 1;
             }
