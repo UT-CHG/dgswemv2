@@ -23,6 +23,7 @@ if __name__=='__main__':
 
             if not any_match:
                 print 'ERROR!!! No L2 error found for '+bt+' build.'
+                #print out cout from run with no L2 error
                 with open(bt+'.out') as ff:
                     for ll in ff:
                         print ll
@@ -30,7 +31,7 @@ if __name__=='__main__':
                 exit(1)
 
     max_error = max([ error['serial'], error['hpx'], error['ompi'] ])
-    tol = np.finfo(float).eps*max_error*100 #~10^-14
+    tol = np.finfo(np.float64).eps*max_error*100 #~10^-14
     if abs( error['serial'] - error['ompi'] ) < tol and abs( error['serial'] - error['hpx' ] ) < tol:
        exit(0)
     else:
