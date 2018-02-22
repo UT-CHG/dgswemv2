@@ -73,4 +73,4 @@ DGSWEM V2 is licensed under the MIT license. The following files have been taken
  - `documentation/doxygen-bootstrapped/footer.html`
  - `documentation/doxygen-bootstrapped/header.html`
 
-N.B. The files in `documentation/doxygen-boostrapped` are taken from `feature/support-doxygen-1.1.12+` branch of the [Velron/doxygen-bootstrapped](https://github.com/Velron/doxygen-bootstrapped/tree/master) repository. The copy of the Apache-2.0 licesnse can be found in `documentation/doxygen-bootstrapped/APACHE_2.0_LICENSE` of this repository or in the original repository.
+N.B. The files in `documentation/doxygen-boostrapped` are taken from `feature/support-doxygen-1.1.12+` branch of the [Velron/doxygen-bootstrapped](https://github.com/Velron/doxygen-bootstrapped) repository. The copy of the Apache-2.0 licesnse can be found in `documentation/doxygen-bootstrapped/APACHE_2.0_LICENSE` of this repository or in the original repository.
