@@ -39,6 +39,11 @@ class Writer {
     int modal_output_frequency;
 
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 template <typename ProblemType>
@@ -174,4 +179,21 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
     }
 }
 
+#ifdef HAS_HPX
+template <typename ProblemType>
+template <typename Archive>
+void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
+    ar & writing_output
+       & output_path
+       & writing_log_file
+       & verbose_log_file
+       & log_file_name
+       & writing_vtk_output
+       & vtk_output_frequency
+       & vtk_file_name_geom
+       & vtk_file_name_raw
+       & writing_modal_output
+       & modal_output_frequency;
+}
+#endif
 #endif

@@ -47,6 +47,11 @@ struct HPXRankBoundary {
         return incoming.get(timestamp)
             .then([this](hpx::future<array_double> msg_future) { this->receive_postproc_buffer = msg_future.get(); });
     }
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        ar& elements& bound_ids& p& outgoing& incoming;
+    }
 };
 
 class HPXCommunicator {
@@ -71,6 +76,11 @@ class HPXCommunicator {
 
   public:
     using RankBoundaryType = HPXRankBoundary;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        ar& rank_boundaries;
+    }
 };
 
 #endif
