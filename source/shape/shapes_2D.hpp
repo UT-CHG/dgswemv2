@@ -9,22 +9,22 @@ class StraightTriangle : public Shape<2> {
     StraightTriangle()=default;
     StraightTriangle(const std::vector<Point<2>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
-    bool CheckJacobianPositive(const Point<2>& point) const;
+    bool CheckJacobianPositive(const Point<2>& point);
 
     std::vector<Point<2>>& GetNodalCoordinates();
-    Point<2> GetBarycentricCoordinates() const;
-    std::vector<Point<2>> GetMidpointCoordinates() const;
+    Point<2> GetBarycentricCoordinates();
+    std::vector<Point<2>> GetMidpointCoordinates();
 
-    std::vector<double> GetJdet(const std::vector<Point<2>>& points) const;
-    Array3D<double> GetJinv(const std::vector<Point<2>>& points) const;
-    std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) const;
-    Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points) const;
+    std::vector<double> GetJdet(const std::vector<Point<2>>& points);
+    Array3D<double> GetJinv(const std::vector<Point<2>>& points);
+    std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points);
+    Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points);
 
     std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                               const std::vector<Point<2>>& points) const;
-    std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points) const;
+                                               const std::vector<Point<2>>& points);
+    std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points);
 
-    void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const;
+    void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
 
   private:
     std::vector<Point<2>> nodal_coordinates;

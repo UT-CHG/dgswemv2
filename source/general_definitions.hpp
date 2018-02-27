@@ -161,22 +161,22 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
-    virtual bool CheckJacobianPositive(const Point<dimension>& point) const = 0;
+    virtual bool CheckJacobianPositive(const Point<dimension>& point)= 0;
 
     virtual std::vector<Point<dimension>>& GetNodalCoordinates() = 0;
-    virtual Point<dimension> GetBarycentricCoordinates() const = 0;
-    virtual std::vector<Point<dimension>> GetMidpointCoordinates() const = 0;
+    virtual Point<dimension> GetBarycentricCoordinates() = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
 
-    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) const = 0;
-    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) const = 0;
-    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) const = 0;
-    virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) const = 0;
+    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) = 0;
+    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
     virtual std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                                       const std::vector<Point<dimension>>& points) const = 0;
-    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) const = 0;
+                                                       const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
-    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const = 0;
+    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 };
 }
 
