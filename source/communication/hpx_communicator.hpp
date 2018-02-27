@@ -22,6 +22,11 @@ struct HPXRankBoundary {
 
     std::vector<double> send_postproc_buffer;
     std::vector<double> receive_postproc_buffer;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        ar& elements& bound_ids& p& outgoing& incoming;
+    }
 };
 
 class HPXCommunicator {
@@ -46,6 +51,11 @@ class HPXCommunicator {
 
   public:
     using RankBoundaryType = HPXRankBoundary;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        ar& rank_boundaries;
+    }
 };
 
 #endif
