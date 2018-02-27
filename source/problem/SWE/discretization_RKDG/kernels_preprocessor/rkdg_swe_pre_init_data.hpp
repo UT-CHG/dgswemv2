@@ -65,7 +65,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
-            uint n_node = elt.GetShape().nodal_coordinates.size();
+          uint n_node = elt.GetShape().GetNodalCoordinates().size();
 
             std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
             elt.L2Projection(ze_node, state.ze);
