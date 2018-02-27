@@ -40,7 +40,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
-            uint n_node = elt.GetShape().nodal_coordinates.size();
+          uint n_node = elt.GetShape().GetNodalCoordinates().size();
 
             std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
             state.ze = elt.L2Projection(ze_node);

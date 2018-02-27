@@ -79,8 +79,6 @@ void Simulation<ProblemType>::Run() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    ProblemType::parse_source_data(this->stepper, this->mesh, this->problem_input);
-
     for (uint step = 1; step <= nsteps; ++step) {
         if (this->parser.ParsingInput()) {
             this->parser.ParseInput(this->stepper, this->mesh);
