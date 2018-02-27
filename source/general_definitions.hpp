@@ -164,7 +164,7 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
-    virtual bool CheckJacobianPositive(const Point<dimension>& point) const = 0;
+    virtual bool CheckJacobianPositive(const Point<dimension>& point)= 0;
 
     Array2D<double> psi_gp;
     Array3D<double> dpsi_gp;
@@ -189,7 +189,7 @@ class Shape {
 
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
-    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const = 0;
+    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 };
 }
 

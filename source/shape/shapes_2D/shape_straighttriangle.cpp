@@ -23,7 +23,7 @@ std::vector<Point<2>>& StraightTriangle::GetNodalCoordinates() {
     return this->nodal_coordinates;
 }
 
-Point<2> StraightTriangle::GetBarycentricCoordinates() const {
+Point<2> StraightTriangle::GetBarycentricCoordinates() {
     assert(this->nodal_coordinates.size() > 0);
     Point<2> baryctr_coord;
 
@@ -40,7 +40,7 @@ Point<2> StraightTriangle::GetBarycentricCoordinates() const {
     return baryctr_coord;
 }
 
-std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() const {
+std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
     std::vector<Point<2>> midpoint_coord(3);
 
     for (uint midpt = 0; midpt < 3; midpt++) {
@@ -56,7 +56,7 @@ std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() const {
     return midpoint_coord;
 }
 
-std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) const {
+std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) {
     assert(this->nodal_coordinates.size() > 0);
     std::vector<double> J_det;
 
@@ -74,7 +74,7 @@ std::vector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& point
     return J_det;
 }
 
-Array3D<double> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) const {
+Array3D<double> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
     assert(this->nodal_coordinates.size() > 0);
     Array3D<double> J_inv(2);
     J_inv[0].resize(2);
@@ -99,7 +99,7 @@ Array3D<double> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) c
     return J_inv;
 }
 
-std::vector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) const {
+std::vector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) {
     assert(this->nodal_coordinates.size() > 0);
     std::vector<double> surface_J;
 
@@ -114,7 +114,7 @@ std::vector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std
     return surface_J;
 }
 
-Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points) const {
+Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points) {
     assert(this->nodal_coordinates.size() > 0);
     Array2D<double> surface_normal(1);
 
@@ -193,7 +193,7 @@ Array2D<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const std:
     return psi_bound;
 }
 
-std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) const {
+std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
     assert(this->nodal_coordinates.size() > 0);
     std::vector<Point<2>> global_coordinates(points.size());
 
@@ -212,7 +212,7 @@ std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vect
     return global_coordinates;
 }
 
-void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const {
+void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
     assert(this->nodal_coordinates.size() > 0);
     uint number_pt = points.size();
 
