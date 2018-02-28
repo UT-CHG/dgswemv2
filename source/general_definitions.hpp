@@ -161,9 +161,14 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
+    std::vector<Point<dimension>> nodal_coordinates;
+
+  public:
+    Shape()=default;
+    Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(nodal_coordinates) {}
+
     virtual bool CheckJacobianPositive(const Point<dimension>& point)= 0;
 
-    virtual std::vector<Point<dimension>>& GetNodalCoordinates() = 0;
     virtual Point<dimension> GetBarycentricCoordinates() = 0;
     virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
 
@@ -177,6 +182,12 @@ class Shape {
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) { ar & nodal_coordinates; }
+    HPX_SERIALIZATION_POLYMORPHIC_ABSTRACT(Shape);
+#endif
 };
 }
 

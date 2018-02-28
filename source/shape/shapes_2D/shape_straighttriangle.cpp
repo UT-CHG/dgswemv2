@@ -5,10 +5,6 @@ bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
     return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 }
 
-std::vector<Point<2>>& StraightTriangle::GetNodalCoordinates() {
-    return this->nodal_coordinates;
-}
-
 Point<2> StraightTriangle::GetBarycentricCoordinates() {
     assert(this->nodal_coordinates.size() > 0);
     Point<2> baryctr_coord;

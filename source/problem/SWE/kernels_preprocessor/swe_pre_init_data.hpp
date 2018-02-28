@@ -40,7 +40,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
-          uint n_node = elt.GetShape().GetNodalCoordinates().size();
+          uint n_node = elt.GetShape().nodal_coordinates.size();
 
             std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
             state.ze = elt.L2Projection(ze_node);
@@ -120,7 +120,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         mesh.CallForEachElement([](auto& elt) {
             //# of node != # of vrtx in case we have an iso-p element with p>1
             // I assume we will have values only at vrtx in files
-            std::vector<double>& nodal_coordinates = elt.GetShape().GetNodalCoordinates();
+            std::vector<double>& nodal_coordinates = elt.nodal_coordinates.GetNodalCoordinates();
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::x];
                 elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::y];
