@@ -1,16 +1,16 @@
 #include "swe_parser.hpp"
 
-namespace SWE{
+namespace SWE {
 void Parser::ParseMeteoInput(uint step) {
     if (this->meteo_forcing_type == SWE::MeteoForcingType::Test) {
-        if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {    
+        if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {
             this->node_meteo_data_step.erase(this->node_meteo_data_step.find(step - this->meteo_parse_frequency));
         }
 
-        if (this->node_meteo_data_step.find(step) == this->node_meteo_data_step.end()) {    
-            std::string meteo_data_file_name = this->meteo_data_file;   
+        if (this->node_meteo_data_step.find(step) == this->node_meteo_data_step.end()) {
+            std::string meteo_data_file_name = this->meteo_data_file;
 
-            meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."),'_' + std::to_string(step));
+            meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."), '_' + std::to_string(step));
 
             std::ifstream meteo_file(meteo_data_file_name);
 
@@ -33,10 +33,11 @@ void Parser::ParseMeteoInput(uint step) {
             }
         }
 
-        if (this->node_meteo_data_step.find(step + this->meteo_parse_frequency) == this->node_meteo_data_step.end()) {    
+        if (this->node_meteo_data_step.find(step + this->meteo_parse_frequency) == this->node_meteo_data_step.end()) {
             std::string meteo_data_file_name = this->meteo_data_file;
 
-            meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."), '_' + std::to_string(step+this->meteo_parse_frequency));
+            meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."),
+                                        '_' + std::to_string(step + this->meteo_parse_frequency));
 
             std::ifstream meteo_file(meteo_data_file_name);
 
@@ -66,16 +67,18 @@ void Parser::CalculateMeteoData(uint step) {
         uint step_begin = step - step % this->meteo_parse_frequency;
         uint step_end = step_begin + this->meteo_parse_frequency;
 
-        double interp_factor = step % this->meteo_parse_frequency/((double)this->meteo_parse_frequency);
+        double interp_factor = step % this->meteo_parse_frequency / ((double)this->meteo_parse_frequency);
 
         this->node_meteo_data = this->node_meteo_data_step[step_begin];
 
         for (auto it = this->node_meteo_data.begin(); it != this->node_meteo_data.end(); ++it) {
-            it->second[0] += interp_factor*(this->node_meteo_data_step[step_end][it->first][0] - this->node_meteo_data_step[step_begin][it->first][0]);
-            it->second[1] += interp_factor*(this->node_meteo_data_step[step_end][it->first][1] - this->node_meteo_data_step[step_begin][it->first][1]);
-            it->second[2] += interp_factor*(this->node_meteo_data_step[step_end][it->first][2] - this->node_meteo_data_step[step_begin][it->first][2]);
+            it->second[0] += interp_factor * (this->node_meteo_data_step[step_end][it->first][0] -
+                                              this->node_meteo_data_step[step_begin][it->first][0]);
+            it->second[1] += interp_factor * (this->node_meteo_data_step[step_end][it->first][1] -
+                                              this->node_meteo_data_step[step_begin][it->first][1]);
+            it->second[2] += interp_factor * (this->node_meteo_data_step[step_end][it->first][2] -
+                                              this->node_meteo_data_step[step_begin][it->first][2]);
         }
     }
 }
-
 }

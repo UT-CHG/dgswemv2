@@ -54,7 +54,7 @@ inline YAML::Node WriterInput::as_yaml_node() {
     return ret;
 }
 
-//Lower case letter for member functions names
+// Lower case letter for member functions names
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
     InputParameters() = default;

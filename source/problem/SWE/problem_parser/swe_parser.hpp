@@ -28,7 +28,8 @@ class Parser {
         this->meteo_data_file = input.problem_input.meteo_forcing.meteo_data_file;
     }
 
-    Parser(const InputParameters<SWE::Inputs>& input, const uint locality_id, const uint submesh_id) : Parser(input) {} // this is for partitioned input files
+    Parser(const InputParameters<SWE::Inputs>& input, const uint locality_id, const uint submesh_id)
+        : Parser(input) {}  // this is for partitioned input files
 
     bool ParsingInput() { return parsing_input; }
 
