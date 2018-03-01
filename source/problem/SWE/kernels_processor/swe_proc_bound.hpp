@@ -13,7 +13,6 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
 
         auto& state = bound.data.state[stage];
         auto& boundary = bound.data.boundary[bound.bound_id];
-        auto& sp_at_gp = bound.data.spherical_projection.sp_at_gp_boundary[bound.bound_id];
 
         bound.ComputeUgp(state.ze, boundary.ze_at_gp);
         bound.ComputeUgp(state.qx, boundary.qx_at_gp);
@@ -38,7 +37,6 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
                      boundary.qy_at_gp[gp],
                      qy_ex,
                      boundary.bath_at_gp[gp],
-                     sp_at_gp[gp],
                      bound.surface_normal[gp],
                      boundary.ze_numerical_flux_at_gp[gp],
                      boundary.qx_numerical_flux_at_gp[gp],

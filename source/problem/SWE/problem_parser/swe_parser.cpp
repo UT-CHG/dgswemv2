@@ -74,10 +74,10 @@ void Parser::CalculateMeteoData(uint step) {
         for (auto it = this->node_meteo_data.begin(); it != this->node_meteo_data.end(); ++it) {
             it->second[0] += interp_factor * (this->node_meteo_data_step[step_end][it->first][0] -
                                               this->node_meteo_data_step[step_begin][it->first][0]);
-
+            
             it->second[1] += interp_factor * (this->node_meteo_data_step[step_end][it->first][1] -
                                               this->node_meteo_data_step[step_begin][it->first][1]);
-
+            
             it->second[2] += interp_factor * (this->node_meteo_data_step[step_end][it->first][2] -
                                               this->node_meteo_data_step[step_begin][it->first][2]);
         }

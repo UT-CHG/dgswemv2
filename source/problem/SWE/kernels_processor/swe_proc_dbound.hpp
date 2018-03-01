@@ -33,7 +33,6 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
 
         auto& state = dbound.data.state[stage];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
-        auto& sp_at_gp = dbound.data.spherical_projection.sp_at_gp_boundary[dbound.bound_id];
 
         double ze_ex, qx_ex, qy_ex;
         for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
@@ -54,7 +53,6 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                      boundary.qy_at_gp[gp],
                      qy_ex,
                      boundary.bath_at_gp[gp],
-                     sp_at_gp[gp],
                      dbound.surface_normal[gp],
                      boundary.ze_numerical_flux_at_gp[gp],
                      boundary.qx_numerical_flux_at_gp[gp],
@@ -100,7 +98,6 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                              boundary.qy_at_gp[gp],
                              qy_ex,
                              boundary.bath_at_gp[gp],
-                             sp_at_gp[gp],
                              dbound.surface_normal[gp],
                              boundary.ze_numerical_flux_at_gp[gp],
                              boundary.qx_numerical_flux_at_gp[gp],
@@ -127,7 +124,6 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                     boundary.qy_at_gp[gp],
                                     qy_ex,
                                     boundary.bath_at_gp[gp],
-                                    sp_at_gp[gp],
                                     dbound.surface_normal[gp],
                                     boundary.ze_numerical_flux_at_gp[gp],
                                     boundary.qx_numerical_flux_at_gp[gp],

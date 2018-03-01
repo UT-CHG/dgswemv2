@@ -27,7 +27,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
         auto& state = elt.data.state[0];
         auto& internal = elt.data.internal;
-        auto& sp = elt.data.spherical_projection;
 
         if (!bathymetry.count(id)) {
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
@@ -39,32 +38,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
         elt.ComputeDUgp(GlobalCoord::x, state.bath, internal.bath_deriv_wrt_x_at_gp);
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
-
-        if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            uint n_node = elt.GetShape().nodal_coordinates.size();
-
-            std::vector<double> x_node(n_node);
-            std::vector<double> y_node(n_node);
-
-            for (uint node_id = 0; node_id < n_node; node_id++) {
-                x_node[node_id] = elt.GetShape().nodal_coordinates[node_id][GlobalCoord::x];
-                y_node[node_id] = elt.GetShape().nodal_coordinates[node_id][GlobalCoord::y];
-            }
-
-            sp.x = elt.L2Projection(x_node);
-            sp.y = elt.L2Projection(y_node);
-
-            std::vector<double> y_at_gp(elt.data.get_ngp_internal());
-
-            elt.ComputeUgp(sp.y, y_at_gp);
-
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
-
-            for (uint gp = 0; gp < elt.data.get_ngp_internal(); gp++) {
-                sp.sp_at_gp_internal[gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
-            }
-        }
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
             uint n_node = elt.GetShape().nodal_coordinates.size();
@@ -89,55 +62,22 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
     });
 
-    mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
+    mesh.CallForEachInterface([](auto& intface) {
         auto& state_in = intface.data_in.state[0];
         auto& state_ex = intface.data_ex.state[0];
 
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        auto& sp_in = intface.data_in.spherical_projection;
-        auto& sp_ex = intface.data_ex.spherical_projection;
-
         intface.ComputeUgpIN(state_in.bath, boundary_in.bath_at_gp);
         intface.ComputeUgpEX(state_ex.bath, boundary_ex.bath_at_gp);
-
-        if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            std::vector<double> y_at_gp_in(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-            std::vector<double> y_at_gp_ex(intface.data_ex.get_ngp_boundary(intface.bound_id_ex));
-
-            intface.ComputeUgpIN(sp_in.y, y_at_gp_in);
-            intface.ComputeUgpEX(sp_ex.y, y_at_gp_ex);
-
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
-
-            for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); gp++) {
-                sp_in.sp_at_gp_boundary[intface.bound_id_in][gp] = cos_phi_o / std::cos(y_at_gp_in[gp] / R);
-                sp_ex.sp_at_gp_boundary[intface.bound_id_ex][gp] = cos_phi_o / std::cos(y_at_gp_ex[gp] / R);
-            }
-        }
     });
 
-    mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
+    mesh.CallForEachBoundary([](auto& bound) {
         auto& state = bound.data.state[0];
         auto& boundary = bound.data.boundary[bound.bound_id];
-        auto& sp = bound.data.spherical_projection;
 
         bound.ComputeUgp(state.bath, boundary.bath_at_gp);
-
-        if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            std::vector<double> y_at_gp(bound.data.get_ngp_boundary(bound.bound_id));
-
-            bound.ComputeUgp(sp.y, y_at_gp);
-
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
-
-            for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); gp++) {
-                sp.sp_at_gp_boundary[bound.bound_id][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
-            }
-        }
     });
 
     // SOURCE TERMS INITIALIZE
@@ -326,25 +266,11 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
 
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
-    mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
+    mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& state = dbound.data.state[0];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
-        auto& sp = dbound.data.spherical_projection;
 
         dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
-
-        if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            std::vector<double> y_at_gp(dbound.data.get_ngp_boundary(dbound.bound_id));
-
-            dbound.ComputeUgp(sp.y, y_at_gp);
-
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
-
-            for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); gp++) {
-                sp.sp_at_gp_boundary[dbound.bound_id][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
-            }
-        }
     });
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) {

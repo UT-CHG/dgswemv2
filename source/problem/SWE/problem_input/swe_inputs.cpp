@@ -10,34 +10,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
         h_o = swe_node["h_o"].as<double>();
     }
 
-    const std::string malformatted_sp_warning("  Warning sp conditions are mal-formatted. Using default parameters\n");
-
-    if (YAML::Node sp_node = swe_node["spherical_projection"]) {
-        if (sp_node["type"]) {
-            std::string sp_str = sp_node["type"].as<std::string>();
-            if (sp_str == "None") {
-                spherical_projection.type = SphericalProjectionType::None;
-            } else if (sp_str == "Enable") {
-                if (sp_node["polar_o"] && sp_node["azimuthal_o"] && sp_node["R"]) {
-                    spherical_projection.type = SphericalProjectionType::Enable;
-                    spherical_projection.azimuthal_o = sp_node["polar_o"].as<double>();
-                    spherical_projection.polar_o = sp_node["azimuthal_o"].as<double>();
-                    spherical_projection.R = sp_node["R"].as<double>();
-                } else {
-                    std::cerr << malformatted_sp_warning;
-                }
-            } else {
-                std::cerr << malformatted_sp_warning;
-            }
-        } else {
-            std::cerr << malformatted_sp_warning;
-        }
-    } else {
-        std::cerr << malformatted_sp_warning;
-    }
-
     const std::string malformatted_ic_warning(
-        "  Warning initial conditions are mal-formatted. Using default parameters\n");
+        "  Warning initial conditions are mal-formatted. Using default parameters");
 
     if (YAML::Node ic_node = swe_node["initial_conditions"]) {
         if (ic_node["type"]) {
@@ -55,11 +29,11 @@ Inputs::Inputs(YAML::Node& swe_node) {
             } else if (ic_str == "Function") {
                 initial_conditions.type = InitialConditionsType::Function;
             } else {
-                std::cerr << malformatted_ic_warning;
+                std::cerr << "  Unable to determine initial conditions type; using default parameters\n";
             }
         }
     } else {
-        std::cerr << malformatted_ic_warning;
+        std::cerr << "  Initial conditions unset; using default parameters\n";
     }
 
     const std::string malformatted_fsource_warning(
@@ -70,8 +44,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
             std::string func_source_str = func_source["type"].as<std::string>();
             if (func_source_str == "None") {
                 function_source.type = FunctionSourceType::None;
-            } else if (func_source_str == "Enable") {
-                function_source.type = FunctionSourceType::Enable;
+            } else if (func_source_str == "Test") {
+                function_source.type = FunctionSourceType::Test;
             } else {
                 std::cerr << malformatted_fsource_warning;
             }
@@ -178,8 +152,8 @@ Inputs::Inputs(YAML::Node& swe_node) {
             std::string coriolis_str = coriolis_node["type"].as<std::string>();
             if (coriolis_str == "None") {
                 coriolis.type = CoriolisType::None;
-            } else if (coriolis_str == "Enable") {
-                coriolis.type = CoriolisType::Enable;
+            } else if (coriolis_str == "Test") {
+                coriolis.type = CoriolisType::Test;
             } else {
                 std::cerr << malformatted_coriolis_warning;
             }
@@ -196,20 +170,6 @@ YAML::Node Inputs::as_yaml_node() {
     ret["name"] = "swe";
     ret["gravity"] = g;
     ret["h_o"] = h_o;
-
-    YAML::Node sp_node;
-    switch (spherical_projection.type) {
-        case SphericalProjectionType::None:
-            sp_node["type"] = "None";
-            break;
-        case SphericalProjectionType::Enable:
-            sp_node["type"] = "Enable";
-            sp_node["polar_o"] = spherical_projection.polar_o;
-            sp_node["azimuthal_o"] = spherical_projection.azimuthal_o;
-            sp_node["R"] = spherical_projection.R;
-            break;
-    }
-    ret["spherical_projection"] = sp_node;
 
     YAML::Node ic_node;
     switch (initial_conditions.type) {
@@ -230,8 +190,8 @@ YAML::Node Inputs::as_yaml_node() {
         case FunctionSourceType::None:
             func_src_node["type"] = "None";
             break;
-        case FunctionSourceType::Enable:
-            func_src_node["type"] = "Enable";
+        case FunctionSourceType::Test:
+            func_src_node["type"] = "Test";
             break;
     }
     ret["function_source"] = func_src_node;
@@ -282,8 +242,8 @@ YAML::Node Inputs::as_yaml_node() {
         case CoriolisType::None:
             coriolis_node["type"] = "None";
             break;
-        case CoriolisType::Enable:
-            coriolis_node["type"] = "Enable";
+        case CoriolisType::Test:
+            coriolis_node["type"] = "Test";
             break;
     }
     ret["coriolis"] = coriolis_node;
