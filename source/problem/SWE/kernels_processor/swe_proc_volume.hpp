@@ -29,13 +29,14 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
 
-            u_at_gp = internal.qx_at_gp[gp]/internal.h_at_gp[gp]; 
-            v_at_gp = internal.qy_at_gp[gp]/internal.h_at_gp[gp]; 
+            u_at_gp = internal.qx_at_gp[gp] / internal.h_at_gp[gp];
+            v_at_gp = internal.qy_at_gp[gp] / internal.h_at_gp[gp];
 
             uuh_at_gp = u_at_gp * internal.qx_at_gp[gp];
             vvh_at_gp = v_at_gp * internal.qy_at_gp[gp];
             uvh_at_gp = u_at_gp * internal.qy_at_gp[gp];
-            pe_at_gp = Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
+            pe_at_gp = Global::g *
+                       (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
 
             internal.ze_flux_at_gp[GlobalCoord::x][gp] = sp_at_gp[gp] * internal.qx_at_gp[gp];
             internal.ze_flux_at_gp[GlobalCoord::y][gp] = internal.qy_at_gp[gp];

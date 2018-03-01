@@ -10,8 +10,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
         h_o = swe_node["h_o"].as<double>();
     }
 
-    const std::string malformatted_sp_warning(
-        "  Warning sp conditions are mal-formatted. Using default parameters\n");
+    const std::string malformatted_sp_warning("  Warning sp conditions are mal-formatted. Using default parameters\n");
 
     if (YAML::Node sp_node = swe_node["spherical_projection"]) {
         if (sp_node["type"]) {
@@ -19,14 +18,13 @@ Inputs::Inputs(YAML::Node& swe_node) {
             if (sp_str == "None") {
                 spherical_projection.type = SphericalProjectionType::None;
             } else if (sp_str == "Enable") {
-                if (sp_node["polar_o"] && sp_node["azimuthal_o"] &&
-                    sp_node["R"]) {
+                if (sp_node["polar_o"] && sp_node["azimuthal_o"] && sp_node["R"]) {
                     spherical_projection.type = SphericalProjectionType::Enable;
                     spherical_projection.azimuthal_o = sp_node["polar_o"].as<double>();
                     spherical_projection.polar_o = sp_node["azimuthal_o"].as<double>();
                     spherical_projection.R = sp_node["R"].as<double>();
                 } else {
-                    std::cerr << malformatted_sp_warning;            
+                    std::cerr << malformatted_sp_warning;
                 }
             } else {
                 std::cerr << malformatted_sp_warning;
@@ -57,11 +55,11 @@ Inputs::Inputs(YAML::Node& swe_node) {
             } else if (ic_str == "Function") {
                 initial_conditions.type = InitialConditionsType::Function;
             } else {
-                    std::cerr << malformatted_ic_warning;
+                std::cerr << malformatted_ic_warning;
             }
         }
     } else {
-                    std::cerr << malformatted_ic_warning;
+        std::cerr << malformatted_ic_warning;
     }
 
     const std::string malformatted_fsource_warning(

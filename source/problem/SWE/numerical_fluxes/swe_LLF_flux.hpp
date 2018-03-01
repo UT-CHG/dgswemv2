@@ -18,23 +18,22 @@ inline void LLF_flux(const double ze_in,
                      double& qx_flux,
                      double& qy_flux) {
     double h_in = ze_in + bath;
-    double u_in = qx_in/h_in;
-    double v_in = qy_in/h_in;
+    double u_in = qx_in / h_in;
+    double v_in = qy_in / h_in;
 
     double h_ex = ze_ex + bath;
-    double u_ex = qx_ex/h_ex;
-    double v_ex = qy_ex/h_ex;
+    double u_ex = qx_ex / h_ex;
+    double v_ex = qy_ex / h_ex;
 
     double un_in = u_in * normal[GlobalCoord::x] + v_in * normal[GlobalCoord::y];
     double un_ex = u_ex * normal[GlobalCoord::x] + v_ex * normal[GlobalCoord::y];
 
-    double sp_correction = std::pow(normal[GlobalCoord::x]*sp,2) + std::pow(normal[GlobalCoord::y],2);
+    double sp_correction = std::pow(normal[GlobalCoord::x] * sp, 2) + std::pow(normal[GlobalCoord::y], 2);
 
-    double max_eigenvalue =
-        std::max(std::abs(un_in) + std::sqrt(Global::g * h_in * sp_correction), 
-                 std::abs(un_ex) + std::sqrt(Global::g * h_ex * sp_correction));
+    double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(Global::g * h_in * sp_correction),
+                                     std::abs(un_ex) + std::sqrt(Global::g * h_ex * sp_correction));
 
-    //compute internal flux matrix
+    // compute internal flux matrix
     double uuh_in = u_in * qx_in;
     double vvh_in = v_in * qy_in;
     double uvh_in = u_in * qy_in;
@@ -49,7 +48,7 @@ inline void LLF_flux(const double ze_in,
     double qy_flux_x_in = sp * uvh_in;
     double qy_flux_y_in = vvh_in + pe_in;
 
-    //compute external flux matrix
+    // compute external flux matrix
     double uuh_ex = u_ex * qx_ex;
     double vvh_ex = v_ex * qy_ex;
     double uvh_ex = u_ex * qy_ex;
@@ -64,10 +63,13 @@ inline void LLF_flux(const double ze_in,
     double qy_flux_x_ex = sp * uvh_ex;
     double qy_flux_y_ex = vvh_ex + pe_ex;
 
-    //compute numerical flux
-    double ze_flux_avg = (ze_flux_x_in + ze_flux_x_ex)*normal[GlobalCoord::x] + (ze_flux_y_in + ze_flux_y_ex)*normal[GlobalCoord::y];
-    double qx_flux_avg = (qx_flux_x_in + qx_flux_x_ex)*normal[GlobalCoord::x] + (qx_flux_y_in + qx_flux_y_ex)*normal[GlobalCoord::y];
-    double qy_flux_avg = (qy_flux_x_in + qy_flux_x_ex)*normal[GlobalCoord::x] + (qy_flux_y_in + qy_flux_y_ex)*normal[GlobalCoord::y];
+    // compute numerical flux
+    double ze_flux_avg =
+        (ze_flux_x_in + ze_flux_x_ex) * normal[GlobalCoord::x] + (ze_flux_y_in + ze_flux_y_ex) * normal[GlobalCoord::y];
+    double qx_flux_avg =
+        (qx_flux_x_in + qx_flux_x_ex) * normal[GlobalCoord::x] + (qx_flux_y_in + qx_flux_y_ex) * normal[GlobalCoord::y];
+    double qy_flux_avg =
+        (qy_flux_x_in + qy_flux_x_ex) * normal[GlobalCoord::x] + (qy_flux_y_in + qy_flux_y_ex) * normal[GlobalCoord::y];
 
     ze_flux = 0.5 * (ze_flux_avg + max_eigenvalue * (ze_in - ze_ex));
     qx_flux = 0.5 * (qx_flux_avg + max_eigenvalue * (qx_in - qx_ex));
@@ -87,19 +89,19 @@ inline void LLF_flux_zero_g(const double ze_in,
                             double& qx_flux,
                             double& qy_flux) {
     double h_in = ze_in + bath;
-    double u_in = qx_in/h_in;
-    double v_in = qy_in/h_in;
+    double u_in = qx_in / h_in;
+    double v_in = qy_in / h_in;
 
     double h_ex = ze_ex + bath;
-    double u_ex = qx_ex/h_ex;
-    double v_ex = qy_ex/h_ex;
+    double u_ex = qx_ex / h_ex;
+    double v_ex = qy_ex / h_ex;
 
     double un_in = u_in * normal[GlobalCoord::x] + v_in * normal[GlobalCoord::y];
     double un_ex = u_ex * normal[GlobalCoord::x] + v_ex * normal[GlobalCoord::y];
 
     double max_eigenvalue = std::max(std::abs(un_in), std::abs(un_ex));
 
-    //compute internal flux matrix
+    // compute internal flux matrix
     double uuh_in = u_in * qx_in;
     double vvh_in = v_in * qy_in;
     double uvh_in = u_in * qy_in;
@@ -113,7 +115,7 @@ inline void LLF_flux_zero_g(const double ze_in,
     double qy_flux_x_in = sp * uvh_in;
     double qy_flux_y_in = vvh_in;
 
-    //compute external flux matrix
+    // compute external flux matrix
     double uuh_ex = u_ex * qx_ex;
     double vvh_ex = v_ex * qy_ex;
     double uvh_ex = u_ex * qy_ex;
@@ -127,10 +129,13 @@ inline void LLF_flux_zero_g(const double ze_in,
     double qy_flux_x_ex = sp * uvh_ex;
     double qy_flux_y_ex = vvh_ex;
 
-    //compute numerical flux
-    double ze_flux_avg = (ze_flux_x_in + ze_flux_x_ex)*normal[GlobalCoord::x] + (ze_flux_y_in + ze_flux_y_ex)*normal[GlobalCoord::y];
-    double qx_flux_avg = (qx_flux_x_in + qx_flux_x_ex)*normal[GlobalCoord::x] + (qx_flux_y_in + qx_flux_y_ex)*normal[GlobalCoord::y];
-    double qy_flux_avg = (qy_flux_x_in + qy_flux_x_ex)*normal[GlobalCoord::x] + (qy_flux_y_in + qy_flux_y_ex)*normal[GlobalCoord::y];
+    // compute numerical flux
+    double ze_flux_avg =
+        (ze_flux_x_in + ze_flux_x_ex) * normal[GlobalCoord::x] + (ze_flux_y_in + ze_flux_y_ex) * normal[GlobalCoord::y];
+    double qx_flux_avg =
+        (qx_flux_x_in + qx_flux_x_ex) * normal[GlobalCoord::x] + (qx_flux_y_in + qx_flux_y_ex) * normal[GlobalCoord::y];
+    double qy_flux_avg =
+        (qy_flux_x_in + qy_flux_x_ex) * normal[GlobalCoord::x] + (qy_flux_y_in + qy_flux_y_ex) * normal[GlobalCoord::y];
 
     ze_flux = 0.5 * (ze_flux_avg + max_eigenvalue * (ze_in - ze_ex));
     qx_flux = 0.5 * (qx_flux_avg + max_eigenvalue * (qx_in - qx_ex));
