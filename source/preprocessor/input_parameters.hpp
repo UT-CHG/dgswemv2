@@ -6,7 +6,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "problem/SWE/problem_input/swe_inputs.hpp"
+#include "../problem/SWE/problem_input/swe_inputs.hpp"
 
 struct YamlNodeWrapper {
     YAML::Node node;
@@ -54,6 +54,7 @@ inline YAML::Node WriterInput::as_yaml_node() {
     return ret;
 }
 
+//Lower case letter for member functions names
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
     InputParameters() = default;

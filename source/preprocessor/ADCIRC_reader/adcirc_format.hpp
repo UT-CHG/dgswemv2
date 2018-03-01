@@ -6,6 +6,7 @@
 
 #include "../../shape/shapes_2D.hpp"
 
+//Upper case letters for member function names
 class AdcircFormat {
   public:
     AdcircFormat(const std::string& in_name);

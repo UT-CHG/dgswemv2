@@ -1,8 +1,8 @@
 #ifndef INITIALIZE_MESH_HPP
 #define INITIALIZE_MESH_HPP
 
-#include "geometry/mesh_definitions.hpp"
-#include "simulation/writer.hpp"
+#include "../geometry/mesh_definitions.hpp"
+#include "../simulation/writer.hpp"
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,

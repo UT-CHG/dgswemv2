@@ -77,6 +77,7 @@ struct ElementMetaData {
     }
 };
 
+//Lower case letters for struct member function names
 struct MeshMetaData {
     MeshMetaData() = default;  // why define default constructor?
     MeshMetaData(const AdcircFormat& mesh_file);
