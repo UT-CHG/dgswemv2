@@ -12,6 +12,7 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
         auto& state = elt.data.state[stage];
         auto& internal = elt.data.internal;
         auto& source = elt.data.source;
+        auto& sp_at_gp = elt.data.spherical_projection.sp_at_gp_internal;
 
         double t = stepper.get_t_at_curr_stage();
 
@@ -35,7 +36,7 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute contribution of hydrostatic pressure
             internal.qx_source_term_at_gp[gp] +=
-                Global::g * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
+                Global::g * sp_at_gp[gp] * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
             internal.qy_source_term_at_gp[gp] +=
                 Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.ze_at_gp[gp];
         }
@@ -75,7 +76,8 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
                 internal.qy_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::y][gp];
 
                 // compute atmospheric pressure contribution
-                internal.qx_source_term_at_gp[gp] -= internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::x][gp];
+                internal.qx_source_term_at_gp[gp] -=
+                    sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::x][gp];
                 internal.qy_source_term_at_gp[gp] -= internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::y][gp];
             }
         }
@@ -87,7 +89,7 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute tidal potential contribution
                 internal.qx_source_term_at_gp[gp] +=
-                    Global::g * internal.h_at_gp[gp] * internal.dtidal_pot_at_gp[GlobalCoord::x][gp];
+                    Global::g * sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dtidal_pot_at_gp[GlobalCoord::x][gp];
                 internal.qy_source_term_at_gp[gp] +=
                     Global::g * internal.h_at_gp[gp] * internal.dtidal_pot_at_gp[GlobalCoord::y][gp];
             }

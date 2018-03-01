@@ -40,7 +40,7 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
     IntegrationType integration;
-    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p);
+    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     std::vector<Point<dimension + 1>> z_master =
         raw_boundary_ex.master.BoundaryToMasterCoordinates(raw_boundary_ex.bound_id, integration_rule.second);

@@ -6,6 +6,7 @@
 #include "swe_data_state.hpp"
 #include "swe_data_internal.hpp"
 #include "swe_data_boundary.hpp"
+#include "swe_data_spherical.hpp"
 #include "swe_data_source.hpp"
 #include "swe_data_wet_dry.hpp"
 #include "swe_data_slope_limit.hpp"
@@ -16,11 +17,14 @@ struct Data {
     Internal internal;
     std::vector<Boundary> boundary;
 
+    Spherical spherical_projection;
     Source source;
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 
     void initialize() {
+        this->spherical_projection = Spherical(this->ndof, this->nbound, this->ngp_internal, this->ngp_boundary);
+
         this->source = Source(this->nvrtx);
 
         this->wet_dry_state = WetDry(this->nvrtx);

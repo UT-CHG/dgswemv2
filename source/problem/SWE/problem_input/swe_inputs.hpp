@@ -5,6 +5,18 @@
 #include <yaml-cpp/yaml.h>
 
 namespace SWE {
+enum class SphericalProjectionType {
+    None,
+    Enable
+};
+
+struct SphericalProjection {
+    SphericalProjectionType type = SphericalProjectionType::None;
+    double polar_o = 0.0;
+    double azimuthal_o = 0.0;
+    double R = 1000.0;
+};
+
 enum class InitialConditionsType {
     Constant,
     Function
@@ -19,7 +31,7 @@ struct InitialConditions {
 
 enum class FunctionSourceType {
     None,
-    Test
+    Enable
 };
 
 struct FunctionSource {
@@ -60,7 +72,7 @@ struct TidalPotential {
 
 enum class CoriolisType {
     None,
-    Test
+    Enable
 };
 
 struct Coriolis {
@@ -77,6 +89,8 @@ struct Inputs {
     double h_o = 0.01;
 
     bool parse_input = false;
+
+    SphericalProjection spherical_projection;
 
     InitialConditions initial_conditions;
 
