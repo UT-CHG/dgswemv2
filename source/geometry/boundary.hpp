@@ -36,7 +36,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     : boundary_condition(std::move(boundary_condition)), data(raw_boundary.data) {
     IntegrationType integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
-        integration.GetRule(2 * raw_boundary.p);
+        integration.GetRule(2 * raw_boundary.p + 1);
 
     std::vector<Point<dimension + 1>> z_master =
         raw_boundary.master.BoundaryToMasterCoordinates(raw_boundary.bound_id, integration_rule.second);

@@ -43,6 +43,7 @@ class Element {
         std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries);
 
     uint GetID() { return this->ID; }
+    MasterType& GetMaster() { return this->master; }
     ShapeType& GetShape() { return this->shape; }
 
     std::vector<uint>& GetNodeID() { return this->node_ID; }

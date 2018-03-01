@@ -21,11 +21,11 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
     }
 
     if (problem_specific_input.tidal_potential.type != SWE::TidalPotentialType::None) {
-        SWE::SourceTerms::tidal_potential = false;
+        SWE::SourceTerms::tidal_potential = true;
     }
 
     if (problem_specific_input.coriolis.type != SWE::CoriolisType::None) {
-        SWE::SourceTerms::coriolis = false;
+        SWE::SourceTerms::coriolis = true;
     }
 }
 }
