@@ -38,7 +38,6 @@ class Interface {
     Array2D<double> int_phi_fact_ex;
 
   public:
-    Interface() = default;
     Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
               const RawBoundary<dimension, DataType>& raw_boundary_ex,
               const SpecializationType& specialization = SpecializationType());
