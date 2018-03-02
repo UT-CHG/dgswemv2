@@ -79,7 +79,7 @@ struct Problem {
     static void update_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt);
+    static bool scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt);
 
     template <typename ElementType>
     static void swap_states_kernel(const Stepper& stepper, ElementType& elt);

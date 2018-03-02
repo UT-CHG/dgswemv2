@@ -68,7 +68,9 @@ void Simulation<ProblemType>::Run() {
     auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
     auto scrutinize_solution_kernel = [this](auto& elt) {
-        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+        bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+
+        if (nan_found) abort();
     };
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
