@@ -7,8 +7,8 @@ class Interface {
   public:
     uint bound_id_in;
     uint bound_id_ex;
-    DataType* data_in = nullptr;
-    DataType* data_ex = nullptr;
+    DataType& data_in;
+    DataType& data_ex;
 
     Array2D<double> surface_normal_in;
     Array2D<double> surface_normal_ex;
@@ -39,8 +39,8 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
                                                            const RawBoundary<dimension, DataType>& raw_boundary_ex)
     : bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
-      data_in(&raw_boundary_in.data),
-      data_ex(&raw_boundary_ex.data) {
+      data_in(raw_boundary_in.data),
+      data_ex(raw_boundary_ex.data) {
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
     IntegrationType integration;
@@ -95,8 +95,8 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
         }
     }
 
-    this->data_in->set_ngp_boundary(bound_id_in, integration_rule.first.size());
-    this->data_ex->set_ngp_boundary(bound_id_ex, integration_rule.first.size());
+    this->data_in.set_ngp_boundary(bound_id_in, integration_rule.first.size());
+    this->data_ex.set_ngp_boundary(bound_id_ex, integration_rule.first.size());
 }
 
 template <uint dimension, class IntegrationType, class DataType>
