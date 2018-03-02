@@ -27,6 +27,12 @@ class Parser {
 
   private:
     void ParseMeteoInput();
+
+#ifdef HAS_HPX
+  public:
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 Parser::Parser(const InputParameters<SWE::Inputs>& input) {
@@ -80,6 +86,16 @@ void Parser::ParseMeteoInput() {
         }
     }
 }
-}
 
+#ifdef HAS_HPX
+template <typename Archive>
+void Parser::serialize(Archive& ar, unsigned) {
+    ar & meteo_forcing_type
+       & meteo_parse_frequency
+       & meteo_data_file
+       & node_meteo_data
+       & parsing_input;
+}
+#endif
+}
 #endif
