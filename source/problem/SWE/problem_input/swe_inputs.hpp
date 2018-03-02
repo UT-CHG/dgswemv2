@@ -85,7 +85,48 @@ struct Inputs {
     MeteoForcing meteo_forcing;
     TidalPotential tidal_potential;
     Coriolis coriolis;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        ar& g& h_o& initial_conditions& function_source& bottom_friction& meteo_forcing& tidal_potential& coriolis&
+            parse_input;
+    }
+#endif
 };
+
+#ifdef HAS_HPX
+template <typename Archive>
+void serialize(Archive& ar, InitialConditions& ic, unsigned) {
+    ar& ic.type& ic.ze_initial& ic.qx_initial& ic.qy_initial;
+}
+
+template <typename Archive>
+void serialize(Archive& ar, FunctionSource& fs, unsigned) {
+    ar& fs.type;
+}
+
+template <typename Archive>
+void serialize(Archive& ar, BottomFriction& bf, unsigned) {
+    ar& bf.type& bf.coefficient& bf.manning_data_file;
+}
+
+template <typename Archive>
+void serialize(Archive& ar, MeteoForcing& mf, unsigned) {
+    ar& mf.type& mf.meteo_data_file& mf.frequency;
+}
+
+template <typename Archive>
+void serialize(Archive& ar, TidalPotential& tp, unsigned) {
+    ar& tp.type;
+}
+
+template <typename Archive>
+void serialize(Archive& ar, Coriolis& c, unsigned) {
+    ar& c.type;
+};
+
+#endif
 }
 
 #endif
