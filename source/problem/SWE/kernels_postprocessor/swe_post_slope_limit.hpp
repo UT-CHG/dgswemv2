@@ -26,8 +26,8 @@ void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, Elem
 
 template <typename InterfaceType>
 void Problem::slope_limiting_prepare_interface_kernel(const Stepper& stepper, InterfaceType& intface) {
-    auto& sl_state_in = intface.data_in->slope_limit_state;
-    auto& sl_state_ex = intface.data_ex->slope_limit_state;
+    auto& sl_state_in = intface.data_in.slope_limit_state;
+    auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
     sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.ze_at_baryctr;
     sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qx_at_baryctr;
