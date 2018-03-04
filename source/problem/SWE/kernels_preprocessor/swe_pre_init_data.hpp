@@ -40,7 +40,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
-          uint n_node = elt.GetShape().nodal_coordinates.size();
+            uint n_node = elt.GetShape().nodal_coordinates.size();
 
             std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
             state.ze = elt.L2Projection(ze_node);
@@ -74,8 +74,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
-        auto& state = bound.data->state[0];
-        auto& boundary = bound.data->boundary[bound.bound_id];
+        auto& state = bound.data.state[0];
+        auto& boundary = bound.data.boundary[bound.bound_id];
 
         bound.ComputeUgp(state.bath, boundary.bath_at_gp);
     });
@@ -216,7 +216,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
-        auto& sl_state = bound.data->slope_limit_state;
+        auto& sl_state = bound.data.slope_limit_state;
 
         sl_state.bath_at_baryctr_neigh[bound.bound_id] = sl_state.bath_at_baryctr;
 
@@ -268,14 +268,14 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& state = dbound.data->state[0];
-        auto& boundary = dbound.data->boundary[dbound.bound_id];
+        auto& state = dbound.data.state[0];
+        auto& boundary = dbound.data.boundary[dbound.bound_id];
 
         dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
     });
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& sl_state = dbound.data->slope_limit_state;
+        auto& sl_state = dbound.data.slope_limit_state;
 
         dbound.boundary_condition.SetPreprocEX(sl_state.baryctr_coord[GlobalCoord::x],
                                                sl_state.baryctr_coord[GlobalCoord::y]);
@@ -285,7 +285,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
 void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
                                                            const ProblemInputType& problem_specific_input) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& sl_state = dbound.data->slope_limit_state;
+        auto& sl_state = dbound.data.slope_limit_state;
 
         dbound.boundary_condition.GetPreprocEX(sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::x],
                                                sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::y]);
