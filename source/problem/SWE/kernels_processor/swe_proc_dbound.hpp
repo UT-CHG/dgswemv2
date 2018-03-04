@@ -47,7 +47,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                             qx_ex,
                                             qy_ex);
 
-            LLF_flux(boundary.ze_at_gp[gp],
+            LLF_flux(Global::g,boundary.ze_at_gp[gp],
                      ze_ex,
                      boundary.qx_at_gp[gp],
                      qx_ex,
@@ -93,7 +93,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                         qx_ex,
                                         qy_ex);
 
-                    LLF_flux(boundary.ze_at_gp[gp],
+                    LLF_flux(Global::g,boundary.ze_at_gp[gp],
                              ze_ex,
                              boundary.qx_at_gp[gp],
                              qx_ex,
@@ -120,7 +120,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                                     qx_ex,
                                                     qy_ex);
 
-                    LLF_flux_zero_g(boundary.ze_at_gp[gp],
+                    LLF_flux(0.0,boundary.ze_at_gp[gp],
                                     ze_ex,
                                     boundary.qx_at_gp[gp],
                                     qx_ex,

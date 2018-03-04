@@ -31,7 +31,8 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
                                            qx_ex,
                                            qy_ex);
 
-            LLF_flux(boundary.ze_at_gp[gp],
+            LLF_flux(Global::g,
+                     boundary.ze_at_gp[gp],
                      ze_ex,
                      boundary.qx_at_gp[gp],
                      qx_ex,

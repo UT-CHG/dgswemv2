@@ -35,7 +35,8 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
         for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
             gp_ex = ngp - gp - 1;
 
-            LLF_flux(boundary_in.ze_at_gp[gp],
+            LLF_flux(Global::g,
+                    boundary_in.ze_at_gp[gp],
                      boundary_ex.ze_at_gp[gp_ex],
                      boundary_in.qx_at_gp[gp],
                      boundary_ex.qx_at_gp[gp_ex],
@@ -82,7 +83,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                                         qx_in,
                                         qy_in);
 
-                    LLF_flux(boundary_ex.ze_at_gp[gp],
+                    LLF_flux(Global::g,boundary_ex.ze_at_gp[gp],
                              ze_in,
                              boundary_ex.qx_at_gp[gp],
                              qx_in,
@@ -102,7 +103,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     gp_ex = ngp - gp - 1;
 
-                    LLF_flux_zero_g(boundary_ex.ze_at_gp[gp_ex],
+                    LLF_flux(0.0,boundary_ex.ze_at_gp[gp_ex],
                                     boundary_in.ze_at_gp[gp],
                                     boundary_ex.qx_at_gp[gp_ex],
                                     boundary_in.qx_at_gp[gp],
@@ -141,7 +142,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                                         qx_ex,
                                         qy_ex);
 
-                    LLF_flux(boundary_in.ze_at_gp[gp],
+                    LLF_flux(Global::g,boundary_in.ze_at_gp[gp],
                              ze_ex,
                              boundary_in.qx_at_gp[gp],
                              qx_ex,
@@ -161,7 +162,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     gp_ex = ngp - gp - 1;
 
-                    LLF_flux_zero_g(boundary_in.ze_at_gp[gp],
+                    LLF_flux(0.0,boundary_in.ze_at_gp[gp],
                                     boundary_ex.ze_at_gp[gp_ex],
                                     boundary_in.qx_at_gp[gp],
                                     boundary_ex.qx_at_gp[gp_ex],
