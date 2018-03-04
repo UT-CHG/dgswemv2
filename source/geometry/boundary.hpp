@@ -39,11 +39,6 @@ class Boundary {
 
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned);
-#endif
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
@@ -158,18 +153,5 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
 
     return integral;
 }
-
-#ifdef HAS_HPX
-template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
-template<typename Archive>
-void Boundary<dimension, IntegrationType, DataType, BoundaryType>::serialize(Archive& ar, unsigned) {
-    ar & boundary_condition
-       & bound_id
-       & surface_normal
-       & phi_gp
-       & int_fact
-       & int_fact_phi;
-}
-#endif
 }
 #endif

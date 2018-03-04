@@ -65,7 +65,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
-          uint n_node = elt.GetShape().nodal_coordinates.size();
+            uint n_node = elt.GetShape().nodal_coordinates.size();
 
             std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
             elt.L2Projection(ze_node, state.ze);
@@ -271,7 +271,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
-        auto& sl_state = bound.data->slope_limit_state;
+        auto& sl_state = bound.data.slope_limit_state;
 
         sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::x] =
             2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
@@ -429,7 +429,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& sl_state = dbound.data->slope_limit_state;
+        auto& sl_state = dbound.data.slope_limit_state;
 
         dbound.boundary_condition.exchanger.SetPreprocEX(sl_state.baryctr_coord[GlobalCoord::x],
                                                          sl_state.baryctr_coord[GlobalCoord::y]);
@@ -438,7 +438,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
 
 void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& sl_state = dbound.data->slope_limit_state;
+        auto& sl_state = dbound.data.slope_limit_state;
 
         dbound.boundary_condition.exchanger.GetPreprocEX(sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::x],
                                                          sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::y]);
