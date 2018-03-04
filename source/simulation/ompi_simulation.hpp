@@ -189,7 +189,8 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
     auto scrutinize_solution_kernel = [this](auto& elt) {
         bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
 
-        if (nan_found) MPI_Abort(MPI_COMM_WORLD, 0);
+        if (nan_found)
+            MPI_Abort(MPI_COMM_WORLD, 0);
     };
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);

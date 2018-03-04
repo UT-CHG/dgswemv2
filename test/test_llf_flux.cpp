@@ -21,7 +21,8 @@ bool test_configuration(const int configuration,
 
     double ze_flux, qx_flux, qy_flux;
 
-    SWE::LLF_flux(SWE::Global::g, ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, sp, normal, ze_flux, qx_flux, qy_flux);
+    SWE::LLF_flux(
+        SWE::Global::g, ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, sp, normal, ze_flux, qx_flux, qy_flux);
 
     if (!Utilities::almost_equal(ze_flux, true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";

@@ -195,7 +195,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         auto scrutinize_solution_kernel = [this](auto& elt) {
             bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
 
-            if (nan_found) hpx::terminate();
+            if (nan_found)
+                hpx::terminate();
         };
 
         this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);

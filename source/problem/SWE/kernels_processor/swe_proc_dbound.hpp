@@ -47,7 +47,8 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                             qx_ex,
                                             qy_ex);
 
-            LLF_flux(Global::g,boundary.ze_at_gp[gp],
+            LLF_flux(Global::g,
+                     boundary.ze_at_gp[gp],
                      ze_ex,
                      boundary.qx_at_gp[gp],
                      qx_ex,
@@ -93,7 +94,8 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                         qx_ex,
                                         qy_ex);
 
-                    LLF_flux(Global::g,boundary.ze_at_gp[gp],
+                    LLF_flux(Global::g,
+                             boundary.ze_at_gp[gp],
                              ze_ex,
                              boundary.qx_at_gp[gp],
                              qx_ex,
@@ -120,18 +122,19 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
                                                     qx_ex,
                                                     qy_ex);
 
-                    LLF_flux(0.0,boundary.ze_at_gp[gp],
-                                    ze_ex,
-                                    boundary.qx_at_gp[gp],
-                                    qx_ex,
-                                    boundary.qy_at_gp[gp],
-                                    qy_ex,
-                                    boundary.bath_at_gp[gp],
-                                    sp_at_gp[gp],
-                                    dbound.surface_normal[gp],
-                                    boundary.ze_numerical_flux_at_gp[gp],
-                                    boundary.qx_numerical_flux_at_gp[gp],
-                                    boundary.qy_numerical_flux_at_gp[gp]);
+                    LLF_flux(0.0,
+                             boundary.ze_at_gp[gp],
+                             ze_ex,
+                             boundary.qx_at_gp[gp],
+                             qx_ex,
+                             boundary.qy_at_gp[gp],
+                             qy_ex,
+                             boundary.bath_at_gp[gp],
+                             sp_at_gp[gp],
+                             dbound.surface_normal[gp],
+                             boundary.ze_numerical_flux_at_gp[gp],
+                             boundary.qx_numerical_flux_at_gp[gp],
+                             boundary.qy_numerical_flux_at_gp[gp]);
                 }
 
                 net_volume_flux_in = dbound.Integration(boundary.ze_numerical_flux_at_gp);
