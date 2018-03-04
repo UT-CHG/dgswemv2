@@ -44,7 +44,7 @@ void Problem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
 }
 
 template <typename ElementType>
-void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
+bool Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
     uint stage = stepper.get_stage();
 
     auto& state = elt.data.state[stage];
@@ -53,6 +53,8 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
         if (std::isnan(ze_mode)) {
             std::cerr << "Error: found isnan ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
         }
     }
 
@@ -60,6 +62,8 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
         if (std::isnan(qx_mode)) {
             std::cerr << "Error: found isnan qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
         }
     }
 
@@ -67,6 +71,8 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
         if (std::isnan(qy_mode)) {
             std::cerr << "Error: found isnan qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
         }
     }
 
@@ -74,6 +80,8 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
         if (std::isnan(rhs_ze_mode)) {
             std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
         }
     }
 
@@ -81,6 +89,8 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
         if (std::isnan(rhs_qx_mode)) {
             std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
         }
     }
 
@@ -88,8 +98,12 @@ void Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& el
         if (std::isnan(rhs_qy_mode)) {
             std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
         }
     }
+
+    return false;
 }
 }
 
