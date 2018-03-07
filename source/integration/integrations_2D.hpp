@@ -44,7 +44,18 @@ class GaussLegendre_2D : Integration<2> {
   public:
     std::pair<std::vector<double>, std::vector<Point<2>>> GetRule(const uint p);
     uint GetNumGP(const uint p);
+
+  private:
+  /**trying to figure out what the hell I'm doing right now
+   * 
+   * 
+   * 
+   * 
+   *
+   */
+
 };
+
 }
 
 #endif

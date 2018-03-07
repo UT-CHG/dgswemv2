@@ -71,6 +71,7 @@ add_executable(
   test_integ_gausslegendre_2d_exe
   test_integ_gausslegendre_2d.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_gausslegendre_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
 add_test(
