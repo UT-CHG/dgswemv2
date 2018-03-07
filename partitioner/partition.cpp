@@ -2,25 +2,23 @@
 #include "preprocessor/mesh_metadata.hpp"
 
 #include "csrmat.hpp"
-#include "numa_configuration.hpp"
 
 #include <vector>
 
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
+                                                 const std::unordered_map<int, std::vector<double>>& problem_weights,
                                                  const int num_partitions,
                                                  const int num_nodes,
                                                  const int ranks_per_locality,
-                                                 const NumaConfiguration& numa_config) {
-    // To do: add an additional layer of support for assigning submeshes to NUMA
-    // domains
-    // const int num_localities = num_nodes *
-    // numa_config.get_num_numa_domains();
+                                                 const bool rank_balanced) {
 
-    std::unordered_map<int, double> element_weights;
+    std::unordered_map<int, std::vector<double>> element_weights;
     std::unordered_map<std::pair<int, int>, double> edge_weights;
 
     for (const auto& elt : mesh_meta.elements) {
-        element_weights.insert(std::make_pair(elt.first, 1.));
+        if (!rank_balanced) {
+            element_weights.insert(std::make_pair(elt.first, std::vector<double>({1.})));
+        }
 
         for (const uint neigh_id : elt.second.neighbor_ID) {
             if (neigh_id != DEFAULT_ID) {
@@ -31,11 +29,9 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
         }
     }
 
-    CSRMat<> mesh_graph(element_weights, edge_weights);
-    std::vector<std::function<double(int)>> cons;
-    cons.push_back([&element_weights](int i) { return element_weights.at(i); });
+    CSRMat mesh_graph(rank_balanced ? problem_weights : element_weights, edge_weights);
 
-    std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, cons, 1.05);
+    std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, 1.05);
 
     std::unordered_map<int, int64_t> elt2partition;
     const std::vector<int>& elts_sorted = mesh_graph.node_ID();
@@ -57,10 +53,12 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     }
 
     // partition submeshes onto nodes
-    std::unordered_map<int, double> submesh_weight;
-    for (auto& elt : element_weights) {
+    std::unordered_map<int, std::vector<double>> submesh_weight;
+    for (auto& elt : problem_weights) {
         if (submesh_weight.count(elt2partition.at(elt.first))) {
-            submesh_weight[elt2partition[elt.first]] += elt.second;
+            for (uint c = 0; c < elt.second.size(); ++c) {
+                submesh_weight[elt2partition[elt.first]][c] += elt.second[c];
+            }
         } else {
             submesh_weight.insert(std::make_pair(elt2partition[elt.first], elt.second));
         }
@@ -79,11 +77,9 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     }
 
     // sbmsh_wght takes the submeshes and distribtutes them across localities
-    CSRMat<> sbmsh_graph(submesh_weight, submesh_edge_weight);
-    std::vector<std::function<double(int)>> sbmsh_cons;
-    sbmsh_cons.push_back([&submesh_weight](int i) { return submesh_weight.at(i); });
+    CSRMat sbmsh_graph(submesh_weight, submesh_edge_weight);
 
-    std::vector<int64_t> sbmsh_part = metis_part(sbmsh_graph, num_nodes, sbmsh_cons, 1.02);
+    std::vector<int64_t> sbmsh_part = metis_part(sbmsh_graph, num_nodes, 1.02);
 
     std::vector<int> permutation;
     permutation.reserve(sbmsh_part.size());
@@ -181,25 +177,32 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     }
 
     {  // compute imbalance across nodes
-        double max_load(0);
-        double avg_load(0);
-        std::vector<double> node_weight(num_nodes, 0);
+        std::size_t num_constraints = submesh_weight.cbegin()->second.size();
+        std::vector<double> max_load(num_constraints, 0);
+        std::vector<double> avg_load(num_constraints, 0);
+
+        std::vector<std::vector<double>> node_weight(num_nodes, std::vector<double>(num_constraints, 0));
 
         for (const auto& sw : submesh_weight) {
-            node_weight.at(partition2node.at(sw.first)) += sw.second;
+            for (uint c = 0; c < num_constraints; ++c) {
+                node_weight.at(partition2node.at(sw.first))[c] += sw.second[c];
+            }
         }
 
         for (const auto& wght : node_weight) {
-            if (wght > max_load) {
-                max_load = wght;
+            for (uint c = 0; c < num_constraints; ++c) {
+                max_load[c] = std::max(wght[c], max_load[c]);
+                avg_load[c] += wght[c];
             }
-            avg_load += wght;
         }
 
-        avg_load /= num_nodes;
-        double imbalance = (max_load - avg_load) / avg_load;
-
-        std::cout << "  Imbalance across NUMA domains: " << imbalance << '\n';
+        std::cout << "  Imbalance across NUMA domains:\n";
+        for (uint c = 0; c < num_constraints; ++c) {
+            avg_load[c] /= num_nodes;
+            double imbalance = (max_load[c] - avg_load[c]) / avg_load[c];
+            std::cout << "    Constraint " << c << ": " << imbalance << '\n';
+        }
+        std::cout << '\n';
     }
 
     return submeshes;
