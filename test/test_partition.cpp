@@ -1,4 +1,4 @@
-#include "../partitioner/numa_configuration.hpp"
+#include "../partitioner/problem/default_partitioner_inputs.hpp"
 
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
@@ -6,10 +6,11 @@
 #include <unordered_set>
 
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
+                                                 const std::unordered_map<int, std::vector<double>>& problem_weights,
                                                  const int num_partitions,
                                                  const int num_nodes,
                                                  const int ranks_per_locality,
-                                                 const NumaConfiguration& numa_config);
+                                                 const bool rank_balanced);
 
 bool check_partition(const MeshMetaData& mesh, std::vector<std::vector<MeshMetaData>>& submeshes) {
     bool error_found{false};
@@ -66,29 +67,38 @@ int main(int argc, char** argv) {
 
     bool error_found{false};
 
-    NumaConfiguration numa_config("default");
-
     AdcircFormat mesh1(argv[1]);
     MeshMetaData meshA(mesh1);
 
+    std::unordered_map<int,std::vector<double>> weights;
+    for ( const auto& elt : meshA.elements ) {
+        weights.insert(std::make_pair(elt.first, std::vector<double>{1.}));
+    }
+
     std::cout << "Checking for 1 locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 1, 1, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, weights, 4, 1, 1, false);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for 1 locality\n\n";
     std::cout << "Checking for multiple localities with one rank per locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 2, 1, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, weights, 4, 2, 1, false);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for multiple localities\n";
     std::cout << "Checking for multiple localities with multiple ranks per locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 8, 2, 2, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, weights, 8, 2, 2, false);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for multiple localities\n";
+    std::cout << "Checking for with rank balancing turned on...\n";
+    {
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, weights, 4, 1, 1, true);
+        error_found = error_found || check_partition(meshA, submeshes);
+    }
+    std::cout << "...done checking for rank balancing turned on\n\n";
 
     if (error_found) {
         return 1;

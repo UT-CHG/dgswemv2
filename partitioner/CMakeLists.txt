@@ -8,6 +8,8 @@ list (APPEND PARTITIONER_SOURCES
 
   ${PROJECT_SOURCE_DIR}/partitioner/partition.cpp
   ${PROJECT_SOURCE_DIR}/partitioner/write_distributed_interfaces.cpp
+
+  ${PROJECT_SOURCE_DIR}/partitioner/problem/default_partitioner_inputs.cpp
 )
 
 add_executable(
