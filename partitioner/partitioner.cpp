@@ -2,6 +2,7 @@
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
+#include "problem/swe_partitioner_inputs.hpp"
 #include "problem/default_partitioner_inputs.hpp"
 
 #include <cassert>
@@ -70,7 +71,14 @@ int main(int argc, char** argv) {
 
     // initialize problem specific inputs
     std::unique_ptr<ProblemPartitionerInputs> problem_inputs;
-    {
+    if ( input.problem_input.node["name"]) {
+        if ( input.problem_input.node["name"].as<std::string>() == "swe" ) {
+            SWE::Inputs swe_inputs(input.problem_input.node);
+            problem_inputs = std::make_unique<SWE::PartitionerInputs>(mesh_meta, swe_inputs);
+        } else {
+            problem_inputs = std::make_unique<DefaultPartitionerInputs>(mesh_meta);
+        }
+    } else {
         problem_inputs = std::make_unique<DefaultPartitionerInputs>(mesh_meta);
     }
 
@@ -106,6 +114,6 @@ int main(int argc, char** argv) {
     input.WriteTo(updated_input_filename);
 
     auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "\nTime Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+    std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << std::endl;
 }

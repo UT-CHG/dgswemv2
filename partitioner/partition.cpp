@@ -178,25 +178,32 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     }
 
     {  // compute imbalance across nodes
-        double max_load(0);
-        double avg_load(0);
-        std::vector<double> node_weight(num_nodes, 0);
+        std::size_t num_constraints = submesh_weight.cbegin()->second.size();
+        std::vector<double> max_load(num_constraints, 0);
+        std::vector<double> avg_load(num_constraints, 0);
+
+        std::vector<std::vector<double>> node_weight(num_nodes, std::vector<double>(num_constraints,0));
 
         for (const auto& sw : submesh_weight) {
-            node_weight.at(partition2node.at(sw.first)) += sw.second[0];
+            for ( uint c = 0; c < num_constraints; ++c ) {
+                node_weight.at(partition2node.at(sw.first))[c] += sw.second[c];
+            }
         }
 
         for (const auto& wght : node_weight) {
-            if (wght > max_load) {
-                max_load = wght;
+            for ( uint c = 0; c < num_constraints; ++c ) {
+                max_load[c] = std::max(wght[c], max_load[c]);
+                avg_load[c] += wght[c];
             }
-            avg_load += wght;
         }
 
-        avg_load /= num_nodes;
-        double imbalance = (max_load - avg_load) / avg_load;
-
-        std::cout << "  Imbalance across NUMA domains: " << imbalance << '\n';
+        std::cout << "  Imbalance across NUMA domains:\n";
+        for ( uint c = 0; c < num_constraints; ++c ) {
+            avg_load[c] /= num_nodes;
+            double imbalance = (max_load[c] - avg_load[c]) / avg_load[c];
+            std::cout << "    Constraint " << c << ": " << imbalance << '\n';
+        }
+        std::cout << '\n';
     }
 
     return submeshes;
