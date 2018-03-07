@@ -21,10 +21,7 @@ std::pair<std::vector<double>, std::vector<Point<2>>> GaussLegendre_2D::GetRule(
         }
 
     }
-
     
-
-
     return Rule2Ddata;
 }
 
