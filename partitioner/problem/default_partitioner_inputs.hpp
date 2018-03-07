@@ -6,14 +6,12 @@
 #include "preprocessor/mesh_metadata.hpp"
 
 class DefaultPartitionerInputs final : public ProblemPartitionerInputs {
-public:
-    //using ProblemPartitionerInputs::WeightsType;
-
+  public:
     DefaultPartitionerInputs(const MeshMetaData& mesh);
 
     WeightsType GetWeights() { return weights; }
 
-private:
+  private:
     WeightsType weights;
 };
 #endif

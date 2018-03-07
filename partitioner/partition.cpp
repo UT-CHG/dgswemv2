@@ -16,7 +16,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     std::unordered_map<std::pair<int, int>, double> edge_weights;
 
     for (const auto& elt : mesh_meta.elements) {
-        if ( !rank_balanced ) {
+        if (!rank_balanced) {
             element_weights.insert(std::make_pair(elt.first, std::vector<double>({1.})));
         }
 
@@ -29,8 +29,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
         }
     }
 
-    CSRMat mesh_graph(rank_balanced ? problem_weights : element_weights,
-                      edge_weights);
+    CSRMat mesh_graph(rank_balanced ? problem_weights : element_weights, edge_weights);
 
     std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, 1.05);
 
@@ -57,7 +56,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     std::unordered_map<int, std::vector<double>> submesh_weight;
     for (auto& elt : problem_weights) {
         if (submesh_weight.count(elt2partition.at(elt.first))) {
-            for ( uint c = 0; c < elt.second.size(); ++c ) {
+            for (uint c = 0; c < elt.second.size(); ++c) {
                 submesh_weight[elt2partition[elt.first]][c] += elt.second[c];
             }
         } else {
@@ -182,23 +181,23 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
         std::vector<double> max_load(num_constraints, 0);
         std::vector<double> avg_load(num_constraints, 0);
 
-        std::vector<std::vector<double>> node_weight(num_nodes, std::vector<double>(num_constraints,0));
+        std::vector<std::vector<double>> node_weight(num_nodes, std::vector<double>(num_constraints, 0));
 
         for (const auto& sw : submesh_weight) {
-            for ( uint c = 0; c < num_constraints; ++c ) {
+            for (uint c = 0; c < num_constraints; ++c) {
                 node_weight.at(partition2node.at(sw.first))[c] += sw.second[c];
             }
         }
 
         for (const auto& wght : node_weight) {
-            for ( uint c = 0; c < num_constraints; ++c ) {
+            for (uint c = 0; c < num_constraints; ++c) {
                 max_load[c] = std::max(wght[c], max_load[c]);
                 avg_load[c] += wght[c];
             }
         }
 
         std::cout << "  Imbalance across NUMA domains:\n";
-        for ( uint c = 0; c < num_constraints; ++c ) {
+        for (uint c = 0; c < num_constraints; ++c) {
             avg_load[c] /= num_nodes;
             double imbalance = (max_load[c] - avg_load[c]) / avg_load[c];
             std::cout << "    Constraint " << c << ": " << imbalance << '\n';

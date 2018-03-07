@@ -11,7 +11,7 @@
 #include <vector>
 
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
-                                                 const std::unordered_map<int,std::vector<double>>& problem_weights,
+                                                 const std::unordered_map<int, std::vector<double>>& problem_weights,
                                                  const int num_partitions,
                                                  const int num_nodes,
                                                  const int ranks_per_locality,
@@ -57,12 +57,11 @@ int main(int argc, char** argv) {
     };
 
     bool rank_balanced{false};
-    if ( argc == 6 ) {
+    if (argc == 6) {
         std::stringstream ss(argv[5]);
         ss >> std::boolalpha >> rank_balanced;
     }
     std::cout << std::boolalpha << "  Rank balanced: " << rank_balanced << "\n\n";
-
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
@@ -71,8 +70,8 @@ int main(int argc, char** argv) {
 
     // initialize problem specific inputs
     std::unique_ptr<ProblemPartitionerInputs> problem_inputs;
-    if ( input.problem_input.node["name"]) {
-        if ( input.problem_input.node["name"].as<std::string>() == "swe" ) {
+    if (input.problem_input.node["name"]) {
+        if (input.problem_input.node["name"].as<std::string>() == "swe") {
             SWE::Inputs swe_inputs(input.problem_input.node);
             problem_inputs = std::make_unique<SWE::PartitionerInputs>(mesh_meta, swe_inputs);
         } else {

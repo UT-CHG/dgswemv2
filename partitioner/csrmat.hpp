@@ -16,23 +16,25 @@ class CSRMat {
     // construct from components
     CSRMat(std::unordered_map<int, std::vector<double>> nw, std::unordered_map<std::pair<int, int>, double> ew)
         : _edges{}, _nodes{}, _node_wgts_map(std::move(nw)), _edge_wgts_map(std::move(ew)) {
-        if ( _node_wgts_map.size() > 0 ) {
+        if (_node_wgts_map.size() > 0) {
             _constraint_number = _node_wgts_map.cbegin()->second.size();
         }
         for (const auto& p : _node_wgts_map) {
             _nodes.push_back(p.first);
 
-            //Enforce that each vector-value in the node weight map has the same length.
-            if ( p.second.size() != _constraint_number ) {
-                std::string err_msg="Error: Two nodes with different number of constraints\n"
-                    "    Node "+std::to_string(_node_wgts_map.cbegin()->first)+" has constraints { ";
-                for ( const double& c : _node_wgts_map.cbegin()->second) {
-                    err_msg += std::to_string(c)+" ";
+            // Enforce that each vector-value in the node weight map has the same length.
+            if (p.second.size() != _constraint_number) {
+                std::string err_msg =
+                    "Error: Two nodes with different number of constraints\n"
+                    "    Node " +
+                    std::to_string(_node_wgts_map.cbegin()->first) + " has constraints { ";
+                for (const double& c : _node_wgts_map.cbegin()->second) {
+                    err_msg += std::to_string(c) + " ";
                 }
                 err_msg += "}\n";
-                err_msg += "    Node "+std::to_string(p.first)+" has constraints { ";
-                for ( const double& c : p.second) {
-                    err_msg += std::to_string(c)+" ";
+                err_msg += "    Node " + std::to_string(p.first) + " has constraints { ";
+                for (const double& c : p.second) {
+                    err_msg += std::to_string(c) + " ";
                 }
                 err_msg += "}\n";
                 throw std::logic_error(err_msg);
@@ -95,9 +97,9 @@ class CSRMat {
     // vector of node weights in order
     std::vector<double> node_wgts() const {
         std::vector<double> result;
-        result.reserve(_constraint_number * size());   // pre-allocate
-        for (auto id : _nodes) {  // _nodes is sorted
-            for ( uint c = 0; c < _constraint_number; ++c ) {
+        result.reserve(_constraint_number * size());  // pre-allocate
+        for (auto id : _nodes) {                      // _nodes is sorted
+            for (uint c = 0; c < _constraint_number; ++c) {
                 result.push_back(_node_wgts_map.at(id).at(c));
             }
         }
@@ -223,9 +225,7 @@ void summarize_vec(std::vector<T> vec) {
     mota::Say() << "\b\b)";
 }
 
-std::vector<int64_t> metis_part(const CSRMat& mat,
-                                int64_t nparts,
-                                const double imba_ratio) {
+std::vector<int64_t> metis_part(const CSRMat& mat, int64_t nparts, const double imba_ratio) {
     static_assert(sizeof(idx_t) == sizeof(int64_t), "Requires 64-bit METIS idx_t");
     static_assert(sizeof(real_t) == sizeof(double), "Requires 64-bit METIS real_t");
 
@@ -243,8 +243,7 @@ std::vector<int64_t> metis_part(const CSRMat& mat,
     std::vector<double> tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);
     // set up weights vectorse
 
-    std::vector<int64_t> node_wgts = scale_to_int64(mat.node_wgts()),
-                         edge_wgts = scale_to_int64(mat.edge_wgts());
+    std::vector<int64_t> node_wgts = scale_to_int64(mat.node_wgts()), edge_wgts = scale_to_int64(mat.edge_wgts());
     // check parameters
 
     /*mota::Say() << "nparts: " << nparts;

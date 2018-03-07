@@ -8,16 +8,15 @@
 
 namespace SWE {
 class PartitionerInputs final : public ProblemPartitionerInputs {
-public:
-    PartitionerInputs(const MeshMetaData& mesh,
-                      Inputs inputs);
+  public:
+    PartitionerInputs(const MeshMetaData& mesh, Inputs inputs);
 
     inline WeightsType GetWeights() { return weights; }
 
-    //To be added at a later date
-    //void PartitionAuxiliaryFiles();
+    // To be added at a later date
+    // void PartitionAuxiliaryFiles();
 
-private:
+  private:
     WeightsType weights;
 };
 }

@@ -5,12 +5,12 @@
 #include <vector>
 
 class ProblemPartitionerInputs {
-public:
-    using WeightsType=std::unordered_map<int,std::vector<double>>;
+  public:
+    using WeightsType = std::unordered_map<int, std::vector<double>>;
 
-    virtual WeightsType GetWeights()=0;
+    virtual WeightsType GetWeights() = 0;
     virtual void PartitionAuxiliaryFiles() {};
 
-    virtual ~ProblemPartitionerInputs()=default;
+    virtual ~ProblemPartitionerInputs() = default;
 };
 #endif
