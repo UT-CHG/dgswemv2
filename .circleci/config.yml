@@ -5,9 +5,9 @@ jobs:
       - image: circleci/python: 2.7.11
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - dgswemv2-dependencies
+#      - restore_cache:
+#          keys:
+#            - dgswemv2-dependencies
 
       - run: sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo add-apt-repository -y ppa:ppsspp/cmake
       - run: sudo apt-get update
@@ -19,20 +19,17 @@ jobs:
       - run: pip install numpy
       - run: scripts/circleci/build.sh
 
-      - save_cache:
-          key: dgswemv2-dependencies
-          paths:
-            - "/home/ubuntu/yaml-cpp"
-            - "/home/ubuntu/hpx"
-            - "/home/ubuntu/build"
-            - "/home/ubuntu/install"
-
-compile:
-  override:
+#      - save_cache:
+#          key: dgswemv2-dependencies
+#          paths:
+#            - "/home/ubuntu/yaml-cpp"
+#            - "/home/ubuntu/hpx"
+#            - "/home/ubuntu/build"
+#            - "/home/ubuntu/install"
 
   test:
     docker:
-      - image: python: 2.7.11
+      - image: circleci/python: 2.7.11
     steps:
       - run: scripts/circleci/test.sh
       - run: scripts/correctness/test_parallel_correctness.sh
