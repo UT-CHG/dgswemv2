@@ -1,8 +1,9 @@
 version: 2
 jobs:
   build:
+    machine:
+      enabled: true
     docker:
-      - image: circleci/build-image:ubuntu-14.04-XL-922-9410082
       - image: circleci/python:2.7.14
     steps:
       - checkout
@@ -29,8 +30,9 @@ jobs:
 #            - "/home/ubuntu/install"
 
   test:
+    machine:
+      enabled: true
     docker:
-      - image: circleci/build-image:ubuntu-14.04-XL-922-9410082
       - image: circleci/python:2.7.14
     steps:
       - run: scripts/circleci/test.sh
@@ -41,4 +43,6 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - test
+      - test:
+          requires:
+            -build
