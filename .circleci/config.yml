@@ -3,8 +3,8 @@ jobs:
   build:
     machine:
       enabled: true
-    docker:
-      - image: circleci/python:2.7.14
+#    docker:
+#      - image: circleci/python:2.7.14
     steps:
       - checkout
 #      - restore_cache:
@@ -32,8 +32,8 @@ jobs:
   test:
     machine:
       enabled: true
-    docker:
-      - image: circleci/python:2.7.14
+#    docker:
+#      - image: circleci/python:2.7.14
     steps:
       - run: scripts/circleci/test.sh
       - run: scripts/correctness/test_parallel_correctness.sh
