@@ -2,6 +2,7 @@ version: 2
 jobs:
   build:
     docker:
+      - image: circleci/build-image:ubuntu-14.04-XL-922-9410082
       - image: circleci/python:2.7.14
     steps:
       - checkout
@@ -29,6 +30,7 @@ jobs:
 
   test:
     docker:
+      - image: circleci/build-image:ubuntu-14.04-XL-922-9410082
       - image: circleci/python:2.7.14
     steps:
       - run: scripts/circleci/test.sh
