@@ -144,7 +144,7 @@ if [ ! -d "$METIS_BUILD_PATH" ]; then
     cd metis-5.1.0
     sed -i 's/#define IDXTYPEWIDTH 32/#define IDXTYPEWIDTH 64/g' include/metis.h
     sed -i 's/#define REALTYPEWIDTH 32/#define REALTYPEWIDTH 64/g' include/metis.h
-    make config prefix=${INSTALL_PATH}
+    make config prefix=${INSTALL_PATH} CC=${C_COMPILER} CXX=${CXX_COMPILER}
     make
     make install
 else
