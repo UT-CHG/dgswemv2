@@ -148,6 +148,9 @@ class CSRMat {
         return edge_sets.count(idx) ? edge_sets.at(idx) : empty_set;
     }
 
+    const std::unordered_map<int,NodeW>& get_node_wghts_map() const { return _node_wgts_map; }
+    const std::unordered_map<std::pair<int,int>, EdgeW> get_edge_wgts_map() const { return _edge_wgts_map; }
+
   private:
     std::unordered_map<int, std::vector<int>> _edges;
     std::vector<int> _nodes;  // sorted node IDs

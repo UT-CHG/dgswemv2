@@ -274,6 +274,7 @@ add_executable(
   test_refine_manually2_exe
   ${PROJECT_SOURCE_DIR}/test/partitioner/test_refine_manually2.cpp
   ${PROJECT_SOURCE_DIR}/partitioner/refine_strict.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/partition_type.cpp
 )
 
 target_include_directories(test_refine_manually2_exe PRIVATE ${METIS_INCLUDE_DIRS})
@@ -282,4 +283,33 @@ target_link_libraries(test_refine_manually2_exe ${METIS_LIBRARIES})
 add_test(
   Unit_partitioner_refine_manually2
   test_refine_manually2_exe
+)
+
+add_executable(
+  test_partition_type_exe
+  ${PROJECT_SOURCE_DIR}/test/partitioner/test_partition_type.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/partition_type.cpp
+)
+
+target_include_directories(test_partition_type_exe PRIVATE ${METIS_INCLUDE_DIRS})
+target_link_libraries(test_partition_type_exe ${METIS_LIBRARIES})
+
+add_test(
+  Unit_partitioner_partition_type
+  test_partition_type_exe
+)
+
+add_executable(
+  test_coarsen_exe
+  ${PROJECT_SOURCE_DIR}/test/partitioner/test_coarsen.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/refine_strict.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/partition_type.cpp
+)
+
+target_include_directories(test_coarsen_exe PRIVATE ${METIS_INCLUDE_DIRS})
+target_link_libraries(test_coarsen_exe ${METIS_LIBRARIES})
+
+add_test(
+  Unit_partitioner_coarsen
+  test_coarsen_exe
 )

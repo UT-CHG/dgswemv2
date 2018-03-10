@@ -56,11 +56,37 @@ void manually_refine3() {
 }
 
 
+*/
 PartitionType coarsen(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) {
+    //if exact these are the number of partitions
+    int64_t num_partitions = g.size()/coarsening_factor;
+    //Otherwise, go for the ceil
+    if ( num_partitions*coarsening_factor != p.num_partitions ) {
+        num_partitions = static_cast<int64_t>( std::ceil( static_cast<double>(g.size())/coarsening_factor));
+    }
 
+    PartitionType p_new = p;
+
+    CSRMat<> g_p = p.make_partition_graph(g);
+
+    std::vector<std::function<double(int)>> cons;
+    cons.push_back([&g_p](int id) { return g_p.node_weight(id); });
+
+    std::vector<int64_t> partition = metis_part(g_p, num_partitions, cons, 1.02);
+
+    //make a super partition and assign p_new based on the super partition
+    PartitionType p_super = PartitionType(num_partitions, g, std::move(partition));
+
+
+    p_new.num_partitions = p_super.num_partitions;
+    for ( auto& v_p : p_new.vertex2partition ) {
+        v_p.second = p_super.vertex2partition[v_p.second];
+    }
+
+    return p_new;
 }
 
-PartitionType refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) {
+void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) {
     if ( coarsening_factor <= 1 ) {
         throw std::logic_error("Error in refine_strict;"
                                "Coarsening factor needs to be greater than 1\n");
@@ -72,22 +98,25 @@ PartitionType refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening
     } else if ( p.num_partitions == 2 ) {
         manually_refine2(g,p);
         return;
-    } else if ( p.num_partitions ==3 ) {
+/*    } else if ( p.num_partitions ==3 ) {
         manually_refine3(g,p);
+        return;*/
+    }
+
+    //Nothing to be done
+    if ( is_balanced(g,p) ) {
         return;
     }
 
-    
-
     PartitionType p_prime = coarsen(g, p, coarsening_factor);
-    PartitionType p_new = refine_strict(g, p_prime, 2);
+//    PartitionType p_new = refine_strict(g, p_prime, 2);
 
     //find tiles that have migrated, and remove them from p
 
     //greedily add migrated tiles to new submeshes
-    for ( CSRMat& sm : prime_submeshes ) {
+/*    for ( CSRMat<>& sm : prime_submeshes ) {
 
-    }
+      }*/
 
     //use Fid
-    }*/
+}
