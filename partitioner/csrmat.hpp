@@ -24,7 +24,6 @@ class CSRMat {
 
         // use of intermediate edge_sets normalizes all edges to be
         // bi-directional
-        std::unordered_map<int, std::unordered_set<int>> edge_sets;
         for (const auto& p : _edge_wgts_map) {
             int src = p.first.first, dst = p.first.second;
             edge_sets[src].insert(dst);
@@ -43,6 +42,7 @@ class CSRMat {
     const std::vector<int>& node_ids() const { return _nodes; }
     int get(int index) const { return _nodes[index]; }
     NodeW node_weight(int id) const { return _node_wgts_map.at(id); }
+    EdgeW edge_weight(const std::pair<int,int>& id) const {return _edge_wgts_map.at(id); }
 
     std::vector<int> xadj() const {
         std::vector<int> result;
@@ -144,11 +144,19 @@ class CSRMat {
 
     std::unordered_map<int, std::vector<int>> get_edges() { return _edges; }
 
+    const std::unordered_set<int>& get_neighbors(int idx) const {
+        return edge_sets.count(idx) ? edge_sets.at(idx) : empty_set;
+    }
+
   private:
     std::unordered_map<int, std::vector<int>> _edges;
     std::vector<int> _nodes;  // sorted node IDs
     std::unordered_map<int, NodeW> _node_wgts_map;
     std::unordered_map<std::pair<int, int>, EdgeW> _edge_wgts_map;
+
+    std::unordered_set<int> empty_set;
+    std::unordered_map<int, std::unordered_set<int>> edge_sets;
+
 };
 
 template <class T>

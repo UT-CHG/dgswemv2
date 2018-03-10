@@ -269,3 +269,17 @@ add_test(
   test_partition_exe
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
 )
+
+add_executable(
+  test_refine_manually2_exe
+  ${PROJECT_SOURCE_DIR}/test/partitioner/test_refine_manually2.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/refine_strict.cpp
+)
+
+target_include_directories(test_refine_manually2_exe PRIVATE ${METIS_INCLUDE_DIRS})
+target_link_libraries(test_refine_manually2_exe ${METIS_LIBRARIES})
+
+add_test(
+  Unit_partitioner_refine_manually2
+  test_refine_manually2_exe
+)
