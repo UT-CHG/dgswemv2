@@ -39,7 +39,6 @@ struct PartitionType {
     //needs test//implementation
     bool is_balanced();
 
-    //needs test
     void add_vertex(int ID);
 };
 #endif

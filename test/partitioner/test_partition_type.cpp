@@ -36,29 +36,46 @@ int main() {
     for ( uint i = 0; i < 8;  ++i ) {
         std::cout << "  " << i << " : " << p_vec[i] << '\n';
     }
+    {
+        PartitionType p(2,g, p_vec);
 
-    PartitionType p(2,g, p_vec);
+        //check that the partitioning vector and partitioning map match up
+        for ( uint indx = 0; indx < g.size(); ++indx ) {
+            if ( p_vec[indx] != p.vertex2partition.at( g.node_ids()[indx]) ) {
+                std::cerr << "Error in construction PartitionType\n"
+                          << "Vertex " << g.node_ids()[indx] << " has been assigned to "
+                          << p.vertex2partition.at( g.node_ids()[indx]) << " should be " << p_vec[indx] << '\n';
+                error_found = true;
+            }
+        }
 
-    //check that the partitioning vector and partitioning map match up
-    for ( uint indx = 0; indx < g.size(); ++indx ) {
-        if ( p_vec[indx] != p.vertex2partition.at( g.node_ids()[indx]) ) {
-            std::cerr << "Error in construction PartitionType\n"
-                      << "Vertex " << g.node_ids()[indx] << " has been assigned to "
-                      << p.vertex2partition.at( g.node_ids()[indx]) << " should be " << p_vec[indx] << '\n';
+        //check that make_partition_graph is working properly
+        CSRMat<> meta_g = p.make_partition_graph();
+        if ( !meta_g.get_node_wghts_map().count(0) || !meta_g.get_node_wghts_map().count(1) ) {
+            std::cerr << "Can't find all of the super meshes\n";
+            error_found = true;
+        }
+
+        if ( !meta_g.get_edge_wgts_map().count(std::make_pair(0,1)) ) {
+            std::cerr << "Can't find edge between meshes\n";
             error_found = true;
         }
     }
 
-    //check that make_partition_graph is working properly
-    CSRMat<> meta_g = p.make_partition_graph();
-    if ( !meta_g.get_node_wghts_map().count(0) || !meta_g.get_node_wghts_map().count(1) ) {
-        std::cerr << "Can't find all of the super meshes\n";
-        error_found = true;
-    }
 
-    if ( !meta_g.get_edge_wgts_map().count(std::make_pair(0,1)) ) {
-        std::cerr << "Can't find edge between meshes\n";
-        error_found = true;
+    { // test adding a vertex
+        std::vector<int> vrtxs{0,2,4,5,6};
+        std::vector<int64_t> part{0,1,0,0,1};
+
+        PartitionType p(2,g,vrtxs,part,std::vector<double>(2,2));
+
+        //add vertex one, which since this is greedy should get added to partition 0
+        p.add_vertex(1);
+
+        if ( p.vertex2partition[1] != 0 ) {
+            std::cerr << "Error vertex 1 has been added to the incorrect partition\n";
+            error_found = true;
+        }
     }
 
     return error_found;
