@@ -90,7 +90,7 @@ bool PartitionType::is_balanced() {
     std::vector<double> partition_weights(num_partitions, 0);
 
     for ( auto& v_p : vertex2partition ) {
-        partition_weights[v_p.second] += g_ref.node_weight(v_p.first);
+        partition_weights[v_p.second] += 1;
     }
 
     for ( uint part_id = 0; part_id < num_partitions; ++part_id ) {

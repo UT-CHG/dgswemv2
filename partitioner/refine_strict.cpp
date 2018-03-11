@@ -2,36 +2,47 @@
 #include "csrmat.hpp"
 #include "steal_queue.hpp"
 
+#include "utilities/almost_equal.hpp"
+
 #include <deque>
 
-void manually_refine2(const CSRMat<>& g, PartitionType&p, bool override=false) {
+void manually_refine2(const CSRMat<>& g, PartitionType&p,
+                      const std::vector<double>& custom_weights = std::vector<double>()) {
+    //custom weights should either be empty or have size 2
+    assert( custom_weights.empty() || custom_weights.size() == 2 );
+
+    const std::vector<double>& ideal_weights = custom_weights.empty() ? p.ideal_weights : custom_weights;
+
 //by convention here, gain is the change in edge cuts, but going from 0 to 1
-    std::array<uint,2> discrete_weights{0,0};
+    std::array<uint,2> weights{0,0};
     std::array<std::deque<int>,2> elements;
 
     for ( auto& v_p : p.vertex2partition ) {
-        discrete_weights[ v_p.second ] += 1;
+        weights[ v_p.second ] += 1; //enforce unit weight
         elements[ v_p.second ].push_back(v_p.first);
     }
 
-    if ( discrete_weights[0] == discrete_weights[1] ) {
-        return;
+    uint num_tiles_to_be_moved;
+    { // check feasibility, by ensuring than an integral number of tiles needs to be moved
+      //  to balance the 2 partitions
+        double num_tiles_fp = ( ideal_weights[1]*weights[0] - ideal_weights[0]*weights[1] )/
+            (ideal_weights[0] + ideal_weights[1]);
+        if ( !Utilities::almost_equal(num_tiles_fp, std::round(num_tiles_fp)) ) {
+            std::string err_msg{"Error: Unable to exactly manually_refine2 partitions with weights: "
+                    + std::to_string(weights[0])+", "+std::to_string(weights[1])+"\n"};
+            throw std::logic_error(err_msg);
+        }
+
+        num_tiles_to_be_moved = std::abs( num_tiles_fp );
     }
 
-    if ( ( (discrete_weights[0] + discrete_weights[1]) % 2 != 0) && !override ) {
-        std::string err_msg{"Error: Unable to exactly manually_refine2 partitions with weights: "
-                + std::to_string(discrete_weights[0])+", "+std::to_string(discrete_weights[1])+"\n"};
-        throw std::logic_error(err_msg);
-    }
-
-    uint high = discrete_weights[1] > discrete_weights[0];
+    uint high = weights[1]/p.ideal_weights[1] > weights[0]/p.ideal_weights[0];
     uint low = 1 - high;
 
     std::cout << "high: " << high << " low: " << low << '\n';
 
     //In the case of an override there will be an odd number of tiles, and we would like
     // to ensure that one extra tile ends up on the low end. Note this number is strictly positive.
-    uint num_tiles_to_be_moved = (discrete_weights[high] - discrete_weights[low] + 1)/2;
     std::cout << "High elements:";
     for( auto& elt : elements[high] ) {
         std::cout << ' ' << elt;
@@ -104,11 +115,11 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
 
     PartitionType p_coarse = coarsen(g, p, coarsening_factor);
 
-/*
+
     //save copy of old vertex placements to track movement
     PartitionType p_coarse_old = p_coarse;
     refine_strict(g, p_coarse, 2);
-
+/*
     std::unordered_set<int> moved_vertices;
     for ( auto& v_p : p_coarse.vertex2partition ) {
         if ( v_p.second != p_coarse_old.vertex2partition.at(v_p.first) ) {
