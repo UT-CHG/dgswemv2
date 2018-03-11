@@ -4,7 +4,7 @@
 
 #include <deque>
 
-void manually_refine2(const CSRMat<>& g, PartitionType&p, bool override = false) {
+void manually_refine2(const CSRMat<>& g, PartitionType&p, bool override=false) {
 //by convention here, gain is the change in edge cuts, but going from 0 to 1
     std::array<uint,2> discrete_weights{0,0};
     std::array<std::deque<int>,2> elements;
@@ -57,33 +57,25 @@ void manually_refine3() {
 
 
 */
-PartitionType coarsen(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) {
+PartitionType coarsen(const CSRMat<>& g, const PartitionType& p, uint coarsening_factor) {
     //if exact these are the number of partitions
-    int64_t num_partitions = g.size()/coarsening_factor;
-    //Otherwise, go for the ceil
+    int64_t num_partitions = p.vertex2partition.size()/coarsening_factor;
+
+    //Otherwise, add an extra partition
     if ( num_partitions*coarsening_factor != p.num_partitions ) {
         num_partitions = static_cast<int64_t>( std::ceil( static_cast<double>(g.size())/coarsening_factor));
     }
 
-    PartitionType p_new = p;
-
-    CSRMat<> g_p = p.make_partition_graph(g);
+    CSRMat<> g_super = p.make_partition_graph();
 
     std::vector<std::function<double(int)>> cons;
-    cons.push_back([&g_p](int id) { return g_p.node_weight(id); });
+    cons.push_back([&g_super](int id) { return g_super.node_weight(id); });
 
-    std::vector<int64_t> partition = metis_part(g_p, num_partitions, cons, 1.02);
+    std::vector<int64_t> coarse_partition = metis_part(g_super, num_partitions, cons, 1.02);
 
-    //make a super partition and assign p_new based on the super partition
-    PartitionType p_super = PartitionType(num_partitions, g, std::move(partition));
-
-
-    p_new.num_partitions = p_super.num_partitions;
-    for ( auto& v_p : p_new.vertex2partition ) {
-        v_p.second = p_super.vertex2partition[v_p.second];
-    }
-
-    return p_new;
+    return PartitionType(num_partitions,
+                         g, p,
+                         coarse_partition);
 }
 
 void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) {
@@ -104,19 +96,39 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
     }
 
     //Nothing to be done
-    if ( is_balanced(g,p) ) {
-        return;
+    //if ( p.is_balanced(g,p) ) {
+    //    return;
+    //}
+
+    PartitionType p_coarse = coarsen(g, p, coarsening_factor);
+
+/*
+    //save copy of old vertex placements to track movement
+    PartitionType p_coarse_old = p_coarse;
+    refine_strict(g, p_coarse, 2);
+
+    std::unordered_set<int> moved_vertices;
+    for ( auto& v_p : p_coarse.vertex2partition ) {
+        if ( v_p.second != p_coarse_old.vertex2partition.at(v_p.first) ) {
+            moved_vertices.insert(v_p.first);
+            //moved vertices are temporarily not assinged to any partition
+            p[v_p.first] = -1;
+        }
     }
 
-    PartitionType p_prime = coarsen(g, p, coarsening_factor);
-//    PartitionType p_new = refine_strict(g, p_prime, 2);
+    //make sub partitioned subgraphs
+    std::vector<PartitionType> sub_partitions(p_coarse.num_partitions);
+    {
+        std::vector<std::unordered_set<int64_t>> partitions_on_coarse_partition(p_coarse.num_partitions);
+        for ( auto& v_p : p_coarse.vertex2partition ) {
+            if ( p[v_p.first] != -1 ) {
+                int64_t fine_partition = p[v_p.first];
+                sub_partitions.vertex2partition[v_p.first] = fine_partition;
+                partitions_on_coarse_partition[v_p.second].insert(fine_partition);
+            }
+        }
 
-    //find tiles that have migrated, and remove them from p
+        }*/
 
-    //greedily add migrated tiles to new submeshes
-/*    for ( CSRMat<>& sm : prime_submeshes ) {
-
-      }*/
-
-    //use Fid
+    
 }

@@ -48,7 +48,7 @@ int StealQ::steal_one() {
     //update gains for elements on high partition side
     for ( int neigh : g.get_neighbors(elt) ) {
         if ( p.vertex2partition.count(neigh) ) {
-            if ( p.vertex2partition.count(neigh) && (p.vertex2partition.at(neigh) == high_partition) ) {
+            if ( p.vertex2partition.at(neigh) == high_partition ) {
                 std::pair<int,int> edge_name{ std::min(elt, neigh), std::max(elt,neigh) };
                 element_gains[neigh] += 2 * g.edge_weight(edge_name);
             }

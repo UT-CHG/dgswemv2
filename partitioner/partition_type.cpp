@@ -1,18 +1,64 @@
 #include "partition_type.hpp"
 
-PartitionType::PartitionType(int64_t num_partitions, const CSRMat<>& g, const std::vector<int64_t>& partition) : num_partitions(num_partitions) {
-    for ( uint indx = 0; indx < g.size(); ++indx ) {
-        vertex2partition.insert(std::make_pair(g.node_ids().at(indx), partition[indx]));
+PartitionType::PartitionType(int64_t num_partitions,
+                             const CSRMat<>& g,
+                             const std::vector<int64_t>& partition)
+    : num_partitions(num_partitions), g_ref(g), ideal_weights(num_partitions,1)
+{
+    assert( num_partitions > 0 );
+    assert( g.size() == partition.size() );
+
+    for ( uint id = 0; id < g.size(); ++id ) {
+        vertex2partition.insert( {g.node_ids()[id], partition[id]} );
     }
 }
 
-CSRMat<> PartitionType::make_partition_graph(const CSRMat<>& g) {
+PartitionType::PartitionType(int64_t num_partitions,
+                             const CSRMat<>& g,
+                             const std::vector<int64_t>& partition,
+                             const std::vector<double>& ideal_weights_)
+    : PartitionType(num_partitions,g,partition)
+{
+    ideal_weights = ideal_weights_;
+}
+
+PartitionType::PartitionType(int64_t num_partitions,
+                             const CSRMat<>& g,
+                             const std::vector<int>& node_ids,
+                             const std::vector<int64_t>& partition,
+                             const std::vector<double>& ideal_weights)
+    : num_partitions(num_partitions), g_ref(g), ideal_weights(ideal_weights) {
+
+    assert( num_partitions > 0 );
+    assert( node_ids.size() == partition.size() );
+    assert( ideal_weights.size() == (uint)num_partitions );
+
+    for ( uint indx = 0; indx < node_ids.size(); ++indx ) {
+        vertex2partition.insert(std::make_pair(node_ids[indx], partition[indx]));
+    }
+}
+
+PartitionType::PartitionType(int64_t num_partitions,
+                             const CSRMat<>& g,
+                             const PartitionType& p,
+                             const std::vector<int64_t>& coarse_partition)
+    : num_partitions(num_partitions), g_ref(g), vertex2partition(p.vertex2partition), ideal_weights(num_partitions,0) {
+    for ( auto& v_p : vertex2partition ) {
+        v_p.second = coarse_partition.at(v_p.second);
+    }
+
+    for ( uint fine_partition = 0; fine_partition < p.num_partitions; ++fine_partition ) {
+        ideal_weights[ coarse_partition[fine_partition] ] += p.ideal_weights.at(fine_partition);
+    }
+}
+
+CSRMat<> PartitionType::make_partition_graph() const {
     std::unordered_map<int,double> super_nodes;
     std::unordered_map<std::pair<int,int>, double> super_edges;
 
-    for ( auto& n_w : g.get_node_wghts_map() ) {
+    for ( auto& n_w : g_ref.get_node_wghts_map() ) {
         if ( vertex2partition.count(n_w.first) ) {
-            int partition = vertex2partition[n_w.first];
+            int partition = vertex2partition.at(n_w.first);
             if ( super_nodes.count(partition) ) {
                 super_nodes[partition] += n_w.second;
             } else {
@@ -21,7 +67,7 @@ CSRMat<> PartitionType::make_partition_graph(const CSRMat<>& g) {
         }
     }
 
-    for ( auto& e_w : g.get_edge_wgts_map() ) {
+    for ( auto& e_w : g_ref.get_edge_wgts_map() ) {
         if ( vertex2partition.count(e_w.first.first) &&
              vertex2partition.count(e_w.first.second) ) {
             std::pair<int,int> super_edge_name{ std::min( vertex2partition.at(e_w.first.first),
@@ -37,4 +83,34 @@ CSRMat<> PartitionType::make_partition_graph(const CSRMat<>& g) {
     }
 
     return CSRMat<>(super_nodes, super_edges);
+}
+
+bool is_balanced() {
+    return true;
+}
+
+void PartitionType::add_vertex(int ID) {
+    assert( !vertex2partition.count(ID) );
+    int64_t partition{0};
+
+    if ( num_partitions > 1 ) {
+        std::vector<double> gain(num_partitions,0);
+
+        for ( int neigh : g_ref.get_neighbors(ID) ) {
+            if ( vertex2partition.count(neigh) ) {
+                std::pair<int,int> edge_name{ std::min(ID, neigh), std::max(ID,neigh) };
+                gain[vertex2partition.at(neigh)] += g_ref.edge_weight(edge_name);
+            }
+        }
+
+        double max_gain=gain[0];
+        for ( uint i = 1; i < partition; ++i ) {
+            if ( gain[i] > max_gain ) {
+                max_gain = gain[i];
+                partition = i;
+            }
+        }
+    }
+
+    vertex2partition.insert({ID,partition});
 }

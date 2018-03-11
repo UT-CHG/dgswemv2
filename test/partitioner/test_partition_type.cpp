@@ -7,7 +7,7 @@ int main() {
      *
      * 0--1--2--3
      * |  |  |  |
-     * 5--6--7--8
+     * 4--5--6--7
      */
 
     std::unordered_map<int,double> nw;
@@ -15,7 +15,7 @@ int main() {
 
     for ( uint i = 0; i < 8; ++i ) {
         nw.insert({i,1.});
-        if ( i < 7 ) {
+        if ( i < 7 && i != 3) {
             std::pair<int,int> edge_name{i,i+1};
             ew.insert({edge_name,1});
         }
@@ -50,7 +50,7 @@ int main() {
     }
 
     //check that make_partition_graph is working properly
-    CSRMat<> meta_g = p.make_partition_graph(g);
+    CSRMat<> meta_g = p.make_partition_graph();
     if ( !meta_g.get_node_wghts_map().count(0) || !meta_g.get_node_wghts_map().count(1) ) {
         std::cerr << "Can't find all of the super meshes\n";
         error_found = true;
