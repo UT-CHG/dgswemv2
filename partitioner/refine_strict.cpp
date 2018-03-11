@@ -66,7 +66,6 @@ void manually_refine3() {
 
 }
 
-
 */
 PartitionType coarsen(const CSRMat<>& g, const PartitionType& p, uint coarsening_factor) {
     //if exact these are the number of partitions
@@ -100,7 +99,6 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
         return;
     }
 
-
     //Take care of base cases
     if ( p.num_partitions == 1 ) {
         return;
@@ -114,34 +112,96 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
 
 
     PartitionType p_coarse = coarsen(g, p, coarsening_factor);
-
-
-    //save copy of old vertex placements to track movement
-    PartitionType p_coarse_old = p_coarse;
-    refine_strict(g, p_coarse, 2);
-/*
     std::unordered_set<int> moved_vertices;
-    for ( auto& v_p : p_coarse.vertex2partition ) {
-        if ( v_p.second != p_coarse_old.vertex2partition.at(v_p.first) ) {
-            moved_vertices.insert(v_p.first);
-            //moved vertices are temporarily not assinged to any partition
-            p[v_p.first] = -1;
+
+
+    { //save copy of old vertex placements to track movement
+        PartitionType p_coarse_old = p_coarse;
+        refine_strict(g, p_coarse, 2);
+
+        for ( auto& v_p : p_coarse.vertex2partition ) {
+            if ( v_p.second != p_coarse_old.vertex2partition.at(v_p.first) ) {
+                moved_vertices.insert(v_p.first);
+                //moved vertices are temporarily not assinged to any partition
+                p.vertex2partition[v_p.first] = -1;
+            }
         }
     }
 
-    //make sub partitioned subgraphs
-    std::vector<PartitionType> sub_partitions(p_coarse.num_partitions);
-    {
-        std::vector<std::unordered_set<int64_t>> partitions_on_coarse_partition(p_coarse.num_partitions);
-        for ( auto& v_p : p_coarse.vertex2partition ) {
-            if ( p[v_p.first] != -1 ) {
-                int64_t fine_partition = p[v_p.first];
-                sub_partitions.vertex2partition[v_p.first] = fine_partition;
-                partitions_on_coarse_partition[v_p.second].insert(fine_partition);
+    { //make sub partitioned subgraphs
+        std::vector<std::pair<int64_t,int64_t>> glo2loc(p.num_partitions,std::make_pair(-1,-1));
+        std::unordered_map<std::pair<int64_t,int64_t>, int64_t> loc2glo;
+        std::vector<std::size_t> local_partition_counter(p_coarse.num_partitions,0);
+
+        for ( auto& v_p : p.vertex2partition ) {
+            if ( v_p.second != -1 ) { //hasn't been moved
+                if ( glo2loc[v_p.second].first == -1 ) { //hasn't been assigned yet
+                    int64_t coarse_partition = p_coarse.vertex2partition[v_p.first];
+                    int64_t local_partition = local_partition_counter[coarse_partition]++;
+
+                    glo2loc[v_p.second].first = coarse_partition;
+                    glo2loc[v_p.second].second = local_partition;
+
+                    std::pair<int64_t,int64_t> local_name{coarse_partition, local_partition};
+                    loc2glo[local_name] = v_p.second;
+                }
             }
         }
 
-        }*/
+        //build the local sub_partitions
+        std::vector<PartitionType> sub_partitions;
+        {
+            sub_partitions.reserve(p_coarse.num_partitions);
 
-    
+            std::vector<std::vector<int>> node_ids(p_coarse.num_partitions);
+            std::vector<std::vector<int64_t>> partition(p_coarse.num_partitions);
+            for ( auto& v_p : p.vertex2partition ) {
+                std::pair<int64_t,int64_t> local_name = glo2loc[v_p.second];
+                node_ids[local_name.first].push_back(v_p.second);
+                partition[local_name.first].push_back(local_name.second);
+            }
+
+            for ( uint coarse_id = 0; coarse_id < p_coarse.num_partitions; ++coarse_id ) {
+                std::vector<double> ideal_weights(local_partition_counter[coarse_id]);
+
+                for ( uint i = 0; i < local_partition_counter[coarse_id]; ++i ) {
+                    std::pair<int64_t,int64_t> local_name{ coarse_id, i };
+                    ideal_weights[i] = p.ideal_weights[loc2glo[local_name]];
+                }
+
+                sub_partitions.emplace_back( local_partition_counter[coarse_id],
+                                             g,
+                                             node_ids[coarse_id],
+                                             partition[coarse_id],
+                                             ideal_weights);
+            }
+        }
+
+        // add in moved vertices
+        for ( int ID : moved_vertices ) {
+            sub_partitions[ p_coarse.vertex2partition.at(ID) ].add_vertex(ID);
+        }
+
+        // refine local partitions
+        for ( auto& part : sub_partitions ) {
+            if ( part.num_partitions > 3 ) {
+                std::cout << "Warning subpartition has more than 3 partitions. This will cause bad performance.\n"
+                          << "     Consider lowering the coarsening factor to keep number of partitions in local\n"
+                          << "     partitions low.\n";
+            }
+
+            refine_strict(g, part, 2);
+            assert( part.is_balanced() );
+        }
+
+        //update big partition
+        for ( uint coarse_id = 0; coarse_id < p_coarse.num_partitions; ++coarse_id ) {
+            for ( auto& v_p : sub_partitions[coarse_id].vertex2partition ) {
+                std::pair<int64_t,int64_t> local_name {coarse_id, v_p.second};
+                p.vertex2partition[v_p.first] = loc2glo.at(local_name);
+            }
+        }
+    }
+
+    assert( p.is_balanced() );
 }
