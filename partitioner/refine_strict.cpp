@@ -84,6 +84,12 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
                                "Coarsening factor needs to be greater than 1\n");
     }
 
+    //Nothing to be done
+    if ( p.is_balanced() ) {
+        return;
+    }
+
+
     //Take care of base cases
     if ( p.num_partitions == 1 ) {
         return;
@@ -95,10 +101,6 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
         return;*/
     }
 
-    //Nothing to be done
-    //if ( p.is_balanced(g,p) ) {
-    //    return;
-    //}
 
     PartitionType p_coarse = coarsen(g, p, coarsening_factor);
 

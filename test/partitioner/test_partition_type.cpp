@@ -78,5 +78,40 @@ int main() {
         }
     }
 
+    { // test is_balanced
+        std::vector<std::vector<int>> vrtxs;
+        std::vector<std::vector<int64_t>> parts;
+        std::vector<std::vector<double>> ideal_weights;
+        std::vector<bool> true_val;
+
+        vrtxs.push_back({0,2,4,5,6});
+        parts.push_back({0,1,0,0,1});
+        ideal_weights.push_back({1,1});
+        true_val.push_back(false);
+
+        vrtxs.push_back({0,2,4,5,6});
+        parts.push_back({0,1,0,0,1});
+        ideal_weights.push_back({3,2});
+        true_val.push_back(true);
+
+        vrtxs.push_back({0,2,4,5,6});
+        parts.push_back({0,1,0,0,1});
+        ideal_weights.push_back({2,3});
+        true_val.push_back(false);
+
+        vrtxs.push_back({0,1,2,3,4,5,6,7});
+        parts.push_back({0,0,1,1,0,0,1,1});
+        ideal_weights.push_back({1,1});
+        true_val.push_back(true);
+
+        for ( uint case_=0; case_ < vrtxs.size(); ++case_ ) {
+            PartitionType p(2,g,vrtxs[case_],parts[case_],ideal_weights[case_]);
+            if ( p.is_balanced() != true_val[case_] ) {
+                std::cerr << "Error in Partition::is_balanced() for case " << case_ << '\n';
+                error_found = true;
+            }
+        }
+    }
+
     return error_found;
 }

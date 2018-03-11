@@ -1,4 +1,5 @@
 #include "partition_type.hpp"
+#include "utilities/almost_equal.hpp"
 
 PartitionType::PartitionType(int64_t num_partitions,
                              const CSRMat<>& g,
@@ -85,7 +86,23 @@ CSRMat<> PartitionType::make_partition_graph() const {
     return CSRMat<>(super_nodes, super_edges);
 }
 
-bool is_balanced() {
+bool PartitionType::is_balanced() {
+    std::vector<double> partition_weights(num_partitions, 0);
+
+    for ( auto& v_p : vertex2partition ) {
+        partition_weights[v_p.second] += g_ref.node_weight(v_p.first);
+    }
+
+    for ( uint part_id = 0; part_id < num_partitions; ++part_id ) {
+        partition_weights[part_id] /= ideal_weights[part_id];
+    }
+
+    for ( uint part_id = 1; part_id < num_partitions; ++part_id ) {
+        if ( !Utilities::almost_equal( partition_weights[part_id], partition_weights[0]) ) {
+            return false;
+        }
+    }
+
     return true;
 }
 

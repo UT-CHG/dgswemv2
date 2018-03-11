@@ -36,7 +36,6 @@ struct PartitionType {
 
     CSRMat<> make_partition_graph() const;
 
-    //needs test//implementation
     bool is_balanced();
 
     void add_vertex(int ID);
