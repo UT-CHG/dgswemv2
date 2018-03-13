@@ -79,18 +79,25 @@ void manually_refine3() {
 
 */
 PartitionType coarsen(const CSRMat<>& g, const PartitionType& p, uint coarsening_factor) {
-    //if exact these are the number of partitions
+  //easy case
+  if ( coarsening_factor == 1 ) {
+    return p;
+  }
+
+  //if exact these are the number of partitions
     int64_t num_partitions = p.vertex2partition.size()/coarsening_factor;
 
     //Otherwise, add an extra partition
     if ( num_partitions*coarsening_factor != p.num_partitions ) {
         num_partitions = static_cast<int64_t>( std::ceil( static_cast<double>(p.num_partitions)/coarsening_factor));
     }
+    assert( num_partitions <= g.size() );
 
     std::cout << spacing() << "num_partitions: " << num_partitions << '\n';
 
     CSRMat<> g_super = p.make_partition_graph();
-
+    std::cout << spacing() << "g_super.size() = " << g_super.size() << '\n';
+    
     std::vector<std::function<double(int)>> cons;
     cons.push_back([&g_super](int id) { return g_super.node_weight(id); });
 
@@ -99,6 +106,7 @@ PartitionType coarsen(const CSRMat<>& g, const PartitionType& p, uint coarsening
     return PartitionType(num_partitions,
                          g,
                          p,
+                         g_super.node_ids(),
                          coarse_partition);
 }
 
@@ -130,7 +138,8 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
     }
 
 
-    std::cout << spacing() << "Coarsening partition\n";
+    std::cout << spacing() << "Coarsening partition..." << coarsening_factor <<
+ "\n";
     PartitionType p_coarse = coarsen(g, p, coarsening_factor);
     //std::cout << "p_coarse summary:\n" << p_coarse;
     std::unordered_set<int> moved_vertices;
@@ -175,7 +184,7 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
             }
         }
 
-        std::cout << spacing() << "glo2loc:\n";
+        /*std::cout << spacing() << "glo2loc:\n";
         for ( uint i = 0; i < glo2loc.size(); ++i ) {
             std::cout << spacing() << "  " << i << " : " << glo2loc[i].first << ", " << glo2loc[i].second << '\n';
         }
@@ -183,7 +192,7 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
         std::cout << spacing() << "loc2glo:\n";
         for ( auto& l_p : loc2glo ) {
             std::cout << spacing() << "  " << l_p.first.first << ", " << l_p.first.second << " : " << l_p.second << '\n';
-        }
+            }*/
 
         //build the local sub_partitions
         std::vector<PartitionType> sub_partitions;
@@ -260,18 +269,23 @@ void refine_strict_tracked(const CSRMat<>& g, std::vector<PartitionType>& ps, co
 
     { //save copy of old vertex placements to track movement
         PartitionType p_coarse_old = ps[recursion_level + 1];
-        std::cout << spacing() << "Entering refine strict...\n";
-        spaces += 2;
         if ( recursion_level < coarsening_factors.size() -1 ) {
-            refine_strict_tracked(g, ps, coarsening_factors);
+          std::cout << spacing() << "Entering refine strict tracked...\n";
+          spaces += 2;
+          refine_strict_tracked(g, ps, coarsening_factors);
+          spaces -= 2;
+          std::cout << spacing() << "Leaving refine strict tracked...\n";
+
         } else {
-            refine_strict(g, ps[recursion_level + 1], 2);
+          std::cout << spacing() << "Entering refine strict...\n";
+          spaces += 2;
+          refine_strict(g, ps[recursion_level + 1], 2);
+          spaces -= 2;
+          std::cout << spacing() << "Leaving refine strict...\n";
         }
-        spaces -= 2;
-        std::cout << spacing() << "Leaving refine strict...\n";
 
         for ( auto& v_p : ps[recursion_level + 1].vertex2partition ) {
-            if ( v_p.second != ps[recursion_level+1].vertex2partition.at(v_p.first) ) {
+            if ( v_p.second != p_coarse_old.vertex2partition.at(v_p.first) ) {
                 moved_vertices.insert(v_p.first);
                 //moved vertices are temporarily not assinged to any partition
                 ps[recursion_level].vertex2partition.erase(v_p.first);

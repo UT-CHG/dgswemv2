@@ -238,6 +238,13 @@ std::vector<int64_t> metis_part(const CSRMat<NodeW>& mat,
         return std::vector<int64_t>(nvtxs, 0);
     }
 
+    //second, easy case
+    if (nvtxs == nparts) {
+      std::vector<int64_t> part(nvtxs);
+      std::iota(part.begin(), part.end(),0);
+      return part;
+    }
+
     // set up metis parameters
     int64_t ncon = cons.size(), objval;
     std::vector<int64_t> options(METIS_NOPTIONS), part(nvtxs);

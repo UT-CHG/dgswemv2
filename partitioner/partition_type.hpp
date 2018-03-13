@@ -32,6 +32,7 @@ struct PartitionType {
     PartitionType(int64_t num_partitions,
                   const CSRMat<>& g,
                   const PartitionType& p,
+                  const std::vector<int>& coarse_nodes,
                   const std::vector<int64_t>& coarse_partition);
 
     CSRMat<> make_partition_graph() const;

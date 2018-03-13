@@ -71,14 +71,18 @@ std::vector<std::vector<MeshMetaData>> partition2(const MeshMetaData& mesh_meta,
     std::cout << "submeshes_per_rank = " << submeshes_per_rank << '\n';
     assert( submeshes_per_rank * num_ranks == num_partitions );
 
-    std::vector<uint> coarsening_factors{submeshes_per_rank * ranks_per_numa_domain, ranks_per_numa_domain, numa_domains_per_node};
-    std::cout << "  coarsening_factors = { " << coarsening_factors[0] << ", " << coarsening_factors[1] << ", " << coarsening_factors[2] << "}" << std::endl;
+    std::vector<uint> coarsening_factors{ranks_per_numa_domain, numa_domains_per_node};
+    std::cout << "  coarsening_factors = { " << coarsening_factors[0] << ", " << coarsening_factors[1] << "}" << std::endl;
     std::cout << "submesh_partitions.size() = " << submesh_partitions.size() << '\n';
 
     refine_strict_tracked(submesh_graph, submesh_partitions, coarsening_factors);
 
     std::vector<std::vector<MeshMetaData>> submeshes(num_ranks);
 
+    for ( auto& sm : submesh_partitions ) {
+      std::cout << sm << "\n\n" << std::endl;
+    }
+    std::cout << "submesh_partitions.size() = " << submesh_partitions.size() << '\n';
     std::unordered_map<int64_t,int64_t> rank2local_rank;
     std::unordered_map<int64_t,int64_t> numa2local_numa;
     std::unordered_map<int64_t,int64_t> part2local_part;

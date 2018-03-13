@@ -42,14 +42,20 @@ PartitionType::PartitionType(int64_t num_partitions,
 PartitionType::PartitionType(int64_t num_partitions,
                              const CSRMat<>& g,
                              const PartitionType& p,
+                             const std::vector<int>& coarse_nodes,
                              const std::vector<int64_t>& coarse_partition)
     : num_partitions(num_partitions), g_ref(g), vertex2partition(p.vertex2partition), ideal_weights(num_partitions,0) {
+    std::unordered_map<int,int64_t> coarse_partition_id;
+    for ( uint i =0; i < coarse_nodes.size(); ++i ) {
+      coarse_partition_id.insert( {coarse_nodes[i], coarse_partition[i]} );
+    }
+
     for ( auto& v_p : vertex2partition ) {
-        v_p.second = coarse_partition.at(v_p.second);
+        v_p.second = coarse_partition_id.at(v_p.second);
     }
 
     for ( uint fine_partition = 0; fine_partition < p.num_partitions; ++fine_partition ) {
-        ideal_weights[ coarse_partition[fine_partition] ] += p.ideal_weights.at(fine_partition);
+      ideal_weights[ coarse_partition_id.at(fine_partition) ] += p.ideal_weights.at(fine_partition);
     }
 }
 
