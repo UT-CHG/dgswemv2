@@ -39,5 +39,7 @@ struct PartitionType {
     bool is_balanced();
 
     void add_vertex(int ID);
+
+    friend std::ostream& operator<<(std::ostream& s, const PartitionType& p);
 };
 #endif

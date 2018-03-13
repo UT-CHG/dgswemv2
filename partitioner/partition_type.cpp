@@ -87,6 +87,9 @@ CSRMat<> PartitionType::make_partition_graph() const {
 }
 
 bool PartitionType::is_balanced() {
+    //easy case
+    if ( num_partitions == 1 ) { return true; }
+
     std::vector<double> partition_weights(num_partitions, 0);
 
     for ( auto& v_p : vertex2partition ) {
@@ -130,4 +133,18 @@ void PartitionType::add_vertex(int ID) {
     }
 
     vertex2partition.insert({ID,partition});
+}
+
+std::ostream& operator<<(std::ostream& s, const PartitionType& p) {
+    s << "num_partitions: " << p.num_partitions << '\n'
+      << "vertex2partition: " << '\n';
+    for ( auto& v_p : p.vertex2partition ) {
+        s << "  " << v_p.first << " : " << v_p.second << '\n';
+    }
+
+    s << "ideal_weights: " << '\n';
+    for ( uint i = 0; i < p.num_partitions; ++i ) {
+        s << "  " << i << " : " << p.ideal_weights[i] << '\n';
+    }
+    return s;
 }

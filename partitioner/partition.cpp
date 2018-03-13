@@ -2,15 +2,13 @@
 #include "preprocessor/mesh_metadata.hpp"
 
 #include "csrmat.hpp"
-#include "numa_configuration.hpp"
 
 #include <vector>
 
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
-                                                 const int ranks_per_locality,
-                                                 const NumaConfiguration& numa_config) {
+                                                 const int ranks_per_locality) {
     // To do: add an additional layer of support for assigning submeshes to NUMA
     // domains
     // const int num_localities = num_nodes *

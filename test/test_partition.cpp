@@ -1,4 +1,3 @@
-#include "../partitioner/numa_configuration.hpp"
 
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
@@ -8,8 +7,7 @@
 std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const int num_partitions,
                                                  const int num_nodes,
-                                                 const int ranks_per_locality,
-                                                 const NumaConfiguration& numa_config);
+                                                 const int ranks_per_locality);
 
 bool check_partition(const MeshMetaData& mesh, std::vector<std::vector<MeshMetaData>>& submeshes) {
     bool error_found{false};
@@ -66,26 +64,24 @@ int main(int argc, char** argv) {
 
     bool error_found{false};
 
-    NumaConfiguration numa_config("default");
-
     AdcircFormat mesh1(argv[1]);
     MeshMetaData meshA(mesh1);
 
     std::cout << "Checking for 1 locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 1, 1, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 1, 1);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for 1 locality\n\n";
     std::cout << "Checking for multiple localities with one rank per locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 2, 1, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 4, 2, 1);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for multiple localities\n";
     std::cout << "Checking for multiple localities with multiple ranks per locality...\n";
     {
-        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 8, 2, 2, numa_config);
+        std::vector<std::vector<MeshMetaData>> submeshes = partition(meshA, 8, 2, 2);
         error_found = error_found || check_partition(meshA, submeshes);
     }
     std::cout << "...done checking for multiple localities\n";

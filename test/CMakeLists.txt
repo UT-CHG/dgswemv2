@@ -313,3 +313,18 @@ add_test(
   Unit_partitioner_coarsen
   test_coarsen_exe
 )
+
+add_executable(
+  test_refine_strict_exe
+  ${PROJECT_SOURCE_DIR}/test/partitioner/test_refine_strict.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/refine_strict.cpp
+  ${PROJECT_SOURCE_DIR}/partitioner/partition_type.cpp
+)
+
+target_include_directories(test_refine_strict_exe PRIVATE ${METIS_INCLUDE_DIRS})
+target_link_libraries(test_refine_strict_exe ${METIS_LIBRARIES})
+
+add_test(
+  Unit_partitioner_refine_strict
+  test_refine_strict_exe
+)
