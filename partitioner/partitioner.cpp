@@ -28,10 +28,9 @@ int main(int argc, char** argv) {
 
     if (argc < 4 || argc > 6) {
         std::cout << "Usage:\n";
-        std::cout << "  path/to/partitioner <input_file_name> <number of "
-                     "partitions>\n";
-        std::cout << "                      <number of nodes> <ranks per locality>(optional) <NUMA "
-                     "configuration>(optional)\n";
+        std::cout << "  path/to/partitioner <input_file_name> <number of partitions>\n";
+        std::cout << "                      <number of nodes> <ranks per locality>(default: 1)\n"
+                  << "                      <localities per node>(default: 1)\n";
 
         return 0;
     }

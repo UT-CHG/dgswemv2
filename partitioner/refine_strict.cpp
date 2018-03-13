@@ -5,6 +5,7 @@
 #include "utilities/almost_equal.hpp"
 
 #include <deque>
+#include <memory>
 
 uint spaces = 0;
 
@@ -86,7 +87,7 @@ PartitionType coarsen(const CSRMat<>& g, const PartitionType& p, uint coarsening
         num_partitions = static_cast<int64_t>( std::ceil( static_cast<double>(p.num_partitions)/coarsening_factor));
     }
 
-    std::cout << "num_partitions: " << num_partitions << '\n';
+    std::cout << spacing() << "num_partitions: " << num_partitions << '\n';
 
     CSRMat<> g_super = p.make_partition_graph();
 
@@ -102,6 +103,8 @@ PartitionType coarsen(const CSRMat<>& g, const PartitionType& p, uint coarsening
 }
 
 void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) {
+  assert( std::addressof(g) == std::addressof(p.g_ref) );
+
     if ( coarsening_factor <= 1 ) {
         throw std::logic_error("Error in refine_strict;"
                                "Coarsening factor needs to be greater than 1\n");
@@ -129,7 +132,7 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
 
     std::cout << spacing() << "Coarsening partition\n";
     PartitionType p_coarse = coarsen(g, p, coarsening_factor);
-    std::cout << "p_coarse summary:\n" << p_coarse;
+    //std::cout << "p_coarse summary:\n" << p_coarse;
     std::unordered_set<int> moved_vertices;
 
 
@@ -215,9 +218,9 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
             sub_partitions[ p_coarse.vertex2partition.at(ID) ].add_vertex(ID);
         }
 
-        for ( uint sp = 0; sp < sub_partitions.size(); ++sp ) {
-            std::cout << "Subpartition: " << sp << '\n' << sub_partitions[sp];
-        }
+        /*for ( uint sp = 0; sp < sub_partitions.size(); ++sp ) {
+          std::cout << spacing()<< "Subpartition: " << sp << '\n' << sub_partitions[sp];
+          }*/
 
         // refine local partitions
         for ( auto& part : sub_partitions ) {
@@ -244,35 +247,34 @@ void refine_strict(const CSRMat<>& g, PartitionType& p, uint coarsening_factor) 
 }
 
 void refine_strict_tracked(const CSRMat<>& g, std::vector<PartitionType>& ps, const std::vector<uint>& coarsening_factors) {
-    uint recursion_level = ps.size() - 1;
+    int recursion_level = ps.size() - 1;
+    std::cout << spacing() << "recursion_level: " << recursion_level << std::endl;
 
-    PartitionType& curr_p = ps.back();
-
+    std::cout << spacing() << "current partition is_balanced() = " << std::boolalpha << ps[recursion_level].is_balanced() << '\n';
     std::cout << spacing() << "Coarsening partition\n";
-    ps.emplace_back( coarsen(g, curr_p, coarsening_factors[recursion_level]) );
-    PartitionType& p_coarse = ps.back();
+    ps.emplace_back( coarsen(g, ps[recursion_level], coarsening_factors[recursion_level]) );
 
-    std::cout << "p_coarse summary:\n" << p_coarse;
+    //std::cout << "p_coarse summary:\n" << p_coarse;
     std::unordered_set<int> moved_vertices;
 
 
     { //save copy of old vertex placements to track movement
-        PartitionType p_coarse_old = p_coarse;
+        PartitionType p_coarse_old = ps[recursion_level + 1];
         std::cout << spacing() << "Entering refine strict...\n";
         spaces += 2;
         if ( recursion_level < coarsening_factors.size() -1 ) {
             refine_strict_tracked(g, ps, coarsening_factors);
         } else {
-            refine_strict(g, p_coarse, 2);
+            refine_strict(g, ps[recursion_level + 1], 2);
         }
         spaces -= 2;
         std::cout << spacing() << "Leaving refine strict...\n";
 
-        for ( auto& v_p : p_coarse.vertex2partition ) {
-            if ( v_p.second != p_coarse_old.vertex2partition.at(v_p.first) ) {
+        for ( auto& v_p : ps[recursion_level + 1].vertex2partition ) {
+            if ( v_p.second != ps[recursion_level+1].vertex2partition.at(v_p.first) ) {
                 moved_vertices.insert(v_p.first);
                 //moved vertices are temporarily not assinged to any partition
-                curr_p.vertex2partition.erase(v_p.first);
+                ps[recursion_level].vertex2partition.erase(v_p.first);
             }
         }
 
@@ -284,13 +286,13 @@ void refine_strict_tracked(const CSRMat<>& g, std::vector<PartitionType>& ps, co
     }
 
     { //make sub partitioned subgraphs
-        std::vector<std::pair<int64_t,int64_t>> glo2loc(curr_p.num_partitions,std::make_pair(-1,-1));
+        std::vector<std::pair<int64_t,int64_t>> glo2loc(ps[recursion_level].num_partitions,std::make_pair(-1,-1));
         std::unordered_map<std::pair<int64_t,int64_t>, int64_t> loc2glo;
-        std::vector<std::size_t> local_partition_counter(p_coarse.num_partitions,0);
+        std::vector<std::size_t> local_partition_counter(ps[recursion_level + 1].num_partitions,0);
 
-        for ( auto& v_p : curr_p.vertex2partition ) {
+        for ( auto& v_p : ps[recursion_level].vertex2partition ) {
             if ( glo2loc[v_p.second].first == -1 ) { //hasn't been assigned yet
-                int64_t coarse_partition = p_coarse.vertex2partition[v_p.first];
+                int64_t coarse_partition = ps[recursion_level + 1].vertex2partition[v_p.first];
                 int64_t local_partition = local_partition_counter[coarse_partition]++;
                 std::pair<int64_t,int64_t> local_name{coarse_partition, local_partition};
 
@@ -312,21 +314,21 @@ void refine_strict_tracked(const CSRMat<>& g, std::vector<PartitionType>& ps, co
         //build the local sub_partitions
         std::vector<PartitionType> sub_partitions;
         {
-            std::vector<std::vector<int>> node_ids(p_coarse.num_partitions);
-            std::vector<std::vector<int64_t>> partition(p_coarse.num_partitions);
-            for ( auto& v_p : curr_p.vertex2partition ) {
+            std::vector<std::vector<int>> node_ids(ps[recursion_level+1].num_partitions);
+            std::vector<std::vector<int64_t>> partition(ps[recursion_level+1].num_partitions);
+            for ( auto& v_p : ps[recursion_level].vertex2partition ) {
                 std::pair<int64_t,int64_t> local_name = glo2loc.at(v_p.second);
                 node_ids[local_name.first].push_back(v_p.first);
                 partition[local_name.first].push_back(local_name.second);
             }
 
-            sub_partitions.reserve(p_coarse.num_partitions);
-            for ( uint coarse_id = 0; coarse_id < p_coarse.num_partitions; ++coarse_id ) {
+            sub_partitions.reserve(ps[recursion_level+1].num_partitions);
+            for ( uint coarse_id = 0; coarse_id < ps[recursion_level+1].num_partitions; ++coarse_id ) {
                 std::vector<double> ideal_weights(local_partition_counter[coarse_id]);
 
                 for ( uint i = 0; i < local_partition_counter[coarse_id]; ++i ) {
                     std::pair<int64_t,int64_t> local_name{ coarse_id, i };
-                    ideal_weights[i] = curr_p.ideal_weights.at(loc2glo.at(local_name));
+                    ideal_weights[i] = ps[recursion_level].ideal_weights.at(loc2glo.at(local_name));
                 }
 
                 sub_partitions.emplace_back( local_partition_counter[coarse_id],
@@ -339,12 +341,12 @@ void refine_strict_tracked(const CSRMat<>& g, std::vector<PartitionType>& ps, co
 
         // add in moved vertices
         for ( int ID : moved_vertices ) {
-            sub_partitions[ p_coarse.vertex2partition.at(ID) ].add_vertex(ID);
+            sub_partitions[ ps[recursion_level+1].vertex2partition.at(ID) ].add_vertex(ID);
         }
 
-        for ( uint sp = 0; sp < sub_partitions.size(); ++sp ) {
+        /*for ( uint sp = 0; sp < sub_partitions.size(); ++sp ) {
             std::cout << "Subpartition: " << sp << '\n' << sub_partitions[sp];
-        }
+            }*/
 
         // refine local partitions
         for ( auto& part : sub_partitions ) {
@@ -353,13 +355,13 @@ void refine_strict_tracked(const CSRMat<>& g, std::vector<PartitionType>& ps, co
         }
 
         //update big partition
-        for ( uint coarse_id = 0; coarse_id < p_coarse.num_partitions; ++coarse_id ) {
+        for ( uint coarse_id = 0; coarse_id < ps[recursion_level+1].num_partitions; ++coarse_id ) {
             for ( auto& v_p : sub_partitions[coarse_id].vertex2partition ) {
                 std::pair<int64_t,int64_t> local_name {coarse_id, v_p.second};
-                curr_p.vertex2partition[v_p.first] = loc2glo.at(local_name);
+                ps[recursion_level].vertex2partition[v_p.first] = loc2glo.at(local_name);
             }
         }
     }
 
-    assert( curr_p.is_balanced() );
+    assert( ps[recursion_level].is_balanced() );
 }
