@@ -53,5 +53,5 @@ int main(int argc, char** argv) {
         std::cout << "  " << vrtx << " : " << p.vertex2partition[vrtx] << '\n';
     }
 
-    return p.is_balanced();
+    return !p.is_balanced();
 }
