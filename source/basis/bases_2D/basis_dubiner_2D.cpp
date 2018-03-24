@@ -15,7 +15,7 @@ Array2D<double> Dubiner_2D::GetPhi(const uint p, const std::vector<Point<2>>& po
     }
 
     for (uint dof = 0; dof < phi.size(); dof++) {
-        uint tri_num_indx = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
+        uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
         uint lower_tri_num = (tri_num_indx + 1) * tri_num_indx / 2;
 
         uint p = dof - lower_tri_num;
@@ -41,7 +41,7 @@ Array3D<double> Dubiner_2D::GetDPhi(const uint p, const std::vector<Point<2>>& p
     }
 
     for (uint dof = 0; dof < dphi.size(); dof++) {
-        uint tri_num_indx = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
+        uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
         uint lower_tri_num = (tri_num_indx + 1) * tri_num_indx / 2;
 
         uint p = dof - lower_tri_num;
@@ -59,7 +59,7 @@ std::pair<bool, Array2D<double>> Dubiner_2D::GetMinv(const uint p) {
     m_inv.second[0].resize((p + 1) * (p + 2) / 2);
 
     for (uint dof = 0; dof < m_inv.second[0].size(); dof++) {
-        uint tri_num_indx = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
+        uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
         uint lower_tri_num = (tri_num_indx + 1) * tri_num_indx / 2;
 
         uint p = dof - lower_tri_num;
@@ -85,12 +85,12 @@ inline void Dubiner_2D::ProjectLinearToBasis(const std::vector<double>& u_lin, s
     u[2] = (-u_lin[0] + u_lin[1]) / 2.0;
 }
 
-std::vector<double> Dubiner_2D::ComputePhi(const uint p,
-                                           const uint q,
+std::vector<double> Dubiner_2D::ComputePhi(const uint                 p,
+                                           const uint                 q,
                                            const std::vector<double>& n1,
                                            const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
-    uint n_pts = n1.size();
+    uint                n_pts = n1.size();
     std::vector<double> phi(n_pts);
 
     std::vector<double> psi_p(jacobi_polynomial(p, 0, 0, n1));
@@ -112,8 +112,8 @@ std::vector<double> Dubiner_2D::ComputePhi(const uint p,
     return phi;
 }
 
-Array2D<double> Dubiner_2D::ComputeDPhi(const uint p,
-                                        const uint q,
+Array2D<double> Dubiner_2D::ComputeDPhi(const uint                 p,
+                                        const uint                 q,
                                         const std::vector<double>& n1,
                                         const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
@@ -130,8 +130,8 @@ Array2D<double> Dubiner_2D::ComputeDPhi(const uint p,
     std::vector<double> dpsi_pq_dn2(jacobi_polynomial_derivative(q, 2 * p + 1, 0, n2));
 
     for (uint pt = 0; pt < n_pts; pt++) {
-        dphi_d[LocalCoordTri::z1]
-            .push_back((2.0 / (1.0 - n2[pt])) * dpsi_p_dn1[pt] * pow((1.0 - n2[pt]) / 2.0, (int)p) * psi_pq[pt]);
+        dphi_d[LocalCoordTri::z1].push_back((2.0 / (1.0 - n2[pt])) * dpsi_p_dn1[pt] *
+                                            pow((1.0 - n2[pt]) / 2.0, (int)p) * psi_pq[pt]);
 
         dphi_d[LocalCoordTri::z2].push_back(
             ((1 + n1[pt]) / (1.0 - n2[pt])) * dpsi_p_dn1[pt] * pow((1.0 - n2[pt]) / 2.0, (int)p) * psi_pq[pt] +

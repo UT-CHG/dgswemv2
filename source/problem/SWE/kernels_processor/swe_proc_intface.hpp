@@ -10,14 +10,14 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
     if (wd_state_in.wet || wd_state_ex.wet) {
-        const uint stage = stepper.GetStage();
-        const double dt = stepper.GetDT();
+        const uint   stage = stepper.GetStage();
+        const double dt    = stepper.GetDT();
 
-        auto& state_in = intface.data_in.state[stage];
+        auto& state_in    = intface.data_in.state[stage];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& sp_at_gp_in = intface.data_in.spherical_projection.sp_at_gp_boundary[intface.bound_id_in];
 
-        auto& state_ex = intface.data_ex.state[stage];
+        auto& state_ex    = intface.data_ex.state[stage];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
         auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
 
@@ -30,7 +30,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
         intface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
 
         // assemble numerical fluxes
-        uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+        uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
         uint gp_ex = 0;
         for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
             gp_ex = ngp - gp - 1;
@@ -70,7 +70,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
 
                 // Reflective Boundary on EX element side
                 SWE::Land land_boundary;
-                double ze_in, qx_in, qy_in;
+                double    ze_in, qx_in, qy_in;
 
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     land_boundary.GetEX(stepper,
@@ -131,7 +131,7 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
 
                 // Reflective Boundary on IN element side
                 SWE::Land land_boundary;
-                double ze_ex, qx_ex, qy_ex;
+                double    ze_ex, qx_ex, qy_ex;
 
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     land_boundary.GetEX(stepper,

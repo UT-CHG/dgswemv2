@@ -52,25 +52,25 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     for (const auto& edge : edge_dictionary) {
         // check if there are two elements associated with this edge
         if (edge.second.second.first != DEFAULT_ID) {
-            uint eltA_id = edge.second.first.first;
-            uint eltB_id = edge.second.second.first;
+            uint eltA_id  = edge.second.first.first;
+            uint eltB_id  = edge.second.second.first;
             uint faceA_id = edge.second.first.second;
             uint faceB_id = edge.second.second.second;
 
-            elements.at(eltA_id).neighbor_ID[faceA_id] = eltB_id;
+            elements.at(eltA_id).neighbor_ID[faceA_id]   = eltB_id;
             elements.at(eltA_id).boundary_type[faceA_id] = INTERNAL;
 
-            elements.at(eltB_id).neighbor_ID[faceB_id] = eltA_id;
+            elements.at(eltB_id).neighbor_ID[faceB_id]   = eltA_id;
             elements.at(eltB_id).boundary_type[faceB_id] = INTERNAL;
         } else {
             // treat boundary conditions
-            uint elt_id = edge.second.first.first;
+            uint elt_id  = edge.second.first.first;
             uint face_id = edge.second.first.second;
 
             std::array<int, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
                                      mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
 
-            elements.at(elt_id).neighbor_ID[face_id] = DEFAULT_ID;
+            elements.at(elt_id).neighbor_ID[face_id]   = DEFAULT_ID;
             elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
         }
     }

@@ -46,7 +46,7 @@ class OMPICommunicator {
 
     void InitializeCommunication();
 
-    uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
+    uint              GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     OMPIRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
 
     void SendPreprocAll(const uint timestamp) {

@@ -4,7 +4,7 @@
 namespace SWE {
 void Problem::initialize_problem_parameters(const ProblemInputType& problem_specific_input) {
     // specify forcing terms
-    SWE::Global::g = problem_specific_input.g;
+    SWE::Global::g   = problem_specific_input.g;
     SWE::Global::h_o = problem_specific_input.h_o;
 
     if (problem_specific_input.function_source.type != SWE::FunctionSourceType::None) {
@@ -13,7 +13,7 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
 
     if (problem_specific_input.bottom_friction.type != SWE::BottomFrictionType::None) {
         SWE::SourceTerms::bottom_friction = true;
-        SWE::Global::Cf = problem_specific_input.bottom_friction.coefficient;
+        SWE::Global::Cf                   = problem_specific_input.bottom_friction.coefficient;
     }
 
     if (problem_specific_input.meteo_forcing.type != SWE::MeteoForcingType::None) {

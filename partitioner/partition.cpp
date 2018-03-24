@@ -5,14 +5,14 @@
 
 #include <vector>
 
-std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
+std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData&                                 mesh_meta,
                                                  const std::unordered_map<int, std::vector<double>>& problem_weights,
-                                                 const int num_partitions,
-                                                 const int num_nodes,
-                                                 const int ranks_per_locality,
-                                                 const bool rank_balanced) {
+                                                 const int                                           num_partitions,
+                                                 const int                                           num_nodes,
+                                                 const int                                           ranks_per_locality,
+                                                 const bool                                          rank_balanced) {
 
-    std::unordered_map<int, std::vector<double>> element_weights;
+    std::unordered_map<int, std::vector<double>>    element_weights;
     std::unordered_map<std::pair<int, int>, double> edge_weights;
 
     for (const auto& elt : mesh_meta.elements) {
@@ -34,7 +34,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, 1.05);
 
     std::unordered_map<int, int64_t> elt2partition;
-    const std::vector<int>& elts_sorted = mesh_graph.node_ID();
+    const std::vector<int>&          elts_sorted = mesh_graph.node_ID();
     for (uint i = 0; i < elts_sorted.size(); ++i) {
         elt2partition.insert({elts_sorted.at(i), mesh_part.at(i)});
     }
@@ -89,22 +89,22 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
 
     std::unordered_map<int, int64_t> partition2node;
     std::unordered_map<int, int64_t> partition2rank;
-    const std::vector<int>& sbmshs_sorted = sbmsh_graph.node_ID();
+    const std::vector<int>&          sbmshs_sorted = sbmsh_graph.node_ID();
     for (uint i = 0; i < sbmshs_sorted.size(); ++i) {
         partition2node.insert({sbmshs_sorted.at(i), sbmsh_part.at(i)});
     }
 
     std::vector<std::vector<MeshMetaData>> submeshes(num_nodes * ranks_per_locality);
-    std::vector<uint> partition2local_partition(num_partitions);
+    std::vector<uint>                      partition2local_partition(num_partitions);
     {
         std::vector<uint> local_partition_counter(num_nodes * ranks_per_locality, 0);
         std::vector<uint> local_rank_counter(num_nodes, 0);
         for (auto& p_n : partition2node) {
             // Assign submeshes to ranks on a node, by cycling round robin through the meshes
-            const uint rank = local_rank_counter[p_n.second] + ranks_per_locality * p_n.second;
+            const uint rank                = local_rank_counter[p_n.second] + ranks_per_locality * p_n.second;
             local_rank_counter[p_n.second] = (local_rank_counter[p_n.second] + 1) % ranks_per_locality;
 
-            partition2rank[p_n.first] = rank;
+            partition2rank[p_n.first]            = rank;
             partition2local_partition[p_n.first] = local_partition_counter[rank]++;
         }
 
@@ -119,8 +119,8 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     {  // assemble submeshes
         for (const auto& elt : mesh_meta.elements) {
             uint partition = elt2partition.at(elt.first);
-            uint rank = partition2rank[partition];
-            uint loc_part = partition2local_partition[partition];
+            uint rank      = partition2rank[partition];
+            uint loc_part  = partition2local_partition[partition];
 
             // error here the partition in question is not actually the
             // partition you are interested in.
@@ -135,20 +135,20 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     {  // update boundaries for split edges
         for (const auto& edg : edge_weights) {
             if (elt2partition.at(edg.first.first) != elt2partition.at(edg.first.second)) {
-                uint elt_A = edg.first.first;
-                uint part_A = elt2partition.at(elt_A);
+                uint elt_A      = edg.first.first;
+                uint part_A     = elt2partition.at(elt_A);
                 uint loc_part_A = partition2local_partition[part_A];
-                uint rank_A = partition2rank[part_A];
+                uint rank_A     = partition2rank[part_A];
 
-                uint elt_B = edg.first.second;
-                uint part_B = elt2partition.at(elt_B);
+                uint elt_B      = edg.first.second;
+                uint part_B     = elt2partition.at(elt_B);
                 uint loc_part_B = partition2local_partition[part_B];
-                uint rank_B = partition2rank[part_B];
+                uint rank_B     = partition2rank[part_B];
 
                 for (uint k = 0; k < 3; ++k) {
                     if (elt_B == mesh_meta.elements.at(elt_A).neighbor_ID[k]) {
                         ElementMetaData& curr_elt = submeshes[rank_A][loc_part_A].elements.at(elt_A);
-                        curr_elt.neighbor_ID[k] = DEFAULT_ID;
+                        curr_elt.neighbor_ID[k]   = DEFAULT_ID;
                         curr_elt.boundary_type[k] = SWE::BoundaryConditions::distributed;
                     }
                 }
@@ -156,7 +156,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                 for (uint k = 0; k < 3; ++k) {
                     if (elt_A == mesh_meta.elements.at(elt_B).neighbor_ID[k]) {
                         ElementMetaData& curr_elt = submeshes[rank_B][loc_part_B].elements.at(elt_B);
-                        curr_elt.neighbor_ID[k] = DEFAULT_ID;
+                        curr_elt.neighbor_ID[k]   = DEFAULT_ID;
                         curr_elt.boundary_type[k] = SWE::BoundaryConditions::distributed;
                     }
                 }
@@ -177,7 +177,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
     }
 
     {  // compute imbalance across nodes
-        std::size_t num_constraints = submesh_weight.cbegin()->second.size();
+        std::size_t         num_constraints = submesh_weight.cbegin()->second.size();
         std::vector<double> max_load(num_constraints, 0);
         std::vector<double> avg_load(num_constraints, 0);
 

@@ -41,19 +41,19 @@ class Distributed {
                 std::vector<double>& receive_buffer,
                 std::vector<double>& send_postproc_buffer,
                 std::vector<double>& receive_postproc_buffer,
-                const uint x_at_baryctr_index,
-                const uint y_at_baryctr_index,
-                const uint wet_dry_index,
-                const uint ze_in_index,
-                const uint qx_in_index,
-                const uint qy_in_index,
-                const uint ze_ex_index,
-                const uint qx_ex_index,
-                const uint qy_ex_index,
-                const uint ze_at_baryctr_index,
-                const uint qx_at_baryctr_index,
-                const uint qy_at_baryctr_index,
-                const uint bath_at_baryctr_index)
+                const uint           x_at_baryctr_index,
+                const uint           y_at_baryctr_index,
+                const uint           wet_dry_index,
+                const uint           ze_in_index,
+                const uint           qx_in_index,
+                const uint           qy_in_index,
+                const uint           ze_ex_index,
+                const uint           qx_ex_index,
+                const uint           qy_ex_index,
+                const uint           ze_at_baryctr_index,
+                const uint           qx_at_baryctr_index,
+                const uint           qy_at_baryctr_index,
+                const uint           bath_at_baryctr_index)
         : send_preproc_buffer(send_preproc_buffer),
           receive_preproc_buffer(receive_preproc_buffer),
           send_buffer(send_buffer),
@@ -96,15 +96,15 @@ class Distributed {
         }
     }
 
-    void GetEX(const Stepper& stepper,
-               const uint gp,
-               const Array2D<double>& surface_normal,
+    void GetEX(const Stepper&             stepper,
+               const uint                 gp,
+               const Array2D<double>&     surface_normal,
                const std::vector<double>& ze_in,
                const std::vector<double>& qx_in,
                const std::vector<double>& qy_in,
-               double& ze_ex,
-               double& qx_ex,
-               double& qy_ex) {
+               double&                    ze_ex,
+               double&                    qx_ex,
+               double&                    qy_ex) {
         ze_ex = this->receive_buffer[ze_ex_index - gp];
         qx_ex = this->receive_buffer[qx_ex_index - gp];
         qy_ex = this->receive_buffer[qy_ex_index - gp];
@@ -114,9 +114,9 @@ class Distributed {
                        const double qx_at_baryctr_in,
                        const double qy_at_baryctr_in,
                        const double bath_at_baryctr_in) {
-        this->send_postproc_buffer[ze_at_baryctr_index] = ze_at_baryctr_in;
-        this->send_postproc_buffer[qx_at_baryctr_index] = qx_at_baryctr_in;
-        this->send_postproc_buffer[qy_at_baryctr_index] = qy_at_baryctr_in;
+        this->send_postproc_buffer[ze_at_baryctr_index]   = ze_at_baryctr_in;
+        this->send_postproc_buffer[qx_at_baryctr_index]   = qx_at_baryctr_in;
+        this->send_postproc_buffer[qy_at_baryctr_index]   = qy_at_baryctr_in;
         this->send_postproc_buffer[bath_at_baryctr_index] = bath_at_baryctr_in;
     }
 
@@ -124,9 +124,9 @@ class Distributed {
                        double& qx_at_baryctr_ex,
                        double& qy_at_baryctr_ex,
                        double& bath_at_baryctr_ex) {
-        ze_at_baryctr_ex = this->receive_postproc_buffer[ze_at_baryctr_index];
-        qx_at_baryctr_ex = this->receive_postproc_buffer[qx_at_baryctr_index];
-        qy_at_baryctr_ex = this->receive_postproc_buffer[qy_at_baryctr_index];
+        ze_at_baryctr_ex   = this->receive_postproc_buffer[ze_at_baryctr_index];
+        qx_at_baryctr_ex   = this->receive_postproc_buffer[qx_at_baryctr_index];
+        qy_at_baryctr_ex   = this->receive_postproc_buffer[qy_at_baryctr_index];
         bath_at_baryctr_ex = this->receive_postproc_buffer[bath_at_baryctr_index];
     }
 };

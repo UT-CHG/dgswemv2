@@ -2,9 +2,8 @@
 
 namespace Master {
 template <typename BasisType, typename IntegrationType>
-Triangle<BasisType, IntegrationType>::Triangle(const uint p)
-    : Master<2>(p) {
-    this->nvrtx = 3;
+Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
+    this->nvrtx  = 3;
     this->nbound = 3;
 
     this->integration_rule = this->integration.GetRule(2 * this->p);
@@ -21,14 +20,14 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
 
     this->dpsi = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};
 
-    this->phi_gp = this->basis.GetPhi(this->p, this->integration_rule.second);
+    this->phi_gp  = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
 
     std::vector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
-    this->phi_postprocessor_cell = this->basis.GetPhi(this->p, z_postprocessor_cell);
+    this->phi_postprocessor_cell               = this->basis.GetPhi(this->p, z_postprocessor_cell);
 
     std::vector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
-    this->phi_postprocessor_point = this->basis.GetPhi(this->p, z_postprocessor_point);
+    this->phi_postprocessor_point               = this->basis.GetPhi(this->p, z_postprocessor_point);
 
     this->int_fact_phi = this->phi_gp;
     for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
@@ -51,7 +50,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
 
 template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
-    const uint bound_id,
+    const uint                   bound_id,
     const std::vector<Point<1>>& z_boundary) {
     std::vector<Point<2>> z_master(z_boundary.size());
 
@@ -83,13 +82,13 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 
 template <typename BasisType, typename IntegrationType>
 inline void Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin,
-                                                                        double& u_lin_baryctr) {
+                                                                        double&                    u_lin_baryctr) {
     u_lin_baryctr = (u_lin[0] + u_lin[1] + u_lin[2]) / 3.0;
 }
 
 template <typename BasisType, typename IntegrationType>
 inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std::vector<double>& u_lin,
-                                                                       std::vector<double>& u_lin_midpts) {
+                                                                       std::vector<double>&       u_lin_midpts) {
     u_lin_midpts[0] = (u_lin[1] + u_lin[2]) / 2.0;
     u_lin_midpts[1] = (u_lin[2] + u_lin[0]) / 2.0;
     u_lin_midpts[2] = (u_lin[0] + u_lin[1]) / 2.0;
@@ -97,7 +96,7 @@ inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std
 
 template <typename BasisType, typename IntegrationType>
 inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
-                                                                     std::vector<double>& u_lin_vrtx) {
+                                                                     std::vector<double>&       u_lin_vrtx) {
     u_lin_vrtx = u_lin;
 }
 

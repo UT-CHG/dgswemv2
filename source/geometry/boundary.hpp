@@ -7,21 +7,21 @@ class Boundary {
   public:
     BoundaryType boundary_condition;
 
-    uint bound_id;
+    uint      bound_id;
     DataType& data;
 
     Array2D<double> surface_normal;
 
   private:
-    Array2D<double> phi_gp;
+    Array2D<double>     phi_gp;
     std::vector<double> int_fact;
-    Array2D<double> int_fact_phi;
+    Array2D<double>     int_fact_phi;
 
   public:
     Boundary(const RawBoundary<dimension, DataType>& raw_boundary,
-             const BoundaryType& boundary_condition = BoundaryType());
+             const BoundaryType&                     boundary_condition = BoundaryType());
 
-    void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
+    void   ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
 
@@ -32,9 +32,9 @@ class Boundary {
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
-    const BoundaryType& boundary_condition)
+    const BoundaryType&                     boundary_condition)
     : boundary_condition(std::move(boundary_condition)), data(raw_boundary.data) {
-    IntegrationType integration;
+    IntegrationType                                               integration;
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p + 1);
 
@@ -69,7 +69,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
 
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeUgp(const std::vector<double>& u,
-                                                                                     std::vector<double>& u_gp) {
+                                                                                     std::vector<double>&       u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -93,7 +93,7 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
 
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::IntegrationPhi(
-    const uint dof,
+    const uint                 dof,
     const std::vector<double>& u_gp) {
     double integral = 0;
 

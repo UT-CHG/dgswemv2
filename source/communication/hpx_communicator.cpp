@@ -3,8 +3,8 @@
 HPX_REGISTER_CHANNEL(array_double);
 
 HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
-                                 const uint locality_id,
-                                 const uint submesh_id) {
+                                 const uint         locality_id,
+                                 const uint         submesh_id) {
     std::ifstream file(neighborhood_data_file);
 
     if (!file) {
@@ -26,17 +26,17 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
         std::string neighbor_location;
 
         if (locality_A == locality_id && submesh_A == submesh_id) {
-            my_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
+            my_location       = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
             neighbor_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
         } else {
-            my_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
+            my_location       = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
             neighbor_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
         }
 
         std::string outgoing_channel_string = "channel_from_" + my_location + "_to_" + neighbor_location;
         std::string incoming_channel_string = "channel_from_" + neighbor_location + "_to_" + my_location;
 
-        rank_boundary.outgoing = hpx::lcos::channel<array_double>(hpx::find_here());
+        rank_boundary.outgoing                 = hpx::lcos::channel<array_double>(hpx::find_here());
         hpx::future<void> set_outgoing_channel = rank_boundary.outgoing.register_as(outgoing_channel_string);
 
         rank_boundary.incoming.connect_to(incoming_channel_string);

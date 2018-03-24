@@ -27,9 +27,9 @@ struct Problem {
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
 
     template <typename RawBoundaryType>
-    static void create_boundaries_kernel(ProblemMeshType& mesh,
+    static void create_boundaries_kernel(ProblemMeshType&                               mesh,
                                          std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
-                                         Writer<SWE::Problem>& writer);
+                                         Writer<SWE::Problem>&                          writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries_kernel(ProblemMeshType&,
@@ -39,21 +39,21 @@ struct Problem {
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries_kernel(
-        ProblemMeshType& mesh,
-        Communicator& communicator,
+        ProblemMeshType&                                 mesh,
+        Communicator&                                    communicator,
         std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
-        Writer<SWE::Problem>& writer);
+        Writer<SWE::Problem>&                            writer);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
+    static void initialize_data_kernel(ProblemMeshType&        mesh,
+                                       const MeshMetaData&     mesh_data,
                                        const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const MeshMetaData& mesh_data,
+    static void initialize_data_parallel_pre_send_kernel(ProblemMeshType&        mesh,
+                                                         const MeshMetaData&     mesh_data,
                                                          const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
-                                                             const MeshMetaData& mesh_data,
+    static void initialize_data_parallel_post_receive_kernel(ProblemMeshType&        mesh,
+                                                             const MeshMetaData&     mesh_data,
                                                              const ProblemInputType& problem_specific_input);
 
     // processor kernels
@@ -106,11 +106,11 @@ struct Problem {
     static void slope_limiting_prepare_boundary_kernel(const Stepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void slope_limiting_distributed_boundary_send_kernel(const Stepper& stepper,
+    static void slope_limiting_distributed_boundary_send_kernel(const Stepper&           stepper,
                                                                 DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    static void slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper,
+    static void slope_limiting_prepare_distributed_boundary_kernel(const Stepper&           stepper,
                                                                    DistributedBoundaryType& dbound);
 
     template <typename ElementType>

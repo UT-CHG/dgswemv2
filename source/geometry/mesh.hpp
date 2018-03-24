@@ -21,16 +21,16 @@ class Mesh<std::tuple<Elements...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>> {
   private:
-    using MasterElementTypes = typename make_master_type<std::tuple<Elements...>>::type;
-    using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
-    using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
-    using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
+    using MasterElementTypes             = typename make_master_type<std::tuple<Elements...>>::type;
+    using ElementContainer               = Utilities::HeterogeneousMap<Elements...>;
+    using InterfaceContainer             = Utilities::HeterogeneousVector<Interfaces...>;
+    using BoundaryContainer              = Utilities::HeterogeneousVector<Boundaries...>;
     using DistributedBoundariesContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
-    MasterElementTypes masters;
-    ElementContainer elements;
-    InterfaceContainer interfaces;
-    BoundaryContainer boundaries;
+    MasterElementTypes             masters;
+    ElementContainer               elements;
+    InterfaceContainer             interfaces;
+    BoundaryContainer              boundaries;
     DistributedBoundariesContainer distributed_boundaries;
 
     std::string mesh_name;
@@ -38,7 +38,7 @@ class Mesh<std::tuple<Elements...>,
   public:
     Mesh(const uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
-    void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
+    void        SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
     std::string GetMeshName() { return this->mesh_name; }
 
     uint GetNumberElements() { return this->elements.size(); }

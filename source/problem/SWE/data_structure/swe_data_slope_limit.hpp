@@ -30,7 +30,7 @@ struct SlopeLimit {
 
     Array2D<double> surface_normal;
 
-    Point<2> baryctr_coord;
+    Point<2>              baryctr_coord;
     std::vector<Point<2>> midpts_coord;
     std::vector<Point<2>> baryctr_coord_neigh;
 
@@ -61,11 +61,11 @@ struct SlopeLimit {
     std::vector<double> qy_at_baryctr_neigh;
     std::vector<double> bath_at_baryctr_neigh;
 
-    std::vector<double> w_midpt_char = std::vector<double>(3);
-    Array2D<double> w_baryctr_char = Array2D<double>(3, std::vector<double>(3));
+    std::vector<double> w_midpt_char   = std::vector<double>(3);
+    Array2D<double>     w_baryctr_char = Array2D<double>(3, std::vector<double>(3));
 
     std::vector<double> delta_char = std::vector<double>(3);
-    Array2D<double> delta = Array2D<double>(3, std::vector<double>(3));
+    Array2D<double>     delta      = Array2D<double>(3, std::vector<double>(3));
 
     Array2D<double> L = Array2D<double>(3, std::vector<double>(3));
     Array2D<double> R = Array2D<double>(3, std::vector<double>(3));

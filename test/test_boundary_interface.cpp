@@ -7,13 +7,13 @@ int main() {
     using Utilities::almost_equal;
     bool error_found = false;
 
-    using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
-    using ShapeType = Shape::StraightTriangle;
+    using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
+    using ShapeType   = Shape::StraightTriangle;
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::Data>;
-    using BoundaryType = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
-    using InterfaceType = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::Land>;
+    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data>;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);
@@ -22,19 +22,20 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2.};
 
     MasterType master(10);
-    ShapeType shape(vrtxs);
+    ShapeType  shape(vrtxs);
 
-    ElementType triangle(0,
-                         master,
-                         vrtxs,
-                         std::vector<uint>{0, 0, 0},
-                         std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
-                         std::vector<unsigned char>{SWE::BoundaryConditions::land, SWE::BoundaryConditions::land,
-                                                    SWE::BoundaryConditions::land});
+    ElementType triangle(
+        0,
+        master,
+        vrtxs,
+        std::vector<uint>{0, 0, 0},
+        std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
+        std::vector<unsigned char>{
+            SWE::BoundaryConditions::land, SWE::BoundaryConditions::land, SWE::BoundaryConditions::land});
 
     std::map<unsigned char, std::vector<RawBoundaryType>> pre_boundaries;
-    std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
-    std::map<uint, std::map<uint, RawBoundaryType>> pre_distributed_interfaces;
+    std::map<uint, std::map<uint, RawBoundaryType>>       pre_interfaces;
+    std::map<uint, std::map<uint, RawBoundaryType>>       pre_distributed_interfaces;
 
     // generate boundaries
     triangle.CreateRawBoundaries(pre_interfaces, pre_boundaries, pre_distributed_interfaces);
@@ -47,7 +48,7 @@ int main() {
 
     // Check Integrations
     Integration::Dunavant_2D integ_2D;
-    std::vector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
+    std::vector<Point<2>>    gp_2D = integ_2D.GetRule(20).second;
 
     std::vector<double> x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp_2D);
     std::vector<double> y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp_2D);
@@ -66,8 +67,8 @@ int main() {
     }
 
     Integration::GaussLegendre_1D integ_1D;
-    std::vector<Point<1>> gp_1D = integ_1D.GetRule(20).second;
-    std::vector<Point<2>> gp_bound;
+    std::vector<Point<1>>         gp_1D = integ_1D.GetRule(20).second;
+    std::vector<Point<2>>         gp_bound;
 
     Array2D<double> F_vals_bound(2);
     F_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));

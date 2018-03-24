@@ -10,17 +10,17 @@ class RawBoundary {
 
     DataType& data;
 
-    Basis::Basis<dimension + 1>& basis;
+    Basis::Basis<dimension + 1>&   basis;
     Master::Master<dimension + 1>& master;
-    Shape::Shape<dimension + 1>& shape;
+    Shape::Shape<dimension + 1>&   shape;
 
   public:
-    RawBoundary(uint p,
-                uint bound_id,
-                DataType& data,
-                Basis::Basis<dimension + 1>& basis,
+    RawBoundary(uint                           p,
+                uint                           bound_id,
+                DataType&                      data,
+                Basis::Basis<dimension + 1>&   basis,
                 Master::Master<dimension + 1>& master,
-                Shape::Shape<dimension + 1>& shape)
+                Shape::Shape<dimension + 1>&   shape)
         : p(p), bound_id(bound_id), data(data), basis(basis), master(master), shape(shape) {}
 };
 }

@@ -8,7 +8,7 @@ template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& state = elt.data.state[stage + 1];
+    auto& state    = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;
 
     elt.ProjectBasisToLinear(state.ze, sl_state.ze_lin);
@@ -56,7 +56,7 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const Stepper& ste
 }
 
 template <typename DistributedBoundaryType>
-void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper,
+void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper&           stepper,
                                                                  DistributedBoundaryType& dbound) {
     auto& sl_state = dbound.data.slope_limit_state;
 
@@ -70,7 +70,7 @@ template <typename ElementType>
 void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& state = elt.data.state[stage + 1];
+    auto& state    = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;
 
     double u = sl_state.qx_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
@@ -133,7 +133,7 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
         double w_tilda;
         double w_delta;
 
-        double M = 1e-8;
+        double M  = 1e-8;
         double nu = 1.5;
 
         for (uint var = 0; var < 3; var++) {

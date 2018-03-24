@@ -10,10 +10,10 @@ class Simulation {
   private:
     InputParameters<typename ProblemType::ProblemInputType> input;
 
-    Stepper stepper;
-    Writer<ProblemType> writer;
+    Stepper                                 stepper;
+    Writer<ProblemType>                     writer;
     typename ProblemType::ProblemParserType parser;
-    typename ProblemType::ProblemMeshType mesh;
+    typename ProblemType::ProblemMeshType   mesh;
 
   public:
     Simulation()
@@ -38,7 +38,8 @@ class Simulation {
             this->writer.StartLog();
 
             this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+                                      << input.mesh_data.mesh_name << " mesh" << std::endl
+                                      << std::endl;
         }
 
         initialize_mesh<ProblemType>(
@@ -76,7 +77,7 @@ void Simulation<ProblemType>::Run() {
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
-    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.GetDT());
+    uint nsteps   = (uint)std::ceil(this->input.T_end / this->stepper.GetDT());
     uint n_stages = this->stepper.GetNumStages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };

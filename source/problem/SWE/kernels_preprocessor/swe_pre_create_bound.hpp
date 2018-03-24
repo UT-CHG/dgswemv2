@@ -3,12 +3,12 @@
 
 namespace SWE {
 template <typename RawBoundaryType>
-void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
+void Problem::create_boundaries_kernel(ProblemMeshType&                               mesh,
                                        std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
-                                       Writer<SWE::Problem>& writer) {
-    uint n_bound_old_land = 0;
+                                       Writer<SWE::Problem>&                          writer) {
+    uint n_bound_old_land  = 0;
     uint n_bound_old_tidal = 0;
-    uint n_bound_old_flow = 0;
+    uint n_bound_old_flow  = 0;
 
     using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal, SWE::Flow>;
 
@@ -24,8 +24,8 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 }
 
                 if (writer.WritingLog()) {
-                    writer.GetLogFile() << "Number of land boundaries: " << mesh.GetNumberBoundaries() -
-                                                                                n_bound_old_land << std::endl;
+                    writer.GetLogFile() << "Number of land boundaries: "
+                                        << mesh.GetNumberBoundaries() - n_bound_old_land << std::endl;
                 }
 
                 break;
@@ -39,8 +39,8 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 }
 
                 if (writer.WritingLog()) {
-                    writer.GetLogFile() << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() -
-                                                                                 n_bound_old_tidal << std::endl;
+                    writer.GetLogFile() << "Number of tidal boundaries: "
+                                        << mesh.GetNumberBoundaries() - n_bound_old_tidal << std::endl;
                 }
 
                 break;
@@ -54,8 +54,8 @@ void Problem::create_boundaries_kernel(ProblemMeshType& mesh,
                 }
 
                 if (writer.WritingLog()) {
-                    writer.GetLogFile() << "Number of flow boundaries: " << mesh.GetNumberBoundaries() -
-                                                                                n_bound_old_flow << std::endl;
+                    writer.GetLogFile() << "Number of flow boundaries: "
+                                        << mesh.GetNumberBoundaries() - n_bound_old_flow << std::endl;
                 }
 
                 break;

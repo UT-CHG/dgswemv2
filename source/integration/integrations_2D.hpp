@@ -14,7 +14,7 @@ class Dunavant_2D : Integration<2> {
   public:
     // Implementations of inherited functions
     std::pair<std::vector<double>, std::vector<Point<2>>> GetRule(const uint p);
-    uint GetNumGP(const uint p);
+    uint                                                  GetNumGP(const uint p);
 
   private:
     /**

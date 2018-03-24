@@ -9,7 +9,7 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
     if (wd_state.wet) {
         const uint stage = stepper.GetStage();
 
-        auto& state = elt.data.state[stage];
+        auto& state    = elt.data.state[stage];
         auto& internal = elt.data.internal;
         auto& sp_at_gp = elt.data.spherical_projection.sp_at_gp_internal;
 
@@ -23,7 +23,7 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
         double uuh_at_gp = 0.0;
         double vvh_at_gp = 0.0;
         double uvh_at_gp = 0.0;
-        double pe_at_gp = 0.0;
+        double pe_at_gp  = 0.0;
 
         // assemble flux
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
@@ -35,7 +35,7 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
             uuh_at_gp = u_at_gp * internal.qx_at_gp[gp];
             vvh_at_gp = v_at_gp * internal.qy_at_gp[gp];
             uvh_at_gp = u_at_gp * internal.qy_at_gp[gp];
-            pe_at_gp = Global::g *
+            pe_at_gp  = Global::g *
                        (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
 
             internal.ze_flux_at_gp[GlobalCoord::x][gp] = sp_at_gp[gp] * internal.qx_at_gp[gp];

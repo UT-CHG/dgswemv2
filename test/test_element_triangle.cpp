@@ -55,8 +55,8 @@ int main() {
     using Utilities::almost_equal;
     bool error_found = false;
 
-    using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
-    using ShapeType = Shape::StraightTriangle;
+    using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
+    using ShapeType   = Shape::StraightTriangle;
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
     // make an equilateral triangle
@@ -66,13 +66,13 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2.};
 
     MasterType master(10);
-    ShapeType shape(vrtxs);
+    ShapeType  shape(vrtxs);
 
     ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<uint>(0), std::vector<unsigned char>(0));
 
     // Check integrations
     Integration::Dunavant_2D integ;
-    std::vector<Point<2>> gp = integ.GetRule(20).second;
+    std::vector<Point<2>>    gp = integ.GetRule(20).second;
 
     std::vector<double> x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp);
     std::vector<double> y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp);
@@ -100,7 +100,8 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
-                         "in x direction" << std::endl;
+                         "in x direction"
+                      << std::endl;
         }
     }
     // Add 7 more modes
@@ -109,7 +110,8 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
-                         "in y direction" << std::endl;
+                         "in y direction"
+                      << std::endl;
         }
     }
 
@@ -134,14 +136,16 @@ int main() {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
-                     "in x direction" << std::endl;
+                     "in x direction"
+                  << std::endl;
     }
 
     if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
-                     "in y direction" << std::endl;
+                     "in y direction"
+                  << std::endl;
     }
 
     // Check ComputeUgp and ApplyMinv
@@ -188,7 +192,8 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in x "
-                         "direction" << std::endl;
+                         "direction"
+                      << std::endl;
         }
 
         triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
@@ -198,7 +203,8 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in y "
-                         "direction" << std::endl;
+                         "direction"
+                      << std::endl;
         }
     }
 

@@ -11,7 +11,7 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
     if (wd_state.wet) {
         const uint stage = stepper.GetStage();
 
-        auto& state = bound.data.state[stage];
+        auto& state    = bound.data.state[stage];
         auto& boundary = bound.data.boundary[bound.bound_id];
         auto& sp_at_gp = bound.data.spherical_projection.sp_at_gp_boundary[bound.bound_id];
 

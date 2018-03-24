@@ -5,19 +5,19 @@
 
 namespace SWE {
 // The normal points form the interior side (in) to the exterior side (ex)
-inline void LLF_flux(const double gravity,
-                     const double ze_in,
-                     const double ze_ex,
-                     const double qx_in,
-                     const double qx_ex,
-                     const double qy_in,
-                     const double qy_ex,
-                     const double bath,
-                     const double sp,
+inline void LLF_flux(const double               gravity,
+                     const double               ze_in,
+                     const double               ze_ex,
+                     const double               qx_in,
+                     const double               qx_ex,
+                     const double               qy_in,
+                     const double               qy_ex,
+                     const double               bath,
+                     const double               sp,
                      const std::vector<double>& normal,
-                     double& ze_flux,
-                     double& qx_flux,
-                     double& qy_flux) {
+                     double&                    ze_flux,
+                     double&                    qx_flux,
+                     double&                    qy_flux) {
     double h_in = ze_in + bath;
     double u_in = qx_in / h_in;
     double v_in = qy_in / h_in;
@@ -38,7 +38,7 @@ inline void LLF_flux(const double gravity,
     double uuh_in = u_in * qx_in;
     double vvh_in = v_in * qy_in;
     double uvh_in = u_in * qy_in;
-    double pe_in = gravity * (std::pow(ze_in, 2) / 2 + ze_in * bath);
+    double pe_in  = gravity * (std::pow(ze_in, 2) / 2 + ze_in * bath);
 
     double ze_flux_x_in = sp * qx_in;
     double ze_flux_y_in = qy_in;
@@ -53,7 +53,7 @@ inline void LLF_flux(const double gravity,
     double uuh_ex = u_ex * qx_ex;
     double vvh_ex = v_ex * qy_ex;
     double uvh_ex = u_ex * qy_ex;
-    double pe_ex = gravity * (std::pow(ze_ex, 2) / 2 + ze_ex * bath);
+    double pe_ex  = gravity * (std::pow(ze_ex, 2) / 2 + ze_ex * bath);
 
     double ze_flux_x_ex = sp * qx_ex;
     double ze_flux_y_ex = qy_ex;

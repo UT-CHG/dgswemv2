@@ -18,7 +18,7 @@ struct Spherical {
     std::vector<double> x;
     std::vector<double> y;
 
-    std::vector<double> sp_at_gp_internal;
+    std::vector<double>              sp_at_gp_internal;
     std::vector<std::vector<double>> sp_at_gp_boundary;
 };
 }

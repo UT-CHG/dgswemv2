@@ -20,9 +20,9 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
         res_futures.push_back(clients[id].ResidualL2());
     }
 
-    return hpx::when_all(res_futures).then([](auto && res_futures)->double {
+    return hpx::when_all(res_futures).then([](auto&& res_futures) -> double {
         std::vector<double> res = hpx::util::unwrap(res_futures.get());
-        double combined_res{0};
+        double              combined_res{0};
         for (double r : res) {
             combined_res += r;
         }
@@ -37,10 +37,10 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
     Stepper stepper;
 
-    Writer<ProblemType> writer;
+    Writer<ProblemType>                     writer;
     typename ProblemType::ProblemParserType parser;
-    typename ProblemType::ProblemMeshType mesh;
-    HPXCommunicator communicator;
+    typename ProblemType::ProblemMeshType   mesh;
+    HPXCommunicator                         communicator;
 
   public:
     HPXSimulationUnit()
@@ -66,7 +66,8 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
             this->writer.StartLog();
 
             this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+                                      << input.mesh_data.mesh_name << " mesh" << std::endl
+                                      << std::endl;
         }
 
         initialize_mesh<ProblemType, HPXCommunicator>(
@@ -137,8 +138,8 @@ template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
-                                  << this->stepper.GetStage() << ')' << std::endl << "Starting work before receive"
-                                  << std::endl;
+                                  << this->stepper.GetStage() << ')' << std::endl
+                                  << "Starting work before receive" << std::endl;
     }
 
     auto distributed_boundary_send_kernel = [this](auto& dbound) {
@@ -332,12 +333,12 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
   public:
     HPXSimulation() = default;
     HPXSimulation(const std::string& input_string) {
-        const uint locality_id = hpx::get_locality_id();
-        const hpx::naming::id_type here = hpx::find_here();
+        const uint                 locality_id = hpx::get_locality_id();
+        const hpx::naming::id_type here        = hpx::find_here();
 
         InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-        this->n_steps = (uint)std::ceil(input.T_end / input.dt);
+        this->n_steps  = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
 
         std::string submesh_file_prefix = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + "_" +
@@ -374,36 +375,31 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-        simulation_futures[sim_id] =
-            simulation_futures[sim_id]
-                .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Launch(); });
+        simulation_futures[sim_id] = simulation_futures[sim_id].then(
+            [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Launch(); });
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-            simulation_futures[sim_id] =
-                simulation_futures[sim_id]
-                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Parse(); });
+            simulation_futures[sim_id] = simulation_futures[sim_id].then(
+                [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Parse(); });
         }
 
         for (uint stage = 0; stage < this->n_stages; stage++) {
             for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] =
-                    simulation_futures[sim_id]
-                        .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Stage(); });
+                simulation_futures[sim_id] = simulation_futures[sim_id].then(
+                    [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Stage(); });
             }
 
             for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] =
-                    simulation_futures[sim_id]
-                        .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Postprocessor(); });
+                simulation_futures[sim_id] = simulation_futures[sim_id].then(
+                    [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Postprocessor(); });
             }
         }
 
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-            simulation_futures[sim_id] =
-                simulation_futures[sim_id]
-                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
+            simulation_futures[sim_id] = simulation_futures[sim_id].then(
+                [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
     return hpx::when_all(simulation_futures);

@@ -9,9 +9,9 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
     if (wd_state.wet) {
         const uint stage = stepper.GetStage();
 
-        auto& state = elt.data.state[stage];
+        auto& state    = elt.data.state[stage];
         auto& internal = elt.data.internal;
-        auto& source = elt.data.source;
+        auto& source   = elt.data.source;
         auto& sp_at_gp = elt.data.spherical_projection.sp_at_gp_internal;
 
         double t = stepper.GetTimeAtCurrentStage();

@@ -16,7 +16,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     ifs.ignore(1000, '\n');
 
     {  // read in node information
-        int node_name;
+        int                   node_name;
         std::array<double, 3> node_data;
 
         for (int i = 0; i < n_nodes; ++i) {
@@ -30,7 +30,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     }
 
     {  // read in element information
-        int element_name;
+        int                element_name;
         std::array<int, 4> element_data;
 
         for (int i = 0; i < n_elements; ++i) {
@@ -183,7 +183,7 @@ SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) 
 
 bool AdcircFormat::has_edge(std::vector<int>::const_iterator cbegin,
                             std::vector<int>::const_iterator cend,
-                            std::array<int, 2>& node_pair) const {
+                            std::array<int, 2>&              node_pair) const {
     auto it = std::find(cbegin, cend, node_pair[0]);
 
     if (it != cend) {

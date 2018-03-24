@@ -19,7 +19,7 @@ void Parser::ParseMeteoInput(uint step) {
                 throw std::logic_error(err_msg);
             }
 
-            uint node_id;
+            uint                node_id;
             std::vector<double> meteo_data(3);
 
             std::string line;
@@ -46,7 +46,7 @@ void Parser::ParseMeteoInput(uint step) {
                 throw std::logic_error(err_msg);
             }
 
-            uint node_id;
+            uint                node_id;
             std::vector<double> meteo_data(3);
 
             std::string line;
@@ -65,7 +65,7 @@ void Parser::ParseMeteoInput(uint step) {
 void Parser::CalculateMeteoData(uint step) {
     if (this->meteo_forcing_type == SWE::MeteoForcingType::Test) {
         uint step_begin = step - step % this->meteo_parse_frequency;
-        uint step_end = step_begin + this->meteo_parse_frequency;
+        uint step_end   = step_begin + this->meteo_parse_frequency;
 
         double interp_factor = step % this->meteo_parse_frequency / ((double)this->meteo_parse_frequency);
 

@@ -2,8 +2,8 @@
 #define SWE_PRE_INIT_DATA_HPP
 
 namespace SWE {
-void Problem::initialize_data_kernel(ProblemMeshType& mesh,
-                                     const MeshMetaData& mesh_data,
+void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
+                                     const MeshMetaData&     mesh_data,
                                      const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
@@ -27,9 +27,9 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
         auto& shape = elt.GetShape();
 
-        auto& state = elt.data.state[0];
+        auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
-        auto& sp = elt.data.spherical_projection;
+        auto& sp       = elt.data.spherical_projection;
 
         if (!bathymetry.count(id)) {
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
@@ -61,7 +61,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             elt.ComputeUgp(sp.y, y_at_gp);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
+            double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); gp++) {
                 sp.sp_at_gp_internal[gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
@@ -112,7 +112,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             intface.ComputeUgpEX(sp_ex.y, y_at_gp_ex);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
+            double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); gp++) {
                 sp_in.sp_at_gp_boundary[intface.bound_id_in][gp] = cos_phi_o / std::cos(y_at_gp_in[gp] / R);
@@ -122,9 +122,9 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
-        auto& state = bound.data.state[0];
+        auto& state    = bound.data.state[0];
         auto& boundary = bound.data.boundary[bound.bound_id];
-        auto& sp = bound.data.spherical_projection;
+        auto& sp       = bound.data.spherical_projection;
 
         bound.ComputeUgp(state.bath, boundary.bath_at_gp);
 
@@ -134,7 +134,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             bound.ComputeUgp(sp.y, y_at_gp);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
+            double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); gp++) {
                 sp.sp_at_gp_boundary[bound.bound_id][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
@@ -146,8 +146,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
         std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
 
-        uint node_ID;
-        double manning_n;
+        uint                   node_ID;
+        double                 manning_n;
         std::map<uint, double> node_manning_n;
 
         std::string line;
@@ -192,7 +192,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     // WETTING-DRYING INITIALIZE
 
     mesh.CallForEachElement([&bathymetry](auto& elt) {
-        auto& state = elt.data.state[0];
+        auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
         auto& wd_state = elt.data.wet_dry_state;
 
@@ -258,7 +258,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeLinearUmidpts(bath_lin, sl_state.bath_at_midpts);
 
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
-        sl_state.midpts_coord = elt.GetShape().GetMidpointCoordinates();
+        sl_state.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
             sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
@@ -290,7 +290,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachElement([](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
+        Array2D<double>     A = Array2D<double>(2, std::vector<double>(2));
         std::vector<double> b(2);
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
@@ -322,16 +322,16 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 }
 
-void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                       const MeshMetaData& mesh_data,
+void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType&        mesh,
+                                                       const MeshMetaData&     mesh_data,
                                                        const ProblemInputType& problem_specific_input) {
 
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
-        auto& state = dbound.data.state[0];
+        auto& state    = dbound.data.state[0];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
-        auto& sp = dbound.data.spherical_projection;
+        auto& sp       = dbound.data.spherical_projection;
 
         dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
 
@@ -341,7 +341,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
             dbound.ComputeUgp(sp.y, y_at_gp);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
-            double R = problem_specific_input.spherical_projection.R;
+            double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); gp++) {
                 sp.sp_at_gp_boundary[dbound.bound_id][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
@@ -357,8 +357,8 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     });
 }
 
-void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
-                                                           const MeshMetaData& mesh_data,
+void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType&        mesh,
+                                                           const MeshMetaData&     mesh_data,
                                                            const ProblemInputType& problem_specific_input) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
@@ -370,7 +370,7 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh
     mesh.CallForEachElement([](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
+        Array2D<double>     A = Array2D<double>(2, std::vector<double>(2));
         std::vector<double> b(2);
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {

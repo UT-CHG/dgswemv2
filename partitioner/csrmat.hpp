@@ -59,17 +59,17 @@ class CSRMat {
         }
     }
 
-    size_t size() const { return _nodes.size(); }
+    size_t                  size() const { return _nodes.size(); }
     const std::vector<int>& node_ID() const { return _nodes; }
-    int get(int index) const { return _nodes[index]; }
-    std::vector<double> node_weight(int id) const { return _node_wgts_map.at(id); }
+    int                     get(int index) const { return _nodes[index]; }
+    std::vector<double>     node_weight(int id) const { return _node_wgts_map.at(id); }
 
     std::vector<int> xadj() const {
         std::vector<int> result;
         result.push_back(0);
         for (auto id : _nodes) {
             int edge_n = _edges.count(id) ? _edges.at(id).size() : 0;
-            int idx = result.back() + edge_n;
+            int idx    = result.back() + edge_n;
             result.push_back(idx);
         }
         return result;
@@ -113,7 +113,7 @@ class CSRMat {
             if (_edges.count(src)) {               // node might not be connected to anything
                 for (auto dst : _edges.at(src)) {  // _edges.at(src) is sorted
                     double w{0};
-                    auto id = std::make_pair(src, dst);
+                    auto   id = std::make_pair(src, dst);
                     if (_edge_wgts_map.count(id)) {
                         w += _edge_wgts_map.at(id);
                     }
@@ -138,9 +138,9 @@ class CSRMat {
 
     friend std::ostream& operator<<(std::ostream& os, const CSRMat& mat) {
         os << "CSRMat (" << mat.size() << ")\n";
-        auto nw = mat.node_wgts();
-        auto ew = mat.edge_wgts();
-        int nidx = 0, eidx = 0;
+        auto nw   = mat.node_wgts();
+        auto ew   = mat.edge_wgts();
+        int  nidx = 0, eidx = 0;
         for (auto nid : mat._nodes) {
             os << "(" << nid << "," << nw[nidx++] << ") : ";
             for (auto eid : mat._edges.at(nid)) {
@@ -169,10 +169,10 @@ class CSRMat {
     std::unordered_map<int, std::vector<int>> get_edges() { return _edges; }
 
   private:
-    std::size_t _constraint_number;
-    std::unordered_map<int, std::vector<int>> _edges;
-    std::vector<int> _nodes;  // sorted node IDs
-    std::unordered_map<int, std::vector<double>> _node_wgts_map;
+    std::size_t                                     _constraint_number;
+    std::unordered_map<int, std::vector<int>>       _edges;
+    std::vector<int>                                _nodes;  // sorted node IDs
+    std::unordered_map<int, std::vector<double>>    _node_wgts_map;
     std::unordered_map<std::pair<int, int>, double> _edge_wgts_map;
 };
 
@@ -193,8 +193,8 @@ std::vector<int64_t> scale_to_int64(const std::vector<T>& vec) {
         if (fabs(val) > max_aval)
             max_aval = fabs(val);
     }
-    double target = std::sqrt(double(std::numeric_limits<int64_t>::max()));
-    double scale_factor = target / max_aval;
+    double               target       = std::sqrt(double(std::numeric_limits<int64_t>::max()));
+    double               scale_factor = target / max_aval;
     std::vector<int64_t> result;
     result.reserve(vec.size());
     for (auto val : vec) {
@@ -237,10 +237,10 @@ std::vector<int64_t> metis_part(const CSRMat& mat, int64_t nparts, const double 
     }
 
     // set up metis parameters
-    int64_t ncon = static_cast<int64_t>(mat.constraint_number());
-    int64_t objval;
+    int64_t              ncon = static_cast<int64_t>(mat.constraint_number());
+    int64_t              objval;
     std::vector<int64_t> options(METIS_NOPTIONS), part(nvtxs);
-    std::vector<double> tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);
+    std::vector<double>  tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);
     // set up weights vectorse
 
     std::vector<int64_t> node_wgts = scale_to_int64(mat.node_wgts()), edge_wgts = scale_to_int64(mat.edge_wgts());

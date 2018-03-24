@@ -5,9 +5,9 @@
 #include <deque>
 #include <unordered_set>
 
-void write_distributed_edge_metadata(const std::string& file_name,
-                                     const InputParameters<>& input,
-                                     const MeshMetaData& mesh_meta,
+void write_distributed_edge_metadata(const std::string&                            file_name,
+                                     const InputParameters<>&                      input,
+                                     const MeshMetaData&                           mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes) {
     std::size_t num_loc = submeshes.size();
 
@@ -44,7 +44,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         uint eltB = f.second;
         uint rnkB = elt2partition.at(eltB);
 
-        uint face_id_A{DEFAULT_ID};
+        uint                   face_id_A{DEFAULT_ID};
         const ElementMetaData& eltA_meta = mesh_meta.elements.at(eltA);
         for (uint fid = 0; fid < eltA_meta.neighbor_ID.size(); ++fid) {
             if (eltB == eltA_meta.neighbor_ID[fid]) {
@@ -53,7 +53,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         }
         assert(face_id_A != DEFAULT_ID);
 
-        uint face_id_B{DEFAULT_ID};
+        uint                   face_id_B{DEFAULT_ID};
         const ElementMetaData& eltB_meta = mesh_meta.elements.at(eltB);
         for (uint fid = 0; fid < eltB_meta.neighbor_ID.size(); ++fid) {
             if (eltA == eltB_meta.neighbor_ID[fid]) {
@@ -68,10 +68,10 @@ void write_distributed_edge_metadata(const std::string& file_name,
         dist_int.p = input.polynomial_order;
 
         if (rnkA > rnkB) {
-            dist_int.elements = {eltB, eltA};
+            dist_int.elements  = {eltB, eltA};
             dist_int.bound_ids = {face_id_B, face_id_A};
         } else {
-            dist_int.elements = {eltA, eltB};
+            dist_int.elements  = {eltA, eltB};
             dist_int.bound_ids = {face_id_A, face_id_B};
         }
 
@@ -87,10 +87,10 @@ void write_distributed_edge_metadata(const std::string& file_name,
             std::ofstream file(distributed_meta_filename + '_' + std::to_string(loc_id) + '_' +
                                std::to_string(sbmsh_id) + ".dbmd");
             for (auto& sf : shared_faces) {
-                uint locA = sf.first.first % num_loc;
+                uint locA   = sf.first.first % num_loc;
                 uint sbmshA = sf.first.first / num_loc;
 
-                uint locB = sf.first.second % num_loc;
+                uint locB   = sf.first.second % num_loc;
                 uint sbmshB = sf.first.second / num_loc;
                 if ((locA == loc_id && sbmshA == sbmsh_id) || (locB == loc_id && sbmshB == sbmsh_id)) {
                     file << locA << " " << sbmshA << " " << locB << " " << sbmshB << " " << sf.second.size() << '\n';

@@ -11,10 +11,10 @@ class Element {
     uint ID;
 
     MasterType& master;
-    ShapeType shape;
+    ShapeType   shape;
 
-    std::vector<uint> node_ID;
-    std::vector<uint> neighbor_ID;
+    std::vector<uint>  node_ID;
+    std::vector<uint>  neighbor_ID;
     std::vector<uchar> boundary_type;
 
     std::vector<Point<dimension>> gp_global_coordinates;
@@ -22,31 +22,31 @@ class Element {
     Array3D<double> dpsi_fact;
     Array3D<double> dphi_fact;
 
-    bool const_J;
+    bool                const_J;
     std::vector<double> int_fact;
-    Array2D<double> int_fact_phi;
-    Array3D<double> int_fact_dphi;
+    Array2D<double>     int_fact_phi;
+    Array3D<double>     int_fact_dphi;
 
     std::pair<bool, Array2D<double>> m_inv;
 
   public:
-    Element(const uint ID,
-            MasterType& master,
+    Element(const uint                           ID,
+            MasterType&                          master,
             const std::vector<Point<dimension>>& nodal_coordinates,
-            const std::vector<uint>& node_ID,
-            const std::vector<uint>& neighbor_ID,
-            const std::vector<uchar>& boundary_type);
+            const std::vector<uint>&             node_ID,
+            const std::vector<uint>&             neighbor_ID,
+            const std::vector<uchar>&            boundary_type);
 
     void CreateRawBoundaries(
         std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_interfaces,
-        std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>& pre_boundaries,
+        std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&   pre_boundaries,
         std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries);
 
-    uint GetID() { return this->ID; }
+    uint        GetID() { return this->ID; }
     MasterType& GetMaster() { return this->master; }
-    ShapeType& GetShape() { return this->shape; }
+    ShapeType&  GetShape() { return this->shape; }
 
-    std::vector<uint>& GetNodeID() { return this->node_ID; }
+    std::vector<uint>&  GetNodeID() { return this->node_ID; }
     std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     template <typename F>
@@ -85,12 +85,12 @@ class Element {
 };
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
-                                                             MasterType& master,
+Element<dimension, MasterType, ShapeType, DataType>::Element(const uint                           ID,
+                                                             MasterType&                          master,
                                                              const std::vector<Point<dimension>>& nodal_coordinates,
-                                                             const std::vector<uint>& node_ID,
-                                                             const std::vector<uint>& neighbor_ID,
-                                                             const std::vector<uchar>& boundary_type)
+                                                             const std::vector<uint>&             node_ID,
+                                                             const std::vector<uint>&             neighbor_ID,
+                                                             const std::vector<uchar>&            boundary_type)
     : ID(ID),
       master(master),
       shape(ShapeType(nodal_coordinates)),
@@ -102,7 +102,7 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
 
     // DEFORMATION
     std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
-    Array3D<double> J_inv = this->shape.GetJinv(this->master.integration_rule.second);
+    Array3D<double>     J_inv = this->shape.GetJinv(this->master.integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
 
@@ -187,24 +187,24 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_interfaces,
-    std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>& pre_boundaries,
+    std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&   pre_boundaries,
     std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries) {
 
-    Basis::Basis<dimension>* my_basis = (Basis::Basis<dimension>*)(&this->master.basis);
+    Basis::Basis<dimension>*   my_basis  = (Basis::Basis<dimension>*)(&this->master.basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
-    Shape::Shape<dimension>* my_shape = (Shape::Shape<dimension>*)(&this->shape);
+    Shape::Shape<dimension>*   my_shape  = (Shape::Shape<dimension>*)(&this->shape);
 
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
         if (this->boundary_type[bound_id] == INTERNAL) {
-            pre_interfaces[this->ID]
-                .emplace(std::make_pair(this->neighbor_ID[bound_id],
-                                        RawBoundary<dimension - 1, DataType>(
-                                            this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
+            pre_interfaces[this->ID].emplace(
+                std::make_pair(this->neighbor_ID[bound_id],
+                               RawBoundary<dimension - 1, DataType>(
+                                   this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
         } else if (this->boundary_type[bound_id] == DISTRIBUTED) {
-            pre_distributed_boundaries[this->ID]
-                .emplace(std::make_pair(bound_id,
-                                        RawBoundary<dimension - 1, DataType>(
-                                            this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
+            pre_distributed_boundaries[this->ID].emplace(
+                std::make_pair(bound_id,
+                               RawBoundary<dimension - 1, DataType>(
+                                   this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape)));
         } else {
             pre_boundaries[this->boundary_type[bound_id]].emplace_back(RawBoundary<dimension - 1, DataType>(
                 this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
@@ -214,7 +214,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f,
+inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F&             f,
                                                                               std::vector<double>& projection) {
     std::vector<double> rhs;
 
@@ -231,7 +231,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(co
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const std::vector<double>& nodal_values,
-                                                                              std::vector<double>& projection) {
+                                                                              std::vector<double>&       projection) {
     std::vector<double> rhs;
 
     std::vector<double> interpolation =
@@ -256,7 +256,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToL
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<double>& u_lin,
-                                                                                      std::vector<double>& u) {
+                                                                                      std::vector<double>&       u) {
     if (const_J) {
         this->master.basis.ProjectLinearToBasis(u_lin, u);
     } else {
@@ -274,7 +274,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(cons
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(const std::vector<double>& u,
-                                                                            std::vector<double>& u_gp) {
+                                                                            std::vector<double>&       u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -285,9 +285,9 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(cons
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const uint dir,
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const uint                 dir,
                                                                              const std::vector<double>& u,
-                                                                             std::vector<double>& du_gp) {
+                                                                             std::vector<double>&       du_gp) {
     std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -299,7 +299,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin,
-                                                                                  std::vector<double>& u_lin_gp) {
+                                                                                  std::vector<double>&       u_lin_gp) {
     std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
@@ -310,7 +310,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUg
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(const uint dir,
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(const uint                 dir,
                                                                                    const std::vector<double>& u_lin,
                                                                                    std::vector<double>& du_lin_gp) {
     std::fill(du_lin_gp.begin(), du_lin_gp.end(), 0.0);
@@ -331,7 +331,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUb
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(
     const std::vector<double>& u_lin,
-    std::vector<double>& u_lin_midpts) {
+    std::vector<double>&       u_lin_midpts) {
     this->master.ComputeLinearUmidpts(u_lin, u_lin_midpts);
 }
 
@@ -353,7 +353,7 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::Integration(c
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
+inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint                 dof,
                                                                                   const std::vector<double>& u_gp) {
     double integral = 0;
 
@@ -365,8 +365,8 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPh
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
-                                                                                   const uint dof,
+inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint                 dir,
+                                                                                   const uint                 dof,
                                                                                    const std::vector<double>& u_gp) {
     double integral = 0;
 
@@ -379,7 +379,7 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDP
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(const std::vector<double>& rhs,
-                                                                           std::vector<double>& solution) {
+                                                                           std::vector<double>&       solution) {
     if (this->m_inv.first) {  // diagonal
         for (uint i = 0; i < rhs.size(); i++) {
             solution[i] = this->m_inv.second[0][i] * rhs[i];
@@ -396,7 +396,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(const
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vector<Point<3>>& points,
-                                                                        Array2D<uint>& cells) {
+                                                                        Array2D<uint>&         cells) {
     this->shape.GetVTK(points, cells);
 }
 
@@ -442,7 +442,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataV
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f,
+double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F&                   f,
                                                                               const std::vector<double>& u) {
     std::pair<std::vector<double>, std::vector<Point<2>>> rule = this->master.integration.GetRule(20);
     // At this point we use maximum possible p for Dunavant integration

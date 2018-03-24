@@ -12,8 +12,8 @@ int main() {
     using Utilities::almost_equal;
     bool error_found = false;
 
-    using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
-    using ShapeType = Shape::StraightTriangle;
+    using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
+    using ShapeType   = Shape::StraightTriangle;
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
     // the whole test is designed for h_0 = 0.01
@@ -26,7 +26,7 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2.};
 
     MasterType master(10);
-    ShapeType shape(vrtxs);
+    ShapeType  shape(vrtxs);
 
     ElementType triangle(0, master, vrtxs, std::vector<uint>(3), std::vector<uint>(3), std::vector<unsigned char>(3));
     triangle.data.initialize();
@@ -35,7 +35,7 @@ int main() {
     Stepper stepper(1, 1, 1);
 
     auto& wd_state = triangle.data.wet_dry_state;
-    auto& state = triangle.data.state[1];
+    auto& state    = triangle.data.state[1];
 
     wd_state.bath_at_vrtx[0] = 1.;
     wd_state.bath_at_vrtx[1] = 2.;

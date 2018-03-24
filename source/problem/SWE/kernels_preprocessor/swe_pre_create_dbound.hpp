@@ -10,10 +10,10 @@ void Problem::create_distributed_boundaries_kernel(ProblemMeshType&,
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
-    ProblemMeshType& mesh,
-    Communicator& communicator,
+    ProblemMeshType&                                 mesh,
+    Communicator&                                    communicator,
     std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
-    Writer<SWE::Problem>& writer) {
+    Writer<SWE::Problem>&                            writer) {
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
 
@@ -22,13 +22,13 @@ void Problem::create_distributed_boundaries_kernel(
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
-        std::vector<double>& send_preproc_buffer_reference = rank_boundary.send_preproc_buffer;
+        std::vector<double>& send_preproc_buffer_reference    = rank_boundary.send_preproc_buffer;
         std::vector<double>& receive_preproc_buffer_reference = rank_boundary.receive_preproc_buffer;
 
-        std::vector<double>& send_buffer_reference = rank_boundary.send_buffer;
+        std::vector<double>& send_buffer_reference    = rank_boundary.send_buffer;
         std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
 
-        std::vector<double>& send_postproc_buffer_reference = rank_boundary.send_postproc_buffer;
+        std::vector<double>& send_postproc_buffer_reference    = rank_boundary.send_postproc_buffer;
         std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
 
         uint element_id, bound_id, p, ngp;
@@ -36,15 +36,15 @@ void Problem::create_distributed_boundaries_kernel(
         uint ze_at_baryctr_index, qx_at_baryctr_index, qy_at_baryctr_index, bath_at_baryctr_index;
         uint x_at_baryctr_index, y_at_baryctr_index;
 
-        uint begin_index_preproc = 0;
-        uint begin_index = 0;
+        uint begin_index_preproc  = 0;
+        uint begin_index          = 0;
         uint begin_index_postproc = 0;
 
         for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements.size(); dboundary_id++) {
             element_id = rank_boundary.elements.at(dboundary_id);
-            bound_id = rank_boundary.bound_ids.at(dboundary_id);
-            p = rank_boundary.p.at(dboundary_id);
-            ngp = boundary_integration.GetNumGP(2 * p);
+            bound_id   = rank_boundary.bound_ids.at(dboundary_id);
+            p          = rank_boundary.p.at(dboundary_id);
+            ngp        = boundary_integration.GetNumGP(2 * p);
 
             x_at_baryctr_index = begin_index_preproc;
             y_at_baryctr_index = begin_index_preproc + 1;
@@ -63,15 +63,15 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp + 1;
 
-            ze_at_baryctr_index = begin_index_postproc;
-            qx_at_baryctr_index = begin_index_postproc + 1;
-            qy_at_baryctr_index = begin_index_postproc + 2;
+            ze_at_baryctr_index   = begin_index_postproc;
+            qx_at_baryctr_index   = begin_index_postproc + 1;
+            qy_at_baryctr_index   = begin_index_postproc + 2;
             bath_at_baryctr_index = begin_index_postproc + 3;
 
             begin_index_postproc += 4;
 
             auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
-            pre_dboundary.p = p;
+            pre_dboundary.p     = p;
 
             mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
                 pre_dboundary,

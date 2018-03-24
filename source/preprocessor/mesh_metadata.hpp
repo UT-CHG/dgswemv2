@@ -27,8 +27,8 @@ struct ElementMetaData {
     ElementMetaData() = default;
     ElementMetaData(uint n_faces) : node_ID(n_faces), neighbor_ID(n_faces), boundary_type(n_faces) {}
 
-    std::vector<uint> node_ID;
-    std::vector<uint> neighbor_ID;
+    std::vector<uint>  node_ID;
+    std::vector<uint>  neighbor_ID;
     std::vector<uchar> boundary_type;
 
     friend std::ostream& operator<<(std::ostream& s, const ElementMetaData& elt) {
@@ -86,15 +86,15 @@ struct MeshMetaData {
 
     std::vector<Point<3>> get_nodal_coordinates(uint elt_id) const;
 
-    std::string mesh_name;
+    std::string                               mesh_name;
     std::unordered_map<uint, ElementMetaData> elements;
-    std::unordered_map<uint, NodeMetaData> nodes;
+    std::unordered_map<uint, NodeMetaData>    nodes;
 };
 
 struct DistributedBoundaryMetaData {
     std::pair<uint, uint> elements;
     std::pair<uint, uint> bound_ids;
-    uint p;
+    uint                  p;
 
     friend std::ostream& operator<<(std::ostream& s, const DistributedBoundaryMetaData& dist_int) {
         return s << dist_int.elements.first << " " << dist_int.elements.second << " " << dist_int.bound_ids.first << " "

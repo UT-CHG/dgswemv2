@@ -9,7 +9,7 @@ class ProblemPartitionerInputs {
     using WeightsType = std::unordered_map<int, std::vector<double>>;
 
     virtual WeightsType GetWeights() = 0;
-    virtual void PartitionAuxiliaryFiles() {};
+    virtual void        PartitionAuxiliaryFiles(){};
 
     virtual ~ProblemPartitionerInputs() = default;
 };

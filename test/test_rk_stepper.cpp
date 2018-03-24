@@ -11,25 +11,23 @@ int main() {
     bool error_found = false;
 
     std::array<std::pair<int, int>, 11> rk_pairs;
-    rk_pairs[0] = {1, 1};
-    rk_pairs[1] = {2, 2};
-    rk_pairs[2] = {3, 3};
-    rk_pairs[3] = {4, 3};
-    rk_pairs[4] = {5, 3};
-    rk_pairs[5] = {6, 3};
-    rk_pairs[6] = {7, 3};
-    rk_pairs[7] = {5, 4};
-    rk_pairs[8] = {6, 4};
-    rk_pairs[9] = {7, 4};
+    rk_pairs[0]  = {1, 1};
+    rk_pairs[1]  = {2, 2};
+    rk_pairs[2]  = {3, 3};
+    rk_pairs[3]  = {4, 3};
+    rk_pairs[4]  = {5, 3};
+    rk_pairs[5]  = {6, 3};
+    rk_pairs[6]  = {7, 3};
+    rk_pairs[7]  = {5, 4};
+    rk_pairs[8]  = {6, 4};
+    rk_pairs[9]  = {7, 4};
     rk_pairs[10] = {8, 4};
 
-    double dt = 0.00005;
-    uint nsteps = 5. / dt + 1;
+    double dt     = 0.00005;
+    uint   nsteps = 5. / dt + 1;
 
-    using State = std::array<double, 2>;
-    auto compute_rhs = [](State y, double t)->State {
-        return {y[1], -y[0] + 0.5 * t};
-    };
+    using State      = std::array<double, 2>;
+    auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
 
     for (auto& pair : rk_pairs) {
         Stepper rk_stepper(pair.first, pair.second, dt);
@@ -42,7 +40,7 @@ int main() {
 
         for (uint step = 0; step < nsteps; ++step) {
             for (uint stage = 0; stage < rk_stepper.GetNumStages(); ++stage) {
-                rhs[stage] = compute_rhs(y[stage], t + rk_stepper.drk[stage] * dt);
+                rhs[stage]   = compute_rhs(y[stage], t + rk_stepper.drk[stage] * dt);
                 y[stage + 1] = {0, 0};
                 for (uint s = 0; s < stage + 1; ++s) {
 

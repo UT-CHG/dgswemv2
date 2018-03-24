@@ -15,11 +15,11 @@ class OMPISimulationUnit {
   private:
     InputParameters<typename ProblemType::ProblemInputType> input;
 
-    Stepper stepper;
-    Writer<ProblemType> writer;
+    Stepper                                 stepper;
+    Writer<ProblemType>                     writer;
     typename ProblemType::ProblemParserType parser;
-    typename ProblemType::ProblemMeshType mesh;
-    OMPICommunicator communicator;
+    typename ProblemType::ProblemMeshType   mesh;
+    OMPICommunicator                        communicator;
 
   public:
     OMPISimulationUnit()
@@ -45,7 +45,8 @@ class OMPISimulationUnit {
             this->writer.StartLog();
 
             this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+                                      << input.mesh_data.mesh_name << " mesh" << std::endl
+                                      << std::endl;
         }
 
         initialize_mesh<ProblemType, OMPICommunicator>(
@@ -293,7 +294,7 @@ class OMPISimulation {
   private:
     uint n_steps;
     uint n_stages;
-    int locality_id;
+    int  locality_id;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
@@ -304,7 +305,7 @@ class OMPISimulation {
 
         InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-        this->n_steps = (uint)std::ceil(input.T_end / input.dt);
+        this->n_steps  = (uint)std::ceil(input.T_end / input.dt);
         this->n_stages = input.rk.nstages;
 
         std::string submesh_file_prefix = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + "_" +
@@ -327,7 +328,7 @@ class OMPISimulation {
 };
 
 template <typename ProblemType>
-void OMPISimulation<ProblemType>::Run() {
+void        OMPISimulation<ProblemType>::Run() {
 #pragma omp parallel
     {
         uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
@@ -338,7 +339,7 @@ void OMPISimulation<ProblemType>::Run() {
         sim_per_thread = (this->simulation_units.size() + n_threads - 1) / n_threads;
 
         begin_sim_id = sim_per_thread * thread_id;
-        end_sim_id = std::min(sim_per_thread * (thread_id + 1), (uint) this->simulation_units.size());
+        end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->simulation_units.size());
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
             this->simulation_units[sim_unit_id]->PostReceivePrerocStage();

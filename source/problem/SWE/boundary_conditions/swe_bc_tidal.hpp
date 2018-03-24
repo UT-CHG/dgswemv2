@@ -7,16 +7,16 @@
 namespace SWE {
 class Tidal {
   public:
-    void GetEX(const Stepper& stepper,
-               const uint gp,
-               const Array2D<double>& surface_normal,
+    void GetEX(const Stepper&             stepper,
+               const uint                 gp,
+               const Array2D<double>&     surface_normal,
                const std::vector<double>& ze_in,
                const std::vector<double>& qx_in,
                const std::vector<double>& qy_in,
-               double& ze_ex,
-               double& qx_ex,
-               double& qy_ex) {
-        double ze_0 = 0.0;
+               double&                    ze_ex,
+               double&                    qx_ex,
+               double&                    qy_ex) {
+        double ze_0   = 0.0;
         double ze_amp = ze_0;
 
         // ze_amp = ze_0 * tanh(2 * stepper.GetTimeAtCurrentStage() / (0.25 * 86400.0));  // TANH RAMP

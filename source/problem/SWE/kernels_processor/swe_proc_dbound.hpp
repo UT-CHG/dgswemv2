@@ -8,7 +8,7 @@ template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_send_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
-    auto& state = dbound.data.state[stage];
+    auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
     dbound.ComputeUgp(state.ze, boundary.ze_at_gp);
@@ -28,10 +28,10 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
     dbound.boundary_condition.GetWetDryEX(wet_ex);
 
     if (wd_state_in.wet || wet_ex) {
-        const uint stage = stepper.GetStage();
-        const double dt = stepper.GetDT();
+        const uint   stage = stepper.GetStage();
+        const double dt    = stepper.GetDT();
 
-        auto& state = dbound.data.state[stage];
+        auto& state    = dbound.data.state[stage];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
         auto& sp_at_gp = dbound.data.spherical_projection.sp_at_gp_boundary[dbound.bound_id];
 

@@ -105,7 +105,7 @@ Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const st
     J[1].push_back((this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) / 2.0);
 
     double det_J = (J[0][0] * J[1][1] - J[0][1] * J[1][0]);
-    double cw = det_J / std::abs(det_J);  // CW or CCW
+    double cw    = det_J / std::abs(det_J);  // CW or CCW
 
     double length = sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
                                  this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x],
@@ -114,17 +114,19 @@ Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const st
                                  this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y],
                              2.0));
 
-    surface_normal[0].push_back(cw * (this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
-                                      this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y]) /
+    surface_normal[0].push_back(cw *
+                                (this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
+                                 this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y]) /
                                 length);
-    surface_normal[0].push_back(-cw * (this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
-                                       this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x]) /
+    surface_normal[0].push_back(-cw *
+                                (this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
+                                 this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x]) /
                                 length);
 
     return surface_normal;
 }
 
-std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values,
+std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>&   nodal_values,
                                                              const std::vector<Point<2>>& points) {
     std::vector<double> interpolation;
 
@@ -145,15 +147,17 @@ std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<d
 std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
     std::vector<Point<2>> global_coordinates(points.size());
 
-    std::vector<double> x = this->InterpolateNodalValues(
-        std::vector<double>{this->nodal_coordinates[0][GlobalCoord::x], this->nodal_coordinates[1][GlobalCoord::x],
-                            this->nodal_coordinates[2][GlobalCoord::x]},
-        points);
+    std::vector<double> x =
+        this->InterpolateNodalValues(std::vector<double>{this->nodal_coordinates[0][GlobalCoord::x],
+                                                         this->nodal_coordinates[1][GlobalCoord::x],
+                                                         this->nodal_coordinates[2][GlobalCoord::x]},
+                                     points);
 
-    std::vector<double> y = this->InterpolateNodalValues(
-        std::vector<double>{this->nodal_coordinates[0][GlobalCoord::y], this->nodal_coordinates[1][GlobalCoord::y],
-                            this->nodal_coordinates[2][GlobalCoord::y]},
-        points);
+    std::vector<double> y =
+        this->InterpolateNodalValues(std::vector<double>{this->nodal_coordinates[0][GlobalCoord::y],
+                                                         this->nodal_coordinates[1][GlobalCoord::y],
+                                                         this->nodal_coordinates[2][GlobalCoord::y]},
+                                     points);
 
     for (uint pt = 0; pt < points.size(); pt++) {
         global_coordinates[pt][GlobalCoord::x] = x[pt];

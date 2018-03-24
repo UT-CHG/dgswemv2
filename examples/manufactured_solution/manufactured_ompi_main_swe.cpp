@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
         return 1;
     } else {
         auto t1 = std::chrono::high_resolution_clock::now();
-        int provided;
+        int  provided;
         MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
         if (provided != MPI_THREAD_MULTIPLE) {
@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
         if (locality_id == 0) {
-            std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1)
-                                                         .count() << std::endl;
+            std::cout << "Time Elapsed (in us): "
+                      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
 
         simulation.ComputeL2Residual();

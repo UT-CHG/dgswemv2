@@ -9,7 +9,7 @@ int main() {
     {
         std::cout << "Beginning test 1\n";
 
-        YAML::Node test;
+        YAML::Node  test;
         SWE::Inputs result(test);
 
         if (!Utilities::almost_equal(9.81, result.g)) {
@@ -38,16 +38,16 @@ int main() {
         test["gravity"] = 1.0;
 
         YAML::Node bf_node;
-        bf_node["type"] = std::string("Chezy");
+        bf_node["type"]        = std::string("Chezy");
         bf_node["coefficient"] = 0.01;
 
         YAML::Node ic_node;
-        ic_node["type"] = "Constant";
+        ic_node["type"]                   = "Constant";
         ic_node["initial_surface_height"] = 1.0;
-        ic_node["initial_momentum_x"] = 2.0;
-        ic_node["initial_momentum_y"] = 3.0;
+        ic_node["initial_momentum_x"]     = 2.0;
+        ic_node["initial_momentum_y"]     = 3.0;
 
-        test["bottom_friction"] = bf_node;
+        test["bottom_friction"]    = bf_node;
         test["initial_conditions"] = ic_node;
 
         SWE::Inputs result(test);
@@ -74,7 +74,7 @@ int main() {
     {
         std::cout << "\nBeginning test 3\n";
         YAML::Node bf_node;
-        bf_node["type"] = "Chezy";
+        bf_node["type"]        = "Chezy";
         bf_node["coefficient"] = -0.01;
 
         YAML::Node test;
@@ -83,8 +83,7 @@ int main() {
         bool local_error{true};
         try {
             SWE::Inputs results(test);
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cout << "Good news (this error should have been thrown)\n"
                       << "    " << e.what() << '\n';
             local_error = false;

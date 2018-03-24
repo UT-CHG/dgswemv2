@@ -10,16 +10,16 @@
 #include <sstream>
 #include <vector>
 
-std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
+std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData&                                 mesh_meta,
                                                  const std::unordered_map<int, std::vector<double>>& problem_weights,
-                                                 const int num_partitions,
-                                                 const int num_nodes,
-                                                 const int ranks_per_locality,
-                                                 const bool rank_balanced);
+                                                 const int                                           num_partitions,
+                                                 const int                                           num_nodes,
+                                                 const int                                           ranks_per_locality,
+                                                 const bool                                          rank_balanced);
 
-void write_distributed_edge_metadata(const std::string& file_name,
-                                     const InputParameters<>& input,
-                                     const MeshMetaData& mesh_meta,
+void write_distributed_edge_metadata(const std::string&                            file_name,
+                                     const InputParameters<>&                      input,
+                                     const MeshMetaData&                           mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes);
 
 int main(int argc, char** argv) {
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {
             std::string outname = input_mesh_str;
-            outname = outname.substr(0, outname.find_last_of("."));
+            outname             = outname.substr(0, outname.find_last_of("."));
 
             outname += "_" + std::to_string(static_cast<long long>(n)) + "_" +
                        std::to_string(static_cast<long long>(m)) + ".meta";
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     updated_input_filename.erase(updated_input_filename.size() - 3);
     updated_input_filename += "_parallelized.15";
     input.mesh_file_name = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of(".")) + ".meta";
-    input.mesh_format = "Meta";
+    input.mesh_format    = "Meta";
     input.write_to(updated_input_filename);
 
     auto t2 = std::chrono::high_resolution_clock::now();

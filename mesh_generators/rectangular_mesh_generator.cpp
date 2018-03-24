@@ -3,11 +3,7 @@
 
 #include "bathymetry.hpp"
 
-enum Pattern : uchar {
-    simple = 0,
-    zigzag = 1,
-    checker = 2
-};
+enum Pattern : uchar { simple = 0, zigzag = 1, checker = 2 };
 
 struct MeshGeneratorInput {
     std::string mesh_name;
@@ -31,18 +27,18 @@ struct MeshGeneratorInput {
 };
 
 struct node {
-    uint ID;
+    uint                  ID;
     std::array<double, 3> coord;
 };
 
 struct element {
-    uint ID;
-    uint type;
+    uint              ID;
+    uint              type;
     std::vector<uint> nodes;
 };
 
 struct boundary {
-    uchar type;
+    uchar             type;
     std::vector<uint> nodes;
 };
 
@@ -122,7 +118,7 @@ int main(int argc, const char* argv[]) {
 
     file << std::fixed << std::setprecision(12);
     file << "rectangle\n";
-    file << 2 * m* n << "    " << (m + 1) * (n + 1) << '\n';
+    file << 2 * m * n << "    " << (m + 1) * (n + 1) << '\n';
 
     for (uint node = 0; node < nodes.size(); node++) {
         file << nodes[node].ID << ' ';
@@ -141,13 +137,13 @@ int main(int argc, const char* argv[]) {
         file << '\n';
     }
 
-    uint n_land = 0;
+    uint n_land  = 0;
     uint n_tidal = 0;
-    uint n_flow = 0;
+    uint n_flow  = 0;
 
-    uint n_land_node = 0;
+    uint n_land_node  = 0;
     uint n_tidal_node = 0;
-    uint n_flow_node = 0;
+    uint n_flow_node  = 0;
 
     for (uint n_bound = 0; n_bound < 4; n_bound++) {
         if (boundaries[n_bound].type == 0) {
@@ -282,8 +278,12 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) {
 
 void MeshGeneratorInput::Summarize() {
     std::cout << "MeshGenerator Input\n"
-              << "  x1: " << this->x1 << '\n' << "  x2: " << this->x2 << '\n' << "  y1: " << this->y1 << '\n'
-              << "  y2: " << this->y2 << '\n' << '\n' << "  num_x_subdivisions: " << num_x_subdivisions << '\n'
+              << "  x1: " << this->x1 << '\n'
+              << "  x2: " << this->x2 << '\n'
+              << "  y1: " << this->y1 << '\n'
+              << "  y2: " << this->y2 << '\n'
+              << '\n'
+              << "  num_x_subdivisions: " << num_x_subdivisions << '\n'
               << "  num_y_subdivisions: " << num_y_subdivisions << "\n\n";
 
     switch (this->pattern) {
@@ -311,12 +311,12 @@ void simple_pattern_tri(uint m, uint n, std::vector<element>& elements) {
     // mesh with triangular elements simple pattern
     for (uint j = 0; j < n; j++) {
         for (uint i = 0; i < m; i++) {
-            elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+            elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + m + 2 + (m + 1) * j, i + m + 1 + (m + 1) * j};
 
-            elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+            elements[2 * i + 2 * m * j + 1].ID   = 2 * i + 2 * m * j + 1;
             elements[2 * i + 2 * m * j + 1].type = 3;
             elements[2 * i + 2 * m * j + 1].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + 1 + (m + 1) * j, i + m + 2 + (m + 1) * j};
@@ -328,12 +328,12 @@ void zigzag_pattern_tri(uint m, uint n, std::vector<element>& elements) {
     // mesh with triangular elements zigzag pattern
     for (uint j = 0; j < n; j += 2) {
         for (uint i = 0; i < m; i++) {
-            elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+            elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + m + 2 + (m + 1) * j, i + m + 1 + (m + 1) * j};
 
-            elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+            elements[2 * i + 2 * m * j + 1].ID   = 2 * i + 2 * m * j + 1;
             elements[2 * i + 2 * m * j + 1].type = 3;
             elements[2 * i + 2 * m * j + 1].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + 1 + (m + 1) * j, i + m + 2 + (m + 1) * j};
@@ -342,12 +342,12 @@ void zigzag_pattern_tri(uint m, uint n, std::vector<element>& elements) {
 
     for (uint j = 1; j < n; j += 2) {
         for (uint i = 0; i < m; i++) {
-            elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+            elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + 1 + (m + 1) * j, i + m + 1 + (m + 1) * j};
 
-            elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+            elements[2 * i + 2 * m * j + 1].ID   = 2 * i + 2 * m * j + 1;
             elements[2 * i + 2 * m * j + 1].type = 3;
             elements[2 * i + 2 * m * j + 1].nodes =
                 std::vector<uint>{i + 1 + (m + 1) * j, i + m + 2 + (m + 1) * j, i + m + 1 + (m + 1) * j};
@@ -359,12 +359,12 @@ void checker_pattern_tri(uint m, uint n, std::vector<element>& elements) {
     // mesh with triangular elements checker pattern
     for (uint j = 0; j < n; j++) {
         for (uint i = j % 2; i < m; i += 2) {
-            elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+            elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + m + 2 + (m + 1) * j, i + m + 1 + (m + 1) * j};
 
-            elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+            elements[2 * i + 2 * m * j + 1].ID   = 2 * i + 2 * m * j + 1;
             elements[2 * i + 2 * m * j + 1].type = 3;
             elements[2 * i + 2 * m * j + 1].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + 1 + (m + 1) * j, i + m + 2 + (m + 1) * j};
@@ -373,12 +373,12 @@ void checker_pattern_tri(uint m, uint n, std::vector<element>& elements) {
 
     for (uint j = 0; j < n; j++) {
         for (uint i = (j + 1) % 2; i < m; i += 2) {
-            elements[2 * i + 2 * m * j].ID = 2 * i + 2 * m * j;
+            elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
                 std::vector<uint>{i + (m + 1) * j, i + 1 + (m + 1) * j, i + m + 1 + (m + 1) * j};
 
-            elements[2 * i + 2 * m * j + 1].ID = 2 * i + 2 * m * j + 1;
+            elements[2 * i + 2 * m * j + 1].ID   = 2 * i + 2 * m * j + 1;
             elements[2 * i + 2 * m * j + 1].type = 3;
             elements[2 * i + 2 * m * j + 1].nodes =
                 std::vector<uint>{i + 1 + (m + 1) * j, i + m + 2 + (m + 1) * j, i + m + 1 + (m + 1) * j};

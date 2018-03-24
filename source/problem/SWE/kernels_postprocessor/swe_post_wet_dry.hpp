@@ -6,7 +6,7 @@ template <typename ElementType>
 void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& state = elt.data.state[stage + 1];
+    auto& state    = elt.data.state[stage + 1];
     auto& wd_state = elt.data.wet_dry_state;
     auto& internal = elt.data.internal;
 
@@ -22,7 +22,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
     bool set_wet_element = false;
     bool set_dry_element = false;
-    bool check_element = false;
+    bool check_element   = false;
 
     if (h_avg <= Global::h_o) {
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {

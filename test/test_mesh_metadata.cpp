@@ -1,8 +1,7 @@
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
-const static auto is_equal = [](const MeshMetaData & meshA, const MeshMetaData & meshB) -> bool {
-
+const static auto is_equal = [](const MeshMetaData& meshA, const MeshMetaData& meshB) -> bool {
     bool is_the_same{true};
 
     if (meshA.mesh_name.compare(meshB.mesh_name) != 0) {
@@ -29,7 +28,7 @@ int main(int argc, char** argv) {
     MeshMetaData meshA(mesh1);
 
     std::string out_name = argv[1];
-    out_name = out_name + ".meta.out";
+    out_name             = out_name + ".meta.out";
 
     meshA.write_to(out_name);
 

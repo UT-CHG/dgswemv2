@@ -11,18 +11,18 @@ class Parser {
   private:
     bool parsing_input;
 
-    SWE::MeteoForcingType meteo_forcing_type;
-    uint meteo_parse_frequency;
-    std::string meteo_data_file;
+    SWE::MeteoForcingType                               meteo_forcing_type;
+    uint                                                meteo_parse_frequency;
+    std::string                                         meteo_data_file;
     std::map<uint, std::map<uint, std::vector<double>>> node_meteo_data_step;
-    std::map<uint, std::vector<double>> node_meteo_data;
+    std::map<uint, std::vector<double>>                 node_meteo_data;
 
   public:
     Parser() = default;
     Parser(const InputParameters<SWE::Inputs>& input) {
         this->parsing_input = input.problem_input.parse_input;
 
-        meteo_forcing_type = input.problem_input.meteo_forcing.type;
+        meteo_forcing_type    = input.problem_input.meteo_forcing.type;
         meteo_parse_frequency = (uint)std::ceil(input.problem_input.meteo_forcing.frequency / input.dt);
         this->meteo_data_file = input.problem_input.meteo_forcing.meteo_data_file;
     }

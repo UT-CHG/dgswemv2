@@ -4,19 +4,19 @@
 
 #include <iostream>
 
-bool test_configuration(const int configuration,
-                        const double ze_in,
-                        const double ze_ex,
-                        const double qx_in,
-                        const double qx_ex,
-                        const double qy_in,
-                        const double qy_ex,
-                        const double bath,
-                        const double sp,
+bool test_configuration(const int            configuration,
+                        const double         ze_in,
+                        const double         ze_ex,
+                        const double         qx_in,
+                        const double         qx_ex,
+                        const double         qy_in,
+                        const double         qy_ex,
+                        const double         bath,
+                        const double         sp,
                         std::vector<double>& normal,
-                        const double true_ze_flux,
-                        const double true_qx_flux,
-                        const double true_qy_flux) {
+                        const double         true_ze_flux,
+                        const double         true_qx_flux,
+                        const double         true_qy_flux) {
     bool error_found = false;
 
     double ze_flux, qx_flux, qy_flux;
@@ -67,7 +67,7 @@ int main() {
         std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
-        double sp = 1;
+        double sp   = 1;
 
         if (test_configuration(1,
                                ze_in,
@@ -97,7 +97,7 @@ int main() {
         std::vector<double> normal{1. / std::sqrt(2.), -1. / std::sqrt(2.)};
 
         double bath = 0;
-        double sp = 1;
+        double sp   = 1;
 
         if (test_configuration(2,
                                ze_in,
@@ -127,7 +127,7 @@ int main() {
         std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
-        double sp = 1;
+        double sp   = 1;
 
         if (test_configuration(2,
                                ze_in,
