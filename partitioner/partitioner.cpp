@@ -81,12 +81,8 @@ int main(int argc, char** argv) {
         problem_inputs = std::make_unique<DefaultPartitionerInputs>(mesh_meta);
     }
 
-    std::vector<std::vector<MeshMetaData>> submeshes = partition(mesh_meta,
-                                                                 problem_inputs->GetWeights(),
-                                                                 num_partitions,
-                                                                 num_nodes,
-                                                                 ranks_per_locality,
-                                                                 rank_balanced);
+    std::vector<std::vector<MeshMetaData>> submeshes = partition(
+        mesh_meta, problem_inputs->GetWeights(), num_partitions, num_nodes, ranks_per_locality, rank_balanced);
 
     for (uint n = 0; n < submeshes.size(); ++n) {
         for (uint m = 0; m < submeshes[n].size(); ++m) {

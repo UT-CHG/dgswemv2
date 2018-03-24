@@ -144,7 +144,6 @@ int main() {
                      "in y direction" << std::endl;
     }
 
-
     // Check ComputeUgp and ApplyMinv
     std::vector<double> mod_vals(triangle.data.get_ndof());
     std::vector<double> gp_vals(triangle.data.get_ngp_internal());
@@ -156,11 +155,10 @@ int main() {
 
         triangle.ComputeUgp(mod_vals, gp_vals);
         triangle.ApplyMinv(mod_vals, solution_vals);
-        
+
         for (uint doff = 0; doff < 66; doff++) {
             if (dof == doff) {
-                if (!almost_equal(
-                         (1. / triangle.IntegrationPhi(doff, gp_vals)), solution_vals[dof], 1.e+03)) {
+                if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)), solution_vals[dof], 1.e+03)) {
                     error_found = true;
 
                     std::cerr << "Error found in Triangle element in ApplyMinv" << std::endl;
@@ -207,8 +205,8 @@ int main() {
     // Check L2 projection
     std::vector<double> nodal_vals{1.0, 2.0, 3.0};
     std::vector<double> modal_vals_true{2.0, 0.5, 0.5};
-    std::vector<double> modal_vals_computed(triangle.data.get_ndof()); 
-    
+    std::vector<double> modal_vals_computed(triangle.data.get_ndof());
+
     triangle.L2Projection(nodal_vals, modal_vals_computed);
 
     for (uint i = 0; i < 3; i++) {

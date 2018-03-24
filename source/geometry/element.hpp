@@ -214,7 +214,8 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f, std::vector<double>& projection) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f,
+                                                                              std::vector<double>& projection) {
     std::vector<double> rhs;
 
     std::vector<double> f_vals(this->gp_global_coordinates.size());
@@ -229,8 +230,8 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(co
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(
-    const std::vector<double>& nodal_values, std::vector<double>& projection) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const std::vector<double>& nodal_values,
+                                                                              std::vector<double>& projection) {
     std::vector<double> rhs;
 
     std::vector<double> interpolation =
@@ -377,8 +378,8 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDP
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(
-    const std::vector<double>& rhs, std::vector<double>& solution) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(const std::vector<double>& rhs,
+                                                                           std::vector<double>& solution) {
     if (this->m_inv.first) {  // diagonal
         for (uint i = 0; i < rhs.size(); i++) {
             solution[i] = this->m_inv.second[0][i] * rhs[i];

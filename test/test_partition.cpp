@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
     AdcircFormat mesh1(argv[1]);
     MeshMetaData meshA(mesh1);
 
-    std::unordered_map<int,std::vector<double>> weights;
-    for ( const auto& elt : meshA.elements ) {
+    std::unordered_map<int, std::vector<double>> weights;
+    for (const auto& elt : meshA.elements) {
         weights.insert(std::make_pair(elt.first, std::vector<double>{1.}));
     }
 

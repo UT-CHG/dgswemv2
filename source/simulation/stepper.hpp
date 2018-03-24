@@ -25,7 +25,7 @@ class Stepper {
 
     uint GetNumStages() const { return nstages; }
     double GetDT() const { return dt; }
-    
+
     uint GetStep() const { return step; }
     uint GetTimestamp() const { return timestamp; }
     uint GetStage() const { return stage; }

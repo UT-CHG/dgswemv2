@@ -30,7 +30,7 @@ struct AdcircFormat {
     void write_to(const char* out_name) const;
 
     SWE::BoundaryConditions get_ibtype(std::array<int, 2>& node_pair) const;
-    
+
     bool has_edge(std::vector<int>::const_iterator cbegin,
                   std::vector<int>::const_iterator cend,
                   std::array<int, 2>& node_pair) const;
