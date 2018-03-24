@@ -66,7 +66,7 @@ and running the executable without any arguments will provide usage information.
 \item \lstinline{<number of partitions>}: The number of partitions the mesh is to be partitioned into.
 \item \lstinline{<number of nodes>}: The number of hardware localities the simulation is to be run on.
 \item \lstinline{<ranks per locality>}: The number of ranks per locality. 
-\item \lstinline{<NUMA configuration>}: Additional NUMA specific information to be incorporated into the partitioning. Currently, this option is unsupported and should be left blank.
+\item \lstinline{<rank balanced>}: Whether or not the constraints should be balanced across the individual submeshes. Note that the entry options are \lstinline{true} or \lstinline{false}. Recommended for OpenMP/MPI.
 \end{itemize}
 Our two parallelization strategies rely on different parallel execution models. Thus the inputs for either version need to be slightly modified. In the following two subsections we outline, the differences in general, but also provide concrete numbers to allow the user to proceed.
 \subsubsection{Partitioning for HPX}
@@ -82,13 +82,15 @@ This should generate, 4 \lstinline{meta}-formatted mesh files. The \lstinline{me
 \lstinline{dgswemv2_input_parallelized.15}.
 
 \subsubsection{Partitioning for OpenMP/MPI}
-Partitioning for the MPI+OpenMP implementation is slightly, different. Ratio of number of partitions to number of threads should correspond to the number of threads available on each node. However, it's also possible to run a flat MPI implementation by modifying the \lstinline{<ranks per locality>} option. This option will correspond to the number MPI ranks on each node. 
+Partitioning for the MPI+OpenMP implementation is slightly, different. Ratio of number of partitions to number of threads should correspond to the number of threads available on each node. However, it's also possible to run a flat MPI implementation by modifying the \lstinline{<ranks per locality>} option. This option will correspond to the number MPI ranks on each node.
+
+Additionally, since submeshes are mapped statically to threads, we recommend setting the \lstinline{<rank balanced>} option to \lstinline{true}. For applications with varying load across the elements, e.g. in the case of wetting and drying, we would like to balance load and memory constraints across the submeshes. Ultimately, the performance will be constrained along the critical path, for statically mapped parallelizations optimal performance is achieved when each submesh roughly has the same amount of work. Note that this is not necessary for the HPX parallelization, which implements aggressive on-node work stealing.
 
 To generate a mesh partitioning for this parallelization, we run
 \begin{lstlisting}[language=bash]
 cd ${DGSWEMV2_EXAMPLES}/manufactured_solution/input_files
 ${DGSWEMV2_BUILD}/partitioner/partitioner\
-   dgswemv2_input.15 2 1 2
+   dgswemv2_input.15 2 1 2 true
 \end{lstlisting}
 This configuration will result in a flat MPI run. With 2 MPI ranks. Note that similar to the HPX run, we generate both \lstinline{meta} mesh files and \lstinline{dbmd} connectivity information and an updated \lstinline{dgswemv2_input_paralllelized.15} input file.
 \subsection{Running the simulation}

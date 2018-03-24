@@ -11,14 +11,34 @@
 #include "util.hpp"
 #include <metis.h>
 
-template <class NodeW = double, class EdgeW = double>
 class CSRMat {
   public:
     // construct from components
-    CSRMat(std::unordered_map<int, NodeW> nw, std::unordered_map<std::pair<int, int>, EdgeW> ew)
+    CSRMat(std::unordered_map<int, std::vector<double>> nw, std::unordered_map<std::pair<int, int>, double> ew)
         : _edges{}, _nodes{}, _node_wgts_map(std::move(nw)), _edge_wgts_map(std::move(ew)) {
+        if (_node_wgts_map.size() > 0) {
+            _constraint_number = _node_wgts_map.cbegin()->second.size();
+        }
         for (const auto& p : _node_wgts_map) {
             _nodes.push_back(p.first);
+
+            // Enforce that each vector-value in the node weight map has the same length.
+            if (p.second.size() != _constraint_number) {
+                std::string err_msg =
+                    "Error: Two nodes with different number of constraints\n"
+                    "    Node " +
+                    std::to_string(_node_wgts_map.cbegin()->first) + " has constraints { ";
+                for (const double& c : _node_wgts_map.cbegin()->second) {
+                    err_msg += std::to_string(c) + " ";
+                }
+                err_msg += "}\n";
+                err_msg += "    Node " + std::to_string(p.first) + " has constraints { ";
+                for (const double& c : p.second) {
+                    err_msg += std::to_string(c) + " ";
+                }
+                err_msg += "}\n";
+                throw std::logic_error(err_msg);
+            }
         }
         std::sort(_nodes.begin(), _nodes.end());
 
@@ -42,7 +62,7 @@ class CSRMat {
     size_t size() const { return _nodes.size(); }
     const std::vector<int>& node_ID() const { return _nodes; }
     int get(int index) const { return _nodes[index]; }
-    NodeW node_weight(int id) const { return _node_wgts_map.at(id); }
+    std::vector<double> node_weight(int id) const { return _node_wgts_map.at(id); }
 
     std::vector<int> xadj() const {
         std::vector<int> result;
@@ -72,23 +92,27 @@ class CSRMat {
         return result;
     }
 
+    std::size_t constraint_number() const { return _constraint_number; }
+
     // vector of node weights in order
-    std::vector<NodeW> node_wgts() const {
-        std::vector<NodeW> result;
-        result.reserve(size());   // pre-allocate
-        for (auto id : _nodes) {  // _nodes is sorted
-            result.push_back(_node_wgts_map.at(id));
+    std::vector<double> node_wgts() const {
+        std::vector<double> result;
+        result.reserve(_constraint_number * size());  // pre-allocate
+        for (auto id : _nodes) {                      // _nodes is sorted
+            for (uint c = 0; c < _constraint_number; ++c) {
+                result.push_back(_node_wgts_map.at(id).at(c));
+            }
         }
         return result;
     }
 
     // returns a vector of edge weights in order
-    std::vector<EdgeW> edge_wgts() const {
-        std::vector<EdgeW> result;
+    std::vector<double> edge_wgts() const {
+        std::vector<double> result;
         for (auto src : _nodes) {                  // _nodes is sorted
             if (_edges.count(src)) {               // node might not be connected to anything
                 for (auto dst : _edges.at(src)) {  // _edges.at(src) is sorted
-                    EdgeW w{0};
+                    double w{0};
                     auto id = std::make_pair(src, dst);
                     if (_edge_wgts_map.count(id)) {
                         w += _edge_wgts_map.at(id);
@@ -145,10 +169,11 @@ class CSRMat {
     std::unordered_map<int, std::vector<int>> get_edges() { return _edges; }
 
   private:
+    std::size_t _constraint_number;
     std::unordered_map<int, std::vector<int>> _edges;
     std::vector<int> _nodes;  // sorted node IDs
-    std::unordered_map<int, NodeW> _node_wgts_map;
-    std::unordered_map<std::pair<int, int>, EdgeW> _edge_wgts_map;
+    std::unordered_map<int, std::vector<double>> _node_wgts_map;
+    std::unordered_map<std::pair<int, int>, double> _edge_wgts_map;
 };
 
 template <class T>
@@ -200,23 +225,7 @@ void summarize_vec(std::vector<T> vec) {
     mota::Say() << "\b\b)";
 }
 
-inline std::vector<double> get_node_weights(const std::vector<int>& node_ID,
-                                            const std::vector<std::function<double(int)>>& cons) {
-    std::vector<double> result;
-    result.reserve(node_ID.size() * cons.size());
-    for (auto id : node_ID) {
-        for (auto lam : cons) {
-            result.push_back(lam(id));
-        }
-    }
-    return result;
-}
-
-template <class NodeW>
-std::vector<int64_t> metis_part(const CSRMat<NodeW>& mat,
-                                int64_t nparts,
-                                std::vector<std::function<double(int)>> cons,
-                                const double imba_ratio) {
+std::vector<int64_t> metis_part(const CSRMat& mat, int64_t nparts, const double imba_ratio) {
     static_assert(sizeof(idx_t) == sizeof(int64_t), "Requires 64-bit METIS idx_t");
     static_assert(sizeof(real_t) == sizeof(double), "Requires 64-bit METIS real_t");
 
@@ -228,18 +237,18 @@ std::vector<int64_t> metis_part(const CSRMat<NodeW>& mat,
     }
 
     // set up metis parameters
-    int64_t ncon = cons.size(), objval;
+    int64_t ncon = static_cast<int64_t>(mat.constraint_number());
+    int64_t objval;
     std::vector<int64_t> options(METIS_NOPTIONS), part(nvtxs);
     std::vector<double> tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);
     // set up weights vectorse
 
-    std::vector<int64_t> node_wgts = scale_to_int64(get_node_weights(mat.node_ID(), cons)),
-                         edge_wgts = scale_to_int64(mat.edge_wgts());
+    std::vector<int64_t> node_wgts = scale_to_int64(mat.node_wgts()), edge_wgts = scale_to_int64(mat.edge_wgts());
     // check parameters
 
     /*mota::Say() << "nparts: " << nparts;
     mota::Say() << "nvtx: " << nvtxs;
-    mota::Say() << "xadj: ";
+    mota::Say() << "xadj: "
     summarize_vec(mat.xadj());
     mota::Say() << " adj: ";
     summarize_vec(mat.adj());
