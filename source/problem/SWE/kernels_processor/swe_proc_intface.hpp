@@ -10,8 +10,8 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
     if (wd_state_in.wet || wd_state_ex.wet) {
-        const uint stage = stepper.get_stage();
-        const double dt = stepper.get_dt();
+        const uint stage = stepper.GetStage();
+        const double dt = stepper.GetDT();
 
         auto& state_in = intface.data_in.state[stage];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];

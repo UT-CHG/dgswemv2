@@ -50,8 +50,8 @@ class Element {
     std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     template <typename F>
-    std::vector<double> L2Projection(const F& f);
-    std::vector<double> L2Projection(const std::vector<double>& nodal_values);
+    void L2Projection(const F& f, std::vector<double>& projection);
+    void L2Projection(const std::vector<double>& nodal_values, std::vector<double>& projection);
 
     void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin);
     void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u);
@@ -71,7 +71,7 @@ class Element {
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
     double IntegrationDPhi(const uint dir, const uint dof, const std::vector<double>& u_gp);
 
-    std::vector<double> ApplyMinv(const std::vector<double>& rhs);
+    void ApplyMinv(const std::vector<double>& rhs, std::vector<double>& solution);
 
     void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
     void WriteCellDataVTK(const std::vector<double>& u, std::vector<double>& cell_data);
@@ -214,7 +214,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f, std::vector<double>& projection) {
     std::vector<double> rhs;
 
     std::vector<double> f_vals(this->gp_global_coordinates.size());
@@ -225,12 +225,12 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
         rhs.push_back(this->IntegrationPhi(dof, f_vals));
     }
 
-    return this->ApplyMinv(rhs);
+    this->ApplyMinv(rhs, projection);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Projection(
-    const std::vector<double>& nodal_values) {
+inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(
+    const std::vector<double>& nodal_values, std::vector<double>& projection) {
     std::vector<double> rhs;
 
     std::vector<double> interpolation =
@@ -240,7 +240,7 @@ std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::L2Proje
         rhs.push_back(this->IntegrationPhi(dof, interpolation));
     }
 
-    return this->ApplyMinv(rhs);
+    this->ApplyMinv(rhs, projection);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -377,24 +377,20 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDP
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline std::vector<double> Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(
-    const std::vector<double>& rhs) {
-    std::vector<double> solution;
-
+inline void Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(
+    const std::vector<double>& rhs, std::vector<double>& solution) {
     if (this->m_inv.first) {  // diagonal
         for (uint i = 0; i < rhs.size(); i++) {
-            solution.push_back(this->m_inv.second[0][i] * rhs[i]);
+            solution[i] = this->m_inv.second[0][i] * rhs[i];
         }
     } else if (!(this->m_inv.first)) {  // not diagonal
         for (uint i = 0; i < this->m_inv.second.size(); i++) {
-            solution.push_back(0);
+            solution[i] = 0.0;
             for (uint j = 0; j < rhs.size(); j++) {
                 solution[i] += this->m_inv.second[i][j] * rhs[j];
             }
         }
     }
-
-    return solution;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>

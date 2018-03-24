@@ -7,14 +7,14 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
 
     if (wd_state.wet) {
-        const uint stage = stepper.get_stage();
+        const uint stage = stepper.GetStage();
 
         auto& state = elt.data.state[stage];
         auto& internal = elt.data.internal;
         auto& source = elt.data.source;
         auto& sp_at_gp = elt.data.spherical_projection.sp_at_gp_internal;
 
-        double t = stepper.get_t_at_curr_stage();
+        double t = stepper.GetTimeAtCurrentStage();
 
         if (SWE::SourceTerms::function_source) {
             auto source_ze = [t](Point<2>& pt) { return SWE::source_ze(t, pt); };

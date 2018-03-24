@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
             InputParameters<typename SWE::Inputs> input(argv[1]);
             std::string output_file_name = std::string(argv[1]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
-            input.WriteTo(output_file_name);
+            input.write_to(output_file_name);
 
             InputParameters<typename SWE::Inputs> input2(output_file_name);
             local_error = !equal(input, input2);
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
             InputParameters<> input(argv[1]);
             std::string output_file_name = std::string(argv[1]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
-            input.WriteTo(output_file_name);
+            input.write_to(output_file_name);
 
             InputParameters<> input2(output_file_name);
             local_error = !equal2(input, input2);
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
             InputParameters<typename SWE::Inputs> input(argv[4]);
             std::string output_file_name = std::string(argv[4]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
-            input.WriteTo(output_file_name);
+            input.write_to(output_file_name);
 
             InputParameters<typename SWE::Inputs> input2(output_file_name);
             local_error = !equal(input, input2);

@@ -28,7 +28,7 @@ class Simulation {
           mesh(this->input.polynomial_order) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
-        this->input.ReadMesh();
+        this->input.read_mesh();
 
         mesh.SetMeshName(this->input.mesh_data.mesh_name);
 
@@ -76,8 +76,8 @@ void Simulation<ProblemType>::Run() {
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
-    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
-    uint n_stages = this->stepper.get_num_stages();
+    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.GetDT());
+    uint n_stages = this->stepper.GetNumStages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
@@ -92,7 +92,7 @@ void Simulation<ProblemType>::Run() {
             this->parser.ParseInput(this->stepper, this->mesh);
         }
 
-        for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
+        for (uint stage = 0; stage < this->stepper.GetNumStages(); ++stage) {
             this->mesh.CallForEachElement(volume_kernel);
 
             this->mesh.CallForEachElement(source_kernel);

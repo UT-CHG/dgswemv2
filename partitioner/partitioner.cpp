@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    input.ReadMesh();
+    input.read_mesh();
     MeshMetaData& mesh_meta = input.mesh_data;
     std::vector<std::vector<MeshMetaData>> submeshes =
         partition(mesh_meta, num_partitions, num_nodes, ranks_per_locality, numa_config);
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
             outname += "_" + std::to_string(static_cast<long long>(n)) + "_" +
                        std::to_string(static_cast<long long>(m)) + ".meta";
 
-            submeshes[n][m].WriteTo(outname);
+            submeshes[n][m].write_to(outname);
         }
     }
 
@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
     updated_input_filename += "_parallelized.15";
     input.mesh_file_name = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of(".")) + ".meta";
     input.mesh_format = "Meta";
-    input.WriteTo(updated_input_filename);
+    input.write_to(updated_input_filename);
 
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "\nTime Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()

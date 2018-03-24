@@ -5,22 +5,6 @@
 
 template <typename ProblemType>
 class Writer {
-  public:
-    Writer() = default;
-    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input);
-    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
-           const uint locality_id,
-           const uint submesh_id);
-
-    bool WritingLog() { return writing_log_file; }
-    bool WritingVerboseLog() { return (writing_log_file && verbose_log_file); }
-    std::ofstream& GetLogFile() { return log_file; }
-    void StartLog();
-
-    bool WritingOutput() { return writing_output; }
-    void WriteFirstStep(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
-    void WriteOutput(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
-
   private:
     bool writing_output;
     std::string output_path;
@@ -38,6 +22,23 @@ class Writer {
     bool writing_modal_output;
     int modal_output_frequency;
 
+  public:
+    Writer() = default;
+    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input);
+    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
+           const uint locality_id,
+           const uint submesh_id);
+
+    bool WritingLog() { return writing_log_file; }
+    bool WritingVerboseLog() { return (writing_log_file && verbose_log_file); }
+    std::ofstream& GetLogFile() { return log_file; }
+    void StartLog();
+
+    bool WritingOutput() { return writing_output; }
+    void WriteFirstStep(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
+    void WriteOutput(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
+
+  private:
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
 };
 
@@ -90,7 +91,7 @@ void Writer<ProblemType>::WriteFirstStep(const Stepper& stepper, typename Proble
 
 template <typename ProblemType>
 void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh) {
-    if (writing_vtk_output && (stepper.get_step() % vtk_output_frequency == 0)) {
+    if (writing_vtk_output && (stepper.GetStep() % vtk_output_frequency == 0)) {
         std::ofstream raw_data_file(vtk_file_name_raw);
 
         ProblemType::write_VTK_data_kernel(mesh, raw_data_file);
@@ -98,7 +99,7 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
         std::ifstream file_geom(vtk_file_name_geom, std::ios_base::binary);
         std::ifstream file_data(vtk_file_name_raw, std::ios_base::binary);
 
-        uint step = stepper.get_step();
+        uint step = stepper.GetStep();
         std::string file_name_merge = output_path + mesh.GetMeshName() + "_data_" + std::to_string(step) + ".vtk";
         std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
@@ -106,7 +107,7 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
         file_merge.close();
     }
 
-    if (writing_modal_output && (stepper.get_step() % modal_output_frequency == 0)) {
+    if (writing_modal_output && (stepper.GetStep() % modal_output_frequency == 0)) {
         ProblemType::write_modal_data_kernel(stepper, mesh, output_path);
     }
 }

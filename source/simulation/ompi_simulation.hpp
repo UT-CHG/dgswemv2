@@ -37,7 +37,7 @@ class OMPISimulationUnit {
                        submesh_id) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
-        this->input.ReadMesh();
+        this->input.read_mesh();
 
         this->mesh.SetMeshName(this->input.mesh_data.mesh_name);
 
@@ -56,9 +56,9 @@ class OMPISimulationUnit {
 
         this->communicator.InitializeCommunication();
 
-        this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
+        this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
 
-        this->communicator.SendPreprocAll(this->stepper.get_timestamp());
+        this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
     }
 
     void PostReceivePrerocStage();
@@ -85,7 +85,7 @@ class OMPISimulationUnit {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
-    this->communicator.WaitAllPreprocReceives(this->stepper.get_timestamp());
+    this->communicator.WaitAllPreprocReceives(this->stepper.GetTimestamp());
 
     ProblemType::initialize_data_parallel_post_receive_kernel(
         this->mesh, this->input.mesh_data, this->input.problem_input);
@@ -93,7 +93,7 @@ void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::WaitAllPreprocSends() {
-    this->communicator.WaitAllPreprocSends(this->stepper.get_timestamp());
+    this->communicator.WaitAllPreprocSends(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
@@ -106,7 +106,7 @@ void OMPISimulationUnit<ProblemType>::Launch() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    uint n_stages = this->stepper.get_num_stages();
+    uint n_stages = this->stepper.GetNumStages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
@@ -123,8 +123,8 @@ void OMPISimulationUnit<ProblemType>::Parse() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::ExchangeData() {
     if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                                  << this->stepper.get_stage() << ')' << std::endl;
+        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
+                                  << this->stepper.GetStage() << ')' << std::endl;
 
         this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
@@ -133,11 +133,11 @@ void OMPISimulationUnit<ProblemType>::ExchangeData() {
         ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
     };
 
-    this->communicator.ReceiveAll(this->stepper.get_timestamp());
+    this->communicator.ReceiveAll(this->stepper.GetTimestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
-    this->communicator.SendAll(this->stepper.get_timestamp());
+    this->communicator.SendAll(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
@@ -170,11 +170,11 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
     if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
+        this->writer.GetLogFile() << "Starting to wait on receive with timestamp: " << this->stepper.GetTimestamp()
                                   << std::endl;
     }
 
-    this->communicator.WaitAllReceives(this->stepper.get_timestamp());
+    this->communicator.WaitAllReceives(this->stepper.GetTimestamp());
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting work after receive" << std::endl;
@@ -206,7 +206,7 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::WaitAllSends() {
-    this->communicator.WaitAllSends(this->stepper.get_timestamp());
+    this->communicator.WaitAllSends(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
@@ -215,11 +215,11 @@ void OMPISimulationUnit<ProblemType>::ExchangePostprocData() {
         this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
     }
 
-    this->communicator.ReceivePostprocAll(this->stepper.get_timestamp());
+    this->communicator.ReceivePostprocAll(this->stepper.GetTimestamp());
 
     ProblemType::postprocessor_parallel_pre_send_kernel(this->stepper, this->mesh);
 
-    this->communicator.SendPostprocAll(this->stepper.get_timestamp());
+    this->communicator.SendPostprocAll(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
@@ -239,10 +239,10 @@ template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceivePostprocStage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting to wait on postprocessor receive with timestamp: "
-                                  << this->stepper.get_timestamp() << std::endl;
+                                  << this->stepper.GetTimestamp() << std::endl;
     }
 
-    this->communicator.WaitAllPostprocReceives(this->stepper.get_timestamp());
+    this->communicator.WaitAllPostprocReceives(this->stepper.GetTimestamp());
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
@@ -259,7 +259,7 @@ void OMPISimulationUnit<ProblemType>::PostReceivePostprocStage() {
 
 template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::WaitAllPostprocSends() {
-    this->communicator.WaitAllPostprocSends(this->stepper.get_timestamp());
+    this->communicator.WaitAllPostprocSends(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>

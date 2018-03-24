@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     std::string out_name = argv[1];
     out_name = out_name + ".meta.out";
 
-    meshA.WriteTo(out_name);
+    meshA.write_to(out_name);
 
     MeshMetaData meshB(out_name);
 

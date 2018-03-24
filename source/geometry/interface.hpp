@@ -2,7 +2,7 @@
 #define CLASS_INTERFACE_HPP
 
 namespace Geometry {
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 class Interface {
   public:
     uint bound_id_in;
@@ -33,7 +33,7 @@ class Interface {
     double IntegrationPhiEX(const uint dof, const std::vector<double>& u_gp);
 };
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
                                                            const RawBoundary<dimension, DataType>& raw_boundary_ex)
     : data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) {
@@ -98,7 +98,7 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
     this->data_ex.set_ngp_boundary(raw_boundary_ex.bound_id, integration_rule.first.size());
 }
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpIN(const std::vector<double>& u,
                                                                           std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
@@ -110,7 +110,7 @@ inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpIN(const 
     }
 }
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 inline double Interface<dimension, IntegrationType, DataType>::IntegrationIN(const std::vector<double>& u_gp) {
     double integral = 0;
 
@@ -121,7 +121,7 @@ inline double Interface<dimension, IntegrationType, DataType>::IntegrationIN(con
     return integral;
 }
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 inline double Interface<dimension, IntegrationType, DataType>::IntegrationPhiIN(const uint dof,
                                                                                 const std::vector<double>& u_gp) {
     double integral = 0;
@@ -133,7 +133,7 @@ inline double Interface<dimension, IntegrationType, DataType>::IntegrationPhiIN(
     return integral;
 }
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpEX(const std::vector<double>& u,
                                                                           std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
@@ -145,7 +145,7 @@ inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpEX(const 
     }
 }
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 inline double Interface<dimension, IntegrationType, DataType>::IntegrationEX(const std::vector<double>& u_gp) {
     double integral = 0;
 
@@ -156,7 +156,7 @@ inline double Interface<dimension, IntegrationType, DataType>::IntegrationEX(con
     return integral;
 }
 
-template <uint dimension, class IntegrationType, class DataType>
+template <uint dimension, typename IntegrationType, typename DataType>
 inline double Interface<dimension, IntegrationType, DataType>::IntegrationPhiEX(const uint dof,
                                                                                 const std::vector<double>& u_gp) {
     double integral = 0;

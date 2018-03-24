@@ -3,47 +3,47 @@
 
 #include "../general_definitions.hpp"
 
-struct Stepper {
+class Stepper {
+  public:
+    Array2D<double> ark;
+    Array2D<double> brk;
+    Array2D<double> crk;
+    std::vector<double> drk;
+
+  private:
+    const uint nstages;
+    const double dt;
+
+    uint step;
+    uint stage;
+    uint timestamp;
+
+    double t;
+
+  public:
     Stepper(uint nstages, uint order, double dt);
 
-    uint get_num_stages() const { return nstages; }
-
-    double get_t_at_curr_stage() const { return _t + _dt * drk[irk]; }
-
-    double get_dt() const { return _dt; }
-
-    uint get_step() const { return step; }
-
-    uint get_timestamp() const { return timestamp; }
-
-    uint get_stage() const { return irk; }
+    uint GetNumStages() const { return nstages; }
+    double GetDT() const { return dt; }
+    
+    uint GetStep() const { return step; }
+    uint GetTimestamp() const { return timestamp; }
+    uint GetStage() const { return stage; }
+    double GetTimeAtCurrentStage() const { return t + dt * drk[stage]; }
 
     Stepper& operator++() {
-        ++irk;
+        ++stage;
         ++timestamp;
 
-        irk = irk % nstages;
+        stage = stage % nstages;
 
-        if (irk == 0) {
-            _t += _dt;
+        if (stage == 0) {
+            t += dt;
             ++step;
         }
 
         return *this;
     }
-
-    const uint nstages;
-    uint irk;
-
-    std::vector<std::vector<double>> ark;
-    std::vector<std::vector<double>> brk;
-    std::vector<std::vector<double>> crk;
-    std::vector<double> drk;
-
-    uint step;
-    uint timestamp;
-    double _t;
-    const double _dt;
 };
 
 #endif

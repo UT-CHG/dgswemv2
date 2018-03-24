@@ -6,11 +6,7 @@
 
 #include "../../shape/shapes_2D.hpp"
 
-// Upper case letters for member function names
-class AdcircFormat {
-  public:
-    AdcircFormat(const std::string& in_name);
-
+struct AdcircFormat {
     std::string name;
     std::unordered_map<int, std::array<double, 3>> nodes;
     std::unordered_map<int, std::array<int, 4>> elements;
@@ -29,12 +25,12 @@ class AdcircFormat {
     std::vector<std::vector<int>> NBVV;  // node numbers on normal flow boundary
                                          // segment k
 
-  public:
+    AdcircFormat(const std::string& in_name);
+
     void write_to(const char* out_name) const;
 
     SWE::BoundaryConditions get_ibtype(std::array<int, 2>& node_pair) const;
-
-  private:
+    
     bool has_edge(std::vector<int>::const_iterator cbegin,
                   std::vector<int>::const_iterator cend,
                   std::array<int, 2>& node_pair) const;

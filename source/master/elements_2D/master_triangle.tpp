@@ -1,7 +1,7 @@
 #include "../master_elements_2D.hpp"
 
 namespace Master {
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     : Master<2>(p) {
     this->nvrtx = 3;
@@ -49,7 +49,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p)
     this->m_inv = this->basis.GetMinv(this->p);
 }
 
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
     const uint bound_id,
     const std::vector<Point<1>>& z_boundary) {
@@ -81,13 +81,13 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
     return z_master;
 }
 
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 inline void Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin,
                                                                         double& u_lin_baryctr) {
     u_lin_baryctr = (u_lin[0] + u_lin[1] + u_lin[2]) / 3.0;
 }
 
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std::vector<double>& u_lin,
                                                                        std::vector<double>& u_lin_midpts) {
     u_lin_midpts[0] = (u_lin[1] + u_lin[2]) / 2.0;
@@ -95,13 +95,13 @@ inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std
     u_lin_midpts[2] = (u_lin[0] + u_lin[1]) / 2.0;
 }
 
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
                                                                      std::vector<double>& u_lin_vrtx) {
     u_lin_vrtx = u_lin;
 }
 
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
     std::vector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
 
@@ -126,7 +126,7 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
     return z_postprocessor_cell;
 }
 
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() {
     std::vector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
 

@@ -11,7 +11,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     std::vector<double> bathymetry_temp;
     for (const auto& elt : mesh_data.elements) {
-        auto nodal_coordinates = mesh_data.GetNodalCoordinates(elt.first);
+        auto nodal_coordinates = mesh_data.get_nodal_coordinates(elt.first);
 
         for (auto& node_coordinate : nodal_coordinates) {
             bathymetry_temp.push_back(node_coordinate[GlobalCoord::z]);
@@ -25,6 +25,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachElement([&bathymetry, &problem_specific_input](auto& elt) {
         uint id = elt.GetID();
 
+        auto& shape = elt.GetShape();
+
         auto& state = elt.data.state[0];
         auto& internal = elt.data.internal;
         auto& sp = elt.data.spherical_projection;
@@ -33,7 +35,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
         }
 
-        state.bath = elt.L2Projection(bathymetry[id]);
+        elt.L2Projection(bathymetry[id], state.bath);
 
         elt.ComputeUgp(state.bath, internal.bath_at_gp);
 
@@ -41,18 +43,18 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            uint n_node = elt.GetShape().nodal_coordinates.size();
+            uint n_node = shape.nodal_coordinates.size();
 
             std::vector<double> x_node(n_node);
             std::vector<double> y_node(n_node);
 
             for (uint node_id = 0; node_id < n_node; node_id++) {
-                x_node[node_id] = elt.GetShape().nodal_coordinates[node_id][GlobalCoord::x];
-                y_node[node_id] = elt.GetShape().nodal_coordinates[node_id][GlobalCoord::y];
+                x_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::x];
+                y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
 
-            sp.x = elt.L2Projection(x_node);
-            sp.y = elt.L2Projection(y_node);
+            elt.L2Projection(x_node, sp.x);
+            elt.L2Projection(y_node, sp.x);
 
             std::vector<double> y_at_gp(elt.data.get_ngp_internal());
 
@@ -70,22 +72,22 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             uint n_node = elt.GetShape().nodal_coordinates.size();
 
             std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
-            state.ze = elt.L2Projection(ze_node);
+            elt.L2Projection(ze_node, state.ze);
 
             std::vector<double> qx_node(n_node, problem_specific_input.initial_conditions.qx_initial);
-            state.qx = elt.L2Projection(qx_node);
+            elt.L2Projection(qx_node, state.qx);
 
             std::vector<double> qy_node(n_node, problem_specific_input.initial_conditions.qy_initial);
-            state.qy = elt.L2Projection(qy_node);
+            elt.L2Projection(qy_node, state.qy);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
             auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
-            state.ze = elt.L2Projection(ze_init);
+            elt.L2Projection(ze_init, state.ze);
 
             auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
-            state.qx = elt.L2Projection(qx_init);
+            elt.L2Projection(qx_init, state.qx);
 
             auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
-            state.qy = elt.L2Projection(qy_init);
+            elt.L2Projection(qy_init, state.qy);
         }
     });
 

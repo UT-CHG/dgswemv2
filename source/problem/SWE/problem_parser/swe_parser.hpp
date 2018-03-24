@@ -34,11 +34,11 @@ class Parser {
     template <typename MeshType>
     void ParseInput(const Stepper& stepper, MeshType& mesh) {
         if (SWE::SourceTerms::meteo_forcing) {
-            if (stepper.get_step() % this->meteo_parse_frequency == 0) {
-                this->ParseMeteoInput(stepper.get_step());
+            if (stepper.GetStep() % this->meteo_parse_frequency == 0) {
+                this->ParseMeteoInput(stepper.GetStep());
             }
 
-            this->CalculateMeteoData(stepper.get_step());
+            this->CalculateMeteoData(stepper.GetStep());
 
             mesh.CallForEachElement([this, &stepper](auto& elt) {
                 std::vector<uint>& node_ID = elt.GetNodeID();

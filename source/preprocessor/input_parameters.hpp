@@ -38,6 +38,7 @@ struct WriterInput {
 
 inline YAML::Node WriterInput::as_yaml_node() {
     YAML::Node ret;
+
     if (writing_output) {
         ret["path"] = output_path;
         if (writing_log_file) {
@@ -51,20 +52,13 @@ inline YAML::Node WriterInput::as_yaml_node() {
             ret["modal"]["frequency"] = modal_output_frequency;
         }
     }
+
     return ret;
 }
 
 // Lower case letter for member functions names
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
-    InputParameters() = default;
-    InputParameters(const std::string& input_string);
-    InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id);
-
-    void ReadMesh();
-
-    void WriteTo(const std::string& output_filename);
-
     std::string mesh_file_name;
     std::string mesh_format;
     MeshMetaData mesh_data;
@@ -83,6 +77,13 @@ struct InputParameters {
 
     ProblemInput problem_input;
 
+    InputParameters() = default;
+    InputParameters(const std::string& input_string);
+    InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id);
+
+    void read_mesh();
+    void write_to(const std::string& output_filename);
+
   private:
     ProblemInput problem_specific_ctor_helper(const YAML::Node& input_file);
 };
@@ -90,6 +91,7 @@ struct InputParameters {
 template <typename ProblemInput>
 InputParameters<ProblemInput>::InputParameters(const std::string& input_string) {
     YAML::Node input_file = YAML::LoadFile(input_string);
+    
     // Process Mesh information
     if (input_file["mesh"]) {
         YAML::Node raw_mesh = input_file["mesh"];
@@ -106,14 +108,12 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
     }
 
     // Process timestepping information
-    {
         YAML::Node time_stepping = input_file["timestepping"];
         dt = time_stepping["dt"].as<double>();
         // T_start    = time_stepping["start_time"].as<double>();
         T_end = time_stepping["end_time"].as<double>();
         rk.nstages = time_stepping["order"].as<uint>();
         rk.order = time_stepping["nstages"].as<uint>();
-    }
 
     // Process output information
     if (input_file["output"]) {
@@ -121,6 +121,7 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
 
         writer_input.writing_output = true;
         writer_input.output_path = out_node["path"].as<std::string>();
+        
         if (writer_input.output_path.back() != '/') {
             writer_input.output_path += "/";
         }
@@ -146,6 +147,7 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
         std::string err_msg("Error: Problem node not found\n");
         throw std::logic_error(err_msg);
     }
+
     problem_input = problem_specific_ctor_helper(input_file);
 
     polynomial_order = input_file["polynomial_order"].as<uint>();
@@ -161,7 +163,7 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string,
 }
 
 template <typename ProblemInput>
-void InputParameters<ProblemInput>::ReadMesh() {
+void InputParameters<ProblemInput>::read_mesh() {
     if (mesh_format == "Adcirc") {
         AdcircFormat adcirc_file(mesh_file_name);
         mesh_data = MeshMetaData(adcirc_file);
@@ -171,21 +173,22 @@ void InputParameters<ProblemInput>::ReadMesh() {
 }
 
 template <typename ProblemInput>
-void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) {
+void InputParameters<ProblemInput>::write_to(const std::string& output_filename) {
     YAML::Emitter output;
+    
     assert(output.good());
+
     output << YAML::BeginMap;
+
     // Assemble mesh information
-    {
         YAML::Node mesh;
         mesh["format"] = mesh_format;
         mesh["file_name"] = mesh_file_name;
 
         output << YAML::Key << "mesh";
         output << YAML::Value << mesh;
-    }
+    
     // Assemble timestepping information
-    {
         YAML::Node timestepping;
         timestepping["dt"] = dt;
         timestepping["end_time"] = T_end;
@@ -193,7 +196,6 @@ void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) 
         timestepping["nstages"] = rk.nstages;
 
         output << YAML::Key << "timestepping" << YAML::Value << timestepping;
-    }
 
     output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
 
@@ -218,12 +220,6 @@ void InputParameters<ProblemInput>::WriteTo(const std::string& output_filename) 
 
     ofs << output.c_str();
 }
-
-// template <typename ProblemInput>
-// ProblemInput InputParameter<ProblemInput>::problem_specific_ctor_helper(const YAML::Node& input_file) {
-//    static_assert(false, "Error: It seems that for the specific ProblemInput type there is no specialization
-// written");
-//}
 
 template <>
 inline YamlNodeWrapper InputParameters<YamlNodeWrapper>::problem_specific_ctor_helper(const YAML::Node& input_file) {

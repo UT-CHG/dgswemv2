@@ -2,7 +2,7 @@
 #define CLASS_BOUNDARY_HPP
 
 namespace Geometry {
-template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 class Boundary {
   public:
     BoundaryType boundary_condition;
@@ -29,7 +29,7 @@ class Boundary {
     using BoundaryIntegrationType = IntegrationType;
 };
 
-template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
     const BoundaryType& boundary_condition)
@@ -67,7 +67,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     this->data.set_ngp_boundary(raw_boundary.bound_id, integration_rule.first.size());
 }
 
-template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeUgp(const std::vector<double>& u,
                                                                                      std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
@@ -79,7 +79,7 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
     }
 }
 
-template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Integration(
     const std::vector<double>& u_gp) {
     double integral = 0;
@@ -91,7 +91,7 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
     return integral;
 }
 
-template <uint dimension, class IntegrationType, class DataType, class BoundaryType>
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::IntegrationPhi(
     const uint dof,
     const std::vector<double>& u_gp) {

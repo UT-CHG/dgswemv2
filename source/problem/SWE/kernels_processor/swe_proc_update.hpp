@@ -4,16 +4,16 @@
 namespace SWE {
 template <typename ElementType>
 void Problem::update_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
-    const double dt = stepper.get_dt();
+    const uint stage = stepper.GetStage();
+    const double dt = stepper.GetDT();
 
     auto& state = elt.data.state;
     auto& curr_state = elt.data.state[stage];
     auto& next_state = elt.data.state[stage + 1];
 
-    curr_state.rhs_ze = elt.ApplyMinv(curr_state.rhs_ze);
-    curr_state.rhs_qx = elt.ApplyMinv(curr_state.rhs_qx);
-    curr_state.rhs_qy = elt.ApplyMinv(curr_state.rhs_qy);
+    elt.ApplyMinv(curr_state.rhs_ze, curr_state.solution_ze);
+    elt.ApplyMinv(curr_state.rhs_qx, curr_state.solution_qx);
+    elt.ApplyMinv(curr_state.rhs_qy, curr_state.solution_qy);
 
     std::fill(next_state.ze.begin(), next_state.ze.end(), 0);
     std::fill(next_state.qx.begin(), next_state.qx.end(), 0);
@@ -22,20 +22,20 @@ void Problem::update_kernel(const Stepper& stepper, ElementType& elt) {
     for (uint s = 0; s <= stage; ++s) {
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             next_state.ze[dof] +=
-                stepper.ark[stage][s] * state[s].ze[dof] + dt * stepper.brk[stage][s] * state[s].rhs_ze[dof];
+                stepper.ark[stage][s] * state[s].ze[dof] + dt * stepper.brk[stage][s] * state[s].solution_ze[dof];
 
             next_state.qx[dof] +=
-                stepper.ark[stage][s] * state[s].qx[dof] + dt * stepper.brk[stage][s] * state[s].rhs_qx[dof];
+                stepper.ark[stage][s] * state[s].qx[dof] + dt * stepper.brk[stage][s] * state[s].solution_qx[dof];
 
             next_state.qy[dof] +=
-                stepper.ark[stage][s] * state[s].qy[dof] + dt * stepper.brk[stage][s] * state[s].rhs_qy[dof];
+                stepper.ark[stage][s] * state[s].qy[dof] + dt * stepper.brk[stage][s] * state[s].solution_qy[dof];
         }
     }
 }
 
 template <typename ElementType>
 void Problem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
-    uint n_stages = stepper.get_num_stages();
+    uint n_stages = stepper.GetNumStages();
     auto& state = elt.data.state;
 
     std::swap(state[0].ze, state[n_stages].ze);
@@ -45,7 +45,7 @@ void Problem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
 
 template <typename ElementType>
 bool Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
-    uint stage = stepper.get_stage();
+    uint stage = stepper.GetStage();
 
     auto& state = elt.data.state[stage];
 

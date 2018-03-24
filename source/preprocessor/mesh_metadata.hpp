@@ -77,15 +77,14 @@ struct ElementMetaData {
     }
 };
 
-// Lower case letters for struct member function names
 struct MeshMetaData {
     MeshMetaData() = default;  // why define default constructor?
     MeshMetaData(const AdcircFormat& mesh_file);
     MeshMetaData(const std::string& file);  // read from file
 
-    void WriteTo(const std::string& file);  // write to file
+    void write_to(const std::string& file);  // write to file
 
-    std::vector<Point<3>> GetNodalCoordinates(uint elt_id) const;
+    std::vector<Point<3>> get_nodal_coordinates(uint elt_id) const;
 
     std::string mesh_name;
     std::unordered_map<uint, ElementMetaData> elements;

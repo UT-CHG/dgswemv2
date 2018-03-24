@@ -6,7 +6,7 @@
 namespace SWE {
 template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_send_kernel(const Stepper& stepper, DistributedBoundaryType& dbound) {
-    const uint stage = stepper.get_stage();
+    const uint stage = stepper.GetStage();
 
     auto& state = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -28,8 +28,8 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
     dbound.boundary_condition.GetWetDryEX(wet_ex);
 
     if (wd_state_in.wet || wet_ex) {
-        const uint stage = stepper.get_stage();
-        const double dt = stepper.get_dt();
+        const uint stage = stepper.GetStage();
+        const double dt = stepper.GetDT();
 
         auto& state = dbound.data.state[stage];
         auto& boundary = dbound.data.boundary[dbound.bound_id];

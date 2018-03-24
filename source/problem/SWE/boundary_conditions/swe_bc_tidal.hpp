@@ -19,15 +19,15 @@ class Tidal {
         double ze_0 = 0.0;
         double ze_amp = ze_0;
 
-        // ze_amp = ze_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.25 * 86400.0));  // TANH RAMP
+        // ze_amp = ze_0 * tanh(2 * stepper.GetTimeAtCurrentStage() / (0.25 * 86400.0));  // TANH RAMP
 
-        /*if (stepper.get_t_at_curr_stage() < 43200.0) {
-            ze_amp = ze_0 * stepper.get_t_at_curr_stage() / 43200.0;  // LINEAR RAMPING
+        /*if (stepper.GetTimeAtCurrentStage() < 43200.0) {
+            ze_amp = ze_0 * stepper.GetTimeAtCurrentStage() / 43200.0;  // LINEAR RAMPING
         } else {
             ze_amp = ze_0;
         }*/
 
-        ze_ex = ze_amp;  //* cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0);  // M2
+        ze_ex = ze_amp;  //* cos(2 * PI * stepper.GetTimeAtCurrentStage() / 43200.0);  // M2
         qx_ex = qx_in[gp];
         qy_ex = qy_in[gp];
     }

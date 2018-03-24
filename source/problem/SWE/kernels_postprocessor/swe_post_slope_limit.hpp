@@ -6,7 +6,7 @@
 namespace SWE {
 template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
+    const uint stage = stepper.GetStage();
 
     auto& state = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;
@@ -68,7 +68,7 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper& 
 
 template <typename ElementType>
 void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint stage = stepper.get_stage();
+    const uint stage = stepper.GetStage();
 
     auto& state = elt.data.state[stage + 1];
     auto& sl_state = elt.data.slope_limit_state;

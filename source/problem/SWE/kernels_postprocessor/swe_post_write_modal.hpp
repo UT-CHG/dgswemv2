@@ -16,13 +16,13 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& m
     std::ofstream file;
 
     std::string file_name = output_path + mesh.GetMeshName() + "_modal_ze.txt";
-    if (stepper.get_step() == 0) {
+    if (stepper.GetStep() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
+    file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[0].begin(); itt != (*it).second[0].end(); itt++) {
             file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
@@ -32,13 +32,13 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& m
     file.close();
 
     file_name = output_path + mesh.GetMeshName() + "_modal_qx.txt";
-    if (stepper.get_step() == 0) {
+    if (stepper.GetStep() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
+    file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[1].begin(); itt != (*it).second[1].end(); itt++) {
             file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
@@ -48,13 +48,13 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& m
     file.close();
 
     file_name = output_path + mesh.GetMeshName() + "_modal_qy.txt";
-    if (stepper.get_step() == 0) {
+    if (stepper.GetStep() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
+    file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[2].begin(); itt != (*it).second[2].end(); itt++) {
             file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
@@ -64,13 +64,13 @@ void Problem::write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& m
     file.close();
 
     file_name = output_path + mesh.GetMeshName() + "_modal_bath.txt";
-    if (stepper.get_step() == 0) {
+    if (stepper.GetStep() == 0) {
         file = std::ofstream(file_name);
     } else {
         file = std::ofstream(file_name, std::ios::app);
     }
 
-    file << std::to_string(stepper.get_t_at_curr_stage()) << std::endl;
+    file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
         for (auto itt = (*it).second[3].begin(); itt != (*it).second[3].end(); itt++) {
             file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;

@@ -109,7 +109,7 @@ MeshMetaData::MeshMetaData(const std::string& file) {
     ifs.close();
 }
 
-void MeshMetaData::WriteTo(const std::string& file) {
+void MeshMetaData::write_to(const std::string& file) {
     std::ofstream ofs;
     ofs.open(file);
 
@@ -127,7 +127,7 @@ void MeshMetaData::WriteTo(const std::string& file) {
     ofs.close();
 }
 
-std::vector<Point<3>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
+std::vector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
     const std::vector<uint>& node_ID = elements.at(elt_id).node_ID;
 
     std::vector<Point<3>> nodal_coordinates(node_ID.size());

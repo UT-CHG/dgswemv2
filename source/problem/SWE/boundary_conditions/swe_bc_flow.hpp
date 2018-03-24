@@ -18,7 +18,7 @@ class Flow {
                double& qy_ex) {
         double qn_0 = -0.75;
         double qn_amp = 0;
-        qn_amp = qn_0 * tanh(2 * stepper.get_t_at_curr_stage() / (0.5 * 86400.0));  // TANH RAMP
+        qn_amp = qn_0 * tanh(2 * stepper.GetTimeAtCurrentStage() / (0.5 * 86400.0));  // TANH RAMP
 
         double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
 
@@ -27,7 +27,7 @@ class Flow {
         t_x = -n_y;
         t_y = n_x;
 
-        qn_ex = qn_amp * cos(2 * PI * stepper.get_t_at_curr_stage() / 43200.0);  // M2
+        qn_ex = qn_amp * cos(2 * PI * stepper.GetTimeAtCurrentStage() / 43200.0);  // M2
         qt_ex = 0;
 
         ze_ex = ze_in[gp];

@@ -36,7 +36,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
     for (const auto& element_meta : mesh_data.elements) {
         uint elt_id = element_meta.first;
 
-        auto nodal_coordinates = mesh_data.GetNodalCoordinates(elt_id);
+        auto nodal_coordinates = mesh_data.get_nodal_coordinates(elt_id);
 
         for (auto& node_coordinate : nodal_coordinates) {
             nodal_coords_temp.push_back({node_coordinate[GlobalCoord::x], node_coordinate[GlobalCoord::y]});

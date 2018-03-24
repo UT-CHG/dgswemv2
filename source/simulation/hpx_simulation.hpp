@@ -58,7 +58,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
                        submesh_id) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
-        this->input.ReadMesh();
+        this->input.read_mesh();
 
         this->mesh.SetMeshName(this->input.mesh_data.mesh_name);
 
@@ -97,11 +97,11 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
-    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
+    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
 
     ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
 
-    this->communicator.SendPreprocAll(this->stepper.get_timestamp());
+    this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 
     return receive_future.then([this](auto&&) {
         ProblemType::initialize_data_parallel_post_receive_kernel(
@@ -119,7 +119,7 @@ void HPXSimulationUnit<ProblemType>::Launch() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    uint n_stages = this->stepper.get_num_stages();
+    uint n_stages = this->stepper.GetNumStages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
@@ -136,8 +136,8 @@ void HPXSimulationUnit<ProblemType>::Parse() {
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                                  << this->stepper.get_stage() << ')' << std::endl << "Starting work before receive"
+        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
+                                  << this->stepper.GetStage() << ')' << std::endl << "Starting work before receive"
                                   << std::endl;
     }
 
@@ -157,11 +157,11 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
 
-    hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
+    hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.GetTimestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
-    this->communicator.SendAll(this->stepper.get_timestamp());
+    this->communicator.SendAll(this->stepper.GetTimestamp());
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting work before receive" << std::endl;
@@ -177,7 +177,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work before receive" << std::endl
-                                  << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
+                                  << "Starting to wait on receive with timestamp: " << this->stepper.GetTimestamp()
                                   << std::endl;
     }
 
@@ -217,11 +217,11 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
         this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
     }
 
-    hpx::future<void> receive_future = this->communicator.ReceivePostprocAll(this->stepper.get_timestamp());
+    hpx::future<void> receive_future = this->communicator.ReceivePostprocAll(this->stepper.GetTimestamp());
 
     ProblemType::postprocessor_parallel_pre_send_kernel(this->stepper, this->mesh);
 
-    this->communicator.SendPostprocAll(this->stepper.get_timestamp());
+    this->communicator.SendPostprocAll(this->stepper.GetTimestamp());
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
@@ -232,7 +232,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished postprocessor work before receive" << std::endl
                                   << "Starting to wait on postprocessor receive with timestamp: "
-                                  << this->stepper.get_timestamp() << std::endl;
+                                  << this->stepper.GetTimestamp() << std::endl;
     }
 
     return receive_future.then([this](auto&&) {

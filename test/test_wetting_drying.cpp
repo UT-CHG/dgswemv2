@@ -47,17 +47,17 @@ int main() {
     wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 4.0 - wd_state.bath_at_vrtx[1];
     wd_state.ze_at_vrtx[2] = SWE::Global::h_o / 6.0 - wd_state.bath_at_vrtx[2];
-    state.ze = triangle.L2Projection(wd_state.ze_at_vrtx);
+    triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
     wd_state.qx_at_vrtx[1] = 2.;
     wd_state.qx_at_vrtx[2] = 3.;
-    state.qx = triangle.L2Projection(wd_state.qx_at_vrtx);
+    triangle.L2Projection(wd_state.qx_at_vrtx, state.qx);
 
     wd_state.qy_at_vrtx[0] = -1.;
     wd_state.qy_at_vrtx[1] = -2.;
     wd_state.qy_at_vrtx[2] = -3.;
-    state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
+    triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
@@ -105,17 +105,17 @@ int main() {
     wd_state.ze_at_vrtx[0] = SWE::Global::h_o;
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o;
     wd_state.ze_at_vrtx[2] = SWE::Global::h_o;
-    state.ze = triangle.L2Projection(wd_state.ze_at_vrtx);
+    triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
     wd_state.qx_at_vrtx[1] = 2.;
     wd_state.qx_at_vrtx[2] = 3.;
-    state.qx = triangle.L2Projection(wd_state.qx_at_vrtx);
+    triangle.L2Projection(wd_state.qx_at_vrtx, state.qx);
 
     wd_state.qy_at_vrtx[0] = -1.;
     wd_state.qy_at_vrtx[1] = -2.;
     wd_state.qy_at_vrtx[2] = -3.;
-    state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
+    triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
@@ -160,17 +160,17 @@ int main() {
     wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
     wd_state.ze_at_vrtx[2] = 2.0 * SWE::Global::h_o - wd_state.bath_at_vrtx[2];
-    state.ze = triangle.L2Projection(wd_state.ze_at_vrtx);
+    triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
     wd_state.qx_at_vrtx[1] = 2.;
     wd_state.qx_at_vrtx[2] = 3.;
-    state.qx = triangle.L2Projection(wd_state.qx_at_vrtx);
+    triangle.L2Projection(wd_state.qx_at_vrtx, state.qx);
 
     wd_state.qy_at_vrtx[0] = -1.;
     wd_state.qy_at_vrtx[1] = -2.;
     wd_state.qy_at_vrtx[2] = -3.;
-    state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
+    triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
@@ -219,17 +219,17 @@ int main() {
     wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
     wd_state.ze_at_vrtx[2] = 3.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[2];
-    state.ze = triangle.L2Projection(wd_state.ze_at_vrtx);
+    triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
     wd_state.qx_at_vrtx[1] = 2.;
     wd_state.qx_at_vrtx[2] = 3.;
-    state.qx = triangle.L2Projection(wd_state.qx_at_vrtx);
+    triangle.L2Projection(wd_state.qx_at_vrtx, state.qx);
 
     wd_state.qy_at_vrtx[0] = -1.;
     wd_state.qy_at_vrtx[1] = -2.;
     wd_state.qy_at_vrtx[2] = -3.;
-    state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
+    triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 
@@ -291,17 +291,17 @@ int main() {
     wd_state.ze_at_vrtx[0] = 3.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[0];
     wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
     wd_state.ze_at_vrtx[2] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[2];
-    state.ze = triangle.L2Projection(wd_state.ze_at_vrtx);
+    triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
     wd_state.qx_at_vrtx[1] = 2.;
     wd_state.qx_at_vrtx[2] = 3.;
-    state.qx = triangle.L2Projection(wd_state.qx_at_vrtx);
+    triangle.L2Projection(wd_state.qx_at_vrtx, state.qx);
 
     wd_state.qy_at_vrtx[0] = -1.;
     wd_state.qy_at_vrtx[1] = -2.;
     wd_state.qy_at_vrtx[2] = -3.;
-    state.qy = triangle.L2Projection(wd_state.qy_at_vrtx);
+    triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
     SWE::Problem::wetting_drying_kernel(stepper, triangle);
 

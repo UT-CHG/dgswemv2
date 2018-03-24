@@ -9,7 +9,7 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
     auto& wd_state = bound.data.wet_dry_state;
 
     if (wd_state.wet) {
-        const uint stage = stepper.get_stage();
+        const uint stage = stepper.GetStage();
 
         auto& state = bound.data.state[stage];
         auto& boundary = bound.data.boundary[bound.bound_id];

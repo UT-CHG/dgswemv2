@@ -29,13 +29,13 @@ typedef unsigned char uchar;
 template <uint dimension>
 using Point = std::array<double, dimension>;
 
-template <class type>
+template <typename type>
 using Array2D = std::vector<std::vector<type>>;
 
-template <class type>
+template <typename type>
 using Array3D = std::vector<std::vector<std::vector<type>>>;
 
-template <class type>
+template <typename type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 namespace Basis {

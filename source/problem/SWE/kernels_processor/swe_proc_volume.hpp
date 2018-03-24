@@ -7,7 +7,7 @@ void Problem::volume_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
 
     if (wd_state.wet) {
-        const uint stage = stepper.get_stage();
+        const uint stage = stepper.GetStage();
 
         auto& state = elt.data.state[stage];
         auto& internal = elt.data.internal;

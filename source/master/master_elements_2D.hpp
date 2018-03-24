@@ -9,7 +9,7 @@ namespace Master {
  * Triangular master elements contains the information necessary for evaluating computations on
  * on the master triangle.
  */
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 class Triangle : public Master<2> {
   public:
     /**

@@ -1,7 +1,7 @@
 #include "stepper.hpp"
 
 Stepper::Stepper(uint nstages, uint order, double dt)
-    : nstages(nstages), irk(0), drk(nstages, 0), step(0), timestamp(0), _t(0.), _dt(dt) {
+    : nstages(nstages), stage(0), drk(nstages, 0), step(0), timestamp(0), t(0.), dt(dt) {
     // Allocate the time stepping arrays
     ark.reserve(nstages);
     brk.reserve(nstages);
@@ -276,14 +276,14 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
     // Compute the maximum beta over alpha ratio at each stage
 
-    /*for ( uint irk = 0; irk < nstages; ++irk ) {
+    /*for ( uint stage = 0; stage < nstages; ++stage ) {
         double max_boa = 0.;
-        for ( uint i = 0; i <= irk; ++irk ) {
-        if (ark(irk,i) != 0) {
-            if (max_boa < brk[irk][i]/ark[irk][i]) { max_boa =
-       brk[irk][i]/ark[irk][i]; }
+        for ( uint i = 0; i <= stage; ++stage ) {
+        if (ark(stage,i) != 0) {
+            if (max_boa < brk[stage][i]/ark[stage][i]) { max_boa =
+       brk[stage][i]/ark[stage][i]; }
         }
         }
-        max_boa_dt[irk] = max_boa_dt*dt;
+        max_boa_dt[stage] = max_boa_dt*dt;
         }*/
 }

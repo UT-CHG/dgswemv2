@@ -6,7 +6,7 @@
 namespace SWE {
 template <typename ElementType>
 double Problem::compute_residual_L2_kernel(const Stepper& stepper, ElementType& elt) {
-    double t = stepper.get_t_at_curr_stage();
+    double t = stepper.GetTimeAtCurrentStage();
 
     auto true_ze = [t](Point<2>& pt) { return SWE::true_ze(t, pt); };
 

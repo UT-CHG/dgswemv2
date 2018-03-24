@@ -41,7 +41,7 @@ int main() {
         std::vector<State> rhs(pair.first);
 
         for (uint step = 0; step < nsteps; ++step) {
-            for (uint stage = 0; stage < rk_stepper.get_num_stages(); ++stage) {
+            for (uint stage = 0; stage < rk_stepper.GetNumStages(); ++stage) {
                 rhs[stage] = compute_rhs(y[stage], t + rk_stepper.drk[stage] * dt);
                 y[stage + 1] = {0, 0};
                 for (uint s = 0; s < stage + 1; ++s) {
@@ -52,7 +52,7 @@ int main() {
                 }
                 ++rk_stepper;
             }
-            std::swap(y[0], y[rk_stepper.get_num_stages()]);
+            std::swap(y[0], y[rk_stepper.GetNumStages()]);
             t += dt;
         }
 
