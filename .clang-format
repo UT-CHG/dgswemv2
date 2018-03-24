@@ -2,11 +2,12 @@
 # BasedOnStyle:  Chromium
 AccessModifierOffset: -2
 ConstructorInitializerIndentWidth: 4
+AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignEscapedNewlinesLeft: true
 AlignTrailingComments: true
-AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: true
@@ -14,12 +15,15 @@ AlwaysBreakBeforeMultilineStrings: true
 BreakBeforeBinaryOperators: false
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: false
+BinPackArguments: false
 BinPackParameters: false
 ColumnLimit:     120
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 DerivePointerBinding: false
 ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: false
 IndentCaseLabels: true
+Language: Cpp
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 ObjCSpaceBeforeProtocolList: false
