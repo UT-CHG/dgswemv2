@@ -2,7 +2,7 @@
 
 namespace SWE {
 void Parser::ParseMeteoInput(uint step) {
-    if (this->meteo_forcing_type == SWE::MeteoForcingType::Test) {
+    if (this->meteo_forcing_type == SWE::MeteoForcingType::Enable) {
         if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {
             this->node_meteo_data_step.erase(this->node_meteo_data_step.find(step - this->meteo_parse_frequency));
         }
@@ -63,7 +63,7 @@ void Parser::ParseMeteoInput(uint step) {
 }
 
 void Parser::CalculateMeteoData(uint step) {
-    if (this->meteo_forcing_type == SWE::MeteoForcingType::Test) {
+    if (this->meteo_forcing_type == SWE::MeteoForcingType::Enable) {
         uint step_begin = step - step % this->meteo_parse_frequency;
         uint step_end   = step_begin + this->meteo_parse_frequency;
 

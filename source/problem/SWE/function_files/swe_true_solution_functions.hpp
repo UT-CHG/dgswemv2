@@ -4,11 +4,17 @@
 #include "../../../general_definitions.hpp"
 
 namespace SWE {
-inline double true_ze(const double t, const Point<2>& pt) { return 0; }
+inline double true_ze(const double t, const Point<2>& pt) {
+    return 0;
+}
 
-inline double true_qx(const double t, const Point<2>& pt) { return 0; }
+inline double true_qx(const double t, const Point<2>& pt) {
+    return 0;
+}
 
-inline double true_qy(const double t, const Point<2>& pt) { return 0; }
+inline double true_qy(const double t, const Point<2>& pt) {
+    return 0;
+}
 }
 
 #endif

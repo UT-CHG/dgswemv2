@@ -189,7 +189,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_interfaces,
     std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&   pre_boundaries,
     std::map<uint, std::map<uint, RawBoundary<dimension - 1, DataType>>>& pre_distributed_boundaries) {
-
+    //Separate from Args
     Basis::Basis<dimension>*   my_basis  = (Basis::Basis<dimension>*)(&this->master.basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
     Shape::Shape<dimension>*   my_shape  = (Shape::Shape<dimension>*)(&this->shape);

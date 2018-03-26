@@ -74,7 +74,6 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
 
     for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
         for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-
             mesh.template CreateInterface<InterfaceType>(itt->second, pre_interfaces.at(itt->first).at(it->first));
 
             pre_interfaces.at(itt->first).erase(it->first);

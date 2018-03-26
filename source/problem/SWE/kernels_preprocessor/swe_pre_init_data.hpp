@@ -325,7 +325,6 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
 void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType&        mesh,
                                                        const MeshMetaData&     mesh_data,
                                                        const ProblemInputType& problem_specific_input) {
-
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {

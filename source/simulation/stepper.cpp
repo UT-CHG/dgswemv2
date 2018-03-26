@@ -1,7 +1,7 @@
 #include "stepper.hpp"
 
 Stepper::Stepper(uint nstages, uint order, double dt)
-    : nstages(nstages), stage(0), drk(nstages, 0), step(0), timestamp(0), t(0.), dt(dt) {
+    : drk(nstages, 0), nstages(nstages), dt(dt), step(0), stage(0), timestamp(0), t(0.) {
     // Allocate the time stepping arrays
     ark.reserve(nstages);
     brk.reserve(nstages);
@@ -15,13 +15,11 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
     // The forward Euler method
     if ((nstages == 1) && (order == 1)) {
-
         ark[0][0] = 1.;
         brk[0][0] = 1.;
 
         // SSP(s,2) schemes
     } else if ((nstages == 2) && (order == 2)) {
-
         ark[0][0] = 1;
         ark[1][0] = 0.5;
         ark[1][1] = 0.5;
@@ -31,7 +29,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(3,3) scheme
     } else if ((nstages == 3) && (order == 3)) {
-
         ark[0][0] = 1.;
         ark[1][0] = 3. / 4.;
         ark[1][1] = 1. / 4.;
@@ -44,7 +41,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SP(4,3) scheme
     } else if ((nstages == 4) && (order == 3)) {
-
         ark[0][0] = 1.;
         ark[1][1] = 1.;
         ark[2][0] = 2. / 3.;
@@ -58,7 +54,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(5,3) scheme
     } else if ((nstages == 5) && (order == 3)) {
-
         ark[0][0] = 1.;
         ark[1][1] = 1.;
         ark[2][0] = 0.355909775063327;
@@ -76,7 +71,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(6,3) scheme
     } else if ((nstages == 6) && (order == 3)) {
-
         ark[0][0] = 1.;
         ark[1][1] = 1.;
         ark[2][2] = 1.;
@@ -96,7 +90,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(7,3) scheme
     } else if ((nstages == 7) && (order == 3)) {
-
         ark[0][0] = 1.;
         ark[1][1] = 1.;
         ark[2][2] = 1.;
@@ -119,7 +112,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(8,3) scheme
     } else if ((nstages == 8) && (order == 3)) {
-
         ark[0][0] = 1.;
         ark[1][1] = 1.;
         ark[2][2] = 1.;
@@ -145,7 +137,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(5,4) scheme
     } else if ((nstages == 5) && (order == 4)) {
-
         ark[0][0] = 1.;
         ark[1][0] = 0.44437049406734;
         ark[1][1] = 0.55562950593266;
@@ -167,7 +158,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(6,4) scheme
     } else if ((nstages == 6) && (order == 4)) {
-
         ark[0][0] = 1.00000000000000;
         ark[1][0] = 0.30948026455053;
         ark[1][1] = 0.69051973544947;
@@ -192,7 +182,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(7,4) scheme
     } else if ((nstages == 7) && (order == 4)) {
-
         ark[0][0] = 1.;
         ark[1][0] = 0.20161507213829;
         ark[1][1] = 0.79838492786171;
@@ -221,7 +210,6 @@ Stepper::Stepper(uint nstages, uint order, double dt)
 
         // SSP(8,4) scheme
     } else if ((nstages == 8) && (order == 4)) {
-
         ark[0][0] = 1.;
         ark[1][0] = 0.10645325745007;
         ark[1][1] = 0.89354674254993;

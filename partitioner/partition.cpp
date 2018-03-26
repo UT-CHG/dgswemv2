@@ -11,7 +11,6 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData&            
                                                  const int                                           num_nodes,
                                                  const int                                           ranks_per_locality,
                                                  const bool                                          rank_balanced) {
-
     std::unordered_map<int, std::vector<double>>    element_weights;
     std::unordered_map<std::pair<int, int>, double> edge_weights;
 

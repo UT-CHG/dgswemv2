@@ -1,5 +1,5 @@
 ---
-# BasedOnStyle:  Chromium
+BasedOnStyle:  Chromium
 AccessModifierOffset: -2
 ConstructorInitializerIndentWidth: 4
 AlignAfterOpenBracket: Align

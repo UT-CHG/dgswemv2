@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 list (APPEND DG_HYPER_SWE_SOURCES
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp

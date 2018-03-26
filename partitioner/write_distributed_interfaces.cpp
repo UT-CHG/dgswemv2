@@ -80,7 +80,6 @@ void write_distributed_edge_metadata(const std::string&                         
 
     for (uint loc_id = 0; loc_id < submeshes.size(); ++loc_id) {
         for (uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id) {
-
             std::string distributed_meta_filename = file_name;
             distributed_meta_filename =
                 distributed_meta_filename.substr(0, distributed_meta_filename.find_last_of("."));

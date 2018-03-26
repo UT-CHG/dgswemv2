@@ -64,7 +64,6 @@ bool check_partition(const MeshMetaData& mesh, std::vector<std::vector<MeshMetaD
 
 // This unit test partitions a mesh and then stitches it back together again
 int main(int argc, char** argv) {
-
     bool error_found{false};
 
     AdcircFormat mesh1(argv[1]);

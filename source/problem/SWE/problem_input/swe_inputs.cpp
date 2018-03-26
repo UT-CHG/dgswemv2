@@ -130,13 +130,15 @@ Inputs::Inputs(YAML::Node& swe_node) {
             std::string meteo_str = meteo["type"].as<std::string>();
             if (meteo_str == "None") {
                 meteo_forcing.type = MeteoForcingType::None;
-            } else if (meteo_str == "Test") {
-                if (meteo["input_file"] && meteo["frequency"]) {
-                    meteo_forcing.type = MeteoForcingType::Test;
+            } else if (meteo_str != "None") {
+                if (meteo["type"] && meteo["raw_input_file"] && meteo["input_file"] && meteo["frequency"]) {
+                    meteo_forcing.type = MeteoForcingType::Enable;
 
-                    parse_input                   = true;
-                    meteo_forcing.meteo_data_file = meteo["input_file"].as<std::string>();
-                    meteo_forcing.frequency       = meteo["frequency"].as<double>();
+                    parse_input                       = true;
+                    meteo_forcing.meteo_data_type     = meteo["type"].as<std::string>();
+                    meteo_forcing.raw_meteo_data_file = meteo["raw_input_file"].as<std::string>();
+                    meteo_forcing.meteo_data_file     = meteo["input_file"].as<std::string>();
+                    meteo_forcing.frequency           = meteo["frequency"].as<double>();
                 } else {
                     std::cerr << malformatted_meteo_warning;
                 }
@@ -258,10 +260,11 @@ YAML::Node Inputs::as_yaml_node() {
         case MeteoForcingType::None:
             meteo_node["type"] = "None";
             break;
-        case MeteoForcingType::Test:
-            meteo_node["type"]       = "Test";
-            meteo_node["input_file"] = meteo_forcing.meteo_data_file;
-            meteo_node["frequency"]  = meteo_forcing.frequency;
+        case MeteoForcingType::Enable:
+            meteo_node["type"]           = meteo_forcing.meteo_data_type;
+            meteo_node["raw_input_file"] = meteo_forcing.raw_meteo_data_file;
+            meteo_node["input_file"]     = meteo_forcing.meteo_data_file;
+            meteo_node["frequency"]      = meteo_forcing.frequency;
             break;
     }
     ret["meteo_forcing"] = meteo_node;

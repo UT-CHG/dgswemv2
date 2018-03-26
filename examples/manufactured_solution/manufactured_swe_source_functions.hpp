@@ -2,7 +2,9 @@
 #define SWE_SOURCE_FUNCTIONS_HPP
 
 namespace SWE {
-inline double source_ze(const double t, const Point<2>& pt) { return 0; }
+inline double source_ze(const double t, const Point<2>& pt) {
+    return 0;
+}
 
 inline double source_qx(const double t, const Point<2>& pt) {
     constexpr double x1 = 40000.;

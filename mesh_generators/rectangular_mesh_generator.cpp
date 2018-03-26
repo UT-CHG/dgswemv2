@@ -201,7 +201,6 @@ int main(int argc, const char* argv[]) {
 }
 
 MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) {
-
     YAML::Node yaml_input = YAML::LoadFile(input_string);
 
     auto throw_missing_node = [](const std::string& str) {

@@ -37,10 +37,12 @@ struct BottomFriction {
     std::string        manning_data_file;
 };
 
-enum class MeteoForcingType { None, Test };
+enum class MeteoForcingType { None, Enable };
 
 struct MeteoForcing {
     MeteoForcingType type = MeteoForcingType::None;
+    std::string      meteo_data_type;
+    std::string      raw_meteo_data_file;
     std::string      meteo_data_file;
     double           frequency;
 };

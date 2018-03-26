@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 list (APPEND PARTITIONER_SOURCES
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp

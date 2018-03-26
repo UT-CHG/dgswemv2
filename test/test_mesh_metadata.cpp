@@ -23,7 +23,6 @@ const static auto is_equal = [](const MeshMetaData& meshA, const MeshMetaData& m
 };
 
 int main(int argc, char** argv) {
-
     AdcircFormat mesh1(argv[1]);
     MeshMetaData meshA(mesh1);
 

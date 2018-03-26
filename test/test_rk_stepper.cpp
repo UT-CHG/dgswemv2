@@ -43,7 +43,6 @@ int main() {
                 rhs[stage]   = compute_rhs(y[stage], t + rk_stepper.drk[stage] * dt);
                 y[stage + 1] = {0, 0};
                 for (uint s = 0; s < stage + 1; ++s) {
-
                     y[stage + 1][0] += rk_stepper.ark[stage][s] * y[s][0] + dt * rk_stepper.brk[stage][s] * rhs[s][0];
 
                     y[stage + 1][1] += rk_stepper.ark[stage][s] * y[s][1] + dt * rk_stepper.brk[stage][s] * rhs[s][1];

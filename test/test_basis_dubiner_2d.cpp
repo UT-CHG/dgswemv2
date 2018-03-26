@@ -1573,7 +1573,6 @@ int main() {
         for (int pt = 0; pt < 15; ++pt) {
             if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt]) ||
                 !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
-
                 std::cerr << "Error in Gradient dof(" << dof << "): the true value = (" << true_Dvals[dof][2 * pt]
                           << ", " << true_Dvals[dof][2 * pt + 1] << ") your computed value  = ("
                           << my_Devals[dof][LocalCoordTri::z1][pt] << ", " << my_Devals[dof][LocalCoordTri::z2][pt]
@@ -1586,7 +1585,6 @@ int main() {
         for (int pt = 0; pt < 15; ++pt) {
             if (!almost_equal(true_Dvals[dof][2 * pt], my_Devals[dof][LocalCoordTri::z1][pt], 1000) ||
                 !almost_equal(true_Dvals[dof][2 * pt + 1], my_Devals[dof][LocalCoordTri::z2][pt], 1000)) {
-
                 std::cerr << "Error in Gradient dof(" << dof << pt << "): the true value = (" << std::setprecision(14)
                           << true_Dvals[dof][2 * pt] << ", " << true_Dvals[dof][2 * pt + 1]
                           << ") your computed value  = (" << my_Devals[dof][LocalCoordTri::z1][pt] << ", "
