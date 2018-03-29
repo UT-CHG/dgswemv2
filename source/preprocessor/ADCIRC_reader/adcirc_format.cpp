@@ -78,15 +78,15 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     }
 
     {  // process land boundaries
-        ifs >> this->NETA;
+        ifs >> this->NBOU;
         ifs.ignore(1000, '\n');
         ifs >> this->NVEL;
         ifs.ignore(1000, '\n');
 
-        this->IBTYPE.resize(this->NETA);
-        this->NBVV.reserve(this->NETA);
+        this->IBTYPE.resize(this->NBOU);
+        this->NBVV.reserve(this->NBOU);
         int n_nodes_bdry;
-        for (int bdry = 0; bdry < this->NETA; ++bdry) {
+        for (int bdry = 0; bdry < this->NBOU; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs >> this->IBTYPE[bdry];
             ifs.ignore(1000, '\n');
@@ -134,7 +134,7 @@ void AdcircFormat::write_to(const char* out_name) const {
         }
     }
 
-    file << this->NETA << " = Number of land Boundaries\n";
+    file << this->NBOU << " = Number of land Boundaries\n";
     file << this->NVEL << " = Total number of open boundary nodes\n";
 
     for (int n = 0; n < this->NETA; ++n) {
