@@ -137,7 +137,7 @@ void AdcircFormat::write_to(const char* out_name) const {
     file << this->NBOU << " = Number of land Boundaries\n";
     file << this->NVEL << " = Total number of open boundary nodes\n";
 
-    for (int n = 0; n < this->NETA; ++n) {
+    for (int n = 0; n < this->NBOU; ++n) {
         file << this->NBVV[n].size() << " " << this->IBTYPE[n] << " = Number of nodes for land boundary " << n + 1
              << '\n';
         for (uint i = 0; i < this->NBVV[n].size(); ++i) {
