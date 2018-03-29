@@ -18,10 +18,10 @@ Inputs::Inputs(YAML::Node& swe_node) {
             if (sp_str == "None") {
                 spherical_projection.type = SphericalProjectionType::None;
             } else if (sp_str == "Enable") {
-                if (sp_node["polar_o"] && sp_node["azimuthal_o"] && sp_node["R"]) {
+                if (sp_node["longitude_o"] && sp_node["latitude_o"] && sp_node["R"]) {
                     spherical_projection.type        = SphericalProjectionType::Enable;
-                    spherical_projection.azimuthal_o = sp_node["polar_o"].as<double>();
-                    spherical_projection.polar_o     = sp_node["azimuthal_o"].as<double>();
+                    spherical_projection.longitude_o = sp_node["longitude_o"].as<double>();
+                    spherical_projection.latitude_o  = sp_node["latitude_o"].as<double>();
                     spherical_projection.R           = sp_node["R"].as<double>();
                 } else {
                     std::cerr << malformatted_sp_warning;
@@ -206,8 +206,8 @@ YAML::Node Inputs::as_yaml_node() {
             break;
         case SphericalProjectionType::Enable:
             sp_node["type"]        = "Enable";
-            sp_node["polar_o"]     = spherical_projection.polar_o;
-            sp_node["azimuthal_o"] = spherical_projection.azimuthal_o;
+            sp_node["longitude_o"] = spherical_projection.longitude_o;
+            sp_node["latitude_o"]  = spherical_projection.latitude_o;
             sp_node["R"]           = spherical_projection.R;
             break;
     }

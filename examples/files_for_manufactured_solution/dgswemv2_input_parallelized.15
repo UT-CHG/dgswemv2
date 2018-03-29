@@ -21,9 +21,9 @@ problem:
   gravity: 9.81
   h_o: 0.01
   spherical_projection:
-    type: Enable
-    polar_o: 0.0
-    azimuthal_o: 0.0
+    type: None
+    longitude_o: 0.0
+    latitude_o: 0.0
     R: 10000000.0
   initial_conditions:
     type: Function

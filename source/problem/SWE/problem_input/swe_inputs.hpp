@@ -9,8 +9,8 @@ enum class SphericalProjectionType { None, Enable };
 
 struct SphericalProjection {
     SphericalProjectionType type        = SphericalProjectionType::None;
-    double                  polar_o     = 0.0;
-    double                  azimuthal_o = 0.0;
+    double                  longitude_o = 0.0;
+    double                  latitude_o  = 0.0;
     double                  R           = 1000.0;
 };
 

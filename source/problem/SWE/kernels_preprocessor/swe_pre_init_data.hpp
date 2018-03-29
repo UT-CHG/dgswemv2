@@ -60,7 +60,7 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
 
             elt.ComputeUgp(sp.y, y_at_gp);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
+            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o);
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); gp++) {
@@ -111,7 +111,7 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
             intface.ComputeUgpIN(sp_in.y, y_at_gp_in);
             intface.ComputeUgpEX(sp_ex.y, y_at_gp_ex);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
+            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o);
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); gp++) {
@@ -133,7 +133,7 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
 
             bound.ComputeUgp(sp.y, y_at_gp);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
+            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o);
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); gp++) {
@@ -339,7 +339,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType&        m
 
             dbound.ComputeUgp(sp.y, y_at_gp);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.polar_o);
+            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o);
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); gp++) {
