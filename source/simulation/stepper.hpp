@@ -23,23 +23,23 @@ class Stepper {
   public:
     Stepper(uint nstages, uint order, double dt);
 
-    uint   GetNumStages() const { return nstages; }
-    double GetDT() const { return dt; }
+    uint   GetNumStages() const { return this->nstages; }
+    double GetDT() const { return this->dt; }
 
-    uint   GetStep() const { return step; }
-    uint   GetTimestamp() const { return timestamp; }
-    uint   GetStage() const { return stage; }
-    double GetTimeAtCurrentStage() const { return t + dt * drk[stage]; }
+    uint   GetStep() const { return this->step; }
+    uint   GetTimestamp() const { return this->timestamp; }
+    uint   GetStage() const { return this->stage; }
+    double GetTimeAtCurrentStage() const { return this->t + this->dt * this->drk[this->stage]; }
 
     Stepper& operator++() {
-        ++stage;
-        ++timestamp;
+        ++(this->stage);
+        ++(this->timestamp);
 
-        stage = stage % nstages;
+        this->stage = this->stage % this->nstages;
 
-        if (stage == 0) {
-            t += dt;
-            ++step;
+        if (this->stage == 0) {
+            this->t += this->dt;
+            ++(this->step);
         }
 
         return *this;

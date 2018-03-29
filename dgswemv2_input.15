@@ -20,6 +20,11 @@ problem:
   name: swe
   gravity: 9.81
   h_o: 0.01
+  spherical_projection:
+    type: None
+    longitude_o: 0.0
+    latitude_o: 0.0
+    R: 10000000.0
   initial_conditions:
     type: Constant
     initial_surface_height: 0.0
@@ -32,7 +37,8 @@ problem:
     coefficient: 0.001
     input_file: manning.test
   meteo_forcing:
-    type: Test
+    type: HWIND
+    raw_input_file: weather.test
     input_file: weather.test
     frequency: 172800
   tidal_potential:

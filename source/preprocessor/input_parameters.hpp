@@ -11,7 +11,7 @@
 struct YamlNodeWrapper {
     YAML::Node node;
 
-    YAML::Node as_yaml_node() { return node; }
+    YAML::Node as_yaml_node() { return this->node; }
 };
 
 struct RKInput {
@@ -39,17 +39,17 @@ struct WriterInput {
 inline YAML::Node WriterInput::as_yaml_node() {
     YAML::Node ret;
 
-    if (writing_output) {
-        ret["path"] = output_path;
-        if (writing_log_file) {
-            ret["logfile"]["name"]    = log_file_name;
-            ret["logfile"]["verbose"] = verbose_log_file;
+    if (this->writing_output) {
+        ret["path"] = this->output_path;
+        if (this->writing_log_file) {
+            ret["logfile"]["name"]    = this->log_file_name;
+            ret["logfile"]["verbose"] = this->verbose_log_file;
         }
-        if (writing_vtk_output) {
-            ret["vtk"]["frequency"] = vtk_output_frequency;
+        if (this->writing_vtk_output) {
+            ret["vtk"]["frequency"] = this->vtk_output_frequency;
         }
-        if (writing_modal_output) {
-            ret["modal"]["frequency"] = modal_output_frequency;
+        if (this->writing_modal_output) {
+            ret["modal"]["frequency"] = this->modal_output_frequency;
         }
     }
 
@@ -94,11 +94,11 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
 
     // Process Mesh information
     if (input_file["mesh"]) {
-        YAML::Node raw_mesh = input_file["mesh"];
-        mesh_format         = raw_mesh["format"].as<std::string>();
-        mesh_file_name      = raw_mesh["file_name"].as<std::string>();
+        YAML::Node raw_mesh  = input_file["mesh"];
+        this->mesh_format    = raw_mesh["format"].as<std::string>();
+        this->mesh_file_name = raw_mesh["file_name"].as<std::string>();
 
-        if (!((mesh_format == "Adcirc") || (mesh_format == "Meta"))) {
+        if (!((this->mesh_format == "Adcirc") || (this->mesh_format == "Meta"))) {
             std::string err_msg = "Error: Unsupported mesh format: " + raw_mesh["format"].as<std::string>() + '\n';
             throw std::logic_error(err_msg);
         }
@@ -109,37 +109,37 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
 
     // Process timestepping information
     YAML::Node time_stepping = input_file["timestepping"];
-    dt                       = time_stepping["dt"].as<double>();
+    this->dt                 = time_stepping["dt"].as<double>();
     // T_start    = time_stepping["start_time"].as<double>();
-    T_end      = time_stepping["end_time"].as<double>();
-    rk.nstages = time_stepping["order"].as<uint>();
-    rk.order   = time_stepping["nstages"].as<uint>();
+    this->T_end      = time_stepping["end_time"].as<double>();
+    this->rk.nstages = time_stepping["order"].as<uint>();
+    this->rk.order   = time_stepping["nstages"].as<uint>();
 
     // Process output information
     if (input_file["output"]) {
         YAML::Node out_node = input_file["output"];
 
-        writer_input.writing_output = true;
-        writer_input.output_path    = out_node["path"].as<std::string>();
+        this->writer_input.writing_output = true;
+        this->writer_input.output_path    = out_node["path"].as<std::string>();
 
-        if (writer_input.output_path.back() != '/') {
-            writer_input.output_path += "/";
+        if (this->writer_input.output_path.back() != '/') {
+            this->writer_input.output_path += "/";
         }
 
         if (out_node["logfile"]) {
-            writer_input.writing_log_file = true;
-            writer_input.verbose_log_file = out_node["logfile"]["verbose"].as<bool>();
-            writer_input.log_file_name    = out_node["logfile"]["name"].as<std::string>();
+            this->writer_input.writing_log_file = true;
+            this->writer_input.verbose_log_file = out_node["logfile"]["verbose"].as<bool>();
+            this->writer_input.log_file_name    = out_node["logfile"]["name"].as<std::string>();
         }
 
         if (out_node["vtk"]) {
-            writer_input.writing_vtk_output   = true;
-            writer_input.vtk_output_frequency = out_node["vtk"]["frequency"].as<uint>();
+            this->writer_input.writing_vtk_output   = true;
+            this->writer_input.vtk_output_frequency = out_node["vtk"]["frequency"].as<uint>();
         }
 
         if (out_node["modal"]) {
-            writer_input.writing_modal_output   = true;
-            writer_input.modal_output_frequency = out_node["modal"]["frequency"].as<uint>();
+            this->writer_input.writing_modal_output   = true;
+            this->writer_input.modal_output_frequency = out_node["modal"]["frequency"].as<uint>();
         }
     }
 
@@ -148,9 +148,9 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
         throw std::logic_error(err_msg);
     }
 
-    problem_input = problem_specific_ctor_helper(input_file);
+    this->problem_input = problem_specific_ctor_helper(input_file);
 
-    polynomial_order = input_file["polynomial_order"].as<uint>();
+    this->polynomial_order = input_file["polynomial_order"].as<uint>();
 }
 
 template <typename ProblemInput>
@@ -158,17 +158,17 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string,
                                                const uint         locality_id,
                                                const uint         submesh_id)
     : InputParameters(input_string) {
-    mesh_file_name.insert(mesh_file_name.find_last_of("."),
-                          '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
+    this->mesh_file_name.insert(this->mesh_file_name.find_last_of("."),
+                                '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
 }
 
 template <typename ProblemInput>
 void InputParameters<ProblemInput>::read_mesh() {
-    if (mesh_format == "Adcirc") {
-        AdcircFormat adcirc_file(mesh_file_name);
-        mesh_data = MeshMetaData(adcirc_file);
-    } else if (mesh_format == "Meta") {
-        mesh_data = MeshMetaData(mesh_file_name);
+    if (this->mesh_format == "Adcirc") {
+        AdcircFormat adcirc_file(this->mesh_file_name);
+        this->mesh_data = MeshMetaData(adcirc_file);
+    } else if (this->mesh_format == "Meta") {
+        this->mesh_data = MeshMetaData(this->mesh_file_name);
     }
 }
 
@@ -182,27 +182,27 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
 
     // Assemble mesh information
     YAML::Node mesh;
-    mesh["format"]    = mesh_format;
-    mesh["file_name"] = mesh_file_name;
+    mesh["format"]    = this->mesh_format;
+    mesh["file_name"] = this->mesh_file_name;
 
     output << YAML::Key << "mesh";
     output << YAML::Value << mesh;
 
     // Assemble timestepping information
     YAML::Node timestepping;
-    timestepping["dt"]       = dt;
-    timestepping["end_time"] = T_end;
-    timestepping["order"]    = rk.order;
-    timestepping["nstages"]  = rk.nstages;
+    timestepping["dt"]       = this->dt;
+    timestepping["end_time"] = this->T_end;
+    timestepping["order"]    = this->rk.order;
+    timestepping["nstages"]  = this->rk.nstages;
 
     output << YAML::Key << "timestepping" << YAML::Value << timestepping;
 
-    output << YAML::Key << "polynomial_order" << YAML::Value << polynomial_order;
+    output << YAML::Key << "polynomial_order" << YAML::Value << this->polynomial_order;
 
-    output << YAML::Key << "problem" << YAML::Value << problem_input.as_yaml_node();
+    output << YAML::Key << "problem" << YAML::Value << this->problem_input.as_yaml_node();
 
-    if (writer_input.writing_output) {
-        output << YAML::Key << "output" << YAML::Value << writer_input.as_yaml_node();
+    if (this->writer_input.writing_output) {
+        output << YAML::Key << "output" << YAML::Value << this->writer_input.as_yaml_node();
     }
 
     output << YAML::EndMap;

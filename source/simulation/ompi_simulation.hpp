@@ -29,8 +29,8 @@ class OMPISimulationUnit {
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
           stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          writer(input, locality_id, submesh_id),
-          parser(input, locality_id, submesh_id),
+          writer(this->input, locality_id, submesh_id),
+          parser(this->input, locality_id, submesh_id),
           mesh(this->input.polynomial_order),
           communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
                        locality_id,
@@ -44,8 +44,8 @@ class OMPISimulationUnit {
         if (this->writer.WritingLog()) {
             this->writer.StartLog();
 
-            this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                      << input.mesh_data.mesh_name << " mesh" << std::endl
+            this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
+                                      << this->input.mesh_data.mesh_name << " mesh" << std::endl
                                       << std::endl;
         }
 

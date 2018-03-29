@@ -23,8 +23,8 @@ class Simulation {
     Simulation(std::string input_string)
         : input(input_string),
           stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
-          writer(input),
-          parser(input),
+          writer(this->input),
+          parser(this->input),
           mesh(this->input.polynomial_order) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
@@ -37,8 +37,8 @@ class Simulation {
         if (this->writer.WritingLog()) {
             this->writer.StartLog();
 
-            this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                      << input.mesh_data.mesh_name << " mesh" << std::endl
+            this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
+                                      << this->input.mesh_data.mesh_name << " mesh" << std::endl
                                       << std::endl;
         }
 

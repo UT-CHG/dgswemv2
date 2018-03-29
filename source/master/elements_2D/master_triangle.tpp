@@ -52,6 +52,7 @@ template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
     const uint                   bound_id,
     const std::vector<Point<1>>& z_boundary) {
+    // *** //
     std::vector<Point<2>> z_master(z_boundary.size());
 
     if (bound_id == 0) {

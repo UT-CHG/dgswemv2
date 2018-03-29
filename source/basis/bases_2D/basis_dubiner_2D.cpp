@@ -21,7 +21,7 @@ Array2D<double> Dubiner_2D::GetPhi(const uint p, const std::vector<Point<2>>& po
         uint p = dof - lower_tri_num;
         uint q = tri_num_indx - p;
 
-        phi[dof] = ComputePhi(p, q, n1, n2);
+        phi[dof] = this->ComputePhi(p, q, n1, n2);
     }
 
     return phi;
@@ -47,7 +47,7 @@ Array3D<double> Dubiner_2D::GetDPhi(const uint p, const std::vector<Point<2>>& p
         uint p = dof - lower_tri_num;
         uint q = tri_num_indx - p;
 
-        dphi[dof] = ComputeDPhi(p, q, n1, n2);
+        dphi[dof] = this->ComputeDPhi(p, q, n1, n2);
     }
 
     return dphi;
@@ -90,6 +90,7 @@ std::vector<double> Dubiner_2D::ComputePhi(const uint                 p,
                                            const std::vector<double>& n1,
                                            const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
+
     uint                n_pts = n1.size();
     std::vector<double> phi(n_pts);
 
@@ -99,8 +100,7 @@ std::vector<double> Dubiner_2D::ComputePhi(const uint                 p,
     for (uint pt = 0; pt < n_pts; pt++) {
         phi[pt] = psi_p[pt] * pow((1 - n2[pt]) / 2, (int)p) * psi_pq[pt];
 
-        if (std::isnan(n1[pt])) {  // value of Dubiner polynomial at singular
-                                   // point (-1,1)
+        if (std::isnan(n1[pt])) {  // value of Dubiner polynomial at singular point (-1,1)
             if (p == 0) {
                 phi[pt] = q + 1;
             } else {
@@ -117,6 +117,7 @@ Array2D<double> Dubiner_2D::ComputeDPhi(const uint                 p,
                                         const std::vector<double>& n1,
                                         const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
+
     uint n_pts = n1.size();
 
     Array2D<double> dphi_d(2);
@@ -138,8 +139,7 @@ Array2D<double> Dubiner_2D::ComputeDPhi(const uint                 p,
             psi_p[pt] * (pow((1.0 - n2[pt]) / 2.0, (int)p) * dpsi_pq_dn2[pt] -
                          (p / 2.0) * pow((1.0 - n2[pt]) / 2.0, (int)(p - 1)) * psi_pq[pt]));
 
-        if (std::isnan(n1[pt])) {  // value of Dubiner polynomial derivatives at
-                                   // singular point (-1,1)
+        if (std::isnan(n1[pt])) {  // value of Dubiner polynomial derivatives at singular point (-1,1)
             std::vector<double> dphi = this->ComputeSingularDPhi(p, q);
 
             dphi_d[LocalCoordTri::z1][pt] = dphi[LocalCoordTri::z1];
@@ -154,15 +154,15 @@ std::vector<double> Dubiner_2D::ComputeSingularDPhi(const uint p, const uint q) 
     std::vector<double> dphi(2);
 
     if (p == 1) {
-        dphi[LocalCoordTri::z1] = ComputeSingularDPhiDZ1(q)[1];
+        dphi[LocalCoordTri::z1] = this->ComputeSingularDPhiDZ1(q)[1];
     } else {
         dphi[LocalCoordTri::z1] = 0;
     }
 
     if (p == 0) {
-        dphi[LocalCoordTri::z2] = 3 * ComputeSingularDPhiDZ2(q)[1];
+        dphi[LocalCoordTri::z2] = 3 * this->ComputeSingularDPhiDZ2(q)[1];
     } else if (p == 1) {
-        dphi[LocalCoordTri::z2] = ComputeSingularDPhiDZ2(q + 1)[1];
+        dphi[LocalCoordTri::z2] = this->ComputeSingularDPhiDZ2(q + 1)[1];
     } else if (p > 1) {
         dphi[LocalCoordTri::z2] = 0;
     }

@@ -27,24 +27,24 @@ struct HPXRankBoundary {
     std::vector<double> send_postproc_buffer;
     std::vector<double> receive_postproc_buffer;
 
-    void send_preproc(uint timestamp) { outgoing.set(send_preproc_buffer, timestamp); }
+    void send_preproc(uint timestamp) { this->outgoing.set(this->send_preproc_buffer, timestamp); }
 
     hpx::future<void> receive_preproc(uint timestamp) {
-        return incoming.get(timestamp).then(
+        return this->incoming.get(timestamp).then(
             [this](hpx::future<array_double> msg_future) { this->receive_preproc_buffer = msg_future.get(); });
     }
 
-    void send(uint timestamp) { outgoing.set(send_buffer, timestamp); }
+    void send(uint timestamp) { this->outgoing.set(this->send_buffer, timestamp); }
 
     hpx::future<void> receive(uint timestamp) {
-        return incoming.get(timestamp).then(
+        return this->incoming.get(timestamp).then(
             [this](hpx::future<array_double> msg_future) { this->receive_buffer = msg_future.get(); });
     }
 
-    void send_postproc(uint timestamp) { outgoing.set(send_postproc_buffer, timestamp); }
+    void send_postproc(uint timestamp) { this->outgoing.set(this->send_postproc_buffer, timestamp); }
 
     hpx::future<void> receive_postproc(uint timestamp) {
-        return incoming.get(timestamp).then(
+        return this->incoming.get(timestamp).then(
             [this](hpx::future<array_double> msg_future) { this->receive_postproc_buffer = msg_future.get(); });
     }
 };

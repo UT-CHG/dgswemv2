@@ -8,7 +8,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         throw std::logic_error(err_msg);
     }
 
-    std::getline(ifs, name);
+    std::getline(ifs, this->name);
     int n_nodes, n_elements;
 
     ifs >> n_elements;
@@ -23,8 +23,8 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> node_name;
             ifs >> node_data[0] >> node_data[1] >> node_data[2];
 
-            assert(!nodes.count(node_name));  // Can't define a node twice
-            nodes.insert({node_name, node_data});
+            assert(!this->nodes.count(node_name));  // Can't define a node twice
+            this->nodes.insert({node_name, node_data});
             ifs.ignore(1000, '\n');
         }
     }
@@ -37,17 +37,17 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> element_name;
             ifs >> element_data[0] >> element_data[1] >> element_data[2] >> element_data[3];
 
-            assert(!elements.count(element_name));  // Can't define element twice
-            elements.insert({element_name, element_data});
+            assert(!this->elements.count(element_name));  // Can't define element twice
+            this->elements.insert({element_name, element_data});
             ifs.ignore(1000, '\n');
         }
     }
 
     {  // check if element nodes are ccw, swap if necessary
-        for (auto& elt : elements) {
-            Shape::StraightTriangle triangle({{nodes.at(elt.second[1])[0], nodes.at(elt.second[1])[1]},
-                                              {nodes.at(elt.second[2])[0], nodes.at(elt.second[2])[1]},
-                                              {nodes.at(elt.second[3])[0], nodes.at(elt.second[3])[1]}});
+        for (auto& elt : this->elements) {
+            Shape::StraightTriangle triangle({{this->nodes.at(elt.second[1])[0], this->nodes.at(elt.second[1])[1]},
+                                              {this->nodes.at(elt.second[2])[0], this->nodes.at(elt.second[2])[1]},
+                                              {this->nodes.at(elt.second[3])[0], this->nodes.at(elt.second[3])[1]}});
 
             // note that point selection doesn't matter since the Jacobian is
             // constant
@@ -58,42 +58,42 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     }
 
     {  // process open boundaries
-        ifs >> NOPE;
+        ifs >> this->NOPE;
         ifs.ignore(1000, '\n');
-        ifs >> NETA;
+        ifs >> this->NETA;
         ifs.ignore(1000, '\n');
 
-        NBDV.reserve(NOPE);
+        this->NBDV.reserve(this->NOPE);
         int n_nodes_bdry;
-        for (int bdry = 0; bdry < NOPE; ++bdry) {
+        for (int bdry = 0; bdry < this->NOPE; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
-            NBDV.push_back(std::vector<int>(n_nodes_bdry));
+            this->NBDV.push_back(std::vector<int>(n_nodes_bdry));
 
             for (int n = 0; n < n_nodes_bdry; ++n) {
-                ifs >> NBDV[bdry][n];
+                ifs >> this->NBDV[bdry][n];
                 ifs.ignore(1000, '\n');
             }
         }
     }
 
     {  // process land boundaries
-        ifs >> NBOU;
+        ifs >> this->NETA;
         ifs.ignore(1000, '\n');
-        ifs >> NVEL;
+        ifs >> this->NVEL;
         ifs.ignore(1000, '\n');
 
-        IBTYPE.resize(NBOU);
-        NBVV.reserve(NBOU);
+        this->IBTYPE.resize(this->NETA);
+        this->NBVV.reserve(this->NETA);
         int n_nodes_bdry;
-        for (int bdry = 0; bdry < NBOU; ++bdry) {
+        for (int bdry = 0; bdry < this->NETA; ++bdry) {
             ifs >> n_nodes_bdry;
-            ifs >> IBTYPE[bdry];
+            ifs >> this->IBTYPE[bdry];
             ifs.ignore(1000, '\n');
 
-            NBVV.push_back(std::vector<int>(n_nodes_bdry));
+            this->NBVV.push_back(std::vector<int>(n_nodes_bdry));
             for (int n = 0; n < n_nodes_bdry; ++n) {
-                ifs >> NBVV[bdry][n];
+                ifs >> this->NBVV[bdry][n];
                 ifs.ignore(1000, '\n');
             }
         }
@@ -106,10 +106,10 @@ void AdcircFormat::write_to(const char* out_name) const {
     std::ofstream file;
     file.open(out_name);
 
-    file << name << '\n';
-    file << elements.size() << "    " << nodes.size() << '\n';
+    file << this->name << '\n';
+    file << this->elements.size() << "    " << this->nodes.size() << '\n';
 
-    for (const auto& node : nodes) {
+    for (const auto& node : this->nodes) {
         file << node.first;
         for (int i = 0; i < 3; ++i) {
             file << std::setprecision(15) << std::setw(22) << node.second[i];
@@ -117,7 +117,7 @@ void AdcircFormat::write_to(const char* out_name) const {
         file << '\n';
     }
 
-    for (const auto& element : elements) {
+    for (const auto& element : this->elements) {
         file << element.first;
         for (int i = 0; i < 4; ++i) {
             file << std::setw(12) << element.second[i];
@@ -125,37 +125,38 @@ void AdcircFormat::write_to(const char* out_name) const {
         file << '\n';
     }
 
-    file << NOPE << " = Number of open boundaries\n";
-    file << NETA << " = Total number of open boundary nodes\n";
-    for (int n = 0; n < NOPE; ++n) {
-        file << NBDV[n].size() << " = Number of nodes for open boundry " << n + 1 << " \n";
-        for (uint i = 0; i < NBDV[n].size(); ++i) {
-            file << NBDV[n][i] << "\n";
+    file << this->NOPE << " = Number of open boundaries\n";
+    file << this->NETA << " = Total number of open boundary nodes\n";
+    for (int n = 0; n < this->NOPE; ++n) {
+        file << this->NBDV[n].size() << " = Number of nodes for open boundry " << n + 1 << " \n";
+        for (uint i = 0; i < this->NBDV[n].size(); ++i) {
+            file << this->NBDV[n][i] << "\n";
         }
     }
 
-    file << NBOU << " = Number of land Boundaries\n";
-    file << NVEL << " = Total number of open boundary nodes\n";
+    file << this->NETA << " = Number of land Boundaries\n";
+    file << this->NVEL << " = Total number of open boundary nodes\n";
 
-    for (int n = 0; n < NBOU; ++n) {
-        file << NBVV[n].size() << " " << IBTYPE[n] << " = Number of nodes for land boundary " << n + 1 << '\n';
-        for (uint i = 0; i < NBVV[n].size(); ++i) {
-            file << NBVV[n][i] << '\n';
+    for (int n = 0; n < this->NETA; ++n) {
+        file << this->NBVV[n].size() << " " << this->IBTYPE[n] << " = Number of nodes for land boundary " << n + 1
+             << '\n';
+        for (uint i = 0; i < this->NBVV[n].size(); ++i) {
+            file << this->NBVV[n][i] << '\n';
         }
     }
 }
 
 SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) const {
-    for (auto& open_bdry : NBDV) {
+    for (auto& open_bdry : this->NBDV) {
         if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
             return SWE::BoundaryConditions::tidal;
         }
     }
 
     uint segment_id = 0;
-    for (auto& land_bdry : NBVV) {
+    for (auto& land_bdry : this->NBVV) {
         if (has_edge(land_bdry.cbegin(), land_bdry.cend(), node_pair)) {
-            switch (IBTYPE[segment_id]) {
+            switch (this->IBTYPE[segment_id]) {
                 case 0:
                 case 10:
                 case 20:

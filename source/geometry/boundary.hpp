@@ -33,17 +33,19 @@ template <uint dimension, typename IntegrationType, typename DataType, typename 
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
     const BoundaryType&                     boundary_condition)
-    : boundary_condition(std::move(boundary_condition)), data(raw_boundary.data) {
-    IntegrationType                                               integration;
+    : boundary_condition(std::move(boundary_condition)), bound_id(raw_boundary.bound_id), data(raw_boundary.data) {
+    // *** //
+    IntegrationType integration;
+
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p + 1);
 
     std::vector<Point<dimension + 1>> z_master =
-        raw_boundary.master.BoundaryToMasterCoordinates(raw_boundary.bound_id, integration_rule.second);
+        raw_boundary.master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
     this->phi_gp = raw_boundary.basis.GetPhi(raw_boundary.p, z_master);
 
-    std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(raw_boundary.bound_id, z_master);
+    std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(this->bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact = integration_rule.first;
@@ -58,13 +60,11 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
             }
         }
 
-        this->surface_normal =
-            Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary.shape.GetSurfaceNormal(raw_boundary.bound_id, z_master).begin());
+        this->surface_normal = Array2D<double>(integration_rule.first.size(),
+                                               *raw_boundary.shape.GetSurfaceNormal(this->bound_id, z_master).begin());
     }
 
-    this->bound_id = raw_boundary.bound_id;
-    this->data.set_ngp_boundary(raw_boundary.bound_id, integration_rule.first.size());
+    this->data.set_ngp_boundary(this->bound_id, integration_rule.first.size());
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>

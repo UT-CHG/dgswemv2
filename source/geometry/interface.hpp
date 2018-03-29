@@ -36,20 +36,25 @@ class Interface {
 template <uint dimension, typename IntegrationType, typename DataType>
 Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
                                                            const RawBoundary<dimension, DataType>& raw_boundary_ex)
-    : data_in(raw_boundary_in.data), data_ex(raw_boundary_ex.data) {
+    : bound_id_in(raw_boundary_in.bound_id),
+      bound_id_ex(raw_boundary_ex.bound_id),
+      data_in(raw_boundary_in.data),
+      data_ex(raw_boundary_ex.data) {
+    // *** //
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
-    IntegrationType                                               integration;
+    IntegrationType integration;
+
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     std::vector<Point<dimension + 1>> z_master =
-        raw_boundary_ex.master.BoundaryToMasterCoordinates(raw_boundary_ex.bound_id, integration_rule.second);
-    this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master);
-
-    z_master = raw_boundary_in.master.BoundaryToMasterCoordinates(raw_boundary_in.bound_id, integration_rule.second);
+        raw_boundary_in.master.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
     this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master);
 
-    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(raw_boundary_in.bound_id, z_master);
+    z_master        = raw_boundary_ex.master.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
+    this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master);
+
+    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(this->bound_id_in, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_in = integration_rule.first;
@@ -78,9 +83,9 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
 
         this->surface_normal_in =
             Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary_in.shape.GetSurfaceNormal(raw_boundary_in.bound_id, z_master).begin());
+                            *raw_boundary_in.shape.GetSurfaceNormal(this->bound_id_in, z_master).begin());
 
-        this->surface_normal_ex = this->surface_normal_in;
+        this->surface_normal_ex = this->surface_normal_in;  // same dimensions
 
         uint ngp   = this->surface_normal_ex.size();
         uint gp_ex = 0;
@@ -92,10 +97,8 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
         }
     }
 
-    this->bound_id_in = raw_boundary_in.bound_id;
-    this->bound_id_ex = raw_boundary_ex.bound_id;
-    this->data_in.set_ngp_boundary(raw_boundary_in.bound_id, integration_rule.first.size());
-    this->data_ex.set_ngp_boundary(raw_boundary_ex.bound_id, integration_rule.first.size());
+    this->data_in.set_ngp_boundary(this->bound_id_in, integration_rule.first.size());
+    this->data_ex.set_ngp_boundary(this->bound_id_ex, integration_rule.first.size());
 }
 
 template <uint dimension, typename IntegrationType, typename DataType>
