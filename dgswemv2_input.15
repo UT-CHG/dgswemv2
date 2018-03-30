@@ -19,6 +19,8 @@ polynomial_order: 1
 problem:
   name: swe
   gravity: 9.81
+  density_air: 1.225
+  density_water: 1000.0
   h_o: 0.01
   spherical_projection:
     type: None

@@ -11,7 +11,7 @@ struct SphericalProjection {
     SphericalProjectionType type        = SphericalProjectionType::None;
     double                  longitude_o = 0.0;
     double                  latitude_o  = 0.0;
-    double                  R           = 1000.0;
+    double                  R           = 6378200.0;
 };
 
 enum class InitialConditionsType { Constant, Function };
@@ -66,6 +66,8 @@ struct Inputs {
     YAML::Node as_yaml_node();
 
     double g   = 9.81;
+    double rho_air = 1.2250;	
+    double rho_water = 1000.0;
     double h_o = 0.01;
 
     bool parse_input = false;

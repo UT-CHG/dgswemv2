@@ -4,6 +4,9 @@
 namespace SWE {
 namespace Global {
 static double g   = 9.81;
+double rho_air = 1.225;
+double rho_water = 1000.0;
+
 static double Cf  = 0.0;
 static double h_o = 0.01;
 }

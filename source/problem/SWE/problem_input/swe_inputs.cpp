@@ -4,10 +4,26 @@ namespace SWE {
 Inputs::Inputs(YAML::Node& swe_node) {
     if (swe_node["gravity"]) {
         this->g = swe_node["gravity"].as<double>();
+    } else {
+        std::cerr << "Using default g\n";
+    }
+
+    if (swe_node["density_air"]) {
+        this->rho_air = swe_node["density_air"].as<double>();
+    } else {
+        std::cerr << "Using default air density\n";
+    }
+
+    if (swe_node["density_water"]) {
+        this->rho_water = swe_node["density_water"].as<double>();
+    } else {
+        std::cerr << "Using default water density\n";
     }
 
     if (swe_node["h_o"]) {
         this->h_o = swe_node["h_o"].as<double>();
+    } else {
+        std::cerr << "Using default h_o parameter\n";        
     }
 
     const std::string malformatted_sp_warning(
@@ -195,8 +211,11 @@ Inputs::Inputs(YAML::Node& swe_node) {
 
 YAML::Node Inputs::as_yaml_node() {
     YAML::Node ret;
+    
     ret["name"]    = "swe";
     ret["gravity"] = this->g;
+    ret["density_air"] = this->rho_air;
+    ret["density_water"] = this->rho_water;
     ret["h_o"]     = this->h_o;
 
     YAML::Node sp_node;

@@ -72,13 +72,13 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute surface friction contribution
-                internal.qx_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::x][gp];
-                internal.qy_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::y][gp];
+                internal.qx_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::x][gp] / Global::rho_water;
+                internal.qy_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::y][gp] / Global::rho_water;
 
                 // compute atmospheric pressure contribution
                 internal.qx_source_term_at_gp[gp] -=
-                    sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::x][gp];
-                internal.qy_source_term_at_gp[gp] -= internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::y][gp];
+                    sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::x][gp]  / Global::rho_water;
+                internal.qy_source_term_at_gp[gp] -= internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::y][gp]  / Global::rho_water;
             }
         }
 
