@@ -74,7 +74,7 @@ void Problem::postprocessor_parallel_post_receive_kernel(const Stepper& stepper,
 
     mesh.CallForEachDistributedBoundary(slope_limiting_prepare_distributed_boundary_kernel);
 
-    mesh.CallForEachElement(slope_limiting_kernel);
+    //mesh.CallForEachElement(slope_limiting_kernel);
 
     mesh.CallForEachElement(wetting_drying_kernel);
 }
