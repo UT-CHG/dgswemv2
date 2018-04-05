@@ -1,5 +1,6 @@
 #include "../source/general_definitions.hpp"
 #include <yaml-cpp/yaml.h>
+#include "math.h"
 
 #include "bathymetry.hpp"
 
