@@ -23,7 +23,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
     if (swe_node["h_o"]) {
         this->h_o = swe_node["h_o"].as<double>();
     } else {
-        std::cerr << "Using default h_o parameter\n";        
+        std::cerr << "Using default h_o parameter\n";
     }
 
     const std::string malformatted_sp_warning(
@@ -211,12 +211,12 @@ Inputs::Inputs(YAML::Node& swe_node) {
 
 YAML::Node Inputs::as_yaml_node() {
     YAML::Node ret;
-    
-    ret["name"]    = "swe";
-    ret["gravity"] = this->g;
-    ret["density_air"] = this->rho_air;
+
+    ret["name"]          = "swe";
+    ret["gravity"]       = this->g;
+    ret["density_air"]   = this->rho_air;
     ret["density_water"] = this->rho_water;
-    ret["h_o"]     = this->h_o;
+    ret["h_o"]           = this->h_o;
 
     YAML::Node sp_node;
     switch (this->spherical_projection.type) {

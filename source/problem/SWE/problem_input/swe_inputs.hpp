@@ -65,10 +65,10 @@ struct Inputs {
 
     YAML::Node as_yaml_node();
 
-    double g   = 9.81;
-    double rho_air = 1.2250;	
+    double g         = 9.81;
+    double rho_air   = 1.2250;
     double rho_water = 1000.0;
-    double h_o = 0.01;
+    double h_o       = 0.01;
 
     bool parse_input = false;
 

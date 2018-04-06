@@ -24,7 +24,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     bool set_dry_element = false;
     bool check_element   = false;
 
-    if (h_avg <= Global::h_o) {
+    if (h_avg <= Global::h_o + Global::h_o_treshold) {
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
         }
@@ -36,7 +36,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         uint n_dry_vrtx = 0;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
+            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o + Global::h_o_treshold) {
                 n_dry_vrtx++;
             }
         }
@@ -81,7 +81,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             n_dry_vrtx = 0;
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
+                if (wd_state.h_at_vrtx[vrtx] <= Global::h_o + Global::h_o_treshold) {
                     n_dry_vrtx++;
 
                     del_qx += wd_state.qx_at_vrtx[vrtx];
@@ -95,7 +95,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
-                if (wd_state.h_at_vrtx[vrtx] > Global::h_o) {
+                if (wd_state.h_at_vrtx[vrtx] > Global::h_o + Global::h_o_treshold) {
                     wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
                     wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
                 }

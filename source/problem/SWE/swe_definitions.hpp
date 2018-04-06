@@ -3,12 +3,13 @@
 
 namespace SWE {
 namespace Global {
-static double g   = 9.81;
-static double rho_air = 1.225;
+static double g         = 9.81;
+static double rho_air   = 1.225;
 static double rho_water = 1000.0;
 
-static double Cf  = 0.0;
-static double h_o = 0.01;
+static double Cf           = 0.0;
+static double h_o          = 0.01;
+static double h_o_treshold = std::numeric_limits<double>::epsilon();
 }
 
 namespace SourceTerms {

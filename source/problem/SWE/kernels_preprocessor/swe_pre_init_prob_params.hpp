@@ -3,11 +3,12 @@
 
 namespace SWE {
 void Problem::initialize_problem_parameters(const ProblemInputType& problem_specific_input) {
-    SWE::Global::g   = problem_specific_input.g;
-    SWE::Global::rho_air  = problem_specific_input.rho_air;
-    SWE::Global::rho_water   = problem_specific_input.rho_water;
+    SWE::Global::g         = problem_specific_input.g;
+    SWE::Global::rho_air   = problem_specific_input.rho_air;
+    SWE::Global::rho_water = problem_specific_input.rho_water;
 
-    SWE::Global::h_o = problem_specific_input.h_o;
+    SWE::Global::h_o          = problem_specific_input.h_o;
+    SWE::Global::h_o_treshold = 10e6 * SWE::Global::h_o * std::numeric_limits<double>::epsilon();
 
     // specify forcing terms
     if (problem_specific_input.function_source.type != SWE::FunctionSourceType::None) {
