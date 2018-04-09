@@ -51,17 +51,20 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
 
-    hpx::future<void> Stage();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
-
-    hpx::future<void> Postprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Postprocessor, PostprocessorAction);
-
-    void Step();
+    hpx::future<void> Step();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
 
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
+
+  private:
+    void Parse();
+
+    hpx::future<void> Stage();
+
+    hpx::future<void> Postprocessor();
+
+    void SwapStates();
 };
 
 template <typename ProblemType>
@@ -247,7 +250,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
 }
 
 template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::Step() {
+void HPXSimulationUnit<ProblemType>::SwapStates() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -255,6 +258,28 @@ void HPXSimulationUnit<ProblemType>::Step() {
     if (this->writer.WritingOutput()) {
         this->writer.WriteOutput(this->stepper, this->mesh);
     }
+}
+
+template <typename ProblemType>
+hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
+
+    hpx::future<void> step_future = hpx::make_ready_future();
+
+    for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
+        this->Parse();
+
+        step_future = step_future.then([this](auto&&) {
+                return this->Stage();
+            });
+
+        step_future = step_future.then([this](auto&&) {
+                return this->Postprocessor();
+            });
+    }
+
+    return step_future.then([this](auto&&) {
+            return this->SwapStates();
+        });
 }
 
 template <typename ProblemType>
@@ -288,16 +313,6 @@ class HPXSimulationUnitClient
 
     hpx::future<void> Launch() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::LaunchAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Stage() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Postprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::PostprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
@@ -374,21 +389,10 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint stage = 0; stage < this->n_stages; stage++) {
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] = simulation_futures[sim_id].then(
-                    [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Stage(); });
-            }
-
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] = simulation_futures[sim_id].then(
-                    [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Postprocessor(); });
-            }
-        }
-
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-            simulation_futures[sim_id] = simulation_futures[sim_id].then(
-                [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
+            simulation_futures[sim_id] =
+                simulation_futures[sim_id]
+                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
     return hpx::when_all(simulation_futures);
