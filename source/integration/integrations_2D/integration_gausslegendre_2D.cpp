@@ -3,7 +3,7 @@
 
 namespace Integration {
 std::pair<std::vector<double>, std::vector<Point<2>>> GaussLegendre_2D::GetRule(const uint p) {
-    /* implementation goes here */
+    
     GaussLegendre_1D Rule1D;
     std::pair<std::vector<double>, std::vector<Point<1>>> Rule1Ddata=Rule1D.GetRule(p);
     std::pair<std::vector<double>, std::vector<Point<2>>>  Rule2Ddata;

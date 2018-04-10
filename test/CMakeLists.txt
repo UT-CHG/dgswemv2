@@ -46,6 +46,18 @@ add_test(
 )
 
 add_executable(
+  test_basis_legendre_2d_exe
+  test_basis_legendre_2d.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_legendre_2D.cpp
+)
+
+add_test(
+  Unit_basis_legendre_2d
+  test_basis_legendre_2d_exe
+)
+
+add_executable(
   test_integ_gausslegendre_1d_exe
   test_integ_gausslegendre_1d.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp

@@ -80,6 +80,13 @@ class Dubiner_2D : Basis<2> {
      */
     std::vector<double> ComputeSingularDPhiDZ2(const uint q);
 };
+
+class Legendre_2D : Basis<2> {
+  public:
+    Array2D<double> GetPhi(const uint p, const std::vector<Point<2>>& points);
+    Array3D<double> GetDPhi(const uint p, const std::vector<Point<2>>& points);
+    std::pair<bool, Array2D<double>> GetMinv(const uint p);
+};
 }
 
 #endif
