@@ -339,6 +339,16 @@ add_test(
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
 )
 
+add_executable(
+  test_heartbeat_exe
+  test_heartbeat.cpp
+)
+
+add_test(
+  Unit_heartbeat
+  test_heartbeat_exe
+)
+
 if(USE_HPX)
   add_executable(
     test_swe_serialization_exe
