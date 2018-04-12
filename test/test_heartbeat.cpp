@@ -19,5 +19,5 @@ int main() {
         }
     }
 
-    return counter != 5;
+    return counter != 7;
 }

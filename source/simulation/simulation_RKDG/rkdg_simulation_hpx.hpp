@@ -299,12 +299,14 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
 
 template <typename ProblemType>
 class HPXSimulationUnitClient
-    : hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>> {
+    : public hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>> {
   private:
     using BaseType = hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>>;
 
   public:
     HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+
+    static constexpr const char* GetBasename() { return "Simulation_Unit_Client_"; }
 
     hpx::future<void> FinishPreprocessor() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::FinishPreprocessorAction;
@@ -353,25 +355,28 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-    this->n_stages = input.stepper_input.nstages;
-
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
         std::to_string(locality_id) + '_';
     std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
+    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+    this->n_stages = input.stepper_input.nstages;
     uint submesh_id = 0;
-
+    std::vector<hpx::future<void>> registration_futures;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
         hpx::future<hpx::id_type> simulation_unit_id =
             hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
                 here, input_string, locality_id, submesh_id);
 
-        this->simulation_unit_clients.emplace_back(std::move(simulation_unit_id));
+            registration_futures.push_back(this->simulation_unit_clients.back().register_as(
+                                               std::string{HPXSimulationUnitClient<ProblemType>::GetBasename()}+
+                                               std::to_string(locality_id)+'_'+std::to_string(submesh_id)));
+            ++submesh_id;
+        }
 
-        ++submesh_id;
+        hpx::when_all(registration_futures).get();
     }
 }
 
