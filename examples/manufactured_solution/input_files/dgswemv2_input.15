@@ -10,8 +10,9 @@ mesh:
   coordinate_system: cartesian
 
 timestepping:
+  start_time: 25-11-1987 00:00                
+  end_time: 25-11-1987 01:00                
   dt: 1                           #in seconds
-  end_time: 3600                #in seconds
   order: 2
   nstages: 2
 
@@ -19,19 +20,7 @@ polynomial_order: 1
 
 problem:
   name: swe
-  bottom_friction:
-    type: Chezy
-    coefficient: 0.001
   gravity: 9.81
   initial_conditions:
     type: Function
-  function_source:
-    type: Test
-
-output:
-  path: output/
-  logfile:
-    name: log
-    verbose: true
-  vtk:
-    frequency: 360
+  function_source: Enable
