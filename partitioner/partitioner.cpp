@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     std::cout << "Mesh Partitioner Configuration\n";
     InputParameters<> input(argv[1]);
     std::cout << "  Input File: " << argv[1] << '\n';
-    std::string input_mesh_str(input.mesh_file_name);
+    std::string input_mesh_str(input.mesh_input.mesh_file_name);
     std::cout << "  Mesh Path: " << input_mesh_str << '\n';
     int num_partitions = atoi(argv[2]);
     std::cout << "  Number of partitions: " << num_partitions << '\n';
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     auto t1 = std::chrono::high_resolution_clock::now();
 
     input.read_mesh();
-    MeshMetaData& mesh_meta = input.mesh_data;
+    MeshMetaData& mesh_meta = input.mesh_input.mesh_data;
 
     // initialize problem specific inputs
     std::unique_ptr<ProblemPartitionerInputs> problem_inputs;
@@ -103,8 +103,9 @@ int main(int argc, char** argv) {
     std::string updated_input_filename = std::string(argv[1]);
     updated_input_filename.erase(updated_input_filename.size() - 3);
     updated_input_filename += "_parallelized.15";
-    input.mesh_file_name = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of(".")) + ".meta";
-    input.mesh_format    = "Meta";
+    input.mesh_input.mesh_file_name =
+        input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of(".")) + ".meta";
+    input.mesh_input.mesh_format = "Meta";
     input.write_to(updated_input_filename);
 
     auto t2 = std::chrono::high_resolution_clock::now();

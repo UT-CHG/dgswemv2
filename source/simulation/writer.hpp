@@ -15,12 +15,12 @@ class Writer {
     std::ofstream log_file;
 
     bool        writing_vtk_output;
-    int         vtk_output_frequency;
+    uint        vtk_output_frequency;
     std::string vtk_file_name_geom;
     std::string vtk_file_name_raw;
 
     bool writing_modal_output;
-    int  modal_output_frequency;
+    uint modal_output_frequency;
 
   public:
     Writer() = default;
@@ -49,9 +49,11 @@ Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemI
       writing_log_file(input.writer_input.writing_log_file),
       verbose_log_file(input.writer_input.verbose_log_file),
       writing_vtk_output(input.writer_input.writing_vtk_output),
-      vtk_output_frequency(input.writer_input.vtk_output_frequency),
-      writing_modal_output(input.writer_input.writing_modal_output),
-      modal_output_frequency(input.writer_input.modal_output_frequency) {
+      writing_modal_output(input.writer_input.writing_modal_output) {
+    this->vtk_output_frequency = (uint)std::ceil(input.writer_input.vtk_output_frequency / input.stepper_input.dt);
+
+    this->modal_output_frequency = (uint)std::ceil(input.writer_input.modal_output_frequency / input.stepper_input.dt);
+
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + input.writer_input.log_file_name;
     }

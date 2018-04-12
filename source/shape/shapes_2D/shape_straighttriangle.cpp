@@ -1,6 +1,15 @@
 #include "../shapes_2D.hpp"
 
 namespace Shape {
+StraightTriangle::StraightTriangle(const std::vector<Point<2>>& nodal_coordinates) : Shape<2>(nodal_coordinates) {
+    // check if element nodes are ccw, swap if necessary
+    // note that point selection doesn't matter since the Jacobian is
+    // constant
+    if (!this->CheckJacobianPositive(Point<2>())) {
+        std::swap(this->nodal_coordinates[0], this->nodal_coordinates[2]);
+    }
+}
+
 bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
     return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 }

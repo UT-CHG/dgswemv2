@@ -24,7 +24,7 @@ int main() {
         }
 
         const SWE::InitialConditions& ics = result.initial_conditions;
-        if (!(ics.type == SWE::InitialConditionsType::Constant && Utilities::almost_equal(0., ics.ze_initial) &&
+        if (!(ics.type == SWE::InitialConditionsType::Default && Utilities::almost_equal(0., ics.ze_initial) &&
               Utilities::almost_equal(0., ics.qx_initial) && Utilities::almost_equal(0., ics.qy_initial))) {
             std::cerr << "Default initial conditions are incorrectly set\n";
             error_found = true;

@@ -21,6 +21,8 @@
 #include <map>
 #include <unordered_map>
 #include <tuple>
+#include <stdlib.h>
+#include <time.h>
 
 typedef unsigned int uint;
 
@@ -125,8 +127,8 @@ class Master {
 
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule;
 
-    Array2D<double> psi_gp;
-    Array2D<double> dpsi;
+    Array2D<double> chi_gp;
+    Array2D<double> dchi;
 
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
@@ -185,6 +187,8 @@ class Shape {
 #define DEFAULT_ID 4294967295  // max uint as default id
 #define INTERNAL 255           // max uchar as default bound type: internal
 #define DISTRIBUTED 254
+
+enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };
 
 enum GlobalCoord : uchar { x = 0, y = 1, z = 2 };
 

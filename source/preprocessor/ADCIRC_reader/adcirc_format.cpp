@@ -9,17 +9,17 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     }
 
     std::getline(ifs, this->name);
-    int n_nodes, n_elements;
+    uint n_nodes, n_elements;
 
     ifs >> n_elements;
     ifs >> n_nodes;
     ifs.ignore(1000, '\n');
 
     {  // read in node information
-        int                   node_name;
+        uint                  node_name;
         std::array<double, 3> node_data;
 
-        for (int i = 0; i < n_nodes; ++i) {
+        for (uint i = 0; i < n_nodes; ++i) {
             ifs >> node_name;
             ifs >> node_data[0] >> node_data[1] >> node_data[2];
 
@@ -30,30 +30,16 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     }
 
     {  // read in element information
-        int                element_name;
-        std::array<int, 4> element_data;
+        uint                element_name;
+        std::array<uint, 4> element_data;
 
-        for (int i = 0; i < n_elements; ++i) {
+        for (uint i = 0; i < n_elements; ++i) {
             ifs >> element_name;
             ifs >> element_data[0] >> element_data[1] >> element_data[2] >> element_data[3];
 
             assert(!this->elements.count(element_name));  // Can't define element twice
             this->elements.insert({element_name, element_data});
             ifs.ignore(1000, '\n');
-        }
-    }
-
-    {  // check if element nodes are ccw, swap if necessary
-        for (auto& elt : this->elements) {
-            Shape::StraightTriangle triangle({{this->nodes.at(elt.second[1])[0], this->nodes.at(elt.second[1])[1]},
-                                              {this->nodes.at(elt.second[2])[0], this->nodes.at(elt.second[2])[1]},
-                                              {this->nodes.at(elt.second[3])[0], this->nodes.at(elt.second[3])[1]}});
-
-            // note that point selection doesn't matter since the Jacobian is
-            // constant
-            if (!triangle.CheckJacobianPositive(Point<2>())) {
-                std::swap(elt.second[1], elt.second[3]);
-            }
         }
     }
 
@@ -64,13 +50,13 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         ifs.ignore(1000, '\n');
 
         this->NBDV.reserve(this->NOPE);
-        int n_nodes_bdry;
-        for (int bdry = 0; bdry < this->NOPE; ++bdry) {
+        uint n_nodes_bdry;
+        for (uint bdry = 0; bdry < this->NOPE; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
-            this->NBDV.push_back(std::vector<int>(n_nodes_bdry));
+            this->NBDV.push_back(std::vector<uint>(n_nodes_bdry));
 
-            for (int n = 0; n < n_nodes_bdry; ++n) {
+            for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBDV[bdry][n];
                 ifs.ignore(1000, '\n');
             }
@@ -85,14 +71,14 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
 
         this->IBTYPE.resize(this->NBOU);
         this->NBVV.reserve(this->NBOU);
-        int n_nodes_bdry;
-        for (int bdry = 0; bdry < this->NBOU; ++bdry) {
+        uint n_nodes_bdry;
+        for (uint bdry = 0; bdry < this->NBOU; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs >> this->IBTYPE[bdry];
             ifs.ignore(1000, '\n');
 
-            this->NBVV.push_back(std::vector<int>(n_nodes_bdry));
-            for (int n = 0; n < n_nodes_bdry; ++n) {
+            this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+            for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBVV[bdry][n];
                 ifs.ignore(1000, '\n');
             }
@@ -111,7 +97,7 @@ void AdcircFormat::write_to(const char* out_name) const {
 
     for (const auto& node : this->nodes) {
         file << node.first;
-        for (int i = 0; i < 3; ++i) {
+        for (uint i = 0; i < 3; ++i) {
             file << std::setprecision(15) << std::setw(22) << node.second[i];
         }
         file << '\n';
@@ -119,7 +105,7 @@ void AdcircFormat::write_to(const char* out_name) const {
 
     for (const auto& element : this->elements) {
         file << element.first;
-        for (int i = 0; i < 4; ++i) {
+        for (uint i = 0; i < 4; ++i) {
             file << std::setw(12) << element.second[i];
         }
         file << '\n';
@@ -127,7 +113,7 @@ void AdcircFormat::write_to(const char* out_name) const {
 
     file << this->NOPE << " = Number of open boundaries\n";
     file << this->NETA << " = Total number of open boundary nodes\n";
-    for (int n = 0; n < this->NOPE; ++n) {
+    for (uint n = 0; n < this->NOPE; ++n) {
         file << this->NBDV[n].size() << " = Number of nodes for open boundry " << n + 1 << " \n";
         for (uint i = 0; i < this->NBDV[n].size(); ++i) {
             file << this->NBDV[n][i] << "\n";
@@ -137,7 +123,7 @@ void AdcircFormat::write_to(const char* out_name) const {
     file << this->NBOU << " = Number of land Boundaries\n";
     file << this->NVEL << " = Total number of open boundary nodes\n";
 
-    for (int n = 0; n < this->NBOU; ++n) {
+    for (uint n = 0; n < this->NBOU; ++n) {
         file << this->NBVV[n].size() << " " << this->IBTYPE[n] << " = Number of nodes for land boundary " << n + 1
              << '\n';
         for (uint i = 0; i < this->NBVV[n].size(); ++i) {
@@ -146,7 +132,7 @@ void AdcircFormat::write_to(const char* out_name) const {
     }
 }
 
-SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) const {
+SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) const {
     for (auto& open_bdry : this->NBDV) {
         if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
             return SWE::BoundaryConditions::tidal;
@@ -182,9 +168,9 @@ SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<int, 2>& node_pair) 
         std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
 }
 
-bool AdcircFormat::has_edge(std::vector<int>::const_iterator cbegin,
-                            std::vector<int>::const_iterator cend,
-                            std::array<int, 2>&              node_pair) const {
+bool AdcircFormat::has_edge(std::vector<uint>::const_iterator cbegin,
+                            std::vector<uint>::const_iterator cend,
+                            std::array<uint, 2>&              node_pair) const {
     auto it = std::find(cbegin, cend, node_pair[0]);
 
     if (it != cend) {

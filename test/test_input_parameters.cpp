@@ -40,9 +40,12 @@ const static auto equal = [](const InputParameters<typename SWE::Inputs>& ipa,
         std::cerr << "Error: Problem Specific inputs not equal\n";
     }
 
-    return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
-           (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
-           Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
+    return (ipa.mesh_input.mesh_file_name == ipb.mesh_input.mesh_file_name) &&
+           (ipa.mesh_input.mesh_format == ipb.mesh_input.mesh_format) &&
+           (ipa.stepper_input.nstages == ipb.stepper_input.nstages) &&
+           (ipa.stepper_input.order == ipb.stepper_input.order) &&
+           Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
+           Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
            (ipa.polynomial_order == ipb.polynomial_order) && inputs_are_equal &&
            equal_writer(ipa.writer_input, ipb.writer_input);
 };
@@ -69,9 +72,12 @@ const static auto equal2 = [](const InputParameters<>& ipa, const InputParameter
         std::cerr << "Error: Problem Specific inputs not equal\n";
     }
 
-    return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
-           (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
-           Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
+    return (ipa.mesh_input.mesh_file_name == ipb.mesh_input.mesh_file_name) &&
+           (ipa.mesh_input.mesh_format == ipb.mesh_input.mesh_format) &&
+           (ipa.stepper_input.nstages == ipb.stepper_input.nstages) &&
+           (ipa.stepper_input.order == ipb.stepper_input.order) &&
+           Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
+           Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
            (ipa.polynomial_order == ipb.polynomial_order) && swe_nodes_are_equal &&
            equal_writer(ipa.writer_input, ipb.writer_input);
 };

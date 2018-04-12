@@ -199,35 +199,39 @@ add_test(
 file(WRITE files_for_testing/correct_input.15
 "mesh:\n\
   format: Adcirc\n\
-  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\n\
+  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\
+  coordinate_system: cartesian\n\n\
 timestepping:\n\
+  start_time: 11-05-2015 12:00              #dd-mm-yyyy hh:mm\n\
+  end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm\n\
   dt: 1                           #in seconds\n\
-  end_time: 86400                 #in seconds\n\
   order: 2\n\
   nstages: 2\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
   gravity: 9.81\n\
+  density_air: 1.225\n\
+  density_water: 1000\n\
   h_o: 0.001\n\
   initial_conditions:\n\
     type: Constant\n\
     initial_surface_height: 10.0\n\
     initial_momentum_x: 0.0\n\
     initial_momentum_y: 0.0\n\
-  function_source:\n\
-    type: Test\n\  
+  function_source: Enable\n\
   bottom_friction:\n\
     type: Manning\n\
     coefficient: 0.001\n\
     input_file: manning.test\n\
   meteo_forcing:\n\
-    type: Test\n\
+    type: HWIND\n\
+    raw_input_file: weather.test\n\
     input_file: weather.test\n\
+    frequency: 900\n\
   tidal_potential:\n\
     type: Test\n\
-  coriolis:\n\
-    type: Test\n\n\
+  coriolis: Enable\n\n\
 output:\n\
   logfile:\n\
     name: log\n\
@@ -240,35 +244,39 @@ output:\n\
 file(WRITE files_for_testing/correct_input_no_output.15
 "mesh:\n\
   format: Adcirc\n\
-  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\n\
+  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\
+  coordinate_system: cartesian\n\n\
 timestepping:\n\
+  start_time: 11-05-2015 12:00              #dd-mm-yyyy hh:mm\n\
+  end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm\n\
   dt: 1                           #in seconds\n\
-  end_time: 86400                 #in seconds\n\
   order: 2\n\
   nstages: 2\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
   gravity: 9.81\n\
+  density_air: 1.225\n\
+  density_water: 1000\n\
   h_o: 0.001\n\
   initial_conditions:\n\
     type: Constant\n\
     initial_surface_height: 10.0\n\
     initial_momentum_x: 0.0\n\
     initial_momentum_y: 0.0\n\
-  function_source:\n\
-    type: Test\n\  
+  function_source: Enable\n\
   bottom_friction:\n\
     type: Manning\n\
     coefficient: 0.001\n\
     input_file: manning.test\n\
   meteo_forcing:\n\
-    type: Test\n\
+    type: HWIND\n\
+    raw_input_file: weather.test\n\
     input_file: weather.test\n\
+    frequency: 900\n\
   tidal_potential:\n\
     type: Test\n\
-  coriolis:\n\
-    type: Test\n"
+  coriolis: Enable\n"
 )
 
 add_executable(

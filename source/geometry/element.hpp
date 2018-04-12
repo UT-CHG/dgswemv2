@@ -19,7 +19,7 @@ class Element {
 
     std::vector<Point<dimension>> gp_global_coordinates;
 
-    Array3D<double> dpsi_fact;
+    Array3D<double> dchi_fact;
     Array3D<double> dphi_fact;
 
     bool                const_J;
@@ -108,17 +108,17 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint         
 
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
-        this->dpsi_fact.resize(this->master.dpsi.size());
-        for (uint dof = 0; dof < this->master.dpsi.size(); dof++) {
-            this->dpsi_fact[dof].resize(dimension);
+        this->dchi_fact.resize(this->master.dchi.size());
+        for (uint dof = 0; dof < this->master.dchi.size(); dof++) {
+            this->dchi_fact[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->dpsi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
+                this->dchi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
                 for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
-                    double dpsi = 0;
+                    double dchi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        dpsi += this->master.dpsi[dof][z] * J_inv[z][dir][0];
+                        dchi += this->master.dchi[dof][z] * J_inv[z][dir][0];
                     }
-                    this->dpsi_fact[dof][dir].push_back(dpsi);
+                    this->dchi_fact[dof][dir].push_back(dchi);
                 }
             }
         }
@@ -304,7 +304,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUg
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
         for (uint gp = 0; gp < u_lin_gp.size(); gp++) {
-            u_lin_gp[gp] += u_lin[dof] * this->master.psi_gp[dof][gp];
+            u_lin_gp[gp] += u_lin[dof] * this->master.chi_gp[dof][gp];
         }
     }
 }
@@ -317,7 +317,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDU
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
         for (uint gp = 0; gp < du_lin_gp.size(); gp++) {
-            du_lin_gp[gp] += u_lin[dof] * this->dpsi_fact[dof][dir][gp];
+            du_lin_gp[gp] += u_lin[dof] * this->dchi_fact[dof][dir][gp];
         }
     }
 }

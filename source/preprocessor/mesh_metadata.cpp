@@ -34,7 +34,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     std::unordered_map<std::uint64_t, std::pair<eltID_faceID, eltID_faceID>> edge_dictionary;
 
     for (const auto& elt : mesh_file.elements) {
-        std::vector<int> node{elt.second[1], elt.second[2], elt.second[3]};
+        std::vector<uint> node{elt.second[1], elt.second[2], elt.second[3]};
 
         for (uint k = 0; k < 3; ++k) {
             std::uint64_t curr_key = static_cast<std::uint64_t>(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32 |
@@ -67,8 +67,8 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             uint elt_id  = edge.second.first.first;
             uint face_id = edge.second.first.second;
 
-            std::array<int, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
-                                     mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
+            std::array<uint, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
+                                      mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
 
             this->elements.at(elt_id).neighbor_ID[face_id]   = DEFAULT_ID;
             this->elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);

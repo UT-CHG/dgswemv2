@@ -14,10 +14,10 @@ struct SphericalProjection {
     double                  R           = 6378200.0;
 };
 
-enum class InitialConditionsType { Constant, Function };
+enum class InitialConditionsType { Default, Constant, Function };
 
 struct InitialConditions {
-    InitialConditionsType type       = InitialConditionsType::Constant;
+    InitialConditionsType type       = InitialConditionsType::Default;
     double                ze_initial = 0.;
     double                qx_initial = 0.;
     double                qy_initial = 0.;

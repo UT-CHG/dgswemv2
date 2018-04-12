@@ -26,6 +26,8 @@ struct Problem {
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
 
+    static void preprocess_mesh_data(InputParameters<ProblemInputType>& input);
+
     template <typename RawBoundaryType>
     static void create_boundaries_kernel(ProblemMeshType&                               mesh,
                                          std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,

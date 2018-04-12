@@ -24,36 +24,40 @@ class OMPISimulationUnit {
   public:
     OMPISimulationUnit()
         : input(),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
           mesh(this->input.polynomial_order) {}
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
           writer(this->input, locality_id, submesh_id),
           parser(this->input, locality_id, submesh_id),
           mesh(this->input.polynomial_order),
-          communicator(this->input.mesh_file_name.substr(0, this->input.mesh_file_name.find_last_of('.')) + ".dbmd",
-                       locality_id,
-                       submesh_id) {
+          communicator(
+              this->input.mesh_input.mesh_file_name.substr(0, this->input.mesh_input.mesh_file_name.find_last_of('.')) +
+                  ".dbmd",
+              locality_id,
+              submesh_id) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
         this->input.read_mesh();
 
-        this->mesh.SetMeshName(this->input.mesh_data.mesh_name);
+        this->mesh.SetMeshName(this->input.mesh_input.mesh_data.mesh_name);
+
+        ProblemType::preprocess_mesh_data(this->input);
 
         if (this->writer.WritingLog()) {
             this->writer.StartLog();
 
             this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
-                                      << this->input.mesh_data.mesh_name << " mesh" << std::endl
+                                      << this->input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
                                       << std::endl;
         }
 
         initialize_mesh<ProblemType, OMPICommunicator>(
-            this->mesh, this->input.mesh_data, this->communicator, this->input.problem_input, this->writer);
+            this->mesh, this->input.mesh_input.mesh_data, this->communicator, this->input.problem_input, this->writer);
 
         ProblemType::initialize_data_parallel_pre_send_kernel(
-            this->mesh, this->input.mesh_data, this->input.problem_input);
+            this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
 
         this->communicator.InitializeCommunication();
 
@@ -89,7 +93,7 @@ void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.GetTimestamp());
 
     ProblemType::initialize_data_parallel_post_receive_kernel(
-        this->mesh, this->input.mesh_data, this->input.problem_input);
+        this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
 }
 
 template <typename ProblemType>
@@ -305,13 +309,14 @@ class OMPISimulation {
 
         InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-        this->n_steps  = (uint)std::ceil(input.T_end / input.dt);
-        this->n_stages = input.rk.nstages;
+        this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+        this->n_stages = input.stepper_input.nstages;
 
-        std::string submesh_file_prefix = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + "_" +
-                                          std::to_string(locality_id) + '_';
-        std::string submesh_file_postfix =
-            input.mesh_file_name.substr(input.mesh_file_name.find_last_of('.'), input.mesh_file_name.size());
+        std::string submesh_file_prefix =
+            input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
+            std::to_string(locality_id) + '_';
+        std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
+            input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
         uint submesh_id = 0;
 

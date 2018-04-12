@@ -18,11 +18,11 @@ class Simulation {
   public:
     Simulation()
         : input(),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
           mesh(this->input.polynomial_order) {}
     Simulation(std::string input_string)
         : input(input_string),
-          stepper(this->input.rk.nstages, this->input.rk.order, this->input.dt),
+          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
           writer(this->input),
           parser(this->input),
           mesh(this->input.polynomial_order) {
@@ -30,7 +30,9 @@ class Simulation {
 
         this->input.read_mesh();
 
-        mesh.SetMeshName(this->input.mesh_data.mesh_name);
+        mesh.SetMeshName(this->input.mesh_input.mesh_data.mesh_name);
+
+        ProblemType::preprocess_mesh_data(this->input);
 
         std::tuple<> empty_comm;
 
@@ -38,14 +40,14 @@ class Simulation {
             this->writer.StartLog();
 
             this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
-                                      << this->input.mesh_data.mesh_name << " mesh" << std::endl
+                                      << this->input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
                                       << std::endl;
         }
 
         initialize_mesh<ProblemType>(
-            this->mesh, this->input.mesh_data, empty_comm, this->input.problem_input, this->writer);
+            this->mesh, this->input.mesh_input.mesh_data, empty_comm, this->input.problem_input, this->writer);
 
-        ProblemType::initialize_data_kernel(this->mesh, this->input.mesh_data, this->input.problem_input);
+        ProblemType::initialize_data_kernel(this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
     }
 
     void Run();
@@ -77,7 +79,7 @@ void Simulation<ProblemType>::Run() {
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
-    uint nsteps   = (uint)std::ceil(this->input.T_end / this->stepper.GetDT());
+    uint nsteps   = (uint)std::ceil(this->input.stepper_input.run_time / this->stepper.GetDT());
     uint n_stages = this->stepper.GetNumStages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };

@@ -7,10 +7,12 @@
 mesh:
   format: Adcirc
   file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.14
-
+  coordinate_system: spherical
+  
 timestepping:
+  start_time: 11-05-2015 12:00              #dd-mm-yyyy hh:mm
+  end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm
   dt: 1                           #in seconds
-  end_time: 172800                #in seconds
   order: 2
   nstages: 2
 
@@ -23,35 +25,33 @@ problem:
   density_water: 1000.0
   h_o: 0.01
   spherical_projection:
-    type: None
-    longitude_o: 0.0
-    latitude_o: 0.0
-    R: 10000000.0
-  initial_conditions:
-    type: Constant
-    initial_surface_height: 0.0
-    initial_momentum_x: 0.0
-    initial_momentum_y: 0.0
-  function_source:
-    type: None  
-  bottom_friction:
-    type: None
-    coefficient: 0.001
-    input_file: manning.test
-  meteo_forcing:
-    type: HWIND
-    raw_input_file: weather.test
-    input_file: weather.test
-    frequency: 172800
-  tidal_potential:
-    type: None
-  coriolis:
-    type: None
-
+    longitude_o: 15.0
+    latitude_o: 25.0
+    R: 6378200.0
+  #initial_conditions:
+  #  type: Function
+  #  initial_surface_height: 0.0
+  #  initial_momentum_x: 0.0
+  #  initial_momentum_y: 0.0
+  #function_source: Enable
+  #bottom_friction:
+  #  type: Chezy
+  #  coefficient: 0.001
+  #meteo_forcing:
+  #  type: HWIND
+  #  raw_input_file: weather.test
+  #  input_file: weather.test
+  #  frequency: 900
+  #tidal_potential:
+  #  type: Test
+  #coriolis: Enable
+    
 output:
   path: output/
-#  logfile: 
-#    name: log
-#    verbose: false
+  #  logfile: 
+  #    name: log
+  #    verbose: false
+  #modal:
+  #  frequency: 360
   vtk:
     frequency: 360
