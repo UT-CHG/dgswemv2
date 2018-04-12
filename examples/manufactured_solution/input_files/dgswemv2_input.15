@@ -7,8 +7,8 @@
 mesh:
   format: Adcirc
   file_name: rectangular_mesh.14
-  coordiate_system: cartesian
-  
+  coordinate_system: cartesian
+
 timestepping:
   dt: 1                           #in seconds
   end_time: 3600                #in seconds
