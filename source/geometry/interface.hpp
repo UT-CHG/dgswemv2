@@ -14,8 +14,11 @@ class Interface {
     Array2D<double> surface_normal_ex;
 
   private:
-    Array2D<double>     phi_gp_in;
-    Array2D<double>     phi_gp_ex;
+    Array2D<double> psi_gp_in;
+    Array2D<double> psi_gp_ex;
+    Array2D<double> phi_gp_in;
+    Array2D<double> phi_gp_ex;
+
     std::vector<double> int_fact_in;
     std::vector<double> int_fact_ex;
     Array2D<double>     int_fact_phi_in;
@@ -25,8 +28,12 @@ class Interface {
     Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
               const RawBoundary<dimension, DataType>& raw_boundary_ex);
 
-    void   ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp);
-    void   ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp);
+    void ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp);
+    void ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp);
+
+    void ComputeNodalUgpIN(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
+    void ComputeNodalUgpEX(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
+
     double IntegrationIN(const std::vector<double>& u_gp);
     double IntegrationEX(const std::vector<double>& u_gp);
     double IntegrationPhiIN(const uint dof, const std::vector<double>& u_gp);
@@ -47,11 +54,39 @@ Interface<dimension, IntegrationType, DataType>::Interface(const RawBoundary<dim
 
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
+    // transfrom gp to master coord in
     std::vector<Point<dimension + 1>> z_master =
         raw_boundary_in.master.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
+
+    // Compute factors to expand nodal values in
+    this->psi_gp_in.resize(raw_boundary_in.shape.nodal_coordinates.size());
+
+    std::vector<double> u_temp_in(raw_boundary_in.shape.nodal_coordinates.size());
+    for (uint dof = 0; dof < raw_boundary_in.shape.nodal_coordinates.size(); dof++) {
+        std::fill(u_temp_in.begin(), u_temp_in.end(), 0.0);
+        u_temp_in[dof] = 1.0;
+
+        this->psi_gp_in[dof] = raw_boundary_in.shape.InterpolateNodalValues(u_temp_in, z_master);
+    }
+
+    // Compute factors to expand modal values in
     this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master);
 
-    z_master        = raw_boundary_ex.master.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
+    // transfrom gp to master coord ex
+    z_master = raw_boundary_ex.master.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
+
+    // Compute factors to expand nodal values ex
+    this->psi_gp_ex.resize(raw_boundary_ex.shape.nodal_coordinates.size());
+
+    std::vector<double> u_temp_ex(raw_boundary_ex.shape.nodal_coordinates.size());
+    for (uint dof = 0; dof < raw_boundary_ex.shape.nodal_coordinates.size(); dof++) {
+        std::fill(u_temp_ex.begin(), u_temp_ex.end(), 0.0);
+        u_temp_ex[dof] = 1.0;
+
+        this->psi_gp_ex[dof] = raw_boundary_ex.shape.InterpolateNodalValues(u_temp_ex, z_master);
+    }
+
+    // Compute factors to expand modal values ex
     this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master);
 
     std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(this->bound_id_in, z_master);
@@ -114,6 +149,18 @@ inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpIN(const 
 }
 
 template <uint dimension, typename IntegrationType, typename DataType>
+inline void Interface<dimension, IntegrationType, DataType>::ComputeNodalUgpIN(const std::vector<double>& u_nodal,
+                                                                               std::vector<double>&       u_nodal_gp) {
+    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
+            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp_in[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename IntegrationType, typename DataType>
 inline double Interface<dimension, IntegrationType, DataType>::IntegrationIN(const std::vector<double>& u_gp) {
     double integral = 0;
 
@@ -144,6 +191,18 @@ inline void Interface<dimension, IntegrationType, DataType>::ComputeUgpEX(const 
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < u_gp.size(); gp++) {
             u_gp[gp] += u[dof] * this->phi_gp_ex[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename IntegrationType, typename DataType>
+inline void Interface<dimension, IntegrationType, DataType>::ComputeNodalUgpEX(const std::vector<double>& u_nodal,
+                                                                               std::vector<double>&       u_nodal_gp) {
+    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
+            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp_ex[dof][gp];
         }
     }
 }

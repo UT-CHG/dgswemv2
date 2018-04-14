@@ -153,6 +153,27 @@ std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<d
     return interpolation;
 }
 
+Array2D<double> StraightTriangle::InterpolateNodalValuesDerivatives(const std::vector<double>&   nodal_values,
+                                                                    const std::vector<Point<2>>& points) {
+    Array2D<double> interpolation_derivative;
+
+    Array3D<double> J_inv = this->GetJinv(points);
+
+    double du_dz1 = 0.5 * (nodal_values[1] - nodal_values[0]);
+    double du_dz2 = 0.5 * (nodal_values[2] - nodal_values[0]);
+
+    double du_dx =
+        du_dz1 * J_inv[LocalCoordTri::z1][GlobalCoord::x][0] + du_dz2 * J_inv[LocalCoordTri::z2][GlobalCoord::x][0];
+
+    double du_dy =
+        du_dz1 * J_inv[LocalCoordTri::z1][GlobalCoord::y][0] + du_dz2 * J_inv[LocalCoordTri::z2][GlobalCoord::y][0];
+
+    interpolation_derivative =
+        Array2D<double>{std::vector<double>(points.size(), du_dx), std::vector<double>(points.size(), du_dy)};
+
+    return interpolation_derivative;
+}
+
 std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
     std::vector<Point<2>> global_coordinates(points.size());
 

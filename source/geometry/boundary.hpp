@@ -13,7 +13,9 @@ class Boundary {
     Array2D<double> surface_normal;
 
   private:
-    Array2D<double>     phi_gp;
+    Array2D<double> psi_gp;
+    Array2D<double> phi_gp;
+
     std::vector<double> int_fact;
     Array2D<double>     int_fact_phi;
 
@@ -21,7 +23,10 @@ class Boundary {
     Boundary(const RawBoundary<dimension, DataType>& raw_boundary,
              const BoundaryType&                     boundary_condition = BoundaryType());
 
-    void   ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
+    void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
+
+    void ComputeNodalUgp(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
+
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
 
@@ -43,6 +48,18 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     std::vector<Point<dimension + 1>> z_master =
         raw_boundary.master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
+    // Compute factors to expand nodal values
+    this->psi_gp.resize(raw_boundary.shape.nodal_coordinates.size());
+
+    std::vector<double> u_temp(raw_boundary.shape.nodal_coordinates.size());
+    for (uint dof = 0; dof < raw_boundary.shape.nodal_coordinates.size(); dof++) {
+        std::fill(u_temp.begin(), u_temp.end(), 0.0);
+        u_temp[dof] = 1.0;
+
+        this->psi_gp[dof] = raw_boundary.shape.InterpolateNodalValues(u_temp, z_master);
+    }
+
+    // Compute factors to expand modal values
     this->phi_gp = raw_boundary.basis.GetPhi(raw_boundary.p, z_master);
 
     std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(this->bound_id, z_master);
@@ -75,6 +92,19 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < u_gp.size(); gp++) {
             u_gp[gp] += u[dof] * this->phi_gp[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
+inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeNodalUgp(
+    const std::vector<double>& u_nodal,
+    std::vector<double>&       u_nodal_gp) {
+    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
+            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp[dof][gp];
         }
     }
 }

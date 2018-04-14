@@ -43,22 +43,14 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
         elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            uint n_node = shape.nodal_coordinates.size();
-
-            std::vector<double> x_node(n_node);
-            std::vector<double> y_node(n_node);
-
-            for (uint node_id = 0; node_id < n_node; node_id++) {
-                x_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::x];
-                y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
+            for (uint node_id = 0; node_id < elt.data.get_nnode(); node_id++) {
+                sp.x_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::x];
+                sp.y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
-
-            elt.L2Projection(x_node, sp.x);
-            elt.L2Projection(y_node, sp.x);
 
             std::vector<double> y_at_gp(elt.data.get_ngp_internal());
 
-            elt.ComputeUgp(sp.y, y_at_gp);
+            elt.ComputeNodalUgp(sp.y_node, y_at_gp);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
@@ -108,8 +100,8 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
             std::vector<double> y_at_gp_in(intface.data_in.get_ngp_boundary(intface.bound_id_in));
             std::vector<double> y_at_gp_ex(intface.data_ex.get_ngp_boundary(intface.bound_id_ex));
 
-            intface.ComputeUgpIN(sp_in.y, y_at_gp_in);
-            intface.ComputeUgpEX(sp_ex.y, y_at_gp_ex);
+            intface.ComputeNodalUgpIN(sp_in.y_node, y_at_gp_in);
+            intface.ComputeNodalUgpEX(sp_ex.y_node, y_at_gp_ex);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
@@ -131,7 +123,7 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             std::vector<double> y_at_gp(bound.data.get_ngp_boundary(bound.bound_id));
 
-            bound.ComputeUgp(sp.y, y_at_gp);
+            bound.ComputeNodalUgp(sp.y_node, y_at_gp);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
@@ -143,6 +135,7 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
     });
 
     // SOURCE TERMS INITIALIZE
+    // Manning N bottom friction
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
         std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
 
@@ -163,10 +156,8 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
             std::vector<uint>& node_ID = elt.GetNodeID();
 
-            //# of node != # of vrtx in case we have an iso-p element with p>1
-            // I assume we will have values only at vrtx in files
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                elt.data.source.manning_n[vrtx] = node_manning_n[node_ID[vrtx]];
+            for (uint node = 0; node < elt.data.get_nnode(); node++) {
+                elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
             }
 
             elt.data.source.manning = true;
@@ -178,19 +169,25 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
         });
     }
 
-    if (problem_specific_input.coriolis.type != SWE::CoriolisType::None) {
-        mesh.CallForEachElement([](auto& elt) {
-            //# of node != # of vrtx in case we have an iso-p element with p>1
-            // I assume we will have values only at vrtx in files
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::x];
-                elt.GetShape().nodal_coordinates[vrtx][GlobalCoord::y];
+    // Coriolis effect
+    if (problem_specific_input.coriolis.type == SWE::CoriolisType::Enable) {
+        mesh.CallForEachElement([&problem_specific_input](auto& elt) {
+            double y_avg = 0;
+
+            for (uint node = 0; node < elt.data.get_nnode(); node++) {
+                y_avg += elt.GetShape().nodal_coordinates[node][GlobalCoord::y];
             }
+
+            y_avg /= elt.data.get_nnode();
+
+            // If spherical projection is not specified we use default value for R which is R earth
+            double latitude_avg = y_avg / problem_specific_input.spherical_projection.R;
+
+            elt.data.source.coriolis_f = 2 * 7.2921E-5 * std::sin(latitude_avg);
         });
     }
 
     // WETTING-DRYING INITIALIZE
-
     mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
@@ -244,7 +241,6 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
     });
 
     // SLOPE LIMIT INITIALIZE
-
     mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
@@ -337,7 +333,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType&        m
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             std::vector<double> y_at_gp(dbound.data.get_ngp_boundary(dbound.bound_id));
 
-            dbound.ComputeUgp(sp.y, y_at_gp);
+            dbound.ComputeNodalUgp(sp.y_node, y_at_gp);
 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;

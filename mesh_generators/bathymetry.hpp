@@ -2,7 +2,7 @@
 #define BATHYMETRY_HPP
 
 double bathymetry_function(double x, double y) {
-    double bath = 6.0 * (x + 95.0);
+    double bath = 100.0;  // 6.0 * (x + 95.0);
 
     // if (x < 255000.0) {
     //    bath = (x - 225000.0) / 15000.0;

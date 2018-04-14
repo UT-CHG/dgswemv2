@@ -19,8 +19,11 @@ class Element {
 
     std::vector<Point<dimension>> gp_global_coordinates;
 
-    Array3D<double> dchi_fact;
-    Array3D<double> dphi_fact;
+    Array2D<double> psi_gp;
+
+    Array3D<double> dpsi_fact;  // nodal basis, i.e. shape functions
+    Array3D<double> dchi_fact;  // linear basis
+    Array3D<double> dphi_fact;  // modal basis
 
     bool                const_J;
     std::vector<double> int_fact;
@@ -67,6 +70,9 @@ class Element {
     void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts);
     void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx);
 
+    void ComputeNodalUgp(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
+    void ComputeNodalDUgp(const uint dir, const std::vector<double>& u_nodal, std::vector<double>& du_nodal_gp);
+
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
     double IntegrationDPhi(const uint dir, const uint dof, const std::vector<double>& u_gp);
@@ -99,6 +105,20 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint         
       boundary_type(std::move(boundary_type)) {
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
+
+    // Compute factors to expand nodal values and derivatives of nodal values
+    this->psi_gp.resize(this->shape.nodal_coordinates.size());
+    this->dpsi_fact.resize(this->shape.nodal_coordinates.size());
+
+    std::vector<double> u_temp(this->shape.nodal_coordinates.size());
+    for (uint dof = 0; dof < this->shape.nodal_coordinates.size(); dof++) {
+        std::fill(u_temp.begin(), u_temp.end(), 0.0);
+        u_temp[dof] = 1.0;
+
+        this->psi_gp[dof] = this->shape.InterpolateNodalValues(u_temp, this->master.integration_rule.second);
+        this->dpsi_fact[dof] =
+            this->shape.InterpolateNodalValuesDerivatives(u_temp, this->master.integration_rule.second);
+    }
 
     // DEFORMATION
     std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
@@ -178,6 +198,7 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint         
         // Placeholder for nonconstant Jacobian
     }
 
+    this->data.set_nnode(this->shape.nodal_coordinates.size());
     this->data.set_nvrtx(this->master.nvrtx);
     this->data.set_nbound(this->master.nbound);
     this->data.set_ndof(this->master.phi_gp.size());
@@ -339,6 +360,31 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
                                                                                     std::vector<double>& u_lin_vrtx) {
     this->master.ComputeLinearUvrtx(u_lin, u_lin_vrtx);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalUgp(const std::vector<double>& u_nodal,
+                                                                                 std::vector<double>& u_nodal_gp) {
+    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
+            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(const uint                 dir,
+                                                                                  const std::vector<double>& u_nodal,
+                                                                                  std::vector<double>& du_nodal_gp) {
+    std::fill(du_nodal_gp.begin(), du_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_nodal.size(); dof++) {
+        for (uint gp = 0; gp < du_nodal_gp.size(); gp++) {
+            du_nodal_gp[gp] += u_nodal[dof] * this->dpsi_fact[dof][dir][gp];
+        }
+    }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>

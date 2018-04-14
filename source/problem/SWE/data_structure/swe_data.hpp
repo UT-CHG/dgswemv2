@@ -23,9 +23,9 @@ struct Data {
     SlopeLimit slope_limit_state;
 
     void initialize() {
-        this->spherical_projection = Spherical(this->ndof, this->nbound, this->ngp_internal, this->ngp_boundary);
+        this->spherical_projection = Spherical(this->nnode, this->nbound, this->ngp_internal, this->ngp_boundary);
 
-        this->source = Source(this->nvrtx);
+        this->source = Source(this->nnode);
 
         this->wet_dry_state = WetDry(this->nvrtx);
 
@@ -48,12 +48,14 @@ struct Data {
         }
     }
 
+    uint get_nnode() { return this->nnode; }
     uint get_nvrtx() { return this->nvrtx; }
     uint get_nbound() { return this->nbound; }
     uint get_ndof() { return this->ndof; }
     uint get_ngp_internal() { return this->ngp_internal; }
     uint get_ngp_boundary(uint nbound) { return this->ngp_boundary[nbound]; }
 
+    void set_nnode(const uint nnode) { this->nnode = nnode; }
     void set_nvrtx(const uint nvrtx) { this->nvrtx = nvrtx; }
     void set_nbound(const uint nbound) {
         this->nbound       = nbound;
@@ -64,6 +66,7 @@ struct Data {
     void set_ngp_boundary(const uint bound_id, const uint ngp) { this->ngp_boundary[bound_id] = ngp; }
 
   private:
+    uint              nnode;
     uint              nvrtx;
     uint              nbound;
     uint              ndof;

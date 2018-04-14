@@ -67,7 +67,7 @@ int main() {
     }
 
     Integration::GaussLegendre_1D integ_1D;
-    std::vector<Point<1>>         gp_1D = integ_1D.GetRule(20).second;
+    std::vector<Point<1>>         gp_1D = integ_1D.GetRule(21).second;
     std::vector<Point<2>>         gp_bound;
 
     Array2D<double> F_vals_bound(2);
@@ -133,6 +133,35 @@ int main() {
         }
     }
 
+    // Check ComputeNodalUgp and Integration
+    std::vector<double> nodal_vals = {1.0, 2.0, 3.0};
+
+    std::vector<double> nodal_vals_gp(gp_1D.size());
+    std::vector<double> nodal_vals_gp_comp(gp_1D.size());
+
+    for (uint n_bound = 0; n_bound < 3; n_bound++) {
+        gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
+
+        nodal_vals_gp = shape.InterpolateNodalValues(nodal_vals, gp_bound);
+        boundaries[n_bound].ComputeNodalUgp(nodal_vals, nodal_vals_gp_comp);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+                error_found = true;
+
+                std::cerr << "Error found in boundary in ComputeNodalUgp" << std::endl;
+            }
+        }
+
+        double exact_integration = (nodal_vals[(n_bound + 1) % 3] + nodal_vals[(n_bound + 2) % 3]) / 2.0;
+
+        if (!almost_equal(exact_integration, boundaries[n_bound].Integration(nodal_vals_gp_comp))) {
+            error_found = true;
+
+            std::cerr << "Error found in boundary in Integration" << std::endl;
+        }
+    }
+
     // generate Interfaces
     std::vector<InterfaceType> interfaces;
 
@@ -186,6 +215,46 @@ int main() {
 
                 std::cerr << "Error found in interface in ComputeUgpEX" << std::endl;
             }
+        }
+    }
+
+    // Check ComputeNodalUgp and Integration
+    for (uint n_intface = 0; n_intface < 3; n_intface++) {
+        gp_bound = master.BoundaryToMasterCoordinates(n_intface, gp_1D);
+
+        nodal_vals_gp = shape.InterpolateNodalValues(nodal_vals, gp_bound);
+        interfaces[n_intface].ComputeNodalUgpIN(nodal_vals, nodal_vals_gp_comp);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+                error_found = true;
+
+                std::cerr << "Error found in boundary in ComputeNodalUgpIN" << std::endl;
+            }
+        }
+
+        double exact_integration = (nodal_vals[(n_intface + 1) % 3] + nodal_vals[(n_intface + 2) % 3]) / 2.0;
+
+        if (!almost_equal(exact_integration, interfaces[n_intface].IntegrationIN(nodal_vals_gp_comp))) {
+            error_found = true;
+
+            std::cerr << "Error found in boundary in IntegrationIN" << std::endl;
+        }
+
+        interfaces[n_intface].ComputeNodalUgpEX(nodal_vals, nodal_vals_gp_comp);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+                error_found = true;
+
+                std::cerr << "Error found in boundary in ComputeNodalUgpEX" << std::endl;
+            }
+        }
+
+        if (!almost_equal(exact_integration, interfaces[n_intface].IntegrationEX(nodal_vals_gp_comp))) {
+            error_found = true;
+
+            std::cerr << "Error found in boundary in IntegrationEX" << std::endl;
         }
     }
 

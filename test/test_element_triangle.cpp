@@ -104,7 +104,7 @@ int main() {
                       << std::endl;
         }
     }
-    // Add 7 more modes
+
     for (uint dof = 0; dof < 66; dof++) {
         if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
             error_found = true;
@@ -116,6 +116,7 @@ int main() {
     }
 
     // Check linears through integration
+    // Check nodals through integration
     // u(x,y) = 3 + 2*x - 2*sqrt(3)*y plane
     std::vector<double> u{2, 4, 0};
     std::vector<double> u_gp(triangle.data.get_ngp_internal());
@@ -144,6 +145,33 @@ int main() {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
+                     "in y direction"
+                  << std::endl;
+    }
+
+    // Check nodals through the same integration
+    triangle.ComputeNodalUgp(u, u_gp);
+    triangle.ComputeNodalDUgp(0, u, du_dx_gp);
+    triangle.ComputeNodalDUgp(1, u, du_dy_gp);
+
+    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeNodalUgp" << std::endl;
+    }
+
+    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeNodalDUgp "
+                     "in x direction"
+                  << std::endl;
+    }
+
+    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeNodalDUgp "
                      "in y direction"
                   << std::endl;
     }

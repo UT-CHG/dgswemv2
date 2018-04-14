@@ -11,8 +11,8 @@ class Stepper {
     std::vector<double> drk;
 
   private:
-    const uint   nstages;
-    const double dt;
+    uint   nstages;
+    double dt;
 
     uint step;
     uint stage;
@@ -21,6 +21,7 @@ class Stepper {
     double t;
 
   public:
+    Stepper() = default;
     Stepper(uint nstages, uint order, double dt);
 
     uint   GetNumStages() const { return this->nstages; }

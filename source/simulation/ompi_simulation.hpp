@@ -15,28 +15,26 @@ class OMPISimulationUnit {
   private:
     InputParameters<typename ProblemType::ProblemInputType> input;
 
+    typename ProblemType::ProblemMeshType mesh;
+
+    OMPICommunicator                        communicator;
     Stepper                                 stepper;
     Writer<ProblemType>                     writer;
     typename ProblemType::ProblemParserType parser;
-    typename ProblemType::ProblemMeshType   mesh;
-    OMPICommunicator                        communicator;
 
   public:
-    OMPISimulationUnit()
-        : input(),
-          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
-          mesh(this->input.polynomial_order) {}
+    OMPISimulationUnit() : mesh(this->input.polynomial_order) {}
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
         : input(input_string, locality_id, submesh_id),
-          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
-          writer(this->input, locality_id, submesh_id),
-          parser(this->input, locality_id, submesh_id),
           mesh(this->input.polynomial_order),
           communicator(
               this->input.mesh_input.mesh_file_name.substr(0, this->input.mesh_input.mesh_file_name.find_last_of('.')) +
                   ".dbmd",
               locality_id,
-              submesh_id) {
+              submesh_id),
+          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
+          writer(this->input, locality_id, submesh_id),
+          parser(this->input, locality_id, submesh_id) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
         this->input.read_mesh();
@@ -70,8 +68,6 @@ class OMPISimulationUnit {
     void WaitAllPreprocSends();
 
     void Launch();
-
-    void Parse();
 
     void ExchangeData();
     void PreReceiveStage();
@@ -119,13 +115,6 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-void OMPISimulationUnit<ProblemType>::Parse() {
-    if (this->parser.ParsingInput()) {
-        this->parser.ParseInput(this->stepper, this->mesh);
-    }
-}
-
-template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::ExchangeData() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
@@ -158,6 +147,10 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
     auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
 
     auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+
+    if (this->parser.ParsingInput()) {
+        this->parser.ParseInput(this->stepper, this->mesh);
+    }
 
     this->mesh.CallForEachElement(volume_kernel);
 
@@ -359,10 +352,6 @@ void        OMPISimulation<ProblemType>::Run() {
         }
 
         for (uint step = 1; step <= this->n_steps; step++) {
-            for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                this->simulation_units[sim_unit_id]->Parse();
-            }
-
             for (uint stage = 0; stage < this->n_stages; stage++) {
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                     this->simulation_units[sim_unit_id]->ExchangeData();

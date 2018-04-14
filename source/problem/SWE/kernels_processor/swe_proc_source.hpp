@@ -64,11 +64,11 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
         }
 
         if (SWE::SourceTerms::meteo_forcing) {
-            elt.ComputeLinearUgp(source.tau_s[GlobalCoord::x], internal.tau_s_at_gp[GlobalCoord::x]);
-            elt.ComputeLinearUgp(source.tau_s[GlobalCoord::y], internal.tau_s_at_gp[GlobalCoord::y]);
+            elt.ComputeNodalUgp(source.tau_s[GlobalCoord::x], internal.tau_s_at_gp[GlobalCoord::x]);
+            elt.ComputeNodalUgp(source.tau_s[GlobalCoord::y], internal.tau_s_at_gp[GlobalCoord::y]);
 
-            elt.ComputeLinearDUgp(GlobalCoord::x, source.p_atm, internal.dp_atm_at_gp[GlobalCoord::x]);
-            elt.ComputeLinearDUgp(GlobalCoord::y, source.p_atm, internal.dp_atm_at_gp[GlobalCoord::y]);
+            elt.ComputeNodalDUgp(GlobalCoord::x, source.p_atm, internal.dp_atm_at_gp[GlobalCoord::x]);
+            elt.ComputeNodalDUgp(GlobalCoord::y, source.p_atm, internal.dp_atm_at_gp[GlobalCoord::y]);
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute surface friction contribution
@@ -84,8 +84,8 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
         }
 
         if (SWE::SourceTerms::tidal_potential) {
-            elt.ComputeLinearDUgp(GlobalCoord::x, source.tidal_pot, internal.dtidal_pot_at_gp[GlobalCoord::x]);
-            elt.ComputeLinearDUgp(GlobalCoord::y, source.tidal_pot, internal.dtidal_pot_at_gp[GlobalCoord::y]);
+            elt.ComputeNodalDUgp(GlobalCoord::x, source.tidal_pot, internal.dtidal_pot_at_gp[GlobalCoord::x]);
+            elt.ComputeNodalDUgp(GlobalCoord::y, source.tidal_pot, internal.dtidal_pot_at_gp[GlobalCoord::y]);
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute tidal potential contribution

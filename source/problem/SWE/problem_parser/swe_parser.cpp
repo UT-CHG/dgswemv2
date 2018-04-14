@@ -1,7 +1,9 @@
 #include "swe_parser.hpp"
 
 namespace SWE {
-void Parser::ParseMeteoInput(uint step) {
+void Parser::ParseMeteoInput(const Stepper& stepper) {
+    uint step = stepper.GetStep();
+
     if (this->meteo_forcing_type == SWE::MeteoForcingType::Enable) {
         if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {
             this->node_meteo_data_step.erase(this->node_meteo_data_step.find(step - this->meteo_parse_frequency));
@@ -62,25 +64,29 @@ void Parser::ParseMeteoInput(uint step) {
     }
 }
 
-void Parser::CalculateMeteoData(uint step) {
-    if (this->meteo_forcing_type == SWE::MeteoForcingType::Enable) {
-        uint step_begin = step - step % this->meteo_parse_frequency;
-        uint step_end   = step_begin + this->meteo_parse_frequency;
+void Parser::InterpolateMeteoData(const Stepper& stepper) {
+    uint step = stepper.GetStep();
 
-        double interp_factor = step % this->meteo_parse_frequency / ((double)this->meteo_parse_frequency);
+    uint step_start = step - step % this->meteo_parse_frequency;
+    uint step_end   = step_start + this->meteo_parse_frequency;
 
-        this->node_meteo_data = this->node_meteo_data_step[step_begin];
+    double t_start = step_start * stepper.GetDT();
+    double t_end   = step_end * stepper.GetDT();
 
-        for (auto it = this->node_meteo_data.begin(); it != this->node_meteo_data.end(); ++it) {
-            it->second[0] += interp_factor * (this->node_meteo_data_step[step_end][it->first][0] -
-                                              this->node_meteo_data_step[step_begin][it->first][0]);
+    double interp_factor = (stepper.GetTimeAtCurrentStage() - t_start) / (t_end - t_start);
 
-            it->second[1] += interp_factor * (this->node_meteo_data_step[step_end][it->first][1] -
-                                              this->node_meteo_data_step[step_begin][it->first][1]);
+    for (auto it = this->node_meteo_data_interp.begin(); it != this->node_meteo_data_interp.end(); ++it) {
+        it->second[0] = this->node_meteo_data_step[step_start][it->first][0] +
+                        interp_factor * (this->node_meteo_data_step[step_end][it->first][0] -
+                                         this->node_meteo_data_step[step_start][it->first][0]);
 
-            it->second[2] += interp_factor * (this->node_meteo_data_step[step_end][it->first][2] -
-                                              this->node_meteo_data_step[step_begin][it->first][2]);
-        }
+        it->second[1] = this->node_meteo_data_step[step_start][it->first][1] +
+                        interp_factor * (this->node_meteo_data_step[step_end][it->first][1] -
+                                         this->node_meteo_data_step[step_start][it->first][1]);
+
+        it->second[2] = this->node_meteo_data_step[step_start][it->first][2] +
+                        interp_factor * (this->node_meteo_data_step[step_end][it->first][2] -
+                                         this->node_meteo_data_step[step_start][it->first][2]);
     }
 }
 }

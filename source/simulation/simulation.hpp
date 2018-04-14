@@ -10,22 +10,20 @@ class Simulation {
   private:
     InputParameters<typename ProblemType::ProblemInputType> input;
 
+    typename ProblemType::ProblemMeshType mesh;
+
     Stepper                                 stepper;
     Writer<ProblemType>                     writer;
     typename ProblemType::ProblemParserType parser;
-    typename ProblemType::ProblemMeshType   mesh;
 
   public:
-    Simulation()
-        : input(),
-          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
-          mesh(this->input.polynomial_order) {}
+    Simulation() : mesh(this->input.polynomial_order) {}
     Simulation(std::string input_string)
         : input(input_string),
+          mesh(this->input.polynomial_order),
           stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
           writer(this->input),
-          parser(this->input),
-          mesh(this->input.polynomial_order) {
+          parser(this->input) {
         ProblemType::initialize_problem_parameters(this->input.problem_input);
 
         this->input.read_mesh();
@@ -91,11 +89,11 @@ void Simulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= nsteps; ++step) {
-        if (this->parser.ParsingInput()) {
-            this->parser.ParseInput(this->stepper, this->mesh);
-        }
-
         for (uint stage = 0; stage < this->stepper.GetNumStages(); ++stage) {
+            if (this->parser.ParsingInput()) {
+                this->parser.ParseInput(this->stepper, this->mesh);
+            }
+
             this->mesh.CallForEachElement(volume_kernel);
 
             this->mesh.CallForEachElement(source_kernel);

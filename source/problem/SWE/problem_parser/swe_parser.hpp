@@ -15,7 +15,7 @@ class Parser {
     uint                                                meteo_parse_frequency;
     std::string                                         meteo_data_file;
     std::map<uint, std::map<uint, std::vector<double>>> node_meteo_data_step;
-    std::map<uint, std::vector<double>>                 node_meteo_data;
+    std::map<uint, std::vector<double>>                 node_meteo_data_interp;
 
   public:
     Parser() = default;
@@ -35,30 +35,42 @@ class Parser {
     template <typename MeshType>
     void ParseInput(const Stepper& stepper, MeshType& mesh) {
         if (SWE::SourceTerms::meteo_forcing) {
-            if (stepper.GetStep() % this->meteo_parse_frequency == 0) {
-                this->ParseMeteoInput(stepper.GetStep());
+            if (stepper.GetStep() % this->meteo_parse_frequency == 0 && stepper.GetStage() == 0) {
+                this->ParseMeteoInput(stepper);
             }
 
-            this->CalculateMeteoData(stepper.GetStep());
+            // Initialize container to store parsed data and store pointers for fast access
+            if (stepper.GetStep() == 0 && stepper.GetStage() == 0) {
+                mesh.CallForEachElement([this](auto& elt) {
+                    std::vector<uint>& node_ID = elt.GetNodeID();
 
-            mesh.CallForEachElement([this, &stepper](auto& elt) {
+                    for (uint node = 0; node < elt.data.get_nnode(); node++) {
+                        if (this->node_meteo_data_interp.find(node_ID[node]) == this->node_meteo_data_interp.end()) {
+                            this->node_meteo_data_interp[node_ID[node]] = std::vector<double>(3);
+                        }
+
+                        elt.data.source.parsed_meteo_data[node] = &this->node_meteo_data_interp[node_ID[node]];
+                    }
+                });
+            }
+
+            this->InterpolateMeteoData(stepper);
+
+            mesh.CallForEachElement([this](auto& elt) {
                 std::vector<uint>& node_ID = elt.GetNodeID();
 
-                //# of node != # of vrtx in case we have an iso-p element with p>1
-                // I assume we will have values only at vrtx in files
-                for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                    elt.data.source.tau_s[GlobalCoord::x][vrtx] = this->node_meteo_data[node_ID[vrtx]][0];
-                    elt.data.source.tau_s[GlobalCoord::y][vrtx] = this->node_meteo_data[node_ID[vrtx]][1];
-
-                    elt.data.source.p_atm[vrtx] = this->node_meteo_data[node_ID[vrtx]][2];
+                for (uint node = 0; node < elt.data.get_nnode(); node++) {
+                    elt.data.source.tau_s[GlobalCoord::x][node] = elt.data.source.parsed_meteo_data[node]->at(0);
+                    elt.data.source.tau_s[GlobalCoord::y][node] = elt.data.source.parsed_meteo_data[node]->at(1);
+                    elt.data.source.p_atm[node]                 = elt.data.source.parsed_meteo_data[node]->at(2);
                 }
             });
         }
     }
 
   private:
-    void ParseMeteoInput(uint step);
-    void CalculateMeteoData(uint step);
+    void ParseMeteoInput(const Stepper& stepper);
+    void InterpolateMeteoData(const Stepper& stepper);
 };
 }
 

@@ -18,8 +18,11 @@ class StraightTriangle : public Shape<2> {
     std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points);
     Array2D<double>     GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points);
 
-    std::vector<double>   InterpolateNodalValues(const std::vector<double>&   nodal_values,
-                                                 const std::vector<Point<2>>& points);
+    std::vector<double> InterpolateNodalValues(const std::vector<double>&   nodal_values,
+                                               const std::vector<Point<2>>& points);
+    Array2D<double>     InterpolateNodalValuesDerivatives(const std::vector<double>&   nodal_values,
+                                                          const std::vector<Point<2>>& points);
+
     std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points);
 
     void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
