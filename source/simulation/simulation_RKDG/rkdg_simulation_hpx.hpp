@@ -428,4 +428,13 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 };
 }
 
+#define DGSWEMV2_REGISTER_COMPONENTS(ProblemType)\
+    using hpx_simulation_unit_ = HPXSimulationUnit<ProblemType>;\
+    using hpx_simulation_unit_swe_component_ = hpx::components::simple_component<HPXSimulationUnit<ProblemType>>;\
+    HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_); \
+    \
+    using hpx_simulation_swe_ = HPXSimulation<ProblemType>;\
+    using hpx_simulation_swe_component_ = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;\
+    HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);
+/**/
 #endif

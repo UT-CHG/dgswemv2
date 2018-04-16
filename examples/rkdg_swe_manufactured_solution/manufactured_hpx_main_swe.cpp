@@ -20,14 +20,7 @@
 #include "simulation/simulation_RKDG/rkdg_simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
-using hpx_simulation_unit_swe = RKDG::HPXSimulationUnit<SWE::RKDG::Problem>;
-using hpx_simulation_unit_swe_component =
-    hpx::components::simple_component<RKDG::HPXSimulationUnit<SWE::RKDG::Problem>>;
-HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component, hpx_simulation_unit_swe);
-
-using hpx_simulation_swe           = RKDG::HPXSimulation<SWE::RKDG::Problem>;
-using hpx_simulation_swe_component = hpx::components::simple_component<RKDG::HPXSimulation<SWE::RKDG::Problem>>;
-HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
+DGSWEMV2_REGISTER_COMPONENTS(SWE::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
