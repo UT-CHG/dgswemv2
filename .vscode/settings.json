@@ -31,6 +31,8 @@
         "vector": "cpp",
         "__bit_reference": "cpp",
         "algorithm": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "__locale": "cpp",
+        "ios": "cpp"
     }
 }

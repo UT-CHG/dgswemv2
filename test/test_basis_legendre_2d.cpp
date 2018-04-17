@@ -52,9 +52,31 @@ int main() {
     Array2D<double> my_evals = basis.GetPhi(10, points);
     Array3D<double> my_Devals = basis.GetDPhi(10, points);
     
-    
+    for (uint dof = 0; dof < 10; ++dof) {
+        for (uint pt = 0; pt < 15; ++pt) {
+            if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
+                std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
+                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
+                error_found = true;
+            }
+        }
+        
+        //Check the Gradient evaluations of the Dubiner polynomials
+        for (int pt = 0; pt < 15; ++pt) {
+            /*The problem is in this if statement:
+            if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt]) ||
+                !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
+                std::cerr << "Error in Gradient dof(" << dof << "): the true value = (" << true_Dvals[dof][2 * pt]
+                          << ", " << true_Dvals[dof][2 * pt + 1] << ") your computed value  = ("
+                          << my_Devals[dof][LocalCoordTri::z1][pt] << ", " << my_Devals[dof][LocalCoordTri::z2][pt]
+                          << ")\n";
+                error_found = true;*/
+            }
+        }
+    }
 
-    for (uint dof = 0; dof < 66; ++dof) {
+/*
+    for (uint dof = 0; dof < 10; ++dof) {
         // Check the evaluations of the Legendre polynomials
         for (uint pt = 0; pt < 15; ++pt) {
             if (!is_normal_or_zero(my_evals[dof][pt])) {
@@ -65,7 +87,7 @@ int main() {
             }
         }
     
-/* I know this isn't helpful, but the issue is somewhere in here:
+
         for (uint pt = 0; pt < 15; ++pt) {
             if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
@@ -76,8 +98,7 @@ int main() {
         }
         
 
-        // I don't know if I need this:
-        //Check the Gradient evaluations of the Dubiner polynomials
+        //Check the Gradient evaluations of the polynomials
         for (int pt = 0; pt < 15; ++pt) {
             if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt]) ||
                 !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
@@ -104,9 +125,9 @@ int main() {
                 error_found = true;
             }
             
-        }*/
+        }
         
-    }
+    }*/
     
     
     if (error_found) {
