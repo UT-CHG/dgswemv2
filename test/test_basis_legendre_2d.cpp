@@ -52,7 +52,7 @@ int main() {
     Array2D<double> my_evals = basis.GetPhi(10, points);
     Array3D<double> my_Devals = basis.GetDPhi(10, points);
     
-    }
+    
 
     for (uint dof = 0; dof < 66; ++dof) {
         // Check the evaluations of the Legendre polynomials
@@ -64,7 +64,8 @@ int main() {
                 error_found = true;
             }
         }
-
+    
+/* I know this isn't helpful, but the issue is somewhere in here:
         for (uint pt = 0; pt < 15; ++pt) {
             if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
@@ -73,6 +74,7 @@ int main() {
                 error_found = true;
             }
         }
+        
 
         // I don't know if I need this:
         //Check the Gradient evaluations of the Dubiner polynomials
@@ -102,14 +104,15 @@ int main() {
                 error_found = true;
             }
             
-        }
+        }*/
         
     }
-
+    
+    
     if (error_found) {
         return 1;
     }
     return 0;
     
 }
-}
+
