@@ -53,7 +53,7 @@ int main() {
     Array3D<double> my_Devals = basis.GetDPhi(10, points);
     
     }
-/*
+
     for (uint dof = 0; dof < 66; ++dof) {
         // Check the evaluations of the Legendre polynomials
         for (uint pt = 0; pt < 15; ++pt) {
@@ -110,6 +110,6 @@ int main() {
         return 1;
     }
     return 0;
+    
 }
 }
-*/

@@ -32,8 +32,7 @@ Array2D<double> Legendre_2D::GetPhi(const uint p, const std::vector<Point<2>>& p
         Py=jacobi_polynomial(q,0,0,n2);
 
 
-        /* The problem lies here:
-        for (uint count = 0; count < phi.size(); count++) {
+        for (uint count = 0; count < n_pts; count++) {
             
        
             ans[count]=Px[count]*Py[count];
@@ -42,7 +41,7 @@ Array2D<double> Legendre_2D::GetPhi(const uint p, const std::vector<Point<2>>& p
         }
         
         phi[dof]=ans;
-        */
+        
         
 
     }
@@ -83,17 +82,19 @@ Array3D<double> Legendre_2D::GetDPhi(const uint p, const std::vector<Point<2>>& 
         Pdx=jacobi_polynomial_derivative(p,0,0,n1);
         Py=jacobi_polynomial(q,0,0,n2);
         Pdy=jacobi_polynomial_derivative(q,0,0,n2);
-        /*
-        for (uint count = 0; count < dphi.size(); count++) {
+        
+        for (uint count = 0; count < n_pts; count++) {
 
-            Ux[count]=Px[count]*Pdy[count];
-            Uy[count]=Pdx[count]*Py[count];
+            Ux[count]=Pdx[count]*Py[count];
+            Uy[count]=Px[count]*Pdy[count];
+
 
         }
-
+/*
         dphi[dof][0]=Ux;
         dphi[dof][1]=Uy;
-        */
+*/
+        
     }
 
     return dphi;
