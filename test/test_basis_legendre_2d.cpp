@@ -41,9 +41,6 @@ int main() {
     
     using Utilities::almost_equal;
 
-    auto is_normal_or_zero = [](double a)->bool {
-        return (std::isnormal(a) || (a == 0));
-    };
 
     Basis::Legendre_2D basis;
     bool error_found = false;
@@ -52,42 +49,9 @@ int main() {
     Array2D<double> my_evals = basis.GetPhi(10, points);
     Array3D<double> my_Devals = basis.GetDPhi(10, points);
     
-    for (uint dof = 0; dof < 10; ++dof) {
-        for (uint pt = 0; pt < 15; ++pt) {
-            if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
-                std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
-                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
-                error_found = true;
-            }
-        }
-        
-        //Check the Gradient evaluations of the Dubiner polynomials
-        for (int pt = 0; pt < 15; ++pt) {
-            /*The problem is in this if statement:
-            if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt]) ||
-                !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
-                std::cerr << "Error in Gradient dof(" << dof << "): the true value = (" << true_Dvals[dof][2 * pt]
-                          << ", " << true_Dvals[dof][2 * pt + 1] << ") your computed value  = ("
-                          << my_Devals[dof][LocalCoordTri::z1][pt] << ", " << my_Devals[dof][LocalCoordTri::z2][pt]
-                          << ")\n";
-                error_found = true;*/
-            }
-        }
-    }
-
-/*
-    for (uint dof = 0; dof < 10; ++dof) {
+   for (uint dof = 0; dof < 10; ++dof) {
         // Check the evaluations of the Legendre polynomials
-        for (uint pt = 0; pt < 15; ++pt) {
-            if (!is_normal_or_zero(my_evals[dof][pt])) {
-                std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
-                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
-
-                error_found = true;
-            }
-        }
     
-
         for (uint pt = 0; pt < 15; ++pt) {
             if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
@@ -97,37 +61,17 @@ int main() {
             }
         }
         
-
-        //Check the Gradient evaluations of the polynomials
-        for (int pt = 0; pt < 15; ++pt) {
-            if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt]) ||
-                !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
-
-                std::cerr << "Error in Gradient dof(" << dof << "): the true value = (" << true_Dvals[dof][2 * pt]
-                          << ", " << true_Dvals[dof][2 * pt + 1] << ") your computed value  = ("
-                          << my_Devals[dof][LocalCoordTri::z1][pt] << ", " << my_Devals[dof][LocalCoordTri::z2][pt]
-                          << ")\n";
-
-                error_found = true;
-            }
-        }
-    
-
+/*
         for (int pt = 0; pt < 15; ++pt) {
             if (!almost_equal(true_Dvals[dof][2 * pt], my_Devals[dof][LocalCoordTri::z1][pt], 1000) ||
                 !almost_equal(true_Dvals[dof][2 * pt + 1], my_Devals[dof][LocalCoordTri::z2][pt], 1000)) {
 
-                std::cerr << "Error in Gradient dof(" << dof << pt << "): the true value = (" << std::setprecision(14)
-                          << true_Dvals[dof][2 * pt] << ", " << true_Dvals[dof][2 * pt + 1]
-                          << ") your computed value  = (" << my_Devals[dof][LocalCoordTri::z1][pt] << ", "
-                          << my_Devals[dof][LocalCoordTri::z2][pt] << ")\n";
-
                 error_found = true;
             }
             
-        }
+        }*/
         
-    }*/
+    }
     
     
     if (error_found) {
