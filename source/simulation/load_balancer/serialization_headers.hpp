@@ -5,5 +5,6 @@
 #include <hpx/runtime/serialization/map.hpp>
 #include <hpx/runtime/serialization/base_object.hpp>
 #include <hpx/runtime/serialization/detail/polymorphic_intrusive_factory.hpp>
+#include "../../utilities/serialize_chrono.hpp"
 
 #endif

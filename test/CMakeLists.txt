@@ -459,4 +459,19 @@ if(USE_HPX)
     test_swe_inputs_serialization_exe
   )
 
+  add_executable(
+    test_serialize_chrono_exe
+    test_serialize_chrono.cpp
+  )
+
+  set_target_properties(test_serialize_chrono_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_serialize_chrono_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_serialize_chrono_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_serialize_chrono
+    test_serialize_chrono_exe
+  )
+
 endif()
