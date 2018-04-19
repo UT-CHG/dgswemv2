@@ -8,6 +8,8 @@
 #include "../communication/hpx_communicator.hpp"
 
 #include "writer.hpp"
+#include "load_balancer/base_model.hpp"
+#include "load_balancer/abstract_load_balancer_factory.hpp"
 
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
@@ -19,6 +21,7 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     typename ProblemType::ProblemMeshType mesh;
     typename ProblemType::ProblemInputType problem_input;
     HPXCommunicator communicator;
+    std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
   public:
     HPXSimulationUnit() = default;
@@ -32,7 +35,11 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
         this->communicator = HPXCommunicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd",
                                              locality_id,
                                              submesh_id);
-
+        this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id,submesh_id);
+        assert(this->submesh_model);
+        if ( locality_id == 0 && submesh_id == 0 ) {
+            std::cout << "Making submesh model on locality = 0 submesh_id =  0" << std::endl;
+        }
         ProblemType::initialize_problem_parameters(this->problem_input);
 
         input.ReadMesh();
@@ -134,6 +141,8 @@ void HPXSimulationUnit<ProblemType>::Parse() {
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
+    this->Parse();
+
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
                                   << this->stepper.get_stage() << ')' << std::endl << "Starting work before receive"
@@ -263,7 +272,6 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     hpx::future<void> step_future = hpx::make_ready_future();
 
     for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
-        this->Parse();
 
         step_future = step_future.then([this](auto&&) {
                 return this->Stage();
@@ -275,6 +283,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     }
 
     return step_future.then([this](auto&&) {
+            this->submesh_model->InStep(0,0);
             return this->SwapStates();
         });
 }

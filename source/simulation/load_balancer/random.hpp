@@ -1,7 +1,7 @@
 #ifndef LOAD_BALANCER_RANDOM_HPP
 #define LOAD_BALANCER_RANDOM_HPP
 #include "../../utilities/heartbeat.hpp"
-#include "base_models.hpp"
+#include "base_model.hpp"
 #include "../hpx_simulation_unit.hpp"
 
 #include <cstdlib>
@@ -36,20 +36,26 @@ class WorldModelClient final :
     WorldModelClient(hpx::future<hpx::id_type>&&id) : BaseType(std::move(id)) {}
 
     void MigrateOneSubmesh() {
-        using ActionType = typename WorldModel<ProblemType>::MigrateOneSubmesh;
+        using ActionType = typename WorldModel<ProblemType>::MigrateOneSubmeshAction;
         hpx::apply<ActionType>(this->get_id());
     }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename ProblemType>
-class SubmeshModel final : public LoadBalancer::SubmeshModel {
+class SubmeshModel : public LoadBalancer::SubmeshModel {
   public:
     using BaseType = LoadBalancer::SubmeshModel;
 
+    SubmeshModel() = default;
     SubmeshModel(const std::chrono::duration<double>& rebalance_period,
                  uint locality_id, uint submesh_id);
+
     void InStep(uint64_t compute_cost, uint64_t memory_cost);
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+    HPX_SERIALIZATION_POLYMORPHIC(SubmeshModel<ProblemType>);
 
   private:
     Utilities::HeartBeat beat;
@@ -66,6 +72,7 @@ struct Random {
     static WorldModelClient world_model_client;
     static hpx::future<void> initialize_locality_and_world_models(const uint locality_id);
     static void reset_locality_and_world_models();
+    static std::unique_ptr<LoadBalancer::SubmeshModel> create_submesh_model(uint locality_id, uint submesh_id);
 };
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,9 +105,18 @@ SubmeshModel<ProblemType>::SubmeshModel(const std::chrono::duration<double>& reb
 
 template <typename ProblemType>
 void SubmeshModel<ProblemType>::InStep(uint64_t, uint64_t) {
-    if ( locality_id == 0 && submesh_id == 0 && beat.Thump() ) {
+    if ( this->locality_id == 0 && this->submesh_id == 0 && this->beat.Thump() ) {
+        std::cout << "In submeshmode->Instep()\n";
+        assert(Random<ProblemType>::world_model_client);
         Random<ProblemType>::world_model_client.MigrateOneSubmesh();
     }
+}
+
+template <typename ProblemType>
+template <typename Archive>
+void SubmeshModel<ProblemType>::serialize(Archive& ar, unsigned) {
+    ar & hpx::serialization::base_object<LoadBalancer::SubmeshModel>(*this);
+    ar & beat;
 }
 }
 
@@ -128,7 +144,11 @@ hpx::future<void> Random<ProblemType>::initialize_locality_and_world_models(cons
 template <typename ProblemType>
 void Random<ProblemType>::reset_locality_and_world_models() {
     Random<ProblemType>::world_model_client = WorldModelClient();
+}
 
+template <typename ProblemType>
+std::unique_ptr<LoadBalancer::SubmeshModel> Random<ProblemType>::create_submesh_model(uint locality_id, uint submesh_id) {
+    return std::make_unique<Random<ProblemType>::SubmeshModel>(std::chrono::duration<double>(2.), locality_id, submesh_id);
 }
 }
 #endif

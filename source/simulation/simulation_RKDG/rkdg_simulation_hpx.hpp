@@ -56,6 +56,8 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     const uint locality_id          = hpx::get_locality_id();
     const hpx::naming::id_type here = hpx::find_here();
 
+    hpx::future<void> lb_future = LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id);
+
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
     hpx::future<void> lb_future = LoadBalancer::initialize_locality_and_world_models<ProblemType>(locality_id);
@@ -107,7 +109,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         }
     }
     return hpx::when_all(simulation_futures).then([](auto&&) {
-            LoadBalancer::reset_locality_and_world_models<ProblemType>();
+            LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
         });
 }
 
