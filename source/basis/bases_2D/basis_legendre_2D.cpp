@@ -90,10 +90,12 @@ Array3D<double> Legendre_2D::GetDPhi(const uint p, const std::vector<Point<2>>& 
 
 
         }
-/*
+
+        dphi[dof].resize(2);
+
         dphi[dof][0]=Ux;
         dphi[dof][1]=Uy;
-*/
+
         
     }
 
