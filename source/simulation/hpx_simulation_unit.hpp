@@ -12,8 +12,15 @@
 #include "load_balancer/abstract_load_balancer_factory.hpp"
 
 template <typename ProblemType>
-class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
+class HPXSimulationUnit
+    : public hpx::components::migration_support<
+        hpx::components::component_base<HPXSimulationUnit<ProblemType>>
+    > {
   private:
+    using BaseType = hpx::components::migration_support<
+      hpx::components::component_base<HPXSimulationUnit<ProblemType>>
+      >;
+
     Stepper stepper;
 
     Writer<ProblemType> writer;
@@ -25,39 +32,10 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
   public:
     HPXSimulationUnit() = default;
-    HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id) {
-        InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
-        this->stepper = Stepper(input.rk.nstages, input.rk.order, input.dt, input.T_end);
-        this->problem_input = input.problem_input;
-        this->writer = Writer<ProblemType>(input, locality_id, submesh_id);
-        this->parser = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
-        this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order),
-        this->communicator = HPXCommunicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd",
-                                             locality_id,
-                                             submesh_id);
-        this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id,submesh_id);
-        assert(this->submesh_model);
-        if ( locality_id == 0 && submesh_id == 0 ) {
-            std::cout << "Making submesh model on locality = 0 submesh_id =  0" << std::endl;
-        }
-        ProblemType::initialize_problem_parameters(this->problem_input);
+    HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
+    HPXSimulationUnit(const HPXSimulationUnit& rhs) = default;
 
-        input.ReadMesh();
-
-        this->mesh.SetMeshName(input.mesh_data.mesh_name);
-
-        if (this->writer.WritingLog()) {
-            this->writer.StartLog();
-
-            this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                      << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
-        }
-
-        initialize_mesh<ProblemType, HPXCommunicator>(
-            this->mesh, input.mesh_data, this->communicator, this->problem_input, this->writer);
-
-        ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_data, this->problem_input);
-    }
+    HPXSimulationUnit& operator=(HPXSimulationUnit& rhs) = default;
 
     hpx::future<void> Preprocessor();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
@@ -87,6 +65,41 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
     void SwapStates();
 };
+
+template <typename ProblemType>
+HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id) {
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
+    this->stepper = Stepper(input.rk.nstages, input.rk.order, input.dt, input.T_end);
+    this->problem_input = input.problem_input;
+    this->writer = Writer<ProblemType>(input, locality_id, submesh_id);
+    this->parser = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
+    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+    this->communicator = HPXCommunicator(input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + ".dbmd",
+                                         locality_id,
+                                         submesh_id);
+    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id,submesh_id);
+    assert(this->submesh_model);
+    if ( locality_id == 0 && submesh_id == 0 ) {
+        std::cout << "Making submesh model on locality = 0 submesh_id =  0" << std::endl;
+    }
+    ProblemType::initialize_problem_parameters(this->problem_input);
+
+    input.ReadMesh();
+
+    this->mesh.SetMeshName(input.mesh_data.mesh_name);
+
+    if (this->writer.WritingLog()) {
+        this->writer.StartLog();
+
+        this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                  << input.mesh_data.mesh_name << " mesh" << std::endl << std::endl;
+    }
+
+    initialize_mesh<ProblemType, HPXCommunicator>(
+        this->mesh, input.mesh_data, this->communicator, this->problem_input, this->writer);
+
+    ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_data, this->problem_input);
+}
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
@@ -311,6 +324,7 @@ class HPXSimulationUnitClient
 
   public:
     HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    HPXSimulationUnitClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
 
     static constexpr const char* GetBasename() { return "Simulation_Unit_Client_"; }
 

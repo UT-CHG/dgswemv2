@@ -38,7 +38,9 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
     uint n_steps;
     uint n_stages;
 
-    std::vector<HPXSimulationUnitClient<ProblemType>> simulation_unit_clients;
+    using client_t = HPXSimulationUnitClient<ProblemType>;
+
+    std::vector<client_t> simulation_unit_clients;
 
   public:
     HPXSimulation() = default;
@@ -73,12 +75,13 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     uint submesh_id = 0;
     std::vector<hpx::future<void>> registration_futures;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        hpx::future<hpx::id_type> simulation_unit_id =
-            hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
-                here, input_string, locality_id, submesh_id);
+        this->simulation_unit_clients.emplace_back(hpx::new_<client_t>(
+            here, input_string, locality_id, submesh_id)
+                );
+
 
             registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-                                               std::string{HPXSimulationUnitClient<ProblemType>::GetBasename()}+
+                                               std::string{client_t::GetBasename()}+
                                                std::to_string(locality_id)+'_'+std::to_string(submesh_id)));
             ++submesh_id;
         }
@@ -125,6 +128,7 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 
   public:
     HPXSimulationClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    HPXSimulationClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
 
     hpx::future<void> Run() {
         using ActionType = typename HPXSimulation<ProblemType>::RunAction;
