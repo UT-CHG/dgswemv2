@@ -185,10 +185,6 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
             }
         }
 
-        // compute water level reduction
-        wd_state_in.water_volume -= net_volume_flux_in * dt;
-        wd_state_ex.water_volume -= net_volume_flux_ex * dt;
-
         // now compute contributions to the righthand side
         for (uint dof = 0; dof < intface.data_in.get_ndof(); ++dof) {
             state_in.rhs_ze[dof] -= intface.IntegrationPhiIN(dof, boundary_in.ze_numerical_flux_at_gp);

@@ -17,7 +17,7 @@ int main() {
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
     // the whole test is designed for h_0 = 0.01
-    SWE::Global::h_o = 0.01;
+    SWE::PostProcessing::h_o = 0.01;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);
@@ -44,9 +44,9 @@ int main() {
     wd_state.bath_min = 1.;
 
     // Completely dry element
-    wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
-    wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 4.0 - wd_state.bath_at_vrtx[1];
-    wd_state.ze_at_vrtx[2] = SWE::Global::h_o / 6.0 - wd_state.bath_at_vrtx[2];
+    wd_state.ze_at_vrtx[0] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[0];
+    wd_state.ze_at_vrtx[1] = SWE::PostProcessing::h_o / 4.0 - wd_state.bath_at_vrtx[1];
+    wd_state.ze_at_vrtx[2] = SWE::PostProcessing::h_o / 6.0 - wd_state.bath_at_vrtx[2];
     triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
@@ -102,9 +102,9 @@ int main() {
     }
 
     // Completely wet element
-    wd_state.ze_at_vrtx[0] = SWE::Global::h_o;
-    wd_state.ze_at_vrtx[1] = SWE::Global::h_o;
-    wd_state.ze_at_vrtx[2] = SWE::Global::h_o;
+    wd_state.ze_at_vrtx[0] = SWE::PostProcessing::h_o;
+    wd_state.ze_at_vrtx[1] = SWE::PostProcessing::h_o;
+    wd_state.ze_at_vrtx[2] = SWE::PostProcessing::h_o;
     triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
@@ -133,12 +133,12 @@ int main() {
     }
 
     for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); vrtx++) {
-        if (!almost_equal(wd_state.ze_at_vrtx[vrtx], SWE::Global::h_o, 1.e+4)) {
+        if (!almost_equal(wd_state.ze_at_vrtx[vrtx], SWE::PostProcessing::h_o, 1.e+4)) {
             error_found = true;
             printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                    vrtx,
                    wd_state.ze_at_vrtx[vrtx],
-                   SWE::Global::h_o);
+                   SWE::PostProcessing::h_o);
         }
         if (!almost_equal(wd_state.qx_at_vrtx[vrtx], (double)(vrtx + 1), 1.e+4)) {
             error_found = true;
@@ -157,9 +157,9 @@ int main() {
     }
 
     // Dry element on average
-    wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
-    wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
-    wd_state.ze_at_vrtx[2] = 2.0 * SWE::Global::h_o - wd_state.bath_at_vrtx[2];
+    wd_state.ze_at_vrtx[0] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[0];
+    wd_state.ze_at_vrtx[1] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[1];
+    wd_state.ze_at_vrtx[2] = 2.0 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2];
     triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
@@ -216,9 +216,9 @@ int main() {
     // Some nodes dry element of flood-type
     wd_state.wet = false;  // To do check_element
 
-    wd_state.ze_at_vrtx[0] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[0];
-    wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
-    wd_state.ze_at_vrtx[2] = 3.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[2];
+    wd_state.ze_at_vrtx[0] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[0];
+    wd_state.ze_at_vrtx[1] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[1];
+    wd_state.ze_at_vrtx[2] = 3.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2];
     triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
@@ -246,26 +246,26 @@ int main() {
         printf("flood-type element is not dry!\n");
     }
 
-    if (!almost_equal(wd_state.ze_at_vrtx[0], SWE::Global::h_o - wd_state.bath_at_vrtx[0], 1.e+5)) {
+    if (!almost_equal(wd_state.ze_at_vrtx[0], SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[0], 1.e+5)) {
         error_found = true;
         printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                0,
                wd_state.ze_at_vrtx[0],
-               SWE::Global::h_o - wd_state.bath_at_vrtx[0]);
+               SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[0]);
     }
-    if (!almost_equal(wd_state.ze_at_vrtx[1], SWE::Global::h_o - wd_state.bath_at_vrtx[1], 1.e+5)) {
+    if (!almost_equal(wd_state.ze_at_vrtx[1], SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[1], 1.e+5)) {
         error_found = true;
         printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                1,
                wd_state.ze_at_vrtx[1],
-               SWE::Global::h_o - wd_state.bath_at_vrtx[1]);
+               SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[1]);
     }
-    if (!almost_equal(wd_state.ze_at_vrtx[2], 2.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[2], 1.e+5)) {
+    if (!almost_equal(wd_state.ze_at_vrtx[2], 2.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2], 1.e+5)) {
         error_found = true;
         printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                2,
                wd_state.ze_at_vrtx[2],
-               2.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[2]);
+               2.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2]);
     }
 
     for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); vrtx++) {
@@ -288,9 +288,9 @@ int main() {
     // Some nodes dry element of dam-break-type
     wd_state.wet = false;  // To do check_element
 
-    wd_state.ze_at_vrtx[0] = 3.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[0];
-    wd_state.ze_at_vrtx[1] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[1];
-    wd_state.ze_at_vrtx[2] = SWE::Global::h_o / 2.0 - wd_state.bath_at_vrtx[2];
+    wd_state.ze_at_vrtx[0] = 3.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[0];
+    wd_state.ze_at_vrtx[1] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[1];
+    wd_state.ze_at_vrtx[2] = SWE::PostProcessing::h_o / 2.0 - wd_state.bath_at_vrtx[2];
     triangle.L2Projection(wd_state.ze_at_vrtx, state.ze);
 
     wd_state.qx_at_vrtx[0] = 1.;
@@ -318,26 +318,26 @@ int main() {
         printf("dam-break-type element is not wet!\n");
     }
 
-    if (!almost_equal(wd_state.ze_at_vrtx[0], 2.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[0], 1.e+5)) {
+    if (!almost_equal(wd_state.ze_at_vrtx[0], 2.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[0], 1.e+5)) {
         error_found = true;
         printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                0,
                wd_state.ze_at_vrtx[0],
-               2.5 * SWE::Global::h_o - wd_state.bath_at_vrtx[0]);
+               2.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[0]);
     }
-    if (!almost_equal(wd_state.ze_at_vrtx[1], SWE::Global::h_o - wd_state.bath_at_vrtx[1], 1.e+5)) {
+    if (!almost_equal(wd_state.ze_at_vrtx[1], SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[1], 1.e+5)) {
         error_found = true;
         printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                1,
                wd_state.ze_at_vrtx[1],
-               SWE::Global::h_o - wd_state.bath_at_vrtx[1]);
+               SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[1]);
     }
-    if (!almost_equal(wd_state.ze_at_vrtx[2], SWE::Global::h_o - wd_state.bath_at_vrtx[2], 1.e+5)) {
+    if (!almost_equal(wd_state.ze_at_vrtx[2], SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2], 1.e+5)) {
         error_found = true;
         printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
                2,
                wd_state.ze_at_vrtx[2],
-               SWE::Global::h_o - wd_state.bath_at_vrtx[2]);
+               SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2]);
     }
 
     if (!almost_equal(wd_state.qx_at_vrtx[0], 6.0, 1.e+5)) {

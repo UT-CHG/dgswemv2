@@ -42,7 +42,7 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
         }
 
         if (SWE::SourceTerms::bottom_friction) {
-            double Cf = Global::Cf;
+            double Cf = SWE::SourceTerms::Cf;
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute bottom friction contribution
@@ -52,8 +52,8 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
                 // compute manning friction factor
                 if (source.manning) {
                     Cf = source.g_manning_n_sq / std::pow(internal.h_at_gp[gp], 1.0 / 3.0);
-                    if (Cf < Global::Cf)
-                        Cf = Global::Cf;
+                    if (Cf < SWE::SourceTerms::Cf)
+                        Cf = SWE::SourceTerms::Cf;
                 }
 
                 double bottom_friction_stress = Cf * std::hypot(u_at_gp, v_at_gp) / internal.h_at_gp[gp];

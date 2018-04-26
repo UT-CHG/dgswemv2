@@ -23,14 +23,6 @@ struct Data {
     SlopeLimit slope_limit_state;
 
     void initialize() {
-        this->spherical_projection = Spherical(this->nnode, this->nbound, this->ngp_internal, this->ngp_boundary);
-
-        this->source = Source(this->nnode);
-
-        this->wet_dry_state = WetDry(this->nvrtx);
-
-        this->slope_limit_state = SlopeLimit(this->nbound);
-
         this->state = std::vector<State>{State(this->ndof)};
 
         this->internal = Internal(this->ngp_internal);
@@ -38,6 +30,14 @@ struct Data {
         for (uint bound_id = 0; bound_id < this->nbound; bound_id++) {
             this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
         }
+
+        this->spherical_projection = Spherical(this->nnode, this->nbound, this->ngp_internal, this->ngp_boundary);
+
+        this->source = Source(this->nnode);
+
+        this->wet_dry_state = WetDry(this->nvrtx);
+
+        this->slope_limit_state = SlopeLimit(this->nbound);
     }
 
     void resize(const uint nstate) {

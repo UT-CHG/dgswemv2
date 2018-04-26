@@ -133,9 +133,6 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
         double w_tilda;
         double w_delta;
 
-        double M  = 1e-8;
-        double nu = 1.5;
-
         for (uint var = 0; var < 3; var++) {
             w_tilda = sl_state.w_midpt_char[var] - sl_state.w_baryctr_char[var][0];
 
@@ -143,11 +140,11 @@ void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
                       sl_state.alpha_2[bound] * (sl_state.w_baryctr_char[var][2] - sl_state.w_baryctr_char[var][0]);
 
             // TVB modified minmod
-            if (std::abs(w_tilda) <= M * sl_state.r_sq[bound]) {
+            if (std::abs(w_tilda) <= PostProcessing::M * sl_state.r_sq[bound]) {
                 sl_state.delta_char[var] = w_tilda;
             } else if (std::signbit(w_tilda) == std::signbit(w_delta)) {
                 sl_state.delta_char[var] =
-                    std::copysign(1.0, w_tilda) * std::min(std::abs(w_tilda), std::abs(nu * w_delta));
+                    std::copysign(1.0, w_tilda) * std::min(std::abs(w_tilda), std::abs(PostProcessing::nu * w_delta));
             } else {
                 sl_state.delta_char[var] = 0.0;
             }

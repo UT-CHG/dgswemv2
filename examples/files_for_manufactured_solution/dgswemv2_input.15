@@ -23,7 +23,6 @@ problem:
   gravity: 9.81
   density_air: 1.225
   density_water: 1000.0
-  h_o: 0.01
   initial_conditions:
     type: Function
   function_source: Enable  

@@ -18,9 +18,9 @@ struct WetDry {
           h_at_vrtx_temp(nvrtx) {}
 
     bool wet;
+    bool went_completely_dry;
 
     double bath_min;
-    double water_volume;
 
     std::vector<double> ze_lin;
     std::vector<double> qx_lin;

@@ -141,9 +141,6 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
             }
         }
 
-        // compute water level reduction
-        wd_state_in.water_volume -= net_volume_flux_in * dt;
-
         // now compute contributions to the righthand side
         for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
             state.rhs_ze[dof] -= dbound.IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);

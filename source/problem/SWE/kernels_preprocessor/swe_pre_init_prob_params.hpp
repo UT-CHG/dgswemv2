@@ -7,9 +7,6 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
     SWE::Global::rho_air   = problem_specific_input.rho_air;
     SWE::Global::rho_water = problem_specific_input.rho_water;
 
-    SWE::Global::h_o          = problem_specific_input.h_o;
-    SWE::Global::h_o_treshold = 10e6 * SWE::Global::h_o * std::numeric_limits<double>::epsilon();
-
     // specify forcing terms
     if (problem_specific_input.function_source.type != SWE::FunctionSourceType::None) {
         SWE::SourceTerms::function_source = true;
@@ -17,7 +14,7 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
 
     if (problem_specific_input.bottom_friction.type != SWE::BottomFrictionType::None) {
         SWE::SourceTerms::bottom_friction = true;
-        SWE::Global::Cf                   = problem_specific_input.bottom_friction.coefficient;
+        SWE::SourceTerms::Cf              = problem_specific_input.bottom_friction.coefficient;
     }
 
     if (problem_specific_input.meteo_forcing.type != SWE::MeteoForcingType::None) {
@@ -30,6 +27,22 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
 
     if (problem_specific_input.coriolis.type != SWE::CoriolisType::None) {
         SWE::SourceTerms::coriolis = true;
+    }
+
+    // specify postprocessin parameters
+    if (problem_specific_input.wet_dry.type != SWE::WettingDryingType::None) {
+        SWE::PostProcessing::wetting_drying = true;
+        SWE::PostProcessing::h_o            = problem_specific_input.wet_dry.h_o;
+        SWE::PostProcessing::h_o_treshold   = 1.0e6 * SWE::PostProcessing::h_o * std::numeric_limits<double>::epsilon();
+    }
+
+    if (problem_specific_input.slope_limit.type != SWE::SlopeLimitingType::None) {
+        SWE::PostProcessing::slope_limiting = true;
+
+        if (problem_specific_input.slope_limit.type == SWE::SlopeLimitingType::CockburnShu) {
+            SWE::PostProcessing::M  = problem_specific_input.slope_limit.M;
+            SWE::PostProcessing::nu = problem_specific_input.slope_limit.nu;
+        }
     }
 }
 }

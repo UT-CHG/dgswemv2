@@ -23,13 +23,13 @@ void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
         elt.WritePointDataVTK(elt.data.state[0].bath, point_data[3]);
     });
 
-    std::vector<uint> elt_id_data;
-    std::vector<bool> wd_data;
+    std::vector<uint>                elt_id_data;
+    std::vector<std::array<bool, 2>> wd_data;
 
     mesh.CallForEachElement([&elt_id_data, &wd_data](auto& elt) {
         for (uint cell = 0; cell < N_DIV * N_DIV; cell++) {
             elt_id_data.push_back(elt.GetID());
-            wd_data.push_back(elt.data.wet_dry_state.wet);
+            wd_data.push_back({elt.data.wet_dry_state.wet, elt.data.wet_dry_state.went_completely_dry});
         }
     });
 
@@ -63,7 +63,12 @@ void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
     raw_data_file << "SCALARS wet_dry bit 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = wd_data.begin(); it != wd_data.end(); it++)
-        raw_data_file << *it << std::endl;
+        raw_data_file << (*it)[0] << std::endl;
+
+    raw_data_file << "SCALARS went_completely_dry bit 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
+    for (auto it = wd_data.begin(); it != wd_data.end(); it++)
+        raw_data_file << (*it)[1] << std::endl;
 
     raw_data_file << "POINT_DATA " << (*point_data.begin()).size() << std::endl;
 

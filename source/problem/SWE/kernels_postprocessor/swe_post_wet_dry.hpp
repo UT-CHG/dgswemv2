@@ -24,7 +24,16 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     bool set_dry_element = false;
     bool check_element   = false;
 
-    if (h_avg <= Global::h_o + Global::h_o_treshold) {
+    if (h_avg <= PostProcessing::h_o + PostProcessing::h_o_treshold) {
+        // Say that "low" h_avg is 10% of h_o
+        // Check if element has dangerously low h_avg or even negative h_avg
+        // In this case we need to bump up the water to at least "low" h_avg
+        if (h_avg < 0.1 * PostProcessing::h_o) {
+            wd_state.went_completely_dry = true;
+
+            h_avg = 0.1 * PostProcessing::h_o;
+        }
+
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.ze_at_vrtx[vrtx] = h_avg - wd_state.bath_at_vrtx[vrtx];
         }
@@ -36,7 +45,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         uint n_dry_vrtx = 0;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o + Global::h_o_treshold) {
+            if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_treshold) {
                 n_dry_vrtx++;
             }
         }
@@ -56,10 +65,10 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             uint h_mid_vrtx = 3 - h_max_vrtx - h_min_vrtx;
 
-            wd_state.h_at_vrtx_temp[h_min_vrtx] = Global::h_o;
+            wd_state.h_at_vrtx_temp[h_min_vrtx] = PostProcessing::h_o;
 
             wd_state.h_at_vrtx_temp[h_mid_vrtx] =
-                std::max(Global::h_o,
+                std::max(PostProcessing::h_o,
                          wd_state.h_at_vrtx[h_mid_vrtx] -
                              (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
 
@@ -81,7 +90,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             n_dry_vrtx = 0;
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                if (wd_state.h_at_vrtx[vrtx] <= Global::h_o + Global::h_o_treshold) {
+                if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_treshold) {
                     n_dry_vrtx++;
 
                     del_qx += wd_state.qx_at_vrtx[vrtx];
@@ -95,7 +104,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
-                if (wd_state.h_at_vrtx[vrtx] > Global::h_o + Global::h_o_treshold) {
+                if (wd_state.h_at_vrtx[vrtx] > PostProcessing::h_o + PostProcessing::h_o_treshold) {
                     wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
                     wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
                 }
@@ -118,7 +127,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             double ze_h_max_vrtx = wd_state.ze_at_vrtx[h_max_vrtx];
 
-            if (ze_h_max_vrtx > Global::h_o - wd_state.bath_min) {
+            if (ze_h_max_vrtx > PostProcessing::h_o - wd_state.bath_min) {
                 set_wet_element = true;
             } else {
                 set_dry_element = true;
@@ -138,14 +147,6 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     } else if (set_wet_element) {
         wd_state.wet = true;
     }
-
-    elt.ComputeUgp(state.ze, internal.ze_at_gp);
-
-    for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-        internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
-    }
-
-    wd_state.water_volume = elt.Integration(internal.h_at_gp);
 }
 }
 

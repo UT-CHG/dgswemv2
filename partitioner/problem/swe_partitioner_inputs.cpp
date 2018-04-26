@@ -24,10 +24,10 @@ PartitionerInputs::PartitionerInputs(const MeshMetaData& mesh, Inputs inputs) {
                 Point<2> pt{coordinates[0], coordinates[1]};
                 h_at_vrtx = ic_ze(0, pt) + bath_at_vrtx;
             } else {  // unknown input conditition; set the whole mesh to wet
-                h_at_vrtx = 2 * inputs.h_o;
+                h_at_vrtx = 2 * inputs.wet_dry.h_o;
             }
 
-            is_wet &= (h_at_vrtx >= inputs.h_o);
+            is_wet &= (h_at_vrtx >= inputs.wet_dry.h_o);
         }
 
         weights.insert(std::make_pair(elt.first, std::vector<double>{1., is_wet}));

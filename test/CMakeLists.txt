@@ -231,7 +231,13 @@ problem:\n\
     frequency: 900\n\
   tidal_potential:\n\
     type: Test\n\
-  coriolis: Enable\n\n\
+  coriolis: Enable\n\
+  wetting_drying:\n\
+    h_o: 0.1\n\
+  slope_limiting:\n\
+    type: Cockburn-Shu\n\
+    M: 50\n\
+    nu: 1\n\n\
 output:\n\
   logfile:\n\
     name: log\n\
@@ -276,7 +282,13 @@ problem:\n\
     frequency: 900\n\
   tidal_potential:\n\
     type: Test\n\
-  coriolis: Enable\n"
+  coriolis: Enable\n\
+  wetting_drying:\n\
+    h_o: 0.1\n\
+  slope_limiting:\n\
+    type: Cockburn-Shu\n\
+    M: 50\n\
+    nu: 1\n"
 )
 
 add_executable(

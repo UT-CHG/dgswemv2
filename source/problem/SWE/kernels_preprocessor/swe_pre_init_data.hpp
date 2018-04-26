@@ -210,8 +210,8 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
         bool set_wet_element = true;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= Global::h_o) {
-                wd_state.ze_at_vrtx[vrtx] = Global::h_o - wd_state.bath_at_vrtx[vrtx];
+            if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o) {
+                wd_state.ze_at_vrtx[vrtx] = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
 
                 set_wet_element = false;
             }
@@ -230,14 +230,6 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
             std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
             std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
         }
-
-        elt.ComputeUgp(state.ze, internal.ze_at_gp);
-
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
-        }
-
-        wd_state.water_volume = elt.Integration(internal.h_at_gp);
     });
 
     // SLOPE LIMIT INITIALIZE

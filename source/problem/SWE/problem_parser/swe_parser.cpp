@@ -4,62 +4,60 @@ namespace SWE {
 void Parser::ParseMeteoInput(const Stepper& stepper) {
     uint step = stepper.GetStep();
 
-    if (this->meteo_forcing_type == SWE::MeteoForcingType::Enable) {
-        if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {
-            this->node_meteo_data_step.erase(this->node_meteo_data_step.find(step - this->meteo_parse_frequency));
+    if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {
+        this->node_meteo_data_step.erase(this->node_meteo_data_step.find(step - this->meteo_parse_frequency));
+    }
+
+    if (this->node_meteo_data_step.find(step) == this->node_meteo_data_step.end()) {
+        std::string meteo_data_file_name = this->meteo_data_file;
+
+        meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."), '_' + std::to_string(step));
+
+        std::ifstream meteo_file(meteo_data_file_name);
+
+        if (!meteo_file) {
+            std::string err_msg = "Fatal Error: Meteo data file " + meteo_data_file_name + " was not found\n";
+            throw std::logic_error(err_msg);
         }
 
-        if (this->node_meteo_data_step.find(step) == this->node_meteo_data_step.end()) {
-            std::string meteo_data_file_name = this->meteo_data_file;
+        uint                node_id;
+        std::vector<double> meteo_data(3);
 
-            meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."), '_' + std::to_string(step));
+        std::string line;
+        while (std::getline(meteo_file, line)) {
+            std::istringstream input_string(line);
 
-            std::ifstream meteo_file(meteo_data_file_name);
+            if (!(input_string >> node_id >> meteo_data[0] >> meteo_data[1] >> meteo_data[2]))
+                break;
 
-            if (!meteo_file) {
-                std::string err_msg = "Fatal Error: Meteo data file " + meteo_data_file_name + " was not found\n";
-                throw std::logic_error(err_msg);
-            }
+            this->node_meteo_data_step[step][node_id] = meteo_data;
+        }
+    }
 
-            uint                node_id;
-            std::vector<double> meteo_data(3);
+    if (this->node_meteo_data_step.find(step + this->meteo_parse_frequency) == this->node_meteo_data_step.end()) {
+        std::string meteo_data_file_name = this->meteo_data_file;
 
-            std::string line;
-            while (std::getline(meteo_file, line)) {
-                std::istringstream input_string(line);
+        meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."),
+                                    '_' + std::to_string(step + this->meteo_parse_frequency));
 
-                if (!(input_string >> node_id >> meteo_data[0] >> meteo_data[1] >> meteo_data[2]))
-                    break;
+        std::ifstream meteo_file(meteo_data_file_name);
 
-                this->node_meteo_data_step[step][node_id] = meteo_data;
-            }
+        if (!meteo_file) {
+            std::string err_msg = "Fatal Error: Meteo data file " + meteo_data_file_name + " not found\n";
+            throw std::logic_error(err_msg);
         }
 
-        if (this->node_meteo_data_step.find(step + this->meteo_parse_frequency) == this->node_meteo_data_step.end()) {
-            std::string meteo_data_file_name = this->meteo_data_file;
+        uint                node_id;
+        std::vector<double> meteo_data(3);
 
-            meteo_data_file_name.insert(meteo_data_file_name.find_last_of("."),
-                                        '_' + std::to_string(step + this->meteo_parse_frequency));
+        std::string line;
+        while (std::getline(meteo_file, line)) {
+            std::istringstream input_string(line);
 
-            std::ifstream meteo_file(meteo_data_file_name);
+            if (!(input_string >> node_id >> meteo_data[0] >> meteo_data[1] >> meteo_data[2]))
+                break;
 
-            if (!meteo_file) {
-                std::string err_msg = "Fatal Error: Meteo data file " + meteo_data_file_name + " not found\n";
-                throw std::logic_error(err_msg);
-            }
-
-            uint                node_id;
-            std::vector<double> meteo_data(3);
-
-            std::string line;
-            while (std::getline(meteo_file, line)) {
-                std::istringstream input_string(line);
-
-                if (!(input_string >> node_id >> meteo_data[0] >> meteo_data[1] >> meteo_data[2]))
-                    break;
-
-                this->node_meteo_data_step[step + this->meteo_parse_frequency][node_id] = meteo_data;
-            }
+            this->node_meteo_data_step[step + this->meteo_parse_frequency][node_id] = meteo_data;
         }
     }
 }

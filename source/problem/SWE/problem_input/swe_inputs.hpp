@@ -59,6 +59,22 @@ struct Coriolis {
     CoriolisType type = CoriolisType::None;
 };
 
+enum class WettingDryingType { None, Enable };
+
+struct WettingDrying {
+    WettingDryingType type = WettingDryingType::None;
+    double            h_o  = 0.1;
+};
+
+enum class SlopeLimitingType { None, CockburnShu };
+
+struct SlopeLimiting {
+    SlopeLimitingType type = SlopeLimitingType::None;
+    std::string       slope_limiting_type;
+    double            M  = 1.0e-8;
+    double            nu = 1.5;
+};
+
 struct Inputs {
     Inputs() = default;
     Inputs(YAML::Node& swe_node);
@@ -68,9 +84,6 @@ struct Inputs {
     double g         = 9.81;
     double rho_air   = 1.2250;
     double rho_water = 1000.0;
-    double h_o       = 0.01;
-
-    bool parse_input = false;
 
     SphericalProjection spherical_projection;
 
@@ -81,6 +94,9 @@ struct Inputs {
     MeteoForcing   meteo_forcing;
     TidalPotential tidal_potential;
     Coriolis       coriolis;
+
+    WettingDrying wet_dry;
+    SlopeLimiting slope_limit;
 };
 }
 

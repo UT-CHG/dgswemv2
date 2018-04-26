@@ -20,12 +20,6 @@ Inputs::Inputs(YAML::Node& swe_node) {
         std::cerr << "Using default water density\n";
     }
 
-    if (swe_node["h_o"]) {
-        this->h_o = swe_node["h_o"].as<double>();
-    } else {
-        std::cerr << "Using default h_o parameter\n";
-    }
-
     const std::string malformatted_sp_warning(
         "Warning: spherical projection inputs are mal-formatted. Using default parameters.\n");
 
@@ -134,7 +128,6 @@ Inputs::Inputs(YAML::Node& swe_node) {
         if (meteo["type"] && meteo["raw_input_file"] && meteo["input_file"] && meteo["frequency"]) {
             this->meteo_forcing.type = MeteoForcingType::Enable;
 
-            this->parse_input                       = true;
             this->meteo_forcing.meteo_data_type     = meteo["type"].as<std::string>();
             this->meteo_forcing.raw_meteo_data_file = meteo["raw_input_file"].as<std::string>();
             this->meteo_forcing.meteo_data_file     = meteo["input_file"].as<std::string>();
@@ -177,6 +170,42 @@ Inputs::Inputs(YAML::Node& swe_node) {
             std::cerr << malformatted_coriolis_warning;
         }
     }
+
+    const std::string malformatted_wd_warning("Warning: wet-dry is mal-formatted. Using default parameters.\n");
+
+    if (YAML::Node wd_node = swe_node["wetting_drying"]) {
+        if (wd_node["h_o"]) {
+            this->wet_dry.type = WettingDryingType::Enable;
+
+            this->wet_dry.h_o = wd_node["h_o"].as<double>();
+        } else {
+            std::cerr << malformatted_wd_warning;
+        }
+    }
+
+    const std::string malformatted_sl_warning("Warning: slope limiting is mal-formatted. Using default parameters.\n");
+
+    if (YAML::Node sl_node = swe_node["slope_limiting"]) {
+        if (sl_node["type"]) {
+            std::string sl_string = sl_node["type"].as<std::string>();
+
+            if (sl_string == "Cockburn-Shu") {
+                if (sl_node["M"] && sl_node["nu"]) {
+                    this->slope_limit.type = SlopeLimitingType::CockburnShu;
+
+                    this->slope_limit.slope_limiting_type = "Cockburn-Shu";
+                    this->slope_limit.M                   = sl_node["M"].as<double>();
+                    this->slope_limit.nu                  = sl_node["nu"].as<double>();
+                } else {
+                    std::cerr << malformatted_sl_warning;
+                }
+            } else {
+                std::cerr << malformatted_sl_warning;
+            }
+        } else {
+            std::cerr << malformatted_sl_warning;
+        }
+    }
 }
 
 YAML::Node Inputs::as_yaml_node() {
@@ -186,7 +215,6 @@ YAML::Node Inputs::as_yaml_node() {
     ret["gravity"]       = this->g;
     ret["density_air"]   = this->rho_air;
     ret["density_water"] = this->rho_water;
-    ret["h_o"]           = this->h_o;
 
     YAML::Node sp_node;
     switch (this->spherical_projection.type) {
@@ -278,6 +306,30 @@ YAML::Node Inputs::as_yaml_node() {
             break;
         case CoriolisType::Enable:
             ret["coriolis"] = "Enable";
+            break;
+    }
+
+    YAML::Node wd_node;
+    switch (this->wet_dry.type) {
+        case WettingDryingType::None:
+            break;
+        case WettingDryingType::Enable:
+            wd_node["h_o"] = this->wet_dry.h_o;
+
+            ret["wetting_drying"] = wd_node;
+            break;
+    }
+
+    YAML::Node sl_node;
+    switch (this->slope_limit.type) {
+        case SlopeLimitingType::None:
+            break;
+        case SlopeLimitingType::CockburnShu:
+            sl_node["type"] = this->slope_limit.slope_limiting_type;
+            sl_node["M"]    = this->slope_limit.M;
+            sl_node["nu"]   = this->slope_limit.nu;
+
+            ret["slope_limiting"] = sl_node;
             break;
     }
 
