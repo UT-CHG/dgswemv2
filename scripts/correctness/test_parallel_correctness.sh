@@ -33,14 +33,17 @@ sed -i 's/  end_time: 3600                #in seconds/  end_time: 1800/g' dgswem
 $DGSWEMV2_ROOT/build/mesh_generators/rectangular_mesh_generator mesh_generator_input.yml
 
 echo "Running Serial Test case..."
+rm -f serial.out
 $DGSWEMV2_ROOT/build/examples/MANUFACTURED_SOLUTION_SERIAL dgswemv2_input.15 &> serial.out
 
 echo "Running HPX Test case..."
+rm -f hpx.out
 $DGSWEMV2_ROOT/build/partitioner/partitioner dgswemv2_input.15 2 1
 $DGSWEMV2_ROOT/build/examples/MANUFACTURED_SOLUTION_HPX dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
 
 echo "Running MPI Test case..."
 rm rectangular_mesh_*
+rm -f ompi.out
 $DGSWEMV2_ROOT/build/partitioner/partitioner dgswemv2_input.15 2 1 2
 #Since OpenMPI does not by default support MPI_THREAD_MULTIPLE
 # we set OMP_NUM_THREADS=1
