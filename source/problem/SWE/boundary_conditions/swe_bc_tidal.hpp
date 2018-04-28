@@ -5,6 +5,7 @@
 #include "../../../simulation/stepper.hpp"
 
 namespace SWE {
+namespace BC {
 class Tidal {
   public:
     void GetEX(const Stepper&             stepper,
@@ -32,6 +33,7 @@ class Tidal {
         qy_ex = qy_in[gp];
     }
 };
+}
 }
 
 #endif

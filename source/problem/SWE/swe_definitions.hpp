@@ -30,7 +30,32 @@ static double M  = 1.0e-8;
 static double nu = 1.5;
 }
 
-enum BoundaryConditions : uchar { land = 0, tidal = 1, flow = 2, distributed = DISTRIBUTED, internal = INTERNAL };
+enum BoundaryConditions : uchar {
+    land             = 0,
+    tidal            = 1,
+    flow             = 2,
+    internal_barrier = 3,
+    distributed      = DISTRIBUTED,
+    internal         = INTERNAL
+};
+
+enum class SphericalProjectionType { None, Enable };
+
+enum class InitialConditionsType { Default, Constant, Function };
+
+enum class FunctionSourceType { None, Enable };
+
+enum class BottomFrictionType { None, Chezy, Manning };
+
+enum class MeteoForcingType { None, Enable };
+
+enum class TidalPotentialType { None, Test };  // not yet implemented
+
+enum class CoriolisType { None, Enable };
+
+enum class WettingDryingType { None, Enable };
+
+enum class SlopeLimitingType { None, CockburnShu };
 }
 
 #endif

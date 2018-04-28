@@ -5,17 +5,18 @@ namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_distributed_boundaries_kernel(ProblemMeshType&,
                                                    std::tuple<>&,
-                                                   std::map<uint, std::map<uint, RawBoundaryType>>&,
+                                                   std::map<std::pair<uint, uint>, RawBoundaryType>&,
                                                    Writer<SWE::Problem>& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
-    ProblemMeshType&                                 mesh,
-    Communicator&                                    communicator,
-    std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
-    Writer<SWE::Problem>&                            writer) {
+    ProblemMeshType&                                  mesh,
+    Communicator&                                     communicator,
+    std::map<std::pair<uint, uint>, RawBoundaryType>& pre_distributed_boundaries,
+    Writer<SWE::Problem>&                             writer) {
+    // *** //
     using DistributedBoundaryType =
-        std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::Distributed>>::type;
+        std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::BC::Distributed>>::type;
 
     typename DistributedBoundaryType::BoundaryIntegrationType boundary_integration;
 
@@ -70,30 +71,30 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index_postproc += 4;
 
-            auto& pre_dboundary = pre_distributed_boundaries.at(element_id).at(bound_id);
+            auto& pre_dboundary = pre_distributed_boundaries.at(std::pair<uint, uint>{element_id, bound_id});
             pre_dboundary.p     = p;
 
             mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
                 pre_dboundary,
-                SWE::Distributed(send_preproc_buffer_reference,
-                                 receive_preproc_buffer_reference,
-                                 send_buffer_reference,
-                                 receive_buffer_reference,
-                                 send_postproc_buffer_reference,
-                                 receive_postproc_buffer_reference,
-                                 x_at_baryctr_index,
-                                 y_at_baryctr_index,
-                                 wet_dry_index,
-                                 ze_in_index,
-                                 qx_in_index,
-                                 qy_in_index,
-                                 ze_ex_index,
-                                 qx_ex_index,
-                                 qy_ex_index,
-                                 ze_at_baryctr_index,
-                                 qx_at_baryctr_index,
-                                 qy_at_baryctr_index,
-                                 bath_at_baryctr_index));
+                SWE::BC::Distributed(send_preproc_buffer_reference,
+                                     receive_preproc_buffer_reference,
+                                     send_buffer_reference,
+                                     receive_buffer_reference,
+                                     send_postproc_buffer_reference,
+                                     receive_postproc_buffer_reference,
+                                     x_at_baryctr_index,
+                                     y_at_baryctr_index,
+                                     wet_dry_index,
+                                     ze_in_index,
+                                     qx_in_index,
+                                     qy_in_index,
+                                     ze_ex_index,
+                                     qx_ex_index,
+                                     qy_ex_index,
+                                     ze_at_baryctr_index,
+                                     qx_at_baryctr_index,
+                                     qy_at_baryctr_index,
+                                     bath_at_baryctr_index));
         }
 
         send_preproc_buffer_reference.resize(begin_index_preproc);

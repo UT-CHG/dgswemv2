@@ -55,7 +55,6 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
             this->NBDV.push_back(std::vector<uint>(n_nodes_bdry));
-
             for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBDV[bdry][n];
                 ifs.ignore(1000, '\n');
@@ -69,17 +68,59 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         ifs >> this->NVEL;
         ifs.ignore(1000, '\n');
 
+        this->NBDV.reserve(this->NBOU);
         this->IBTYPE.resize(this->NBOU);
-        this->NBVV.reserve(this->NBOU);
         uint n_nodes_bdry;
         for (uint bdry = 0; bdry < this->NBOU; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs >> this->IBTYPE[bdry];
             ifs.ignore(1000, '\n');
 
-            this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+            if (this->IBTYPE[bdry] % 10 == 0 ||  // land
+                this->IBTYPE[bdry] % 10 == 1 ||  // island
+                this->IBTYPE[bdry] % 10 == 2) {  // flow
+                // *** //
+                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                for (uint n = 0; n < n_nodes_bdry; ++n) {
+                    ifs >> this->NBVV[bdry][n];
+                    ifs.ignore(1000, '\n');
+                }
+            } else if (this->IBTYPE[bdry] % 10 == 4) {  // internal barrier
+                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->IBCONN[bdry]    = std::vector<uint>(n_nodes_bdry);
+                this->BARINTH[bdry]   = std::vector<double>(n_nodes_bdry);
+                this->BARINCFSB[bdry] = std::vector<double>(n_nodes_bdry);
+                this->BARINCFSP[bdry] = std::vector<double>(n_nodes_bdry);
+                for (uint n = 0; n < n_nodes_bdry; ++n) {
+                    ifs >> this->NBVV[bdry][n];
+                    ifs >> this->IBCONN[bdry][n];
+                    ifs >> this->BARINTH[bdry][n];
+                    ifs >> this->BARINCFSB[bdry][n];
+                    ifs >> this->BARINCFSP[bdry][n];
+                    ifs.ignore(1000, '\n');
+                }
+            } else {
+                std::string err_msg =
+                    "Fatal Error: Undefined boundary type in ADCIRC mesh " + std::to_string(this->IBTYPE[bdry]) + " \n";
+                throw std::logic_error(err_msg);
+            }
+        }
+    }
+
+    {  // process generic boundaries
+        ifs >> this->NGEN;
+        ifs.ignore(1000, '\n');
+        ifs >> this->NNGN;
+        ifs.ignore(1000, '\n');
+
+        this->NBGN.reserve(this->NGEN);
+        uint n_nodes_bdry;
+        for (uint bdry = 0; bdry < this->NGEN; ++bdry) {
+            ifs >> n_nodes_bdry;
+            ifs.ignore(1000, '\n');
+            this->NBGN.push_back(std::vector<uint>(n_nodes_bdry));
             for (uint n = 0; n < n_nodes_bdry; ++n) {
-                ifs >> this->NBVV[bdry][n];
+                ifs >> this->NBGN[bdry][n];
                 ifs.ignore(1000, '\n');
             }
         }
@@ -114,7 +155,7 @@ void AdcircFormat::write_to(const char* out_name) const {
     file << this->NOPE << " = Number of open boundaries\n";
     file << this->NETA << " = Total number of open boundary nodes\n";
     for (uint n = 0; n < this->NOPE; ++n) {
-        file << this->NBDV[n].size() << " = Number of nodes for open boundry " << n + 1 << " \n";
+        file << this->NBDV[n].size() << " = Number of nodes for open boundary " << n + 1 << " \n";
         for (uint i = 0; i < this->NBDV[n].size(); ++i) {
             file << this->NBDV[n][i] << "\n";
         }
@@ -122,12 +163,27 @@ void AdcircFormat::write_to(const char* out_name) const {
 
     file << this->NBOU << " = Number of land Boundaries\n";
     file << this->NVEL << " = Total number of open boundary nodes\n";
-
     for (uint n = 0; n < this->NBOU; ++n) {
         file << this->NBVV[n].size() << " " << this->IBTYPE[n] << " = Number of nodes for land boundary " << n + 1
              << '\n';
         for (uint i = 0; i < this->NBVV[n].size(); ++i) {
-            file << this->NBVV[n][i] << '\n';
+            if (this->IBTYPE[n] % 10 == 0 ||  // land
+                this->IBTYPE[n] % 10 == 1 ||  // island
+                this->IBTYPE[n] % 10 == 2) {  // flow
+                file << this->NBVV[n][i] << '\n';
+            } else if (this->IBTYPE[n] % 10 == 4) {  // internal barrier
+                file << this->NBVV[n][i] << ' ' << this->IBCONN.at(n)[i] << ' ' << this->BARINTH.at(n)[i] << ' '
+                     << this->BARINCFSB.at(n)[i] << ' ' << this->BARINCFSP.at(n)[i] << '\n';
+            }
+        }
+    }
+
+    file << this->NGEN << " = Number of generic boundaries\n";
+    file << this->NNGN << " = Total number of generic boundary nodes\n";
+    for (uint n = 0; n < this->NGEN; ++n) {
+        file << this->NBGN[n].size() << " = Number of nodes for generic boundary " << n + 1 << " \n";
+        for (uint i = 0; i < this->NBGN[n].size(); ++i) {
+            file << this->NBGN[n][i] << "\n";
         }
     }
 }
@@ -139,27 +195,27 @@ SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair)
         }
     }
 
-    uint segment_id = 0;
-    for (auto& land_bdry : this->NBVV) {
-        if (has_edge(land_bdry.cbegin(), land_bdry.cend(), node_pair)) {
-            switch (this->IBTYPE[segment_id]) {
-                case 0:
-                case 10:
-                case 20:
-                    return SWE::BoundaryConditions::land;
-                case 2:
-                case 12:
-                case 22:
-                    return SWE::BoundaryConditions::flow;
-                default:
-                    throw std::logic_error(
-                        "Error Boundary type unknown, unable to assign BOUNDARY_TYPE to given "
-                        "node_pair (" +
-                        std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+    for (uint segment_id = 0; segment_id < this->NBOU; segment_id++) {
+        if (this->IBTYPE[segment_id] % 10 == 0) {
+            if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
+                return SWE::BoundaryConditions::land;
+            }
+        } else if (this->IBTYPE[segment_id] % 10 == 2) {
+            if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
+                return SWE::BoundaryConditions::flow;
+            }
+        } else if (this->IBTYPE[segment_id] % 10 == 4) {
+            if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair) ||
+                has_edge(this->IBCONN.at(segment_id).cbegin(), this->IBCONN.at(segment_id).cend(), node_pair)) {
+                return SWE::BoundaryConditions::internal_barrier;
             }
         }
+    }
 
-        segment_id++;
+    for (auto& generic_bdry : this->NBGN) {
+        if (has_edge(generic_bdry.cbegin(), generic_bdry.cend(), node_pair)) {
+            return SWE::BoundaryConditions::land;
+        }
     }
 
     throw std::logic_error(

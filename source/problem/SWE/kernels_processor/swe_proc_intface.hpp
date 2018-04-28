@@ -29,6 +29,9 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
         intface.ComputeUgpEX(state_ex.qx, boundary_ex.qx_at_gp);
         intface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
 
+        // perform specialization of interface unless empty specialization, e.g. do weir model
+        intface.specialization.Specialize();
+
         // assemble numerical fluxes
         uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
         uint gp_ex = 0;
@@ -69,8 +72,8 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                 std::fill(boundary_in.qy_numerical_flux_at_gp.begin(), boundary_in.qy_numerical_flux_at_gp.end(), 0.0);
 
                 // Reflective Boundary on EX element side
-                SWE::Land land_boundary;
-                double    ze_in, qx_in, qy_in;
+                SWE::BC::Land land_boundary;
+                double        ze_in, qx_in, qy_in;
 
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     land_boundary.GetEX(stepper,
@@ -130,8 +133,8 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
                 std::fill(boundary_ex.qy_numerical_flux_at_gp.begin(), boundary_ex.qy_numerical_flux_at_gp.end(), 0.0);
 
                 // Reflective Boundary on IN element side
-                SWE::Land land_boundary;
-                double    ze_ex, qx_ex, qy_ex;
+                SWE::BC::Land land_boundary;
+                double        ze_ex, qx_ex, qy_ex;
 
                 for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
                     land_boundary.GetEX(stepper,

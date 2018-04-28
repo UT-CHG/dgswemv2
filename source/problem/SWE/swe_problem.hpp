@@ -6,6 +6,7 @@
 
 #include "swe_definitions.hpp"
 #include "boundary_conditions/swe_boundary_conditions.hpp"
+#include "interface_specializations/swe_interface_specializations.hpp"
 #include "data_structure/swe_data.hpp"
 #include "problem_input/swe_inputs.hpp"
 #include "problem_parser/swe_parser.hpp"
@@ -19,7 +20,9 @@ struct Problem {
 
     typedef SWE::Data ProblemDataType;
 
-    typedef Geometry::MeshType<SWE::Data, SWE::Distributed, SWE::Land, SWE::Tidal, SWE::Flow> ProblemMeshType;
+    typedef Geometry::
+        MeshType<SWE::Data, SWE::BC::Distributed, SWE::IS::Empty, SWE::BC::Land, SWE::BC::Tidal, SWE::BC::Flow>
+            ProblemMeshType;
 
     typedef SWE::Parser ProblemParserType;
 
@@ -29,6 +32,11 @@ struct Problem {
     static void preprocess_mesh_data(InputParameters<ProblemInputType>& input);
 
     template <typename RawBoundaryType>
+    static void create_interfaces_kernel(ProblemMeshType&                                  mesh,
+                                         std::map<std::pair<uint, uint>, RawBoundaryType>& pre_interfaces,
+                                         Writer<SWE::Problem>&                             writer);
+
+    template <typename RawBoundaryType>
     static void create_boundaries_kernel(ProblemMeshType&                               mesh,
                                          std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
                                          Writer<SWE::Problem>&                          writer);
@@ -36,15 +44,15 @@ struct Problem {
     template <typename RawBoundaryType>
     static void create_distributed_boundaries_kernel(ProblemMeshType&,
                                                      std::tuple<>&,
-                                                     std::map<uint, std::map<uint, RawBoundaryType>>&,
+                                                     std::map<std::pair<uint, uint>, RawBoundaryType>&,
                                                      Writer<SWE::Problem>&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries_kernel(
-        ProblemMeshType&                                 mesh,
-        Communicator&                                    communicator,
-        std::map<uint, std::map<uint, RawBoundaryType>>& pre_distributed_boundaries,
-        Writer<SWE::Problem>&                            writer);
+        ProblemMeshType&                                  mesh,
+        Communicator&                                     communicator,
+        std::map<std::pair<uint, uint>, RawBoundaryType>& pre_distributed_boundaries,
+        Writer<SWE::Problem>&                             writer);
 
     static void initialize_data_kernel(ProblemMeshType&        mesh,
                                        const MeshMetaData&     mesh_data,

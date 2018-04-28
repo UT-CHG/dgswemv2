@@ -2,19 +2,17 @@
 #define SWE_INPUTS_HPP
 
 #include "../../../general_definitions.hpp"
+#include "../swe_definitions.hpp"
 #include <yaml-cpp/yaml.h>
 
 namespace SWE {
-enum class SphericalProjectionType { None, Enable };
-
+// Problem specific preprocessing information containers
 struct SphericalProjection {
     SphericalProjectionType type        = SphericalProjectionType::None;
     double                  longitude_o = 0.0;
     double                  latitude_o  = 0.0;
     double                  R           = 6378200.0;
 };
-
-enum class InitialConditionsType { Default, Constant, Function };
 
 struct InitialConditions {
     InitialConditionsType type       = InitialConditionsType::Default;
@@ -23,21 +21,16 @@ struct InitialConditions {
     double                qy_initial = 0.;
 };
 
-enum class FunctionSourceType { None, Enable };
-
+// Problem specific forcing terms information containers
 struct FunctionSource {
     FunctionSourceType type = FunctionSourceType::None;
 };
-
-enum class BottomFrictionType { None, Chezy, Manning };
 
 struct BottomFriction {
     BottomFrictionType type        = BottomFrictionType::None;
     double             coefficient = 0.0;
     std::string        manning_data_file;
 };
-
-enum class MeteoForcingType { None, Enable };
 
 struct MeteoForcing {
     MeteoForcingType type = MeteoForcingType::None;
@@ -47,26 +40,19 @@ struct MeteoForcing {
     double           frequency;
 };
 
-enum class TidalPotentialType { None, Test };
-
 struct TidalPotential {
     TidalPotentialType type = TidalPotentialType::None;
 };
-
-enum class CoriolisType { None, Enable };
 
 struct Coriolis {
     CoriolisType type = CoriolisType::None;
 };
 
-enum class WettingDryingType { None, Enable };
-
+// Problem specific postprocessing information containers
 struct WettingDrying {
     WettingDryingType type = WettingDryingType::None;
     double            h_o  = 0.1;
 };
-
-enum class SlopeLimitingType { None, CockburnShu };
 
 struct SlopeLimiting {
     SlopeLimitingType type = SlopeLimitingType::None;
@@ -75,19 +61,23 @@ struct SlopeLimiting {
     double            nu = 1.5;
 };
 
+// Problem specific boundary condition information containers
+struct InternalBarrier {
+    std::vector<uint>   front_nodes;
+    std::vector<uint>   back_nodes;
+    std::vector<double> barrier_height;
+    std::vector<double> C_subcritical;
+    std::vector<double> C_supercritical;
+};
+
+// Problem specific inputs
 struct Inputs {
-    Inputs() = default;
-    Inputs(YAML::Node& swe_node);
-
-    YAML::Node as_yaml_node();
-
     double g         = 9.81;
     double rho_air   = 1.2250;
     double rho_water = 1000.0;
 
     SphericalProjection spherical_projection;
-
-    InitialConditions initial_conditions;
+    InitialConditions   initial_conditions;
 
     FunctionSource function_source;
     BottomFriction bottom_friction;
@@ -97,6 +87,13 @@ struct Inputs {
 
     WettingDrying wet_dry;
     SlopeLimiting slope_limit;
+
+    std::vector<InternalBarrier> internal_barriers;
+
+    Inputs() = default;
+    Inputs(YAML::Node& swe_node);
+
+    YAML::Node as_yaml_node();
 };
 }
 

@@ -10,7 +10,7 @@ void Problem::create_boundaries_kernel(ProblemMeshType&                         
     uint n_bound_old_tidal = 0;
     uint n_bound_old_flow  = 0;
 
-    using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::Land, SWE::Tidal, SWE::Flow>;
+    using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::BC::Land, SWE::BC::Tidal, SWE::BC::Flow>;
 
     for (auto it = pre_boundaries.begin(); it != pre_boundaries.end(); it++) {
         switch (it->first) {

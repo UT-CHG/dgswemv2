@@ -61,30 +61,18 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
                                            Writer<ProblemType>&                   writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
 
-    using InterfaceType =
-        typename std::tuple_element<0, Geometry::InterfaceTypeTuple<typename ProblemType::ProblemDataType>>::type;
+    std::map<std::pair<uint, uint>, RawBoundaryType>                  pre_interfaces;
+    std::map<uchar, std::vector<RawBoundaryType>>                     pre_boundaries;
+    std::map<std::pair<uint, uint>, RawBoundaryType>                  pre_distributed_boundaries;
+    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> pre_specialized_interfaces;
 
-    std::map<uint, std::map<uint, RawBoundaryType>> pre_interfaces;
-    std::map<uchar, std::vector<RawBoundaryType>>   pre_boundaries;
-    std::map<uint, std::map<uint, RawBoundaryType>> pre_distributed_boundaries;
+    mesh.CallForEachElement(
+        [&pre_interfaces, &pre_boundaries, &pre_distributed_boundaries, &pre_specialized_interfaces](auto& elem) {
+            elem.CreateRawBoundaries(
+                pre_interfaces, pre_boundaries, pre_distributed_boundaries, pre_specialized_interfaces);
+        });
 
-    mesh.CallForEachElement([&pre_interfaces, &pre_boundaries, &pre_distributed_boundaries](auto& elem) {
-        elem.CreateRawBoundaries(pre_interfaces, pre_boundaries, pre_distributed_boundaries);
-    });
-
-    for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
-        for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-            mesh.template CreateInterface<InterfaceType>(itt->second, pre_interfaces.at(itt->first).at(it->first));
-
-            pre_interfaces.at(itt->first).erase(it->first);
-            it->second.erase(itt);
-        }
-    }
-
-    if (writer.WritingLog()) {
-        writer.GetLogFile() << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
-    }
-
+    ProblemType::create_interfaces_kernel(mesh, pre_interfaces, writer);
     ProblemType::create_boundaries_kernel(mesh, pre_boundaries, writer);
     ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, writer);
 }

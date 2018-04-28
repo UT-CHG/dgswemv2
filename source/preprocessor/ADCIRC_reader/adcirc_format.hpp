@@ -22,8 +22,17 @@ struct AdcircFormat {
     uint NVEL;
 
     std::vector<uint>              IBTYPE;  // boundary type
-    std::vector<std::vector<uint>> NBVV;    // node numbers on normal flow boundary
-                                            // segment k
+    std::vector<std::vector<uint>> NBVV;    // node numbers on normal flow boundary segment k
+
+    std::map<uint, std::vector<uint>>   IBCONN;     // node numbers of back nodes for internal barrier segment k
+    std::map<uint, std::vector<double>> BARINTH;    // for internal barrier segment k
+    std::map<uint, std::vector<double>> BARINCFSB;  // for internal barrier segment k
+    std::map<uint, std::vector<double>> BARINCFSP;  // for internal barrier segment k
+
+    uint NGEN;  // number of generic boundaries
+    uint NNGN;  // total number of nodes for generic boundaries
+
+    std::vector<std::vector<uint>> NBGN;  // node numbers for a segment of generic boundary
 
     AdcircFormat(const std::string& in_name);
 

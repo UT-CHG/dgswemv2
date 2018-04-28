@@ -5,6 +5,7 @@
 #include "../../../simulation/stepper.hpp"
 
 namespace SWE {
+namespace BC {
 class Distributed {
   private:
     std::vector<double>& send_preproc_buffer;
@@ -130,6 +131,7 @@ class Distributed {
         bath_at_baryctr_ex = this->receive_postproc_buffer[bath_at_baryctr_index];
     }
 };
+}
 }
 
 #endif

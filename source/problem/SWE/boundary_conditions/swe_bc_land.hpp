@@ -5,6 +5,7 @@
 #include "../../../simulation/stepper.hpp"
 
 namespace SWE {
+namespace BC {
 class Land {
   public:
     void GetEX(const Stepper&             stepper,
@@ -34,6 +35,7 @@ class Land {
         qy_ex = qn_ex * n_y + qt_ex * t_y;
     }
 };
+}
 }
 
 #endif

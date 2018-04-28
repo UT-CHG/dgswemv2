@@ -81,7 +81,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
         } else if (net_volume_flux_in < 0) {
             if (!wet_ex) {  // water flowing from dry EX element
                 // Reflective Boundary on IN element side
-                SWE::Land land_boundary;
+                SWE::BC::Land land_boundary;
 
                 for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
                     land_boundary.GetEX(stepper,

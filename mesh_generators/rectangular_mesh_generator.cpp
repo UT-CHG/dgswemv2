@@ -199,6 +199,9 @@ int main(int argc, const char* argv[]) {
             i++;
         }
     }
+
+    file << "0 = Number of generic boundaries\n";
+    file << "0 = Total number of generic boundary nodes\n";
 }
 
 MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) {
