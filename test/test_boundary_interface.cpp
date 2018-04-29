@@ -13,7 +13,7 @@ int main() {
 
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::Data>;
     using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::BC::Land>;
-    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Regular>;
+    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Interface>;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);

@@ -6,6 +6,7 @@
 
 #include "swe_definitions.hpp"
 #include "boundary_conditions/swe_boundary_conditions.hpp"
+#include "dist_boundary_conditions/swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/swe_interface_specializations.hpp"
 #include "data_structure/swe_data.hpp"
 #include "problem_input/swe_inputs.hpp"
@@ -21,9 +22,9 @@ struct Problem {
     typedef SWE::Data ProblemDataType;
 
     typedef Geometry::MeshType<SWE::Data,
-                               std::tuple<SWE::IS::Regular, SWE::IS::Levee>,
+                               std::tuple<SWE::IS::Interface, SWE::IS::Levee>,
                                std::tuple<SWE::BC::Land, SWE::BC::Tidal, SWE::BC::Flow>,
-                               std::tuple<SWE::BC::Distributed>>::Type ProblemMeshType;
+                               std::tuple<SWE::DBC::Distributed>>::Type ProblemMeshType;
 
     typedef SWE::Parser ProblemParserType;
 

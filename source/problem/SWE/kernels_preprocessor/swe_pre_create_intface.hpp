@@ -9,19 +9,19 @@ void Problem::create_interfaces_kernel(
     Writer<SWE::Problem>& writer) {
     // *** //
 
-    using InterfaceTypes = Geometry::InterfaceTypeTuple<SWE::Data, SWE::IS::Regular, SWE::IS::Levee>;
+    using InterfaceTypes = Geometry::InterfaceTypeTuple<SWE::Data, SWE::IS::Interface, SWE::IS::Levee>;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         switch (it->first) {
             case SWE::BoundaryConditions::internal:
-                using InterfaceTypeRegular = std::tuple_element<0, InterfaceTypes>::type;
+                using InterfaceTypeInterface = std::tuple_element<0, InterfaceTypes>::type;
 
                 for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
                     std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{itt->first.second, itt->first.first};
 
                     if (it->second.find(key_pre_int_ex) != it->second.end()) {
-                        mesh.template CreateInterface<InterfaceTypeRegular>(itt->second,
-                                                                            it->second.find(key_pre_int_ex)->second);
+                        mesh.template CreateInterface<InterfaceTypeInterface>(itt->second,
+                                                                              it->second.find(key_pre_int_ex)->second);
                     }
 
                     it->second.erase(itt);

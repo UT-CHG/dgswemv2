@@ -1,5 +1,5 @@
-#ifndef SWE_INTFACE_SPEC_REGULAR_HPP
-#define SWE_INTFACE_SPEC_REGULAR_HPP
+#ifndef SWE_IS_INTERFACE_HPP
+#define SWE_IS_INTERFACE_HPP
 
 #include "../../../general_definitions.hpp"
 #include "../../../simulation/stepper.hpp"
@@ -7,14 +7,14 @@
 
 namespace SWE {
 namespace IS {
-class Regular {
+class Interface {
   public:
     template <typename InterfaceType>
     void ComputeFlux(const Stepper& stepper, InterfaceType& intface);
 };
 
 template <typename InterfaceType>
-void Regular::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
+void Interface::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 

@@ -1,12 +1,12 @@
-#ifndef SWE_BC_DISTRIBUTED_HPP
-#define SWE_BC_DISTRIBUTED_HPP
+#ifndef SWE_DBC_DISTRIBUTED_HPP
+#define SWE_DBC_DISTRIBUTED_HPP
 
 #include "../../../general_definitions.hpp"
 #include "../../../simulation/stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 namespace SWE {
-namespace BC {
+namespace DBC {
 class Distributed {
   private:
     std::vector<double>& send_preproc_buffer;

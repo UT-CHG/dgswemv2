@@ -1,5 +1,5 @@
-#ifndef SWE_INTFACE_SPEC_LEVEE_HPP
-#define SWE_INTFACE_SPEC_LEVEE_HPP
+#ifndef SWE_IS_LEVEE_HPP
+#define SWE_IS_LEVEE_HPP
 
 #include "../../../general_definitions.hpp"
 #include "../../../simulation/stepper.hpp"
@@ -120,6 +120,7 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
             qy_in_ex = qy_ex_ex;
         }
 
+        // zero g fluxes needed
         LLF_flux(Global::g,
                  boundary_in.ze_at_gp[gp],
                  ze_in_ex,
@@ -134,6 +135,7 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
                  boundary_in.qx_numerical_flux_at_gp[gp],
                  boundary_in.qy_numerical_flux_at_gp[gp]);
 
+        // zero g fluxes needed
         LLF_flux(Global::g,
                  boundary_ex.ze_at_gp[gp_ex],
                  ze_ex_ex,

@@ -17,7 +17,7 @@ void Problem::create_distributed_boundaries_kernel(
     Writer<SWE::Problem>& writer) {
     // *** //
     using DistributedBoundaryType =
-        std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::BC::Distributed>>::type;
+        std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::DBC::Distributed>>::type;
 
     typename DistributedBoundaryType::BoundaryIntegrationType boundary_integration;
 
@@ -80,25 +80,25 @@ void Problem::create_distributed_boundaries_kernel(
 
             mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
                 pre_dboundary,
-                SWE::BC::Distributed(send_preproc_buffer_reference,
-                                     receive_preproc_buffer_reference,
-                                     send_buffer_reference,
-                                     receive_buffer_reference,
-                                     send_postproc_buffer_reference,
-                                     receive_postproc_buffer_reference,
-                                     x_at_baryctr_index,
-                                     y_at_baryctr_index,
-                                     wet_dry_index,
-                                     ze_in_index,
-                                     qx_in_index,
-                                     qy_in_index,
-                                     ze_ex_index,
-                                     qx_ex_index,
-                                     qy_ex_index,
-                                     ze_at_baryctr_index,
-                                     qx_at_baryctr_index,
-                                     qy_at_baryctr_index,
-                                     bath_at_baryctr_index));
+                SWE::DBC::Distributed(send_preproc_buffer_reference,
+                                      receive_preproc_buffer_reference,
+                                      send_buffer_reference,
+                                      receive_buffer_reference,
+                                      send_postproc_buffer_reference,
+                                      receive_postproc_buffer_reference,
+                                      x_at_baryctr_index,
+                                      y_at_baryctr_index,
+                                      wet_dry_index,
+                                      ze_in_index,
+                                      qx_in_index,
+                                      qy_in_index,
+                                      ze_ex_index,
+                                      qx_ex_index,
+                                      qy_ex_index,
+                                      ze_at_baryctr_index,
+                                      qx_at_baryctr_index,
+                                      qy_at_baryctr_index,
+                                      bath_at_baryctr_index));
 
             raw_boundaries.at(SWE::BoundaryConditions::distributed)
                 .erase(std::pair<uint, uint>{element_id_in, bound_id_in});
