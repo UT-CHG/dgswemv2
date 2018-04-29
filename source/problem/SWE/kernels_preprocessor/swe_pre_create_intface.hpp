@@ -21,7 +21,7 @@ void Problem::create_interfaces_kernel(
 
                     if (it->second.find(key_pre_int_ex) != it->second.end()) {
                         mesh.template CreateInterface<InterfaceTypeRegular>(itt->second,
-                                                                     it->second.find(key_pre_int_ex)->second);
+                                                                            it->second.find(key_pre_int_ex)->second);
                     }
 
                     it->second.erase(itt);
@@ -36,7 +36,7 @@ void Problem::create_interfaces_kernel(
 
                     if (it->second.find(key_pre_int_ex) != it->second.end()) {
                         mesh.template CreateInterface<InterfaceTypeLevee>(itt->second,
-                                                                     it->second.find(key_pre_int_ex)->second);
+                                                                          it->second.find(key_pre_int_ex)->second);
                     }
 
                     it->second.erase(itt);
