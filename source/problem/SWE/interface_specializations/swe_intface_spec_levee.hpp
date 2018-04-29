@@ -115,7 +115,7 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
             ze_ex_ex = boundary_ex.ze_at_gp[gp_ex];
             qx_ex_ex = qn_ex * n_x + qt_ex * t_x;
             qy_ex_ex = qn_ex * n_y + qt_ex * t_y;
-            
+
             ze_in_ex = boundary_in.ze_at_gp[gp];
             qx_in_ex = qx_ex_ex;
             qy_in_ex = qy_ex_ex;
