@@ -15,12 +15,12 @@ struct Source {
 
     double coriolis_f = 0.0;
 
-    bool   manning        = false;
+    bool manning          = false;
     double g_manning_n_sq = 0.0;
 
-    std::vector<std::vector<double>*>  parsed_meteo_data;
+    std::vector<std::vector<double>*> parsed_meteo_data;
     std::array<std::vector<double>, 2> tau_s;
-    std::vector<double>                p_atm;
+    std::vector<double> p_atm;
 
     std::vector<double> tidal_pot;
     std::vector<double> manning_n;

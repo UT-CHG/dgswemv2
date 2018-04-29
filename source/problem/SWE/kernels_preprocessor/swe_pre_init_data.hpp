@@ -2,8 +2,8 @@
 #define SWE_PRE_INIT_DATA_HPP
 
 namespace SWE {
-void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
-                                     const MeshMetaData&     mesh_data,
+void Problem::initialize_data_kernel(ProblemMeshType& mesh,
+                                     const MeshMetaData& mesh_data,
                                      const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
 
@@ -139,8 +139,8 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
         std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
 
-        uint                   node_ID;
-        double                 manning_n;
+        uint node_ID;
+        double manning_n;
         std::map<uint, double> node_manning_n;
 
         std::string line;
@@ -278,7 +278,7 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
     mesh.CallForEachElement([](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        Array2D<double>     A = Array2D<double>(2, std::vector<double>(2));
+        Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
         std::vector<double> b(2);
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
@@ -310,8 +310,8 @@ void Problem::initialize_data_kernel(ProblemMeshType&        mesh,
     });
 }
 
-void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType&        mesh,
-                                                       const MeshMetaData&     mesh_data,
+void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
+                                                       const MeshMetaData& mesh_data,
                                                        const ProblemInputType& problem_specific_input) {
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
@@ -344,8 +344,8 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType&        m
     });
 }
 
-void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType&        mesh,
-                                                           const MeshMetaData&     mesh_data,
+void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh,
+                                                           const MeshMetaData& mesh_data,
                                                            const ProblemInputType& problem_specific_input) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
@@ -357,7 +357,7 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType&     
     mesh.CallForEachElement([](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        Array2D<double>     A = Array2D<double>(2, std::vector<double>(2));
+        Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
         std::vector<double> b(2);
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {

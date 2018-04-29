@@ -56,7 +56,7 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const Stepper& ste
 }
 
 template <typename DistributedBoundaryType>
-void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper&           stepper,
+void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper,
                                                                  DistributedBoundaryType& dbound) {
     auto& sl_state = dbound.data.slope_limit_state;
 

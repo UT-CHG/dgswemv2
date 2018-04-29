@@ -1544,7 +1544,7 @@ int main() {
     auto is_normal_or_zero = [](double a) -> bool { return (std::isnormal(a) || (a == 0)); };
 
     Basis::Dubiner_2D basis;
-    bool              error_found = false;
+    bool error_found = false;
 
     Array2D<double> my_evals  = basis.GetPhi(10, points);
     Array3D<double> my_Devals = basis.GetDPhi(10, points);

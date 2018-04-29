@@ -4,9 +4,9 @@
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(
-    ProblemMeshType&                                                   mesh,
+    ProblemMeshType& mesh,
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    Writer<SWE::Problem>&                                              writer) {
+    Writer<SWE::Problem>& writer) {
     // *** //
     uint n_bound_old_land  = 0;
     uint n_bound_old_tidal = 0;

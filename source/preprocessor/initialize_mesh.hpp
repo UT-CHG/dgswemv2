@@ -6,20 +6,20 @@
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
-                              const MeshMetaData&                    mesh_data,
-                              Writer<ProblemType>&                   writer);
+                              const MeshMetaData& mesh_data,
+                              Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
-                                           Communicator&                          communicator,
-                                           Writer<ProblemType>&                   writer);
+                                           Communicator& communicator,
+                                           Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
-void initialize_mesh(typename ProblemType::ProblemMeshType&        mesh,
-                     const MeshMetaData&                           mesh_data,
-                     Communicator&                                 communicator,
+void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
+                     const MeshMetaData& mesh_data,
+                     Communicator& communicator,
                      const typename ProblemType::ProblemInputType& problem_specific_input,
-                     Writer<ProblemType>&                          writer) {
+                     Writer<ProblemType>& writer) {
     initialize_mesh_elements<ProblemType>(mesh, mesh_data, writer);
 
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator, writer);
@@ -27,8 +27,8 @@ void initialize_mesh(typename ProblemType::ProblemMeshType&        mesh,
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
-                              const MeshMetaData&                    mesh_data,
-                              Writer<ProblemType>&                   writer) {
+                              const MeshMetaData& mesh_data,
+                              Writer<ProblemType>& writer) {
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
@@ -57,8 +57,8 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
-                                           Communicator&                          communicator,
-                                           Writer<ProblemType>&                   writer) {
+                                           Communicator& communicator,
+                                           Writer<ProblemType>& writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundaries;

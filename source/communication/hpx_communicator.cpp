@@ -3,8 +3,8 @@
 HPX_REGISTER_CHANNEL(array_double);
 
 HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
-                                 const uint         locality_id,
-                                 const uint         submesh_id) {
+                                 const uint locality_id,
+                                 const uint submesh_id) {
     std::ifstream file(neighborhood_data_file);
 
     if (!file) {

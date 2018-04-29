@@ -33,8 +33,7 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
 
     SWE::BC::Land land_boundary;
 
-    double h_above_levee_in;
-    double h_above_levee_ex;
+    double h_above_levee_in, h_above_levee_ex;
     double ze_in_ex, qx_in_ex, qy_in_ex, ze_ex_ex, qx_ex_ex, qy_ex_ex;
 
     uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);

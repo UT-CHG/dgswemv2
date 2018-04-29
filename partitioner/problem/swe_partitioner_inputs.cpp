@@ -11,7 +11,7 @@ PartitionerInputs::PartitionerInputs(const MeshMetaData& mesh, Inputs inputs) {
         bool is_wet{true};
 
         for (uint i = 0; i < elt.second.node_ID.size(); ++i) {
-            uint            node_ID     = elt.second.node_ID[i];
+            uint node_ID                = elt.second.node_ID[i];
             const Point<3>& coordinates = mesh.nodes.at(node_ID).coordinates;
 
             double h_at_vrtx;
@@ -35,7 +35,7 @@ PartitionerInputs::PartitionerInputs(const MeshMetaData& mesh, Inputs inputs) {
 
     {
         uint64_t n_elem = weights.size();
-        double   n_wet{0};
+        double n_wet{0};
         for (const auto& id_w : weights) {
             n_wet += id_w.second[1];
         }

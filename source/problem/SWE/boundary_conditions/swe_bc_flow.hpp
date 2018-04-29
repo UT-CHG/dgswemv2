@@ -9,38 +9,38 @@ namespace SWE {
 namespace BC {
 class Flow {
   public:
-    void ComputeFlux(const Stepper&             stepper,
-                     const Array2D<double>&     surface_normal,
+    void ComputeFlux(const Stepper& stepper,
+                     const Array2D<double>& surface_normal,
                      const std::vector<double>& sp_in,
                      const std::vector<double>& bath_in,
                      const std::vector<double>& ze_in,
                      const std::vector<double>& qx_in,
                      const std::vector<double>& qy_in,
-                     std::vector<double>&       ze_numerical_flux,
-                     std::vector<double>&       qx_numerical_flux,
-                     std::vector<double>&       qy_numerical_flux);
+                     std::vector<double>& ze_numerical_flux,
+                     std::vector<double>& qx_numerical_flux,
+                     std::vector<double>& qy_numerical_flux);
 
-    void GetEX(const Stepper&             stepper,
-               const uint                 gp,
-               const Array2D<double>&     surface_normal,
+    void GetEX(const Stepper& stepper,
+               const uint gp,
+               const Array2D<double>& surface_normal,
                const std::vector<double>& ze_in,
                const std::vector<double>& qx_in,
                const std::vector<double>& qy_in,
-               double&                    ze_ex,
-               double&                    qx_ex,
-               double&                    qy_ex);
+               double& ze_ex,
+               double& qx_ex,
+               double& qy_ex);
 };
 
-void Flow::ComputeFlux(const Stepper&             stepper,
-                       const Array2D<double>&     surface_normal,
+void Flow::ComputeFlux(const Stepper& stepper,
+                       const Array2D<double>& surface_normal,
                        const std::vector<double>& sp_in,
                        const std::vector<double>& bath_in,
                        const std::vector<double>& ze_in,
                        const std::vector<double>& qx_in,
                        const std::vector<double>& qy_in,
-                       std::vector<double>&       ze_numerical_flux,
-                       std::vector<double>&       qx_numerical_flux,
-                       std::vector<double>&       qy_numerical_flux) {
+                       std::vector<double>& ze_numerical_flux,
+                       std::vector<double>& qx_numerical_flux,
+                       std::vector<double>& qy_numerical_flux) {
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < ze_in.size(); ++gp) {
         this->GetEX(stepper, gp, surface_normal, ze_in, qx_in, qy_in, ze_ex, qx_ex, qy_ex);
@@ -61,15 +61,15 @@ void Flow::ComputeFlux(const Stepper&             stepper,
     }
 }
 
-void Flow::GetEX(const Stepper&             stepper,
-                 const uint                 gp,
-                 const Array2D<double>&     surface_normal,
+void Flow::GetEX(const Stepper& stepper,
+                 const uint gp,
+                 const Array2D<double>& surface_normal,
                  const std::vector<double>& ze_in,
                  const std::vector<double>& qx_in,
                  const std::vector<double>& qy_in,
-                 double&                    ze_ex,
-                 double&                    qx_ex,
-                 double&                    qy_ex) {
+                 double& ze_ex,
+                 double& qx_ex,
+                 double& qy_ex) {
     double qn_0   = -0.75;
     double qn_amp = 0;
 

@@ -7,14 +7,14 @@ void Problem::create_distributed_boundaries_kernel(
     ProblemMeshType&,
     std::tuple<>&,
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    Writer<SWE::Problem>&                                              writer) {}
+    Writer<SWE::Problem>& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
-    ProblemMeshType&                                                   mesh,
-    Communicator&                                                      communicator,
+    ProblemMeshType& mesh,
+    Communicator& communicator,
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    Writer<SWE::Problem>&                                              writer) {
+    Writer<SWE::Problem>& writer) {
     // *** //
     using DistributedBoundaryType =
         std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::BC::Distributed>>::type;

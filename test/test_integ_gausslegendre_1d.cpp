@@ -4,8 +4,8 @@
 int main() {
     using Utilities::almost_equal;
 
-    bool                                                  any_error = false;
-    Integration::GaussLegendre_1D                         gausslegendre;
+    bool any_error = false;
+    Integration::GaussLegendre_1D gausslegendre;
     std::pair<std::vector<double>, std::vector<Point<1>>> rule;
 
     for (uint p = 1; p < 20; ++p) {

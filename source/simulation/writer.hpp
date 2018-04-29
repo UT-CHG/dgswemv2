@@ -6,16 +6,16 @@
 template <typename ProblemType>
 class Writer {
   private:
-    bool        writing_output;
+    bool writing_output;
     std::string output_path;
 
-    bool          writing_log_file;
-    bool          verbose_log_file;
-    std::string   log_file_name;
+    bool writing_log_file;
+    bool verbose_log_file;
+    std::string log_file_name;
     std::ofstream log_file;
 
-    bool        writing_vtk_output;
-    uint        vtk_output_frequency;
+    bool writing_vtk_output;
+    uint vtk_output_frequency;
     std::string vtk_file_name_geom;
     std::string vtk_file_name_raw;
 
@@ -26,13 +26,13 @@ class Writer {
     Writer() = default;
     Writer(const InputParameters<typename ProblemType::ProblemInputType>& input);
     Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
-           const uint                                                     locality_id,
-           const uint                                                     submesh_id);
+           const uint locality_id,
+           const uint submesh_id);
 
-    bool           WritingLog() { return this->writing_log_file; }
-    bool           WritingVerboseLog() { return (this->writing_log_file && this->verbose_log_file); }
+    bool WritingLog() { return this->writing_log_file; }
+    bool WritingVerboseLog() { return (this->writing_log_file && this->verbose_log_file); }
     std::ofstream& GetLogFile() { return this->log_file; }
-    void           StartLog();
+    void StartLog();
 
     bool WritingOutput() { return this->writing_output; }
     void WriteFirstStep(const Stepper& stepper, typename ProblemType::ProblemMeshType& mesh);
@@ -61,8 +61,8 @@ Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemI
 
 template <typename ProblemType>
 Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
-                            const uint                                                     locality_id,
-                            const uint                                                     submesh_id)
+                            const uint locality_id,
+                            const uint submesh_id)
     : Writer(input) {
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + input.writer_input.log_file_name + '_' + std::to_string(locality_id) +
@@ -101,7 +101,7 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
         std::ifstream file_geom(this->vtk_file_name_geom, std::ios_base::binary);
         std::ifstream file_data(this->vtk_file_name_raw, std::ios_base::binary);
 
-        uint        step            = stepper.GetStep();
+        uint step                   = stepper.GetStep();
         std::string file_name_merge = this->output_path + mesh.GetMeshName() + "_data_" + std::to_string(step) + ".vtk";
         std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
@@ -117,7 +117,7 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
 template <typename ProblemType>
 void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh) {
     std::vector<Point<3>> points;
-    Array2D<uint>         cells;
+    Array2D<uint> cells;
 
     mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });
 

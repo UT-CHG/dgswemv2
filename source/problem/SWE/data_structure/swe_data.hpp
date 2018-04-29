@@ -13,13 +13,13 @@
 
 namespace SWE {
 struct Data {
-    std::vector<State>    state;
-    Internal              internal;
+    std::vector<State> state;
+    Internal internal;
     std::vector<Boundary> boundary;
 
-    Spherical  spherical_projection;
-    Source     source;
-    WetDry     wet_dry_state;
+    Spherical spherical_projection;
+    Source source;
+    WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 
     void initialize() {
@@ -66,11 +66,11 @@ struct Data {
     void set_ngp_boundary(const uint bound_id, const uint ngp) { this->ngp_boundary[bound_id] = ngp; }
 
   private:
-    uint              nnode;
-    uint              nvrtx;
-    uint              nbound;
-    uint              ndof;
-    uint              ngp_internal;
+    uint nnode;
+    uint nvrtx;
+    uint nbound;
+    uint ndof;
+    uint ngp_internal;
     std::vector<uint> ngp_boundary;
 };
 }

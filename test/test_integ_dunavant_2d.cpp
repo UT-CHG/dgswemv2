@@ -4,8 +4,8 @@
 int main() {
     using Utilities::almost_equal;
 
-    bool                                                  any_error = false;
-    Integration::Dunavant_2D                              dunavant;
+    bool any_error = false;
+    Integration::Dunavant_2D dunavant;
     std::pair<std::vector<double>, std::vector<Point<2>>> rule;
 
     for (uint p = 1; p < 20; ++p) {

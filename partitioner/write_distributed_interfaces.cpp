@@ -5,9 +5,9 @@
 #include <deque>
 #include <unordered_set>
 
-void write_distributed_edge_metadata(const std::string&                            file_name,
-                                     const InputParameters<>&                      input,
-                                     const MeshMetaData&                           mesh_meta,
+void write_distributed_edge_metadata(const std::string& file_name,
+                                     const InputParameters<>& input,
+                                     const MeshMetaData& mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes) {
     std::size_t num_loc = submeshes.size();
 
@@ -44,7 +44,7 @@ void write_distributed_edge_metadata(const std::string&                         
         uint eltB = f.second;
         uint rnkB = elt2partition.at(eltB);
 
-        uint                   face_id_A{DEFAULT_ID};
+        uint face_id_A{DEFAULT_ID};
         const ElementMetaData& eltA_meta = mesh_meta.elements.at(eltA);
         for (uint fid = 0; fid < eltA_meta.neighbor_ID.size(); ++fid) {
             if (eltB == eltA_meta.neighbor_ID[fid]) {
@@ -53,7 +53,7 @@ void write_distributed_edge_metadata(const std::string&                         
         }
         assert(face_id_A != DEFAULT_ID);
 
-        uint                   face_id_B{DEFAULT_ID};
+        uint face_id_B{DEFAULT_ID};
         const ElementMetaData& eltB_meta = mesh_meta.elements.at(eltB);
         for (uint fid = 0; fid < eltB_meta.neighbor_ID.size(); ++fid) {
             if (eltA == eltB_meta.neighbor_ID[fid]) {

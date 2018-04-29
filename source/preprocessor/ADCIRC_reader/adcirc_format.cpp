@@ -16,7 +16,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     ifs.ignore(1000, '\n');
 
     {  // read in node information
-        uint                  node_name;
+        uint node_name;
         std::array<double, 3> node_data;
 
         for (uint i = 0; i < n_nodes; ++i) {
@@ -30,7 +30,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
     }
 
     {  // read in element information
-        uint                element_name;
+        uint element_name;
         std::array<uint, 4> element_data;
 
         for (uint i = 0; i < n_elements; ++i) {
@@ -276,7 +276,7 @@ std::array<uint, 2> AdcircFormat::get_barrier_node_pair(std::array<uint, 2>& nod
 
 bool AdcircFormat::has_edge(std::vector<uint>::const_iterator cbegin,
                             std::vector<uint>::const_iterator cend,
-                            std::array<uint, 2>&              node_pair) const {
+                            std::array<uint, 2>& node_pair) const {
     auto it = std::find(cbegin, cend, node_pair[0]);
 
     if (it != cend) {

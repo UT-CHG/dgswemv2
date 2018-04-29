@@ -5,19 +5,19 @@
 
 namespace SWE {
 // The normal points form the interior side (in) to the exterior side (ex)
-inline void LLF_flux(const double               gravity,
-                     const double               ze_in,
-                     const double               ze_ex,
-                     const double               qx_in,
-                     const double               qx_ex,
-                     const double               qy_in,
-                     const double               qy_ex,
-                     const double               bath,
-                     const double               sp,
+inline void LLF_flux(const double gravity,
+                     const double ze_in,
+                     const double ze_ex,
+                     const double qx_in,
+                     const double qx_ex,
+                     const double qy_in,
+                     const double qy_ex,
+                     const double bath,
+                     const double sp,
                      const std::vector<double>& normal,
-                     double&                    ze_flux,
-                     double&                    qx_flux,
-                     double&                    qy_flux) {
+                     double& ze_flux,
+                     double& qx_flux,
+                     double& qy_flux) {
     double h_in = ze_in + bath;
     double u_in = qx_in / h_in;
     double v_in = qy_in / h_in;

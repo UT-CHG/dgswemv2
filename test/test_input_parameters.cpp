@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
         bool local_error{false};
         try {
             InputParameters<typename SWE::Inputs> input(argv[1]);
-            std::string                           output_file_name = std::string(argv[1]) + ".emitted";
+            std::string output_file_name = std::string(argv[1]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
             input.write_to(output_file_name);
 
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
         bool local_error{false};
         try {
             InputParameters<> input(argv[1]);
-            std::string       output_file_name = std::string(argv[1]) + ".emitted";
+            std::string output_file_name = std::string(argv[1]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
             input.write_to(output_file_name);
 
@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
         bool local_error{false};
         try {
             InputParameters<typename SWE::Inputs> input(argv[4]);
-            std::string                           output_file_name = std::string(argv[4]) + ".emitted";
+            std::string output_file_name = std::string(argv[4]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
             input.write_to(output_file_name);
 

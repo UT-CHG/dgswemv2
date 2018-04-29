@@ -11,10 +11,10 @@ class Parser {
   private:
     bool parsing_input;
 
-    uint                                                meteo_parse_frequency;
-    std::string                                         meteo_data_file;
+    uint meteo_parse_frequency;
+    std::string meteo_data_file;
     std::map<uint, std::map<uint, std::vector<double>>> node_meteo_data_step;
-    std::map<uint, std::vector<double>>                 node_meteo_data_interp;
+    std::map<uint, std::vector<double>> node_meteo_data_interp;
 
   public:
     Parser() = default;

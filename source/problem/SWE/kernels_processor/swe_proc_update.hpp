@@ -4,8 +4,8 @@
 namespace SWE {
 template <typename ElementType>
 void Problem::update_kernel(const Stepper& stepper, ElementType& elt) {
-    const uint   stage = stepper.GetStage();
-    const double dt    = stepper.GetDT();
+    const uint stage = stepper.GetStage();
+    const double dt  = stepper.GetDT();
 
     auto& state      = elt.data.state;
     auto& curr_state = elt.data.state[stage];
@@ -35,8 +35,8 @@ void Problem::update_kernel(const Stepper& stepper, ElementType& elt) {
 
 template <typename ElementType>
 void Problem::swap_states_kernel(const Stepper& stepper, ElementType& elt) {
-    uint  n_stages = stepper.GetNumStages();
-    auto& state    = elt.data.state;
+    uint n_stages = stepper.GetNumStages();
+    auto& state   = elt.data.state;
 
     std::swap(state[0].ze, state[n_stages].ze);
     std::swap(state[0].qx, state[n_stages].qx);

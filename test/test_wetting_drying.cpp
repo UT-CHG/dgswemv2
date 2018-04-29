@@ -26,7 +26,7 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2.};
 
     MasterType master(10);
-    ShapeType  shape(vrtxs);
+    ShapeType shape(vrtxs);
 
     ElementType triangle(0, master, vrtxs, std::vector<uint>(3), std::vector<uint>(3), std::vector<unsigned char>(3));
     triangle.data.initialize();

@@ -135,7 +135,7 @@ Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const st
     return surface_normal;
 }
 
-std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>&   nodal_values,
+std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values,
                                                              const std::vector<Point<2>>& points) {
     std::vector<double> interpolation;
 
@@ -153,7 +153,7 @@ std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<d
     return interpolation;
 }
 
-Array2D<double> StraightTriangle::InterpolateNodalValuesDerivatives(const std::vector<double>&   nodal_values,
+Array2D<double> StraightTriangle::InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
                                                                     const std::vector<Point<2>>& points) {
     Array2D<double> interpolation_derivative;
 

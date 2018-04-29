@@ -15,8 +15,8 @@ struct YamlNodeWrapper {
 };
 
 struct MeshInput {
-    std::string      mesh_format;
-    std::string      mesh_file_name;
+    std::string mesh_format;
+    std::string mesh_file_name;
     CoordinateSystem mesh_coordinate_sys;
 
     MeshMetaData mesh_data;
@@ -34,17 +34,17 @@ struct StepperInput {
 };
 
 struct WriterInput {
-    bool        writing_output{false};
+    bool writing_output{false};
     std::string output_path;
 
-    bool        writing_log_file{false};
-    bool        verbose_log_file{false};
+    bool writing_log_file{false};
+    bool verbose_log_file{false};
     std::string log_file_name;
 
-    bool   writing_vtk_output{false};
+    bool writing_vtk_output{false};
     double vtk_output_frequency{std::numeric_limits<double>::max()};
 
-    bool   writing_modal_output{false};
+    bool writing_modal_output{false};
     double modal_output_frequency{std::numeric_limits<double>::max()};
 };
 
@@ -52,10 +52,10 @@ template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
     uint polynomial_order;
 
-    MeshInput    mesh_input;
+    MeshInput mesh_input;
     StepperInput stepper_input;
     ProblemInput problem_input;
-    WriterInput  writer_input;
+    WriterInput writer_input;
 
     InputParameters() = default;
     InputParameters(const std::string& input_string);
@@ -203,8 +203,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
 
 template <typename ProblemInput>
 InputParameters<ProblemInput>::InputParameters(const std::string& input_string,
-                                               const uint         locality_id,
-                                               const uint         submesh_id)
+                                               const uint locality_id,
+                                               const uint submesh_id)
     : InputParameters(input_string) {
     this->mesh_input.mesh_file_name.insert(this->mesh_input.mesh_file_name.find_last_of("."),
                                            '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));

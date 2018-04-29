@@ -12,8 +12,8 @@ class Simulation {
 
     typename ProblemType::ProblemMeshType mesh;
 
-    Stepper                                 stepper;
-    Writer<ProblemType>                     writer;
+    Stepper stepper;
+    Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
   public:

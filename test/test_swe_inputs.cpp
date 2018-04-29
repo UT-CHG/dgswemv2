@@ -9,7 +9,7 @@ int main() {
     {
         std::cout << "Beginning test 1\n";
 
-        YAML::Node  test;
+        YAML::Node test;
         SWE::Inputs result(test);
 
         if (!Utilities::almost_equal(9.81, result.g)) {

@@ -17,9 +17,9 @@ class OMPISimulationUnit {
 
     typename ProblemType::ProblemMeshType mesh;
 
-    OMPICommunicator                        communicator;
-    Stepper                                 stepper;
-    Writer<ProblemType>                     writer;
+    OMPICommunicator communicator;
+    Stepper stepper;
+    Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
   public:
@@ -291,7 +291,7 @@ class OMPISimulation {
   private:
     uint n_steps;
     uint n_stages;
-    int  locality_id;
+    int locality_id;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
@@ -326,7 +326,7 @@ class OMPISimulation {
 };
 
 template <typename ProblemType>
-void        OMPISimulation<ProblemType>::Run() {
+void OMPISimulation<ProblemType>::Run() {
 #pragma omp parallel
     {
         uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;

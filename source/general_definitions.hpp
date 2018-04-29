@@ -145,7 +145,7 @@ class Master {
     Master(const uint p) : p(p) {}
 
     virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
-        const uint                               bound_id,
+        const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 
     virtual void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr)            = 0;
@@ -165,18 +165,18 @@ class Shape {
 
     virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
 
-    virtual Point<dimension>              GetBarycentricCoordinates() = 0;
-    virtual std::vector<Point<dimension>> GetMidpointCoordinates()    = 0;
+    virtual Point<dimension> GetBarycentricCoordinates()           = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
 
-    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points)                               = 0;
-    virtual Array3D<double>     GetJinv(const std::vector<Point<dimension>>& points)                               = 0;
-    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points)      = 0;
-    virtual Array2D<double>     GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points)                           = 0;
+    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points)                               = 0;
+    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points)  = 0;
+    virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
-    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>&           nodal_values,
-                                                       const std::vector<Point<dimension>>& points)            = 0;
-    virtual Array2D<double>     InterpolateNodalValuesDerivatives(const std::vector<double>&           nodal_values,
-                                                                  const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
+                                                       const std::vector<Point<dimension>>& points)        = 0;
+    virtual Array2D<double> InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
+                                                              const std::vector<Point<dimension>>& points) = 0;
 
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 

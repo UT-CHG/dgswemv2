@@ -5,7 +5,7 @@
 
 int main() {
     std::vector<double> foo{0., 1.1, 5.0};
-    std::string         _str = "bar";
+    std::string _str = "bar";
 
     auto tup = std::make_tuple(5, _str, foo);
 

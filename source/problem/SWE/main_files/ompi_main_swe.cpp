@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
         return 1;
     } else {
         auto t1 = std::chrono::high_resolution_clock::now();
-        int  provided;
+        int provided;
         MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
         if (provided != MPI_THREAD_MULTIPLE) {

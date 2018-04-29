@@ -76,7 +76,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             // find element id on the other side of internal barrier
             if (this->elements.at(elt_id).boundary_type[face_id] == SWE::BoundaryConditions::internal_barrier) {
                 std::array<uint, 2> barrier_np = mesh_file.get_barrier_node_pair(nodes);
-                std::uint64_t       key = static_cast<std::uint64_t>(std::min(barrier_np[0], barrier_np[1])) << 32 |
+                std::uint64_t key = static_cast<std::uint64_t>(std::min(barrier_np[0], barrier_np[1])) << 32 |
                                     std::max(barrier_np[0], barrier_np[1]);
 
                 this->elements.at(elt_id).neighbor_ID[face_id] = edge_dictionary.at(key).first.first;

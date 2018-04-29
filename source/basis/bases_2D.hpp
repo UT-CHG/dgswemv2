@@ -31,8 +31,8 @@ class Dubiner_2D : Basis<2> {
      * @return evaluations of the Dubiner polynomials at points (n1,n2)
      * @warning It is required that the size of n1 is equal to the size of n2.
      */
-    std::vector<double> ComputePhi(const uint                 p,
-                                   const uint                 q,
+    std::vector<double> ComputePhi(const uint p,
+                                   const uint q,
                                    const std::vector<double>& n1,
                                    const std::vector<double>& n2);
 
@@ -46,8 +46,8 @@ class Dubiner_2D : Basis<2> {
      * @return evaluations of the gradient at points (n1,n2)
      * @warning It is required that the size of n1 is equal to the size of n2.
      */
-    Array2D<double> ComputeDPhi(const uint                 p,
-                                const uint                 q,
+    Array2D<double> ComputeDPhi(const uint p,
+                                const uint q,
                                 const std::vector<double>& n1,
                                 const std::vector<double>& n2);
 

@@ -28,18 +28,18 @@ struct MeshGeneratorInput {
 };
 
 struct node {
-    uint                  ID;
+    uint ID;
     std::array<double, 3> coord;
 };
 
 struct element {
-    uint              ID;
-    uint              type;
+    uint ID;
+    uint type;
     std::vector<uint> nodes;
 };
 
 struct boundary {
-    uchar             type;
+    uchar type;
     std::vector<uint> nodes;
 };
 

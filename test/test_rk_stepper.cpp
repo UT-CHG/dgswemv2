@@ -23,8 +23,8 @@ int main() {
     rk_pairs[9]  = {7, 4};
     rk_pairs[10] = {8, 4};
 
-    double dt     = 0.00005;
-    uint   nsteps = 5. / dt + 1;
+    double dt   = 0.00005;
+    uint nsteps = 5. / dt + 1;
 
     using State      = std::array<double, 2>;
     auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };

@@ -5,12 +5,12 @@
 
 #include <unordered_set>
 
-std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData&                                 mesh_meta,
+std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const std::unordered_map<int, std::vector<double>>& problem_weights,
-                                                 const int                                           num_partitions,
-                                                 const int                                           num_nodes,
-                                                 const int                                           ranks_per_locality,
-                                                 const bool                                          rank_balanced);
+                                                 const int num_partitions,
+                                                 const int num_nodes,
+                                                 const int ranks_per_locality,
+                                                 const bool rank_balanced);
 
 bool check_partition(const MeshMetaData& mesh, std::vector<std::vector<MeshMetaData>>& submeshes) {
     bool error_found{false};

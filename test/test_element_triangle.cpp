@@ -66,13 +66,13 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2.};
 
     MasterType master(10);
-    ShapeType  shape(vrtxs);
+    ShapeType shape(vrtxs);
 
     ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<uint>(0), std::vector<unsigned char>(0));
 
     // Check integrations
     Integration::Dunavant_2D integ;
-    std::vector<Point<2>>    gp = integ.GetRule(20).second;
+    std::vector<Point<2>> gp = integ.GetRule(20).second;
 
     std::vector<double> x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp);
     std::vector<double> y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp);

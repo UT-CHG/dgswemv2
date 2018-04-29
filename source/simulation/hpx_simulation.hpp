@@ -22,7 +22,7 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
 
     return hpx::when_all(res_futures).then([](auto&& res_futures) -> double {
         std::vector<double> res = hpx::util::unwrap(res_futures.get());
-        double              combined_res{0};
+        double combined_res{0};
         for (double r : res) {
             combined_res += r;
         }
@@ -37,9 +37,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
     typename ProblemType::ProblemMeshType mesh;
 
-    HPXCommunicator                         communicator;
-    Stepper                                 stepper;
-    Writer<ProblemType>                     writer;
+    HPXCommunicator communicator;
+    Stepper stepper;
+    Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
   public:
@@ -324,8 +324,8 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
   public:
     HPXSimulation() = default;
     HPXSimulation(const std::string& input_string) {
-        const uint                 locality_id = hpx::get_locality_id();
-        const hpx::naming::id_type here        = hpx::find_here();
+        const uint locality_id          = hpx::get_locality_id();
+        const hpx::naming::id_type here = hpx::find_here();
 
         InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 

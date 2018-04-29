@@ -7,7 +7,7 @@ class Boundary {
   public:
     BoundaryType boundary_condition;
 
-    uint      bound_id;
+    uint bound_id;
     DataType& data;
 
     Array2D<double> surface_normal;
@@ -17,11 +17,11 @@ class Boundary {
     Array2D<double> phi_gp;
 
     std::vector<double> int_fact;
-    Array2D<double>     int_fact_phi;
+    Array2D<double> int_fact_phi;
 
   public:
     Boundary(const RawBoundary<dimension, DataType>& raw_boundary,
-             const BoundaryType&                     boundary_condition = BoundaryType());
+             const BoundaryType& boundary_condition = BoundaryType());
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
 
@@ -37,7 +37,7 @@ class Boundary {
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
-    const BoundaryType&                     boundary_condition)
+    const BoundaryType& boundary_condition)
     : boundary_condition(std::move(boundary_condition)), bound_id(raw_boundary.bound_id), data(raw_boundary.data) {
     // *** //
     IntegrationType integration;
@@ -86,7 +86,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
 
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeUgp(const std::vector<double>& u,
-                                                                                     std::vector<double>&       u_gp) {
+                                                                                     std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -99,7 +99,7 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeNodalUgp(
     const std::vector<double>& u_nodal,
-    std::vector<double>&       u_nodal_gp) {
+    std::vector<double>& u_nodal_gp) {
     std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
@@ -123,7 +123,7 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
 
 template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
 inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::IntegrationPhi(
-    const uint                 dof,
+    const uint dof,
     const std::vector<double>& u_gp) {
     double integral = 0;
 

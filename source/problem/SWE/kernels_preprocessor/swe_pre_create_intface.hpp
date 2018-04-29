@@ -4,9 +4,9 @@
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_interfaces_kernel(
-    ProblemMeshType&                                                   mesh,
+    ProblemMeshType& mesh,
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    Writer<SWE::Problem>&                                              writer) {
+    Writer<SWE::Problem>& writer) {
     // *** //
 
     using InterfaceTypes = Geometry::InterfaceTypeTuple<SWE::Data, SWE::IS::Regular, SWE::IS::Levee>;

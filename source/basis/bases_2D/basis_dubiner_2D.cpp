@@ -85,13 +85,13 @@ inline void Dubiner_2D::ProjectLinearToBasis(const std::vector<double>& u_lin, s
     u[2] = (-u_lin[0] + u_lin[1]) / 2.0;
 }
 
-std::vector<double> Dubiner_2D::ComputePhi(const uint                 p,
-                                           const uint                 q,
+std::vector<double> Dubiner_2D::ComputePhi(const uint p,
+                                           const uint q,
                                            const std::vector<double>& n1,
                                            const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
 
-    uint                n_pts = n1.size();
+    uint n_pts = n1.size();
     std::vector<double> phi(n_pts);
 
     std::vector<double> psi_p(jacobi_polynomial(p, 0, 0, n1));
@@ -112,8 +112,8 @@ std::vector<double> Dubiner_2D::ComputePhi(const uint                 p,
     return phi;
 }
 
-Array2D<double> Dubiner_2D::ComputeDPhi(const uint                 p,
-                                        const uint                 q,
+Array2D<double> Dubiner_2D::ComputeDPhi(const uint p,
+                                        const uint q,
                                         const std::vector<double>& n1,
                                         const std::vector<double>& n2) {
     assert(n1.size() == n2.size());

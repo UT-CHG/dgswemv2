@@ -22,7 +22,7 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2.};
 
     MasterType master(10);
-    ShapeType  shape(vrtxs);
+    ShapeType shape(vrtxs);
 
     ElementType triangle(
         0,
@@ -46,7 +46,7 @@ int main() {
 
     // Check Integrations
     Integration::Dunavant_2D integ_2D;
-    std::vector<Point<2>>    gp_2D = integ_2D.GetRule(20).second;
+    std::vector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
 
     std::vector<double> x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp_2D);
     std::vector<double> y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp_2D);
@@ -65,8 +65,8 @@ int main() {
     }
 
     Integration::GaussLegendre_1D integ_1D;
-    std::vector<Point<1>>         gp_1D = integ_1D.GetRule(21).second;
-    std::vector<Point<2>>         gp_bound;
+    std::vector<Point<1>> gp_1D = integ_1D.GetRule(21).second;
+    std::vector<Point<2>> gp_bound;
 
     Array2D<double> F_vals_bound(2);
     F_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));

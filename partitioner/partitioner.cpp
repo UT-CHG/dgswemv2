@@ -10,16 +10,16 @@
 #include <sstream>
 #include <vector>
 
-std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData&                                 mesh_meta,
+std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                                                  const std::unordered_map<int, std::vector<double>>& problem_weights,
-                                                 const int                                           num_partitions,
-                                                 const int                                           num_nodes,
-                                                 const int                                           ranks_per_locality,
-                                                 const bool                                          rank_balanced);
+                                                 const int num_partitions,
+                                                 const int num_nodes,
+                                                 const int ranks_per_locality,
+                                                 const bool rank_balanced);
 
-void write_distributed_edge_metadata(const std::string&                            file_name,
-                                     const InputParameters<>&                      input,
-                                     const MeshMetaData&                           mesh_meta,
+void write_distributed_edge_metadata(const std::string& file_name,
+                                     const InputParameters<>& input,
+                                     const MeshMetaData& mesh_meta,
                                      const std::vector<std::vector<MeshMetaData>>& submeshes);
 
 int main(int argc, char** argv) {

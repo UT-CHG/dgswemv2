@@ -20,7 +20,7 @@ void Parser::ParseMeteoInput(const Stepper& stepper) {
             throw std::logic_error(err_msg);
         }
 
-        uint                node_id;
+        uint node_id;
         std::vector<double> meteo_data(3);
 
         std::string line;
@@ -47,7 +47,7 @@ void Parser::ParseMeteoInput(const Stepper& stepper) {
             throw std::logic_error(err_msg);
         }
 
-        uint                node_id;
+        uint node_id;
         std::vector<double> meteo_data(3);
 
         std::string line;

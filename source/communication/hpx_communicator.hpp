@@ -61,16 +61,16 @@ class HPXCommunicator {
     HPXCommunicator() = default;
     HPXCommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
 
-    uint             GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
+    uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
 
-    void              SendPreprocAll(const uint timestamp);
+    void SendPreprocAll(const uint timestamp);
     hpx::future<void> ReceivePreprocAll(const uint timestamp);
 
-    void              SendAll(const uint timestamp);
+    void SendAll(const uint timestamp);
     hpx::future<void> ReceiveAll(const uint timestamp);
 
-    void              SendPostprocAll(const uint timestamp);
+    void SendPostprocAll(const uint timestamp);
     hpx::future<void> ReceivePostprocAll(const uint timestamp);
 
   public:

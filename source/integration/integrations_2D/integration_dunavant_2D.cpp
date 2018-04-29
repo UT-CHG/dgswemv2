@@ -9,8 +9,8 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const
         exit(1);
     }
 
-    std::vector<uint>                                     permutation = this->PermutationData(p);
-    std::pair<std::vector<double>, std::vector<Point<3>>> gp          = this->GPData(p);
+    std::vector<uint> permutation                            = this->PermutationData(p);
+    std::pair<std::vector<double>, std::vector<Point<3>>> gp = this->GPData(p);
 
     if (permutation.size() != gp.first.size()) {
         printf("\n");

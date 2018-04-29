@@ -23,7 +23,7 @@ void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
         elt.WritePointDataVTK(elt.data.state[0].bath, point_data[3]);
     });
 
-    std::vector<uint>                elt_id_data;
+    std::vector<uint> elt_id_data;
     std::vector<std::array<bool, 2>> wd_data;
 
     mesh.CallForEachElement([&elt_id_data, &wd_data](auto& elt) {

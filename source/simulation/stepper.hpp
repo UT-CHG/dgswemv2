@@ -5,13 +5,13 @@
 
 class Stepper {
   public:
-    Array2D<double>     ark;
-    Array2D<double>     brk;
-    Array2D<double>     crk;
+    Array2D<double> ark;
+    Array2D<double> brk;
+    Array2D<double> crk;
     std::vector<double> drk;
 
   private:
-    uint   nstages;
+    uint nstages;
     double dt;
 
     uint step;
@@ -24,12 +24,12 @@ class Stepper {
     Stepper() = default;
     Stepper(uint nstages, uint order, double dt);
 
-    uint   GetNumStages() const { return this->nstages; }
+    uint GetNumStages() const { return this->nstages; }
     double GetDT() const { return this->dt; }
 
-    uint   GetStep() const { return this->step; }
-    uint   GetTimestamp() const { return this->timestamp; }
-    uint   GetStage() const { return this->stage; }
+    uint GetStep() const { return this->step; }
+    uint GetTimestamp() const { return this->timestamp; }
+    uint GetStage() const { return this->stage; }
     double GetTimeAtCurrentStage() const { return this->t + this->dt * this->drk[this->stage]; }
 
     Stepper& operator++() {
