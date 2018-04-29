@@ -40,12 +40,8 @@ class Element {
             const std::vector<uint>&             neighbor_ID,
             const std::vector<uchar>&            boundary_type);
 
-    void CreateRawBoundaries(
-        std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>& pre_interfaces,
-        std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&    pre_boundaries,
-        std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>& pre_distributed_boundaries,
-        std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
-            pre_specialized_interfaces);
+    void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
+                                 pre_specialized_interfaces);
 
     uint        GetID() { return this->ID; }
     MasterType& GetMaster() { return this->master; }
@@ -209,32 +205,21 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint         
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
-    std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>& pre_interfaces,
-    std::map<uchar, std::vector<RawBoundary<dimension - 1, DataType>>>&    pre_boundaries,
-    std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>& pre_distributed_boundaries,
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
-        pre_specialized_interfaces) {
+    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>& raw_boundaries) {
     // *** //
     Basis::Basis<dimension>*   my_basis  = (Basis::Basis<dimension>*)(&this->master.basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(&this->master);
     Shape::Shape<dimension>*   my_shape  = (Shape::Shape<dimension>*)(&this->shape);
 
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
-        if (this->boundary_type[bound_id] == INTERNAL) {
-            pre_interfaces.emplace(std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
-                                   RawBoundary<dimension - 1, DataType>(
-                                       this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
-        } else if (this->boundary_type[bound_id] == DISTRIBUTED) {
-            pre_distributed_boundaries.emplace(
-                std::pair<uint, uint>{this->ID, bound_id},
+        if (this->neighbor_ID[bound_id] != DEFAULT_ID) {
+            raw_boundaries[this->boundary_type[bound_id]].emplace(
+                std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
                 RawBoundary<dimension - 1, DataType>(
                     this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
-        } else if (this->neighbor_ID[bound_id] == DEFAULT_ID) {
-            pre_boundaries[this->boundary_type[bound_id]].emplace_back(RawBoundary<dimension - 1, DataType>(
-                this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
         } else {
-            pre_specialized_interfaces[this->boundary_type[bound_id]].emplace(
-                std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
+            raw_boundaries[this->boundary_type[bound_id]].emplace(
+                std::pair<uint, uint>{this->ID, bound_id},
                 RawBoundary<dimension - 1, DataType>(
                     this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
         }

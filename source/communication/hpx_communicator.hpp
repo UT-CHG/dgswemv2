@@ -11,8 +11,12 @@ using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
 
 struct HPXRankBoundary {
-    std::vector<uint> elements;
-    std::vector<uint> bound_ids;
+    std::vector<uint> elements_in;
+    std::vector<uint> elements_ex;
+
+    std::vector<uint> bound_ids_in;
+    std::vector<uint> bound_ids_ex;
+
     std::vector<uint> p;
 
     hpx::lcos::channel<array_double> outgoing;

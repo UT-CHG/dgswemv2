@@ -3,23 +3,51 @@
 
 namespace SWE {
 template <typename RawBoundaryType>
-void Problem::create_interfaces_kernel(ProblemMeshType&                                  mesh,
-                                       std::map<std::pair<uint, uint>, RawBoundaryType>& pre_interfaces,
-                                       Writer<SWE::Problem>&                             writer) {
-    using InterfaceType = std::tuple_element<0, Geometry::InterfaceTypeTuple<SWE::Data, SWE::IS::Empty>>::type;
+void Problem::create_interfaces_kernel(
+    ProblemMeshType&                                                   mesh,
+    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+    Writer<SWE::Problem>&                                              writer) {
+    // *** //
 
-    for (auto it = pre_interfaces.begin(); it != pre_interfaces.end(); it++) {
-        std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{it->first.second, it->first.first};
+    using InterfaceTypes = Geometry::InterfaceTypeTuple<SWE::Data, SWE::IS::Regular, SWE::IS::Levee>;
 
-        if (pre_interfaces.find(key_pre_int_ex) != pre_interfaces.end()) {
-            mesh.template CreateInterface<InterfaceType>(it->second, pre_interfaces.find(key_pre_int_ex)->second);
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+        switch (it->first) {
+            case SWE::BoundaryConditions::internal:
+                using InterfaceTypeRegular = std::tuple_element<0, InterfaceTypes>::type;
+
+                for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+                    std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{itt->first.second, itt->first.first};
+
+                    if (it->second.find(key_pre_int_ex) != it->second.end()) {
+                        mesh.template CreateInterface<InterfaceTypeRegular>(itt->second,
+                                                                     it->second.find(key_pre_int_ex)->second);
+                    }
+
+                    it->second.erase(itt);
+                }
+
+                break;
+            case SWE::BoundaryConditions::internal_barrier:
+                using InterfaceTypeLevee = std::tuple_element<1, InterfaceTypes>::type;
+
+                for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+                    std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{itt->first.second, itt->first.first};
+
+                    if (it->second.find(key_pre_int_ex) != it->second.end()) {
+                        mesh.template CreateInterface<InterfaceTypeLevee>(itt->second,
+                                                                     it->second.find(key_pre_int_ex)->second);
+                    }
+
+                    it->second.erase(itt);
+                }
+
+                break;
         }
 
-        pre_interfaces.erase(it);
-    }
-
-    if (writer.WritingLog()) {
-        writer.GetLogFile() << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
+        if (writer.WritingLog()) {
+            writer.GetLogFile() << "Number of interfaces: " << mesh.GetNumberInterfaces() << std::endl;
+        }
     }
 }
 }

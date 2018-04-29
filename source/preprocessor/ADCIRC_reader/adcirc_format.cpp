@@ -218,10 +218,60 @@ SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair)
         }
     }
 
-    throw std::logic_error(
-        "Error Boundary not found, unable to assign BOUNDARY_TYPE to given "
-        "node_pair (" +
-        std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+    throw std::logic_error("Error Boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
+                           std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+}
+
+std::array<uint, 2> AdcircFormat::get_barrier_node_pair(std::array<uint, 2>& node_pair) const {
+    for (auto it = this->IBCONN.begin(); it != this->IBCONN.end(); it++) {
+        uint segment_id = it->first;
+
+        auto& segment_nbvv   = this->NBVV[segment_id];
+        auto& segment_ibconn = it->second;
+
+        uint n_nodes = segment_nbvv.size();
+
+        // Look through segment NBVV for pair
+        if (segment_nbvv[0] == node_pair[0] && segment_nbvv[1] == node_pair[1]) {
+            return std::array<uint, 2>{segment_ibconn[1], segment_ibconn[0]};
+        }
+
+        for (uint node = 1; node < n_nodes - 1; node++) {
+            if (segment_nbvv[node] == node_pair[0]) {
+                if (segment_nbvv[node + 1] == node_pair[1]) {  // look node after
+                    return std::array<uint, 2>{segment_ibconn[node + 1], segment_ibconn[node]};
+                } else if (segment_nbvv[node - 1] == node_pair[1]) {  // look node before
+                    return std::array<uint, 2>{segment_ibconn[node - 1], segment_ibconn[node]};
+                }
+            }
+        }
+
+        if (segment_nbvv[n_nodes - 1] == node_pair[0] && segment_nbvv[n_nodes - 2] == node_pair[1]) {
+            return std::array<uint, 2>{segment_ibconn[n_nodes - 2], segment_ibconn[n_nodes - 1]};
+        }
+
+        // Look through segment IBCONN for pair
+        if (segment_ibconn[0] == node_pair[0] && segment_ibconn[1] == node_pair[1]) {
+            return std::array<uint, 2>{segment_nbvv[1], segment_nbvv[0]};
+        }
+
+        for (uint node = 1; node < n_nodes - 1; node++) {
+            if (segment_ibconn[node] == node_pair[0]) {
+                if (segment_ibconn[node + 1] == node_pair[1]) {  // look node after
+                    return std::array<uint, 2>{segment_nbvv[node + 1], segment_nbvv[node]};
+                } else if (segment_ibconn[node - 1] == node_pair[1]) {  // look node before
+                    return std::array<uint, 2>{segment_nbvv[node - 1], segment_nbvv[node]};
+                }
+            }
+        }
+
+        if (segment_ibconn[n_nodes - 1] == node_pair[0] && segment_ibconn[n_nodes - 2] == node_pair[1]) {
+            return std::array<uint, 2>{segment_nbvv[n_nodes - 2], segment_nbvv[n_nodes - 1]};
+        }
+    }
+
+    throw std::logic_error("Error back nodes not found to given node_pair (" + std::to_string(node_pair[0]) + ", " +
+                           std::to_string(node_pair[1]) + ")\n");
 }
 
 bool AdcircFormat::has_edge(std::vector<uint>::const_iterator cbegin,

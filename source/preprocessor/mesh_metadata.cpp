@@ -58,10 +58,10 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             uint faceB_id = edge.second.second.second;
 
             this->elements.at(eltA_id).neighbor_ID[faceA_id]   = eltB_id;
-            this->elements.at(eltA_id).boundary_type[faceA_id] = INTERNAL;
+            this->elements.at(eltA_id).boundary_type[faceA_id] = SWE::BoundaryConditions::internal;
 
             this->elements.at(eltB_id).neighbor_ID[faceB_id]   = eltA_id;
-            this->elements.at(eltB_id).boundary_type[faceB_id] = INTERNAL;
+            this->elements.at(eltB_id).boundary_type[faceB_id] = SWE::BoundaryConditions::internal;
         } else {
             // treat boundary conditions
             uint elt_id  = edge.second.first.first;
@@ -72,6 +72,15 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 
             this->elements.at(elt_id).neighbor_ID[face_id]   = DEFAULT_ID;
             this->elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
+
+            // find element id on the other side of internal barrier
+            if (this->elements.at(elt_id).boundary_type[face_id] == SWE::BoundaryConditions::internal_barrier) {
+                std::array<uint, 2> barrier_np = mesh_file.get_barrier_node_pair(nodes);
+                std::uint64_t       key = static_cast<std::uint64_t>(std::min(barrier_np[0], barrier_np[1])) << 32 |
+                                    std::max(barrier_np[0], barrier_np[1]);
+
+                this->elements.at(elt_id).neighbor_ID[face_id] = edge_dictionary.at(key).first.first;
+            }
         }
     }
 }

@@ -61,20 +61,20 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
                                            Writer<ProblemType>&                   writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
 
-    std::map<std::pair<uint, uint>, RawBoundaryType>                  pre_interfaces;
-    std::map<uchar, std::vector<RawBoundaryType>>                     pre_boundaries;
-    std::map<std::pair<uint, uint>, RawBoundaryType>                  pre_distributed_boundaries;
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> pre_specialized_interfaces;
+    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundaries;
 
-    mesh.CallForEachElement(
-        [&pre_interfaces, &pre_boundaries, &pre_distributed_boundaries, &pre_specialized_interfaces](auto& elem) {
-            elem.CreateRawBoundaries(
-                pre_interfaces, pre_boundaries, pre_distributed_boundaries, pre_specialized_interfaces);
-        });
+    mesh.CallForEachElement([&raw_boundaries](auto& elem) { elem.CreateRawBoundaries(raw_boundaries); });
 
-    ProblemType::create_interfaces_kernel(mesh, pre_interfaces, writer);
-    ProblemType::create_boundaries_kernel(mesh, pre_boundaries, writer);
-    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, pre_distributed_boundaries, writer);
+    ProblemType::create_interfaces_kernel(mesh, raw_boundaries, writer);
+    ProblemType::create_boundaries_kernel(mesh, raw_boundaries, writer);
+    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, raw_boundaries, writer);
+
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+        if (it->second.size() != 0) {
+            throw std::logic_error("Error: Unprocessed raw_boundaries of boundary type " + std::to_string(it->first) +
+                                   "\n");
+        }
+    }
 }
 
 #endif

@@ -34,7 +34,7 @@ enum BoundaryConditions : uchar {
     land             = 0,
     tidal            = 1,
     flow             = 2,
-    internal_barrier = 3,
+    internal_barrier = 101,
     distributed      = DISTRIBUTED,
     internal         = INTERNAL
 };

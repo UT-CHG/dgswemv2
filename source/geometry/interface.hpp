@@ -28,7 +28,8 @@ class Interface {
 
   public:
     Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
-              const RawBoundary<dimension, DataType>& raw_boundary_ex);
+              const RawBoundary<dimension, DataType>& raw_boundary_ex,
+              const SpecializationType&               specialization = SpecializationType());
 
     void ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp);
@@ -45,8 +46,10 @@ class Interface {
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
 Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     const RawBoundary<dimension, DataType>& raw_boundary_in,
-    const RawBoundary<dimension, DataType>& raw_boundary_ex)
-    : bound_id_in(raw_boundary_in.bound_id),
+    const RawBoundary<dimension, DataType>& raw_boundary_ex,
+    const SpecializationType&               specialization)
+    : specialization(std::move(specialization)),
+      bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
       data_in(raw_boundary_in.data),
       data_ex(raw_boundary_ex.data) {

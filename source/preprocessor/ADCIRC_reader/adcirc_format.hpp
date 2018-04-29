@@ -39,7 +39,9 @@ struct AdcircFormat {
     void write_to(const char* out_name) const;
 
     SWE::BoundaryConditions get_ibtype(std::array<uint, 2>& node_pair) const;
+    std::array<uint, 2>     get_barrier_node_pair(std::array<uint, 2>& node_pair) const;
 
+  private:
     bool has_edge(std::vector<uint>::const_iterator cbegin,
                   std::vector<uint>::const_iterator cend,
                   std::array<uint, 2>&              node_pair) const;

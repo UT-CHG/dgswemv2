@@ -41,8 +41,12 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
 
         rank_boundary.incoming.connect_to(incoming_channel_string);
 
-        rank_boundary.elements.reserve(n_dboubdaries);
-        rank_boundary.bound_ids.reserve(n_dboubdaries);
+        rank_boundary.elements_in.reserve(n_dboubdaries);
+        rank_boundary.elements_ex.reserve(n_dboubdaries);
+
+        rank_boundary.bound_ids_in.reserve(n_dboubdaries);
+        rank_boundary.bound_ids_ex.reserve(n_dboubdaries);
+
         rank_boundary.p.reserve(n_dboubdaries);
 
         for (uint db = 0; db < n_dboubdaries; ++db) {
@@ -53,12 +57,20 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
             file.ignore(1000, '\n');
 
             if (locality_A == locality_id && submesh_A == submesh_id) {
-                rank_boundary.elements.push_back(dboundary_meta_data.elements.first);
-                rank_boundary.bound_ids.push_back(dboundary_meta_data.bound_ids.first);
+                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.first);
+                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.second);
+
+                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.first);
+                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.second);
+
                 rank_boundary.p.push_back(dboundary_meta_data.p);
             } else {
-                rank_boundary.elements.push_back(dboundary_meta_data.elements.second);
-                rank_boundary.bound_ids.push_back(dboundary_meta_data.bound_ids.second);
+                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.second);
+                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.first);
+
+                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.second);
+                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.first);
+
                 rank_boundary.p.push_back(dboundary_meta_data.p);
             }
         }

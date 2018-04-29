@@ -7,8 +7,12 @@
 #include "../preprocessor/mesh_metadata.hpp"
 
 struct OMPIRankBoundary {
-    std::vector<uint> elements;
-    std::vector<uint> bound_ids;
+    std::vector<uint> elements_in;
+    std::vector<uint> elements_ex;
+
+    std::vector<uint> bound_ids_in;
+    std::vector<uint> bound_ids_ex;
+
     std::vector<uint> p;
 
     int send_rank;

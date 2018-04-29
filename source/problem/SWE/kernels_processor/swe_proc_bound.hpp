@@ -19,32 +19,16 @@ void Problem::boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
         bound.ComputeUgp(state.qx, boundary.qx_at_gp);
         bound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
-        double ze_ex, qx_ex, qy_ex;
-        for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
-            bound.boundary_condition.GetEX(stepper,
-                                           gp,
-                                           bound.surface_normal,
-                                           boundary.ze_at_gp,
-                                           boundary.qx_at_gp,
-                                           boundary.qy_at_gp,
-                                           ze_ex,
-                                           qx_ex,
-                                           qy_ex);
-
-            LLF_flux(Global::g,
-                     boundary.ze_at_gp[gp],
-                     ze_ex,
-                     boundary.qx_at_gp[gp],
-                     qx_ex,
-                     boundary.qy_at_gp[gp],
-                     qy_ex,
-                     boundary.bath_at_gp[gp],
-                     sp_at_gp[gp],
-                     bound.surface_normal[gp],
-                     boundary.ze_numerical_flux_at_gp[gp],
-                     boundary.qx_numerical_flux_at_gp[gp],
-                     boundary.qy_numerical_flux_at_gp[gp]);
-        }
+        bound.boundary_condition.ComputeFlux(stepper,
+                                             bound.surface_normal,
+                                             sp_at_gp,
+                                             boundary.bath_at_gp,
+                                             boundary.ze_at_gp,
+                                             boundary.qx_at_gp,
+                                             boundary.qy_at_gp,
+                                             boundary.ze_numerical_flux_at_gp,
+                                             boundary.qx_numerical_flux_at_gp,
+                                             boundary.qy_numerical_flux_at_gp);
 
         // now compute contributions to the righthand side
         for (uint dof = 0; dof < bound.data.get_ndof(); ++dof) {

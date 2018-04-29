@@ -13,7 +13,7 @@ int main() {
 
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::Data>;
     using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::BC::Land>;
-    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Empty>;
+    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Regular>;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);
@@ -33,19 +33,15 @@ int main() {
         std::vector<unsigned char>{
             SWE::BoundaryConditions::land, SWE::BoundaryConditions::land, SWE::BoundaryConditions::land});
 
-    std::map<std::pair<uint, uint>, RawBoundaryType>                  pre_interfaces;
-    std::map<unsigned char, std::vector<RawBoundaryType>>             pre_boundaries;
-    std::map<std::pair<uint, uint>, RawBoundaryType>                  pre_distributed_interfaces;
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> pre_specialized_interfaces;
+    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 
     // generate boundaries
-    triangle.CreateRawBoundaries(
-        pre_interfaces, pre_boundaries, pre_distributed_interfaces, pre_specialized_interfaces);
+    triangle.CreateRawBoundaries(raw_boundary);
 
     std::vector<BoundaryType> boundaries;
 
-    for (uint i = 0; i < 3; i++) {
-        boundaries.emplace_back(BoundaryType(pre_boundaries[SWE::BoundaryConditions::land].at(i)));
+    for (auto& rb : raw_boundary[SWE::BoundaryConditions::land]) {
+        boundaries.emplace_back(BoundaryType(rb.second));
     }
 
     // Check Integrations
@@ -96,7 +92,6 @@ int main() {
                 F_vals_bound[GlobalCoord::y][gp] * boundaries[n_bound].surface_normal[gp][GlobalCoord::y];
         }
     }
-
     double divergence;
 
     for (uint dof = 0; dof < 66; dof++) {
@@ -166,10 +161,8 @@ int main() {
 
     // generate Interfaces
     std::vector<InterfaceType> interfaces;
-
-    for (uint i = 0; i < 3; i++) {
-        interfaces.emplace_back(InterfaceType(pre_boundaries[SWE::BoundaryConditions::land].at(i),
-                                              pre_boundaries[SWE::BoundaryConditions::land].at(i)));
+    for (auto& rb : raw_boundary[SWE::BoundaryConditions::land]) {
+        interfaces.emplace_back(InterfaceType(rb.second, rb.second));
     }
 
     // Check IntegrationPhiIN/EX
