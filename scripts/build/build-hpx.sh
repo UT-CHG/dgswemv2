@@ -185,7 +185,11 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
                  -DHPX_WITH_CXX14=On \
                  -DHPX_WITH_TESTS=Off \
                  -DHPX_WITH_EXAMPLES=Off"
-    if [ $MACHINE = "stampede2-knl" ]; then
+    if [ $MACHINE = "stampede2-skx" ]; then
+    CMAKE_FLAGS="${CMAKE_FLAGS} \
+                 -DHPX_WITH_MORE_THAN_64_THREADS=On \
+                 -DHPX_WITH_MAX_CPU_COUNT=96"
+    elif [ $MACHINE = "stampede2-knl" ]; then
     CMAKE_FLAGS="${CMAKE_FLAGS} \
                  -DCMAKE_TOOLCHAIN_FILE=${SCRIPTPATH}/Stampede2-gcc.cmake"
     fi
