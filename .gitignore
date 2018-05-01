@@ -3,6 +3,8 @@
 ################################################################################
 
 build/*
+build_debug/*
+settings.json
 test/files_for_testing/sample_fort.14.out
 test/files_for_testing/sample_fort.14.meta.out
 test/files_for_testing/correct_input.15
@@ -13,3 +15,9 @@ test/files_for_testing/correct_input_no_output.15.emitted
 scripts/build/config-kazbek.txt
 documentation/html
 documentation/latex
+.DS_Store
+
+#Ignore files generated building examples
+examples/manufactured_solution/input_files/dgswemv2_input_parallelized.15
+examples/manufactured_solution/input_files/rectangular_mesh*
+examples/manufactured_solution/input_files/output

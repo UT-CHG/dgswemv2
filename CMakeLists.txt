@@ -3,7 +3,9 @@ project (DG_HYPER CXX C)
 
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
+option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
 option(SET_VERBOSE "Verbose MakeFile" OFF)
+option(BUILD_EXAMPLES "Build Examples" OFF)
 
 enable_testing()
 
@@ -45,6 +47,10 @@ if(USE_HPX)
   find_package(HPX REQUIRED)  
 endif()
 
+if(COMPILER_WARNINGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif()
+
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 if(SET_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -53,7 +59,12 @@ endif()
 include_directories(source)
 
 add_subdirectory(source)
-add_subdirectory(examples)
 add_subdirectory(test)
 add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)
+
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+

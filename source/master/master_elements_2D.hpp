@@ -9,7 +9,7 @@ namespace Master {
  * Triangular master elements contains the information necessary for evaluating computations on
  * on the master triangle.
  */
-template <class BasisType, class IntegrationType>
+template <typename BasisType, typename IntegrationType>
 class Triangle : public Master<2> {
   public:
     /**
@@ -46,6 +46,10 @@ class Triangle : public Master<2> {
      * @param The points on the boundary
      */
     std::vector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const std::vector<Point<1>>& z_boundary);
+
+    void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr);
+    void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts);
+    void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx);
 
   private:
     std::vector<Point<2>> VTKPostCell();

@@ -1,17 +1,18 @@
 #include "preprocessor/input_parameters.hpp"
 #include "utilities/almost_equal.hpp"
 
-const static auto equal_writer = [](const WriterInput & wa, const WriterInput & wb) -> bool {
-    bool output_nodes_are_equal = (wa.write_output == wb.write_output) && (wa.output_path == wb.output_path) &&
-                                  (wa.log_file_name == wb.log_file_name) && (wa.writing_vtk == wb.writing_vtk) &&
-                                  (wa.vtk_output_frequency == wb.vtk_output_frequency) &&
-                                  (wa.writing_modal_output == wb.writing_modal_output) &&
-                                  (wa.modal_output_frequency == wb.modal_output_frequency);
+const static auto equal_writer = [](const WriterInput& wa, const WriterInput& wb) -> bool {
+    bool output_nodes_are_equal =
+        (wa.writing_output == wb.writing_output) && (wa.output_path == wb.output_path) &&
+        (wa.log_file_name == wb.log_file_name) && (wa.writing_vtk_output == wb.writing_vtk_output) &&
+        (wa.vtk_output_frequency == wb.vtk_output_frequency) && (wa.writing_modal_output == wb.writing_modal_output) &&
+        (wa.modal_output_frequency == wb.modal_output_frequency);
 
     if (!output_nodes_are_equal) {
-        std::cerr << "write_output: " << wa.write_output << " : " << wb.write_output << '\n' << "              "
-                  << wa.output_path << " : " << wb.output_path << '\n' << "              " << wa.log_file_name << " : "
-                  << wb.log_file_name << '\n' << "              " << wa.writing_vtk << " : " << wb.writing_vtk << '\n'
+        std::cerr << "writing_output: " << wa.writing_output << " : " << wb.writing_output << '\n'
+                  << "              " << wa.output_path << " : " << wb.output_path << '\n'
+                  << "              " << wa.log_file_name << " : " << wb.log_file_name << '\n'
+                  << "              " << wa.writing_vtk_output << " : " << wb.writing_vtk_output << '\n'
                   << "              " << wa.vtk_output_frequency << " : " << wb.vtk_output_frequency << '\n'
                   << "              " << wa.writing_modal_output << " : " << wb.writing_modal_output << '\n'
                   << "              " << wa.modal_output_frequency << " : " << wb.modal_output_frequency << '\n';
@@ -22,9 +23,8 @@ const static auto equal_writer = [](const WriterInput & wa, const WriterInput & 
     return output_nodes_are_equal;
 };
 
-const static auto equal = [](const InputParameters<typename SWE::Inputs> & ipa,
-                             const InputParameters<typename SWE::Inputs> & ipb) -> bool {
-
+const static auto equal = [](const InputParameters<typename SWE::Inputs>& ipa,
+                             const InputParameters<typename SWE::Inputs>& ipb) -> bool {
     const SWE::Inputs& ia = ipa.problem_input;
     const SWE::Inputs& ib = ipb.problem_input;
 
@@ -40,14 +40,17 @@ const static auto equal = [](const InputParameters<typename SWE::Inputs> & ipa,
         std::cerr << "Error: Problem Specific inputs not equal\n";
     }
 
-    return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
-           (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
-           Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
+    return (ipa.mesh_input.mesh_file_name == ipb.mesh_input.mesh_file_name) &&
+           (ipa.mesh_input.mesh_format == ipb.mesh_input.mesh_format) &&
+           (ipa.stepper_input.nstages == ipb.stepper_input.nstages) &&
+           (ipa.stepper_input.order == ipb.stepper_input.order) &&
+           Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
+           Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
            (ipa.polynomial_order == ipb.polynomial_order) && inputs_are_equal &&
            equal_writer(ipa.writer_input, ipb.writer_input);
 };
 
-const static auto equal2 = [](const InputParameters<> & ipa, const InputParameters<> & ipb) -> bool {
+const static auto equal2 = [](const InputParameters<>& ipa, const InputParameters<>& ipb) -> bool {
     const YAML::Node& na = ipa.problem_input.node;
     const YAML::Node& nb = ipb.problem_input.node;
 
@@ -69,9 +72,12 @@ const static auto equal2 = [](const InputParameters<> & ipa, const InputParamete
         std::cerr << "Error: Problem Specific inputs not equal\n";
     }
 
-    return (ipa.mesh_file_name == ipb.mesh_file_name) && (ipa.mesh_format == ipb.mesh_format) &&
-           (ipa.rk.nstages == ipb.rk.nstages) && (ipa.rk.order == ipb.rk.order) &&
-           Utilities::almost_equal(ipa.dt, ipb.dt) && Utilities::almost_equal(ipa.T_end, ipb.T_end) &&
+    return (ipa.mesh_input.mesh_file_name == ipb.mesh_input.mesh_file_name) &&
+           (ipa.mesh_input.mesh_format == ipb.mesh_input.mesh_format) &&
+           (ipa.stepper_input.nstages == ipb.stepper_input.nstages) &&
+           (ipa.stepper_input.order == ipb.stepper_input.order) &&
+           Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
+           Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
            (ipa.polynomial_order == ipb.polynomial_order) && swe_nodes_are_equal &&
            equal_writer(ipa.writer_input, ipb.writer_input);
 };
@@ -87,7 +93,7 @@ int main(int argc, char** argv) {
             InputParameters<typename SWE::Inputs> input(argv[1]);
             std::string output_file_name = std::string(argv[1]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
-            input.WriteTo(output_file_name);
+            input.write_to(output_file_name);
 
             InputParameters<typename SWE::Inputs> input2(output_file_name);
             local_error = !equal(input, input2);
@@ -95,8 +101,7 @@ int main(int argc, char** argv) {
             if (local_error) {
                 std::cerr << "Error found in correct file with SWE::Inputs type\n";
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             local_error = true;
             std::cout << "Bad News: Exception was thrown ( " << e.what() << " )\n";
         }
@@ -111,7 +116,7 @@ int main(int argc, char** argv) {
             InputParameters<> input(argv[1]);
             std::string output_file_name = std::string(argv[1]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
-            input.WriteTo(output_file_name);
+            input.write_to(output_file_name);
 
             InputParameters<> input2(output_file_name);
             local_error = !equal2(input, input2);
@@ -119,8 +124,7 @@ int main(int argc, char** argv) {
             if (local_error) {
                 std::cerr << "Error found in correct file with anonymous input type\n";
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             local_error = true;
             std::cout << "Bad News: Exception was thrown ( " << e.what() << " )\n";
         }
@@ -135,8 +139,7 @@ int main(int argc, char** argv) {
         bool local_error{true};
         try {
             InputParameters<typename SWE::Inputs> input(argv[2]);
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             local_error = false;
             std::cout << "Good News: Exception was thrown ( " << e.what() << " )\n";
         }
@@ -152,8 +155,7 @@ int main(int argc, char** argv) {
         bool local_error{true};
         try {
             InputParameters<typename SWE::Inputs> input(argv[3]);
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             local_error = false;
             std::cout << "Good News: Exception was thrown ( " << e.what() << " )\n";
         }
@@ -173,7 +175,7 @@ int main(int argc, char** argv) {
             InputParameters<typename SWE::Inputs> input(argv[4]);
             std::string output_file_name = std::string(argv[4]) + ".emitted";
             std::cout << "Emitted filename: " << output_file_name << '\n';
-            input.WriteTo(output_file_name);
+            input.write_to(output_file_name);
 
             InputParameters<typename SWE::Inputs> input2(output_file_name);
             local_error = !equal(input, input2);
@@ -181,8 +183,7 @@ int main(int argc, char** argv) {
             if (local_error) {
                 std::cerr << "Error found in correct file with SWE::Inputs type\n";
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             local_error = true;
             std::cout << "Bad News: Exception was thrown ( " << e.what() << " )\n";
         }

@@ -13,17 +13,17 @@
 #include "manufactured_swe_true_solution_functions.hpp"
 
 #include "problem/SWE/swe_problem.hpp"
-#include "problem/SWE/swe_kernels_preprocessor.hpp"
-#include "problem/SWE/swe_kernels_processor.hpp"
-#include "problem/SWE/swe_kernels_postprocessor.hpp"
+#include "problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "problem/SWE/kernels_processor/swe_kernels_processor.hpp"
+#include "problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/hpx_simulation.hpp"
 
-using hpx_simulation_unit_swe = HPXSimulationUnit<SWE::Problem>;
+using hpx_simulation_unit_swe           = HPXSimulationUnit<SWE::Problem>;
 using hpx_simulation_unit_swe_component = hpx::components::simple_component<HPXSimulationUnit<SWE::Problem>>;
 HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component, hpx_simulation_unit_swe);
 
-using hpx_simulation_swe = HPXSimulation<SWE::Problem>;
+using hpx_simulation_swe           = HPXSimulation<SWE::Problem>;
 using hpx_simulation_swe_component = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;
 HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
 
@@ -65,6 +65,9 @@ int hpx_main(int argc, char* argv[]) {
 
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << std::endl;
+
+    hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);
+    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;
 
     return hpx::finalize();
 }

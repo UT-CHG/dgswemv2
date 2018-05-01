@@ -1,4 +1,4 @@
-#include "problem/SWE/swe_inputs.hpp"
+#include "problem/SWE/problem_input/swe_inputs.hpp"
 
 #include "utilities/almost_equal.hpp"
 
@@ -24,7 +24,7 @@ int main() {
         }
 
         const SWE::InitialConditions& ics = result.initial_conditions;
-        if (!(ics.type == SWE::InitialConditionsType::Constant && Utilities::almost_equal(0., ics.ze_initial) &&
+        if (!(ics.type == SWE::InitialConditionsType::Default && Utilities::almost_equal(0., ics.ze_initial) &&
               Utilities::almost_equal(0., ics.qx_initial) && Utilities::almost_equal(0., ics.qy_initial))) {
             std::cerr << "Default initial conditions are incorrectly set\n";
             error_found = true;
@@ -38,16 +38,16 @@ int main() {
         test["gravity"] = 1.0;
 
         YAML::Node bf_node;
-        bf_node["type"] = std::string("Chezy");
+        bf_node["type"]        = std::string("Chezy");
         bf_node["coefficient"] = 0.01;
 
         YAML::Node ic_node;
-        ic_node["type"] = "Constant";
+        ic_node["type"]                   = "Constant";
         ic_node["initial_surface_height"] = 1.0;
-        ic_node["initial_momentum_x"] = 2.0;
-        ic_node["initial_momentum_y"] = 3.0;
+        ic_node["initial_momentum_x"]     = 2.0;
+        ic_node["initial_momentum_y"]     = 3.0;
 
-        test["bottom_friction"] = bf_node;
+        test["bottom_friction"]    = bf_node;
         test["initial_conditions"] = ic_node;
 
         SWE::Inputs result(test);
@@ -74,7 +74,7 @@ int main() {
     {
         std::cout << "\nBeginning test 3\n";
         YAML::Node bf_node;
-        bf_node["type"] = "Chezy";
+        bf_node["type"]        = "Chezy";
         bf_node["coefficient"] = -0.01;
 
         YAML::Node test;
@@ -83,8 +83,7 @@ int main() {
         bool local_error{true};
         try {
             SWE::Inputs results(test);
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             std::cout << "Good news (this error should have been thrown)\n"
                       << "    " << e.what() << '\n';
             local_error = false;

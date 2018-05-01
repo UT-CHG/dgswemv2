@@ -2,6 +2,7 @@
 #define GENERAL_DEFINITIONS
 
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,6 +11,7 @@
 #include <cmath>
 #include <functional>
 #include <algorithm>
+#include <numeric>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
@@ -19,6 +21,8 @@
 #include <map>
 #include <unordered_map>
 #include <tuple>
+#include <stdlib.h>
+#include <time.h>
 
 typedef unsigned int uint;
 
@@ -27,13 +31,13 @@ typedef unsigned char uchar;
 template <uint dimension>
 using Point = std::array<double, dimension>;
 
-template <class type>
+template <typename type>
 using Array2D = std::vector<std::vector<type>>;
 
-template <class type>
+template <typename type>
 using Array3D = std::vector<std::vector<std::vector<type>>>;
 
-template <class type>
+template <typename type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 namespace Basis {
@@ -77,6 +81,9 @@ class Basis {
      *        and a 2-dimensional array corresponding to the mass matrix over the master element
      */
     virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
+
+    virtual void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) = 0;
+    virtual void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) = 0;
 };
 }
 
@@ -115,7 +122,13 @@ class Master {
   public:
     uint p;
 
+    uint nvrtx;
+    uint nbound;
+
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule;
+
+    Array2D<double> chi_gp;
+    Array2D<double> dchi;
 
     Array2D<double> phi_gp;
     Array3D<double> dphi_gp;
@@ -134,13 +147,17 @@ class Master {
     virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
         const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
+
+    virtual void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr)            = 0;
+    virtual void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts) = 0;
+    virtual void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx)     = 0;
 };
 }
 
 namespace Shape {
 template <uint dimension>
 class Shape {
-  protected:
+  public:
     std::vector<Point<dimension>> nodal_coordinates;
 
   public:
@@ -148,22 +165,24 @@ class Shape {
 
     virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
 
-    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points) = 0;
-    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points) = 0;
-    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual Point<dimension> GetBarycentricCoordinates()           = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
+
+    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points)                           = 0;
+    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points)                               = 0;
+    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points)  = 0;
     virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
     virtual std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                                       const std::vector<Point<dimension>>& points) = 0;
+                                                       const std::vector<Point<dimension>>& points)        = 0;
+    virtual Array2D<double> InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
+                                                              const std::vector<Point<dimension>>& points) = 0;
+
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 };
 }
-
-//#define VERBOSE
-//#define OUTPUT
-#define RESL2
 
 #define PI 3.14159265359
 
@@ -172,26 +191,14 @@ class Shape {
 #define INTERNAL 255           // max uchar as default bound type: internal
 #define DISTRIBUTED 254
 
-enum GlobalCoord : uchar {
-    x = 0,
-    y = 1,
-    z = 2
-};
+enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };
 
-enum LocalCoordTri : uchar {
-    z1 = 0,
-    z2 = 1,
-    z3 = 2
-};
+enum GlobalCoord : uchar { x = 0, y = 1, z = 2 };
 
-enum LocalCoordQuad : uchar {
-    n1 = 0,
-    n2 = 1,
-    n3 = 2
-};
+enum LocalCoordTri : uchar { z1 = 0, z2 = 1, z3 = 2 };
 
-enum VTKElementTypes : uchar {
-    straight_triangle = 5
-};
+enum LocalCoordQuad : uchar { n1 = 0, n2 = 1, n3 = 2 };
+
+enum VTKElementTypes : uchar { straight_triangle = 5 };
 
 #endif

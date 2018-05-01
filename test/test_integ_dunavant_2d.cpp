@@ -9,8 +9,9 @@ int main() {
     std::pair<std::vector<double>, std::vector<Point<2>>> rule;
 
     for (uint p = 1; p < 20; ++p) {
-        double exact_integration = 1 / ((double)p + 1) * ((1 - pow(-1.0, p)) / ((double)p + 2) +
-                                                          2 * pow(-1.0, p));  // S(x^p)dxdy over triangle
+        double exact_integration =
+            1 / ((double)p + 1) *
+            ((1 - pow(-1.0, p)) / ((double)p + 2) + 2 * pow(-1.0, p));  // S(x^p)dxdy over triangle
 
         rule = dunavant.GetRule(p);
 

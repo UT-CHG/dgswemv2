@@ -8,34 +8,56 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    InputParameters<typename ProblemType::InputType> input;
+    InputParameters<typename ProblemType::ProblemInputType> input;
+
+    typename ProblemType::ProblemMeshType mesh;
 
     Stepper stepper;
     Writer<ProblemType> writer;
-    typename ProblemType::ProblemMeshType mesh;
+    typename ProblemType::ProblemParserType parser;
 
   public:
-    Simulation() : input(), stepper(input.rk.nstages, input.rk.order, input.dt), mesh(input.polynomial_order) {}
+    Simulation() : mesh(this->input.polynomial_order) {}
     Simulation(std::string input_string)
         : input(input_string),
-          stepper(input.rk.nstages, input.rk.order, input.dt),
-          writer(input),
-          mesh(input.polynomial_order) {
-        input.ReadMesh();
+          mesh(this->input.polynomial_order),
+          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
+          writer(this->input),
+          parser(this->input) {
+        ProblemType::initialize_problem_parameters(this->input.problem_input);
 
-        mesh.SetMeshName(input.mesh_data.mesh_name);
+        this->input.read_mesh();
+
+        mesh.SetMeshName(this->input.mesh_input.mesh_data.mesh_name);
+
+        ProblemType::preprocess_mesh_data(this->input);
 
         std::tuple<> empty_comm;
 
+        if (this->writer.WritingLog()) {
+            this->writer.StartLog();
+
+            this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
+                                      << this->input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
+                                      << std::endl;
+        }
+
         initialize_mesh<ProblemType>(
-            this->mesh, input.mesh_data, empty_comm, input.problem_input, writer.get_log_file());
+            this->mesh, this->input.mesh_input.mesh_data, empty_comm, this->input.problem_input, this->writer);
+
+        ProblemType::initialize_data_kernel(this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
     }
 
     void Run();
+    void ComputeL2Residual();
 };
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
+    if (this->writer.WritingLog()) {
+        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
+    }
+
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
 
     auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
@@ -46,25 +68,32 @@ void Simulation<ProblemType>::Run() {
 
     auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
     auto scrutinize_solution_kernel = [this](auto& elt) {
-        ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+        bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+
+        if (nan_found)
+            abort();
     };
 
-    uint nsteps = (uint)std::ceil(this->input.T_end / this->stepper.get_dt());
-    uint n_stages = this->stepper.get_num_stages();
+    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages); };
+    uint nsteps   = (uint)std::ceil(this->input.stepper_input.run_time / this->stepper.GetDT());
+    uint n_stages = this->stepper.GetNumStages();
+
+    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
     this->mesh.CallForEachElement(resize_data_container);
 
-#ifdef OUTPUT
-    writer.WriteFirstStep(this->stepper, this->mesh);
-#endif
+    if (this->writer.WritingOutput()) {
+        this->writer.WriteFirstStep(this->stepper, this->mesh);
+    }
 
     for (uint step = 1; step <= nsteps; ++step) {
-        for (uint stage = 0; stage < this->stepper.get_num_stages(); ++stage) {
+        for (uint stage = 0; stage < this->stepper.GetNumStages(); ++stage) {
+            if (this->parser.ParsingInput()) {
+                this->parser.ParseInput(this->stepper, this->mesh);
+            }
+
             this->mesh.CallForEachElement(volume_kernel);
 
             this->mesh.CallForEachElement(source_kernel);
@@ -77,16 +106,21 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
+            ProblemType::postprocessor_serial_kernel(this->stepper, this->mesh);
+
             ++(this->stepper);
         }
 
         this->mesh.CallForEachElement(swap_states_kernel);
 
-#ifdef OUTPUT
-        writer.WriteOutput(this->stepper, mesh);
-#endif
+        if (this->writer.WritingOutput()) {
+            this->writer.WriteOutput(this->stepper, this->mesh);
+        }
     }
-#ifdef RESL2
+}
+
+template <typename ProblemType>
+void Simulation<ProblemType>::ComputeL2Residual() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -95,8 +129,7 @@ void Simulation<ProblemType>::Run() {
 
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
-    writer.get_log_file() << "residual inner product: " << residual_L2 << std::endl;
-#endif
+    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
 }
 
 #endif

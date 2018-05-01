@@ -106,7 +106,7 @@ class Say {
 template <class key, class T>
 std::unordered_map<key, T> intersect(const std::unordered_map<key, T>& um1, const std::unordered_map<key, T>& um2) {
     const std::unordered_map<key, T>& smaller = (um1.size() < um2.size()) ? um1 : um2;
-    const std::unordered_map<key, T>& larger = (um1.size() >= um2.size()) ? um1 : um2;
+    const std::unordered_map<key, T>& larger  = (um1.size() >= um2.size()) ? um1 : um2;
     std::unordered_map<key, T> r_um;
 
     for (auto key_T : smaller) {

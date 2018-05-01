@@ -396,3 +396,5 @@ ADCIRC Model
 13
 7
 1
+0 = Number of generic boundaries
+0 = Total number of generic boundary nodes

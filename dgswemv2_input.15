@@ -6,11 +6,13 @@
 
 mesh:
   format: Adcirc
-  file_name: build/mesh_generators/rectangular_mesh.14
-
+  file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.14
+  coordinate_system: spherical
+  
 timestepping:
-  dt: 1 #seconds
-  end_time: 43200 #seconds
+  start_time: 11-05-2015 12:00              #dd-mm-yyyy hh:mm
+  end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm
+  dt: 1                           #in seconds
   order: 2
   nstages: 2
 
@@ -18,12 +20,38 @@ polynomial_order: 1
 
 problem:
   name: swe
-  bottom_friction:
-    type: Chezy
-    coefficient: 0.001
   gravity: 9.81
-  initial_conditions:
-    type: Constant
-    initial_surface_height: 10.0
-    initial_momentum_x: 0.0
-    initial_momentum_y: 0.0
+  density_air: 1.225
+  density_water: 1000.0
+  h_o: 0.01
+  spherical_projection:
+    longitude_o: 15.0
+    latitude_o: 25.0
+    R: 6378200.0
+  #initial_conditions:
+  #  type: Function
+  #  initial_surface_height: 0.0
+  #  initial_momentum_x: 0.0
+  #  initial_momentum_y: 0.0
+  #function_source: Enable
+  #bottom_friction:
+  #  type: Chezy
+  #  coefficient: 0.001
+  #meteo_forcing:
+  #  type: HWIND
+  #  raw_input_file: weather.test
+  #  input_file: weather.test
+  #  frequency: 900
+  #tidal_potential:
+  #  type: Test
+  #coriolis: Enable
+    
+output:
+  path: output/
+  #  logfile: 
+  #    name: log
+  #    verbose: false
+  #modal:
+  #  frequency: 360
+  vtk:
+    frequency: 360

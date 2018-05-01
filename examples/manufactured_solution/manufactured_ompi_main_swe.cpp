@@ -9,9 +9,9 @@
 #include "manufactured_swe_true_solution_functions.hpp"
 
 #include "problem/SWE/swe_problem.hpp"
-#include "problem/SWE/swe_kernels_preprocessor.hpp"
-#include "problem/SWE/swe_kernels_processor.hpp"
-#include "problem/SWE/swe_kernels_postprocessor.hpp"
+#include "problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "problem/SWE/kernels_processor/swe_kernels_processor.hpp"
+#include "problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/ompi_simulation.hpp"
 
@@ -26,11 +26,15 @@ int main(int argc, char* argv[]) {
         MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
         if (provided != MPI_THREAD_MULTIPLE) {
-            std::cerr << "MPI_THREAD_MULTIPLE is not provided!\n";
-
-            MPI_Abort(MPI_COMM_WORLD, MPI_ERR_OTHER);
-
-            return 1;
+            if (omp_get_max_threads() > 1) {
+                std::cerr << "dgswemv2 with ompi parallelization was submitted with more than \n"
+                          << "1 thread per MPI rank and MPI_THREAD_MULTIPLE is not provided!\n"
+                          << "Please either find an MPI implementation that supports MPI_THREAD_MULTIPLE,\n"
+                          << " or resubmit the job with one thread per MPI rank and set the\n"
+                          << " environment variable OMP_NUM_THREADS=1\n";
+                MPI_Abort(MPI_COMM_WORLD, MPI_ERR_OTHER);
+                return 1;
+            }
         }
 
         std::string input_string = std::string(argv[1]);
@@ -46,9 +50,11 @@ int main(int argc, char* argv[]) {
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
         if (locality_id == 0) {
-            std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1)
-                                                         .count() << std::endl;
+            std::cout << "Time Elapsed (in us): "
+                      << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
+
+        simulation.ComputeL2Residual();
 
         MPI_Finalize();
 

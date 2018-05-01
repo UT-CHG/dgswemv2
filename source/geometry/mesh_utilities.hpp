@@ -21,9 +21,7 @@ struct master_maker;
 
 template <typename... Ms>
 struct master_maker<std::tuple<Ms...>> {
-    static std::tuple<Ms...> construct_masters(uint p) {
-        return std::make_tuple(Ms(p)...);
-    };
+    static std::tuple<Ms...> construct_masters(uint p) { return std::make_tuple(Ms(p)...); };
 };
 }
 

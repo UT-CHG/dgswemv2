@@ -68,10 +68,10 @@ void write_distributed_edge_metadata(const std::string& file_name,
         dist_int.p = input.polynomial_order;
 
         if (rnkA > rnkB) {
-            dist_int.elements = {eltB, eltA};
+            dist_int.elements  = {eltB, eltA};
             dist_int.bound_ids = {face_id_B, face_id_A};
         } else {
-            dist_int.elements = {eltA, eltB};
+            dist_int.elements  = {eltA, eltB};
             dist_int.bound_ids = {face_id_A, face_id_B};
         }
 
@@ -80,17 +80,16 @@ void write_distributed_edge_metadata(const std::string& file_name,
 
     for (uint loc_id = 0; loc_id < submeshes.size(); ++loc_id) {
         for (uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id) {
-
             std::string distributed_meta_filename = file_name;
             distributed_meta_filename =
                 distributed_meta_filename.substr(0, distributed_meta_filename.find_last_of("."));
             std::ofstream file(distributed_meta_filename + '_' + std::to_string(loc_id) + '_' +
                                std::to_string(sbmsh_id) + ".dbmd");
             for (auto& sf : shared_faces) {
-                uint locA = sf.first.first % num_loc;
+                uint locA   = sf.first.first % num_loc;
                 uint sbmshA = sf.first.first / num_loc;
 
-                uint locB = sf.first.second % num_loc;
+                uint locB   = sf.first.second % num_loc;
                 uint sbmshB = sf.first.second / num_loc;
                 if ((locA == loc_id && sbmshA == sbmsh_id) || (locB == loc_id && sbmshB == sbmsh_id)) {
                     file << locA << " " << sbmshA << " " << locB << " " << sbmshB << " " << sf.second.size() << '\n';

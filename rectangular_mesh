@@ -1,0 +1,12 @@
+x1: 0.0 
+x2: 90000.0
+
+y1: 0.0
+y2: 6000.0
+
+num_x_subdivisions: 90
+num_y_subdivisions: 6
+
+pattern: 0
+
+boundary_type: [0, 1, 0, 0]

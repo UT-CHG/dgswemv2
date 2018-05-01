@@ -71,6 +71,22 @@ int main() {
             error_found = true;
         }
     }
+
+    // check Interpolation Derivative
+    // take linear function f = x + 1/sqrt(3) * y
+    nodal_vals = {-0.5, 0.5, 0.5};
+
+    Array2D<double> interpolation_derivative_true = {{1.0}, {1.0 / std::sqrt(3.)}};
+
+    Array2D<double> interpolation_derivative_comp =
+        triangle.InterpolateNodalValuesDerivatives(nodal_vals, std::vector<Point<2>>{{0.0, 0.0}});
+
+    if (!almost_equal(interpolation_derivative_true[0][0], interpolation_derivative_comp[0][0]) ||
+        !almost_equal(interpolation_derivative_true[1][0], interpolation_derivative_comp[1][0])) {
+        std::cerr << "Error InterpolateNodalValuesDerivatives\n";
+        error_found = true;
+    }
+
     if (error_found) {
         return 1;
     }

@@ -21,21 +21,25 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
         OMPIRankBoundary rank_boundary;
 
         if (locality_A == locality_id && submesh_A == submesh_id) {
-            rank_boundary.send_rank = locality_B;
+            rank_boundary.send_rank    = locality_B;
             rank_boundary.receive_rank = locality_B;
 
-            rank_boundary.send_tag = (int)((unsigned short)submesh_A << 16 | (unsigned short)submesh_B);
+            rank_boundary.send_tag    = (int)((unsigned short)submesh_A << 16 | (unsigned short)submesh_B);
             rank_boundary.receive_tag = (int)((unsigned short)submesh_B << 16 | (unsigned short)submesh_A);
         } else {
-            rank_boundary.send_rank = locality_A;
+            rank_boundary.send_rank    = locality_A;
             rank_boundary.receive_rank = locality_A;
 
-            rank_boundary.send_tag = (int)((unsigned short)submesh_B << 16 | (unsigned short)submesh_A);
+            rank_boundary.send_tag    = (int)((unsigned short)submesh_B << 16 | (unsigned short)submesh_A);
             rank_boundary.receive_tag = (int)((unsigned short)submesh_A << 16 | (unsigned short)submesh_B);
         }
 
-        rank_boundary.elements.reserve(n_dboubdaries);
-        rank_boundary.bound_ids.reserve(n_dboubdaries);
+        rank_boundary.elements_in.reserve(n_dboubdaries);
+        rank_boundary.elements_in.reserve(n_dboubdaries);
+
+        rank_boundary.bound_ids_in.reserve(n_dboubdaries);
+        rank_boundary.bound_ids_ex.reserve(n_dboubdaries);
+
         rank_boundary.p.reserve(n_dboubdaries);
 
         for (uint db = 0; db < n_dboubdaries; ++db) {
@@ -46,12 +50,20 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
             file.ignore(1000, '\n');
 
             if (locality_A == locality_id && submesh_A == submesh_id) {
-                rank_boundary.elements.push_back(dboundary_meta_data.elements.first);
-                rank_boundary.bound_ids.push_back(dboundary_meta_data.bound_ids.first);
+                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.first);
+                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.second);
+
+                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.first);
+                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.second);
+
                 rank_boundary.p.push_back(dboundary_meta_data.p);
             } else {
-                rank_boundary.elements.push_back(dboundary_meta_data.elements.second);
-                rank_boundary.bound_ids.push_back(dboundary_meta_data.bound_ids.second);
+                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.second);
+                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.first);
+
+                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.second);
+                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.first);
+
                 rank_boundary.p.push_back(dboundary_meta_data.p);
             }
         }
@@ -59,13 +71,35 @@ OMPICommunicator::OMPICommunicator(const std::string& neighborhood_data_file,
         this->rank_boundaries.push_back(std::move(rank_boundary));
     }
 
+    this->send_preproc_requests.resize(this->rank_boundaries.size());
+    this->receive_preproc_requests.resize(this->rank_boundaries.size());
+
     this->send_requests.resize(this->rank_boundaries.size());
     this->receive_requests.resize(this->rank_boundaries.size());
+
+    this->send_postproc_requests.resize(this->rank_boundaries.size());
+    this->receive_postproc_requests.resize(this->rank_boundaries.size());
 }
 
 void OMPICommunicator::InitializeCommunication() {
     for (uint rank_boundary_id = 0; rank_boundary_id < this->rank_boundaries.size(); rank_boundary_id++) {
         OMPIRankBoundary& rank_boundary = this->rank_boundaries[rank_boundary_id];
+
+        MPI_Send_init(&rank_boundary.send_preproc_buffer.front(),
+                      rank_boundary.send_preproc_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.send_rank,
+                      rank_boundary.send_tag,
+                      MPI_COMM_WORLD,
+                      &this->send_preproc_requests.at(rank_boundary_id));
+
+        MPI_Recv_init(&rank_boundary.receive_preproc_buffer.front(),
+                      rank_boundary.receive_preproc_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.receive_rank,
+                      rank_boundary.receive_tag,
+                      MPI_COMM_WORLD,
+                      &this->receive_preproc_requests.at(rank_boundary_id));
 
         MPI_Send_init(&rank_boundary.send_buffer.front(),
                       rank_boundary.send_buffer.size(),
@@ -82,5 +116,21 @@ void OMPICommunicator::InitializeCommunication() {
                       rank_boundary.receive_tag,
                       MPI_COMM_WORLD,
                       &this->receive_requests.at(rank_boundary_id));
+
+        MPI_Send_init(&rank_boundary.send_postproc_buffer.front(),
+                      rank_boundary.send_postproc_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.send_rank,
+                      rank_boundary.send_tag,
+                      MPI_COMM_WORLD,
+                      &this->send_postproc_requests.at(rank_boundary_id));
+
+        MPI_Recv_init(&rank_boundary.receive_postproc_buffer.front(),
+                      rank_boundary.receive_postproc_buffer.size(),
+                      MPI_DOUBLE,
+                      rank_boundary.receive_rank,
+                      rank_boundary.receive_tag,
+                      MPI_COMM_WORLD,
+                      &this->receive_postproc_requests.at(rank_boundary_id));
     }
 }

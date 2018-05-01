@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -g")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
   test_tuple_helpers_exe
@@ -119,17 +119,6 @@ add_test(
   test_rk_stepper_exe
 )
 
-#add_executable(
-#  test_triangulation_exe
-#  test_triangulation.cpp
-#  ${PROJECT_SOURCE_DIR}/src/writer/triangulation.cpp
-#)
-
-#add_test(
-#  Unit_triangulation
-#  test_triangulation_exe
-#)
-
 add_executable(
   test_llf_flux_exe
   test_llf_flux.cpp
@@ -140,15 +129,21 @@ add_test(
   test_llf_flux_exe
 )
 
-#add_executable(
-#  test_swe_boundaries_exe
-#  test_swe_boundaries.cpp
-#)
+add_executable(
+  test_wetting_drying_exe
+  test_wetting_drying.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
+)
 
-#add_test(
-#  Uint_test_land_boundary.cpp
-#  test_swe_boundaries_exe
-#)
+add_test(
+  Unit_wetting_drying
+  test_wetting_drying_exe
+)
 
 add_executable(
   test_mesh_metadata_exe
@@ -169,7 +164,7 @@ include_directories("${YAML_CPP_INCLUDE_DIR}")
 add_executable(
   test_swe_inputs_exe
   test_swe_inputs.cpp
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
 target_link_libraries(test_swe_inputs_exe ${YAML_CPP_LIBRARIES})
@@ -185,7 +180,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/swe_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
 target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
@@ -204,26 +199,49 @@ add_test(
 file(WRITE files_for_testing/correct_input.15
 "mesh:\n\
   format: Adcirc\n\
-  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\n\
+  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\
+  coordinate_system: cartesian\n\n\
 timestepping:\n\
+  start_time: 11-05-2015 12:00              #dd-mm-yyyy hh:mm\n\
+  end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm\n\
   dt: 1                           #in seconds\n\
-  end_time: 86400                 #in seconds\n\
   order: 2\n\
   nstages: 2\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
-  bottom_friction:\n\
-    type: Chezy\n\
-    coefficient: 0.001\n\
   gravity: 9.81\n\
+  density_air: 1.225\n\
+  density_water: 1000\n\
+  h_o: 0.001\n\
   initial_conditions:\n\
     type: Constant\n\
     initial_surface_height: 10.0\n\
     initial_momentum_x: 0.0\n\
-    initial_momentum_y: 0.0\n\n\
+    initial_momentum_y: 0.0\n\
+  function_source: Enable\n\
+  bottom_friction:\n\
+    type: Manning\n\
+    coefficient: 0.001\n\
+    input_file: manning.test\n\
+  meteo_forcing:\n\
+    type: HWIND\n\
+    raw_input_file: weather.test\n\
+    input_file: weather.test\n\
+    frequency: 900\n\
+  tidal_potential:\n\
+    type: Test\n\
+  coriolis: Enable\n\
+  wetting_drying:\n\
+    h_o: 0.1\n\
+  slope_limiting:\n\
+    type: Cockburn-Shu\n\
+    M: 50\n\
+    nu: 1\n\n\
 output:\n\
-  logfile: log\n\
+  logfile:\n\
+    name: log\n\
+    verbose: true\n\
   path: output/\n\
   vtk:\n\
     frequency: 100\n"
@@ -232,24 +250,45 @@ output:\n\
 file(WRITE files_for_testing/correct_input_no_output.15
 "mesh:\n\
   format: Adcirc\n\
-  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\n\
+  file_name: ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14\n\
+  coordinate_system: cartesian\n\n\
 timestepping:\n\
+  start_time: 11-05-2015 12:00              #dd-mm-yyyy hh:mm\n\
+  end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm\n\
   dt: 1                           #in seconds\n\
-  end_time: 86400                 #in seconds\n\
   order: 2\n\
   nstages: 2\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
-  bottom_friction:\n\
-    type: Chezy\n\
-    coefficient: 0.001\n\
   gravity: 9.81\n\
+  density_air: 1.225\n\
+  density_water: 1000\n\
+  h_o: 0.001\n\
   initial_conditions:\n\
     type: Constant\n\
     initial_surface_height: 10.0\n\
     initial_momentum_x: 0.0\n\
-    initial_momentum_y: 0.0\n"
+    initial_momentum_y: 0.0\n\
+  function_source: Enable\n\
+  bottom_friction:\n\
+    type: Manning\n\
+    coefficient: 0.001\n\
+    input_file: manning.test\n\
+  meteo_forcing:\n\
+    type: HWIND\n\
+    raw_input_file: weather.test\n\
+    input_file: weather.test\n\
+    frequency: 900\n\
+  tidal_potential:\n\
+    type: Test\n\
+  coriolis: Enable\n\
+  wetting_drying:\n\
+    h_o: 0.1\n\
+  slope_limiting:\n\
+    type: Cockburn-Shu\n\
+    M: 50\n\
+    nu: 1\n"
 )
 
 add_executable(

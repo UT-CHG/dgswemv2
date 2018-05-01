@@ -1,6 +1,8 @@
 #ifndef FILE_EXISTS_HPP
 #define FILE_EXISTS_HPP
 
+#include "../general_definitions.hpp"
+
 namespace Utilities {
 /**
  * Determine whether a file exists.

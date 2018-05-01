@@ -1,7 +1,7 @@
 #include "mesh_metadata.hpp"
 
 MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
-    mesh_name = mesh_file.name;
+    this->mesh_name = mesh_file.name;
 
     for (const auto& nod : mesh_file.nodes) {
         if (nod.first < 0) {
@@ -11,7 +11,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         }
 
         uint ID = nod.first;
-        nodes.insert({ID, {nod.second[0], nod.second[1], nod.second[2]}});
+        this->nodes.insert({ID, {nod.second[0], nod.second[1], nod.second[2]}});
     }
 
     for (const auto& elt : mesh_file.elements) {
@@ -22,10 +22,10 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         }
 
         uint ID = elt.first;
-        elements.insert({ID, ElementMetaData(3)});
+        this->elements.insert({ID, ElementMetaData(3)});
 
         for (uint i = 0; i < 3; ++i) {
-            elements.at(ID).node_ids[i] = elt.second[i + 1];
+            this->elements.at(ID).node_ID[i] = elt.second[i + 1];
         }
     }
 
@@ -34,7 +34,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     std::unordered_map<std::uint64_t, std::pair<eltID_faceID, eltID_faceID>> edge_dictionary;
 
     for (const auto& elt : mesh_file.elements) {
-        std::vector<int> node{elt.second[1], elt.second[2], elt.second[3]};
+        std::vector<uint> node{elt.second[1], elt.second[2], elt.second[3]};
 
         for (uint k = 0; k < 3; ++k) {
             std::uint64_t curr_key = static_cast<std::uint64_t>(std::min(node[(k + 1) % 3], node[(k + 2) % 3])) << 32 |
@@ -52,26 +52,35 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     for (const auto& edge : edge_dictionary) {
         // check if there are two elements associated with this edge
         if (edge.second.second.first != DEFAULT_ID) {
-            uint eltA_id = edge.second.first.first;
-            uint eltB_id = edge.second.second.first;
+            uint eltA_id  = edge.second.first.first;
+            uint eltB_id  = edge.second.second.first;
             uint faceA_id = edge.second.first.second;
             uint faceB_id = edge.second.second.second;
 
-            elements.at(eltA_id).neighbor_ID[faceA_id] = eltB_id;
-            elements.at(eltA_id).boundary_type[faceA_id] = SWE::BoundaryConditions::internal;
+            this->elements.at(eltA_id).neighbor_ID[faceA_id]   = eltB_id;
+            this->elements.at(eltA_id).boundary_type[faceA_id] = SWE::BoundaryConditions::internal;
 
-            elements.at(eltB_id).neighbor_ID[faceB_id] = eltA_id;
-            elements.at(eltB_id).boundary_type[faceB_id] = SWE::BoundaryConditions::internal;
+            this->elements.at(eltB_id).neighbor_ID[faceB_id]   = eltA_id;
+            this->elements.at(eltB_id).boundary_type[faceB_id] = SWE::BoundaryConditions::internal;
         } else {
             // treat boundary conditions
-            uint elt_id = edge.second.first.first;
+            uint elt_id  = edge.second.first.first;
             uint face_id = edge.second.first.second;
 
-            std::array<int, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
-                                     mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
+            std::array<uint, 2> nodes{mesh_file.elements.at(elt_id)[(face_id + 1) % 3 + 1],
+                                      mesh_file.elements.at(elt_id)[(face_id + 2) % 3 + 1]};
 
-            elements.at(elt_id).neighbor_ID[face_id] = DEFAULT_ID;
-            elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
+            this->elements.at(elt_id).neighbor_ID[face_id]   = DEFAULT_ID;
+            this->elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
+
+            // find element id on the other side of internal barrier
+            if (this->elements.at(elt_id).boundary_type[face_id] == SWE::BoundaryConditions::internal_barrier) {
+                std::array<uint, 2> barrier_np = mesh_file.get_barrier_node_pair(nodes);
+                std::uint64_t key = static_cast<std::uint64_t>(std::min(barrier_np[0], barrier_np[1])) << 32 |
+                                    std::max(barrier_np[0], barrier_np[1]);
+
+                this->elements.at(elt_id).neighbor_ID[face_id] = edge_dictionary.at(key).first.first;
+            }
         }
     }
 }
@@ -84,7 +93,7 @@ MeshMetaData::MeshMetaData(const std::string& file) {
         throw std::logic_error(err_msg);
     }
 
-    std::getline(ifs, mesh_name);
+    std::getline(ifs, this->mesh_name);
 
     uint numelements;
     ifs >> numelements;
@@ -92,7 +101,7 @@ MeshMetaData::MeshMetaData(const std::string& file) {
     uint elt_id;
     for (uint e = 0; e < numelements; ++e) {
         ifs >> elt_id;
-        ifs >> elements[elt_id];
+        ifs >> this->elements[elt_id];
         ifs.ignore(1000, '\n');
     }
 
@@ -102,38 +111,38 @@ MeshMetaData::MeshMetaData(const std::string& file) {
     uint node_id;
     for (uint n = 0; n < numnodes; ++n) {
         ifs >> node_id;
-        ifs >> nodes[node_id];
+        ifs >> this->nodes[node_id];
         ifs.ignore(1000, '\n');
     }
 
     ifs.close();
 }
 
-void MeshMetaData::WriteTo(const std::string& file) {
+void MeshMetaData::write_to(const std::string& file) {
     std::ofstream ofs;
     ofs.open(file);
 
-    ofs << mesh_name << '\n';
-    ofs << elements.size() << " = number of elements\n";
-    for (const auto& elt : elements) {
+    ofs << this->mesh_name << '\n';
+    ofs << this->elements.size() << " = number of elements\n";
+    for (const auto& elt : this->elements) {
         ofs << elt.first << " " << elt.second << '\n';
     }
 
-    ofs << nodes.size() << " = number of nodes\n";
-    for (const auto& nod : nodes) {
+    ofs << this->nodes.size() << " = number of nodes\n";
+    for (const auto& nod : this->nodes) {
         ofs << nod.first << " " << nod.second << '\n';
     }
 
     ofs.close();
 }
 
-std::vector<Point<3>> MeshMetaData::GetNodalCoordinates(uint elt_id) const {
-    const std::vector<uint>& node_ids = elements.at(elt_id).node_ids;
+std::vector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
+    const std::vector<uint>& node_ID = this->elements.at(elt_id).node_ID;
 
-    std::vector<Point<3>> nodal_coordinates(node_ids.size());
+    std::vector<Point<3>> nodal_coordinates(node_ID.size());
 
-    for (uint indx = 0; indx < node_ids.size(); ++indx) {
-        nodal_coordinates[indx] = nodes.at(node_ids[indx]).coordinates;
+    for (uint indx = 0; indx < node_ID.size(); ++indx) {
+        nodal_coordinates[indx] = this->nodes.at(node_ID[indx]).coordinates;
     }
 
     return nodal_coordinates;

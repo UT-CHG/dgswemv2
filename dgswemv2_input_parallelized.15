@@ -1,26 +1,31 @@
 ###############################################################################
 #
-#  DGSWEMv2 input file
+#  DG_HYPER input file
 #
 ###############################################################################
 
+polynomial_order: 1
 mesh:
   format: Meta
-  file_name: build/mesh_generators/rectangular_mesh.meta
+  file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/mesh_generators/rectangular_mesh.meta
+  coordinate_system: spherical
 timestepping:
+  start_time: 11-05-2015 12:00
+  end_time: 12-05-2015 00:00
   dt: 1
-  end_time: 43200
   order: 2
   nstages: 2
-polynomial_order: 1
 problem:
   name: swe
-  bottom_friction:
-    type: Chezy
-    coefficient: 0.001
   gravity: 9.81
-  initial_conditions:
-    type: Constant
-    initial_surface_height: 10.0
-    initial_momentum_x: 0.0
-    initial_momentum_y: 0.0
+  density_air: 1.225
+  density_water: 1000.0
+  h_o: 0.01
+  spherical_projection:
+    longitude_o: 15.0
+    latitude_o: 25.0
+    R: 6378200.0
+output:
+  path: output/
+  vtk:
+    frequency: 360

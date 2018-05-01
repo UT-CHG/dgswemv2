@@ -55,8 +55,8 @@ int main() {
     using Utilities::almost_equal;
     bool error_found = false;
 
-    using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
-    using ShapeType = Shape::StraightTriangle;
+    using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
+    using ShapeType   = Shape::StraightTriangle;
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
     // make an equilateral triangle
@@ -68,7 +68,7 @@ int main() {
     MasterType master(10);
     ShapeType shape(vrtxs);
 
-    ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<unsigned char>(0));
+    ElementType triangle(0, master, vrtxs, std::vector<uint>(0), std::vector<uint>(0), std::vector<unsigned char>(0));
 
     // Check integrations
     Integration::Dunavant_2D integ;
@@ -100,36 +100,100 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
-                         "in x direction" << std::endl;
+                         "in x direction"
+                      << std::endl;
         }
     }
-    // Add 7 more modes
+
     for (uint dof = 0; dof < 66; dof++) {
         if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
-                         "in y direction" << std::endl;
+                         "in y direction"
+                      << std::endl;
         }
     }
 
-    // Check ComputeUgp and SolveLSE
+    // Check linears through integration
+    // Check nodals through integration
+    // u(x,y) = 3 + 2*x - 2*sqrt(3)*y plane
+    std::vector<double> u{2, 4, 0};
+    std::vector<double> u_gp(triangle.data.get_ngp_internal());
+    std::vector<double> du_dx_gp(triangle.data.get_ngp_internal());
+    std::vector<double> du_dy_gp(triangle.data.get_ngp_internal());
+
+    triangle.ComputeLinearUgp(u, u_gp);
+    triangle.ComputeLinearDUgp(0, u, du_dx_gp);
+    triangle.ComputeLinearDUgp(1, u, du_dy_gp);
+
+    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeLinearUgp" << std::endl;
+    }
+
+    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
+                     "in x direction"
+                  << std::endl;
+    }
+
+    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
+                     "in y direction"
+                  << std::endl;
+    }
+
+    // Check nodals through the same integration
+    triangle.ComputeNodalUgp(u, u_gp);
+    triangle.ComputeNodalDUgp(0, u, du_dx_gp);
+    triangle.ComputeNodalDUgp(1, u, du_dy_gp);
+
+    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeNodalUgp" << std::endl;
+    }
+
+    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeNodalDUgp "
+                     "in x direction"
+                  << std::endl;
+    }
+
+    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
+        error_found = true;
+
+        std::cerr << "Error found in Triangle element in ComputeNodalDUgp "
+                     "in y direction"
+                  << std::endl;
+    }
+
+    // Check ComputeUgp and ApplyMinv
     std::vector<double> mod_vals(triangle.data.get_ndof());
     std::vector<double> gp_vals(triangle.data.get_ngp_internal());
+    std::vector<double> solution_vals(triangle.data.get_ndof());
 
     for (uint dof = 0; dof < 66; dof++) {
         std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
         mod_vals[dof] = 1.0;
 
         triangle.ComputeUgp(mod_vals, gp_vals);
+        triangle.ApplyMinv(mod_vals, solution_vals);
 
         for (uint doff = 0; doff < 66; doff++) {
             if (dof == doff) {
-                if (!almost_equal(
-                         (1. / triangle.IntegrationPhi(doff, gp_vals)), triangle.SolveLSE(mod_vals)[dof], 1.e+03)) {
+                if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)), solution_vals[dof], 1.e+03)) {
                     error_found = true;
 
-                    std::cerr << "Error found in Triangle element in SolveLSE" << std::endl;
+                    std::cerr << "Error found in Triangle element in ApplyMinv" << std::endl;
                 }
             } else {
                 if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals), 0.0)) {
@@ -156,7 +220,8 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in x "
-                         "direction" << std::endl;
+                         "direction"
+                      << std::endl;
         }
 
         triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
@@ -166,15 +231,17 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in y "
-                         "direction" << std::endl;
+                         "direction"
+                      << std::endl;
         }
     }
 
     // Check L2 projection
     std::vector<double> nodal_vals{1.0, 2.0, 3.0};
     std::vector<double> modal_vals_true{2.0, 0.5, 0.5};
+    std::vector<double> modal_vals_computed(triangle.data.get_ndof());
 
-    std::vector<double> modal_vals_computed = triangle.L2Projection(nodal_vals);
+    triangle.L2Projection(nodal_vals, modal_vals_computed);
 
     for (uint i = 0; i < 3; i++) {
         if (!almost_equal(modal_vals_computed[i], modal_vals_true[i])) {

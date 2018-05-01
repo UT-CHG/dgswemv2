@@ -1,49 +1,50 @@
 #ifndef STEPPER_HPP
 #define STEPPER_HPP
 
-#include "general_definitions.hpp"
+#include "../general_definitions.hpp"
 
-struct Stepper {
+class Stepper {
+  public:
+    Array2D<double> ark;
+    Array2D<double> brk;
+    Array2D<double> crk;
+    std::vector<double> drk;
+
+  private:
+    uint nstages;
+    double dt;
+
+    uint step;
+    uint stage;
+    uint timestamp;
+
+    double t;
+
+  public:
+    Stepper() = default;
     Stepper(uint nstages, uint order, double dt);
 
-    uint get_num_stages() const { return nstages; }
+    uint GetNumStages() const { return this->nstages; }
+    double GetDT() const { return this->dt; }
 
-    double get_t_at_curr_stage() const { return _t + _dt * drk[irk]; }
-
-    double get_dt() const { return _dt; }
-
-    uint get_step() const { return step; }
-
-    uint get_timestamp() const { return timestamp; }
-
-    uint get_stage() const { return irk; }
+    uint GetStep() const { return this->step; }
+    uint GetTimestamp() const { return this->timestamp; }
+    uint GetStage() const { return this->stage; }
+    double GetTimeAtCurrentStage() const { return this->t + this->dt * this->drk[this->stage]; }
 
     Stepper& operator++() {
-        ++irk;
-        ++timestamp;
+        ++(this->stage);
+        ++(this->timestamp);
 
-        irk = irk % nstages;
+        this->stage = this->stage % this->nstages;
 
-        if (irk == 0) {
-            _t += _dt;
-            ++step;
+        if (this->stage == 0) {
+            this->t += this->dt;
+            ++(this->step);
         }
 
         return *this;
     }
-
-    const uint nstages;
-    uint irk;
-
-    std::vector<std::vector<double>> ark;
-    std::vector<std::vector<double>> brk;
-    std::vector<std::vector<double>> crk;
-    std::vector<double> drk;
-
-    uint step;
-    uint timestamp;
-    double _t;
-    const double _dt;
 };
 
 #endif

@@ -1,8 +1,9 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include "../utilities/heterogeneous_containers.hpp"
+#include "../general_definitions.hpp"
 
+#include "../utilities/heterogeneous_containers.hpp"
 #include "mesh_utilities.hpp"
 
 namespace Geometry {
@@ -20,10 +21,10 @@ class Mesh<std::tuple<Elements...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>> {
   private:
-    using MasterElementTypes = typename make_master_type<std::tuple<Elements...>>::type;
-    using ElementContainer = Utilities::HeterogeneousMap<Elements...>;
-    using InterfaceContainer = Utilities::HeterogeneousVector<Interfaces...>;
-    using BoundaryContainer = Utilities::HeterogeneousVector<Boundaries...>;
+    using MasterElementTypes             = typename make_master_type<std::tuple<Elements...>>::type;
+    using ElementContainer               = Utilities::HeterogeneousMap<Elements...>;
+    using InterfaceContainer             = Utilities::HeterogeneousVector<Interfaces...>;
+    using BoundaryContainer              = Utilities::HeterogeneousVector<Boundaries...>;
     using DistributedBoundariesContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
     MasterElementTypes masters;
@@ -71,28 +72,28 @@ class Mesh<std::tuple<Elements...>,
 
     template <typename F>
     void CallForEachElement(const F& f) {
-        Utilities::for_each_in_tuple(elements.data, [&f](auto& element_map) {
+        Utilities::for_each_in_tuple(this->elements.data, [&f](auto& element_map) {
             std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) { f(pair.second); });
         });
     }
 
     template <typename F>
     void CallForEachInterface(const F& f) {
-        Utilities::for_each_in_tuple(interfaces.data, [&f](auto& interface_vector) {
+        Utilities::for_each_in_tuple(this->interfaces.data, [&f](auto& interface_vector) {
             std::for_each(interface_vector.begin(), interface_vector.end(), f);
         });
     }
 
     template <typename F>
     void CallForEachBoundary(const F& f) {
-        Utilities::for_each_in_tuple(boundaries.data, [&f](auto& boundary_vector) {
+        Utilities::for_each_in_tuple(this->boundaries.data, [&f](auto& boundary_vector) {
             std::for_each(boundary_vector.begin(), boundary_vector.end(), f);
         });
     }
 
     template <typename F>
     void CallForEachDistributedBoundary(const F& f) {
-        Utilities::for_each_in_tuple(distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
+        Utilities::for_each_in_tuple(this->distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
             std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
         });
     }

@@ -39,7 +39,7 @@ struct HeterogeneousVector {
     void emplace_back(Args... args) {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousVector::emplace_back: Type not found");
 
-        std::get<index<T, TupleType>::value>(data).emplace_back(std::forward<Args>(args)...);
+        std::get<index<T, TupleType>::value>(this->data).emplace_back(std::forward<Args>(args)...);
     }
 
     /**
@@ -52,7 +52,7 @@ struct HeterogeneousVector {
     T& at(uint i) {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousVector::at: Type not found");
 
-        return std::get<index<T, TupleType>::value>(data).at(i);
+        return std::get<index<T, TupleType>::value>(this->data).at(i);
     }
 
     /**
@@ -62,7 +62,7 @@ struct HeterogeneousVector {
     const T& at(uint i) const {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousVector::at: Type not found");
 
-        return std::get<index<T, TupleType>::value>(data).at(i);
+        return std::get<index<T, TupleType>::value>(this->data).at(i);
     }
 };
 
@@ -98,7 +98,7 @@ struct HeterogeneousMap {
     void emplace(uint n, T&& t) {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousMap::emplace: Type not found");
 
-        std::get<index<T, TupleType>::value>(data).emplace(std::make_pair(n, std::forward<T>(t)));
+        std::get<index<T, TupleType>::value>(this->data).emplace(std::make_pair(n, std::forward<T>(t)));
     }
 
     /**
@@ -111,7 +111,7 @@ struct HeterogeneousMap {
     T& at(uint key) {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousMap::at: Type not found");
 
-        return std::get<index<T, TupleType>::value>(data).at(key);
+        return std::get<index<T, TupleType>::value>(this->data).at(key);
     }
 
     /**
@@ -121,7 +121,7 @@ struct HeterogeneousMap {
     const T& at(uint key) const {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousMap::at: Type not found");
 
-        return std::get<index<T, TupleType>::value>(data).at(key);
+        return std::get<index<T, TupleType>::value>(this->data).at(key);
     }
 };
 }

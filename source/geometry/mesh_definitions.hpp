@@ -18,20 +18,26 @@ template <typename Data>
 using ElementTypeTuple = std::tuple<
     Element<2, Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>, Shape::StraightTriangle, Data>>;
 
-template <typename Data>
-using InterfaceTypeTuple = std::tuple<Interface<1, Integration::GaussLegendre_1D, Data>>;
+template <typename Data, typename... ISs>
+using InterfaceTypeTuple = std::tuple<Interface<1, Integration::GaussLegendre_1D, Data, ISs>...>;
 
 template <typename Data, typename... BCs>
 using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, BCs>...>;
 
-template <typename Data, typename Distributed>
-using DistributedBoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, Distributed>>;
+template <typename Data, typename... DBCs>
+using DistributedBoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, DBCs>...>;
 
-template <typename Data, typename Distributed, typename... BCs>
-using MeshType = Mesh<ElementTypeTuple<Data>,
-                      InterfaceTypeTuple<Data>,
-                      BoundaryTypeTuple<Data, BCs...>,
-                      DistributedBoundaryTypeTuple<Data, Distributed>>;
+template <typename Data, typename IS, typename BC, typename DBC>
+struct MeshType;
+
+template <typename Data, typename... ISs, typename... BCs, typename... DBCs>
+struct MeshType<Data, std::tuple<ISs...>, std::tuple<BCs...>, std::tuple<DBCs...>> {
+    typedef Mesh<ElementTypeTuple<Data>,
+                 InterfaceTypeTuple<Data, ISs...>,
+                 BoundaryTypeTuple<Data, BCs...>,
+                 DistributedBoundaryTypeTuple<Data, DBCs...>>
+        Type;
 };
+}
 
 #endif

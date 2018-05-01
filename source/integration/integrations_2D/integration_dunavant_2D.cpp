@@ -9,7 +9,7 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const
         exit(1);
     }
 
-    std::vector<uint> permutation = this->PermutationData(p);
+    std::vector<uint> permutation                            = this->PermutationData(p);
     std::pair<std::vector<double>, std::vector<Point<3>>> gp = this->GPData(p);
 
     if (permutation.size() != gp.first.size()) {
@@ -67,64 +67,64 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const
 uint Dunavant_2D::GetNumGP(const uint p) {
     uint num_gp{0};
     switch (p) {
-        case(1) :
+        case (1):
             num_gp = 1;
             break;
-        case(2) :
+        case (2):
             num_gp = 3;
             break;
-        case(3) :
+        case (3):
             num_gp = 4;
             break;
-        case(4) :
+        case (4):
             num_gp = 6;
             break;
-        case(5) :
+        case (5):
             num_gp = 7;
             break;
-        case(6) :
+        case (6):
             num_gp = 12;
             break;
-        case(7) :
+        case (7):
             num_gp = 13;
             break;
-        case(8) :
+        case (8):
             num_gp = 16;
             break;
-        case(9) :
+        case (9):
             num_gp = 19;
             break;
-        case(10) :
+        case (10):
             num_gp = 25;
             break;
-        case(11) :
+        case (11):
             num_gp = 27;
             break;
-        case(12) :
+        case (12):
             num_gp = 33;
             break;
-        case(13) :
+        case (13):
             num_gp = 37;
             break;
-        case(14) :
+        case (14):
             num_gp = 42;
             break;
-        case(15) :
+        case (15):
             num_gp = 48;
             break;
-        case(16) :
+        case (16):
             num_gp = 52;
             break;
-        case(17) :
+        case (17):
             num_gp = 61;
             break;
-        case(18) :
+        case (18):
             num_gp = 70;
             break;
-        case(19) :
+        case (19):
             num_gp = 73;
             break;
-        case(20) :
+        case (20):
             num_gp = 79;
             break;
     }

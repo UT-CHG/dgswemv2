@@ -2,7 +2,7 @@
 #define CLASS_RAW_BOUNDARY_HPP
 
 namespace Geometry {
-template <uint dimension, class DataType>
+template <uint dimension, typename DataType>
 class RawBoundary {
   public:
     uint p;
@@ -14,6 +14,7 @@ class RawBoundary {
     Master::Master<dimension + 1>& master;
     Shape::Shape<dimension + 1>& shape;
 
+  public:
     RawBoundary(uint p,
                 uint bound_id,
                 DataType& data,

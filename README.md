@@ -54,11 +54,12 @@ Assuming that `${INSTALL_PATH}` is the path defined in the configuration file. T
 ```
 Note that there are some additional options, which will create additional targets. These typically require additional dependencies.
 
-| CMake Option | Description                                                           |
-| ------------ | --------------------------------------------------------------------- |
-| USE_OMPI     | Enables MPI OpenMP parallelization; builds target `DG_HYPER_SWE_OMPI` |
-| USE_HPX      | Enables HPX parallelization; builds target `DG_HYPER_SWE_HPX`         |
-| SET_VERBOSE  | Set the makefile compilation output to Verbose                        |
+| CMake Option   | Description                                                           |
+| -------------- | --------------------------------------------------------------------- |
+| USE_OMPI       | Enables MPI OpenMP parallelization; builds target `DG_HYPER_SWE_OMPI` |
+| USE_HPX        | Enables HPX parallelization; builds target `DG_HYPER_SWE_HPX`         |
+| SET_VERBOSE    | Set the makefile compilation output to Verbose                        |
+| BUILD_EXAMPLES | Build additional executables to run the examples                      |
 
 Note that the two parallel targets are not mutually exclusive. Cmake should be able to build the two targets without any conflicts.
 
@@ -67,3 +68,9 @@ Note that the two parallel targets are not mutually exclusive. Cmake should be a
 DGSWEM V2 is licensed under the MIT license. The following files have been taken from other repositories. Their licenses are inlined within the files:
 
  - `cmake/modules/FindMETIS.cmake`
+ - `documentation/doxygen-bootstrapped/customdoxygen.css`
+ - `documentation/doxygen-bootstrapped/doxy-boot.js`
+ - `documentation/doxygen-bootstrapped/footer.html`
+ - `documentation/doxygen-bootstrapped/header.html`
+
+N.B. The files in `documentation/doxygen-boostrapped` are taken from `feature/support-doxygen-1.1.12+` branch of the [Velron/doxygen-bootstrapped](https://github.com/Velron/doxygen-bootstrapped) repository. The copy of the Apache-2.0 licesnse can be found in `documentation/doxygen-bootstrapped/APACHE_2.0_LICENSE` of this repository or in the original repository.

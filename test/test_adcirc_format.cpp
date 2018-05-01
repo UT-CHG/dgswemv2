@@ -14,11 +14,10 @@ const static auto compare = [](AdcircFormat meshA, AdcircFormat meshB) -> bool {
 };
 
 int main(int argc, char** argv) {
-
     AdcircFormat mesh1(argv[1]);
 
     std::string out_name = argv[1];
-    out_name = out_name + ".out";
+    out_name             = out_name + ".out";
 
     mesh1.write_to(out_name.c_str());
 

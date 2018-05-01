@@ -1,6 +1,6 @@
 #include "utilities/almost_equal.hpp"
 
-#include "problem/SWE/swe_LLF_flux.hpp"
+#include "problem/SWE/numerical_fluxes/swe_numerical_fluxes.hpp"
 
 #include <iostream>
 
@@ -12,6 +12,7 @@ bool test_configuration(const int configuration,
                         const double qy_in,
                         const double qy_ex,
                         const double bath,
+                        const double sp,
                         std::vector<double>& normal,
                         const double true_ze_flux,
                         const double true_qx_flux,
@@ -20,7 +21,8 @@ bool test_configuration(const int configuration,
 
     double ze_flux, qx_flux, qy_flux;
 
-    SWE::LLF_flux(ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, normal, ze_flux, qx_flux, qy_flux);
+    SWE::LLF_flux(
+        SWE::Global::g, ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, sp, normal, ze_flux, qx_flux, qy_flux);
 
     if (!Utilities::almost_equal(ze_flux, true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";
@@ -46,9 +48,10 @@ bool test_configuration(const int configuration,
 int main() {
     using Utilities::almost_equal;
 
-    static_assert(almost_equal(SWE::Global::g, 9.81),
-                  "Error: this test was designed for a static"
-                  "gravity of 9.81\n");
+    if (!almost_equal(SWE::Global::g, 9.81)) {
+        std::cerr << "Error: this test was designed for a static gravity of 9.81\n";
+        return 1;
+    }
 
     bool error_found = false;
 
@@ -64,6 +67,7 @@ int main() {
         std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
+        double sp   = 1;
 
         if (test_configuration(1,
                                ze_in,
@@ -73,6 +77,7 @@ int main() {
                                qy_in,
                                qy_ex,
                                bath,
+                               sp,
                                normal,
                                0.561276190610246,
                                7.062691284925730,
@@ -92,6 +97,7 @@ int main() {
         std::vector<double> normal{1. / std::sqrt(2.), -1. / std::sqrt(2.)};
 
         double bath = 0;
+        double sp   = 1;
 
         if (test_configuration(2,
                                ze_in,
@@ -101,6 +107,7 @@ int main() {
                                qy_in,
                                qy_ex,
                                bath,
+                               sp,
                                normal,
                                -0.959003388940832,
                                5.636082987795024,
@@ -120,6 +127,7 @@ int main() {
         std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
+        double sp   = 1;
 
         if (test_configuration(2,
                                ze_in,
@@ -129,6 +137,7 @@ int main() {
                                qy_in,
                                qy_ex,
                                bath,
+                               sp,
                                normal,
                                5.775392407336936,
                                40.455394948714215,
