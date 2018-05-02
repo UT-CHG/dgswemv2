@@ -7,8 +7,9 @@
 
 namespace LoadBalancer {
 template <typename ProblemType>
-hpx::future<void> AbstractFactory::initialize_locality_and_world_models(const uint locality_id) {
-    return Random<ProblemType>::initialize_locality_and_world_models(locality_id);
+hpx::future<void> AbstractFactory::initialize_locality_and_world_models(const uint locality_id,
+                                                                        const std::string& input_string) {
+    return Random<ProblemType>::initialize_locality_and_world_models(locality_id, input_string);
 }
 
 template <typename ProblemType>

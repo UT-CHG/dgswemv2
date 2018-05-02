@@ -16,11 +16,12 @@ class WorldModel : public hpx::components::simple_component_base<WorldModel<Prob
 
     static constexpr const char* GetBasename() { return "LOAD_BALANCER_RANDOMIZED_WORLD_MODEL"; }
 
-    WorldModel(/*meshrelated*/);
+    WorldModel(const std::string& input_string);
     void MigrateOneSubmesh();
     HPX_DEFINE_COMPONENT_ACTION(WorldModel, MigrateOneSubmesh, MigrateOneSubmeshAction);
 
   private:
+    bool tried_moving_one_tile = false;
     std::vector<client_t> simulation_unit_clients;
 };
 
@@ -70,7 +71,8 @@ struct Random {
     using WorldModelClient = detail_random::WorldModelClient<ProblemType>;
 
     static WorldModelClient world_model_client;
-    static hpx::future<void> initialize_locality_and_world_models(const uint locality_id);
+    static hpx::future<void> initialize_locality_and_world_models(const uint locality_id,
+                                                                  const std::string& input_string);
     static void reset_locality_and_world_models();
     static std::unique_ptr<LoadBalancer::SubmeshModel> create_submesh_model(uint locality_id, uint submesh_id);
 };
@@ -87,8 +89,25 @@ namespace LoadBalancer { namespace detail_random {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WorldModel Implementation
 template <typename ProblemType>
-WorldModel<ProblemType>::WorldModel() {
+WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
+    for ( uint locality_id = 0; locality_id < hpx::get_initial_num_localities(); ++locality_id ) {
+        std::string submesh_file_prefix = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + "_" +
+                                          std::to_string(locality_id) + '_';
+        std::string submesh_file_postfix =
+            input.mesh_file_name.substr(input.mesh_file_name.find_last_of('.'), input.mesh_file_name.size());
+
+        uint submesh_id = 0;
+        while ( Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix) ) {
+            this->simulation_unit_clients.emplace_back();
+            this->simulation_unit_clients.back().connect_to(std::string{client_t::GetBasename()}+
+                                                            std::to_string(locality_id)+'_'+
+                                                            std::to_string(submesh_id));
+            std::cout << "Adding client for locality: " << locality_id << " ad submesh: " << submesh_id << '\n';
+            ++submesh_id;
+        }
+    }
 }
 
 template <typename ProblemType>
@@ -122,18 +141,20 @@ void SubmeshModel<ProblemType>::serialize(Archive& ar, unsigned) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template <typename ProblemType>
-hpx::future<void> Random<ProblemType>::initialize_locality_and_world_models(const uint locality_id) {
+hpx::future<void> Random<ProblemType>::initialize_locality_and_world_models(const uint locality_id,
+                                                                            const std::string& input_string) {
     if ( locality_id == 0 ) {
         std::cout << "Initializing The world model\n";
 
         using WorldModelComponent = hpx::components::simple_component<Random<ProblemType>::WorldModel>;
-        hpx::future<hpx::id_type> world_model_id = hpx::new_<WorldModelComponent>(hpx::find_here());
+        hpx::future<hpx::id_type> world_model_id = hpx::new_<WorldModelComponent>(hpx::find_here(), input_string);
 
         Random<ProblemType>::world_model_client = Random<ProblemType>::WorldModelClient(std::move(world_model_id));
 
         hpx::future<void> registration_future = Random<ProblemType>::world_model_client.register_as(
             Random<ProblemType>::WorldModel::GetBasename()
             );
+
         std::cout << "All calls made, just need to wait on future\n";
         return registration_future;
     }

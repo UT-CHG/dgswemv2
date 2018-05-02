@@ -7,7 +7,8 @@ namespace LoadBalancer {
 class AbstractFactory {
 public:
     template <typename ProblemType>
-    static hpx::future<void> initialize_locality_and_world_models(const uint locality_id);
+    static hpx::future<void> initialize_locality_and_world_models(const uint locality_id,
+                                                                  const std::string& input_string);
 
     template <typename ProblemType>
     static void reset_locality_and_world_models();

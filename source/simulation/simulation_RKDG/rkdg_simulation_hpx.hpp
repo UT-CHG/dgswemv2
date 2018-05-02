@@ -62,7 +62,7 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-    hpx::future<void> lb_future = LoadBalancer::initialize_locality_and_world_models<ProblemType>(locality_id);
+    hpx::future<void> lb_future = LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
 
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +

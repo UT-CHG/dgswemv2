@@ -323,6 +323,7 @@ class HPXSimulationUnitClient
     using BaseType = hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>>;
 
   public:
+    HPXSimulationUnitClient()=default;
     HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
     HPXSimulationUnitClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
 
