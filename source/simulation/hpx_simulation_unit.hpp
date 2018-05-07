@@ -33,9 +33,9 @@ class HPXSimulationUnit
   public:
     HPXSimulationUnit() = default;
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
-    HPXSimulationUnit(const HPXSimulationUnit& rhs) = default;
+    HPXSimulationUnit(HPXSimulationUnit&& rhs) = default;
 
-    HPXSimulationUnit& operator=(HPXSimulationUnit& rhs) = default;
+    HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs)=default;
 
     hpx::future<void> Preprocessor();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
@@ -49,12 +49,18 @@ class HPXSimulationUnit
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 
+
+    //This function is part of me debugging. Ignore this for now. It doesn't get called in the code (at the moment)
+    void SerializeAndUnserialize();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, SerializeAndUnserialize, SerializeAndUnserializeAction);
+
+
     template <typename Archive>
     void save(Archive& ar, unsigned) const;
 
     template <typename Archive>
     void load(Archive& ar, unsigned);
-    HPX_SERIALIZATION_SPLIT_MEMBER()
+    HPX_SERIALIZATION_SPLIT_MEMBER();
 
   private:
     void Parse();
@@ -108,9 +114,9 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
     this->communicator.SendPreprocAll(this->stepper.get_timestamp());
 
     return receive_future.then([this](auto&&) {
-        ProblemType::initialize_data_parallel_post_receive_kernel(
+            ProblemType::initialize_data_parallel_post_receive_kernel(
             this->mesh, this->problem_input);
-    });
+        });
 }
 
 template <typename ProblemType>
@@ -128,21 +134,6 @@ void HPXSimulationUnit<ProblemType>::Launch() {
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
     this->mesh.CallForEachElement(resize_data_container);
-}
-
-template <typename ProblemType>
-template <typename Archive>
-void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
-    ar & stepper & writer & parser & mesh & problem_input & communicator;
-}
-
-template <typename ProblemType>
-template <typename Archive>
-void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
-    ar & stepper & writer & parser & mesh & problem_input & communicator;
-
-    initialize_mesh_interfaces_boundaries<ProblemType,HPXCommunicator>(mesh, communicator, writer);
-    this->writer.StartLog();
 }
 
 template <typename ProblemType>
@@ -226,7 +217,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
         }
-    });
+        });
 }
 
 template <typename ProblemType>
@@ -265,7 +256,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Finished postprocessor work after receive" << std::endl << std::endl;
         }
-    });
+        });
 }
 
 template <typename ProblemType>
@@ -281,7 +272,6 @@ void HPXSimulationUnit<ProblemType>::SwapStates() {
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
-
     hpx::future<void> step_future = hpx::make_ready_future();
 
     for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
@@ -298,7 +288,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     return step_future.then([this](auto&&) {
             this->submesh_model->InStep(0,0);
             return this->SwapStates();
-        });
+            });
 }
 
 template <typename ProblemType>
@@ -314,6 +304,44 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 
     return residual_L2;
+}
+
+template <typename ProblemType>
+void HPXSimulationUnit<ProblemType>::SerializeAndUnserialize() {
+
+//    decltype(*this) _temp_ptr = nullptr;
+
+    std::vector<char> buffer;
+    hpx::serialization::output_archive oarchive(buffer);
+    oarchive << *this;
+
+    hpx::serialization::input_archive iarchive(buffer);
+    iarchive >> *this;
+
+}
+
+template <typename ProblemType>
+template <typename Archive>
+void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Departing from locality " << hpx::get_locality_id() << std::endl;
+    }
+
+    ar & stepper & writer & parser & mesh & problem_input & communicator & submesh_model;
+}
+
+template <typename ProblemType>
+template <typename Archive>
+void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
+    ar & stepper & writer & parser & mesh & problem_input & communicator & submesh_model;
+
+    this->writer.StartLog();
+
+    if (this->writer.WritingVerboseLog()) {
+        this->writer.GetLogFile() << "Arriving on locality " << hpx::get_locality_id() << std::endl;
+    }
+
+    initialize_mesh_interfaces_boundaries<ProblemType,HPXCommunicator>(mesh, communicator, writer);
 }
 
 template <typename ProblemType>
@@ -346,6 +374,11 @@ class HPXSimulationUnitClient
 
     hpx::future<double> ResidualL2() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::ResidualL2Action;
+        return hpx::async<ActionType>(this->get_id());
+    }
+
+    hpx::future<void> SerializeAndUnserialize() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::SerializeAndUnserializeAction;
         return hpx::async<ActionType>(this->get_id());
     }
 };

@@ -13,7 +13,7 @@ class Writer {
     bool writing_log_file;
     bool verbose_log_file;
     std::string log_file_name;
-    std::ofstream log_file;
+    mutable std::ofstream log_file;
 
     bool writing_vtk_output;
     uint vtk_output_frequency;
@@ -34,6 +34,8 @@ class Writer {
     Writer(const WriterInput& writer_input);
     Writer(const WriterInput& writer_input, const uint locality_id, const uint submesh_id);
 
+    Writer(Writer&& rhs)=default;
+
     bool WritingLog() { return this->writing_log_file; }
     bool WritingVerboseLog() { return (this->writing_log_file && this->verbose_log_file); }
     std::ofstream& GetLogFile() { return this->log_file; }
@@ -47,6 +49,7 @@ class Writer {
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
     void InitializeMeshGeometryVTU(typename ProblemType::ProblemMeshType& mesh);
 
+  public:
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned);

@@ -22,7 +22,8 @@ class WorldModel : public hpx::components::simple_component_base<WorldModel<Prob
 
   private:
     bool tried_moving_one_tile = false;
-    std::vector<client_t> simulation_unit_clients;
+    using client_locality_id_pair = std::pair<client_t,uint>;
+    std::vector<client_locality_id_pair> simulation_unit_clients;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,8 +101,11 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
 
         uint submesh_id = 0;
         while ( Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix) ) {
-            this->simulation_unit_clients.emplace_back();
-            this->simulation_unit_clients.back().connect_to(std::string{client_t::GetBasename()}+
+            this->simulation_unit_clients.push_back(
+                std::make_pair( client_t(), locality_id )
+                );
+
+            this->simulation_unit_clients.back().first.connect_to(std::string{client_t::GetBasename()}+
                                                             std::to_string(locality_id)+'_'+
                                                             std::to_string(submesh_id));
             std::cout << "Adding client for locality: " << locality_id << " ad submesh: " << submesh_id << '\n';
@@ -112,7 +116,18 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
 
 template <typename ProblemType>
 void WorldModel<ProblemType>::MigrateOneSubmesh() {
-    std::cout << "Trying to steal one tile" << std::endl;
+    if ( !this->tried_moving_one_tile ) {
+        const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
+
+        client_locality_id_pair& curr_target = this->simulation_unit_clients[ 0xdeadbeef % this->simulation_unit_clients.size() ];
+        uint target_locality = ( curr_target.second + 1 ) % localities.size();
+
+        std::cout << "Stealing tile from " << curr_target.second << " and moving it to " << target_locality << std::endl;
+
+        curr_target.first = hpx::components::migrate(curr_target.first,localities[target_locality]);
+        curr_target.second = target_locality;
+        this->tried_moving_one_tile = true;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

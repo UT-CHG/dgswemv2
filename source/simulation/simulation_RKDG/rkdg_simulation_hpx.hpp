@@ -110,6 +110,14 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                 simulation_futures[sim_id]
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
+
+        // Ignore, this is part of debugging efforts
+        //if ( step % 100 == 0 ) {
+        //    simulation_futures[0] = simulation_futures[0]
+        //        .then([this](auto&&) {
+        //                this->simulation_unit_clients[0].SerializeAndUnserialize();
+        //            });
+        //}
     }
     return hpx::when_all(simulation_futures).then([](auto&&) {
             LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
