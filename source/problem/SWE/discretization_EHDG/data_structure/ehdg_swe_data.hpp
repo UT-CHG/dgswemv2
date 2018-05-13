@@ -72,7 +72,17 @@ struct Data {
 #ifdef HAS_HPX
 template <typename Archive>
 void Data::serialize(Archive& ar, unsigned) {
-    ar& nvrtx& nbound& ndof& ngp_internal& ngp_boundary& state& internal& boundary& wet_dry_state& slope_limit_state;
+    ar & nvrtx
+       & nbound
+       & ndof
+       & ngp_internal
+       & ngp_boundary
+       & state
+       & internal
+       & boundary
+       & source
+       & wet_dry_state
+       & slope_limit_state;
 }
 #endif
 }

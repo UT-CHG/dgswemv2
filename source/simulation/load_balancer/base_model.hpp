@@ -12,6 +12,8 @@ class SubmeshModel {
         std::cout << "Firing base_model::Instep()\n";
     }
 
+    virtual ~SubmeshModel() = default;
+
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         ar & locality_id & submesh_id;
