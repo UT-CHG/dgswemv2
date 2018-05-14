@@ -25,7 +25,13 @@ struct HPXRankBoundary {
 
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-        ar& elements& bound_ids& p& outgoing& incoming;
+        ar& elements& bound_ids& p& outgoing& incoming
+            & send_preproc_buffer //probably unnecessary (can be optimized later)
+            & receive_preproc_buffer
+            & send_buffer
+            & receive_buffer
+            & send_postproc_buffer
+            & receive_postproc_buffer;
     }
 };
 
