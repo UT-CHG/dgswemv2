@@ -125,6 +125,7 @@ void WorldModel<ProblemType>::MigrateOneSubmesh() {
         std::cout << "Stealing tile from " << curr_target.second << " and moving it to " << target_locality << std::endl;
 
         curr_target.first = hpx::components::migrate(curr_target.first,localities[target_locality]);
+        std::cout << "Made it past steal" << std::endl;
         curr_target.second = target_locality;
         this->tried_moving_one_tile = true;
     }

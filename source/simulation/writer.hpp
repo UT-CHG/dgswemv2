@@ -9,6 +9,7 @@ class Writer {
   private:
     bool writing_output;
     std::string output_path;
+    uint version;
 
     bool writing_log_file;
     bool verbose_log_file;
@@ -29,6 +30,7 @@ class Writer {
     bool writing_modal_output;
     uint modal_output_frequency;
 
+    uint version;
   public:
     Writer() = default;
     Writer(const WriterInput& writer_input);
@@ -67,7 +69,8 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
       writing_vtu_output(writer_input.writing_vtu_output),
       vtu_output_frequency(writer_input.vtu_output_freq_step),
       writing_modal_output(writer_input.writing_modal_output),
-      modal_output_frequency(writer_input.modal_output_freq_step) {
+      modal_output_frequency(writer_input.modal_output_freq_step),
+      version(0) {
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name;
     }
@@ -79,12 +82,13 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input, const uint locality
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name + '_' + std::to_string(locality_id) + '_' +
                               std::to_string(submesh_id);
+
     }
 }
 
 template <typename ProblemType>
 void Writer<ProblemType>::StartLog() {
-    this->log_file = std::ofstream(this->log_file_name, std::ofstream::out);
+    this->log_file = std::ofstream(this->log_file_name + '_' + std::to_string(version++));
 
     if (!this->log_file) {
         std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
@@ -354,7 +358,8 @@ void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
        & vtk_file_name_geom
        & vtk_file_name_raw
        & writing_modal_output
-       & modal_output_frequency;
+       & modal_output_frequency
+       & version;
 }
 #endif
 #endif

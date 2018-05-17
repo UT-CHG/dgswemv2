@@ -302,7 +302,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(cons
 
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->master->phi_gp[dof][gp];
+            u_gp.at(gp) += u.at(dof) * this->master->phi_gp.at(dof).at(gp);
         }
     }
 }
@@ -323,6 +323,8 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin,
                                                                                   std::vector<double>& u_lin_gp) {
+
+    assert(this->master);
     std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
