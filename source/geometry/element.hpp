@@ -540,7 +540,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename Archive>
 void Element<dimension, MasterType, ShapeType, DataType>::serialize(Archive& ar,unsigned) {
-    ar & data & ID & shape & neighbor_ID & boundary_type;
+    ar & data & ID & shape & node_ID & neighbor_ID & boundary_type;
 }
 #endif
 }

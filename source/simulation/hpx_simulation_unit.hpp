@@ -272,6 +272,7 @@ void HPXSimulationUnit<ProblemType>::SwapStates() {
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
+    this->pin();
     hpx::future<void> step_future = hpx::make_ready_future();
 
     for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
@@ -287,7 +288,9 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
 
     return step_future.then([this](auto&&) {
             this->submesh_model->InStep(0,0);
-            return this->SwapStates();
+            this->SwapStates();
+            this->unpin();
+            return;
             });
 }
 
