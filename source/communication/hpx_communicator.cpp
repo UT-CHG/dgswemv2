@@ -83,7 +83,7 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
 
 void HPXCommunicator::SendPreprocAll(const uint timestamp) {
     for (auto& rank_boundary : this->rank_boundaries) {
-        rank_boundary.send_preproc(timestamp);
+        rank_boundary.outgoing.set(rank_boundary.send_preproc_buffer, timestamp);
     }
 }
 
@@ -92,7 +92,10 @@ hpx::future<void> HPXCommunicator::ReceivePreprocAll(const uint timestamp) {
     receive_futures.reserve(this->rank_boundaries.size());
 
     for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(rank_boundary.receive_preproc(timestamp));
+        receive_futures.push_back(
+            rank_boundary.incoming.get(timestamp).then([&rank_boundary](hpx::future<array_double> msg_future) {
+                rank_boundary.receive_preproc_buffer = msg_future.get();
+            }));
     }
 
     return hpx::when_all(receive_futures);
@@ -100,7 +103,7 @@ hpx::future<void> HPXCommunicator::ReceivePreprocAll(const uint timestamp) {
 
 void HPXCommunicator::SendAll(const uint timestamp) {
     for (auto& rank_boundary : this->rank_boundaries) {
-        rank_boundary.send(timestamp);
+        rank_boundary.outgoing.set(rank_boundary.send_buffer, timestamp);
     }
 }
 
@@ -109,7 +112,10 @@ hpx::future<void> HPXCommunicator::ReceiveAll(const uint timestamp) {
     receive_futures.reserve(this->rank_boundaries.size());
 
     for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(rank_boundary.receive(timestamp));
+        receive_futures.push_back(
+            rank_boundary.incoming.get(timestamp).then([&rank_boundary](hpx::future<array_double> msg_future) {
+                rank_boundary.receive_buffer = msg_future.get();
+            }));
     }
 
     return hpx::when_all(receive_futures);
@@ -117,7 +123,7 @@ hpx::future<void> HPXCommunicator::ReceiveAll(const uint timestamp) {
 
 void HPXCommunicator::SendPostprocAll(const uint timestamp) {
     for (auto& rank_boundary : this->rank_boundaries) {
-        rank_boundary.send_postproc(timestamp);
+        rank_boundary.outgoing.set(rank_boundary.send_postproc_buffer, timestamp);
     }
 }
 
@@ -126,7 +132,10 @@ hpx::future<void> HPXCommunicator::ReceivePostprocAll(const uint timestamp) {
     receive_futures.reserve(this->rank_boundaries.size());
 
     for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(rank_boundary.receive_postproc(timestamp));
+        receive_futures.push_back(
+            rank_boundary.incoming.get(timestamp).then([&rank_boundary](hpx::future<array_double> msg_future) {
+                rank_boundary.receive_postproc_buffer = msg_future.get();
+            }));
     }
 
     return hpx::when_all(receive_futures);

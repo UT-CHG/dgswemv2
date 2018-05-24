@@ -24,10 +24,8 @@ class Writer {
 
   public:
     Writer() = default;
-    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input);
-    Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
-           const uint locality_id,
-           const uint submesh_id);
+    Writer(const WriterInput& writer_input);
+    Writer(const WriterInput& writer_input, const uint locality_id, const uint submesh_id);
 
     bool WritingLog() { return this->writing_log_file; }
     bool WritingVerboseLog() { return (this->writing_log_file && this->verbose_log_file); }
@@ -43,30 +41,26 @@ class Writer {
 };
 
 template <typename ProblemType>
-Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemInputType>& input)
-    : writing_output(input.writer_input.writing_output),
-      output_path(input.writer_input.output_path),
-      writing_log_file(input.writer_input.writing_log_file),
-      verbose_log_file(input.writer_input.verbose_log_file),
-      writing_vtk_output(input.writer_input.writing_vtk_output),
-      writing_modal_output(input.writer_input.writing_modal_output) {
-    this->vtk_output_frequency = (uint)std::ceil(input.writer_input.vtk_output_frequency / input.stepper_input.dt);
-
-    this->modal_output_frequency = (uint)std::ceil(input.writer_input.modal_output_frequency / input.stepper_input.dt);
-
+Writer<ProblemType>::Writer(const WriterInput& writer_input)
+    : writing_output(writer_input.writing_output),
+      output_path(writer_input.output_path),
+      writing_log_file(writer_input.writing_log_file),
+      verbose_log_file(writer_input.verbose_log_file),
+      writing_vtk_output(writer_input.writing_vtk_output),
+      vtk_output_frequency(writer_input.vtk_output_freq_step),
+      writing_modal_output(writer_input.writing_modal_output),
+      modal_output_frequency(writer_input.writing_vtk_output) {
     if (this->writing_log_file) {
-        this->log_file_name = this->output_path + input.writer_input.log_file_name;
+        this->log_file_name = this->output_path + writer_input.log_file_name;
     }
 }
 
 template <typename ProblemType>
-Writer<ProblemType>::Writer(const InputParameters<typename ProblemType::ProblemInputType>& input,
-                            const uint locality_id,
-                            const uint submesh_id)
-    : Writer(input) {
+Writer<ProblemType>::Writer(const WriterInput& writer_input, const uint locality_id, const uint submesh_id)
+    : Writer(writer_input) {
     if (this->writing_log_file) {
-        this->log_file_name = this->output_path + input.writer_input.log_file_name + '_' + std::to_string(locality_id) +
-                              '_' + std::to_string(submesh_id);
+        this->log_file_name = this->output_path + writer_input.log_file_name + '_' + std::to_string(locality_id) + '_' +
+                              std::to_string(submesh_id);
     }
 }
 

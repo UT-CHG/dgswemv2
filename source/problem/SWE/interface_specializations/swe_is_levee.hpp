@@ -15,6 +15,9 @@ class Levee {
 
 template <typename InterfaceType>
 void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
+    bool wet_in = intface.data_in.wet_dry_state.wet;
+    bool wet_ex = intface.data_ex.wet_dry_state.wet;
+
     double H_levee     = 0.35;
     double H_tolerance = 0.01;
 
@@ -35,18 +38,21 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
 
     double h_above_levee_in, h_above_levee_ex;
     double ze_in_ex, qx_in_ex, qy_in_ex, ze_ex_ex, qx_ex_ex, qy_ex_ex;
+    double gravity_in, gravity_ex;
 
     uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
     uint gp_ex = 0;
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = ngp - gp - 1;
 
+        gravity_in = Global::g;
+        gravity_ex = Global::g;
+
         h_above_levee_in = boundary_in.ze_at_gp[gp] - H_levee;
         h_above_levee_ex = boundary_ex.ze_at_gp[gp_ex] - H_levee;
 
-        if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||
-            std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {  // both side below or equal within
-                                                                             // tolerance
+        if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
+            std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
             // reflective boundary in
             land_boundary.GetEX(stepper,
                                 gp,
@@ -93,6 +99,10 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
             ze_ex_ex = boundary_ex.ze_at_gp[gp_ex];
             qx_ex_ex = qx_in_ex;
             qy_ex_ex = qy_in_ex;
+
+            if (!wet_ex) {
+                gravity_ex = 0.0;
+            }
         } else if (h_above_levee_in < h_above_levee_ex) {  // overtopping from ex to in
             double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
 
@@ -118,10 +128,13 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
             ze_in_ex = boundary_in.ze_at_gp[gp];
             qx_in_ex = qx_ex_ex;
             qy_in_ex = qy_ex_ex;
+
+            if (!wet_in) {
+                gravity_in = 0.0;
+            }
         }
 
-        // zero g fluxes needed
-        LLF_flux(Global::g,
+        LLF_flux(gravity_in,
                  boundary_in.ze_at_gp[gp],
                  ze_in_ex,
                  boundary_in.qx_at_gp[gp],
@@ -135,8 +148,7 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
                  boundary_in.qx_numerical_flux_at_gp[gp],
                  boundary_in.qy_numerical_flux_at_gp[gp]);
 
-        // zero g fluxes needed
-        LLF_flux(Global::g,
+        LLF_flux(gravity_ex,
                  boundary_ex.ze_at_gp[gp_ex],
                  ze_ex_ex,
                  boundary_ex.qx_at_gp[gp_ex],

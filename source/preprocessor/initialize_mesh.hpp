@@ -20,6 +20,8 @@ void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      Communicator& communicator,
                      const typename ProblemType::ProblemInputType& problem_specific_input,
                      Writer<ProblemType>& writer) {
+    mesh.SetMeshName(mesh_data.mesh_name);
+
     initialize_mesh_elements<ProblemType>(mesh, mesh_data, writer);
 
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator, writer);

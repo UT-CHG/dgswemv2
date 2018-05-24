@@ -2,6 +2,7 @@
 #define STEPPER_HPP
 
 #include "../general_definitions.hpp"
+#include "../preprocessor/input_parameters.hpp"
 
 class Stepper {
   public:
@@ -22,7 +23,7 @@ class Stepper {
 
   public:
     Stepper() = default;
-    Stepper(uint nstages, uint order, double dt);
+    Stepper(const StepperInput& stepper_input);
 
     uint GetNumStages() const { return this->nstages; }
     double GetDT() const { return this->dt; }

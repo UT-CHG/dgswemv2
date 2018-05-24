@@ -134,3 +134,51 @@ void OMPICommunicator::InitializeCommunication() {
                       &this->receive_postproc_requests.at(rank_boundary_id));
     }
 }
+
+void OMPICommunicator::SendPreprocAll(const uint timestamp) {
+    MPI_Startall(this->send_preproc_requests.size(), &this->send_preproc_requests.front());
+}
+
+void OMPICommunicator::ReceivePreprocAll(const uint timestamp) {
+    MPI_Startall(this->receive_preproc_requests.size(), &this->receive_preproc_requests.front());
+}
+
+void OMPICommunicator::WaitAllPreprocSends(const uint timestamp) {
+    MPI_Waitall(this->send_preproc_requests.size(), &this->send_preproc_requests.front(), MPI_STATUSES_IGNORE);
+}
+
+void OMPICommunicator::WaitAllPreprocReceives(const uint timestamp) {
+    MPI_Waitall(this->receive_preproc_requests.size(), &this->receive_preproc_requests.front(), MPI_STATUSES_IGNORE);
+}
+
+void OMPICommunicator::SendAll(const uint timestamp) {
+    MPI_Startall(this->send_requests.size(), &this->send_requests.front());
+}
+
+void OMPICommunicator::ReceiveAll(const uint timestamp) {
+    MPI_Startall(this->receive_requests.size(), &this->receive_requests.front());
+}
+
+void OMPICommunicator::WaitAllSends(const uint timestamp) {
+    MPI_Waitall(this->send_requests.size(), &this->send_requests.front(), MPI_STATUSES_IGNORE);
+}
+
+void OMPICommunicator::WaitAllReceives(const uint timestamp) {
+    MPI_Waitall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE);
+}
+
+void OMPICommunicator::SendPostprocAll(const uint timestamp) {
+    MPI_Startall(this->send_postproc_requests.size(), &this->send_postproc_requests.front());
+}
+
+void OMPICommunicator::ReceivePostprocAll(const uint timestamp) {
+    MPI_Startall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front());
+}
+
+void OMPICommunicator::WaitAllPostprocSends(const uint timestamp) {
+    MPI_Waitall(this->send_postproc_requests.size(), &this->send_postproc_requests.front(), MPI_STATUSES_IGNORE);
+}
+
+void OMPICommunicator::WaitAllPostprocReceives(const uint timestamp) {
+    MPI_Waitall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front(), MPI_STATUSES_IGNORE);
+}

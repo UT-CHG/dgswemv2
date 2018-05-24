@@ -53,53 +53,20 @@ class OMPICommunicator {
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     OMPIRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
 
-    void SendPreprocAll(const uint timestamp) {
-        MPI_Startall(this->send_preproc_requests.size(), &this->send_preproc_requests.front());
-    }
+    void SendPreprocAll(const uint timestamp);
+    void ReceivePreprocAll(const uint timestamp);
+    void WaitAllPreprocSends(const uint timestamp);
+    void WaitAllPreprocReceives(const uint timestamp);
 
-    void ReceivePreprocAll(const uint timestamp) {
-        MPI_Startall(this->receive_preproc_requests.size(), &this->receive_preproc_requests.front());
-    }
+    void SendAll(const uint timestamp);
+    void ReceiveAll(const uint timestamp);
+    void WaitAllSends(const uint timestamp);
+    void WaitAllReceives(const uint timestamp);
 
-    void WaitAllPreprocSends(const uint timestamp) {
-        MPI_Waitall(this->send_preproc_requests.size(), &this->send_preproc_requests.front(), MPI_STATUSES_IGNORE);
-    }
-
-    void WaitAllPreprocReceives(const uint timestamp) {
-        MPI_Waitall(
-            this->receive_preproc_requests.size(), &this->receive_preproc_requests.front(), MPI_STATUSES_IGNORE);
-    }
-
-    void SendAll(const uint timestamp) { MPI_Startall(this->send_requests.size(), &this->send_requests.front()); }
-
-    void ReceiveAll(const uint timestamp) {
-        MPI_Startall(this->receive_requests.size(), &this->receive_requests.front());
-    }
-
-    void WaitAllSends(const uint timestamp) {
-        MPI_Waitall(this->send_requests.size(), &this->send_requests.front(), MPI_STATUSES_IGNORE);
-    }
-
-    void WaitAllReceives(const uint timestamp) {
-        MPI_Waitall(this->receive_requests.size(), &this->receive_requests.front(), MPI_STATUSES_IGNORE);
-    }
-
-    void SendPostprocAll(const uint timestamp) {
-        MPI_Startall(this->send_postproc_requests.size(), &this->send_postproc_requests.front());
-    }
-
-    void ReceivePostprocAll(const uint timestamp) {
-        MPI_Startall(this->receive_postproc_requests.size(), &this->receive_postproc_requests.front());
-    }
-
-    void WaitAllPostprocSends(const uint timestamp) {
-        MPI_Waitall(this->send_postproc_requests.size(), &this->send_postproc_requests.front(), MPI_STATUSES_IGNORE);
-    }
-
-    void WaitAllPostprocReceives(const uint timestamp) {
-        MPI_Waitall(
-            this->receive_postproc_requests.size(), &this->receive_postproc_requests.front(), MPI_STATUSES_IGNORE);
-    }
+    void SendPostprocAll(const uint timestamp);
+    void ReceivePostprocAll(const uint timestamp);
+    void WaitAllPostprocSends(const uint timestamp);
+    void WaitAllPostprocReceives(const uint timestamp);
 
   public:
     using RankBoundaryType = OMPIRankBoundary;

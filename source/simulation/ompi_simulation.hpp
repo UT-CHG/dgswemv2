@@ -13,8 +13,6 @@
 template <typename ProblemType>
 class OMPISimulationUnit {
   private:
-    InputParameters<typename ProblemType::ProblemInputType> input;
-
     typename ProblemType::ProblemMeshType mesh;
 
     OMPICommunicator communicator;
@@ -23,46 +21,8 @@ class OMPISimulationUnit {
     typename ProblemType::ProblemParserType parser;
 
   public:
-    OMPISimulationUnit() : mesh(this->input.polynomial_order) {}
-    OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
-        : input(input_string, locality_id, submesh_id),
-          mesh(this->input.polynomial_order),
-          communicator(
-              this->input.mesh_input.mesh_file_name.substr(0, this->input.mesh_input.mesh_file_name.find_last_of('.')) +
-                  ".dbmd",
-              locality_id,
-              submesh_id),
-          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
-          writer(this->input, locality_id, submesh_id),
-          parser(this->input, locality_id, submesh_id) {
-        ProblemType::initialize_problem_parameters(this->input.problem_input);
-
-        this->input.read_mesh();
-
-        this->mesh.SetMeshName(this->input.mesh_input.mesh_data.mesh_name);
-
-        ProblemType::preprocess_mesh_data(this->input);
-
-        if (this->writer.WritingLog()) {
-            this->writer.StartLog();
-
-            this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
-                                      << this->input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
-                                      << std::endl;
-        }
-
-        initialize_mesh<ProblemType, OMPICommunicator>(
-            this->mesh, this->input.mesh_input.mesh_data, this->communicator, this->input.problem_input, this->writer);
-
-        ProblemType::initialize_data_parallel_pre_send_kernel(
-            this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
-
-        this->communicator.InitializeCommunication();
-
-        this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
-
-        this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
-    }
+    OMPISimulationUnit() = default;
+    OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
     void PostReceivePrerocStage();
     void WaitAllPreprocSends();
@@ -85,11 +45,49 @@ class OMPISimulationUnit {
 };
 
 template <typename ProblemType>
+OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_string,
+                                                    const uint locality_id,
+                                                    const uint submesh_id) {
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
+
+    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+
+    this->communicator = OMPICommunicator(input.mesh_input.db_file_name, locality_id, submesh_id);
+    this->stepper      = Stepper(input.stepper_input);
+    this->writer       = Writer<ProblemType>(input.writer_input);
+    this->parser       = typename ProblemType::ProblemParserType(input);
+
+    if (this->writer.WritingLog()) {
+        this->writer.StartLog();
+
+        this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                  << input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
+                                  << std::endl;
+    }
+
+    ProblemType::initialize_problem_parameters(input.problem_input);
+
+    input.read_mesh();
+
+    ProblemType::preprocess_mesh_data(input);
+
+    initialize_mesh<ProblemType, OMPICommunicator>(
+        this->mesh, input.mesh_input.mesh_data, this->communicator, input.problem_input, this->writer);
+
+    ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
+
+    this->communicator.InitializeCommunication();
+
+    this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
+
+    this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
+}
+
+template <typename ProblemType>
 void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.GetTimestamp());
 
-    ProblemType::initialize_data_parallel_post_receive_kernel(
-        this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
+    ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh);
 }
 
 template <typename ProblemType>
@@ -291,39 +289,41 @@ class OMPISimulation {
   private:
     uint n_steps;
     uint n_stages;
-    int locality_id;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
   public:
     OMPISimulation() = default;
-    OMPISimulation(const std::string& input_string) {
-        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
-
-        InputParameters<typename ProblemType::ProblemInputType> input(input_string);
-
-        this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-        this->n_stages = input.stepper_input.nstages;
-
-        std::string submesh_file_prefix =
-            input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
-            std::to_string(locality_id) + '_';
-        std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
-            input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
-
-        uint submesh_id = 0;
-
-        while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-            this->simulation_units.emplace_back(
-                new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
-
-            ++submesh_id;
-        }
-    }
+    OMPISimulation(const std::string& input_string);
 
     void Run();
     void ComputeL2Residual();
 };
+
+template <typename ProblemType>
+OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
+    int locality_id;
+    MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string);
+
+    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+    this->n_stages = input.stepper_input.nstages;
+
+    std::string submesh_file_prefix =
+        input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
+        std::to_string(locality_id) + '_';
+    std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
+        input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
+
+    uint submesh_id = 0;
+
+    while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
+        this->simulation_units.emplace_back(new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
+
+        ++submesh_id;
+    }
+}
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
@@ -395,6 +395,9 @@ void OMPISimulation<ProblemType>::Run() {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::ComputeL2Residual() {
+    int locality_id;
+    MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+
     double global_l2{0};
 
     double residual_l2{0};

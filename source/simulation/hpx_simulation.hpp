@@ -33,8 +33,6 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
 template <typename ProblemType>
 class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
   private:
-    InputParameters<typename ProblemType::ProblemInputType> input;
-
     typename ProblemType::ProblemMeshType mesh;
 
     HPXCommunicator communicator;
@@ -43,40 +41,11 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
     typename ProblemType::ProblemParserType parser;
 
   public:
-    HPXSimulationUnit() : mesh(this->input.polynomial_order) {}
-    HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id)
-        : input(input_string, locality_id, submesh_id),
-          mesh(this->input.polynomial_order),
-          communicator(
-              this->input.mesh_input.mesh_file_name.substr(0, this->input.mesh_input.mesh_file_name.find_last_of('.')) +
-                  ".dbmd",
-              locality_id,
-              submesh_id),
-          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
-          writer(this->input, locality_id, submesh_id),
-          parser(this->input, locality_id, submesh_id) {
-        ProblemType::initialize_problem_parameters(this->input.problem_input);
+    HPXSimulationUnit() = default;
+    HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
-        this->input.read_mesh();
-
-        this->mesh.SetMeshName(this->input.mesh_input.mesh_data.mesh_name);
-
-        ProblemType::preprocess_mesh_data(this->input);
-
-        if (this->writer.WritingLog()) {
-            this->writer.StartLog();
-
-            this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
-                                      << this->input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
-                                      << std::endl;
-        }
-
-        initialize_mesh<ProblemType, HPXCommunicator>(
-            this->mesh, this->input.mesh_input.mesh_data, this->communicator, this->input.problem_input, this->writer);
-    }
-
-    hpx::future<void> Preprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
+    hpx::future<void> FinishPreprocessor();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, FinishPreprocessor, FinishPreprocessorAction);
 
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
@@ -95,18 +64,46 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 };
 
 template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
-    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
+HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_string,
+                                                  const uint locality_id,
+                                                  const uint submesh_id) {
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
-    ProblemType::initialize_data_parallel_pre_send_kernel(
-        this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
+    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+
+    this->communicator = HPXCommunicator(input.mesh_input.db_file_name, locality_id, submesh_id);
+    this->stepper      = Stepper(input.stepper_input);
+    this->writer       = Writer<ProblemType>(input.writer_input);
+    this->parser       = typename ProblemType::ProblemParserType(input);
+
+    if (this->writer.WritingLog()) {
+        this->writer.StartLog();
+
+        this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                  << input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
+                                  << std::endl;
+    }
+
+    ProblemType::initialize_problem_parameters(input.problem_input);
+
+    input.read_mesh();
+
+    ProblemType::preprocess_mesh_data(input);
+
+    initialize_mesh<ProblemType, HPXCommunicator>(
+        this->mesh, input.mesh_input.mesh_data, this->communicator, input.problem_input, this->writer);
+
+    ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
+}
+
+template <typename ProblemType>
+hpx::future<void> HPXSimulationUnit<ProblemType>::FinishPreprocessor() {
+    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
 
     this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 
-    return receive_future.then([this](auto&&) {
-        ProblemType::initialize_data_parallel_post_receive_kernel(
-            this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
-    });
+    return receive_future.then(
+        [this](auto&&) { ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh); });
 }
 
 template <typename ProblemType>
@@ -282,8 +279,8 @@ class HPXSimulationUnitClient
   public:
     HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
 
-    hpx::future<void> Preprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::PreprocessorAction;
+    hpx::future<void> FinishPreprocessor() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::FinishPreprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
@@ -323,33 +320,7 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 
   public:
     HPXSimulation() = default;
-    HPXSimulation(const std::string& input_string) {
-        const uint locality_id          = hpx::get_locality_id();
-        const hpx::naming::id_type here = hpx::find_here();
-
-        InputParameters<typename ProblemType::ProblemInputType> input(input_string);
-
-        this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-        this->n_stages = input.stepper_input.nstages;
-
-        std::string submesh_file_prefix =
-            input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
-            std::to_string(locality_id) + '_';
-        std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
-            input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
-
-        uint submesh_id = 0;
-
-        while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-            hpx::future<hpx::id_type> simulation_unit_id =
-                hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
-                    here, input_string, locality_id, submesh_id);
-
-            this->simulation_unit_clients.emplace_back(std::move(simulation_unit_id));
-
-            ++submesh_id;
-        }
-    }
+    HPXSimulation(const std::string& input_string);
 
     hpx::future<void> Run();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
@@ -359,11 +330,40 @@ class HPXSimulation : public hpx::components::simple_component_base<HPXSimulatio
 };
 
 template <typename ProblemType>
+HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
+    const uint locality_id          = hpx::get_locality_id();
+    const hpx::naming::id_type here = hpx::find_here();
+
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string);
+
+    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+    this->n_stages = input.stepper_input.nstages;
+
+    std::string submesh_file_prefix =
+        input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
+        std::to_string(locality_id) + '_';
+    std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
+        input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
+
+    uint submesh_id = 0;
+
+    while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
+        hpx::future<hpx::id_type> simulation_unit_id =
+            hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
+                here, input_string, locality_id, submesh_id);
+
+        this->simulation_unit_clients.emplace_back(std::move(simulation_unit_id));
+
+        ++submesh_id;
+    }
+}
+
+template <typename ProblemType>
 hpx::future<void> HPXSimulation<ProblemType>::Run() {
     std::vector<hpx::future<void>> simulation_futures;
 
     for (auto& sim_unit_client : this->simulation_unit_clients) {
-        simulation_futures.push_back(sim_unit_client.Preprocessor());
+        simulation_futures.push_back(sim_unit_client.FinishPreprocessor());
     }
 
     for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {

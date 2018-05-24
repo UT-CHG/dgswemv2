@@ -23,6 +23,7 @@ class Triangle : public Master<2> {
     IntegrationType integration;
 
   public:
+    Triangle() = default;
     /**
      * Construct a master triangle with polynomial order p.
      *

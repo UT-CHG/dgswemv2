@@ -142,6 +142,7 @@ class Master {
     Array2D<double> phi_postprocessor_point;
 
   public:
+    Master() = default;
     Master(const uint p) : p(p) {}
 
     virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(

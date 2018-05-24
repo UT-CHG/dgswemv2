@@ -62,7 +62,7 @@ struct SlopeLimiting {
 };
 
 // Problem specific boundary condition information containers
-struct InternalBarrier {
+struct Levee {
     std::vector<uint> front_nodes;
     std::vector<uint> back_nodes;
     std::vector<double> barrier_height;
@@ -87,8 +87,6 @@ struct Inputs {
 
     WettingDrying wet_dry;
     SlopeLimiting slope_limit;
-
-    std::vector<InternalBarrier> internal_barriers;
 
     Inputs() = default;
     Inputs(YAML::Node& swe_node);

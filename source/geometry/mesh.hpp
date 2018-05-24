@@ -36,6 +36,7 @@ class Mesh<std::tuple<Elements...>,
     std::string mesh_name;
 
   public:
+    Mesh() = default;
     Mesh(const uint p) : masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
@@ -47,57 +48,107 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
     template <typename ElementType, typename... Args>
-    void CreateElement(const uint n, Args&&... args) {
-        using MasterType = typename ElementType::ElementMasterType;
-
-        MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
-
-        this->elements.template emplace<ElementType>(n, ElementType(n, master_elt, std::forward<Args>(args)...));
-    }
-
+    void CreateElement(const uint n, Args&&... args);
     template <typename InterfaceType, typename... Args>
-    void CreateInterface(Args&&... args) {
-        this->interfaces.template emplace_back<InterfaceType>(std::forward<Args>(args)...);
-    }
-
+    void CreateInterface(Args&&... args);
     template <typename BoundaryType, typename... Args>
-    void CreateBoundary(Args&&... args) {
-        this->boundaries.template emplace_back<BoundaryType>(std::forward<Args>(args)...);
-    }
-
+    void CreateBoundary(Args&&... args);
     template <typename DistributedBoundaryType, typename... Args>
-    void CreateDistributedBoundary(Args&&... args) {
-        this->distributed_boundaries.template emplace_back<DistributedBoundaryType>(std::forward<Args>(args)...);
-    }
+    void CreateDistributedBoundary(Args&&... args);
 
     template <typename F>
-    void CallForEachElement(const F& f) {
-        Utilities::for_each_in_tuple(this->elements.data, [&f](auto& element_map) {
-            std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) { f(pair.second); });
-        });
-    }
-
+    void CallForEachElement(const F& f);
     template <typename F>
-    void CallForEachInterface(const F& f) {
-        Utilities::for_each_in_tuple(this->interfaces.data, [&f](auto& interface_vector) {
-            std::for_each(interface_vector.begin(), interface_vector.end(), f);
-        });
-    }
-
+    void CallForEachInterface(const F& f);
     template <typename F>
-    void CallForEachBoundary(const F& f) {
-        Utilities::for_each_in_tuple(this->boundaries.data, [&f](auto& boundary_vector) {
-            std::for_each(boundary_vector.begin(), boundary_vector.end(), f);
-        });
-    }
-
+    void CallForEachBoundary(const F& f);
     template <typename F>
-    void CallForEachDistributedBoundary(const F& f) {
-        Utilities::for_each_in_tuple(this->distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
-            std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
-        });
-    }
+    void CallForEachDistributedBoundary(const F& f);
 };
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename ElementType, typename... Args>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CreateElement(const uint n, Args&&... args) {
+    using MasterType = typename ElementType::ElementMasterType;
+
+    MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
+
+    this->elements.template emplace<ElementType>(n, ElementType(n, master_elt, std::forward<Args>(args)...));
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename InterfaceType, typename... Args>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CreateInterface(Args&&... args) {
+    this->interfaces.template emplace_back<InterfaceType>(std::forward<Args>(args)...);
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename BoundaryType, typename... Args>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CreateBoundary(Args&&... args) {
+    this->boundaries.template emplace_back<BoundaryType>(std::forward<Args>(args)...);
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename DistributedBoundaryType, typename... Args>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CreateDistributedBoundary(Args&&... args) {
+    this->distributed_boundaries.template emplace_back<DistributedBoundaryType>(std::forward<Args>(args)...);
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachElement(const F& f) {
+    Utilities::for_each_in_tuple(this->elements.data, [&f](auto& element_map) {
+        std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) { f(pair.second); });
+    });
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachInterface(const F& f) {
+    Utilities::for_each_in_tuple(this->interfaces.data, [&f](auto& interface_vector) {
+        std::for_each(interface_vector.begin(), interface_vector.end(), f);
+    });
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachBoundary(const F& f) {
+    Utilities::for_each_in_tuple(this->boundaries.data, [&f](auto& boundary_vector) {
+        std::for_each(boundary_vector.begin(), boundary_vector.end(), f);
+    });
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachDistributedBoundary(const F& f) {
+    Utilities::for_each_in_tuple(this->distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
+        std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
+    });
+}
 }
 
 #endif

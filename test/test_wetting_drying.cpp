@@ -1,6 +1,7 @@
 #include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
 #include "geometry/mesh_definitions.hpp"
+#include "preprocessor/input_parameters.hpp"
 
 #include "simulation/stepper.hpp"
 
@@ -32,7 +33,13 @@ int main() {
     triangle.data.initialize();
     triangle.data.resize(2);
 
-    Stepper stepper(1, 1, 1);
+    StepperInput stepper_input;
+
+    stepper_input.nstages = 1;
+    stepper_input.order   = 1;
+    stepper_input.dt      = 1;
+
+    Stepper stepper(stepper_input);
 
     auto& wd_state = triangle.data.wet_dry_state;
     auto& state    = triangle.data.state[1];

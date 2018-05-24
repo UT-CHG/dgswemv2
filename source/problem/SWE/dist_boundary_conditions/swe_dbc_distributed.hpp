@@ -70,15 +70,7 @@ class Distributed {
 
     void GetPreprocEX(double& x_at_baryctr_ex, double& y_at_baryctr_ex);
     void GetWetDryEX(bool& wet_ex);
-    void GetEX(const Stepper& stepper,
-               const uint gp,
-               const Array2D<double>& surface_normal,
-               const std::vector<double>& ze_in,
-               const std::vector<double>& qx_in,
-               const std::vector<double>& qy_in,
-               double& ze_ex,
-               double& qx_ex,
-               double& qy_ex);
+    void GetEX(const uint gp, double& ze_ex, double& qx_ex, double& qy_ex);
     void GetPostprocEX(double& ze_at_baryctr_ex,
                        double& qx_at_baryctr_ex,
                        double& qy_at_baryctr_ex,
@@ -138,15 +130,7 @@ void Distributed::ComputeFlux(const Stepper& stepper, DistributedBoundaryType& d
 
     double ze_ex, qx_ex, qy_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        this->GetEX(stepper,
-                    gp,
-                    dbound.surface_normal,
-                    boundary.ze_at_gp,
-                    boundary.qx_at_gp,
-                    boundary.qy_at_gp,
-                    ze_ex,
-                    qx_ex,
-                    qy_ex);
+        this->GetEX(gp, ze_ex, qx_ex, qy_ex);
 
         LLF_flux(Global::g,
                  boundary.ze_at_gp[gp],
@@ -198,15 +182,7 @@ void Distributed::ComputeFlux(const Stepper& stepper, DistributedBoundaryType& d
             net_volume_flux_in = 0;
         } else if (!wet_in) {  // water flowing to dry IN element
             for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-                this->GetEX(stepper,
-                            gp,
-                            dbound.surface_normal,
-                            boundary.ze_at_gp,
-                            boundary.qx_at_gp,
-                            boundary.qy_at_gp,
-                            ze_ex,
-                            qx_ex,
-                            qy_ex);
+                this->GetEX(gp, ze_ex, qx_ex, qy_ex);
 
                 LLF_flux(0.0,
                          boundary.ze_at_gp[gp],
@@ -266,15 +242,7 @@ void Distributed::GetWetDryEX(bool& wet_ex) {
     wet_ex = (bool)this->receive_buffer[wet_dry_index];
 }
 
-void Distributed::GetEX(const Stepper& stepper,
-                        const uint gp,
-                        const Array2D<double>& surface_normal,
-                        const std::vector<double>& ze_in,
-                        const std::vector<double>& qx_in,
-                        const std::vector<double>& qy_in,
-                        double& ze_ex,
-                        double& qx_ex,
-                        double& qy_ex) {
+void Distributed::GetEX(const uint gp, double& ze_ex, double& qx_ex, double& qy_ex) {
     ze_ex = this->receive_buffer[ze_ex_index - gp];
     qx_ex = this->receive_buffer[qx_ex_index - gp];
     qy_ex = this->receive_buffer[qy_ex_index - gp];

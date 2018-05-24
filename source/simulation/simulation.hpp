@@ -8,7 +8,8 @@
 template <typename ProblemType>
 class Simulation {
   private:
-    InputParameters<typename ProblemType::ProblemInputType> input;
+    uint n_steps;
+    uint n_stages;
 
     typename ProblemType::ProblemMeshType mesh;
 
@@ -17,40 +18,46 @@ class Simulation {
     typename ProblemType::ProblemParserType parser;
 
   public:
-    Simulation() : mesh(this->input.polynomial_order) {}
-    Simulation(std::string input_string)
-        : input(input_string),
-          mesh(this->input.polynomial_order),
-          stepper(this->input.stepper_input.nstages, this->input.stepper_input.order, this->input.stepper_input.dt),
-          writer(this->input),
-          parser(this->input) {
-        ProblemType::initialize_problem_parameters(this->input.problem_input);
-
-        this->input.read_mesh();
-
-        mesh.SetMeshName(this->input.mesh_input.mesh_data.mesh_name);
-
-        ProblemType::preprocess_mesh_data(this->input);
-
-        std::tuple<> empty_comm;
-
-        if (this->writer.WritingLog()) {
-            this->writer.StartLog();
-
-            this->writer.GetLogFile() << "Starting simulation with p=" << this->input.polynomial_order << " for "
-                                      << this->input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
-                                      << std::endl;
-        }
-
-        initialize_mesh<ProblemType>(
-            this->mesh, this->input.mesh_input.mesh_data, empty_comm, this->input.problem_input, this->writer);
-
-        ProblemType::initialize_data_kernel(this->mesh, this->input.mesh_input.mesh_data, this->input.problem_input);
-    }
+    Simulation() = default;
+    Simulation(const std::string& input_string);
 
     void Run();
     void ComputeL2Residual();
 };
+
+template <typename ProblemType>
+Simulation<ProblemType>::Simulation(const std::string& input_string) {
+    InputParameters<typename ProblemType::ProblemInputType> input(input_string);
+
+    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+    this->n_stages = input.stepper_input.nstages;
+
+    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+
+    this->stepper = Stepper(input.stepper_input);
+    this->writer  = Writer<ProblemType>(input.writer_input);
+    this->parser  = typename ProblemType::ProblemParserType(input);
+
+    if (this->writer.WritingLog()) {
+        this->writer.StartLog();
+
+        this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
+                                  << input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
+                                  << std::endl;
+    }
+
+    ProblemType::initialize_problem_parameters(input.problem_input);
+
+    input.read_mesh();
+
+    ProblemType::preprocess_mesh_data(input);
+
+    std::tuple<> empty_comm;
+
+    initialize_mesh<ProblemType>(this->mesh, input.mesh_input.mesh_data, empty_comm, input.problem_input, this->writer);
+
+    ProblemType::initialize_data_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
+}
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
@@ -77,10 +84,7 @@ void Simulation<ProblemType>::Run() {
 
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
-    uint nsteps   = (uint)std::ceil(this->input.stepper_input.run_time / this->stepper.GetDT());
-    uint n_stages = this->stepper.GetNumStages();
-
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
+    auto resize_data_container = [this](auto& elt) { elt.data.resize(this->n_stages + 1); };
 
     this->mesh.CallForEachElement(resize_data_container);
 
@@ -88,8 +92,8 @@ void Simulation<ProblemType>::Run() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    for (uint step = 1; step <= nsteps; ++step) {
-        for (uint stage = 0; stage < this->stepper.GetNumStages(); ++stage) {
+    for (uint step = 1; step <= this->n_steps; ++step) {
+        for (uint stage = 0; stage < this->n_stages; ++stage) {
             if (this->parser.ParsingInput()) {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }

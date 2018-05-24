@@ -17,6 +17,9 @@ struct YamlNodeWrapper {
 struct MeshInput {
     std::string mesh_format;
     std::string mesh_file_name;
+    std::string bc_is_file_name;
+    std::string db_file_name;
+
     CoordinateSystem mesh_coordinate_sys;
 
     MeshMetaData mesh_data;
@@ -43,9 +46,11 @@ struct WriterInput {
 
     bool writing_vtk_output{false};
     double vtk_output_frequency{std::numeric_limits<double>::max()};
+    uint vtk_output_freq_step{std::numeric_limits<uint>::max()};
 
     bool writing_modal_output{false};
     double modal_output_frequency{std::numeric_limits<double>::max()};
+    uint modal_output_freq_step{std::numeric_limits<uint>::max()};
 };
 
 template <typename ProblemInput = YamlNodeWrapper>
@@ -93,6 +98,10 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             }
 
             this->mesh_input.mesh_file_name = raw_mesh["file_name"].as<std::string>();
+            this->mesh_input.bc_is_file_name =
+                this->mesh_input.mesh_file_name.substr(0, this->mesh_input.mesh_file_name.find_last_of('.')) + ".bcis";
+            this->mesh_input.db_file_name =
+                this->mesh_input.mesh_file_name.substr(0, this->mesh_input.mesh_file_name.find_last_of('.')) + ".dbmd";
 
             std::string coord_sys_string = raw_mesh["coordinate_system"].as<std::string>();
 
@@ -183,6 +192,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             if (out_node["vtk"]["frequency"]) {
                 this->writer_input.writing_vtk_output   = true;
                 this->writer_input.vtk_output_frequency = out_node["vtk"]["frequency"].as<double>();
+                this->writer_input.vtk_output_freq_step =
+                    (uint)std::ceil(this->writer_input.vtk_output_frequency / this->stepper_input.dt);
             } else {
                 std::string err_msg("Error: VTK YAML node is malformatted\n");
                 throw std::logic_error(err_msg);
@@ -193,6 +204,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             if (out_node["modal"]["frequency"]) {
                 this->writer_input.writing_modal_output   = true;
                 this->writer_input.modal_output_frequency = out_node["modal"]["frequency"].as<double>();
+                this->writer_input.modal_output_freq_step =
+                    (uint)std::ceil(this->writer_input.modal_output_frequency / this->stepper_input.dt);
             } else {
                 std::string err_msg("Error: Modal YAML node is malformatted\n");
                 throw std::logic_error(err_msg);
@@ -208,6 +221,12 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string,
     : InputParameters(input_string) {
     this->mesh_input.mesh_file_name.insert(this->mesh_input.mesh_file_name.find_last_of("."),
                                            '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
+
+    this->mesh_input.bc_is_file_name.insert(this->mesh_input.bc_is_file_name.find_last_of("."),
+                                            '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
+
+    this->mesh_input.db_file_name.insert(this->mesh_input.db_file_name.find_last_of("."),
+                                         '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
 }
 
 template <typename ProblemInput>

@@ -1,4 +1,5 @@
 #include "simulation/stepper.hpp"
+#include "preprocessor/input_parameters.hpp"
 
 #include <cmath>
 #include <iomanip>
@@ -30,7 +31,13 @@ int main() {
     auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
 
     for (auto& pair : rk_pairs) {
-        Stepper rk_stepper(pair.first, pair.second, dt);
+        StepperInput stepper_input;
+
+        stepper_input.nstages = pair.first;
+        stepper_input.order   = pair.second;
+        stepper_input.dt      = dt;
+
+        Stepper rk_stepper(stepper_input);
 
         double t = 0;
 
