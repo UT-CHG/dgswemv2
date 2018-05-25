@@ -206,9 +206,10 @@ Inputs::Inputs(YAML::Node& swe_node) {
             std::cerr << malformatted_sl_warning;
         }
     }
+}
 
-    // Process boundary condition information from mesh file
-    // Process internal barrier information
+void Inputs::read_bcis(const std::string& bcis_file) {
+
 }
 
 YAML::Node Inputs::as_yaml_node() {

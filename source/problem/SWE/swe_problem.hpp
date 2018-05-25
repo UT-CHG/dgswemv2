@@ -35,28 +35,30 @@ struct Problem {
 
     template <typename RawBoundaryType>
     static void create_interfaces_kernel(
-        ProblemMeshType& mesh,
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+        ProblemMeshType& mesh,
         Writer<SWE::Problem>& writer);
 
     template <typename RawBoundaryType>
     static void create_boundaries_kernel(
-        ProblemMeshType& mesh,
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+        ProblemMeshType& mesh,
         Writer<SWE::Problem>& writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries_kernel(
-        ProblemMeshType&,
-        std::tuple<>&,
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+        ProblemMeshType&,
+        DistributedBoundaryMetaData&,
+        std::tuple<>&,
         Writer<SWE::Problem>&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries_kernel(
-        ProblemMeshType& mesh,
-        Communicator& communicator,
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+        ProblemMeshType& mesh,
+        DistributedBoundaryMetaData& db_data,
+        Communicator& communicator,
         Writer<SWE::Problem>& writer);
 
     static void initialize_data_kernel(ProblemMeshType& mesh,

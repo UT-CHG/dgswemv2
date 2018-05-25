@@ -50,9 +50,13 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
                                                     const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
+    input.read_mesh();                         // read mesh meta data
+    input.read_bcis();                         // read bc data
+    input.read_dbmd(locality_id, submesh_id);  // read distributed boundary meta data
+
     this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
 
-    this->communicator = OMPICommunicator(input.mesh_input.db_file_name, locality_id, submesh_id);
+    this->communicator = OMPICommunicator(input.mesh_input.dbmd_data);
     this->stepper      = Stepper(input.stepper_input);
     this->writer       = Writer<ProblemType>(input.writer_input);
     this->parser       = typename ProblemType::ProblemParserType(input);
@@ -67,12 +71,10 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
 
     ProblemType::initialize_problem_parameters(input.problem_input);
 
-    input.read_mesh();
-
     ProblemType::preprocess_mesh_data(input);
 
     initialize_mesh<ProblemType, OMPICommunicator>(
-        this->mesh, input.mesh_input.mesh_data, this->communicator, input.problem_input, this->writer);
+        this->mesh, input.mesh_input.mesh_data, input.mesh_input.dbmd_data, this->communicator, this->writer);
 
     ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
 

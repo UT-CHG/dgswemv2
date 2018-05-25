@@ -91,6 +91,8 @@ struct Inputs {
     Inputs() = default;
     Inputs(YAML::Node& swe_node);
 
+    void read_bcis(const std::string& bcis_file);
+
     YAML::Node as_yaml_node();
 };
 }

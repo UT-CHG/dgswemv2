@@ -29,6 +29,9 @@ template <typename ProblemType>
 Simulation<ProblemType>::Simulation(const std::string& input_string) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
+    input.read_mesh();  // read mesh meta data
+    input.read_bcis();  // read bc data
+
     this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
     this->n_stages = input.stepper_input.nstages;
 
@@ -48,13 +51,12 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
     ProblemType::initialize_problem_parameters(input.problem_input);
 
-    input.read_mesh();
-
     ProblemType::preprocess_mesh_data(input);
 
     std::tuple<> empty_comm;
 
-    initialize_mesh<ProblemType>(this->mesh, input.mesh_input.mesh_data, empty_comm, input.problem_input, this->writer);
+    initialize_mesh<ProblemType>(
+        this->mesh, input.mesh_input.mesh_data, input.mesh_input.dbmd_data, empty_comm, this->writer);
 
     ProblemType::initialize_data_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
 }

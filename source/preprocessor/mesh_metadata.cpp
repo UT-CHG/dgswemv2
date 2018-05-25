@@ -85,11 +85,11 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     }
 }
 
-MeshMetaData::MeshMetaData(const std::string& file) {
-    std::ifstream ifs(file);
+MeshMetaData::MeshMetaData(const std::string& mesh_file) {
+    std::ifstream ifs(mesh_file);
 
     if (!ifs) {
-        std::string err_msg = "Fatal Error: Mesh named " + file + " not found\n";
+        std::string err_msg = "Fatal Error: Mesh named " + mesh_file + " not found\n";
         throw std::logic_error(err_msg);
     }
 
@@ -146,4 +146,78 @@ std::vector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
     }
 
     return nodal_coordinates;
+}
+
+DistributedBoundaryMetaData::DistributedBoundaryMetaData(const std::string& dbmd_file,
+                                                         uint locality_id,
+                                                         uint submesh_id) {
+    std::ifstream file(dbmd_file);
+
+    if (!file) {
+        throw std::logic_error("Error: Unable to find distributed boundary file : " + dbmd_file + '\n');
+    }
+
+    std::string line;
+
+    uint locality_A, locality_B, submesh_A, submesh_B, n_dboubdaries;
+
+    while (std::getline(file, line)) {
+        std::stringstream neighborhood_data(line);
+
+        neighborhood_data >> locality_A >> submesh_A >> locality_B >> submesh_B >> n_dboubdaries;
+
+        RankBoundaryMetaData rank_boundary;
+
+        if (locality_A == locality_id && submesh_A == submesh_id) {
+            rank_boundary.locality_in = locality_A;
+            rank_boundary.locality_ex = locality_B;
+
+            rank_boundary.submesh_in = submesh_A;
+            rank_boundary.submesh_ex = submesh_B;
+        } else if (locality_B == locality_id && submesh_B == submesh_id) {
+            rank_boundary.locality_in = locality_B;
+            rank_boundary.locality_ex = locality_A;
+
+            rank_boundary.submesh_in = submesh_B;
+            rank_boundary.submesh_ex = submesh_A;
+        } else {
+            throw std::logic_error("Error: wrong locality/submesh in distributed boundary file : " + dbmd_file + '\n');
+        }
+
+        rank_boundary.elements_in.reserve(n_dboubdaries);
+        rank_boundary.elements_ex.reserve(n_dboubdaries);
+
+        rank_boundary.bound_ids_in.reserve(n_dboubdaries);
+        rank_boundary.bound_ids_ex.reserve(n_dboubdaries);
+
+        rank_boundary.p.reserve(n_dboubdaries);
+
+        for (uint db = 0; db < n_dboubdaries; ++db) {
+            DBPairMetaData dboundary_meta_data;
+
+            file >> dboundary_meta_data;
+
+            file.ignore(1000, '\n');
+
+            if (locality_A == locality_id && submesh_A == submesh_id) {
+                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.first);
+                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.second);
+
+                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.first);
+                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.second);
+
+                rank_boundary.p.push_back(dboundary_meta_data.p);
+            } else {
+                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.second);
+                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.first);
+
+                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.second);
+                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.first);
+
+                rank_boundary.p.push_back(dboundary_meta_data.p);
+            }
+        }
+
+        this->rank_boundary_data.push_back(std::move(rank_boundary));
+    }
 }

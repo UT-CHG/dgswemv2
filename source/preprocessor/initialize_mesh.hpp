@@ -6,36 +6,37 @@
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
-                              const MeshMetaData& mesh_data,
+                              MeshMetaData& mesh_data,
                               Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
+                                           DistributedBoundaryMetaData& db_data,
                                            Communicator& communicator,
                                            Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
-                     const MeshMetaData& mesh_data,
+                     MeshMetaData& mesh_data,
+                     DistributedBoundaryMetaData& db_data,
                      Communicator& communicator,
-                     const typename ProblemType::ProblemInputType& problem_specific_input,
                      Writer<ProblemType>& writer) {
     mesh.SetMeshName(mesh_data.mesh_name);
 
     initialize_mesh_elements<ProblemType>(mesh, mesh_data, writer);
 
-    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, communicator, writer);
+    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, db_data, communicator, writer);
 }
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
-                              const MeshMetaData& mesh_data,
+                              MeshMetaData& mesh_data,
                               Writer<ProblemType>& writer) {
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
     std::vector<Point<2>> nodal_coords_temp;
-    for (const auto& element_meta : mesh_data.elements) {
+    for (auto& element_meta : mesh_data.elements) {
         uint elt_id = element_meta.first;
 
         auto nodal_coordinates = mesh_data.get_nodal_coordinates(elt_id);
@@ -59,6 +60,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
+                                           DistributedBoundaryMetaData& db_data,
                                            Communicator& communicator,
                                            Writer<ProblemType>& writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
@@ -67,9 +69,9 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
 
     mesh.CallForEachElement([&raw_boundaries](auto& elem) { elem.CreateRawBoundaries(raw_boundaries); });
 
-    ProblemType::create_interfaces_kernel(mesh, raw_boundaries, writer);
-    ProblemType::create_boundaries_kernel(mesh, raw_boundaries, writer);
-    ProblemType::create_distributed_boundaries_kernel(mesh, communicator, raw_boundaries, writer);
+    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, writer);
+    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, writer);
+    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, db_data, communicator, writer);
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         if (it->second.size() != 0) {

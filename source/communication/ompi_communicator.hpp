@@ -7,14 +7,6 @@
 #include "../preprocessor/mesh_metadata.hpp"
 
 struct OMPIRankBoundary {
-    std::vector<uint> elements_in;
-    std::vector<uint> elements_ex;
-
-    std::vector<uint> bound_ids_in;
-    std::vector<uint> bound_ids_ex;
-
-    std::vector<uint> p;
-
     int send_rank;
     int receive_rank;
 
@@ -46,7 +38,7 @@ class OMPICommunicator {
 
   public:
     OMPICommunicator() = default;
-    OMPICommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
+    OMPICommunicator(const DistributedBoundaryMetaData& db_data);
 
     void InitializeCommunication();
 

@@ -11,14 +11,6 @@ using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
 
 struct HPXRankBoundary {
-    std::vector<uint> elements_in;
-    std::vector<uint> elements_ex;
-
-    std::vector<uint> bound_ids_in;
-    std::vector<uint> bound_ids_ex;
-
-    std::vector<uint> p;
-
     hpx::lcos::channel<array_double> outgoing;
     hpx::lcos::channel<array_double> incoming;
 
@@ -38,7 +30,7 @@ class HPXCommunicator {
 
   public:
     HPXCommunicator() = default;
-    HPXCommunicator(const std::string& neighborhood_data_file, const uint locality_id, const uint submesh_id);
+    HPXCommunicator(const DistributedBoundaryMetaData& db_data);
 
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
     HPXRankBoundary& GetRankBoundary(uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }

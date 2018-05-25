@@ -36,7 +36,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
         }
     }
     // Assemble lists of distributed interface meta data
-    std::unordered_map<std::pair<uint, uint>, std::deque<DistributedBoundaryMetaData>> shared_faces;
+    std::unordered_map<std::pair<uint, uint>, std::deque<DBPairMetaData>> shared_faces;
     for (auto& f : faces) {
         uint eltA = f.first;
         uint rnkA = elt2partition.at(eltA);
@@ -64,7 +64,7 @@ void write_distributed_edge_metadata(const std::string& file_name,
 
         std::pair<uint, uint> rnk_pair{std::min(rnkA, rnkB), std::max(rnkA, rnkB)};
 
-        DistributedBoundaryMetaData dist_int;
+        DBPairMetaData dist_int;
         dist_int.p = input.polynomial_order;
 
         if (rnkA > rnkB) {

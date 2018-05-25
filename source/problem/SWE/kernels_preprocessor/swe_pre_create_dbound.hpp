@@ -4,16 +4,18 @@
 namespace SWE {
 template <typename RawBoundaryType>
 void Problem::create_distributed_boundaries_kernel(
-    ProblemMeshType&,
-    std::tuple<>&,
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+    ProblemMeshType&,
+    DistributedBoundaryMetaData&,
+    std::tuple<>&,
     Writer<SWE::Problem>& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
-    ProblemMeshType& mesh,
-    Communicator& communicator,
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+    ProblemMeshType& mesh,
+    DistributedBoundaryMetaData& db_data,
+    Communicator& communicator,
     Writer<SWE::Problem>& writer) {
     // *** //
     using DistributedBoundaryType =
@@ -42,12 +44,15 @@ void Problem::create_distributed_boundaries_kernel(
         uint begin_index          = 0;
         uint begin_index_postproc = 0;
 
-        for (uint dboundary_id = 0; dboundary_id < rank_boundary.elements_in.size(); dboundary_id++) {
-            element_id_in = rank_boundary.elements_in.at(dboundary_id);
-            element_id_ex = rank_boundary.elements_ex.at(dboundary_id);
-            bound_id_in   = rank_boundary.bound_ids_in.at(dboundary_id);
-            bound_id_ex   = rank_boundary.bound_ids_ex.at(dboundary_id);
-            p             = rank_boundary.p.at(dboundary_id);
+        // check if the data in rank_boundary_data matches communicator rank boundary
+        RankBoundaryMetaData& rb_meta_data = db_data.rank_boundary_data[rank_boundary_id];
+
+        for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
+            element_id_in = rb_meta_data.elements_in.at(dboundary_id);
+            element_id_ex = rb_meta_data.elements_ex.at(dboundary_id);
+            bound_id_in   = rb_meta_data.bound_ids_in.at(dboundary_id);
+            bound_id_ex   = rb_meta_data.bound_ids_ex.at(dboundary_id);
+            p             = rb_meta_data.p.at(dboundary_id);
             ngp           = boundary_integration.GetNumGP(2 * p);
 
             x_at_baryctr_index = begin_index_preproc;

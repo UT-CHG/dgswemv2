@@ -78,9 +78,9 @@ struct ElementMetaData {
 };
 
 struct MeshMetaData {
-    MeshMetaData() = default;  // why define default constructor?
+    MeshMetaData() = default;
     MeshMetaData(const AdcircFormat& mesh_file);
-    MeshMetaData(const std::string& file);  // read from file
+    MeshMetaData(const std::string& mesh_file);  // read from file
 
     void write_to(const std::string& file);  // write to file
 
@@ -91,20 +91,43 @@ struct MeshMetaData {
     std::unordered_map<uint, NodeMetaData> nodes;
 };
 
-struct DistributedBoundaryMetaData {
+struct DBPairMetaData {
     std::pair<uint, uint> elements;
     std::pair<uint, uint> bound_ids;
     uint p;
 
-    friend std::ostream& operator<<(std::ostream& s, const DistributedBoundaryMetaData& dist_int) {
+    friend std::ostream& operator<<(std::ostream& s, const DBPairMetaData& dist_int) {
         return s << dist_int.elements.first << " " << dist_int.elements.second << " " << dist_int.bound_ids.first << " "
                  << dist_int.bound_ids.second << " " << dist_int.p;
     }
 
-    friend std::istream& operator>>(std::istream& s, DistributedBoundaryMetaData& dist_int) {
+    friend std::istream& operator>>(std::istream& s, DBPairMetaData& dist_int) {
         return s >> dist_int.elements.first >> dist_int.elements.second >> dist_int.bound_ids.first >>
                dist_int.bound_ids.second >> dist_int.p;
     }
+};
+
+struct RankBoundaryMetaData {
+    uint locality_in;
+    uint locality_ex;
+
+    uint submesh_in;
+    uint submesh_ex;
+
+    std::vector<uint> elements_in;
+    std::vector<uint> elements_ex;
+
+    std::vector<uint> bound_ids_in;
+    std::vector<uint> bound_ids_ex;
+
+    std::vector<uint> p;
+};
+
+struct DistributedBoundaryMetaData {
+    std::vector<RankBoundaryMetaData> rank_boundary_data;
+
+    DistributedBoundaryMetaData() = default;
+    DistributedBoundaryMetaData(const std::string& dbmd_file, uint locality_id, uint submesh_id);  // read from file
 };
 
 #endif

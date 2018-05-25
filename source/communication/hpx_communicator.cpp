@@ -2,36 +2,15 @@
 
 HPX_REGISTER_CHANNEL(array_double);
 
-HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
-                                 const uint locality_id,
-                                 const uint submesh_id) {
-    std::ifstream file(neighborhood_data_file);
-
-    if (!file) {
-        throw std::logic_error("Error: Unable to find distributed boundary file : " + neighborhood_data_file + '\n');
-    }
-
-    std::string line;
-
-    uint locality_A, locality_B, submesh_A, submesh_B, n_dboubdaries;
-
-    while (std::getline(file, line)) {
-        std::stringstream neighborhood_data(line);
-
-        neighborhood_data >> locality_A >> submesh_A >> locality_B >> submesh_B >> n_dboubdaries;
-
+HPXCommunicator::HPXCommunicator(const DistributedBoundaryMetaData& db_data) {
+    for (auto& rb_meta_data : db_data.rank_boundary_data) {
         HPXRankBoundary rank_boundary;
 
         std::string my_location;
         std::string neighbor_location;
 
-        if (locality_A == locality_id && submesh_A == submesh_id) {
-            my_location       = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
-            neighbor_location = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
-        } else {
-            my_location       = std::to_string(locality_B) + "_" + std::to_string(submesh_B);
-            neighbor_location = std::to_string(locality_A) + "_" + std::to_string(submesh_A);
-        }
+        my_location       = std::to_string(rb_meta_data.locality_in) + "_" + std::to_string(rb_meta_data.submesh_in);
+        neighbor_location = std::to_string(rb_meta_data.locality_ex) + "_" + std::to_string(rb_meta_data.submesh_ex);
 
         std::string outgoing_channel_string = "channel_from_" + my_location + "_to_" + neighbor_location;
         std::string incoming_channel_string = "channel_from_" + neighbor_location + "_to_" + my_location;
@@ -40,40 +19,6 @@ HPXCommunicator::HPXCommunicator(const std::string& neighborhood_data_file,
         hpx::future<void> set_outgoing_channel = rank_boundary.outgoing.register_as(outgoing_channel_string);
 
         rank_boundary.incoming.connect_to(incoming_channel_string);
-
-        rank_boundary.elements_in.reserve(n_dboubdaries);
-        rank_boundary.elements_ex.reserve(n_dboubdaries);
-
-        rank_boundary.bound_ids_in.reserve(n_dboubdaries);
-        rank_boundary.bound_ids_ex.reserve(n_dboubdaries);
-
-        rank_boundary.p.reserve(n_dboubdaries);
-
-        for (uint db = 0; db < n_dboubdaries; ++db) {
-            DistributedBoundaryMetaData dboundary_meta_data;
-
-            file >> dboundary_meta_data;
-
-            file.ignore(1000, '\n');
-
-            if (locality_A == locality_id && submesh_A == submesh_id) {
-                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.first);
-                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.second);
-
-                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.first);
-                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.second);
-
-                rank_boundary.p.push_back(dboundary_meta_data.p);
-            } else {
-                rank_boundary.elements_in.push_back(dboundary_meta_data.elements.second);
-                rank_boundary.elements_ex.push_back(dboundary_meta_data.elements.first);
-
-                rank_boundary.bound_ids_in.push_back(dboundary_meta_data.bound_ids.second);
-                rank_boundary.bound_ids_ex.push_back(dboundary_meta_data.bound_ids.first);
-
-                rank_boundary.p.push_back(dboundary_meta_data.p);
-            }
-        }
 
         this->rank_boundaries.push_back(std::move(rank_boundary));
 

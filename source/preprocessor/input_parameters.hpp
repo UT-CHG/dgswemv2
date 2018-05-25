@@ -23,6 +23,7 @@ struct MeshInput {
     CoordinateSystem mesh_coordinate_sys;
 
     MeshMetaData mesh_data;
+    DistributedBoundaryMetaData dbmd_data;
 };
 
 struct StepperInput {
@@ -67,6 +68,9 @@ struct InputParameters {
     InputParameters(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
     void read_mesh();
+    void read_bcis();
+    void read_dbmd(const uint locality_id, const uint submesh_id);
+
     void write_to(const std::string& output_filename);
 
   private:
@@ -237,6 +241,16 @@ void InputParameters<ProblemInput>::read_mesh() {
     } else if (this->mesh_input.mesh_format == "Meta") {
         this->mesh_input.mesh_data = MeshMetaData(this->mesh_input.mesh_file_name);
     }
+}
+
+template <typename ProblemInput>
+void InputParameters<ProblemInput>::read_bcis() {
+    this->problem_input.read_bcis(this->mesh_input.bc_is_file_name);
+}
+
+template <typename ProblemInput>
+void InputParameters<ProblemInput>::read_dbmd(const uint locality_id, const uint submesh_id) {
+    this->mesh_input.dbmd_data = DistributedBoundaryMetaData(this->mesh_input.db_file_name, locality_id, submesh_id);
 }
 
 template <typename ProblemInput>
