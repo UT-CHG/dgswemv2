@@ -1,37 +1,39 @@
 #ifndef INITIALIZE_MESH_HPP
 #define INITIALIZE_MESH_HPP
 
+#include "input_parameters.hpp"
 #include "../geometry/mesh_definitions.hpp"
 #include "../simulation/writer.hpp"
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
-                              MeshMetaData& mesh_data,
+                              InputParameters<typename ProblemType::ProblemInputType>& input,
                               Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
-                                           DistributedBoundaryMetaData& db_data,
+                                           InputParameters<typename ProblemType::ProblemInputType>& input,
                                            Communicator& communicator,
                                            Writer<ProblemType>& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
-                     MeshMetaData& mesh_data,
-                     DistributedBoundaryMetaData& db_data,
+                     InputParameters<typename ProblemType::ProblemInputType>& input,
                      Communicator& communicator,
                      Writer<ProblemType>& writer) {
-    mesh.SetMeshName(mesh_data.mesh_name);
+    mesh.SetMeshName(input.mesh_input.mesh_data.mesh_name);
 
-    initialize_mesh_elements<ProblemType>(mesh, mesh_data, writer);
+    initialize_mesh_elements<ProblemType>(mesh, input, writer);
 
-    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, db_data, communicator, writer);
+    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, input, communicator, writer);
 }
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
-                              MeshMetaData& mesh_data,
+                              InputParameters<typename ProblemType::ProblemInputType>& input,
                               Writer<ProblemType>& writer) {
+    MeshMetaData& mesh_data = input.mesh_input.mesh_data;
+
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
@@ -60,7 +62,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
-                                           DistributedBoundaryMetaData& db_data,
+                                           InputParameters<typename ProblemType::ProblemInputType>& input,
                                            Communicator& communicator,
                                            Writer<ProblemType>& writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
@@ -69,9 +71,9 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
 
     mesh.CallForEachElement([&raw_boundaries](auto& elem) { elem.CreateRawBoundaries(raw_boundaries); });
 
-    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, writer);
-    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, writer);
-    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, db_data, communicator, writer);
+    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, input, writer);
+    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, input, writer);
+    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, input, communicator, writer);
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         if (it->second.size() != 0) {

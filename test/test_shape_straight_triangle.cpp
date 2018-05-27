@@ -65,10 +65,39 @@ int main() {
     std::vector<double> interpolation_true = {-2., 2., 3., 2.5, 0.5, 0, 1.};
 
     std::vector<double> interpolation_comp = triangle.InterpolateNodalValues(nodal_vals, interpolation_pts);
+
     for (uint i = 0; i < 6; i++) {
         if (!almost_equal(interpolation_true[i], interpolation_comp[i])) {
             std::cerr << "Error InterpolateNodalValues\n";
             error_found = true;
+        }
+    }
+
+    // check Interpolation of boundary nodal values to boundaries
+    std::vector<double> bound_nodal_vals(2);
+
+    std::vector<Point<1>> bound_interpolation_pts = {{-1}, {-0.5}, {0}, {0.5}, {1}};
+
+    Array2D<double> bound_interpolation_true = {
+        {2., 2.25, 2.5, 2.75, 3.}, {3., 1.75, 0.5, -0.75, -2}, {-2., -1., 0., 1., 2.}};
+
+    Array2D<double> bound_interpolation_comp;
+    bound_interpolation_comp.resize(3);
+
+    for (uint bound_id = 0; bound_id < 3; bound_id++) {
+        bound_nodal_vals[0] = nodal_vals[(bound_id + 1) % 3];
+        bound_nodal_vals[1] = nodal_vals[(bound_id + 2) % 3];
+
+        bound_interpolation_comp[bound_id] =
+            triangle.InterpolateBoundaryNodalValues(bound_id, bound_nodal_vals, bound_interpolation_pts);
+    }
+
+    for (uint bound_id = 0; bound_id < 3; bound_id++) {
+        for (uint i = 0; i < 5; i++) {
+            if (!almost_equal(bound_interpolation_true[bound_id][i], bound_interpolation_comp[bound_id][i])) {
+                std::cerr << "Error InterpolateNodalValues\n";
+                error_found = true;
+            }
         }
     }
 

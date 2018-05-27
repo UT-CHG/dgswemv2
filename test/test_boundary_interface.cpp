@@ -130,8 +130,9 @@ int main() {
         }
     }
 
-    // Check ComputeNodalUgp and Integration
+    // Check ComputeNodalUgp, ComputeBoundaryNodalUgp and Integration
     std::vector<double> nodal_vals = {1.0, 2.0, 3.0};
+    std::vector<double> bound_nodal_vals(2);
 
     std::vector<double> nodal_vals_gp(gp_1D.size());
     std::vector<double> nodal_vals_gp_comp(gp_1D.size());
@@ -139,7 +140,7 @@ int main() {
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
 
-        nodal_vals_gp = shape.InterpolateNodalValues(nodal_vals, gp_bound);
+        nodal_vals_gp = shape.InterpolateNodalValues(nodal_vals, gp_bound);  // Assuming this is correctly evaluated
         boundaries[n_bound].ComputeNodalUgp(nodal_vals, nodal_vals_gp_comp);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
@@ -147,6 +148,21 @@ int main() {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgp" << std::endl;
+            }
+        }
+
+        bound_nodal_vals[0] = nodal_vals[(n_bound + 1) % 3];
+        bound_nodal_vals[1] = nodal_vals[(n_bound + 2) % 3];
+
+        nodal_vals_gp = shape.InterpolateBoundaryNodalValues(
+            n_bound, bound_nodal_vals, gp_1D);  // Assuming this is correctly evaluated
+        boundaries[n_bound].ComputeBoundaryNodalUgp(bound_nodal_vals, nodal_vals_gp_comp);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+                error_found = true;
+
+                std::cerr << "Error found in boundary in ComputeBoundaryNodalUgp" << std::endl;
             }
         }
 
@@ -213,7 +229,7 @@ int main() {
         }
     }
 
-    // Check ComputeNodalUgp and Integration
+    // Check ComputeNodalUgp, ComputeBoundaryNodalUgp and Integration
     for (uint n_intface = 0; n_intface < 3; n_intface++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_intface, gp_1D);
 
@@ -225,6 +241,21 @@ int main() {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgpIN" << std::endl;
+            }
+        }
+
+        bound_nodal_vals[0] = nodal_vals[(n_intface + 1) % 3];
+        bound_nodal_vals[1] = nodal_vals[(n_intface + 2) % 3];
+
+        nodal_vals_gp = shape.InterpolateBoundaryNodalValues(
+            n_intface, bound_nodal_vals, gp_1D);  // Assuming this is correctly evaluated
+        interfaces[n_intface].ComputeBoundaryNodalUgpIN(bound_nodal_vals, nodal_vals_gp_comp);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+                error_found = true;
+
+                std::cerr << "Error found in boundary in ComputeBoundaryNodalUgpIN" << std::endl;
             }
         }
 
@@ -243,6 +274,18 @@ int main() {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgpEX" << std::endl;
+            }
+        }
+
+        nodal_vals_gp = shape.InterpolateBoundaryNodalValues(
+            n_intface, bound_nodal_vals, gp_1D);  // Assuming this is correctly evaluated
+        interfaces[n_intface].ComputeBoundaryNodalUgpEX(bound_nodal_vals, nodal_vals_gp_comp);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+                error_found = true;
+
+                std::cerr << "Error found in boundary in ComputeBoundaryNodalUgpEX" << std::endl;
             }
         }
 

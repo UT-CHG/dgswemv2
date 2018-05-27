@@ -92,8 +92,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
     ProblemType::preprocess_mesh_data(input);
 
-    initialize_mesh<ProblemType, HPXCommunicator>(
-        this->mesh, input.mesh_input.mesh_data, input.mesh_input.dbmd_data, this->communicator, this->writer);
+    initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input, this->communicator, this->writer);
 
     ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
 }

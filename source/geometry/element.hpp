@@ -98,9 +98,9 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
     : ID(ID),
       master(master),
       shape(ShapeType(nodal_coordinates)),
-      node_ID(std::move(node_ID)),
-      neighbor_ID(std::move(neighbor_ID)),
-      boundary_type(std::move(boundary_type)) {
+      node_ID(node_ID),
+      neighbor_ID(neighbor_ID),
+      boundary_type(boundary_type) {
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
 
@@ -212,16 +212,18 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     Shape::Shape<dimension>* my_shape    = (Shape::Shape<dimension>*)(&this->shape);
 
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
+        std::vector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);
+
         if (this->neighbor_ID[bound_id] != DEFAULT_ID) {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
                 RawBoundary<dimension - 1, DataType>(
-                    this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
+                    this->master.p, bound_id, bound_node_ID, this->data, *my_basis, *my_master, *my_shape));
         } else {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, bound_id},
                 RawBoundary<dimension - 1, DataType>(
-                    this->master.p, bound_id, this->data, *my_basis, *my_master, *my_shape));
+                    this->master.p, bound_id, bound_node_ID, this->data, *my_basis, *my_master, *my_shape));
         }
     }
 }

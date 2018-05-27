@@ -55,8 +55,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
     std::tuple<> empty_comm;
 
-    initialize_mesh<ProblemType>(
-        this->mesh, input.mesh_input.mesh_data, input.mesh_input.dbmd_data, empty_comm, this->writer);
+    initialize_mesh<ProblemType>(this->mesh, input, empty_comm, this->writer);
 
     ProblemType::initialize_data_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
 }

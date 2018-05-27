@@ -14,6 +14,15 @@ bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
     return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 }
 
+std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) {
+    std::vector<uint> bound_node_ID(2);
+
+    bound_node_ID[0] = node_ID[(bound_id + 1) % 3];
+    bound_node_ID[1] = node_ID[(bound_id + 2) % 3];
+
+    return bound_node_ID;
+}
+
 Point<2> StraightTriangle::GetBarycentricCoordinates() {
     Point<2> baryctr_coord;
 
@@ -172,6 +181,21 @@ Array2D<double> StraightTriangle::InterpolateNodalValuesDerivatives(const std::v
         Array2D<double>{std::vector<double>(points.size(), du_dx), std::vector<double>(points.size(), du_dy)};
 
     return interpolation_derivative;
+}
+
+std::vector<double> StraightTriangle::InterpolateBoundaryNodalValues(const uint bound_id,
+                                                                     const std::vector<double>& bound_nodal_values,
+                                                                     const std::vector<Point<1>>& bound_points) {
+    std::vector<double> interpolation;
+
+    for (uint pt = 0; pt < bound_points.size(); pt++) {
+        interpolation.push_back(0);
+
+        interpolation[pt] = (1 - bound_points[pt][LocalCoordTri::z1]) / 2 * bound_nodal_values[0]     // N1
+                            + (1 + bound_points[pt][LocalCoordTri::z1]) / 2 * bound_nodal_values[1];  // N2
+    }
+
+    return interpolation;
 }
 
 std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {

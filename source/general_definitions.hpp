@@ -162,9 +162,11 @@ class Shape {
     std::vector<Point<dimension>> nodal_coordinates;
 
   public:
-    Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
+    Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(nodal_coordinates) {}
 
     virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
+
+    virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
 
     virtual Point<dimension> GetBarycentricCoordinates()           = 0;
     virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
@@ -178,6 +180,11 @@ class Shape {
                                                        const std::vector<Point<dimension>>& points)        = 0;
     virtual Array2D<double> InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
                                                               const std::vector<Point<dimension>>& points) = 0;
+
+    virtual std::vector<double> InterpolateBoundaryNodalValues(
+        const uint bound_id,
+        const std::vector<double>& bound_nodal_values,
+        const std::vector<Point<dimension - 1>>& bound_points) = 0;
 
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 

@@ -7,10 +7,13 @@ class Interface {
   public:
     SpecializationType specialization;
 
-    uint bound_id_in;
-    uint bound_id_ex;
     DataType& data_in;
     DataType& data_ex;
+
+    uint bound_id_in;
+    uint bound_id_ex;
+    std::vector<uint> node_ID_in;
+    std::vector<uint> node_ID_ex;
 
     Array2D<double> surface_normal_in;
     Array2D<double> surface_normal_ex;
@@ -18,6 +21,8 @@ class Interface {
   private:
     Array2D<double> psi_gp_in;
     Array2D<double> psi_gp_ex;
+    Array2D<double> psi_bound_gp_in;
+    Array2D<double> psi_bound_gp_ex;
     Array2D<double> phi_gp_in;
     Array2D<double> phi_gp_ex;
 
@@ -36,6 +41,8 @@ class Interface {
 
     void ComputeNodalUgpIN(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
     void ComputeNodalUgpEX(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
+    void ComputeBoundaryNodalUgpIN(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
+    void ComputeBoundaryNodalUgpEX(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
 
     double IntegrationIN(const std::vector<double>& u_gp);
     double IntegrationEX(const std::vector<double>& u_gp);
@@ -48,11 +55,13 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     const RawBoundary<dimension, DataType>& raw_boundary_in,
     const RawBoundary<dimension, DataType>& raw_boundary_ex,
     const SpecializationType& specialization)
-    : specialization(std::move(specialization)),
+    : specialization(specialization),
+      data_in(raw_boundary_in.data),
+      data_ex(raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
-      data_in(raw_boundary_in.data),
-      data_ex(raw_boundary_ex.data) {
+      node_ID_in(raw_boundary_in.node_ID),
+      node_ID_ex(raw_boundary_ex.node_ID) {
     // *** //
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
@@ -75,6 +84,18 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->psi_gp_in[dof] = raw_boundary_in.shape.InterpolateNodalValues(u_temp_in, z_master);
     }
 
+    // Compute factors to expand boundary nodal values in
+    this->psi_bound_gp_in.resize(raw_boundary_in.node_ID.size());
+
+    std::vector<double> u_bound_temp_in(raw_boundary_in.node_ID.size());
+    for (uint dof = 0; dof < raw_boundary_in.node_ID.size(); dof++) {
+        std::fill(u_bound_temp_in.begin(), u_bound_temp_in.end(), 0.0);
+        u_bound_temp_in[dof] = 1.0;
+
+        this->psi_bound_gp_in[dof] = raw_boundary_in.shape.InterpolateBoundaryNodalValues(
+            this->bound_id_in, u_bound_temp_in, integration_rule.second);
+    }
+
     // Compute factors to expand modal values in
     this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master);
 
@@ -90,6 +111,18 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         u_temp_ex[dof] = 1.0;
 
         this->psi_gp_ex[dof] = raw_boundary_ex.shape.InterpolateNodalValues(u_temp_ex, z_master);
+    }
+
+    // Compute factors to expand boundary nodal values ex
+    this->psi_bound_gp_ex.resize(raw_boundary_ex.node_ID.size());
+
+    std::vector<double> u_bound_temp_ex(raw_boundary_ex.node_ID.size());
+    for (uint dof = 0; dof < raw_boundary_ex.node_ID.size(); dof++) {
+        std::fill(u_bound_temp_ex.begin(), u_bound_temp_ex.end(), 0.0);
+        u_bound_temp_ex[dof] = 1.0;
+
+        this->psi_bound_gp_ex[dof] = raw_boundary_ex.shape.InterpolateBoundaryNodalValues(
+            this->bound_id_ex, u_bound_temp_ex, integration_rule.second);
     }
 
     // Compute factors to expand modal values ex
@@ -133,7 +166,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         for (uint gp = 0; gp < this->surface_normal_ex.size(); gp++) {
             gp_ex = ngp - gp - 1;
             for (uint dir = 0; dir < this->surface_normal_ex[gp].size(); dir++) {
-                this->surface_normal_ex[gp_ex][dir] = -this->surface_normal_in[gp][dir];
+                this->surface_normal_ex[gp_ex][dir] = -this->surface_normal_in[gp][dir];  // but opposite direction
             }
         }
     }
@@ -164,6 +197,19 @@ inline void Interface<dimension, IntegrationType, DataType, SpecializationType>:
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
         for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
             u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp_in[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeBoundaryNodalUgpIN(
+    const std::vector<double>& u_bound_nodal,
+    std::vector<double>& u_bound_nodal_gp) {
+    std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_bound_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_bound_nodal_gp.size(); gp++) {
+            u_bound_nodal_gp[gp] += u_bound_nodal[dof] * this->psi_bound_gp_in[dof][gp];
         }
     }
 }
@@ -215,6 +261,19 @@ inline void Interface<dimension, IntegrationType, DataType, SpecializationType>:
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
         for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
             u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp_ex[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeBoundaryNodalUgpEX(
+    const std::vector<double>& u_bound_nodal,
+    std::vector<double>& u_bound_nodal_gp) {
+    std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_bound_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_bound_nodal_gp.size(); gp++) {
+            u_bound_nodal_gp[gp] += u_bound_nodal[dof] * this->psi_bound_gp_ex[dof][gp];
         }
     }
 }

@@ -61,15 +61,6 @@ struct SlopeLimiting {
     double nu = 1.5;
 };
 
-// Problem specific boundary condition information containers
-struct Levee {
-    std::vector<uint> front_nodes;
-    std::vector<uint> back_nodes;
-    std::vector<double> barrier_height;
-    std::vector<double> C_subcritical;
-    std::vector<double> C_supercritical;
-};
-
 // Problem specific inputs
 struct Inputs {
     double g         = 9.81;
@@ -78,6 +69,8 @@ struct Inputs {
 
     SphericalProjection spherical_projection;
     InitialConditions initial_conditions;
+
+    std::map<std::pair<uint, uint>, std::vector<double>> levee_is_data;
 
     FunctionSource function_source;
     BottomFriction bottom_friction;

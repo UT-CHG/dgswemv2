@@ -7,13 +7,16 @@ class Boundary {
   public:
     BoundaryType boundary_condition;
 
-    uint bound_id;
     DataType& data;
+
+    uint bound_id;
+    std::vector<uint> node_ID;
 
     Array2D<double> surface_normal;
 
   private:
     Array2D<double> psi_gp;
+    Array2D<double> psi_bound_gp;
     Array2D<double> phi_gp;
 
     std::vector<double> int_fact;
@@ -26,6 +29,7 @@ class Boundary {
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
 
     void ComputeNodalUgp(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
+    void ComputeBoundaryNodalUgp(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
 
     double Integration(const std::vector<double>& u_gp);
     double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
@@ -38,7 +42,10 @@ template <uint dimension, typename IntegrationType, typename DataType, typename 
 Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     const RawBoundary<dimension, DataType>& raw_boundary,
     const BoundaryType& boundary_condition)
-    : boundary_condition(std::move(boundary_condition)), bound_id(raw_boundary.bound_id), data(raw_boundary.data) {
+    : boundary_condition(boundary_condition),
+      data(raw_boundary.data),
+      bound_id(raw_boundary.bound_id),
+      node_ID(raw_boundary.node_ID) {
     // *** //
     IntegrationType integration;
 
@@ -57,6 +64,18 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
         u_temp[dof] = 1.0;
 
         this->psi_gp[dof] = raw_boundary.shape.InterpolateNodalValues(u_temp, z_master);
+    }
+
+    // Compute factors to expand boundary nodal values
+    this->psi_bound_gp.resize(raw_boundary.node_ID.size());
+
+    std::vector<double> u_bound_temp(raw_boundary.node_ID.size());
+    for (uint dof = 0; dof < raw_boundary.node_ID.size(); dof++) {
+        std::fill(u_bound_temp.begin(), u_bound_temp.end(), 0.0);
+        u_bound_temp[dof] = 1.0;
+
+        this->psi_bound_gp[dof] =
+            raw_boundary.shape.InterpolateBoundaryNodalValues(this->bound_id, u_bound_temp, integration_rule.second);
     }
 
     // Compute factors to expand modal values
@@ -105,6 +124,19 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
         for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
             u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp[dof][gp];
+        }
+    }
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
+inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeBoundaryNodalUgp(
+    const std::vector<double>& u_bound_nodal,
+    std::vector<double>& u_bound_nodal_gp) {
+    std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_bound_nodal.size(); dof++) {
+        for (uint gp = 0; gp < u_bound_nodal_gp.size(); gp++) {
+            u_bound_nodal_gp[gp] += u_bound_nodal[dof] * this->psi_bound_gp[dof][gp];
         }
     }
 }

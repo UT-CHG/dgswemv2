@@ -10,6 +10,8 @@ class StraightTriangle : public Shape<2> {
 
     bool CheckJacobianPositive(const Point<2>& point);
 
+    std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID);
+
     Point<2> GetBarycentricCoordinates();
     std::vector<Point<2>> GetMidpointCoordinates();
 
@@ -22,6 +24,10 @@ class StraightTriangle : public Shape<2> {
                                                const std::vector<Point<2>>& points);
     Array2D<double> InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
                                                       const std::vector<Point<2>>& points);
+
+    std::vector<double> InterpolateBoundaryNodalValues(const uint bound_id,
+                                                       const std::vector<double>& bound_nodal_values,
+                                                       const std::vector<Point<1>>& bound_points);
 
     std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points);
 

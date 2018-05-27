@@ -8,21 +8,36 @@
 namespace SWE {
 namespace IS {
 class Levee {
+  private:
+    double H_tolerance = 0.01;
+
+    std::vector<double> H_barrier;
+    std::vector<double> C_subcritical;
+    std::vector<double> C_supercritical;
+
+    std::vector<double> H_bar_gp;
+    std::vector<double> C_subcrit_gp;
+    std::vector<double> C_supercrit_gp;
+
   public:
+    Levee() = default;
+    Levee(const std::vector<double>& H_barrier,
+          const std::vector<double>& C_subcritical,
+          const std::vector<double>& C_supercritical);
+
     template <typename InterfaceType>
     void ComputeFlux(const Stepper& stepper, InterfaceType& intface);
 };
+
+Levee::Levee(const std::vector<double>& H_barrier,
+             const std::vector<double>& C_subcritical,
+             const std::vector<double>& C_supercritical)
+    : H_barrier(H_barrier), C_subcritical(C_subcritical), C_supercritical(C_supercritical) {}
 
 template <typename InterfaceType>
 void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
-
-    double H_levee     = 0.35;
-    double H_tolerance = 0.01;
-
-    double C_subcrit   = 1.0;
-    double C_supercrit = 1.0;
 
     const uint stage = stepper.GetStage();
 
@@ -34,8 +49,20 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
     auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
 
+    // Initialize levee parameters at gps at first step/stage
+    if (stepper.GetStep() == 0 && stepper.GetStage() == 0) {
+        this->H_bar_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+        this->C_subcrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+        this->C_supercrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+
+        intface.ComputeBoundaryNodalUgpIN(this->H_barrier, this->H_bar_gp);
+        intface.ComputeBoundaryNodalUgpIN(this->C_subcritical, this->C_subcrit_gp);
+        intface.ComputeBoundaryNodalUgpIN(this->C_supercritical, this->C_supercrit_gp);
+    }
+
     SWE::BC::Land land_boundary;
 
+    double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
     double ze_in_ex, qx_in_ex, qy_in_ex, ze_ex_ex, qx_ex_ex, qy_ex_ex;
     double gravity_in, gravity_ex;
@@ -44,6 +71,10 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
     uint gp_ex = 0;
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = ngp - gp - 1;
+
+        H_levee     = this->H_bar_gp[gp];
+        C_subcrit   = this->C_subcrit_gp[gp];
+        C_supercrit = this->C_supercrit_gp[gp];
 
         gravity_in = Global::g;
         gravity_ex = Global::g;
