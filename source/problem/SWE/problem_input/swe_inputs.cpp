@@ -212,28 +212,28 @@ void Inputs::read_bcis(const std::string& bcis_file) {
     std::ifstream file(bcis_file);
 
     if (!file) {
-        throw std::logic_error("Error: Unable to find bc/is file : " + bcis_file + '\n');
-    }
+        uint nnodes, btype;
 
-    uint nnodes, btype;
-
-    file >> nnodes;
-    file >> btype;
-    file.ignore(1000, '\n');
-
-    uint front_node, back_node;
-    double barrier_height, C_subcrit, C_supercrit;
-
-    for (uint node = 0; node < nnodes; node++) {
-        file >> front_node;
-        file >> back_node;
-        file >> barrier_height;
-        file >> C_subcrit;
-        file >> C_supercrit;
+        file >> nnodes;
+        file >> btype;
         file.ignore(1000, '\n');
 
-        this->levee_is_data.emplace(std::pair<uint, uint>{front_node, back_node},
-                                    std::vector<double>{barrier_height, C_subcrit, C_supercrit});
+        uint front_node, back_node;
+        double barrier_height, C_subcrit, C_supercrit;
+
+        for (uint node = 0; node < nnodes; node++) {
+            file >> front_node;
+            file >> back_node;
+            file >> barrier_height;
+            file >> C_subcrit;
+            file >> C_supercrit;
+            file.ignore(1000, '\n');
+
+            this->levee_is_data.emplace(std::pair<uint, uint>{front_node, back_node},
+                                        std::vector<double>{barrier_height, C_subcrit, C_supercrit});
+        }
+    } else if (!file) {
+        // throw std::logic_error("Error: Unable to find bc/is file : " + bcis_file + '\n');
     }
 }
 
