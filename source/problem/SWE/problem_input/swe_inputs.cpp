@@ -211,7 +211,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
 void Inputs::read_bcis(const std::string& bcis_file) {
     std::ifstream file(bcis_file);
 
-    if (!file) {
+    if (file) {
         uint nnodes, btype;
 
         file >> nnodes;
