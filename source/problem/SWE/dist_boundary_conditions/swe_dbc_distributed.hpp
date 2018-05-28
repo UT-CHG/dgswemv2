@@ -58,6 +58,9 @@ class Distributed {
                 const uint bath_at_baryctr_index);
 
     template <typename DistributedBoundaryType>
+    void Initialize(DistributedBoundaryType& dbound) {} /*nothing to initialize*/
+
+    template <typename DistributedBoundaryType>
     void ComputeFlux(const Stepper& stepper, DistributedBoundaryType& dbound);
 
     void SetPreprocEX(const double x_at_baryctr_in, const double y_at_baryctr_in);

@@ -214,23 +214,79 @@ void Inputs::read_bcis(const std::string& bcis_file) {
     if (file) {
         uint nnodes, btype;
 
-        file >> nnodes;
-        file >> btype;
-        file.ignore(1000, '\n');
+        std::string line;
+        std::stringstream stream;
 
-        uint front_node, back_node;
-        double barrier_height, C_subcrit, C_supercrit;
+        while (std::getline(file, line)) {
+            stream = std::stringstream(line);
+            stream >> btype >> nnodes;
 
-        for (uint node = 0; node < nnodes; node++) {
-            file >> front_node;
-            file >> back_node;
-            file >> barrier_height;
-            file >> C_subcrit;
-            file >> C_supercrit;
-            file.ignore(1000, '\n');
+            if (btype == SWE::BoundaryTypes::tidal) {
+                uint ncon, node_ID;
+                double frequency, force_fact, eq_argument, amplitude, phase;
 
-            this->levee_is_data.emplace(std::pair<uint, uint>{front_node, back_node},
-                                        std::vector<double>{barrier_height, C_subcrit, C_supercrit});
+                std::getline(file, line);
+
+                stream = std::stringstream(line);
+                stream >> ncon;
+
+                for (uint con = 0; con < ncon; con++) {
+                    std::getline(file, line);
+
+                    stream = std::stringstream(line);
+                    stream >> frequency >> force_fact >> eq_argument;
+
+                    this->tidal_bc_con_data.emplace_back(std::vector<double>{frequency, force_fact, eq_argument});
+
+                    for (uint node = 0; node < nnodes; node++) {
+                        std::getline(file, line);
+
+                        stream = std::stringstream(line);
+                        stream >> node_ID >> amplitude >> phase;
+
+                        this->tidal_bc_data[node_ID].emplace_back(std::vector<double>{amplitude, phase});
+                    }
+                }
+            } else if (btype == SWE::BoundaryTypes::flow) {
+                uint ncon, node_ID;
+                double frequency, force_fact, eq_argument, amplitude, phase;
+
+                std::getline(file, line);
+
+                stream = std::stringstream(line);
+                stream >> ncon;
+
+                for (uint con = 0; con < ncon; con++) {
+                    std::getline(file, line);
+
+                    stream = std::stringstream(line);
+                    stream >> frequency >> force_fact >> eq_argument;
+
+                    this->flow_bc_con_data.emplace_back(std::vector<double>{frequency, force_fact, eq_argument});
+
+                    for (uint node = 0; node < nnodes; node++) {
+                        std::getline(file, line);
+
+                        stream = std::stringstream(line);
+                        stream >> node_ID >> amplitude >> phase;
+
+                        this->flow_bc_data[node_ID].emplace_back(std::vector<double>{amplitude, phase});
+                    }
+                }
+            } else if (btype == SWE::BoundaryTypes::levee) {
+                uint front_node, back_node;
+                double barrier_height, C_subcrit, C_supercrit;
+
+                for (uint node = 0; node < nnodes; node++) {
+                    std::getline(file, line);
+
+                    stream = std::stringstream(line);
+                    stream >> front_node >> back_node >> barrier_height >> C_subcrit >> C_supercrit;
+
+                    this->levee_is_data.emplace(std::pair<uint, uint>{front_node, back_node},
+                                                std::vector<double>{barrier_height, C_subcrit, C_supercrit});
+                }
+            }
         }
     } else if (!file) {
         // throw std::logic_error("Error: Unable to find bc/is file : " + bcis_file + '\n');

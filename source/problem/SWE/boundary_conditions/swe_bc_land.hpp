@@ -9,6 +9,9 @@ namespace SWE {
 namespace BC {
 class Land {
   public:
+    template <typename BoundaryType>
+    void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
+
     void ComputeFlux(const Stepper& stepper,
                      const Array2D<double>& surface_normal,
                      const std::vector<double>& sp_in,

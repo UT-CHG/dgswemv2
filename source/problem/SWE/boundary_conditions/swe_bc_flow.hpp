@@ -8,7 +8,21 @@
 namespace SWE {
 namespace BC {
 class Flow {
+  private:
+    Array2D<double> flow_constituents;  // 0 - freq, 1 - force_fact, 2 - eq_arg
+    Array2D<double> amplitude;
+    Array2D<double> phase;
+
+    Array2D<double> amplitude_gp;
+    Array2D<double> phase_gp;
+
   public:
+    Flow() = default;
+    Flow(const Array2D<double>& flow_constituents, const Array2D<double>& amplitude, const Array2D<double>& phase);
+
+    template <typename BoundaryType>
+    void Initialize(BoundaryType& bound);
+
     void ComputeFlux(const Stepper& stepper,
                      const Array2D<double>& surface_normal,
                      const std::vector<double>& sp_in,
@@ -30,6 +44,23 @@ class Flow {
                double& qx_ex,
                double& qy_ex);
 };
+
+Flow::Flow(const Array2D<double>& flow_constituents, const Array2D<double>& amplitude, const Array2D<double>& phase)
+    : flow_constituents(flow_constituents), amplitude(amplitude), phase(phase) {}
+
+template <typename BoundaryType>
+void Flow::Initialize(BoundaryType& bound) {
+    this->amplitude_gp.resize(this->flow_constituents.size());
+    this->phase_gp.resize(this->flow_constituents.size());
+
+    for (uint con = 0; con < this->flow_constituents.size(); con++) {
+        this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
+        this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
+
+        bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
+        bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+    }
+}
 
 void Flow::ComputeFlux(const Stepper& stepper,
                        const Array2D<double>& surface_normal,
@@ -70,10 +101,21 @@ void Flow::GetEX(const Stepper& stepper,
                  double& ze_ex,
                  double& qx_ex,
                  double& qy_ex) {
-    double qn_0   = -0.75;
-    double qn_amp = 0;
+    double qn = 0;
+    double qt = 0;
 
-    qn_amp = qn_0 * tanh(2 * stepper.GetTimeAtCurrentStage() / (0.5 * 86400.0));  // TANH RAMP
+    double frequency;
+    double forcing_fact;
+    double eq_argument;
+
+    for (uint con = 0; con < this->flow_constituents.size(); con++) {
+        frequency    = this->flow_constituents[con][0];
+        forcing_fact = this->flow_constituents[con][1];
+        eq_argument  = this->flow_constituents[con][2];
+
+        qn += forcing_fact * this->amplitude_gp[con][gp] *
+              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
+    }
 
     double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
 
@@ -82,12 +124,9 @@ void Flow::GetEX(const Stepper& stepper,
     t_x = -n_y;
     t_y = n_x;
 
-    qn_ex = qn_amp * cos(2 * PI * stepper.GetTimeAtCurrentStage() / 43200.0);  // M2
-    qt_ex = 0;
-
     ze_ex = ze_in[gp];
-    qx_ex = qn_ex * n_x + qt_ex * t_x;
-    qy_ex = qn_ex * n_y + qt_ex * t_y;
+    qx_ex = qn * n_x + qt * t_x;
+    qy_ex = qn * n_y + qt * t_y;
 }
 }
 }

@@ -1,5 +1,5 @@
-#ifndef SWE_IS_INTERFACE_HPP
-#define SWE_IS_INTERFACE_HPP
+#ifndef SWE_IS_INTERNAL_HPP
+#define SWE_IS_INTERNAL_HPP
 
 #include "../../../general_definitions.hpp"
 #include "../../../simulation/stepper.hpp"
@@ -7,14 +7,17 @@
 
 namespace SWE {
 namespace IS {
-class Interface {
+class Internal {
   public:
+    template <typename InterfaceType>
+    void Initialize(InterfaceType& intface) {} /*nothing to initialize*/
+
     template <typename InterfaceType>
     void ComputeFlux(const Stepper& stepper, InterfaceType& intface);
 };
 
 template <typename InterfaceType>
-void Interface::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
+void Internal::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 

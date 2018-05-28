@@ -8,7 +8,21 @@
 namespace SWE {
 namespace BC {
 class Tidal {
+  private:
+    Array2D<double> tidal_constituents;  // 0 - freq, 1 - force_fact, 2 - eq_arg
+    Array2D<double> amplitude;
+    Array2D<double> phase;
+
+    Array2D<double> amplitude_gp;
+    Array2D<double> phase_gp;
+
   public:
+    Tidal() = default;
+    Tidal(const Array2D<double>& tidal_constituents, const Array2D<double>& amplitude, const Array2D<double>& phase);
+
+    template <typename BoundaryType>
+    void Initialize(BoundaryType& bound);
+
     void ComputeFlux(const Stepper& stepper,
                      const Array2D<double>& surface_normal,
                      const std::vector<double>& sp_in,
@@ -30,6 +44,23 @@ class Tidal {
                double& qx_ex,
                double& qy_ex);
 };
+
+Tidal::Tidal(const Array2D<double>& tidal_constituents, const Array2D<double>& amplitude, const Array2D<double>& phase)
+    : tidal_constituents(tidal_constituents), amplitude(amplitude), phase(phase) {}
+
+template <typename BoundaryType>
+void Tidal::Initialize(BoundaryType& bound) {
+    this->amplitude_gp.resize(this->tidal_constituents.size());
+    this->phase_gp.resize(this->tidal_constituents.size());
+
+    for (uint con = 0; con < this->tidal_constituents.size(); con++) {
+        this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
+        this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
+
+        bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
+        bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+    }
+}
 
 void Tidal::ComputeFlux(const Stepper& stepper,
                         const Array2D<double>& surface_normal,
@@ -70,18 +101,22 @@ void Tidal::GetEX(const Stepper& stepper,
                   double& ze_ex,
                   double& qx_ex,
                   double& qy_ex) {
-    double ze_0   = 0.2;
-    double ze_amp = ze_0;
+    double ze = 0;
 
-    // ze_amp = ze_0 * tanh(2 * stepper.GetTimeAtCurrentStage() / (0.25 * 86400.0));  // TANH RAMP
+    double frequency;
+    double forcing_fact;
+    double eq_argument;
 
-    /*if (stepper.GetTimeAtCurrentStage() < 43200.0) {
-        ze_amp = ze_0 * stepper.GetTimeAtCurrentStage() / 43200.0;  // LINEAR RAMPING
-    } else {
-        ze_amp = ze_0;
-    }*/
+    for (uint con = 0; con < this->tidal_constituents.size(); con++) {
+        frequency    = this->tidal_constituents[con][0];
+        forcing_fact = this->tidal_constituents[con][1];
+        eq_argument  = this->tidal_constituents[con][2];
 
-    ze_ex = ze_amp;  //* cos(2 * PI * stepper.GetTimeAtCurrentStage() / 43200.0);  // M2
+        ze += forcing_fact * this->amplitude_gp[con][gp] *
+              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
+    }
+
+    ze_ex = ze;
     qx_ex = qx_in[gp];
     qy_ex = qy_in[gp];
 }

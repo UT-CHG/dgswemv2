@@ -14,11 +14,9 @@ void Problem::interface_kernel(const Stepper& stepper, InterfaceType& intface) {
 
         auto& state_in    = intface.data_in.state[stage];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-        auto& sp_at_gp_in = intface.data_in.spherical_projection.sp_at_gp_boundary[intface.bound_id_in];
 
         auto& state_ex    = intface.data_ex.state[stage];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
-        auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
 
         intface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
         intface.ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);

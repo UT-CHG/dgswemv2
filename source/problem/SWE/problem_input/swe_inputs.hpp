@@ -70,6 +70,12 @@ struct Inputs {
     SphericalProjection spherical_projection;
     InitialConditions initial_conditions;
 
+    Array2D<double> tidal_bc_con_data;
+    std::map<uint, Array2D<double>> tidal_bc_data;
+
+    Array2D<double> flow_bc_con_data;
+    std::map<uint, Array2D<double>> flow_bc_data;
+
     std::map<std::pair<uint, uint>, std::vector<double>> levee_is_data;
 
     FunctionSource function_source;

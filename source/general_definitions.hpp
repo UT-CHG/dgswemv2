@@ -196,8 +196,8 @@ class Shape {
 
 #define N_DIV 1                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
-#define INTERNAL 255           // max uchar as default bound type: internal
-#define DISTRIBUTED 254
+#define INTERNAL 100           // max uchar as default bound type: internal
+#define DISTRIBUTED 200
 
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };
 

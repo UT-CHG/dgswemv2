@@ -79,7 +79,7 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index_postproc += 4;
 
-            auto& pre_dboundary = raw_boundaries.at(SWE::BoundaryConditions::distributed)
+            auto& pre_dboundary = raw_boundaries.at(SWE::BoundaryTypes::distributed)
                                       .at(std::pair<uint, uint>{element_id_in, bound_id_in});
             pre_dboundary.p = p;
 
@@ -105,8 +105,7 @@ void Problem::create_distributed_boundaries_kernel(
                                       qy_at_baryctr_index,
                                       bath_at_baryctr_index));
 
-            raw_boundaries.at(SWE::BoundaryConditions::distributed)
-                .erase(std::pair<uint, uint>{element_id_in, bound_id_in});
+            raw_boundaries.at(SWE::BoundaryTypes::distributed).erase(std::pair<uint, uint>{element_id_in, bound_id_in});
         }
 
         send_preproc_buffer_reference.resize(begin_index_preproc);

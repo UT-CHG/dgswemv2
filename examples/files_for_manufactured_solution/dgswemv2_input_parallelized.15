@@ -1,23 +1,20 @@
 ###############################################################################
 #
-#  DGSWEMv2 input file
+#  DG_HYPER input file
 #
 ###############################################################################
 
+polynomial_order: 1
 mesh:
   format: Meta
   file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/examples/files_for_manufactured_solution/rectangular_mesh.meta
   coordinate_system: cartesian
-
 timestepping:
   start_time: 25-11-1987 00:00
-  end_time: 25-11-1987 12:00               
-  dt: 1                           
+  end_time: 25-11-1987 12:00
+  dt: 1
   order: 2
   nstages: 2
-
-polynomial_order: 1
-
 problem:
   name: swe
   gravity: 9.81
@@ -25,9 +22,8 @@ problem:
   density_water: 1000.0
   initial_conditions:
     type: Function
-  function_source: Enable  
-
+  function_source: Enable
 output:
   path: output/
   vtk:
-    frequency: 360.0
+    frequency: 360

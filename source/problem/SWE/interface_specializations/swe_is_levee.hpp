@@ -26,6 +26,9 @@ class Levee {
           const std::vector<double>& C_supercritical);
 
     template <typename InterfaceType>
+    void Initialize(InterfaceType& intface);
+
+    template <typename InterfaceType>
     void ComputeFlux(const Stepper& stepper, InterfaceType& intface);
 };
 
@@ -33,6 +36,17 @@ Levee::Levee(const std::vector<double>& H_barrier,
              const std::vector<double>& C_subcritical,
              const std::vector<double>& C_supercritical)
     : H_barrier(H_barrier), C_subcritical(C_subcritical), C_supercritical(C_supercritical) {}
+
+template <typename InterfaceType>
+void Levee::Initialize(InterfaceType& intface) {
+    this->H_bar_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+    this->C_subcrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+    this->C_supercrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+
+    intface.ComputeBoundaryNodalUgpIN(this->H_barrier, this->H_bar_gp);
+    intface.ComputeBoundaryNodalUgpIN(this->C_subcritical, this->C_subcrit_gp);
+    intface.ComputeBoundaryNodalUgpIN(this->C_supercritical, this->C_supercrit_gp);
+}
 
 template <typename InterfaceType>
 void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
@@ -48,17 +62,6 @@ void Levee::ComputeFlux(const Stepper& stepper, InterfaceType& intface) {
     auto& state_ex    = intface.data_ex.state[stage];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
     auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
-
-    // Initialize levee parameters at gps at first step/stage
-    if (stepper.GetStep() == 0 && stepper.GetStage() == 0) {
-        this->H_bar_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-        this->C_subcrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-        this->C_supercrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-
-        intface.ComputeBoundaryNodalUgpIN(this->H_barrier, this->H_bar_gp);
-        intface.ComputeBoundaryNodalUgpIN(this->C_subcritical, this->C_subcrit_gp);
-        intface.ComputeBoundaryNodalUgpIN(this->C_supercritical, this->C_supercrit_gp);
-    }
 
     SWE::BC::Land land_boundary;
 

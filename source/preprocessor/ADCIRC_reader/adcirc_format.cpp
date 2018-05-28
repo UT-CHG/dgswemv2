@@ -188,33 +188,33 @@ void AdcircFormat::write_to(const char* out_name) const {
     }
 }
 
-SWE::BoundaryConditions AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) const {
+SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) const {
     for (auto& open_bdry : this->NBDV) {
         if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
-            return SWE::BoundaryConditions::tidal;
+            return SWE::BoundaryTypes::tidal;
         }
     }
 
     for (uint segment_id = 0; segment_id < this->NBOU; segment_id++) {
         if (this->IBTYPE[segment_id] % 10 == 0) {
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
-                return SWE::BoundaryConditions::land;
+                return SWE::BoundaryTypes::land;
             }
         } else if (this->IBTYPE[segment_id] % 10 == 2) {
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
-                return SWE::BoundaryConditions::flow;
+                return SWE::BoundaryTypes::flow;
             }
         } else if (this->IBTYPE[segment_id] % 10 == 4) {
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair) ||
                 has_edge(this->IBCONN.at(segment_id).cbegin(), this->IBCONN.at(segment_id).cend(), node_pair)) {
-                return SWE::BoundaryConditions::internal_barrier;
+                return SWE::BoundaryTypes::levee;
             }
         }
     }
 
     for (auto& generic_bdry : this->NBGN) {
         if (has_edge(generic_bdry.cbegin(), generic_bdry.cend(), node_pair)) {
-            return SWE::BoundaryConditions::land;
+            return SWE::BoundaryTypes::land;
         }
     }
 

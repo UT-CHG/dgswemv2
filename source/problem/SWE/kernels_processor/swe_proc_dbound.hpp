@@ -32,7 +32,6 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
 
         auto& state    = dbound.data.state[stage];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
-        auto& sp_at_gp = dbound.data.spherical_projection.sp_at_gp_boundary[dbound.bound_id];
 
         dbound.boundary_condition.ComputeFlux(stepper, dbound);
 

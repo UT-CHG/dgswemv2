@@ -13,7 +13,7 @@ int main() {
 
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::Data>;
     using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::BC::Land>;
-    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Interface>;
+    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Internal>;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);
@@ -30,8 +30,7 @@ int main() {
         vrtxs,
         std::vector<uint>{0, 0, 0},
         std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
-        std::vector<unsigned char>{
-            SWE::BoundaryConditions::land, SWE::BoundaryConditions::land, SWE::BoundaryConditions::land});
+        std::vector<unsigned char>{SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land});
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 
@@ -40,7 +39,7 @@ int main() {
 
     std::vector<BoundaryType> boundaries;
 
-    for (auto& rb : raw_boundary[SWE::BoundaryConditions::land]) {
+    for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
         boundaries.emplace_back(BoundaryType(rb.second));
     }
 
@@ -177,7 +176,7 @@ int main() {
 
     // generate Interfaces
     std::vector<InterfaceType> interfaces;
-    for (auto& rb : raw_boundary[SWE::BoundaryConditions::land]) {
+    for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
         interfaces.emplace_back(InterfaceType(rb.second, rb.second));
     }
 
