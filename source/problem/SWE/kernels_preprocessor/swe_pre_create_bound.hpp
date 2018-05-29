@@ -128,6 +128,7 @@ void Problem::create_boundaries_kernel(
             }
         }
     }
+
     mesh.CallForEachBoundary([](auto& bound) { bound.boundary_condition.Initialize(bound); });
 }
 }

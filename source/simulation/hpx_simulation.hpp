@@ -77,8 +77,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
     this->communicator = HPXCommunicator(input.mesh_input.dbmd_data);
     this->stepper      = Stepper(input.stepper_input);
-    this->writer       = Writer<ProblemType>(input.writer_input);
-    this->parser       = typename ProblemType::ProblemParserType(input);
+    this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
+    this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();

@@ -24,6 +24,9 @@ void Problem::create_distributed_boundaries_kernel(
     auto& raw_bound_distributed = raw_boundaries[SWE::BoundaryTypes::distributed];
     auto& raw_bound_distr_levee = raw_boundaries[SWE::BoundaryTypes::distr_levee];
 
+    uint n_distributed = 0;
+    uint n_distr_levee = 0;
+
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
@@ -115,6 +118,8 @@ void Problem::create_distributed_boundaries_kernel(
                                                                     send_postproc_buffer_reference,
                                                                     receive_postproc_buffer_reference)));
 
+                n_distributed++;
+
                 raw_bound_distributed.erase(dbound_key);
             } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
                 using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
@@ -123,9 +128,9 @@ void Problem::create_distributed_boundaries_kernel(
 
                 raw_boundary.p = p;
 
-                std::vector<double> H_barrier;
-                std::vector<double> C_subcritical;
-                std::vector<double> C_supercritical;
+                std::vector<double> H_barrier{0.2, 0.2};
+                std::vector<double> C_subcritical{1.0, 1.0};
+                std::vector<double> C_supercritical{1.0, 1.0};
 
                 /* do lookup for levee parameters in input */
 
@@ -142,6 +147,8 @@ void Problem::create_distributed_boundaries_kernel(
                                                C_subcritical,
                                                C_supercritical));
 
+                n_distr_levee++;
+
                 raw_bound_distr_levee.erase(dbound_key);
             }
         }
@@ -156,9 +163,11 @@ void Problem::create_distributed_boundaries_kernel(
         receive_postproc_buffer_reference.resize(begin_index_postproc);
     }
 
+    mesh.CallForEachDistributedBoundary([](auto& dbound) { dbound.boundary_condition.Initialize(dbound); });
+
     if (writer.WritingLog()) {
-        writer.GetLogFile() << "Number of distributed boundaries: " << mesh.GetNumberDistributedBoundaries()
-                            << std::endl;
+        writer.GetLogFile() << "Number of distributed boundaries: " << n_distributed << std::endl
+                            << "Number of distributed levee boundaries: " << n_distr_levee << std::endl;
     }
 }
 }
