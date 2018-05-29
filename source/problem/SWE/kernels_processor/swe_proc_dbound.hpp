@@ -15,9 +15,9 @@ void Problem::distributed_boundary_send_kernel(const Stepper& stepper, Distribut
     dbound.ComputeUgp(state.qx, boundary.qx_at_gp);
     dbound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
-    dbound.boundary_condition.SetEX(boundary.ze_at_gp, boundary.qx_at_gp, boundary.qy_at_gp);
+    dbound.boundary_condition.exchanger.SetEX(boundary.ze_at_gp, boundary.qx_at_gp, boundary.qy_at_gp);
 
-    dbound.boundary_condition.SetWetDryEX(dbound.data.wet_dry_state.wet);
+    dbound.boundary_condition.exchanger.SetWetDryEX(dbound.data.wet_dry_state.wet);
 }
 
 template <typename DistributedBoundaryType>
@@ -25,7 +25,7 @@ void Problem::distributed_boundary_kernel(const Stepper& stepper, DistributedBou
     auto& wd_state_in = dbound.data.wet_dry_state;
 
     bool wet_ex;
-    dbound.boundary_condition.GetWetDryEX(wet_ex);
+    dbound.boundary_condition.exchanger.GetWetDryEX(wet_ex);
 
     if (wd_state_in.wet || wet_ex) {
         const uint stage = stepper.GetStage();
