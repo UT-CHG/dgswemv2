@@ -107,9 +107,16 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         }
     }
 
-    {  // process generic boundaries
-        ifs >> this->NGEN;
-        ifs.ignore(1000, '\n');
+    std::string line;
+    std::getline(ifs, line);
+
+    if (line.find_first_not_of(' ') != std::string::npos) {  // process generic boundaries if there are any, i.e. not a
+                                                             // white space or end of file
+        std::stringstream stream;
+        stream = std::stringstream(line);
+
+        stream >> this->NGEN;
+        stream.ignore(1000, '\n');
         ifs >> this->NNGN;
         ifs.ignore(1000, '\n');
 

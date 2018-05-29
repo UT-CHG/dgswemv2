@@ -18,10 +18,11 @@ void Problem::create_distributed_boundaries_kernel(
     Communicator& communicator,
     Writer<SWE::Problem>& writer) {
     // *** //
-    using DistributedBoundaryType =
-        std::tuple_element<0, Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::DBC::Distributed>>::type;
+    using DistributedBoundaryTypes =
+        Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::DBC::Distributed, SWE::DBC::DistributedLevee>;
 
-    typename DistributedBoundaryType::BoundaryIntegrationType boundary_integration;
+    auto& raw_bound_distributed = raw_boundaries[SWE::BoundaryTypes::distributed];
+    auto& raw_bound_distr_levee = raw_boundaries[SWE::BoundaryTypes::distr_levee];
 
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
@@ -50,7 +51,26 @@ void Problem::create_distributed_boundaries_kernel(
             bound_id_in   = rb_meta_data.bound_ids_in.at(dboundary_id);
             bound_id_ex   = rb_meta_data.bound_ids_ex.at(dboundary_id);
             p             = rb_meta_data.p.at(dboundary_id);
-            ngp           = boundary_integration.GetNumGP(2 * p);
+
+            std::pair<uint, uint> dbound_key = std::pair<uint, uint>{element_id_in, bound_id_in};
+
+            // this finds number of gps used in integrations at the current bound
+            // revise for a safer more efficient way to do so, be careful about keeping 2 * p + 1 consistent
+            if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
+                using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
+
+                typename DBTypeDistributed::BoundaryIntegrationType boundary_integration;
+
+                ngp = boundary_integration.GetNumGP(2 * p + 1);
+            } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
+                using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
+
+                typename DBTypeDistributedLevee::BoundaryIntegrationType boundary_integration;
+
+                ngp = boundary_integration.GetNumGP(2 * p + 1);
+            } else {
+                throw std::logic_error("Error: Unable to find raw distributed boundary\n");
+            }
 
             SWE::DBC::DBIndex index;
 
@@ -78,21 +98,52 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index_postproc += 4;
 
-            auto& pre_dboundary = raw_boundaries.at(SWE::BoundaryTypes::distributed)
-                                      .at(std::pair<uint, uint>{element_id_in, bound_id_in});
-            pre_dboundary.p = p;
+            if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
+                using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
 
-            mesh.template CreateDistributedBoundary<DistributedBoundaryType>(
-                pre_dboundary,
-                SWE::DBC::Distributed(SWE::DBC::DBDataExchanger(index,
-                                                                send_preproc_buffer_reference,
-                                                                receive_preproc_buffer_reference,
-                                                                send_buffer_reference,
-                                                                receive_buffer_reference,
-                                                                send_postproc_buffer_reference,
-                                                                receive_postproc_buffer_reference)));
+                auto& raw_boundary = raw_bound_distributed.find(dbound_key)->second;
 
-            raw_boundaries.at(SWE::BoundaryTypes::distributed).erase(std::pair<uint, uint>{element_id_in, bound_id_in});
+                raw_boundary.p = p;
+
+                mesh.template CreateDistributedBoundary<DBTypeDistributed>(
+                    raw_boundary,
+                    SWE::DBC::Distributed(SWE::DBC::DBDataExchanger(index,
+                                                                    send_preproc_buffer_reference,
+                                                                    receive_preproc_buffer_reference,
+                                                                    send_buffer_reference,
+                                                                    receive_buffer_reference,
+                                                                    send_postproc_buffer_reference,
+                                                                    receive_postproc_buffer_reference)));
+
+                raw_bound_distributed.erase(dbound_key);
+            } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
+                using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
+
+                auto& raw_boundary = raw_bound_distr_levee.find(dbound_key)->second;
+
+                raw_boundary.p = p;
+
+                std::vector<double> H_barrier;
+                std::vector<double> C_subcritical;
+                std::vector<double> C_supercritical;
+
+                /* do lookup for levee parameters in input */
+
+                mesh.template CreateDistributedBoundary<DBTypeDistributedLevee>(
+                    raw_boundary,
+                    SWE::DBC::DistributedLevee(SWE::DBC::DBDataExchanger(index,
+                                                                         send_preproc_buffer_reference,
+                                                                         receive_preproc_buffer_reference,
+                                                                         send_buffer_reference,
+                                                                         receive_buffer_reference,
+                                                                         send_postproc_buffer_reference,
+                                                                         receive_postproc_buffer_reference),
+                                               H_barrier,
+                                               C_subcritical,
+                                               C_supercritical));
+
+                raw_bound_distr_levee.erase(dbound_key);
+            }
         }
 
         send_preproc_buffer_reference.resize(begin_index_preproc);

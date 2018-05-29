@@ -198,7 +198,7 @@ class Shape {
 #define DEFAULT_ID 4294967295  // max uint as default id
 #define INTERNAL 100
 #define DISTR_OFFSET 100
-#define DISTRIBUTED INTERNAL+DISTR_OFFSET
+#define DISTRIBUTED INTERNAL + DISTR_OFFSET
 
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };
 

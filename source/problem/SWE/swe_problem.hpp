@@ -24,7 +24,7 @@ struct Problem {
     typedef Geometry::MeshType<SWE::Data,
                                std::tuple<SWE::IS::Internal, SWE::IS::Levee>,
                                std::tuple<SWE::BC::Land, SWE::BC::Tidal, SWE::BC::Flow>,
-                               std::tuple<SWE::DBC::Distributed>>::Type ProblemMeshType;
+                               std::tuple<SWE::DBC::Distributed, SWE::DBC::DistributedLevee>>::Type ProblemMeshType;
 
     typedef SWE::Parser ProblemParserType;
 
