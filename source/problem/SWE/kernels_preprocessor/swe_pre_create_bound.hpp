@@ -17,12 +17,13 @@ void Problem::create_boundaries_kernel(
 
             uint n_bound_old_land = mesh.GetNumberBoundaries();
 
-            for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
                 mesh.template CreateBoundary<BoundaryTypeLand>(raw_boundary);
 
-                it->second.erase(itt);
+                it->second.erase(itt++);
             }
 
             if (writer.WritingLog()) {
@@ -43,7 +44,8 @@ void Problem::create_boundaries_kernel(
             amplitude.resize(tidal_con_data.size());
             phase.resize(tidal_con_data.size());
 
-            for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
                 for (uint con = 0; con < tidal_con_data.size(); con++) {
@@ -69,7 +71,7 @@ void Problem::create_boundaries_kernel(
                 mesh.template CreateBoundary<BoundaryTypeTidal>(raw_boundary,
                                                                 SWE::BC::Tidal(tidal_con_data, amplitude, phase));
 
-                it->second.erase(itt);
+                it->second.erase(itt++);
             }
 
             if (writer.WritingLog()) {
@@ -90,7 +92,8 @@ void Problem::create_boundaries_kernel(
             amplitude.resize(flow_con_data.size());
             phase.resize(flow_con_data.size());
 
-            for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
                 for (uint con = 0; con < flow_con_data.size(); con++) {
@@ -116,7 +119,7 @@ void Problem::create_boundaries_kernel(
                 mesh.template CreateBoundary<BoundaryTypeFlow>(raw_boundary,
                                                                SWE::BC::Flow(flow_con_data, amplitude, phase));
 
-                it->second.erase(itt);
+                it->second.erase(itt++);
             }
 
             if (writer.WritingLog()) {

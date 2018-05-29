@@ -17,7 +17,8 @@ void Problem::create_interfaces_kernel(
 
             uint n_intface_old_internal = mesh.GetNumberInterfaces();
 
-            for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
                 std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{itt->first.second, itt->first.first};
 
                 if (it->second.find(key_pre_int_ex) != it->second.end()) {
@@ -27,7 +28,7 @@ void Problem::create_interfaces_kernel(
                     mesh.template CreateInterface<InterfaceTypeInterface>(raw_boundary_in, raw_boundary_ex);
                 }
 
-                it->second.erase(itt);
+                it->second.erase(itt++);
             }
 
             if (writer.WritingLog()) {
@@ -45,7 +46,8 @@ void Problem::create_interfaces_kernel(
             std::vector<double> C_subrictical;
             std::vector<double> C_superctical;
 
-            for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
                 std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{itt->first.second, itt->first.first};
 
                 if (it->second.find(key_pre_int_ex) != it->second.end()) {
@@ -85,7 +87,7 @@ void Problem::create_interfaces_kernel(
                         raw_boundary_in, raw_boundary_ex, SWE::IS::Levee(H_barrier, C_subrictical, C_superctical));
                 }
 
-                it->second.erase(itt);
+                it->second.erase(itt++);
             }
 
             if (writer.WritingLog()) {
