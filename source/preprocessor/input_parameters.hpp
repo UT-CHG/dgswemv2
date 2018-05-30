@@ -284,8 +284,8 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
     char start_time_str[18];
     char end_time_str[18];
 
-    strftime(start_time_str, 18, "%d-%m-%Y %H:%OM", &this->stepper_input.T_start);
-    strftime(end_time_str, 18, "%d-%m-%Y %H:%OM", &this->stepper_input.T_end);
+    strftime(start_time_str, 18, "%d-%m-%Y %H:%M", &this->stepper_input.T_start);
+    strftime(end_time_str, 18, "%d-%m-%Y %H:%M", &this->stepper_input.T_end);
 
     YAML::Node timestepping;
     timestepping["start_time"] = std::string(start_time_str);

@@ -146,13 +146,9 @@ Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const st
 
 std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values,
                                                              const std::vector<Point<2>>& points) {
-    std::vector<double> interpolation;
-
-    interpolation.reserve(points.size());
+    std::vector<double> interpolation(points.size());
 
     for (uint pt = 0; pt < points.size(); pt++) {
-        interpolation.push_back(0);
-
         interpolation[pt] =
             -(points[pt][LocalCoordTri::z1] + points[pt][LocalCoordTri::z2]) / 2 * nodal_values[0]  // N1
             + (1 + points[pt][LocalCoordTri::z1]) / 2 * nodal_values[1]                             // N2
@@ -186,11 +182,9 @@ Array2D<double> StraightTriangle::InterpolateNodalValuesDerivatives(const std::v
 std::vector<double> StraightTriangle::InterpolateBoundaryNodalValues(const uint bound_id,
                                                                      const std::vector<double>& bound_nodal_values,
                                                                      const std::vector<Point<1>>& bound_points) {
-    std::vector<double> interpolation;
+    std::vector<double> interpolation(bound_points.size());
 
     for (uint pt = 0; pt < bound_points.size(); pt++) {
-        interpolation.push_back(0);
-
         interpolation[pt] = (1 - bound_points[pt][LocalCoordTri::z1]) / 2 * bound_nodal_values[0]     // N1
                             + (1 + bound_points[pt][LocalCoordTri::z1]) / 2 * bound_nodal_values[1];  // N2
     }
