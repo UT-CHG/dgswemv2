@@ -31,6 +31,7 @@ add_test(
   Unit_adcirc_format
   test_adcirc_format_exe
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/weir/rectangular_mesh.14
 )
 
 add_executable(
@@ -157,6 +158,7 @@ add_test(
   Unit_mesh_metadata
   test_mesh_metadata_exe
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
+  ${PROJECT_SOURCE_DIR}/test/files_for_testing/weir/rectangular_mesh.14
 )
 
 include_directories("${YAML_CPP_INCLUDE_DIR}")
