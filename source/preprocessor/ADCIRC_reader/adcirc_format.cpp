@@ -8,7 +8,9 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         throw std::logic_error(err_msg);
     }
 
-    std::getline(ifs, this->name);
+    ifs >> this->name;
+    ifs.ignore(1000, '\n');
+
     uint n_nodes, n_elements;
 
     ifs >> n_elements;
