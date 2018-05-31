@@ -93,7 +93,8 @@ MeshMetaData::MeshMetaData(const std::string& mesh_file) {
         throw std::logic_error(err_msg);
     }
 
-    std::getline(ifs, this->mesh_name);
+    ifs >> this->mesh_name;
+    ifs.ignore(1000, '\n');
 
     uint numelements;
     ifs >> numelements;
