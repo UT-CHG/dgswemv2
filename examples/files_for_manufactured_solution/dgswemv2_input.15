@@ -28,6 +28,6 @@ problem:
   function_source: Enable  
 
 output:
-  path: output/
-  vtk:
+  path: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/examples/output/
+  vtu:
     frequency: 360.0

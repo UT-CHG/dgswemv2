@@ -19,6 +19,12 @@ class Writer {
     std::string vtk_file_name_geom;
     std::string vtk_file_name_raw;
 
+    bool writing_vtu_output;
+    uint vtu_output_frequency;
+    std::string vtu_file_name_geom_head;
+    std::string vtu_file_name_geom_foot;
+    std::string vtu_file_name_raw;
+
     bool writing_modal_output;
     uint modal_output_frequency;
 
@@ -38,6 +44,7 @@ class Writer {
 
   private:
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
+    void InitializeMeshGeometryVTU(typename ProblemType::ProblemMeshType& mesh);
 };
 
 template <typename ProblemType>
@@ -48,6 +55,8 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
       verbose_log_file(writer_input.verbose_log_file),
       writing_vtk_output(writer_input.writing_vtk_output),
       vtk_output_frequency(writer_input.vtk_output_freq_step),
+      writing_vtu_output(writer_input.writing_vtu_output),
+      vtu_output_frequency(writer_input.vtu_output_freq_step),
       writing_modal_output(writer_input.writing_modal_output),
       modal_output_frequency(writer_input.writing_vtk_output) {
     if (this->writing_log_file) {
@@ -82,6 +91,14 @@ void Writer<ProblemType>::WriteFirstStep(const Stepper& stepper, typename Proble
         this->InitializeMeshGeometryVTK(mesh);
     }
 
+    if (this->writing_vtu_output) {
+        this->vtu_file_name_geom_head = this->output_path + mesh.GetMeshName() + "_geom_head.vtu";
+        this->vtu_file_name_geom_foot = this->output_path + mesh.GetMeshName() + "_geom_foot.vtu";
+        this->vtu_file_name_raw       = this->output_path + mesh.GetMeshName() + "_raw_data.vtu";
+
+        this->InitializeMeshGeometryVTU(mesh);
+    }
+
     this->WriteOutput(stepper, mesh);
 }
 
@@ -92,6 +109,8 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
 
         ProblemType::write_VTK_data_kernel(mesh, raw_data_file);
 
+        raw_data_file.close();
+
         std::ifstream file_geom(this->vtk_file_name_geom, std::ios_base::binary);
         std::ifstream file_data(this->vtk_file_name_raw, std::ios_base::binary);
 
@@ -100,7 +119,33 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
         std::ofstream file_merge(file_name_merge, std::ios_base::binary);
 
         file_merge << file_geom.rdbuf() << file_data.rdbuf();
+
         file_merge.close();
+        file_geom.close();
+        file_data.close();
+    }
+
+    if (this->writing_vtu_output && (stepper.GetStep() % this->vtu_output_frequency == 0)) {
+        std::ofstream raw_data_file(this->vtu_file_name_raw);
+
+        ProblemType::write_VTU_data_kernel(mesh, raw_data_file);
+
+        raw_data_file.close();
+
+        std::ifstream file_geom_head(this->vtu_file_name_geom_head, std::ios_base::binary);
+        std::ifstream file_geom_foot(this->vtu_file_name_geom_foot, std::ios_base::binary);
+        std::ifstream file_data(this->vtu_file_name_raw, std::ios_base::binary);
+
+        uint step                   = stepper.GetStep();
+        std::string file_name_merge = this->output_path + mesh.GetMeshName() + "_data_" + std::to_string(step) + ".vtu";
+        std::ofstream file_merge(file_name_merge, std::ios_base::binary);
+
+        file_merge << file_geom_head.rdbuf() << file_data.rdbuf() << file_geom_foot.rdbuf();
+
+        file_merge.close();
+        file_geom_head.close();
+        file_geom_foot.close();
+        file_data.close();
     }
 
     if (this->writing_modal_output && (stepper.GetStep() % this->modal_output_frequency == 0)) {
@@ -169,6 +214,98 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
     for (auto it = cells.begin(); it != cells.end(); it++) {
         file << (*it)[0] << '\n';
     }
+
+    file.close();
+}
+
+template <typename ProblemType>
+void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::ProblemMeshType& mesh) {
+    std::vector<Point<3>> points;
+    Array2D<uint> cells;
+
+    mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });
+
+    std::ofstream file(this->vtu_file_name_geom_head);
+
+    file << "<?xml version=\"1.0\"?>\n";
+    file << "<VTKFile type=\"UnstructuredGrid\">\n";
+    file << "\t<UnstructuredGrid>\n";
+    file << "\t\t<Piece NumberOfPoints=\"" << points.size() << "\" NumberOfCells=\"" << cells.size() << "\">\n";
+
+    file.close();
+
+    file = std::ofstream(this->vtu_file_name_geom_foot);
+
+    file << "\t\t\t<Points>\n";
+    file << "\t\t\t\t<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n\t\t\t\t\t";
+
+    for (auto it = points.begin(); it != points.end(); it++) {
+        file << (*it)[0] << ' ' << (*it)[1] << ' ' << (*it)[2] << ' ';
+    }
+
+    file << "\n\t\t\t\t</DataArray>\n";
+    file << "\t\t\t</Points>\n";
+
+    file << "\t\t\t<Cells>\n";
+
+    file << "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n\t\t\t\t\t";
+
+    uint n_nodes;
+
+    for (auto it = cells.begin(); it != cells.end(); it++) {
+        switch ((*it)[0]) {
+            case VTKElementTypes::straight_triangle:
+                n_nodes = 3;
+                break;
+            default:
+                printf("\n");
+                printf("MESH InitializeVTK - Fatal error!\n");
+                printf("Undefined cell type = %d\n", (*it)[0]);
+                exit(1);
+        }
+
+        for (uint i = 1; i <= n_nodes; i++) {
+            file << (*it)[i] << ' ';
+        }
+    }
+
+    file << "\n\t\t\t\t</DataArray>\n";
+
+    file << "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n\t\t\t\t\t";
+
+    uint offset = 0;
+
+    for (auto it = cells.begin(); it != cells.end(); it++) {
+        switch ((*it)[0]) {
+            case VTKElementTypes::straight_triangle:
+                offset += 3;
+                file << offset << ' ';
+                break;
+            default:
+                printf("\n");
+                printf("MESH InitializeVTK - Fatal error!\n");
+                printf("Undefined cell type = %d\n", (*it)[0]);
+                exit(1);
+        }
+    }
+
+    file << "\n\t\t\t\t</DataArray>\n";
+
+    file << "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n\t\t\t\t\t";
+
+    for (auto it = cells.begin(); it != cells.end(); it++) {
+        file << (*it)[0] << ' ';
+    }
+
+    file << "\n\t\t\t\t</DataArray>\n";
+
+    file << "\t\t\t</Cells>\n";
+
+    file << "\t\t</Piece>\n";
+    file << "\t</UnstructuredGrid>\n";
+    file << "</VTKFile>\n";
+
+    file.close();
 }
 
 #endif

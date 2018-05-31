@@ -147,7 +147,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                 for (uint k = 0; k < 3; ++k) {
                     if (elt_B == mesh_meta.elements.at(elt_A).neighbor_ID[k]) {
                         ElementMetaData& curr_elt = submeshes[rank_A][loc_part_A].elements.at(elt_A);
-                        curr_elt.neighbor_ID[k]   = DEFAULT_ID; // can we keep an actual neighbor ID?
+                        curr_elt.neighbor_ID[k]   = DEFAULT_ID;  // can we keep an actual neighbor ID?
                         curr_elt.boundary_type[k] = curr_elt.boundary_type[k] + DISTR_OFFSET;
                     }
                 }
@@ -155,7 +155,7 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
                 for (uint k = 0; k < 3; ++k) {
                     if (elt_A == mesh_meta.elements.at(elt_B).neighbor_ID[k]) {
                         ElementMetaData& curr_elt = submeshes[rank_B][loc_part_B].elements.at(elt_B);
-                        curr_elt.neighbor_ID[k]   = DEFAULT_ID; // can we keep an actual neighbor ID?
+                        curr_elt.neighbor_ID[k]   = DEFAULT_ID;  // can we keep an actual neighbor ID?
                         curr_elt.boundary_type[k] = curr_elt.boundary_type[k] + DISTR_OFFSET;
                     }
                 }

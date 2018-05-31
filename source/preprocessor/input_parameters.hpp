@@ -49,6 +49,10 @@ struct WriterInput {
     double vtk_output_frequency{std::numeric_limits<double>::max()};
     uint vtk_output_freq_step{std::numeric_limits<uint>::max()};
 
+    bool writing_vtu_output{false};
+    double vtu_output_frequency{std::numeric_limits<double>::max()};
+    uint vtu_output_freq_step{std::numeric_limits<uint>::max()};
+
     bool writing_modal_output{false};
     double modal_output_frequency{std::numeric_limits<double>::max()};
     uint modal_output_freq_step{std::numeric_limits<uint>::max()};
@@ -136,8 +140,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             time_stepping["nstages"]) {
             std::string start_time = time_stepping["start_time"].as<std::string>();
             std::string end_time   = time_stepping["end_time"].as<std::string>();
-	    
-	    this->stepper_input.T_start = {0};
+
+            this->stepper_input.T_start = {0};
             this->stepper_input.T_end   = {0};
 
             strptime(start_time.c_str(), "%d-%m-%Y %H:%M", &this->stepper_input.T_start);
@@ -200,6 +204,18 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
                     (uint)std::ceil(this->writer_input.vtk_output_frequency / this->stepper_input.dt);
             } else {
                 std::string err_msg("Error: VTK YAML node is malformatted\n");
+                throw std::logic_error(err_msg);
+            }
+        }
+
+        if (out_node["vtu"]) {
+            if (out_node["vtu"]["frequency"]) {
+                this->writer_input.writing_vtu_output   = true;
+                this->writer_input.vtu_output_frequency = out_node["vtu"]["frequency"].as<double>();
+                this->writer_input.vtu_output_freq_step =
+                    (uint)std::ceil(this->writer_input.vtu_output_frequency / this->stepper_input.dt);
+            } else {
+                std::string err_msg("Error: VTU YAML node is malformatted\n");
                 throw std::logic_error(err_msg);
             }
         }
@@ -312,6 +328,10 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
 
         if (this->writer_input.writing_vtk_output) {
             writer["vtk"]["frequency"] = this->writer_input.vtk_output_frequency;
+        }
+
+        if (this->writer_input.writing_vtu_output) {
+            writer["vtu"]["frequency"] = this->writer_input.vtu_output_frequency;
         }
 
         if (this->writer_input.writing_modal_output) {

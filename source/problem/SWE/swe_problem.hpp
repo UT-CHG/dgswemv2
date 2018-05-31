@@ -136,6 +136,8 @@ struct Problem {
     // writing output kernels
     static void write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
+    static void write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
+
     static void write_modal_data_kernel(const Stepper& stepper, ProblemMeshType& mesh, const std::string& output_path);
 
     template <typename ElementType>
