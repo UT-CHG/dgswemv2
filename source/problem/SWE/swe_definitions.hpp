@@ -35,9 +35,7 @@ enum BoundaryTypes : uchar {
     tidal       = 1,
     flow        = 2,
     internal    = INTERNAL,
-    levee       = 101,
-    distributed = DISTRIBUTED,
-    distr_levee = levee + DISTR_OFFSET
+    levee       = INTERNAL+1
 };
 
 enum class SphericalProjectionType { None, Enable };

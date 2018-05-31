@@ -24,9 +24,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-typedef unsigned int uint;
-
 typedef unsigned char uchar;
+
+#include "boundary_types.hpp"
+
+typedef unsigned int uint;
 
 template <uint dimension>
 using Point = std::array<double, dimension>;
@@ -196,9 +198,6 @@ class Shape {
 
 #define N_DIV 1                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
-#define INTERNAL 100
-#define DISTR_OFFSET 100
-#define DISTRIBUTED INTERNAL + DISTR_OFFSET
 
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };
 

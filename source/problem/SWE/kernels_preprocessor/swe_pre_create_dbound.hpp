@@ -21,8 +21,8 @@ void Problem::create_distributed_boundaries_kernel(
     using DistributedBoundaryTypes =
         Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::DBC::Distributed, SWE::DBC::DistributedLevee>;
 
-    auto& raw_bound_distributed = raw_boundaries[SWE::BoundaryTypes::distributed];
-    auto& raw_bound_distr_levee = raw_boundaries[SWE::BoundaryTypes::distr_levee];
+    auto& raw_bound_distributed = raw_boundaries[Distributed<SWE::BoundaryTypes::internal>::Type()];
+    auto& raw_bound_distr_levee = raw_boundaries[Distributed<SWE::BoundaryTypes::levee>::Type()];
 
     uint n_distributed = 0;
     uint n_distr_levee = 0;
