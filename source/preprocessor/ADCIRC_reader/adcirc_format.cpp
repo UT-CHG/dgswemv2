@@ -224,6 +224,8 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
             return SWE::BoundaryTypes::land;
         }
     }
+    
+    return SWE::BoundaryTypes::land;
 
     throw std::logic_error("Error Boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
                            std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");

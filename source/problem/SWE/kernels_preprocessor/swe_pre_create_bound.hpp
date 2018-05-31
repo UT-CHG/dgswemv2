@@ -53,7 +53,7 @@ void Problem::create_boundaries_kernel(
                     phase[con].resize(raw_boundary.node_ID.size());
                 }
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
+                /*for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
                     uint node_ID = raw_boundary.node_ID[node];
 
                     if (tidal_data.find(node_ID) != tidal_data.end()) {
@@ -66,7 +66,7 @@ void Problem::create_boundaries_kernel(
                     } else {
                         throw std::logic_error("Error: Unable to find tidal data\n");
                     }
-                }
+		    }*/
 
                 mesh.template CreateBoundary<BoundaryTypeTidal>(raw_boundary,
                                                                 SWE::BC::Tidal(tidal_con_data, amplitude, phase));
@@ -101,7 +101,7 @@ void Problem::create_boundaries_kernel(
                     phase[con].resize(raw_boundary.node_ID.size());
                 }
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
+                /*for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
                     uint node_ID = raw_boundary.node_ID[node];
 
                     if (flow_data.find(node_ID) != flow_data.end()) {
@@ -114,7 +114,7 @@ void Problem::create_boundaries_kernel(
                     } else {
                         throw std::logic_error("Error: Unable to find flow data\n");
                     }
-                }
+		    }*/
 
                 mesh.template CreateBoundary<BoundaryTypeFlow>(raw_boundary,
                                                                SWE::BC::Flow(flow_con_data, amplitude, phase));
