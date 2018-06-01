@@ -14,8 +14,9 @@ void write_distributed_edge_metadata(const std::string& file_name,
     std::unordered_set<std::pair<uint, uint>> faces;
     // assemble faces shared across elements
     for (auto& elt : mesh_meta.elements) {
-        for (auto& neigh : elt.second.neighbor_ID) {
-            if (neigh != DEFAULT_ID) {
+        for ( uint i = 0; i < elt.second.neighbor_ID.size(); ++i ) {
+            if (IsInternal(elt.second.boundary_type[i])) {
+                uint neigh{elt.second.neighbor_ID[i]};
                 std::pair<uint, uint> edge_name{std::min(elt.first, neigh), std::max(elt.first, neigh)};
                 faces.insert(edge_name);
             }
@@ -26,8 +27,9 @@ void write_distributed_edge_metadata(const std::string& file_name,
         for (uint sbmsh_id = 0; sbmsh_id < submeshes[loc_id].size(); ++sbmsh_id) {
             for (auto& elt : submeshes[loc_id][sbmsh_id].elements) {
                 elt2partition.insert(std::make_pair(elt.first, loc_id + num_loc * sbmsh_id));
-                for (auto& neigh : elt.second.neighbor_ID) {
-                    if (neigh != DEFAULT_ID) {
+                for ( uint i = 0; i < elt.second.neighbor_ID.size(); ++i ) {
+                    if (IsInternal(elt.second.boundary_type[i])) {
+                        uint neigh{elt.second.neighbor_ID[i]};
                         std::pair<uint, uint> edge_name{std::min(elt.first, neigh), std::max(elt.first, neigh)};
                         faces.erase(edge_name);
                     }

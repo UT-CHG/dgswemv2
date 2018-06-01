@@ -20,12 +20,7 @@ constexpr bool IsBoundary(uchar edge) {
 }
 
 
-template <uchar EdgeType>
-struct Distributed {
-    static constexpr uchar Type() {
-        static_assert(IsInternal(EdgeType),
-            "Error: Distribute<EdgeTYpe>::Type() must be an internal boundary, which ranges from INTERNAL to DISTRIBUTED");
-        return EdgeType + DISTRIBUTED_OFFSET;
-    }
-};
+constexpr uchar Distributed(uchar internal_edge) {
+    return internal_edge + DISTRIBUTED_OFFSET;
+}
 #endif
