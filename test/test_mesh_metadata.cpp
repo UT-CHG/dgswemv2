@@ -24,7 +24,7 @@ const static auto is_equal = [](const MeshMetaData& meshA, const MeshMetaData& m
 
 int main(int argc, char** argv) {
     bool error_found{false};
-    for ( uint i = 1; i < argc; ++i ) {
+    for (uint i = 1; i < argc; ++i) {
         AdcircFormat mesh1(argv[1]);
         MeshMetaData meshA(mesh1);
 
@@ -37,8 +37,7 @@ int main(int argc, char** argv) {
 
         if (!is_equal(meshA, meshB)) {
             error_found = true;
-            std::cerr << "Error: in reading a writing mesh: " << out_name << '\n'
-                      << "       for MeshMeta format.\n";
+            std::cerr << "Error: in reading a writing mesh: " << out_name << '\n' << "       for MeshMeta format.\n";
         }
     }
 

@@ -43,8 +43,8 @@ void Problem::create_interfaces_kernel(
             auto& levee_data = input.problem_input.levee_is_data;
 
             std::vector<double> H_barrier;
-            std::vector<double> C_subrictical;
-            std::vector<double> C_superctical;
+            std::vector<double> C_subcritical;
+            std::vector<double> C_supercritical;
 
             auto itt = it->second.begin();
             while (itt != it->second.end()) {
@@ -55,8 +55,8 @@ void Problem::create_interfaces_kernel(
                     auto& raw_boundary_ex = it->second.find(key_pre_int_ex)->second;
 
                     H_barrier.resize(raw_boundary_in.node_ID.size());
-                    C_subrictical.resize(raw_boundary_in.node_ID.size());
-                    C_superctical.resize(raw_boundary_in.node_ID.size());
+                    C_subcritical.resize(raw_boundary_in.node_ID.size());
+                    C_supercritical.resize(raw_boundary_in.node_ID.size());
 
                     for (uint node = 0; node < raw_boundary_in.node_ID.size(); node++) {
                         std::pair<uint, uint> key_levee_data =
@@ -69,22 +69,22 @@ void Problem::create_interfaces_kernel(
                         if (levee_data.find(key_levee_data) != levee_data.end()) {
                             const auto& levee = levee_data.find(key_levee_data);
 
-                            H_barrier[node]     = levee->second[0];
-                            C_subrictical[node] = levee->second[1];
-                            C_superctical[node] = levee->second[2];
+                            H_barrier[node]       = levee->second[0];
+                            C_subcritical[node]   = levee->second[1];
+                            C_supercritical[node] = levee->second[2];
                         } else if (levee_data.find(key_levee_data_swap) != levee_data.end()) {
                             const auto& levee = levee_data.find(key_levee_data_swap);
 
-                            H_barrier[node]     = levee->second[0];
-                            C_subrictical[node] = levee->second[1];
-                            C_superctical[node] = levee->second[2];
+                            H_barrier[node]       = levee->second[0];
+                            C_subcritical[node]   = levee->second[1];
+                            C_supercritical[node] = levee->second[2];
                         } else {
                             throw std::logic_error("Fatal Error: unable to find levee data!\n");
                         }
                     }
 
                     mesh.template CreateInterface<InterfaceTypeLevee>(
-                        raw_boundary_in, raw_boundary_ex, SWE::IS::Levee(H_barrier, C_subrictical, C_superctical));
+                        raw_boundary_in, raw_boundary_ex, SWE::IS::Levee(H_barrier, C_subcritical, C_supercritical));
                 }
 
                 it->second.erase(itt++);

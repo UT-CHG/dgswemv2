@@ -21,8 +21,8 @@ void Problem::create_distributed_boundaries_kernel(
     using DistributedBoundaryTypes =
         Geometry::DistributedBoundaryTypeTuple<SWE::Data, SWE::DBC::Distributed, SWE::DBC::DistributedLevee>;
 
-    auto& raw_bound_distributed = raw_boundaries[Distributed(SWE::BoundaryTypes::internal)];
-    auto& raw_bound_distr_levee = raw_boundaries[Distributed(SWE::BoundaryTypes::levee)];
+    auto& raw_bound_distributed = raw_boundaries[distributed(SWE::BoundaryTypes::internal)];
+    auto& raw_bound_distr_levee = raw_boundaries[distributed(SWE::BoundaryTypes::levee)];
 
     uint n_distributed = 0;
     uint n_distr_levee = 0;
@@ -128,11 +128,30 @@ void Problem::create_distributed_boundaries_kernel(
 
                 raw_boundary.p = p;
 
-                std::vector<double> H_barrier{0.2, 0.2};
-                std::vector<double> C_subcritical{1.0, 1.0};
-                std::vector<double> C_supercritical{1.0, 1.0};
+                auto& levee_data = input.problem_input.levee_is_data;
 
-                /* do lookup for levee parameters in input */
+                std::vector<double> H_barrier(raw_boundary.node_ID.size());
+                std::vector<double> C_subcritical(raw_boundary.node_ID.size());
+                std::vector<double> C_supercritical(raw_boundary.node_ID.size());
+
+                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
+                    bool found = false;
+
+                    for (auto& levee_node : levee_data) {
+                        if (levee_node.first.first == raw_boundary.node_ID[node] ||
+                            levee_node.first.second == raw_boundary.node_ID[node]) {
+                            H_barrier[node]       = levee_node.second[0];
+                            C_subcritical[node]   = levee_node.second[1];
+                            C_supercritical[node] = levee_node.second[2];
+
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        throw std::logic_error("Fatal Error: unable to find distributed levee data!\n");
+                    }
+                }
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributedLevee>(
                     raw_boundary,

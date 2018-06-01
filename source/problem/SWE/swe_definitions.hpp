@@ -30,13 +30,7 @@ static double M  = 1.0e-8;
 static double nu = 1.5;
 }
 
-enum BoundaryTypes : uchar {
-    land        = 0,
-    tidal       = 1,
-    flow        = 2,
-    internal    = INTERNAL,
-    levee       = INTERNAL+1
-};
+enum BoundaryTypes : uchar { land = 0, tidal = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
 
 enum class SphericalProjectionType { None, Enable };
 

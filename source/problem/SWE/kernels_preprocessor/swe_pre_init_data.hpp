@@ -293,8 +293,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
-            if (IsInternal(elt.GetBoundaryType()[element_1]) &&
-                IsInternal(elt.GetBoundaryType()[element_2])) {
+            if (in_internal(elt.GetBoundaryType()[element_1]) && in_internal(elt.GetBoundaryType()[element_2])) {
                 A[0][0] =
                     sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 A[1][0] =
@@ -370,8 +369,7 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
-            if (IsDistributed(elt.GetBoundaryType()[element_1]) ||
-                IsDistributed(elt.GetBoundaryType()[element_2])) {
+            if (in_distributed(elt.GetBoundaryType()[element_1]) || in_distributed(elt.GetBoundaryType()[element_2])) {
                 A[0][0] =
                     sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 A[1][0] =
