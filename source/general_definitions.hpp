@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-typedef unsigned char uchar;
+#include "edge_types.hpp"
 
-#include "boundary_types.hpp"
+typedef unsigned char uchar;
 
 typedef unsigned int uint;
 
