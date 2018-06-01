@@ -214,7 +214,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
         std::vector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);
 
-        if (this->neighbor_ID[bound_id] != DEFAULT_ID) {
+        if ( IsInternal(this->boundary_type[bound_id]) ) {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
                 RawBoundary<dimension - 1, DataType>(

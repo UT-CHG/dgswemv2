@@ -23,19 +23,24 @@ const static auto is_equal = [](const MeshMetaData& meshA, const MeshMetaData& m
 };
 
 int main(int argc, char** argv) {
-    AdcircFormat mesh1(argv[1]);
-    MeshMetaData meshA(mesh1);
+    bool error_found{false};
+    for ( uint i = 1; i < argc; ++i ) {
+        AdcircFormat mesh1(argv[1]);
+        MeshMetaData meshA(mesh1);
 
-    std::string out_name = argv[1];
-    out_name             = out_name + ".meta.out";
+        std::string out_name = argv[1];
+        out_name             = out_name + ".meta.out";
 
-    meshA.write_to(out_name);
+        meshA.write_to(out_name);
 
-    MeshMetaData meshB(out_name);
+        MeshMetaData meshB(out_name);
 
-    if (!is_equal(meshA, meshB)) {
-        return 1;
+        if (!is_equal(meshA, meshB)) {
+            error_found = true;
+            std::cerr << "Error: in reading a writing mesh: " << out_name << '\n'
+                      << "       for MeshMeta format.\n";
+        }
     }
 
-    return 0;
+    return error_found;
 }
