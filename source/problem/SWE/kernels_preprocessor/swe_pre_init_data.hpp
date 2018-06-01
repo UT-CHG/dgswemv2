@@ -1,6 +1,8 @@
 #ifndef SWE_PRE_INIT_DATA_HPP
 #define SWE_PRE_INIT_DATA_HPP
 
+#include "../../../utilities/file_exists.hpp"
+
 namespace SWE {
 void Problem::initialize_data_kernel(ProblemMeshType& mesh,
                                      const MeshMetaData& mesh_data,
@@ -32,7 +34,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         auto& sp       = elt.data.spherical_projection;
 
         if (!bathymetry.count(id)) {
-            throw std::logic_error("Error: could not find bathymetry for element with id: " + id);
+            throw std::logic_error("Fatal Error: could not find bathymetry for element with id: " + std::to_string(id) +
+                                   "!\n");
         }
 
         elt.L2Projection(bathymetry[id], state.bath);
@@ -137,6 +140,11 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     // SOURCE TERMS INITIALIZE
     // Manning N bottom friction
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
+        if (!Utilities::file_exists(problem_specific_input.bottom_friction.manning_data_file)) {
+            throw std::logic_error("Fatal Error: manning factor data file " +
+                                   problem_specific_input.bottom_friction.manning_data_file + " was not found!\n");
+        }
+
         std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
 
         uint node_ID;

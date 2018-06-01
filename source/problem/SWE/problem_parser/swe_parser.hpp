@@ -6,6 +6,8 @@
 
 #include "../swe_definitions.hpp"
 
+#include "../../../utilities/file_exists.hpp"
+
 namespace SWE {
 class Parser {
   private:

@@ -242,7 +242,7 @@ Stepper::Stepper(const StepperInput& stepper_input)
         this->brk[7][7] = 0.12611877085604;
 
     } else {
-        throw std::logic_error("Error invalid Runge-Kutta method entered");
+        throw std::logic_error("Fatal Error: invalid Runge-Kutta method entered!");
     }
 
     // Compute the time dependent parameters

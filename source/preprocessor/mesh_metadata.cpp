@@ -5,9 +5,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 
     for (const auto& nod : mesh_file.nodes) {
         if (nod.first < 0) {
-            throw std::logic_error(
-                "ERROR in mesh_metadata.cpp: Node ID is negative; not "
-                "supported\n");
+            throw std::logic_error("Fatal Error: in ADCIRC mesh node ID is negative!\n");
         }
 
         uint ID = nod.first;
@@ -16,9 +14,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 
     for (const auto& elt : mesh_file.elements) {
         if (elt.first < 0) {
-            throw std::logic_error(
-                "ERROR in mesh_metadata.cpp: Element ID is negative; not "
-                "supported\n");
+            throw std::logic_error("Fatal Error: in ADCIRC mesh element ID is negative!\n");
         }
 
         uint ID = elt.first;
@@ -86,12 +82,11 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
 }
 
 MeshMetaData::MeshMetaData(const std::string& mesh_file) {
-    std::ifstream ifs(mesh_file);
-
-    if (!ifs) {
-        std::string err_msg = "Fatal Error: Mesh named " + mesh_file + " not found\n";
-        throw std::logic_error(err_msg);
+    if (!Utilities::file_exists(mesh_file)) {
+        throw std::logic_error("Fatal Error: meta mesh file " + mesh_file + " was not found!\n");
     }
+
+    std::ifstream ifs(mesh_file);
 
     ifs >> this->mesh_name;
     ifs.ignore(1000, '\n');
@@ -152,11 +147,11 @@ std::vector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
 DistributedBoundaryMetaData::DistributedBoundaryMetaData(const std::string& dbmd_file,
                                                          uint locality_id,
                                                          uint submesh_id) {
-    std::ifstream file(dbmd_file);
-
-    if (!file) {
-        throw std::logic_error("Error: Unable to find distributed boundary file : " + dbmd_file + '\n');
+    if (!Utilities::file_exists(dbmd_file)) {
+        throw std::logic_error("Fatal Error: distributed boundary data file " + dbmd_file + " was not found!\n");
     }
+
+    std::ifstream file(dbmd_file);
 
     std::string line;
 
@@ -182,7 +177,8 @@ DistributedBoundaryMetaData::DistributedBoundaryMetaData(const std::string& dbmd
             rank_boundary.submesh_in = submesh_B;
             rank_boundary.submesh_ex = submesh_A;
         } else {
-            throw std::logic_error("Error: wrong locality/submesh in distributed boundary file : " + dbmd_file + '\n');
+            throw std::logic_error("Fatal Error: error in locality/submesh in distributed boundary file " + dbmd_file +
+                                   "!\n");
         }
 
         rank_boundary.elements_in.reserve(n_dboubdaries);

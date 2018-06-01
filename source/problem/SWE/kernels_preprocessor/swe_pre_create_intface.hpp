@@ -66,7 +66,7 @@ void Problem::create_interfaces_kernel(
                         std::pair<uint, uint> key_levee_data_swap;
                         key_levee_data_swap.swap(key_levee_data);
 
-                        /*if (levee_data.find(key_levee_data) != levee_data.end()) {
+                        if (levee_data.find(key_levee_data) != levee_data.end()) {
                             const auto& levee = levee_data.find(key_levee_data);
 
                             H_barrier[node]     = levee->second[0];
@@ -79,8 +79,8 @@ void Problem::create_interfaces_kernel(
                             C_subrictical[node] = levee->second[1];
                             C_superctical[node] = levee->second[2];
                         } else {
-                            throw std::logic_error("Error: Unable to find levee data\n");
-			    }*/
+                            throw std::logic_error("Fatal Error: unable to find levee data!\n");
+                        }
                     }
 
                     mesh.template CreateInterface<InterfaceTypeLevee>(

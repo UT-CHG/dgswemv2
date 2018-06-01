@@ -5,6 +5,8 @@
 #include "../swe_definitions.hpp"
 #include <yaml-cpp/yaml.h>
 
+#include "../../../utilities/file_exists.hpp"
+
 namespace SWE {
 // Problem specific preprocessing information containers
 struct SphericalProjection {

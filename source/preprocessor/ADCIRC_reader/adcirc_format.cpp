@@ -1,12 +1,11 @@
 #include "adcirc_format.hpp"
 
 AdcircFormat::AdcircFormat(const std::string& fort14) {
-    std::ifstream ifs(fort14);
-
-    if (!ifs) {
-        std::string err_msg = "Fatal Error: Mesh named " + fort14 + " not found\n";
-        throw std::logic_error(err_msg);
+    if (!Utilities::file_exists(fort14)) {
+        throw std::logic_error("Fatal Error: ADCIRC mesh file " + fort14 + " was not found!\n");
     }
+
+    std::ifstream ifs(fort14);
 
     ifs >> this->name;
     ifs.ignore(1000, '\n');
@@ -102,9 +101,8 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                     ifs.ignore(1000, '\n');
                 }
             } else {
-                std::string err_msg =
-                    "Fatal Error: Undefined boundary type in ADCIRC mesh " + std::to_string(this->IBTYPE[bdry]) + " \n";
-                throw std::logic_error(err_msg);
+                throw std::logic_error("Fatal Error: undefined boundary type in ADCIRC mesh: " +
+                                       std::to_string(this->IBTYPE[bdry]) + "!\n");
             }
         }
     }
@@ -226,11 +224,11 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
             return SWE::BoundaryTypes::land;
         }
     }
-    
+
     return SWE::BoundaryTypes::land;
 
-    throw std::logic_error("Error Boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
-                           std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")\n");
+    throw std::logic_error("Fatal Error: boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
+                           std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")!\n");
 }
 
 std::array<uint, 2> AdcircFormat::get_barrier_node_pair(std::array<uint, 2>& node_pair) const {
@@ -281,8 +279,8 @@ std::array<uint, 2> AdcircFormat::get_barrier_node_pair(std::array<uint, 2>& nod
         }
     }
 
-    throw std::logic_error("Error back nodes not found to given node_pair (" + std::to_string(node_pair[0]) + ", " +
-                           std::to_string(node_pair[1]) + ")\n");
+    throw std::logic_error("Fatal Error: back nodes not found to given node_pair (" + std::to_string(node_pair[0]) +
+                           ", " + std::to_string(node_pair[1]) + ")!\n");
 }
 
 bool AdcircFormat::has_edge(std::vector<uint>::const_iterator cbegin,

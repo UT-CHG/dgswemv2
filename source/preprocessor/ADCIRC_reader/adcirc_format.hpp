@@ -5,6 +5,7 @@
 #include "../../problem/SWE/swe_definitions.hpp"
 
 #include "../../shape/shapes_2D.hpp"
+#include "../../utilities/file_exists.hpp"
 
 struct AdcircFormat {
     std::string name;

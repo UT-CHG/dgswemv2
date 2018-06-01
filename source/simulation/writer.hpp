@@ -2,6 +2,7 @@
 #define WRITER_HPP
 
 #include "../preprocessor/input_parameters.hpp"
+#include "../utilities/file_exists.hpp"
 
 template <typename ProblemType>
 class Writer {
@@ -111,6 +112,15 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
 
         raw_data_file.close();
 
+        if (!Utilities::file_exists(this->vtk_file_name_geom)) {
+            throw std::logic_error("Fatal Error: vtk geometry data file " + this->vtk_file_name_geom +
+                                   " was not found!\n");
+        }
+
+        if (!Utilities::file_exists(this->vtk_file_name_raw)) {
+            throw std::logic_error("Fatal Error: vtk raw data file " + this->vtk_file_name_raw + " was not found!\n");
+        }
+
         std::ifstream file_geom(this->vtk_file_name_geom, std::ios_base::binary);
         std::ifstream file_data(this->vtk_file_name_raw, std::ios_base::binary);
 
@@ -131,6 +141,20 @@ void Writer<ProblemType>::WriteOutput(const Stepper& stepper, typename ProblemTy
         ProblemType::write_VTU_data_kernel(mesh, raw_data_file);
 
         raw_data_file.close();
+
+        if (!Utilities::file_exists(this->vtu_file_name_geom_head)) {
+            throw std::logic_error("Fatal Error: vtu geometry head data file " + this->vtu_file_name_geom_head +
+                                   " was not found!\n");
+        }
+
+        if (!Utilities::file_exists(this->vtu_file_name_geom_foot)) {
+            throw std::logic_error("Fatal Error: vtu geometry foot data file " + this->vtu_file_name_geom_foot +
+                                   " was not found!\n");
+        }
+
+        if (!Utilities::file_exists(this->vtu_file_name_raw)) {
+            throw std::logic_error("Fatal Error: vtu raw data file " + this->vtu_file_name_raw + " was not found!\n");
+        }
 
         std::ifstream file_geom_head(this->vtu_file_name_geom_head, std::ios_base::binary);
         std::ifstream file_geom_foot(this->vtu_file_name_geom_foot, std::ios_base::binary);

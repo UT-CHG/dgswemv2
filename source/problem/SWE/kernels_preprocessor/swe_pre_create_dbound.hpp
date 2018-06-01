@@ -72,7 +72,7 @@ void Problem::create_distributed_boundaries_kernel(
 
                 ngp = boundary_integration.GetNumGP(2 * p + 1);
             } else {
-                throw std::logic_error("Error: Unable to find raw distributed boundary\n");
+                throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
             SWE::DBC::DBIndex index;
