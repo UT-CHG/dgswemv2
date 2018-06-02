@@ -80,13 +80,13 @@ class Mesh<std::tuple<Elements...>,
      void load(Archive& ar, unsigned) {
         ar & mesh_name & p;
 
-        masters = master_maker<MasterElementTypes>::construct_masters(p);
+        this->masters = master_maker<MasterElementTypes>::construct_masters(p);
 
         Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
                 ar & element_map;
         });
 
-        CallForEachElement([this](auto& element) {
+        this->CallForEachElement([this](auto& element) {
                 using MasterType = typename std::remove_reference<decltype(element)>::type::ElementMasterType;
 
                 MasterType& master_elt = std::get<Utilities::index<

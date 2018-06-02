@@ -88,6 +88,7 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
         hpx::when_all(registration_futures).get();
         lb_future.get();
+        std::cout << "leaving hpx simulation" << std::endl;
     }
 }
 
