@@ -59,12 +59,13 @@ void Problem::create_interfaces_kernel(
                     C_supercritical.resize(raw_boundary_in.node_ID.size());
 
                     for (uint node = 0; node < raw_boundary_in.node_ID.size(); node++) {
-                        std::pair<uint, uint> key_levee_data =
-                            std::pair<uint, uint>{raw_boundary_in.node_ID[node],
-                                                  raw_boundary_ex.node_ID[raw_boundary_in.node_ID.size() - node - 1]};
+                        std::pair<uint, uint> key_levee_data{
+                            raw_boundary_in.node_ID[node],
+                            raw_boundary_ex.node_ID[raw_boundary_in.node_ID.size() - node - 1]};
 
-                        std::pair<uint, uint> key_levee_data_swap;
-                        key_levee_data_swap.swap(key_levee_data);
+                        std::pair<uint, uint> key_levee_data_swap{
+                            raw_boundary_ex.node_ID[raw_boundary_in.node_ID.size() - node - 1],
+                            raw_boundary_in.node_ID[node]};
 
                         if (levee_data.find(key_levee_data) != levee_data.end()) {
                             const auto& levee = levee_data.find(key_levee_data);
