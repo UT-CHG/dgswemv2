@@ -140,11 +140,11 @@ SubmeshModel<ProblemType>::SubmeshModel(const std::chrono::duration<double>& reb
 
 template <typename ProblemType>
 void SubmeshModel<ProblemType>::InStep(uint64_t, uint64_t) {
-    if ( this->locality_id == 0 && this->submesh_id == 0 && this->beat.Thump() ) {
+    /*if ( this->locality_id == 0 && this->submesh_id == 0 && this->beat.Thump() ) {
         std::cout << "In submeshmode->Instep()\n";
         assert(Random<ProblemType>::world_model_client);
         Random<ProblemType>::world_model_client.MigrateOneSubmesh();
-    }
+        }*/
 }
 
 template <typename ProblemType>

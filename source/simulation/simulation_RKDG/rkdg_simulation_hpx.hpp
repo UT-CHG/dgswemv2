@@ -58,8 +58,6 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     const uint locality_id          = hpx::get_locality_id();
     const hpx::naming::id_type here = hpx::find_here();
 
-    hpx::future<void> lb_future = LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id);
-
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
     hpx::future<void> lb_future = LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
@@ -79,7 +77,6 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
             here, input_string, locality_id, submesh_id)
                 );
 
-
             registration_futures.push_back(this->simulation_unit_clients.back().register_as(
                                                std::string{client_t::GetBasename()}+
                                                std::to_string(locality_id)+'_'+std::to_string(submesh_id)));
@@ -88,7 +85,6 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
         hpx::when_all(registration_futures).get();
         lb_future.get();
-        std::cout << "leaving hpx simulation" << std::endl;
     }
 }
 
@@ -112,16 +108,17 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                     .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
         }
 
-        // Ignore, this is part of debugging efforts
-        //if ( step % 100 == 0 ) {
-        //    simulation_futures[0] = simulation_futures[0]
-        //        .then([this](auto&&) {
-        //                this->simulation_unit_clients[0].SerializeAndUnserialize();
-        //            });
-        //}
+        if ( step % 100 == 0 ) {
+            simulation_futures[0] = simulation_futures[0]
+                .then([this](auto&&) {
+                        return this->simulation_unit_clients[0].SerializeAndUnserialize();
+                    });
+        }
     }
+
     return hpx::when_all(simulation_futures).then([](auto&&) {
             LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
+            std::cout << "leaving hpx simulation::Run()" << std::endl;
         });
 }
 

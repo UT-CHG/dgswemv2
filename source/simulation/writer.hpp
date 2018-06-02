@@ -8,8 +8,8 @@ template <typename ProblemType>
 class Writer {
   private:
     bool writing_output;
-    std::string output_path;
     uint version;
+    std::string output_path;
 
     bool writing_log_file;
     bool verbose_log_file;
