@@ -94,10 +94,11 @@ void Problem::create_distributed_boundaries_kernel(
 
             begin_index += 3 * ngp + 1;
 
-            index.ze_at_baryctr   = begin_index_postproc;
-            index.qx_at_baryctr   = begin_index_postproc + 1;
-            index.qy_at_baryctr   = begin_index_postproc + 2;
-            index.bath_at_baryctr = begin_index_postproc + 3;
+            index.wet_dry_postproc = begin_index_postproc;
+
+            index.ze_at_baryctr = begin_index_postproc + 1;
+            index.qx_at_baryctr = begin_index_postproc + 2;
+            index.qy_at_baryctr = begin_index_postproc + 3;
 
             begin_index_postproc += 4;
 

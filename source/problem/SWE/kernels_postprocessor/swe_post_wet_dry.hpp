@@ -24,7 +24,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
     bool set_dry_element = false;
     bool check_element   = false;
 
-    if (h_avg <= PostProcessing::h_o + PostProcessing::h_o_treshold) {
+    if (h_avg <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
         // Say that "low" h_avg is 10% of h_o
         // Check if element has dangerously low h_avg or even negative h_avg
         // In this case we need to bump up the water to at least "low" h_avg
@@ -45,7 +45,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
         uint n_dry_vrtx = 0;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_treshold) {
+            if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                 n_dry_vrtx++;
             }
         }
@@ -90,7 +90,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
 
             n_dry_vrtx = 0;
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-                if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_treshold) {
+                if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     n_dry_vrtx++;
 
                     del_qx += wd_state.qx_at_vrtx[vrtx];
@@ -104,7 +104,7 @@ void Problem::wetting_drying_kernel(const Stepper& stepper, ElementType& elt) {
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 wd_state.ze_at_vrtx[vrtx] = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
-                if (wd_state.h_at_vrtx[vrtx] > PostProcessing::h_o + PostProcessing::h_o_treshold) {
+                if (wd_state.h_at_vrtx[vrtx] > PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     wd_state.qx_at_vrtx[vrtx] += del_qx / (3 - n_dry_vrtx);
                     wd_state.qy_at_vrtx[vrtx] += del_qy / (3 - n_dry_vrtx);
                 }

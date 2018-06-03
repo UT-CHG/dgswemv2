@@ -9,6 +9,12 @@
 namespace SWE {
 void Problem::postprocessor_serial_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
     if (SWE::PostProcessing::slope_limiting) {
+        if (SWE::PostProcessing::wetting_drying) {
+            auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
+
+            mesh.CallForEachElement(wetting_drying_kernel);
+        }
+
         auto slope_limiting_prepare_element_kernel = [&stepper](auto& elt) {
             Problem::slope_limiting_prepare_element_kernel(stepper, elt);
         };
@@ -41,6 +47,12 @@ void Problem::postprocessor_serial_kernel(const Stepper& stepper, ProblemMeshTyp
 
 void Problem::postprocessor_parallel_pre_send_kernel(const Stepper& stepper, ProblemMeshType& mesh) {
     if (SWE::PostProcessing::slope_limiting) {
+        if (SWE::PostProcessing::wetting_drying) {
+            auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
+
+            mesh.CallForEachElement(wetting_drying_kernel);
+        }
+
         auto slope_limiting_prepare_element_kernel = [&stepper](auto& elt) {
             Problem::slope_limiting_prepare_element_kernel(stepper, elt);
         };

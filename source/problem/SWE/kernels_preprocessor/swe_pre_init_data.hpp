@@ -218,7 +218,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         bool set_wet_element = true;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o) {
+            if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                 wd_state.ze_at_vrtx[vrtx] = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
 
                 set_wet_element = false;
@@ -265,17 +265,12 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         auto& sl_state_in = intface.data_in.slope_limit_state;
         auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
-        sl_state_in.bath_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.bath_at_baryctr;
-        sl_state_ex.bath_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.bath_at_baryctr;
-
         sl_state_in.baryctr_coord_neigh[intface.bound_id_in] = sl_state_ex.baryctr_coord;
         sl_state_ex.baryctr_coord_neigh[intface.bound_id_ex] = sl_state_in.baryctr_coord;
     });
 
     mesh.CallForEachBoundary([](auto& bound) {
         auto& sl_state = bound.data.slope_limit_state;
-
-        sl_state.bath_at_baryctr_neigh[bound.bound_id] = sl_state.bath_at_baryctr;
 
         sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::x] =
             2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];

@@ -25,8 +25,7 @@ struct SlopeLimit {
           bath_at_midpts(nbound),
           ze_at_baryctr_neigh(nbound),
           qx_at_baryctr_neigh(nbound),
-          qy_at_baryctr_neigh(nbound),
-          bath_at_baryctr_neigh(nbound) {}
+          qy_at_baryctr_neigh(nbound) {}
 
     Array2D<double> surface_normal;
 
@@ -59,7 +58,6 @@ struct SlopeLimit {
     std::vector<double> ze_at_baryctr_neigh;
     std::vector<double> qx_at_baryctr_neigh;
     std::vector<double> qy_at_baryctr_neigh;
-    std::vector<double> bath_at_baryctr_neigh;
 
     std::vector<double> w_midpt_char = std::vector<double>(3);
     Array2D<double> w_baryctr_char   = Array2D<double>(3, std::vector<double>(3));

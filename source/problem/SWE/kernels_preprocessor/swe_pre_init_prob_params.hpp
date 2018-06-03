@@ -33,7 +33,7 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
     if (problem_specific_input.wet_dry.type != SWE::WettingDryingType::None) {
         SWE::PostProcessing::wetting_drying = true;
         SWE::PostProcessing::h_o            = problem_specific_input.wet_dry.h_o;
-        SWE::PostProcessing::h_o_treshold   = 1.0e6 * SWE::PostProcessing::h_o * std::numeric_limits<double>::epsilon();
+        SWE::PostProcessing::h_o_threshold  = 1.0e6 * SWE::PostProcessing::h_o * std::numeric_limits<double>::epsilon();
     }
 
     if (problem_specific_input.slope_limit.type != SWE::SlopeLimitingType::None) {
