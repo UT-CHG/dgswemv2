@@ -12,6 +12,7 @@ class Stepper {
     std::vector<double> drk;
 
   private:
+    uint order;
     uint nstages;
     double dt;
 
@@ -20,18 +21,22 @@ class Stepper {
     uint timestamp;
 
     double t;
+    double ramp;
 
   public:
     Stepper() = default;
     Stepper(const StepperInput& stepper_input);
 
+    uint GetOrder() const { return this->order; }
     uint GetNumStages() const { return this->nstages; }
     double GetDT() const { return this->dt; }
 
     uint GetStep() const { return this->step; }
-    uint GetTimestamp() const { return this->timestamp; }
     uint GetStage() const { return this->stage; }
+    uint GetTimestamp() const { return this->timestamp; }
+
     double GetTimeAtCurrentStage() const { return this->t + this->dt * this->drk[this->stage]; }
+    double GetRamp() const { return tanh(this->GetTimeAtCurrentStage() / 86400.0); }
 
     Stepper& operator++() {
         ++(this->stage);

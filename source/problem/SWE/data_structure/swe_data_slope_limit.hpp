@@ -23,6 +23,7 @@ struct SlopeLimit {
           qx_at_midpts(nbound),
           qy_at_midpts(nbound),
           bath_at_midpts(nbound),
+          wet_neigh(nbound),
           ze_at_baryctr_neigh(nbound),
           qx_at_baryctr_neigh(nbound),
           qy_at_baryctr_neigh(nbound) {}
@@ -55,6 +56,7 @@ struct SlopeLimit {
     std::vector<double> qy_at_midpts;
     std::vector<double> bath_at_midpts;
 
+    std::vector<bool> wet_neigh;
     std::vector<double> ze_at_baryctr_neigh;
     std::vector<double> qx_at_baryctr_neigh;
     std::vector<double> qy_at_baryctr_neigh;

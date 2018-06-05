@@ -7,12 +7,12 @@ namespace SWE {
 template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
+    auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet) {
         const uint stage = stepper.GetStage();
 
-        auto& state    = elt.data.state[stage + 1];
-        auto& sl_state = elt.data.slope_limit_state;
+        auto& state = elt.data.state[stage + 1];
 
         elt.ProjectBasisToLinear(state.ze, sl_state.ze_lin);
         elt.ProjectBasisToLinear(state.qx, sl_state.qx_lin);
@@ -33,10 +33,13 @@ void Problem::slope_limiting_prepare_interface_kernel(const Stepper& stepper, In
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
-    if (wd_state_in.wet && wd_state_ex.wet) {
-        auto& sl_state_in = intface.data_in.slope_limit_state;
-        auto& sl_state_ex = intface.data_ex.slope_limit_state;
+    auto& sl_state_in = intface.data_in.slope_limit_state;
+    auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
+    sl_state_in.wet_neigh[intface.bound_id_in] = wd_state_ex.wet;
+    sl_state_ex.wet_neigh[intface.bound_id_ex] = wd_state_in.wet;
+
+    if (wd_state_in.wet && wd_state_ex.wet) {
         sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.ze_at_baryctr;
         sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qx_at_baryctr;
         sl_state_in.qy_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qy_at_baryctr;
@@ -44,28 +47,17 @@ void Problem::slope_limiting_prepare_interface_kernel(const Stepper& stepper, In
         sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.ze_at_baryctr;
         sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qx_at_baryctr;
         sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qy_at_baryctr;
-    } else if (wd_state_in.wet) {
-        auto& sl_state_in = intface.data_in.slope_limit_state;
-
-        sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_in.ze_at_baryctr;
-        sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_in.qx_at_baryctr;
-        sl_state_in.qy_at_baryctr_neigh[intface.bound_id_in] = sl_state_in.qy_at_baryctr;
-    } else if (wd_state_ex.wet) {
-        auto& sl_state_ex = intface.data_ex.slope_limit_state;
-
-        sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_ex.ze_at_baryctr;
-        sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_ex.qx_at_baryctr;
-        sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_ex.qy_at_baryctr;
     }
 }
 
 template <typename BoundaryType>
 void Problem::slope_limiting_prepare_boundary_kernel(const Stepper& stepper, BoundaryType& bound) {
     auto& wd_state = bound.data.wet_dry_state;
+    auto& sl_state = bound.data.slope_limit_state;
+
+    sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
 
     if (wd_state.wet) {
-        auto& sl_state = bound.data.slope_limit_state;
-
         sl_state.ze_at_baryctr_neigh[bound.bound_id] = sl_state.ze_at_baryctr;
         sl_state.qx_at_baryctr_neigh[bound.bound_id] = sl_state.qx_at_baryctr;
         sl_state.qy_at_baryctr_neigh[bound.bound_id] = sl_state.qy_at_baryctr;
@@ -89,33 +81,31 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const Stepper& ste
 template <typename DistributedBoundaryType>
 void Problem::slope_limiting_prepare_distributed_boundary_kernel(const Stepper& stepper,
                                                                  DistributedBoundaryType& dbound) {
+    auto& wd_state = dbound.data.wet_dry_state;
+    auto& sl_state = dbound.data.slope_limit_state;
+
     bool wet_ex;
     dbound.boundary_condition.exchanger.GetPostprocWetDryEX(wet_ex);
 
-    if (wet_ex) {
-        auto& sl_state = dbound.data.slope_limit_state;
+    sl_state.wet_neigh[dbound.bound_id] = wet_ex;
 
+    if (wd_state.wet && wet_ex) {
         dbound.boundary_condition.exchanger.GetPostprocEX(sl_state.ze_at_baryctr_neigh[dbound.bound_id],
                                                           sl_state.qx_at_baryctr_neigh[dbound.bound_id],
                                                           sl_state.qy_at_baryctr_neigh[dbound.bound_id]);
-    } else {
-        auto& sl_state = dbound.data.slope_limit_state;
-
-        sl_state.ze_at_baryctr_neigh[dbound.bound_id] = sl_state.ze_at_baryctr;
-        sl_state.qx_at_baryctr_neigh[dbound.bound_id] = sl_state.qx_at_baryctr;
-        sl_state.qy_at_baryctr_neigh[dbound.bound_id] = sl_state.qy_at_baryctr;
     }
 }
 
 template <typename ElementType>
 void Problem::slope_limiting_kernel(const Stepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
+    auto& sl_state = elt.data.slope_limit_state;
 
-    if (wd_state.wet) {
+    if (wd_state.wet &&
+        std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()) {
         const uint stage = stepper.GetStage();
 
-        auto& state    = elt.data.state[stage + 1];
-        auto& sl_state = elt.data.slope_limit_state;
+        auto& state = elt.data.state[stage + 1];
 
         double u = sl_state.qx_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
         double v = sl_state.qy_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
