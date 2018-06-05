@@ -110,7 +110,6 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
                 this->mesh_input.mesh_file_name.substr(0, this->mesh_input.mesh_file_name.find_last_of('.')) + ".bcis";
             this->mesh_input.db_file_name =
                 this->mesh_input.mesh_file_name.substr(0, this->mesh_input.mesh_file_name.find_last_of('.')) + ".dbmd";
-
             std::string coord_sys_string = raw_mesh["coordinate_system"].as<std::string>();
 
             if (coord_sys_string == "cartesian") {
@@ -241,9 +240,6 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string,
     : InputParameters(input_string) {
     this->mesh_input.mesh_file_name.insert(this->mesh_input.mesh_file_name.find_last_of("."),
                                            '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
-
-    this->mesh_input.bc_is_file_name.insert(this->mesh_input.bc_is_file_name.find_last_of("."),
-                                            '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
 
     this->mesh_input.db_file_name.insert(this->mesh_input.db_file_name.find_last_of("."),
                                          '_' + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
