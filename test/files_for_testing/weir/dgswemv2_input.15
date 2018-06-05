@@ -1,0 +1,29 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Adcirc
+  file_name: weir.14
+  coordinate_system: cartesian
+
+timestepping:
+  start_time: 25-11-1987 12:00              #dd-mm-yyyy hh:mm
+  end_time: 25-11-1987 14:00                #dd-mm-yyyy hh:mm
+  dt: 1                           #in seconds
+  order: 2
+  nstages: 2
+
+polynomial_order: 1
+
+problem:
+  name: swe
+  gravity: 9.81
+  density_air: 1.225
+  density_water: 1000.0
+  slope_limiting:
+    type: Cockburn-Shu
+    M: 1.0e-8
+    nu: 1.5
