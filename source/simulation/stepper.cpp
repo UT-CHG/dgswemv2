@@ -1,7 +1,7 @@
 #include "stepper.hpp"
 
 Stepper::Stepper(const StepperInput& stepper_input)
-    : order(this->order),
+    : order(stepper_input.order),
       nstages(stepper_input.nstages),
       dt(stepper_input.dt),
       step(0),
