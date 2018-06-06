@@ -18,7 +18,7 @@ jobs:
           paths:
             - /usr/dgswemv2
 
-  build:
+  build_dgswemv2:
     <<: *defaults
     steps:
       - restore_cache:
