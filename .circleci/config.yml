@@ -18,6 +18,30 @@ jobs:
           paths:
             - /usr/dgswemv2
 
+  build:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Building dgswemv2
+	  command: |
+	    cmake --version
+	    rm -rf /usr/dgswemv2/build/*
+	    cmake \
+	        -DCMAKE_PREFIX_PATH=/usr/install \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-DSET_VERBOSE=On \
+		-DCOMPILER_WARNINGS=On \
+		-DUSE_OMPI=On \
+		-DUSE_HPX=On \
+		-DBUILD_EXAMPLES=On \
+		/usr/dgswemv2
+	    make -j4
+      - persist_to_workspace:
+          root: /usr/dgswemv2/build
+	  paths:
+	    - ./*
 
 workflows:
   version: 2
