@@ -50,8 +50,8 @@ jobs:
           key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Running unit tests
-	  command: |
-	    ctest --test-regex unit
+          command: |
+            ctest --test-regex unit
 
   run_parallel_correctness:
     <<: *defaults
@@ -62,8 +62,8 @@ jobs:
           - DGSWEMV2_ROOT: "/usr/dgswemv2"
       - run:
           name: Parallel Manufactured Solution
-	  command: |
-	    /usr/dgswemv2/scripts/test_parallel_correctness.sh
+          command: |
+            /usr/dgswemv2/scripts/test_parallel_correctness.sh
 
 workflows:
   version: 2
@@ -75,7 +75,7 @@ workflows:
             - checkout_code
       - run_unit_tests:
           requires:
-	    - build_dgswemv2
+            - build_dgswemv2
       - run_parallel_correctness:
           requires:
-	    - run_unit_tests
+            - run_unit_tests
