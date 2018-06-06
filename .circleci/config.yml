@@ -43,6 +43,28 @@ jobs:
           paths:
             - ./*
 
+  run_unit_tests:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Running unit tests
+	  command: |
+	    ctest --test-regex unit
+
+  run_parallel_correctness:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - environment:
+          - DGSWEMV2_ROOT: "/usr/dgswemv2"
+      - run:
+          name: Parallel Manufactured Solution
+	  command: |
+	    /usr/dgswemv2/scripts/test_parallel_correctness.sh
+
 workflows:
   version: 2
   build-and-test:
@@ -51,3 +73,9 @@ workflows:
       - build_dgswemv2:
           requires:
             - checkout_code
+      - run_unit_tests:
+          requires:
+	    - build_dgswemv2
+      - run_parallel_correctness:
+          requires:
+	    - run_unit_tests
