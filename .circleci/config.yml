@@ -39,11 +39,12 @@ jobs:
                 -DUSE_HPX=On \
                 -DBUILD_EXAMPLES=On \
                 /usr/dgswemv2
-            make -j4
+            make -j2
       - persist_to_workspace:
           root: /usr/dgswemv2
           paths:
-            - ./*
+            - build/*
+	    - test/*
 
   run_unit_tests:
     <<: *defaults
