@@ -14,7 +14,7 @@ jobs:
       - checkout:
           path: /usr/dgswemv2
       - save_cache:
-          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - /usr/dgswemv2
 
@@ -22,7 +22,7 @@ jobs:
     <<: *defaults
     steps:
       - restore_cache:
-          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Building dgswemv2
           command: |
@@ -47,7 +47,7 @@ jobs:
     <<: *defaults
     steps:
       - restore_cache:
-          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
       - run:
           name: Running unit tests
           command: |
@@ -57,7 +57,7 @@ jobs:
     <<: *defaults
     steps:
       - restore_cache:
-          key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
       - environment:
           - DGSWEMV2_ROOT: "/usr/dgswemv2"
       - run:
