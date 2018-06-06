@@ -59,7 +59,7 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
       writing_vtu_output(writer_input.writing_vtu_output),
       vtu_output_frequency(writer_input.vtu_output_freq_step),
       writing_modal_output(writer_input.writing_modal_output),
-      modal_output_frequency(writer_input.writing_vtk_output) {
+      modal_output_frequency(writer_input.modal_output_freq_step) {
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name;
     }

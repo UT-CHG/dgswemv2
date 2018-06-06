@@ -26,6 +26,10 @@ problem:
   initial_conditions:
     type: Function
   function_source: Enable  
+  slope_limiting:
+    type: Cockburn-Shu
+    M: 1.0e-8
+    nu: 1.5
 
 output:
   path: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/examples/output/

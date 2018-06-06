@@ -7,15 +7,15 @@ constexpr uchar INTERNAL{1 << 7};            // 128
 constexpr uchar DISTRIBUTED_OFFSET{1 << 6};  // 64
 constexpr uchar DISTRIBUTED{INTERNAL + DISTRIBUTED_OFFSET};
 
-constexpr bool in_internal(uchar edge) {
+constexpr bool is_internal(uchar edge) {
     return edge >= INTERNAL && edge < DISTRIBUTED;
 }
 
-constexpr bool in_distributed(uchar edge) {
+constexpr bool is_distributed(uchar edge) {
     return edge >= DISTRIBUTED;
 }
 
-constexpr bool in_boundary(uchar edge) {
+constexpr bool is_boundary(uchar edge) {
     return edge < INTERNAL;
 }
 
