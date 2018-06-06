@@ -63,10 +63,25 @@ jobs:
     steps:
       - restore_cache:
           key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: /usr/dgswemv2
       - run:
           name: Parallel Manufactured Solution
           command: |
-            /usr/dgswemv2/scripts/test_parallel_correctness.sh
+            /usr/dgswemv2/scripts/correctness/test_parallel_correctness.sh
+
+  run_parallel_weirs:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: /usr/dgswemv2
+      - run:
+          name: Parallel Weirs
+          command: |
+            /usr/dgswemv2/scripts/correctness/test_parallel_weirs.sh
+
 
 workflows:
   version: 2
@@ -82,3 +97,6 @@ workflows:
       - run_parallel_correctness:
           requires:
             - run_unit_tests
+      - run_parallel_weirs:
+          requires:
+	    - run_unit_tests
