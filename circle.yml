@@ -25,3 +25,4 @@ test:
   override:
     - scripts/circleci/test.sh
     - scripts/correctness/test_parallel_correctness.sh
+    - scripts/correctness/test_parallel_weirs.sh

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DGSWEMV2_ROOT="${WORK}/dgswemv2"
+DGSWEMV2_ROOT="${HOME}/dgswemv2"
 DGSWEMV2_TEST="${HOME}/dgswemv2_parallel_weirs_test"
 
 echo "Running test to check that distributed weirs are correctly parallelized"
