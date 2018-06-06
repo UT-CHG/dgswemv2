@@ -48,3 +48,6 @@ workflows:
   build-and-test:
     jobs:
       - checkout_code
+      - build_dgswemv2:
+          requires:
+	    - checkout_code
