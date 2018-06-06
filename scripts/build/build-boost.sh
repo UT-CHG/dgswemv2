@@ -128,7 +128,7 @@ if [ ! -d ${BOOST_BUILD} ]; then
     tar xf boost_1_63_0.tar.bz2
     cd boost_1_63_0
     ./bootstrap.sh --prefix="$INSTALL_PATH"
-    ./b2 -j4 install
+    ./b2 -j${NUM_BUILDCORES} install
     exit
 else
     set -e
