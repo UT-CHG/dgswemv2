@@ -44,7 +44,7 @@ jobs:
           root: /usr/dgswemv2
           paths:
             - build/*
-	    - test/*
+            - test/*
 
   run_unit_tests:
     <<: *defaults
@@ -52,7 +52,7 @@ jobs:
       - restore_cache:
           key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
       - attach_workspace:
-          at: /usr/dgswemv2/build
+          at: /usr/dgswemv2
       - run:
           name: Running unit tests
           command: |
