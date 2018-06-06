@@ -41,9 +41,10 @@ jobs:
                 /usr/dgswemv2
             make -j4
       - persist_to_workspace:
-          root: /usr/dgswemv2/build
+          root: /usr/dgswemv2
           paths:
-            - ./*
+            - build/*
+	    - test/files_for_testing/*
 
   run_unit_tests:
     <<: *defaults
