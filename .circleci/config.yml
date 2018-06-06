@@ -17,3 +17,10 @@ jobs:
           key: v2-repo-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - /usr/dgswemv2
+
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - checkout_code
