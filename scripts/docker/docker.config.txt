@@ -1,9 +1,12 @@
 BUILD_TYPE=Debug
 NUM_BUILDCORES=2
 
-CMAKE="/usr/bin/cmake /usr/bin/X11/cmake /usr/share/man/man1/cmake.1.gz"
+CMAKE="/usr/bin/cmake"
 
-WORK=$HOME
+CXX_COMPILER=/usr/bin/g++-5
+C_COMPILER=/usr/bin/gcc-5
+
+WORK=/usr
 
 BUILD_PATH=$WORK/build
 INSTALL_PATH=$WORK/install
