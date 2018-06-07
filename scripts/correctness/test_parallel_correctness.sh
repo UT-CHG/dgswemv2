@@ -51,7 +51,12 @@ rm -f ompi.out
 $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 2 1 2
 #Since OpenMPI does not by default support MPI_THREAD_MULTIPLE
 # we set OMP_NUM_THREADS=1
-OMP_NUM_THREADS=1 mpirun -np 2 $DGSWEMV2_ROOT_/build/examples/MANUFACTURED_SOLUTION_OMPI dgswemv2_input_parallelized.15 &> ompi.out
+#
+# CI_MPI_CLI flag is an environemnt variable to run the mpi code as a root user.
+# Running MPI as root is strongly discouraged by the OpemMPI people, so it really
+# should only be used inside a container.
+# See: https://github.com/open-mpi/ompi/issues/4451
+OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/examples/MANUFACTURED_SOLUTION_OMPI dgswemv2_input_parallelized.15 &> ompi.out
 
 python $DGSWEMV2_ROOT_/scripts/correctness/compare_l2_errors.py
 exit $?

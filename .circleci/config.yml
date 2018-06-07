@@ -4,6 +4,7 @@ defaults: &defaults
       - image: bremerm31/dgswemv2
     environment:
       - DGSWEMV2_ROOT: "/usr/dgswemv2"
+      - CI_MPI_CLI: "--allow-run-as-root"
 
 version: 2
 
