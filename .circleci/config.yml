@@ -1,0 +1,103 @@
+defaults: &defaults
+    working_directory: /usr/dgswemv2/build
+    docker:
+      - image: bremerm31/dgswemv2
+    environment:
+      - DGSWEMV2_ROOT: "/usr/dgswemv2"
+      - CI_MPI_CLI: "--allow-run-as-root"
+
+version: 2
+
+jobs:
+  checkout_code:
+    docker:
+      - image: bremerm31/dgswemv2
+    working_directory: /usr/dgswemv2/build
+    steps:
+      - checkout:
+          path: /usr/dgswemv2
+      - save_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - /usr/dgswemv2
+
+  build_dgswemv2:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Building dgswemv2
+          command: |
+            cmake --version
+            rm -rf /usr/dgswemv2/build/*
+            cmake \
+                -DCMAKE_PREFIX_PATH=/usr/install \
+                -DCMAKE_BUILD_TYPE=Debug \
+                -DSET_VERBOSE=On \
+                -DCOMPILER_WARNINGS=On \
+                -DUSE_OMPI=On \
+                -DUSE_HPX=On \
+                -DBUILD_EXAMPLES=On \
+                /usr/dgswemv2
+            make -j2
+      - persist_to_workspace:
+          root: /usr/dgswemv2
+          paths:
+            - build/*
+            - test/*
+
+  run_unit_tests:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: /usr/dgswemv2
+      - run:
+          name: Running unit tests
+          command: |
+            ctest --test-regex unit
+
+  run_parallel_correctness:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: /usr/dgswemv2
+      - run:
+          name: Parallel Manufactured Solution
+          command: |
+            /usr/dgswemv2/scripts/correctness/test_parallel_correctness.sh
+
+  run_parallel_weirs:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - attach_workspace:
+          at: /usr/dgswemv2
+      - run:
+          name: Parallel Weirs
+          command: |
+            /usr/dgswemv2/scripts/correctness/test_parallel_weirs.sh
+
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - checkout_code
+      - build_dgswemv2:
+          requires:
+            - checkout_code
+      - run_unit_tests:
+          requires:
+            - build_dgswemv2
+      - run_parallel_correctness:
+          requires:
+            - run_unit_tests
+      - run_parallel_weirs:
+          requires:
+            - run_unit_tests
