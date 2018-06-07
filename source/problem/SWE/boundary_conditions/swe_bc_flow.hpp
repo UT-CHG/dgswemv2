@@ -113,7 +113,7 @@ void Flow::GetEX(const Stepper& stepper,
         forcing_fact = this->flow_constituents[con][1];
         eq_argument  = this->flow_constituents[con][2];
 
-        qn += forcing_fact * this->amplitude_gp[con][gp] *
+        qn += stepper.GetRamp() * forcing_fact * this->amplitude_gp[con][gp] *
               cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
     }
 
