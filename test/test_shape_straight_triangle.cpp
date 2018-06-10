@@ -86,8 +86,7 @@ int main() {
     Array2D<double> bound_interpolation_true = {
         {2., 2.25, 2.5, 2.75, 3.}, {3., 1.75, 0.5, -0.75, -2}, {-2., -1., 0., 1., 2.}};
 
-    Array2D<double> bound_interpolation_comp;
-    bound_interpolation_comp.resize(3);
+    Array2D<double> bound_interpolation_comp(3, std::vector<double>(5));
 
     Array2D<double> psi_bound_interp;
     
@@ -96,8 +95,6 @@ int main() {
         bound_nodal_vals[1] = nodal_vals[(bound_id + 2) % 3];
 
         psi_bound_interp = triangle.GetBoundaryPsi(bound_id, bound_interpolation_pts);
-
-        bound_interpolation_comp[bound_id].resize(5);
 
         for (uint i = 0; i < 5; i++) {
             bound_interpolation_comp[bound_id][i] =
@@ -113,7 +110,7 @@ int main() {
             }
         }
     }
-    /*
+    
     // check GetDPsi
     // take linear function f = x + 1/sqrt(3) * y
     nodal_vals = {-0.5, 0.5, 0.5};
@@ -122,7 +119,7 @@ int main() {
 
     Array3D<double> dpsi_interp = triangle.GetDPsi(std::vector<Point<2>>{{0.0, 0.0}});
 
-    Array2D<double> interpolation_derivative_comp(1, std::vector<double>(1));
+    Array2D<double> interpolation_derivative_comp(2, std::vector<double>(1));
 
     interpolation_derivative_comp[0][0] = dpsi_interp[0][0][0] * nodal_vals[0] + dpsi_interp[1][0][0] * nodal_vals[1] +
                                           dpsi_interp[2][0][0] * nodal_vals[2];
@@ -134,7 +131,7 @@ int main() {
         !almost_equal(interpolation_derivative_true[1][0], interpolation_derivative_comp[1][0])) {
         std::cerr << "Error in GetDPsi\n";
         error_found = true;
-    }*/
+    }
 
     if (error_found) {
         return 1;
