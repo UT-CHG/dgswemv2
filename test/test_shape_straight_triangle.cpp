@@ -56,7 +56,7 @@ int main() {
         }
     }
 
-    // check GetPsi
+    /*// check GetPsi
     std::vector<double> nodal_vals = {-2., 2., 3.};
 
     std::vector<Point<2>> interpolation_pts = {
@@ -134,7 +134,7 @@ int main() {
         !almost_equal(interpolation_derivative_true[1][0], interpolation_derivative_comp[1][0])) {
         std::cerr << "Error in GetDPsi\n";
         error_found = true;
-    }
+    }*/
 
     if (error_found) {
         return 1;
