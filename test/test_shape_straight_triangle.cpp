@@ -89,17 +89,19 @@ int main() {
     Array2D<double> bound_interpolation_comp;
     bound_interpolation_comp.resize(3);
 
+    Array2D<double> psi_bound_interp;
+    
     for (uint bound_id = 0; bound_id < 3; bound_id++) {
         bound_nodal_vals[0] = nodal_vals[(bound_id + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(bound_id + 2) % 3];
 
-        Array2D<double> psi_interp = triangle.GetBoundaryPsi(bound_id, bound_interpolation_pts);
+        psi_bound_interp = triangle.GetBoundaryPsi(bound_id, bound_interpolation_pts);
 
         bound_interpolation_comp[bound_id].resize(5);
 
         for (uint i = 0; i < 5; i++) {
             bound_interpolation_comp[bound_id][i] =
-                psi_interp[0][i] * bound_nodal_vals[0] + psi_interp[1][i] * bound_nodal_vals[1];
+                psi_bound_interp[0][i] * bound_nodal_vals[0] + psi_bound_interp[1][i] * bound_nodal_vals[1];
         }
     }
 
