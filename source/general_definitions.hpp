@@ -130,13 +130,13 @@ class Master {
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule;
 
     Array2D<double> chi_gp;
-    Array2D<double> dchi;
-
     Array2D<double> phi_gp;
+
+    Array2D<double> dchi_gp;
     Array3D<double> dphi_gp;
 
-    Array2D<double> int_fact_phi;
-    Array3D<double> int_fact_dphi;
+    Array2D<double> int_phi_fact;
+    Array3D<double> int_dphi_fact;
 
     std::pair<bool, Array2D<double>> m_inv;
 
@@ -163,10 +163,11 @@ class Shape {
   public:
     std::vector<Point<dimension>> nodal_coordinates;
 
+    Array2D<double> psi_gp;
+    Array3D<double> dpsi_gp;
+
   public:
     Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(nodal_coordinates) {}
-
-    virtual bool CheckJacobianPositive(const Point<dimension>& point) = 0;
 
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
 
@@ -178,15 +179,10 @@ class Shape {
     virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points)  = 0;
     virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
-    virtual std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                                       const std::vector<Point<dimension>>& points)        = 0;
-    virtual Array2D<double> InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
-                                                              const std::vector<Point<dimension>>& points) = 0;
+    virtual Array2D<double> GetPsi(const std::vector<Point<dimension>>& points)  = 0;
+    virtual Array3D<double> GetDPsi(const std::vector<Point<dimension>>& points) = 0;
 
-    virtual std::vector<double> InterpolateBoundaryNodalValues(
-        const uint bound_id,
-        const std::vector<double>& bound_nodal_values,
-        const std::vector<Point<dimension - 1>>& bound_points) = 0;
+    virtual Array2D<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<dimension - 1>>& points) = 0;
 
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 

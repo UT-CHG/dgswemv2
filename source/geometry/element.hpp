@@ -19,16 +19,18 @@ class Element {
 
     std::vector<Point<dimension>> gp_global_coordinates;
 
-    Array2D<double> psi_gp;
+    /* psi_gp stored in shape */   // nodal basis, i.e. shape functions
+    /* chi_gp stored in master */  // linear basis
+    /* phi_gp stroed in master */  // modal basis
 
-    Array3D<double> dpsi_fact;  // nodal basis, i.e. shape functions
-    Array3D<double> dchi_fact;  // linear basis
-    Array3D<double> dphi_fact;  // modal basis
+    /* dpsi_gp stored in shape */  // nodal basis, i.e. shape functions
+    Array3D<double> dchi_gp;       // linear basis
+    Array3D<double> dphi_gp;       // modal basis
 
     bool const_J;
     std::vector<double> int_fact;
-    Array2D<double> int_fact_phi;
-    Array3D<double> int_fact_dphi;
+    Array2D<double> int_phi_fact;
+    Array3D<double> int_dphi_fact;
 
     std::pair<bool, Array2D<double>> m_inv;
 
@@ -104,54 +106,44 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master.integration_rule.second);
 
-    // Compute factors to expand nodal values and derivatives of nodal values
-    this->psi_gp.resize(this->shape.nodal_coordinates.size());
-    this->dpsi_fact.resize(this->shape.nodal_coordinates.size());
-
-    std::vector<double> u_temp(this->shape.nodal_coordinates.size());
-    for (uint dof = 0; dof < this->shape.nodal_coordinates.size(); dof++) {
-        std::fill(u_temp.begin(), u_temp.end(), 0.0);
-        u_temp[dof] = 1.0;
-
-        this->psi_gp[dof] = this->shape.InterpolateNodalValues(u_temp, this->master.integration_rule.second);
-        this->dpsi_fact[dof] =
-            this->shape.InterpolateNodalValuesDerivatives(u_temp, this->master.integration_rule.second);
-    }
-
     // DEFORMATION
     std::vector<double> det_J = this->shape.GetJdet(this->master.integration_rule.second);
     Array3D<double> J_inv     = this->shape.GetJinv(this->master.integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
 
+    // Compute factors to expand nodal values and derivatives of nodal values
+    this->shape.psi_gp  = this->shape.GetPsi(this->master.integration_rule.second);
+    this->shape.dpsi_gp = this->shape.GetDPsi(this->master.integration_rule.second);
+
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
-        this->dchi_fact.resize(this->master.dchi.size());
-        for (uint dof = 0; dof < this->master.dchi.size(); dof++) {
-            this->dchi_fact[dof].resize(dimension);
+        this->dchi_gp.resize(this->master.dchi_gp.size());
+        for (uint dof = 0; dof < this->master.dchi_gp.size(); dof++) {
+            this->dchi_gp[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->dchi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
+                this->dchi_gp[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
                 for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
                     double dchi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        dchi += this->master.dchi[dof][z] * J_inv[z][dir][0];
+                        dchi += this->master.dchi_gp[dof][z] * J_inv[z][dir][0];
                     }
-                    this->dchi_fact[dof][dir].push_back(dchi);
+                    this->dchi_gp[dof][dir].push_back(dchi);
                 }
             }
         }
 
-        this->dphi_fact.resize(this->master.dphi_gp.size());
+        this->dphi_gp.resize(this->master.dphi_gp.size());
         for (uint dof = 0; dof < this->master.dphi_gp.size(); dof++) {
-            this->dphi_fact[dof].resize(dimension);
+            this->dphi_gp[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->dphi_fact[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
+                this->dphi_gp[dof][dir].reserve(this->master.dphi_gp[dof][dir].size());
                 for (uint gp = 0; gp < this->master.dphi_gp[dof][dir].size(); gp++) {
                     double dphi = 0;
                     for (uint z = 0; z < dimension; z++) {
                         dphi += this->master.dphi_gp[dof][z][gp] * J_inv[z][dir][0];
                     }
-                    this->dphi_fact[dof][dir].push_back(dphi);
+                    this->dphi_gp[dof][dir].push_back(dphi);
                 }
             }
         }
@@ -162,25 +154,25 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
             this->int_fact[gp] *= std::abs(det_J[0]);
         }
 
-        this->int_fact_phi = this->master.int_fact_phi;
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
-                this->int_fact_phi[dof][gp] *= std::abs(det_J[0]);
+        this->int_phi_fact = this->master.int_phi_fact;
+        for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
+            for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
+                this->int_phi_fact[dof][gp] *= std::abs(det_J[0]);
             }
         }
 
-        this->int_fact_dphi.resize(this->master.int_fact_dphi.size());
-        for (uint dof = 0; dof < this->master.int_fact_dphi.size(); dof++) {
-            this->int_fact_dphi[dof].resize(dimension);
+        this->int_dphi_fact.resize(this->master.int_dphi_fact.size());
+        for (uint dof = 0; dof < this->master.int_dphi_fact.size(); dof++) {
+            this->int_dphi_fact[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->int_fact_dphi[dof][dir].reserve(this->master.int_fact_dphi[dof][dir].size());
-                for (uint gp = 0; gp < this->master.int_fact_dphi[dof][dir].size(); gp++) {
+                this->int_dphi_fact[dof][dir].reserve(this->master.int_dphi_fact[dof][dir].size());
+                for (uint gp = 0; gp < this->master.int_dphi_fact[dof][dir].size(); gp++) {
                     double int_dphi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        int_dphi += this->master.int_fact_dphi[dof][z][gp] * J_inv[z][dir][0];
+                        int_dphi += this->master.int_dphi_fact[dof][z][gp] * J_inv[z][dir][0];
                     }
                     int_dphi *= std::abs(det_J[0]);
-                    this->int_fact_dphi[dof][dir].push_back(int_dphi);
+                    this->int_dphi_fact[dof][dir].push_back(int_dphi);
                 }
             }
         }
@@ -238,7 +230,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(co
 
     this->ComputeFgp(f, f_vals);
 
-    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+    for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
         rhs.push_back(this->IntegrationPhi(dof, f_vals));
     }
 
@@ -250,10 +242,11 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(co
                                                                               std::vector<double>& projection) {
     std::vector<double> rhs;
 
-    std::vector<double> interpolation =
-        this->shape.InterpolateNodalValues(nodal_values, this->master.integration_rule.second);
+    std::vector<double> interpolation(this->data.get_ngp_internal());
 
-    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
+    this->ComputeNodalUgp(nodal_values, interpolation);
+
+    for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
         rhs.push_back(this->IntegrationPhi(dof, interpolation));
     }
 
@@ -308,7 +301,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < du_gp.size(); gp++) {
-            du_gp[gp] += u[dof] * this->dphi_fact[dof][dir][gp];
+            du_gp[gp] += u[dof] * this->dphi_gp[dof][dir][gp];
         }
     }
 }
@@ -333,7 +326,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDU
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
         for (uint gp = 0; gp < du_lin_gp.size(); gp++) {
-            du_lin_gp[gp] += u_lin[dof] * this->dchi_fact[dof][dir][gp];
+            du_lin_gp[gp] += u_lin[dof] * this->dchi_gp[dof][dir][gp];
         }
     }
 }
@@ -364,7 +357,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalUgp
 
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
         for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
-            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp[dof][gp];
+            u_nodal_gp[gp] += u_nodal[dof] * this->shape.psi_gp[dof][gp];
         }
     }
 }
@@ -377,7 +370,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUg
 
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
         for (uint gp = 0; gp < du_nodal_gp.size(); gp++) {
-            du_nodal_gp[gp] += u_nodal[dof] * this->dpsi_fact[dof][dir][gp];
+            du_nodal_gp[gp] += u_nodal[dof] * this->shape.dpsi_gp[dof][dir][gp];
         }
     }
 }
@@ -399,7 +392,7 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPh
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_phi[dof][gp];
+        integral += u_gp[gp] * this->int_phi_fact[dof][gp];
     }
 
     return integral;
@@ -412,7 +405,7 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDP
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_dphi[dof][dir][gp];
+        integral += u_gp[gp] * this->int_dphi_fact[dof][dir][gp];
     }
 
     return integral;

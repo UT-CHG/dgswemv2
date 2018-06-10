@@ -20,7 +20,7 @@ class Boundary {
     Array2D<double> phi_gp;
 
     std::vector<double> int_fact;
-    Array2D<double> int_fact_phi;
+    Array2D<double> int_phi_fact;
 
   public:
     Boundary(const RawBoundary<dimension, DataType>& raw_boundary,
@@ -56,27 +56,10 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
         raw_boundary.master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
     // Compute factors to expand nodal values
-    this->psi_gp.resize(raw_boundary.shape.nodal_coordinates.size());
-
-    std::vector<double> u_temp(raw_boundary.shape.nodal_coordinates.size());
-    for (uint dof = 0; dof < raw_boundary.shape.nodal_coordinates.size(); dof++) {
-        std::fill(u_temp.begin(), u_temp.end(), 0.0);
-        u_temp[dof] = 1.0;
-
-        this->psi_gp[dof] = raw_boundary.shape.InterpolateNodalValues(u_temp, z_master);
-    }
+    this->psi_gp = raw_boundary.shape.GetPsi(z_master);
 
     // Compute factors to expand boundary nodal values
-    this->psi_bound_gp.resize(raw_boundary.node_ID.size());
-
-    std::vector<double> u_bound_temp(raw_boundary.node_ID.size());
-    for (uint dof = 0; dof < raw_boundary.node_ID.size(); dof++) {
-        std::fill(u_bound_temp.begin(), u_bound_temp.end(), 0.0);
-        u_bound_temp[dof] = 1.0;
-
-        this->psi_bound_gp[dof] =
-            raw_boundary.shape.InterpolateBoundaryNodalValues(this->bound_id, u_bound_temp, integration_rule.second);
-    }
+    this->psi_bound_gp = raw_boundary.shape.GetBoundaryPsi(this->bound_id, integration_rule.second);
 
     // Compute factors to expand modal values
     this->phi_gp = raw_boundary.basis.GetPhi(raw_boundary.p, z_master);
@@ -89,10 +72,10 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
             this->int_fact[gp] *= surface_J[0];
         }
 
-        this->int_fact_phi = this->phi_gp;
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
-                this->int_fact_phi[dof][gp] *= integration_rule.first[gp] * surface_J[0];
+        this->int_phi_fact = this->phi_gp;
+        for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
+            for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
+                this->int_phi_fact[dof][gp] *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
@@ -160,7 +143,7 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_phi[dof][gp];
+        integral += u_gp[gp] * this->int_phi_fact[dof][gp];
     }
 
     return integral;

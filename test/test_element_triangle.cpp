@@ -74,8 +74,11 @@ int main() {
     Integration::Dunavant_2D integ;
     std::vector<Point<2>> gp = integ.GetRule(20).second;
 
-    std::vector<double> x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp);
-    std::vector<double> y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp);
+    std::vector<double> x(gp.size());
+    std::vector<double> y(gp.size());
+
+    triangle.ComputeNodalUgp({-0.5, 0.5, 0}, x);
+    triangle.ComputeNodalUgp({0, 0, std::sqrt(3.) / 2.}, y);
 
     std::vector<double> f_vals(triangle.data.get_ngp_internal());
 

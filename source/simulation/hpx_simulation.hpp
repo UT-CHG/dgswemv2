@@ -187,18 +187,9 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
         auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-        auto scrutinize_solution_kernel = [this](auto& elt) {
-            bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-
-            if (nan_found)
-                hpx::terminate();
-        };
-
         this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
 
         this->mesh.CallForEachElement(update_kernel);
-
-        this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
@@ -235,7 +226,16 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
             this->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
         }
 
+        auto scrutinize_solution_kernel = [this](auto& elt) {
+            bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+
+            if (nan_found)
+                hpx::terminate();
+        };
+
         ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
+
+        this->mesh.CallForEachElement(scrutinize_solution_kernel);
 
         ++(this->stepper);
 

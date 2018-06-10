@@ -8,8 +8,6 @@ class StraightTriangle : public Shape<2> {
   public:
     StraightTriangle(const std::vector<Point<2>>& nodal_coordinates);
 
-    bool CheckJacobianPositive(const Point<2>& point);
-
     std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID);
 
     Point<2> GetBarycentricCoordinates();
@@ -20,14 +18,10 @@ class StraightTriangle : public Shape<2> {
     std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points);
     Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points);
 
-    std::vector<double> InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                               const std::vector<Point<2>>& points);
-    Array2D<double> InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
-                                                      const std::vector<Point<2>>& points);
+    Array2D<double> GetPsi(const std::vector<Point<2>>& points);
+    Array3D<double> GetDPsi(const std::vector<Point<2>>& points);
 
-    std::vector<double> InterpolateBoundaryNodalValues(const uint bound_id,
-                                                       const std::vector<double>& bound_nodal_values,
-                                                       const std::vector<Point<1>>& bound_points);
+    Array2D<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points);
 
     std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points);
 

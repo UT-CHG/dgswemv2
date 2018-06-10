@@ -47,7 +47,7 @@ template <typename ElementType>
 bool Problem::scrutinize_solution_kernel(const Stepper& stepper, ElementType& elt) {
     uint stage = stepper.GetStage();
 
-    auto& state = elt.data.state[stage];
+    auto& state = elt.data.state[stage + 1];
 
     for (auto& ze_mode : state.ze) {
         if (std::isnan(ze_mode)) {

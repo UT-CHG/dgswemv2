@@ -5,13 +5,9 @@ StraightTriangle::StraightTriangle(const std::vector<Point<2>>& nodal_coordinate
     // check if element nodes are ccw, swap if necessary
     // note that point selection doesn't matter since the Jacobian is
     // constant
-    if (!this->CheckJacobianPositive(Point<2>())) {
+    if (this->GetJdet(std::vector<Point<2>>(0))[0] < 0) {
         std::swap(this->nodal_coordinates[0], this->nodal_coordinates[2]);
     }
-}
-
-bool StraightTriangle::CheckJacobianPositive(const Point<2>& point) {
-    return this->GetJdet(std::vector<Point<2>>(0))[0] > 0;
 }
 
 std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) {
@@ -144,72 +140,63 @@ Array2D<double> StraightTriangle::GetSurfaceNormal(const uint bound_id, const st
     return surface_normal;
 }
 
-std::vector<double> StraightTriangle::InterpolateNodalValues(const std::vector<double>& nodal_values,
-                                                             const std::vector<Point<2>>& points) {
-    std::vector<double> interpolation(points.size());
+Array2D<double> StraightTriangle::GetPsi(const std::vector<Point<2>>& points) {
+    Array2D<double> psi(3, std::vector<double>(points.size()));
 
     for (uint pt = 0; pt < points.size(); pt++) {
-        interpolation[pt] =
-            -(points[pt][LocalCoordTri::z1] + points[pt][LocalCoordTri::z2]) / 2 * nodal_values[0]  // N1
-            + (1 + points[pt][LocalCoordTri::z1]) / 2 * nodal_values[1]                             // N2
-            + (1 + points[pt][LocalCoordTri::z2]) / 2 * nodal_values[2];                            // N3
+        psi[0][pt] = -(points[pt][LocalCoordTri::z1] + points[pt][LocalCoordTri::z2]) / 2;  // N1
+        psi[1][pt] = (1 + points[pt][LocalCoordTri::z1]) / 2;                               // N2
+        psi[2][pt] = (1 + points[pt][LocalCoordTri::z2]) / 2;                               // N3
     }
 
-    return interpolation;
+    return psi;
 }
 
-Array2D<double> StraightTriangle::InterpolateNodalValuesDerivatives(const std::vector<double>& nodal_values,
-                                                                    const std::vector<Point<2>>& points) {
-    Array2D<double> interpolation_derivative;
+Array3D<double> StraightTriangle::GetDPsi(const std::vector<Point<2>>& points) {
+    Array3D<double> dpsi(3, Array2D<double>(2, std::vector<double>(points.size())));
 
     Array3D<double> J_inv = this->GetJinv(points);
 
-    double du_dz1 = 0.5 * (nodal_values[1] - nodal_values[0]);
-    double du_dz2 = 0.5 * (nodal_values[2] - nodal_values[0]);
+    for (uint pt = 0; pt < points.size(); pt++) {
+        dpsi[0][GlobalCoord::x][pt] =
+            -0.5 * J_inv[LocalCoordTri::z1][GlobalCoord::x][0] - 0.5 * J_inv[LocalCoordTri::z2][GlobalCoord::x][0];
+        dpsi[0][GlobalCoord::y][pt] =
+            -0.5 * J_inv[LocalCoordTri::z1][GlobalCoord::y][0] - 0.5 * J_inv[LocalCoordTri::z2][GlobalCoord::y][0];
 
-    double du_dx =
-        du_dz1 * J_inv[LocalCoordTri::z1][GlobalCoord::x][0] + du_dz2 * J_inv[LocalCoordTri::z2][GlobalCoord::x][0];
+        dpsi[1][GlobalCoord::x][pt] = 0.5 * J_inv[LocalCoordTri::z1][GlobalCoord::x][0];
+        dpsi[1][GlobalCoord::y][pt] = 0.5 * J_inv[LocalCoordTri::z1][GlobalCoord::y][0];
 
-    double du_dy =
-        du_dz1 * J_inv[LocalCoordTri::z1][GlobalCoord::y][0] + du_dz2 * J_inv[LocalCoordTri::z2][GlobalCoord::y][0];
-
-    interpolation_derivative =
-        Array2D<double>{std::vector<double>(points.size(), du_dx), std::vector<double>(points.size(), du_dy)};
-
-    return interpolation_derivative;
-}
-
-std::vector<double> StraightTriangle::InterpolateBoundaryNodalValues(const uint bound_id,
-                                                                     const std::vector<double>& bound_nodal_values,
-                                                                     const std::vector<Point<1>>& bound_points) {
-    std::vector<double> interpolation(bound_points.size());
-
-    for (uint pt = 0; pt < bound_points.size(); pt++) {
-        interpolation[pt] = (1 - bound_points[pt][LocalCoordTri::z1]) / 2 * bound_nodal_values[0]     // N1
-                            + (1 + bound_points[pt][LocalCoordTri::z1]) / 2 * bound_nodal_values[1];  // N2
+        dpsi[2][GlobalCoord::x][pt] = 0.5 * J_inv[LocalCoordTri::z2][GlobalCoord::x][0];
+        dpsi[2][GlobalCoord::y][pt] = 0.5 * J_inv[LocalCoordTri::z2][GlobalCoord::y][0];
     }
 
-    return interpolation;
+    return dpsi;
+}
+
+Array2D<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points) {
+    Array2D<double> psi_bound(2, std::vector<double>(points.size()));
+
+    for (uint pt = 0; pt < points.size(); pt++) {
+        psi_bound[0][pt] = (1 - points[pt][LocalCoordTri::z1]) / 2;  // N1
+        psi_bound[1][pt] = (1 + points[pt][LocalCoordTri::z1]) / 2;  // N2
+    }
+
+    return psi_bound;
 }
 
 std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
     std::vector<Point<2>> global_coordinates(points.size());
 
-    std::vector<double> x =
-        this->InterpolateNodalValues(std::vector<double>{this->nodal_coordinates[0][GlobalCoord::x],
-                                                         this->nodal_coordinates[1][GlobalCoord::x],
-                                                         this->nodal_coordinates[2][GlobalCoord::x]},
-                                     points);
-
-    std::vector<double> y =
-        this->InterpolateNodalValues(std::vector<double>{this->nodal_coordinates[0][GlobalCoord::y],
-                                                         this->nodal_coordinates[1][GlobalCoord::y],
-                                                         this->nodal_coordinates[2][GlobalCoord::y]},
-                                     points);
+    Array2D<double> psi_pts = this->GetPsi(points);
 
     for (uint pt = 0; pt < points.size(); pt++) {
-        global_coordinates[pt][GlobalCoord::x] = x[pt];
-        global_coordinates[pt][GlobalCoord::y] = y[pt];
+        global_coordinates[pt][GlobalCoord::x] = this->nodal_coordinates[0][GlobalCoord::x] * psi_pts[0][pt] +
+                                                 this->nodal_coordinates[1][GlobalCoord::x] * psi_pts[1][pt] +
+                                                 this->nodal_coordinates[2][GlobalCoord::x] * psi_pts[2][pt];
+
+        global_coordinates[pt][GlobalCoord::y] = this->nodal_coordinates[0][GlobalCoord::y] * psi_pts[0][pt] +
+                                                 this->nodal_coordinates[1][GlobalCoord::y] * psi_pts[1][pt] +
+                                                 this->nodal_coordinates[2][GlobalCoord::y] * psi_pts[2][pt];
     }
 
     return global_coordinates;

@@ -18,7 +18,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
         this->chi_gp[2][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
     }
 
-    this->dchi = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};
+    this->dchi_gp = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};
 
     this->phi_gp  = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
@@ -29,18 +29,18 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     std::vector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
     this->phi_postprocessor_point               = this->basis.GetPhi(this->p, z_postprocessor_point);
 
-    this->int_fact_phi = this->phi_gp;
-    for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-        for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
-            this->int_fact_phi[dof][gp] *= this->integration_rule.first[gp];
+    this->int_phi_fact = this->phi_gp;
+    for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
+        for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
+            this->int_phi_fact[dof][gp] *= this->integration_rule.first[gp];
         }
     }
 
-    this->int_fact_dphi = this->dphi_gp;
-    for (uint dof = 0; dof < this->int_fact_dphi.size(); dof++) {
-        for (uint dir = 0; dir < this->int_fact_dphi[dof].size(); dir++) {
-            for (uint gp = 0; gp < this->int_fact_dphi[dof][dir].size(); gp++) {
-                this->int_fact_dphi[dof][dir][gp] *= this->integration_rule.first[gp];
+    this->int_dphi_fact = this->dphi_gp;
+    for (uint dof = 0; dof < this->int_dphi_fact.size(); dof++) {
+        for (uint dir = 0; dir < this->int_dphi_fact[dof].size(); dir++) {
+            for (uint gp = 0; gp < this->int_dphi_fact[dof][dir].size(); gp++) {
+                this->int_dphi_fact[dof][dir][gp] *= this->integration_rule.first[gp];
             }
         }
     }

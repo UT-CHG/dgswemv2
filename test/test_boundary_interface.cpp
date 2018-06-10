@@ -47,8 +47,11 @@ int main() {
     Integration::Dunavant_2D integ_2D;
     std::vector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
 
-    std::vector<double> x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp_2D);
-    std::vector<double> y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp_2D);
+    std::vector<double> x(gp_2D.size());
+    std::vector<double> y(gp_2D.size());
+
+    triangle.ComputeNodalUgp({-0.5, 0.5, 0}, x);
+    triangle.ComputeNodalUgp({0, 0, std::sqrt(3.) / 2.}, y);
 
     Array2D<double> F_vals_int(2);
     F_vals_int[GlobalCoord::x].resize(triangle.data.get_ngp_internal());
@@ -79,8 +82,11 @@ int main() {
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
 
-        x = shape.InterpolateNodalValues({-0.5, 0.5, 0}, gp_bound);
-        y = shape.InterpolateNodalValues({0, 0, std::sqrt(3.) / 2.}, gp_bound);
+        x.resize(triangle.data.get_ngp_boundary(0));
+        y.resize(triangle.data.get_ngp_boundary(0));
+
+        boundaries[n_bound].ComputeNodalUgp({-0.5, 0.5, 0}, x);
+        boundaries[n_bound].ComputeNodalUgp({0, 0, std::sqrt(3.) / 2.}, y);
 
         for (uint gp = 0; gp < triangle.data.get_ngp_boundary(0); gp++) {
             F_vals_bound[GlobalCoord::x][gp] = std::pow(x[gp], 2);
@@ -139,7 +145,13 @@ int main() {
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
 
-        nodal_vals_gp = shape.InterpolateNodalValues(nodal_vals, gp_bound);  // Assuming this is correctly evaluated
+        Array2D<double> psi_gp = shape.GetPsi(gp_bound);
+
+        for (uint gp = 0; gp < gp_bound.size(); gp++) {
+            nodal_vals_gp[gp] =
+                psi_gp[0][gp] * nodal_vals[0] + psi_gp[1][gp] * nodal_vals[1] + psi_gp[2][gp] * nodal_vals[2];
+        }
+
         boundaries[n_bound].ComputeNodalUgp(nodal_vals, nodal_vals_gp_comp);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
@@ -153,8 +165,12 @@ int main() {
         bound_nodal_vals[0] = nodal_vals[(n_bound + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(n_bound + 2) % 3];
 
-        nodal_vals_gp = shape.InterpolateBoundaryNodalValues(
-            n_bound, bound_nodal_vals, gp_1D);  // Assuming this is correctly evaluated
+        Array2D<double> psi_bound_gp = shape.GetBoundaryPsi(n_bound, gp_1D);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            nodal_vals_gp[gp] = psi_bound_gp[0][gp] * bound_nodal_vals[0] + psi_bound_gp[1][gp] * bound_nodal_vals[1];
+        }
+
         boundaries[n_bound].ComputeBoundaryNodalUgp(bound_nodal_vals, nodal_vals_gp_comp);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
@@ -232,7 +248,13 @@ int main() {
     for (uint n_intface = 0; n_intface < 3; n_intface++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_intface, gp_1D);
 
-        nodal_vals_gp = shape.InterpolateNodalValues(nodal_vals, gp_bound);
+        Array2D<double> psi_gp = shape.GetPsi(gp_bound);
+
+        for (uint gp = 0; gp < gp_bound.size(); gp++) {
+            nodal_vals_gp[gp] =
+                psi_gp[0][gp] * nodal_vals[0] + psi_gp[1][gp] * nodal_vals[1] + psi_gp[2][gp] * nodal_vals[2];
+        }
+
         interfaces[n_intface].ComputeNodalUgpIN(nodal_vals, nodal_vals_gp_comp);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
@@ -246,8 +268,12 @@ int main() {
         bound_nodal_vals[0] = nodal_vals[(n_intface + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(n_intface + 2) % 3];
 
-        nodal_vals_gp = shape.InterpolateBoundaryNodalValues(
-            n_intface, bound_nodal_vals, gp_1D);  // Assuming this is correctly evaluated
+        Array2D<double> psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            nodal_vals_gp[gp] = psi_bound_gp[0][gp] * bound_nodal_vals[0] + psi_bound_gp[1][gp] * bound_nodal_vals[1];
+        }
+
         interfaces[n_intface].ComputeBoundaryNodalUgpIN(bound_nodal_vals, nodal_vals_gp_comp);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
@@ -276,8 +302,12 @@ int main() {
             }
         }
 
-        nodal_vals_gp = shape.InterpolateBoundaryNodalValues(
-            n_intface, bound_nodal_vals, gp_1D);  // Assuming this is correctly evaluated
+        psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
+
+        for (uint gp = 0; gp < gp_1D.size(); gp++) {
+            nodal_vals_gp[gp] = psi_bound_gp[0][gp] * bound_nodal_vals[0] + psi_bound_gp[1][gp] * bound_nodal_vals[1];
+        }
+
         interfaces[n_intface].ComputeBoundaryNodalUgpEX(bound_nodal_vals, nodal_vals_gp_comp);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
