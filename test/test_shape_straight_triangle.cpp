@@ -86,7 +86,8 @@ int main() {
     Array2D<double> bound_interpolation_true = {
         {2., 2.25, 2.5, 2.75, 3.}, {3., 1.75, 0.5, -0.75, -2}, {-2., -1., 0., 1., 2.}};
 
-    Array2D<double> bound_interpolation_comp(3);
+    Array2D<double> bound_interpolation_comp;
+    bound_interpolation_comp.resize(3);
 
     for (uint bound_id = 0; bound_id < 3; bound_id++) {
         bound_nodal_vals[0] = nodal_vals[(bound_id + 1) % 3];
