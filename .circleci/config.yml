@@ -97,7 +97,7 @@ workflows:
             - build_dgswemv2
       - run_parallel_correctness:
           requires:
-            - run_unit_tests
+            - build_dgswemv2
       - run_parallel_weirs:
           requires:
-            - run_unit_tests
+            - build_dgswemv2

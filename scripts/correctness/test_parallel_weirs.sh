@@ -11,16 +11,14 @@ echo "Running test to check that distributed weirs are correctly parallelized"
 echo "Compiling code (if necessary)..."
 cd $DGSWEMV2_ROOT_/build
 make partitioner
-#make DG_HYPER_SWE_HPX
-#make DG_HYPER_SWE_OMPI
+num_build_cores=$(( $(nproc) - 1))
+
 echo ""
 echo "Setting up runtime files..."
 mkdir -p ${DGSWEMV2_TEST}
 cp -r $DGSWEMV2_ROOT_/test/files_for_testing/weir/* ${DGSWEMV2_TEST}
 
 cd ${DGSWEMV2_TEST}
-#Halve the manufactured solution run time to shorten circleci test time
-#sed -i 's/  end_time: 3600                #in seconds/  end_time: 1800/g' dgswemv2_input.15
 
 echo ""
 echo "seting up serial test case"
@@ -29,7 +27,7 @@ sed -i.tmp '/return 0/i\
         simulation.ComputeL2Residual();\
 ' ${MAIN_DIR}/main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make DG_HYPER_SWE_SERIAL
+make -j ${num_build_cores} DG_HYPER_SWE_SERIAL
 cd $MAIN_DIR
 #undo the addition of the ComputeL2Residual call
 mv main_swe.cpp.tmp main_swe.cpp
@@ -49,7 +47,7 @@ sed -i.tmp '/    return hpx::finalize();/i\
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;\
 ' ${MAIN_DIR}/hpx_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make DG_HYPER_SWE_HPX
+make -j ${num_build_cores} DG_HYPER_SWE_HPX
 cd $MAIN_DIR
 mv hpx_main_swe.cpp.tmp hpx_main_swe.cpp
 echo ""
@@ -64,11 +62,9 @@ sed -i.tmp '/        MPI_Finalize();/i\
         simulation.ComputeL2Residual();\
 ' ${MAIN_DIR}/ompi_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make DG_HYPER_SWE_OMPI
+make -j ${num_build_cores} DG_HYPER_SWE_OMPI
 cd $MAIN_DIR
 mv ompi_main_swe.cpp.tmp ompi_main_swe.cpp
-
-
 
 echo ""
 echo "Running OMPI Test case..."
