@@ -12,7 +12,7 @@ namespace SourceTerms {
 static bool function_source = false;
 static bool bottom_friction = false;
 static bool meteo_forcing   = false;
-static bool tidal_potential = false;
+static bool tide_potential  = false;
 static bool coriolis        = false;
 
 static double Cf = 0.0;
@@ -30,7 +30,7 @@ static double M  = 1.0e-8;
 static double nu = 1.5;
 }
 
-enum BoundaryTypes : uchar { land = 0, tidal = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
+enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
 
 enum class SphericalProjectionType { None, Enable };
 
@@ -42,7 +42,7 @@ enum class BottomFrictionType { None, Chezy, Manning };
 
 enum class MeteoForcingType { None, Enable };
 
-enum class TidalPotentialType { None, Test };  // not yet implemented
+enum class TidePotentialType { None, Test };  // not yet implemented
 
 enum class CoriolisType { None, Enable };
 

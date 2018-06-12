@@ -9,7 +9,7 @@ void Problem::create_boundaries_kernel(
     InputParameters<ProblemInputType>& input,
     Writer<SWE::Problem>& writer) {
     // *** //
-    using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::BC::Land, SWE::BC::Tidal, SWE::BC::Flow>;
+    using BoundaryTypes = Geometry::BoundaryTypeTuple<SWE::Data, SWE::BC::Land, SWE::BC::Tide, SWE::BC::Flow>;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         if (it->first == SWE::BoundaryTypes::land) {
@@ -30,52 +30,36 @@ void Problem::create_boundaries_kernel(
                 writer.GetLogFile() << "Number of land boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_land
                                     << std::endl;
             }
-        } else if (it->first == SWE::BoundaryTypes::tidal) {
-            using BoundaryTypeTidal = typename std::tuple_element<1, BoundaryTypes>::type;
+        } else if (it->first == SWE::BoundaryTypes::tide) {
+            using BoundaryTypeTide = typename std::tuple_element<1, BoundaryTypes>::type;
 
-            uint n_bound_old_tidal = mesh.GetNumberBoundaries();
+            uint n_bound_old_tide = mesh.GetNumberBoundaries();
 
-            auto& tidal_con_data = input.problem_input.tidal_bc_con_data;
-            auto& tidal_data     = input.problem_input.tidal_bc_data;
-
-            Array2D<double> amplitude;
-            Array2D<double> phase;
-
-            amplitude.resize(tidal_con_data.size());
-            phase.resize(tidal_con_data.size());
+            auto& tide_data = input.problem_input.tide_bc_data;
 
             auto itt = it->second.begin();
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                for (uint con = 0; con < tidal_con_data.size(); con++) {
-                    amplitude[con].resize(raw_boundary.node_ID.size());
-                    phase[con].resize(raw_boundary.node_ID.size());
-                }
+                std::vector<TideInput> tide;
 
                 for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
                     uint node_ID = raw_boundary.node_ID[node];
 
-                    if (tidal_data.find(node_ID) != tidal_data.end()) {
-                        const auto& tidal = tidal_data.find(node_ID);
-
-                        for (uint con = 0; con < tidal_con_data.size(); con++) {
-                            amplitude[con][node] = tidal->second[con][0];
-                            phase[con][node]     = tidal->second[con][1];
-                        }
+                    if (tide_data.find(node_ID) != tide_data.end()) {
+                        tide.push_back(tide_data[node_ID]);
                     } else {
-                        throw std::logic_error("Fatal Error: unable to find tidal data!\n");
+                        throw std::logic_error("Fatal Error: unable to find tide data!\n");
                     }
                 }
 
-                mesh.template CreateBoundary<BoundaryTypeTidal>(raw_boundary,
-                                                                SWE::BC::Tidal(tidal_con_data, amplitude, phase));
+                mesh.template CreateBoundary<BoundaryTypeTide>(raw_boundary, SWE::BC::Tide(tide));
 
                 it->second.erase(itt++);
             }
 
             if (writer.WritingLog()) {
-                writer.GetLogFile() << "Number of tidal boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tidal
+                writer.GetLogFile() << "Number of tide boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_tide
                                     << std::endl;
             }
         } else if (it->first == SWE::BoundaryTypes::flow) {
@@ -83,41 +67,25 @@ void Problem::create_boundaries_kernel(
 
             uint n_bound_old_flow = mesh.GetNumberBoundaries();
 
-            auto& flow_con_data = input.problem_input.flow_bc_con_data;
-            auto& flow_data     = input.problem_input.flow_bc_data;
-
-            Array2D<double> amplitude;
-            Array2D<double> phase;
-
-            amplitude.resize(flow_con_data.size());
-            phase.resize(flow_con_data.size());
+            auto& flow_data = input.problem_input.flow_bc_data;
 
             auto itt = it->second.begin();
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                for (uint con = 0; con < flow_con_data.size(); con++) {
-                    amplitude[con].resize(raw_boundary.node_ID.size());
-                    phase[con].resize(raw_boundary.node_ID.size());
-                }
+                std::vector<FlowInput> flow;
 
                 for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
                     uint node_ID = raw_boundary.node_ID[node];
 
                     if (flow_data.find(node_ID) != flow_data.end()) {
-                        const auto& flow = flow_data.find(node_ID);
-
-                        for (uint con = 0; con < flow_con_data.size(); con++) {
-                            amplitude[con][node] = flow->second[con][0];
-                            phase[con][node]     = flow->second[con][1];
-                        }
+                        flow.push_back(flow_data[node_ID]);
                     } else {
                         throw std::logic_error("Fatal Error: unable to find flow data!\n");
                     }
                 }
 
-                mesh.template CreateBoundary<BoundaryTypeFlow>(raw_boundary,
-                                                               SWE::BC::Flow(flow_con_data, amplitude, phase));
+                mesh.template CreateBoundary<BoundaryTypeFlow>(raw_boundary, SWE::BC::Flow(flow));
 
                 it->second.erase(itt++);
             }

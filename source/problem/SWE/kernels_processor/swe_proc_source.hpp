@@ -83,16 +83,16 @@ void Problem::source_kernel(const Stepper& stepper, ElementType& elt) {
             }
         }
 
-        if (SWE::SourceTerms::tidal_potential) {
-            elt.ComputeNodalDUgp(GlobalCoord::x, source.tidal_pot, internal.dtidal_pot_at_gp[GlobalCoord::x]);
-            elt.ComputeNodalDUgp(GlobalCoord::y, source.tidal_pot, internal.dtidal_pot_at_gp[GlobalCoord::y]);
+        if (SWE::SourceTerms::tide_potential) {
+            elt.ComputeNodalDUgp(GlobalCoord::x, source.tide_pot, internal.dtide_pot_at_gp[GlobalCoord::x]);
+            elt.ComputeNodalDUgp(GlobalCoord::y, source.tide_pot, internal.dtide_pot_at_gp[GlobalCoord::y]);
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-                // compute tidal potential contribution
+                // compute tide potential contribution
                 internal.qx_source_term_at_gp[gp] +=
-                    Global::g * sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dtidal_pot_at_gp[GlobalCoord::x][gp];
+                    Global::g * sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dtide_pot_at_gp[GlobalCoord::x][gp];
                 internal.qy_source_term_at_gp[gp] +=
-                    Global::g * internal.h_at_gp[gp] * internal.dtidal_pot_at_gp[GlobalCoord::y][gp];
+                    Global::g * internal.h_at_gp[gp] * internal.dtide_pot_at_gp[GlobalCoord::y][gp];
             }
         }
 

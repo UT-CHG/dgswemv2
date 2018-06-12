@@ -131,9 +131,7 @@ void Problem::create_distributed_boundaries_kernel(
 
                 auto& levee_data = input.problem_input.levee_is_data;
 
-                std::vector<double> H_barrier(raw_boundary.node_ID.size());
-                std::vector<double> C_subcritical(raw_boundary.node_ID.size());
-                std::vector<double> C_supercritical(raw_boundary.node_ID.size());
+                std::vector<LeveeInput> levee;
 
                 for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
                     bool found = false;
@@ -141,9 +139,7 @@ void Problem::create_distributed_boundaries_kernel(
                     for (auto& levee_node : levee_data) {
                         if (levee_node.first.first == raw_boundary.node_ID[node] ||
                             levee_node.first.second == raw_boundary.node_ID[node]) {
-                            H_barrier[node]       = levee_node.second[0];
-                            C_subcritical[node]   = levee_node.second[1];
-                            C_supercritical[node] = levee_node.second[2];
+                            levee.push_back(levee_node.second);
 
                             found = true;
                         }
@@ -163,9 +159,7 @@ void Problem::create_distributed_boundaries_kernel(
                                                                          receive_buffer_reference,
                                                                          send_postproc_buffer_reference,
                                                                          receive_postproc_buffer_reference),
-                                               H_barrier,
-                                               C_subcritical,
-                                               C_supercritical));
+                                               levee));
 
                 n_distr_levee++;
 

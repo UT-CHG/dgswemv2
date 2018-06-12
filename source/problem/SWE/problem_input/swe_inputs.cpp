@@ -135,20 +135,20 @@ Inputs::Inputs(YAML::Node& swe_node) {
         }
     }
 
-    const std::string malformatted_tidal_warning(
-        "Warning: tidal potential forcing is mal-formatted. Using default parameters.\n");
+    const std::string malformatted_tide_warning(
+        "Warning: tide potential forcing is mal-formatted. Using default parameters.\n");
 
-    if (YAML::Node tidal = swe_node["tidal_potential"]) {
-        if (tidal["type"]) {
-            std::string tidal_str = tidal["type"].as<std::string>();
+    if (YAML::Node tide = swe_node["tide_potential"]) {
+        if (tide["type"]) {
+            std::string tide_str = tide["type"].as<std::string>();
 
-            if (tidal_str == "Test") {
-                this->tidal_potential.type = TidalPotentialType::Test;
+            if (tide_str == "Test") {
+                this->tide_potential.type = TidePotentialType::Test;
             } else {
-                std::cerr << malformatted_tidal_warning;
+                std::cerr << malformatted_tide_warning;
             }
         } else {
-            std::cerr << malformatted_tidal_warning;
+            std::cerr << malformatted_tide_warning;
         }
     }
 
@@ -222,7 +222,7 @@ void Inputs::read_bcis(const std::string& bcis_file) {
         stream = std::stringstream(line);
         stream >> btype >> nnodes;
 
-        if (btype == SWE::BoundaryTypes::tidal) {
+        if (btype == SWE::BoundaryTypes::tide) {
             uint ncon, node_ID;
             double frequency, force_fact, eq_argument, amplitude, phase;
 
@@ -237,15 +237,20 @@ void Inputs::read_bcis(const std::string& bcis_file) {
                 stream = std::stringstream(line);
                 stream >> frequency >> force_fact >> eq_argument;
 
-                this->tidal_bc_con_data.emplace_back(std::vector<double>{frequency, force_fact, eq_argument});
-
                 for (uint node = 0; node < nnodes; node++) {
                     std::getline(file, line);
 
                     stream = std::stringstream(line);
                     stream >> node_ID >> amplitude >> phase;
 
-                    this->tidal_bc_data[node_ID].emplace_back(std::vector<double>{amplitude, phase});
+                    TideInput& tide = this->tide_bc_data[node_ID];
+
+                    tide.frequency.emplace_back(frequency);
+                    tide.forcing_fact.emplace_back(force_fact);
+                    tide.equilib_arg.emplace_back(eq_argument);
+
+                    tide.amplitude.emplace_back(amplitude);
+                    tide.phase.emplace_back(phase);
                 }
             }
         } else if (btype == SWE::BoundaryTypes::flow) {
@@ -263,29 +268,34 @@ void Inputs::read_bcis(const std::string& bcis_file) {
                 stream = std::stringstream(line);
                 stream >> frequency >> force_fact >> eq_argument;
 
-                this->flow_bc_con_data.emplace_back(std::vector<double>{frequency, force_fact, eq_argument});
-
                 for (uint node = 0; node < nnodes; node++) {
                     std::getline(file, line);
 
                     stream = std::stringstream(line);
                     stream >> node_ID >> amplitude >> phase;
 
-                    this->flow_bc_data[node_ID].emplace_back(std::vector<double>{amplitude, phase});
+                    FlowInput& flow = this->flow_bc_data[node_ID];
+
+                    flow.frequency.emplace_back(frequency);
+                    flow.forcing_fact.emplace_back(force_fact);
+                    flow.equilib_arg.emplace_back(eq_argument);
+
+                    flow.amplitude.emplace_back(amplitude);
+                    flow.phase.emplace_back(phase);
                 }
             }
         } else if (btype == SWE::BoundaryTypes::levee) {
             uint front_node, back_node;
-            double barrier_height, C_subcrit, C_supercrit;
 
             for (uint node = 0; node < nnodes; node++) {
                 std::getline(file, line);
 
-                stream = std::stringstream(line);
-                stream >> front_node >> back_node >> barrier_height >> C_subcrit >> C_supercrit;
+                LeveeInput levee;
 
-                this->levee_is_data.emplace(std::pair<uint, uint>{front_node, back_node},
-                                            std::vector<double>{barrier_height, C_subcrit, C_supercrit});
+                stream = std::stringstream(line);
+                stream >> front_node >> back_node >> levee.H_barrier >> levee.C_subcritical >> levee.C_supercritical;
+
+                this->levee_is_data[std::pair<uint, uint>{front_node, back_node}] = levee;
             }
         }
     }
@@ -374,13 +384,13 @@ YAML::Node Inputs::as_yaml_node() {
     }
 
     YAML::Node tide_node;
-    switch (this->tidal_potential.type) {
-        case TidalPotentialType::None:
+    switch (this->tide_potential.type) {
+        case TidePotentialType::None:
             break;
-        case TidalPotentialType::Test:
+        case TidePotentialType::Test:
             tide_node["type"] = "Test";
 
-            ret["tidal_potential"] = tide_node;
+            ret["tide_potential"] = tide_node;
             break;
     }
 

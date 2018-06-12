@@ -9,7 +9,10 @@ namespace SWE {
 namespace BC {
 class Flow {
   private:
-    Array2D<double> flow_constituents;  // 0 - freq, 1 - force_fact, 2 - eq_arg
+    std::vector<double> frequency;
+    std::vector<double> forcing_fact;
+    std::vector<double> equilib_arg;
+
     Array2D<double> amplitude;
     Array2D<double> phase;
 
@@ -18,7 +21,7 @@ class Flow {
 
   public:
     Flow() = default;
-    Flow(const Array2D<double>& flow_constituents, const Array2D<double>& amplitude, const Array2D<double>& phase);
+    Flow(const std::vector<FlowInput>& flow_input);
 
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
@@ -45,15 +48,36 @@ class Flow {
                double& qy_ex);
 };
 
-Flow::Flow(const Array2D<double>& flow_constituents, const Array2D<double>& amplitude, const Array2D<double>& phase)
-    : flow_constituents(flow_constituents), amplitude(amplitude), phase(phase) {}
+Flow::Flow(const std::vector<FlowInput>& flow_input) {
+    this->frequency    = flow_input[0].frequency;
+    this->forcing_fact = flow_input[0].forcing_fact;
+    this->equilib_arg  = flow_input[0].equilib_arg;
+
+    uint n_contituents = this->frequency.size();
+    uint n_nodes       = flow_input.size();
+
+    this->amplitude.resize(n_contituents);
+    this->phase.resize(n_contituents);
+
+    for (uint con = 0; con < n_contituents; con++) {
+        this->amplitude[con].resize(n_nodes);
+        this->phase[con].resize(n_nodes);
+
+        for (uint node = 0; node < n_nodes; node++) {
+            this->amplitude[con][node] = flow_input[node].amplitude[con];
+            this->phase[con][node]     = flow_input[node].phase[con];
+        }
+    }
+}
 
 template <typename BoundaryType>
 void Flow::Initialize(BoundaryType& bound) {
-    this->amplitude_gp.resize(this->flow_constituents.size());
-    this->phase_gp.resize(this->flow_constituents.size());
+    uint n_contituents = this->frequency.size();
 
-    for (uint con = 0; con < this->flow_constituents.size(); con++) {
+    this->amplitude_gp.resize(n_contituents);
+    this->phase_gp.resize(n_contituents);
+
+    for (uint con = 0; con < n_contituents; con++) {
         this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
         this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
 
@@ -108,10 +132,10 @@ void Flow::GetEX(const Stepper& stepper,
     double forcing_fact;
     double eq_argument;
 
-    for (uint con = 0; con < this->flow_constituents.size(); con++) {
-        frequency    = this->flow_constituents[con][0];
-        forcing_fact = this->flow_constituents[con][1];
-        eq_argument  = this->flow_constituents[con][2];
+    for (uint con = 0; con < this->frequency.size(); con++) {
+        frequency    = this->frequency[con];
+        forcing_fact = this->forcing_fact[con];
+        eq_argument  = this->equilib_arg[con];
 
         qn += stepper.GetRamp() * forcing_fact * this->amplitude_gp[con][gp] *
               cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);

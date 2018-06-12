@@ -36,7 +36,7 @@ class Stepper {
     uint GetTimestamp() const { return this->timestamp; }
 
     double GetTimeAtCurrentStage() const { return this->t + this->dt * this->drk[this->stage]; }
-    double GetRamp() const { return tanh(this->GetTimeAtCurrentStage() / 86400.0); }
+    double GetRamp() const { return 1.0; /*tanh(this->GetTimeAtCurrentStage() / 86400.0);*/ }
 
     Stepper& operator++() {
         ++(this->stage);

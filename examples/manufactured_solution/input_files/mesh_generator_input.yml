@@ -30,7 +30,7 @@ pattern: 0
 # The last step is to determine the boundary types
 # The boundary types are
 #  (1) land boundary
-#  (2) tidal boundary
+#  (2) tide boundary
 #  (3) flow boundary
 #
 # Note that we require 4 edges be specified

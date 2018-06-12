@@ -21,9 +21,7 @@ class Levee {
 
   public:
     Levee() = default;
-    Levee(const std::vector<double>& H_barrier,
-          const std::vector<double>& C_subcritical,
-          const std::vector<double>& C_supercritical);
+    Levee(const std::vector<LeveeInput>& levee_input);
 
     template <typename InterfaceType>
     void Initialize(InterfaceType& intface);
@@ -32,10 +30,19 @@ class Levee {
     void ComputeFlux(const Stepper& stepper, InterfaceType& intface);
 };
 
-Levee::Levee(const std::vector<double>& H_barrier,
-             const std::vector<double>& C_subcritical,
-             const std::vector<double>& C_supercritical)
-    : H_barrier(H_barrier), C_subcritical(C_subcritical), C_supercritical(C_supercritical) {}
+Levee::Levee(const std::vector<LeveeInput>& levee_input) {
+    uint n_nodes = levee_input.size();
+
+    H_barrier.resize(n_nodes);
+    C_subcritical.resize(n_nodes);
+    C_supercritical.resize(n_nodes);
+
+    for (uint node = 0; node < n_nodes; node++) {
+        this->H_barrier[node]       = levee_input[node].H_barrier;
+        this->C_subcritical[node]   = levee_input[node].C_subcritical;
+        this->C_supercritical[node] = levee_input[node].C_supercritical;
+    }
+}
 
 template <typename InterfaceType>
 void Levee::Initialize(InterfaceType& intface) {

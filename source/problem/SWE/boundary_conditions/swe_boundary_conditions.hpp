@@ -3,6 +3,6 @@
 
 #include "swe_bc_land.hpp"
 #include "swe_bc_flow.hpp"
-#include "swe_bc_tidal.hpp"
+#include "swe_bc_tide.hpp"
 
 #endif

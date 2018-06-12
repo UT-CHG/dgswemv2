@@ -198,7 +198,7 @@ void AdcircFormat::write_to(const char* out_name) const {
 SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) const {
     for (auto& open_bdry : this->NBDV) {
         if (has_edge(open_bdry.cbegin(), open_bdry.cend(), node_pair)) {
-            return SWE::BoundaryTypes::tidal;
+            return SWE::BoundaryTypes::tide;
         }
     }
 
@@ -214,7 +214,7 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
         } else if (this->IBTYPE[segment_id] % 10 == 4) {
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair) ||
                 has_edge(this->IBCONN.at(segment_id).cbegin(), this->IBCONN.at(segment_id).cend(), node_pair)) {
-                return SWE::BoundaryTypes::levee;
+                return SWE::BoundaryTypes::land; //levee;
             }
         }
     }

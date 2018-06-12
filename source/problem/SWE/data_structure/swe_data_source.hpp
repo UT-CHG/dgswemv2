@@ -10,7 +10,7 @@ struct Source {
         : parsed_meteo_data(nnode),
           tau_s({std::vector<double>(nnode), std::vector<double>(nnode)}),
           p_atm(nnode),
-          tidal_pot(nnode),
+          tide_pot(nnode),
           manning_n(nnode) {}
 
     double coriolis_f = 0.0;
@@ -22,7 +22,7 @@ struct Source {
     std::array<std::vector<double>, 2> tau_s;
     std::vector<double> p_atm;
 
-    std::vector<double> tidal_pot;
+    std::vector<double> tide_pot;
     std::vector<double> manning_n;
 };
 }

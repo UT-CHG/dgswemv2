@@ -89,7 +89,7 @@ int main() {
     Array2D<double> bound_interpolation_comp(3, std::vector<double>(5));
 
     Array2D<double> psi_bound_interp;
-    
+
     for (uint bound_id = 0; bound_id < 3; bound_id++) {
         bound_nodal_vals[0] = nodal_vals[(bound_id + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(bound_id + 2) % 3];
@@ -110,7 +110,7 @@ int main() {
             }
         }
     }
-    
+
     // check GetDPsi
     // take linear function f = x + 1/sqrt(3) * y
     nodal_vals = {-0.5, 0.5, 0.5};

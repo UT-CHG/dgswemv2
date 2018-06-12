@@ -21,8 +21,8 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
         SWE::SourceTerms::meteo_forcing = true;
     }
 
-    if (problem_specific_input.tidal_potential.type != SWE::TidalPotentialType::None) {
-        SWE::SourceTerms::tidal_potential = true;
+    if (problem_specific_input.tide_potential.type != SWE::TidePotentialType::None) {
+        SWE::SourceTerms::tide_potential = true;
     }
 
     if (problem_specific_input.coriolis.type != SWE::CoriolisType::None) {

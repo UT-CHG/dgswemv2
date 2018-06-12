@@ -19,7 +19,7 @@ struct MeshGeneratorInput {
 
     Pattern pattern;
 
-    // 0 - land, 1 - tidal, 2 - flow
+    // 0 - land, 1 - tide, 2 - flow
     std::vector<uchar> boundary_type;
 
     MeshGeneratorInput(const std::string& input_string);
@@ -138,29 +138,29 @@ int main(int argc, const char* argv[]) {
         file << '\n';
     }
 
-    uint n_land  = 0;
-    uint n_tidal = 0;
-    uint n_flow  = 0;
+    uint n_land = 0;
+    uint n_tide = 0;
+    uint n_flow = 0;
 
-    uint n_land_node  = 0;
-    uint n_tidal_node = 0;
-    uint n_flow_node  = 0;
+    uint n_land_node = 0;
+    uint n_tide_node = 0;
+    uint n_flow_node = 0;
 
     for (uint n_bound = 0; n_bound < 4; n_bound++) {
         if (boundaries[n_bound].type == 0) {
             n_land++;
             n_land_node += boundaries[n_bound].nodes.size();
         } else if (boundaries[n_bound].type == 1) {
-            n_tidal++;
-            n_tidal_node += boundaries[n_bound].nodes.size();
+            n_tide++;
+            n_tide_node += boundaries[n_bound].nodes.size();
         } else if (boundaries[n_bound].type == 2) {
             n_flow++;
             n_flow_node += boundaries[n_bound].nodes.size();
         }
     }
 
-    file << n_tidal << " = Number of open boundaries\n";
-    file << n_tidal_node << " = Total number of open boundary nodes\n";
+    file << n_tide << " = Number of open boundaries\n";
+    file << n_tide_node << " = Total number of open boundary nodes\n";
 
     uint i = 1;
     for (uint n_bound = 0; n_bound < 4; n_bound++) {

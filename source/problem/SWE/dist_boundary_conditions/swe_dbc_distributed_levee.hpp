@@ -25,10 +25,7 @@ class DistributedLevee {
 
   public:
     DistributedLevee() = default;
-    DistributedLevee(const DBDataExchanger& exchanger,
-                     const std::vector<double>& H_barrier,
-                     const std::vector<double>& C_subcritical,
-                     const std::vector<double>& C_supercritical);
+    DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input);
 
     template <typename DistributedBoundaryType>
     void Initialize(DistributedBoundaryType& dbound);
@@ -37,11 +34,20 @@ class DistributedLevee {
     void ComputeFlux(const Stepper& stepper, DistributedBoundaryType& dbound);
 };
 
-DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger,
-                                   const std::vector<double>& H_barrier,
-                                   const std::vector<double>& C_subcritical,
-                                   const std::vector<double>& C_supercritical)
-    : exchanger(exchanger), H_barrier(H_barrier), C_subcritical(C_subcritical), C_supercritical(C_supercritical) {}
+DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input)
+    : exchanger(exchanger) {
+    uint n_nodes = levee_input.size();
+
+    H_barrier.resize(n_nodes);
+    C_subcritical.resize(n_nodes);
+    C_supercritical.resize(n_nodes);
+
+    for (uint node = 0; node < n_nodes; node++) {
+        this->H_barrier[node]       = levee_input[node].H_barrier;
+        this->C_subcritical[node]   = levee_input[node].C_subcritical;
+        this->C_supercritical[node] = levee_input[node].C_supercritical;
+    }
+}
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {

@@ -42,7 +42,7 @@ problem:
   #  raw_input_file: weather.test
   #  input_file: weather.test
   #  frequency: 900
-  #tidal_potential:
+  #tide_potential:
   #  type: Test
   #coriolis: Enable
     

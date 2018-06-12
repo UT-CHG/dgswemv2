@@ -231,7 +231,7 @@ problem:\n\
     raw_input_file: weather.test\n\
     input_file: weather.test\n\
     frequency: 900\n\
-  tidal_potential:\n\
+  tide_potential:\n\
     type: Test\n\
   coriolis: Enable\n\
   wetting_drying:\n\
@@ -282,7 +282,7 @@ problem:\n\
     raw_input_file: weather.test\n\
     input_file: weather.test\n\
     frequency: 900\n\
-  tidal_potential:\n\
+  tide_potential:\n\
     type: Test\n\
   coriolis: Enable\n\
   wetting_drying:\n\

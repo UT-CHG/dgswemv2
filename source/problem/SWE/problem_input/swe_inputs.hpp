@@ -23,6 +23,31 @@ struct InitialConditions {
     double qy_initial          = 0.;
 };
 
+// Problem specific bcis information containers
+struct TideInput {
+    std::vector<double> frequency;
+    std::vector<double> forcing_fact;
+    std::vector<double> equilib_arg;
+
+    std::vector<double> amplitude;
+    std::vector<double> phase;
+};
+
+struct FlowInput {
+    std::vector<double> frequency;
+    std::vector<double> forcing_fact;
+    std::vector<double> equilib_arg;
+
+    std::vector<double> amplitude;
+    std::vector<double> phase;
+};
+
+struct LeveeInput {
+    double H_barrier;
+    double C_subcritical;
+    double C_supercritical;
+};
+
 // Problem specific forcing terms information containers
 struct FunctionSource {
     FunctionSourceType type = FunctionSourceType::None;
@@ -42,8 +67,8 @@ struct MeteoForcing {
     double frequency;
 };
 
-struct TidalPotential {
-    TidalPotentialType type = TidalPotentialType::None;
+struct TidePotential {
+    TidePotentialType type = TidePotentialType::None;
 };
 
 struct Coriolis {
@@ -72,18 +97,14 @@ struct Inputs {
     SphericalProjection spherical_projection;
     InitialConditions initial_conditions;
 
-    Array2D<double> tidal_bc_con_data;
-    std::map<uint, Array2D<double>> tidal_bc_data;
-
-    Array2D<double> flow_bc_con_data;
-    std::map<uint, Array2D<double>> flow_bc_data;
-
-    std::map<std::pair<uint, uint>, std::vector<double>> levee_is_data;
+    std::map<uint, TideInput> tide_bc_data;
+    std::map<uint, FlowInput> flow_bc_data;
+    std::map<std::pair<uint, uint>, LeveeInput> levee_is_data;
 
     FunctionSource function_source;
     BottomFriction bottom_friction;
     MeteoForcing meteo_forcing;
-    TidalPotential tidal_potential;
+    TidePotential tide_potential;
     Coriolis coriolis;
 
     WettingDrying wet_dry;
