@@ -31,7 +31,7 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
 }
 
 template <typename ProblemType>
-class RKDGSimulationHPX : public hpx::components::simple_component_base<RKDGSimulationHPX<ProblemType>> {
+class RKDGSimulationHPXUnit : public hpx::components::simple_component_base<RKDGSimulationHPXUnit<ProblemType>> {
   private:
     typename ProblemType::ProblemMeshType mesh;
 
@@ -41,30 +41,30 @@ class RKDGSimulationHPX : public hpx::components::simple_component_base<RKDGSimu
     typename ProblemType::ProblemParserType parser;
 
   public:
-    RKDGSimulationHPX() = default;
-    RKDGSimulationHPX(const std::string& input_string, const uint locality_id, const uint submesh_id);
+    RKDGSimulationHPXUnit() = default;
+    RKDGSimulationHPXUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
     hpx::future<void> FinishPreprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, FinishPreprocessor, FinishPreprocessorAction);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPXUnit, FinishPreprocessor, FinishPreprocessorAction);
 
     void Launch();
-    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, Launch, LaunchAction);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPXUnit, Launch, LaunchAction);
 
     hpx::future<void> Stage();
-    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, Stage, StageAction);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPXUnit, Stage, StageAction);
 
     hpx::future<void> Postprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, Postprocessor, PostprocessorAction);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPXUnit, Postprocessor, PostprocessorAction);
 
     void Step();
-    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, Step, StepAction);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPXUnit, Step, StepAction);
 
     double ResidualL2();
-    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, ResidualL2, ResidualL2Action);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPXUnit, ResidualL2, ResidualL2Action);
 };
 
 template <typename ProblemType>
-RKDGSimulationHPX<ProblemType>::RKDGSimulationHPX(const std::string& input_string,
+RKDGSimulationHPXUnit<ProblemType>::RKDGSimulationHPXUnit(const std::string& input_string,
                                                   const uint locality_id,
                                                   const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
@@ -98,7 +98,7 @@ RKDGSimulationHPX<ProblemType>::RKDGSimulationHPX(const std::string& input_strin
 }
 
 template <typename ProblemType>
-hpx::future<void> RKDGSimulationHPX<ProblemType>::FinishPreprocessor() {
+hpx::future<void> RKDGSimulationHPXUnit<ProblemType>::FinishPreprocessor() {
     hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
 
     this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
@@ -108,7 +108,7 @@ hpx::future<void> RKDGSimulationHPX<ProblemType>::FinishPreprocessor() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationHPX<ProblemType>::Launch() {
+void RKDGSimulationHPXUnit<ProblemType>::Launch() {
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
@@ -125,7 +125,7 @@ void RKDGSimulationHPX<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-hpx::future<void> RKDGSimulationHPX<ProblemType>::Stage() {
+hpx::future<void> RKDGSimulationHPXUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
                                   << this->stepper.GetStage() << ')' << std::endl
@@ -198,7 +198,7 @@ hpx::future<void> RKDGSimulationHPX<ProblemType>::Stage() {
 }
 
 template <typename ProblemType>
-hpx::future<void> RKDGSimulationHPX<ProblemType>::Postprocessor() {
+hpx::future<void> RKDGSimulationHPXUnit<ProblemType>::Postprocessor() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
     }
@@ -246,7 +246,7 @@ hpx::future<void> RKDGSimulationHPX<ProblemType>::Postprocessor() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationHPX<ProblemType>::Step() {
+void RKDGSimulationHPXUnit<ProblemType>::Step() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -257,7 +257,7 @@ void RKDGSimulationHPX<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
-double RKDGSimulationHPX<ProblemType>::ResidualL2() {
+double RKDGSimulationHPXUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -272,66 +272,66 @@ double RKDGSimulationHPX<ProblemType>::ResidualL2() {
 }
 
 template <typename ProblemType>
-class RKDGSimulationHPXClient
-    : hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>> {
+class RKDGSimulationHPXUnitClient
+    : hpx::components::client_base<RKDGSimulationHPXUnitClient<ProblemType>, RKDGSimulationHPXUnit<ProblemType>> {
   private:
-    using BaseType = hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>>;
+    using BaseType = hpx::components::client_base<RKDGSimulationHPXUnitClient<ProblemType>, RKDGSimulationHPXUnit<ProblemType>>;
 
   public:
-    RKDGSimulationHPXClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    RKDGSimulationHPXUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
 
     hpx::future<void> FinishPreprocessor() {
-        using ActionType = typename RKDGSimulationHPX<ProblemType>::FinishPreprocessorAction;
+        using ActionType = typename RKDGSimulationHPXUnit<ProblemType>::FinishPreprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<void> Launch() {
-        using ActionType = typename RKDGSimulationHPX<ProblemType>::LaunchAction;
+        using ActionType = typename RKDGSimulationHPXUnit<ProblemType>::LaunchAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<void> Stage() {
-        using ActionType = typename RKDGSimulationHPX<ProblemType>::StageAction;
+        using ActionType = typename RKDGSimulationHPXUnit<ProblemType>::StageAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<void> Postprocessor() {
-        using ActionType = typename RKDGSimulationHPX<ProblemType>::PostprocessorAction;
+        using ActionType = typename RKDGSimulationHPXUnit<ProblemType>::PostprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<void> Step() {
-        using ActionType = typename RKDGSimulationHPX<ProblemType>::StepAction;
+        using ActionType = typename RKDGSimulationHPXUnit<ProblemType>::StepAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<double> ResidualL2() {
-        using ActionType = typename RKDGSimulationHPX<ProblemType>::ResidualL2Action;
+        using ActionType = typename RKDGSimulationHPXUnit<ProblemType>::ResidualL2Action;
         return hpx::async<ActionType>(this->get_id());
     }
 };
 
 template <typename ProblemType>
-class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
+class RKDGSimulationHPX : public hpx::components::simple_component_base<RKDGSimulationHPX<ProblemType>> {
   private:
     uint n_steps;
     uint n_stages;
 
-    std::vector<RKDGSimulationHPXClient<ProblemType>> simulation_unit_clients;
+    std::vector<RKDGSimulationHPXUnitClient<ProblemType>> simulation_unit_clients;
 
   public:
-    HPXSimulation() = default;
-    HPXSimulation(const std::string& input_string);
+    RKDGSimulationHPX() = default;
+    RKDGSimulationHPX(const std::string& input_string);
 
     hpx::future<void> Run();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, Run, RunAction);
 
     hpx::future<double> ResidualL2();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, ResidualL2, ResidualL2Action);
+    HPX_DEFINE_COMPONENT_ACTION(RKDGSimulationHPX, ResidualL2, ResidualL2Action);
 };
 
 template <typename ProblemType>
-HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
+RKDGSimulationHPX<ProblemType>::RKDGSimulationHPX(const std::string& input_string) {
     const uint locality_id          = hpx::get_locality_id();
     const hpx::naming::id_type here = hpx::find_here();
 
@@ -350,7 +350,7 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
         hpx::future<hpx::id_type> simulation_unit_id =
-            hpx::new_<hpx::components::simple_component<RKDGSimulationHPX<ProblemType>>>(
+            hpx::new_<hpx::components::simple_component<RKDGSimulationHPXUnit<ProblemType>>>(
                 here, input_string, locality_id, submesh_id);
 
         this->simulation_unit_clients.emplace_back(std::move(simulation_unit_id));
@@ -360,7 +360,7 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 }
 
 template <typename ProblemType>
-hpx::future<void> HPXSimulation<ProblemType>::Run() {
+hpx::future<void> RKDGSimulationHPX<ProblemType>::Run() {
     std::vector<hpx::future<void>> simulation_futures;
 
     for (auto& sim_unit_client : this->simulation_unit_clients) {
@@ -394,25 +394,25 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
 }
 
 template <typename ProblemType>
-hpx::future<double> HPXSimulation<ProblemType>::ResidualL2() {
+hpx::future<double> RKDGSimulationHPX<ProblemType>::ResidualL2() {
     return ComputeL2Residual(this->simulation_unit_clients);
 }
 
 template <typename ProblemType>
-class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<ProblemType>, HPXSimulation<ProblemType>> {
+class RKDGSimulationHPXClient : hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>> {
   private:
-    using BaseType = hpx::components::client_base<HPXSimulationClient<ProblemType>, HPXSimulation<ProblemType>>;
+    using BaseType = hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>>;
 
   public:
-    HPXSimulationClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    RKDGSimulationHPXClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
 
     hpx::future<void> Run() {
-        using ActionType = typename HPXSimulation<ProblemType>::RunAction;
+        using ActionType = typename RKDGSimulationHPX<ProblemType>::RunAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
     hpx::future<double> ResidualL2() {
-        using ActionType = typename HPXSimulation<ProblemType>::ResidualL2Action;
+        using ActionType = typename RKDGSimulationHPX<ProblemType>::ResidualL2Action;
         return hpx::async<ActionType>(this->get_id());
     }
 };
