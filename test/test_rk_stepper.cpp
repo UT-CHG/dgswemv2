@@ -1,4 +1,4 @@
-#include "simulation/stepper.hpp"
+#include "simulation/rkdg_simulation/rkdg_stepper.hpp"
 #include "preprocessor/input_parameters.hpp"
 
 #include <cmath>
@@ -37,7 +37,7 @@ int main() {
         stepper_input.order   = pair.second;
         stepper_input.dt      = dt;
 
-        Stepper rk_stepper(stepper_input);
+        RKDGStepper rk_stepper(stepper_input);
 
         double t = 0;
 

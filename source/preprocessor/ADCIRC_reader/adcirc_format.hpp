@@ -2,7 +2,7 @@
 #define ADCIRC_FORMAT_HPP
 
 #include "../../general_definitions.hpp"
-#include "../../problem/SWE/swe_definitions.hpp"
+#include "../../dg_problem/SWE/swe_definitions.hpp"
 
 #include "../../shape/shapes_2D.hpp"
 #include "../../utilities/file_exists.hpp"

@@ -5,20 +5,20 @@
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 
-#include "general_definitions.hpp"
-#include "dg_problem/SWE/swe_definitions.hpp"
+#include "../../../general_definitions.hpp"
+#include "../swe_definitions.hpp"
 
-#include "manufactured_swe_initial_condition_functions.hpp"
-#include "manufactured_swe_source_functions.hpp"
-#include "manufactured_swe_true_solution_functions.hpp"
+#include "../function_files/swe_initial_condition_functions.hpp"
+#include "../function_files/swe_source_functions.hpp"
+#include "../function_files/swe_true_solution_functions.hpp"
 
-#include "dg_problem/SWE/swe_problem.hpp"
-#include "dg_problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
-#include "dg_problem/SWE/kernels_processor/swe_kernels_processor.hpp"
-#include "dg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
+#include "../swe_problem.hpp"
+#include "../kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "../kernels_processor/swe_kernels_processor.hpp"
+#include "../kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
-#include "simulation/rkdg_simulation/rkdg_simulation_hpx.hpp"
-#include "simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rkdg_simulation_hpx.hpp"
+#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
 
 using hpx_simulation_unit_swe           = RKDGSimulationHPXUnit<SWE::Problem>;
 using hpx_simulation_unit_swe_component = hpx::components::simple_component<RKDGSimulationHPXUnit<SWE::Problem>>;
@@ -66,9 +66,6 @@ int hpx_main(int argc, char* argv[]) {
 
     std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
               << std::endl;
-
-    hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);
-    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;
 
     return hpx::finalize();
 }

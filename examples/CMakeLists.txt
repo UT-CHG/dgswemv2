@@ -1,13 +1,13 @@
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 list (APPEND DG_HYPER_SWE_SOURCES
-${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_parser/swe_parser.cpp
-${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+${PROJECT_SOURCE_DIR}/source/dg_problem/SWE/problem_parser/swe_parser.cpp
+${PROJECT_SOURCE_DIR}/source/dg_problem/SWE/problem_input/swe_inputs.cpp
 
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
 
-  ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/rkdg_simulation/rkdg_stepper.cpp
 
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp

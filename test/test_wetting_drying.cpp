@@ -3,11 +3,11 @@
 #include "geometry/mesh_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 
-#include "simulation/stepper.hpp"
+#include "simulation/rkdg_simulation/rkdg_stepper.hpp"
 
-#include "problem/SWE/function_files/swe_source_functions.hpp"
-#include "problem/SWE/swe_problem.hpp"
-#include "problem/SWE/kernels_postprocessor/swe_post_wet_dry.hpp"
+#include "dg_problem/SWE/function_files/swe_source_functions.hpp"
+#include "dg_problem/SWE/swe_problem.hpp"
+#include "dg_problem/SWE/kernels_postprocessor/swe_post_wet_dry.hpp"
 
 int main() {
     using Utilities::almost_equal;
@@ -39,7 +39,7 @@ int main() {
     stepper_input.order   = 1;
     stepper_input.dt      = 1;
 
-    Stepper stepper(stepper_input);
+    RKDGStepper stepper(stepper_input);
 
     auto& wd_state = triangle.data.wet_dry_state;
     auto& state    = triangle.data.state[1];

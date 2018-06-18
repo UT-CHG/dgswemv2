@@ -1,20 +1,20 @@
 #include <mpi.h>
 #include <omp.h>
 
-#include "general_definitions.hpp"
-#include "dg_problem/SWE/swe_definitions.hpp"
+#include "../../../general_definitions.hpp"
+#include "../swe_definitions.hpp"
 
-#include "manufactured_swe_initial_condition_functions.hpp"
-#include "manufactured_swe_source_functions.hpp"
-#include "manufactured_swe_true_solution_functions.hpp"
+#include "../function_files/swe_initial_condition_functions.hpp"
+#include "../function_files/swe_source_functions.hpp"
+#include "../function_files/swe_true_solution_functions.hpp"
 
-#include "dg_problem/SWE/swe_problem.hpp"
-#include "dg_problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
-#include "dg_problem/SWE/kernels_processor/swe_kernels_processor.hpp"
-#include "dg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
+#include "../swe_problem.hpp"
+#include "../kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "../kernels_processor/swe_kernels_processor.hpp"
+#include "../kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
-#include "simulation/rkdg_simulation/rkdg_simulation_ompi.hpp"
-#include "simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rkdg_simulation_ompi.hpp"
+#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -54,8 +54,6 @@ int main(int argc, char* argv[]) {
             std::cout << "Time Elapsed (in us): "
                       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
-
-        simulation.ComputeL2Residual();
 
         MPI_Finalize();
 
