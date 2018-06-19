@@ -11,7 +11,7 @@
 #include "../kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "../../../simulation/rkdg_simulation/rkdg_simulation.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        RKDGSimulation<SWE::Problem> simulation(input_string);
+        RKDG::Simulation<SWE::Problem> simulation(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();

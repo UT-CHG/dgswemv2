@@ -1,10 +1,10 @@
-#ifndef STEPPER_HPP
-#define STEPPER_HPP
+#ifndef RK_STEPPER_HPP
+#define RK_STEPPER_HPP
 
 #include "../../general_definitions.hpp"
 #include "../../preprocessor/input_parameters.hpp"
 
-class RKDGStepper {
+class RKStepper {
   public:
     Array2D<double> ark;
     Array2D<double> brk;
@@ -24,8 +24,8 @@ class RKDGStepper {
     double ramp;
 
   public:
-    RKDGStepper() = default;
-    RKDGStepper(const StepperInput& stepper_input);
+    RKStepper() = default;
+    RKStepper(const StepperInput& stepper_input);
 
     uint GetOrder() const { return this->order; }
     uint GetNumStages() const { return this->nstages; }
@@ -38,7 +38,7 @@ class RKDGStepper {
     double GetTimeAtCurrentStage() const { return this->t + this->dt * this->drk[this->stage]; }
     double GetRamp() const { return 1.0; /*tanh(this->GetTimeAtCurrentStage() / 86400.0);*/ }
 
-    RKDGStepper& operator++() {
+    RKStepper& operator++() {
         ++(this->stage);
         ++(this->timestamp);
 

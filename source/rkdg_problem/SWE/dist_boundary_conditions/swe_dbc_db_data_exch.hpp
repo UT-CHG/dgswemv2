@@ -2,7 +2,7 @@
 #define SWE_DBC_DB_DATA_EXCH_HPP
 
 #include "../../../general_definitions.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 namespace SWE {

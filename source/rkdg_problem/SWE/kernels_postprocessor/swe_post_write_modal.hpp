@@ -4,9 +4,7 @@
 #include "../../../general_definitions.hpp"
 
 namespace SWE {
-void Problem::write_modal_data_kernel(const RKDGStepper& stepper,
-                                      ProblemMeshType& mesh,
-                                      const std::string& output_path) {
+void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, Array2D<double>>> modal_data;
 
     mesh.CallForEachElement([&modal_data](auto& elt) {

@@ -7,7 +7,7 @@ ${PROJECT_SOURCE_DIR}/source/rkdg_problem/SWE/problem_input/swe_inputs.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
 
-  ${PROJECT_SOURCE_DIR}/source/simulation/rkdg_simulation/rkdg_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/rkdg_simulation/rk_stepper.cpp
 
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp

@@ -2,7 +2,7 @@
 #define SWE_DBC_DISTRIBUTED_LEVEE_HPP
 
 #include "../../../general_definitions.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 #include "swe_dbc_distributed.hpp"
@@ -31,7 +31,7 @@ class DistributedLevee {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    void ComputeFlux(const RKDGStepper& stepper, DistributedBoundaryType& dbound);
+    void ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound);
 };
 
 DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input)
@@ -61,7 +61,7 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 }
 
 template <typename DistributedBoundaryType>
-void DistributedLevee::ComputeFlux(const RKDGStepper& stepper, DistributedBoundaryType& dbound) {
+void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     bool wet_in = dbound.data.wet_dry_state.wet;
     bool wet_ex;
     this->exchanger.GetWetDryEX(wet_ex);

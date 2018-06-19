@@ -2,7 +2,7 @@
 #define SWE_BC_FLOW_HPP
 
 #include "../../../general_definitions.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 namespace SWE {
@@ -26,7 +26,7 @@ class Flow {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    void ComputeFlux(const RKDGStepper& stepper,
+    void ComputeFlux(const RKStepper& stepper,
                      const Array2D<double>& surface_normal,
                      const std::vector<double>& sp_in,
                      const std::vector<double>& bath_in,
@@ -37,7 +37,7 @@ class Flow {
                      std::vector<double>& qx_numerical_flux,
                      std::vector<double>& qy_numerical_flux);
 
-    void GetEX(const RKDGStepper& stepper,
+    void GetEX(const RKStepper& stepper,
                const uint gp,
                const Array2D<double>& surface_normal,
                const std::vector<double>& ze_in,
@@ -86,7 +86,7 @@ void Flow::Initialize(BoundaryType& bound) {
     }
 }
 
-void Flow::ComputeFlux(const RKDGStepper& stepper,
+void Flow::ComputeFlux(const RKStepper& stepper,
                        const Array2D<double>& surface_normal,
                        const std::vector<double>& sp_in,
                        const std::vector<double>& bath_in,
@@ -116,7 +116,7 @@ void Flow::ComputeFlux(const RKDGStepper& stepper,
     }
 }
 
-void Flow::GetEX(const RKDGStepper& stepper,
+void Flow::GetEX(const RKStepper& stepper,
                  const uint gp,
                  const Array2D<double>& surface_normal,
                  const std::vector<double>& ze_in,

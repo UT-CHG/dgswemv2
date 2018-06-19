@@ -1,6 +1,6 @@
-#include "rkdg_stepper.hpp"
+#include "rk_stepper.hpp"
 
-RKDGStepper::RKDGStepper(const StepperInput& stepper_input)
+RKStepper::RKStepper(const StepperInput& stepper_input)
     : order(stepper_input.order),
       nstages(stepper_input.nstages),
       dt(stepper_input.dt),

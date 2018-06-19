@@ -7,6 +7,8 @@ option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
 option(SET_VERBOSE "Verbose MakeFile" OFF)
 option(BUILD_EXAMPLES "Build Examples" OFF)
 
+option(RKDG_SWE "Build RKDG SWE simulations" ON)
+
 enable_testing()
 
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
@@ -58,13 +60,15 @@ endif()
 
 include_directories(source)
 
-add_subdirectory(source)
 add_subdirectory(test)
 add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)
 
-if(BUILD_EXAMPLES)
-  add_subdirectory(examples)
+if(RKDG_SWE)
+  add_subdirectory(source/rkdg_problem/SWE)
+  if(BUILD_EXAMPLES)
+    add_subdirectory(examples/rkdg_swe_manufactured_solution)
+  endif()
 endif()
 
 

@@ -2,7 +2,7 @@
 #define SWE_IS_INTERNAL_HPP
 
 #include "../../../general_definitions.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 namespace SWE {
@@ -13,11 +13,11 @@ class Internal {
     void Initialize(InterfaceType& intface) {} /*nothing to initialize*/
 
     template <typename InterfaceType>
-    void ComputeFlux(const RKDGStepper& stepper, InterfaceType& intface);
+    void ComputeFlux(const RKStepper& stepper, InterfaceType& intface);
 };
 
 template <typename InterfaceType>
-void Internal::ComputeFlux(const RKDGStepper& stepper, InterfaceType& intface) {
+void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 

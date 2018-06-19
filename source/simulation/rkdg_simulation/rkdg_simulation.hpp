@@ -5,28 +5,29 @@
 #include "../../preprocessor/initialize_mesh.hpp"
 #include "../writer.hpp"
 
+namespace RKDG {
 template <typename ProblemType>
-class RKDGSimulation {
+class Simulation {
   private:
     uint n_steps;
     uint n_stages;
 
     typename ProblemType::ProblemMeshType mesh;
 
-    RKDGStepper stepper;
+    RKStepper stepper;
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
   public:
-    RKDGSimulation() = default;
-    RKDGSimulation(const std::string& input_string);
+    Simulation() = default;
+    Simulation(const std::string& input_string);
 
     void Run();
     void ComputeL2Residual();
 };
 
 template <typename ProblemType>
-RKDGSimulation<ProblemType>::RKDGSimulation(const std::string& input_string) {
+Simulation<ProblemType>::Simulation(const std::string& input_string) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
     input.read_mesh();  // read mesh meta data
@@ -37,7 +38,7 @@ RKDGSimulation<ProblemType>::RKDGSimulation(const std::string& input_string) {
 
     this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
 
-    this->stepper = RKDGStepper(input.stepper_input);
+    this->stepper = RKStepper(input.stepper_input);
     this->writer  = Writer<ProblemType>(input.writer_input);
     this->parser  = typename ProblemType::ProblemParserType(input);
 
@@ -61,9 +62,9 @@ RKDGSimulation<ProblemType>::RKDGSimulation(const std::string& input_string) {
 }
 
 template <typename ProblemType>
-void RKDGSimulation<ProblemType>::Run() {
+void Simulation<ProblemType>::Run() {
     if (this->writer.WritingLog()) {
-        this->writer.GetLogFile() << std::endl << "Launching RKDGSimulation!" << std::endl << std::endl;
+        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
 
     auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
@@ -125,7 +126,7 @@ void RKDGSimulation<ProblemType>::Run() {
 }
 
 template <typename ProblemType>
-void RKDGSimulation<ProblemType>::ComputeL2Residual() {
+void Simulation<ProblemType>::ComputeL2Residual() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -135,6 +136,7 @@ void RKDGSimulation<ProblemType>::ComputeL2Residual() {
     this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
+}
 }
 
 #endif

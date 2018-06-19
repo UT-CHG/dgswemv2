@@ -2,7 +2,7 @@
 #define SWE_BC_LAND_HPP
 
 #include "../../../general_definitions.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 
 namespace SWE {
@@ -12,7 +12,7 @@ class Land {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
 
-    void ComputeFlux(const RKDGStepper& stepper,
+    void ComputeFlux(const RKStepper& stepper,
                      const Array2D<double>& surface_normal,
                      const std::vector<double>& sp_in,
                      const std::vector<double>& bath_in,
@@ -23,7 +23,7 @@ class Land {
                      std::vector<double>& qx_numerical_flux,
                      std::vector<double>& qy_numerical_flux);
 
-    void GetEX(const RKDGStepper& stepper,
+    void GetEX(const RKStepper& stepper,
                const uint gp,
                const Array2D<double>& surface_normal,
                const std::vector<double>& ze_in,
@@ -34,7 +34,7 @@ class Land {
                double& qy_ex);
 };
 
-void Land::ComputeFlux(const RKDGStepper& stepper,
+void Land::ComputeFlux(const RKStepper& stepper,
                        const Array2D<double>& surface_normal,
                        const std::vector<double>& sp_in,
                        const std::vector<double>& bath_in,
@@ -64,7 +64,7 @@ void Land::ComputeFlux(const RKDGStepper& stepper,
     }
 }
 
-void Land::GetEX(const RKDGStepper& stepper,
+void Land::GetEX(const RKStepper& stepper,
                  const uint gp,
                  const Array2D<double>& surface_normal,
                  const std::vector<double>& ze_in,

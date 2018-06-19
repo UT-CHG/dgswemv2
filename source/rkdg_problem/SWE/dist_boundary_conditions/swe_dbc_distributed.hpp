@@ -2,7 +2,7 @@
 #define SWE_DBC_DISTRIBUTED_HPP
 
 #include "../../../general_definitions.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 #include "../numerical_fluxes/swe_numerical_fluxes.hpp"
 #include "swe_dbc_db_data_exch.hpp"
 
@@ -20,13 +20,13 @@ class Distributed {
     void Initialize(DistributedBoundaryType& dbound) {} /*nothing to initialize*/
 
     template <typename DistributedBoundaryType>
-    void ComputeFlux(const RKDGStepper& stepper, DistributedBoundaryType& dbound);
+    void ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound);
 };
 
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
 
 template <typename DistributedBoundaryType>
-void Distributed::ComputeFlux(const RKDGStepper& stepper, DistributedBoundaryType& dbound) {
+void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     bool wet_in = dbound.data.wet_dry_state.wet;
     bool wet_ex;
     this->exchanger.GetWetDryEX(wet_ex);

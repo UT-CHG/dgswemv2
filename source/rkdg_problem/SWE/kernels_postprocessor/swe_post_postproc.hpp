@@ -7,7 +7,7 @@
 #include "swe_post_slope_limit.hpp"
 
 namespace SWE {
-void Problem::postprocessor_serial_kernel(const RKDGStepper& stepper, ProblemMeshType& mesh) {
+void Problem::postprocessor_serial_kernel(const RKStepper& stepper, ProblemMeshType& mesh) {
     if (SWE::PostProcessing::slope_limiting) {
         if (SWE::PostProcessing::wetting_drying) {
             auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
@@ -45,7 +45,7 @@ void Problem::postprocessor_serial_kernel(const RKDGStepper& stepper, ProblemMes
     }
 }
 
-void Problem::postprocessor_parallel_pre_send_kernel(const RKDGStepper& stepper, ProblemMeshType& mesh) {
+void Problem::postprocessor_parallel_pre_send_kernel(const RKStepper& stepper, ProblemMeshType& mesh) {
     if (SWE::PostProcessing::slope_limiting) {
         if (SWE::PostProcessing::wetting_drying) {
             auto wetting_drying_kernel = [&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); };
@@ -67,7 +67,7 @@ void Problem::postprocessor_parallel_pre_send_kernel(const RKDGStepper& stepper,
     }
 }
 
-void Problem::postprocessor_parallel_pre_receive_kernel(const RKDGStepper& stepper, ProblemMeshType& mesh) {
+void Problem::postprocessor_parallel_pre_receive_kernel(const RKStepper& stepper, ProblemMeshType& mesh) {
     if (SWE::PostProcessing::slope_limiting) {
         auto slope_limiting_prepare_interface_kernel = [&stepper](auto& intface) {
             Problem::slope_limiting_prepare_interface_kernel(stepper, intface);
@@ -83,7 +83,7 @@ void Problem::postprocessor_parallel_pre_receive_kernel(const RKDGStepper& stepp
     }
 }
 
-void Problem::postprocessor_parallel_post_receive_kernel(const RKDGStepper& stepper, ProblemMeshType& mesh) {
+void Problem::postprocessor_parallel_post_receive_kernel(const RKStepper& stepper, ProblemMeshType& mesh) {
     if (SWE::PostProcessing::slope_limiting) {
         auto slope_limiting_prepare_distributed_boundary_kernel = [&stepper](auto& dbound) {
             Problem::slope_limiting_prepare_distributed_boundary_kernel(stepper, dbound);

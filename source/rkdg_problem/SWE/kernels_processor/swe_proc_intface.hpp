@@ -5,7 +5,7 @@
 
 namespace SWE {
 template <typename InterfaceType>
-void Problem::interface_kernel(const RKDGStepper& stepper, InterfaceType& intface) {
+void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 

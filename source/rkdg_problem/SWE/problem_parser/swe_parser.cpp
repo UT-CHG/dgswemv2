@@ -14,7 +14,7 @@ Parser::Parser(const InputParameters<SWE::Inputs>& input) {
 Parser::Parser(const InputParameters<SWE::Inputs>& input, const uint locality_id, const uint submesh_id)
     : Parser(input) {}  // this is for partitioned input files
 
-void Parser::ParseMeteoInput(const RKDGStepper& stepper) {
+void Parser::ParseMeteoInput(const RKStepper& stepper) {
     uint step = stepper.GetStep();
 
     if (this->node_meteo_data_step.find(step - this->meteo_parse_frequency) != this->node_meteo_data_step.end()) {
@@ -73,7 +73,7 @@ void Parser::ParseMeteoInput(const RKDGStepper& stepper) {
     }
 }
 
-void Parser::InterpolateMeteoData(const RKDGStepper& stepper) {
+void Parser::InterpolateMeteoData(const RKStepper& stepper) {
     uint step = stepper.GetStep();
 
     uint step_start = step - step % this->meteo_parse_frequency;

@@ -3,7 +3,7 @@
 
 namespace SWE {
 template <typename ElementType>
-void Problem::source_kernel(const RKDGStepper& stepper, ElementType& elt) {
+void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
 
     if (wd_state.wet) {

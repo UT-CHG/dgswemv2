@@ -10,19 +10,20 @@
 
 #include "../writer.hpp"
 
+namespace RKDG {
 template <typename ProblemType>
-class RKDGSimulationOMPIUnit {
+class OMPISimulationUnit {
   private:
     typename ProblemType::ProblemMeshType mesh;
 
     OMPICommunicator communicator;
-    RKDGStepper stepper;
+    RKStepper stepper;
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
   public:
-    RKDGSimulationOMPIUnit() = default;
-    RKDGSimulationOMPIUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
+    OMPISimulationUnit() = default;
+    OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
     void PostReceivePrerocStage();
     void WaitAllPreprocSends();
@@ -45,9 +46,9 @@ class RKDGSimulationOMPIUnit {
 };
 
 template <typename ProblemType>
-RKDGSimulationOMPIUnit<ProblemType>::RKDGSimulationOMPIUnit(const std::string& input_string,
-                                                            const uint locality_id,
-                                                            const uint submesh_id) {
+OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_string,
+                                                    const uint locality_id,
+                                                    const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
     input.read_mesh();                         // read mesh meta data
@@ -57,7 +58,7 @@ RKDGSimulationOMPIUnit<ProblemType>::RKDGSimulationOMPIUnit(const std::string& i
     this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
 
     this->communicator = OMPICommunicator(input.mesh_input.dbmd_data);
-    this->stepper      = RKDGStepper(input.stepper_input);
+    this->stepper      = RKStepper(input.stepper_input);
     this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
     this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
@@ -85,19 +86,19 @@ RKDGSimulationOMPIUnit<ProblemType>::RKDGSimulationOMPIUnit(const std::string& i
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::PostReceivePrerocStage() {
+void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.GetTimestamp());
 
     ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh);
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::WaitAllPreprocSends() {
+void OMPISimulationUnit<ProblemType>::WaitAllPreprocSends() {
     this->communicator.WaitAllPreprocSends(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::Launch() {
+void OMPISimulationUnit<ProblemType>::Launch() {
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
@@ -114,7 +115,7 @@ void RKDGSimulationOMPIUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::ExchangeData() {
+void OMPISimulationUnit<ProblemType>::ExchangeData() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
                                   << this->stepper.GetStage() << ')' << std::endl;
@@ -134,7 +135,7 @@ void RKDGSimulationOMPIUnit<ProblemType>::ExchangeData() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::PreReceiveStage() {
+void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting work before receive" << std::endl;
     }
@@ -165,7 +166,7 @@ void RKDGSimulationOMPIUnit<ProblemType>::PreReceiveStage() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::PostReceiveStage() {
+void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting to wait on receive with timestamp: " << this->stepper.GetTimestamp()
                                   << std::endl;
@@ -193,12 +194,12 @@ void RKDGSimulationOMPIUnit<ProblemType>::PostReceiveStage() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::WaitAllSends() {
+void OMPISimulationUnit<ProblemType>::WaitAllSends() {
     this->communicator.WaitAllSends(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::ExchangePostprocData() {
+void OMPISimulationUnit<ProblemType>::ExchangePostprocData() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
     }
@@ -211,7 +212,7 @@ void RKDGSimulationOMPIUnit<ProblemType>::ExchangePostprocData() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::PreReceivePostprocStage() {
+void OMPISimulationUnit<ProblemType>::PreReceivePostprocStage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
     }
@@ -224,7 +225,7 @@ void RKDGSimulationOMPIUnit<ProblemType>::PreReceivePostprocStage() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::PostReceivePostprocStage() {
+void OMPISimulationUnit<ProblemType>::PostReceivePostprocStage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting to wait on postprocessor receive with timestamp: "
                                   << this->stepper.GetTimestamp() << std::endl;
@@ -255,12 +256,12 @@ void RKDGSimulationOMPIUnit<ProblemType>::PostReceivePostprocStage() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::WaitAllPostprocSends() {
+void OMPISimulationUnit<ProblemType>::WaitAllPostprocSends() {
     this->communicator.WaitAllPostprocSends(this->stepper.GetTimestamp());
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPIUnit<ProblemType>::Step() {
+void OMPISimulationUnit<ProblemType>::Step() {
     auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
 
     this->mesh.CallForEachElement(swap_states_kernel);
@@ -271,7 +272,7 @@ void RKDGSimulationOMPIUnit<ProblemType>::Step() {
 }
 
 template <typename ProblemType>
-double RKDGSimulationOMPIUnit<ProblemType>::ResidualL2() {
+double OMPISimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
     auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
@@ -286,23 +287,23 @@ double RKDGSimulationOMPIUnit<ProblemType>::ResidualL2() {
 }
 
 template <typename ProblemType>
-class RKDGSimulationOMPI {
+class OMPISimulation {
   private:
     uint n_steps;
     uint n_stages;
 
-    std::vector<std::unique_ptr<RKDGSimulationOMPIUnit<ProblemType>>> simulation_units;
+    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
 
   public:
-    RKDGSimulationOMPI() = default;
-    RKDGSimulationOMPI(const std::string& input_string);
+    OMPISimulation() = default;
+    OMPISimulation(const std::string& input_string);
 
     void Run();
     void ComputeL2Residual();
 };
 
 template <typename ProblemType>
-RKDGSimulationOMPI<ProblemType>::RKDGSimulationOMPI(const std::string& input_string) {
+OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
     int locality_id;
     MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
@@ -320,15 +321,14 @@ RKDGSimulationOMPI<ProblemType>::RKDGSimulationOMPI(const std::string& input_str
     uint submesh_id = 0;
 
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        this->simulation_units.emplace_back(
-            new RKDGSimulationOMPIUnit<ProblemType>(input_string, locality_id, submesh_id));
+        this->simulation_units.emplace_back(new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
         ++submesh_id;
     }
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPI<ProblemType>::Run() {
+void OMPISimulation<ProblemType>::Run() {
 #pragma omp parallel
     {
         uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
@@ -396,7 +396,7 @@ void RKDGSimulationOMPI<ProblemType>::Run() {
 }
 
 template <typename ProblemType>
-void RKDGSimulationOMPI<ProblemType>::ComputeL2Residual() {
+void OMPISimulation<ProblemType>::ComputeL2Residual() {
     int locality_id;
     MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
@@ -412,6 +412,7 @@ void RKDGSimulationOMPI<ProblemType>::ComputeL2Residual() {
     if (locality_id == 0) {
         std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
+}
 }
 
 #endif

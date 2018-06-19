@@ -2,7 +2,7 @@
 #define SWE_PARSER_HPP
 
 #include "../../../preprocessor/input_parameters.hpp"
-#include "../../../simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "../../../simulation/rkdg_simulation/rk_stepper.hpp"
 
 #include "../swe_definitions.hpp"
 
@@ -26,15 +26,15 @@ class Parser {
     bool ParsingInput() { return parsing_input; }
 
     template <typename MeshType>
-    void ParseInput(const RKDGStepper& stepper, MeshType& mesh);
+    void ParseInput(const RKStepper& stepper, MeshType& mesh);
 
   private:
-    void ParseMeteoInput(const RKDGStepper& stepper);
-    void InterpolateMeteoData(const RKDGStepper& stepper);
+    void ParseMeteoInput(const RKStepper& stepper);
+    void InterpolateMeteoData(const RKStepper& stepper);
 };
 
 template <typename MeshType>
-void Parser::ParseInput(const RKDGStepper& stepper, MeshType& mesh) {
+void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
     if (SWE::SourceTerms::meteo_forcing) {
         if (stepper.GetStep() % this->meteo_parse_frequency == 0 && stepper.GetStage() == 0) {
             this->ParseMeteoInput(stepper);

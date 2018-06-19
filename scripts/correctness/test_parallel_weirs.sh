@@ -27,7 +27,7 @@ sed -i.tmp '/return 0/i\
         simulation.ComputeL2Residual();\
 ' ${MAIN_DIR}/main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make -j ${num_build_cores} DG_HYPER_SWE_SERIAL
+make -j ${num_build_cores} RKDG_SWE_SERIAL
 cd $MAIN_DIR
 #undo the addition of the ComputeL2Residual call
 mv main_swe.cpp.tmp main_swe.cpp
@@ -35,7 +35,7 @@ echo ""
 echo "Running Serial Test case..."
 cd $DGSWEMV2_TEST
 rm -f serial.out
-$DGSWEMV2_ROOT_/build/source/DG_HYPER_SWE_SERIAL dgswemv2_input.15 &> serial.out
+$DGSWEMV2_ROOT_/build/source/rkdg_problem/SWE/RKDG_SWE_SERIAL dgswemv2_input.15 &> serial.out
 
 echo ""
 echo "Building HPX Test case..."
@@ -47,14 +47,14 @@ sed -i.tmp '/    return hpx::finalize();/i\
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;\
 ' ${MAIN_DIR}/hpx_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make -j ${num_build_cores} DG_HYPER_SWE_HPX
+make -j ${num_build_cores} RKDG_SWE_HPX
 cd $MAIN_DIR
 mv hpx_main_swe.cpp.tmp hpx_main_swe.cpp
 echo ""
 echo "Running HPX Test case..."
 cd $DGSWEMV2_TEST
 rm -f hpx.out
-$DGSWEMV2_ROOT_/build/source/DG_HYPER_SWE_HPX dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
+$DGSWEMV2_ROOT_/build/source/rkdg_problem/SWE/RKDG_SWE_HPX dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
 
 echo ""
 echo "Building MPI Test case..."
@@ -62,7 +62,7 @@ sed -i.tmp '/        MPI_Finalize();/i\
         simulation.ComputeL2Residual();\
 ' ${MAIN_DIR}/ompi_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make -j ${num_build_cores} DG_HYPER_SWE_OMPI
+make -j ${num_build_cores} RKDG_SWE_OMPI
 cd $MAIN_DIR
 mv ompi_main_swe.cpp.tmp ompi_main_swe.cpp
 
@@ -79,7 +79,7 @@ rm -f ompi.out
 # Running MPI as root is strongly discouraged by the OpemMPI people, so it really
 # should only be used inside a container.
 # See: https://github.com/open-mpi/ompi/issues/4451
-OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/source/DG_HYPER_SWE_OMPI dgswemv2_input_parallelized.15 &> ompi.out
+OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/source/rkdg_problem/SWE/RKDG_SWE_OMPI dgswemv2_input_parallelized.15 &> ompi.out
 
 python $DGSWEMV2_ROOT_/scripts/correctness/compare_l2_errors.py
 exit $?

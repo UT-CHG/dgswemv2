@@ -38,12 +38,12 @@ $DGSWEMV2_ROOT_/build/mesh_generators/rectangular_mesh_generator mesh_generator_
 
 echo "Running Serial Test case..."
 rm -f serial.out
-$DGSWEMV2_ROOT_/build/examples/MANUFACTURED_SOLUTION_SERIAL dgswemv2_input.15 &> serial.out
+$DGSWEMV2_ROOT_/build/examples/rkdg_swe_manufactured_solution/MANUFACTURED_SOLUTION_SERIAL dgswemv2_input.15 &> serial.out
 
 echo "Running HPX Test case..."
 rm -f hpx.out
 $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 2 1
-$DGSWEMV2_ROOT_/build/examples/MANUFACTURED_SOLUTION_HPX dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
+$DGSWEMV2_ROOT_/build/examples/rkdg_swe_manufactured_solution/MANUFACTURED_SOLUTION_HPX dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
 
 echo "Running MPI Test case..."
 rm rectangular_mesh_*
@@ -56,7 +56,7 @@ $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 2 1 2
 # Running MPI as root is strongly discouraged by the OpemMPI people, so it really
 # should only be used inside a container.
 # See: https://github.com/open-mpi/ompi/issues/4451
-OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/examples/MANUFACTURED_SOLUTION_OMPI dgswemv2_input_parallelized.15 &> ompi.out
+OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/examples/rkdg_swe_manufactured_solution/MANUFACTURED_SOLUTION_OMPI dgswemv2_input_parallelized.15 &> ompi.out
 
 python $DGSWEMV2_ROOT_/scripts/correctness/compare_l2_errors.py
 exit $?

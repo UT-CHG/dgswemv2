@@ -5,7 +5,7 @@
 
 namespace SWE {
 template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_send_kernel(const RKDGStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];
@@ -21,7 +21,7 @@ void Problem::distributed_boundary_send_kernel(const RKDGStepper& stepper, Distr
 }
 
 template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_kernel(const RKDGStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     auto& wd_state_in = dbound.data.wet_dry_state;
 
     bool wet_ex;

@@ -3,7 +3,7 @@
 #include "geometry/mesh_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 
-#include "simulation/rkdg_simulation/rkdg_stepper.hpp"
+#include "simulation/rkdg_simulation/rk_stepper.hpp"
 
 #include "rkdg_problem/SWE/function_files/swe_source_functions.hpp"
 #include "rkdg_problem/SWE/swe_problem.hpp"
@@ -39,7 +39,7 @@ int main() {
     stepper_input.order   = 1;
     stepper_input.dt      = 1;
 
-    RKDGStepper stepper(stepper_input);
+    RKStepper stepper(stepper_input);
 
     auto& wd_state = triangle.data.wet_dry_state;
     auto& state    = triangle.data.state[1];

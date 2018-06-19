@@ -3,7 +3,7 @@
 
 namespace SWE {
 template <typename ElementType>
-void Problem::wetting_drying_kernel(const RKDGStepper& stepper, ElementType& elt) {
+void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage + 1];
