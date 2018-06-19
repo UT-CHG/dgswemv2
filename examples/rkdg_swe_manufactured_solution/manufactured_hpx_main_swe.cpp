@@ -18,7 +18,7 @@
 #include "rkdg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/rkdg_simulation/rkdg_simulation_hpx.hpp"
-#include "simulation/rkdg_simulation/rk_stepper.hpp"
+#include "simulation/stepper/rk_stepper.hpp"
 
 using hpx_simulation_unit_swe           = RKDG::HPXSimulationUnit<SWE::Problem>;
 using hpx_simulation_unit_swe_component = hpx::components::simple_component<RKDG::HPXSimulationUnit<SWE::Problem>>;

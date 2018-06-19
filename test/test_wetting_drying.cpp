@@ -3,7 +3,7 @@
 #include "geometry/mesh_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 
-#include "simulation/rkdg_simulation/rk_stepper.hpp"
+#include "simulation/stepper/rk_stepper.hpp"
 
 #include "rkdg_problem/SWE/function_files/swe_source_functions.hpp"
 #include "rkdg_problem/SWE/swe_problem.hpp"

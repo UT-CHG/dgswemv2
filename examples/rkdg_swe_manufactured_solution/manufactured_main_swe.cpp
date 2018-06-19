@@ -11,7 +11,7 @@
 #include "rkdg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/rkdg_simulation/rkdg_simulation.hpp"
-#include "simulation/rkdg_simulation/rk_stepper.hpp"
+#include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

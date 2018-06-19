@@ -112,7 +112,7 @@ add_test(
 add_executable(
   test_rk_stepper_exe
   test_rk_stepper.cpp
-  ${PROJECT_SOURCE_DIR}/source/simulation/rkdg_simulation/rk_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
 add_test(
@@ -138,7 +138,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
-  ${PROJECT_SOURCE_DIR}/source/simulation/rkdg_simulation/rk_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
 add_test(

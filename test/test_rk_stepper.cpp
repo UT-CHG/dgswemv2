@@ -1,4 +1,4 @@
-#include "simulation/rkdg_simulation/rk_stepper.hpp"
+#include "simulation/stepper/rk_stepper.hpp"
 #include "preprocessor/input_parameters.hpp"
 
 #include <cmath>
