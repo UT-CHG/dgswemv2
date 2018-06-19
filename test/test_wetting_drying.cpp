@@ -5,9 +5,9 @@
 
 #include "simulation/rkdg_simulation/rkdg_stepper.hpp"
 
-#include "dg_problem/SWE/function_files/swe_source_functions.hpp"
-#include "dg_problem/SWE/swe_problem.hpp"
-#include "dg_problem/SWE/kernels_postprocessor/swe_post_wet_dry.hpp"
+#include "rkdg_problem/SWE/function_files/swe_source_functions.hpp"
+#include "rkdg_problem/SWE/swe_problem.hpp"
+#include "rkdg_problem/SWE/kernels_postprocessor/swe_post_wet_dry.hpp"
 
 int main() {
     using Utilities::almost_equal;

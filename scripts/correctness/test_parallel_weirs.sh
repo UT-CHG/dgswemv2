@@ -22,7 +22,7 @@ cd ${DGSWEMV2_TEST}
 
 echo ""
 echo "seting up serial test case"
-MAIN_DIR="${DGSWEMV2_ROOT_}/source/dg_problem/SWE/main_files"
+MAIN_DIR="${DGSWEMV2_ROOT_}/source/rkdg_problem/SWE/main_files"
 sed -i.tmp '/return 0/i\
         simulation.ComputeL2Residual();\
 ' ${MAIN_DIR}/main_swe.cpp

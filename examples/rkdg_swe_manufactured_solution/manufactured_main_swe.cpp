@@ -1,14 +1,14 @@
 #include "general_definitions.hpp"
-#include "dg_problem/SWE/swe_definitions.hpp"
+#include "rkdg_problem/SWE/swe_definitions.hpp"
 
 #include "manufactured_swe_initial_condition_functions.hpp"
 #include "manufactured_swe_source_functions.hpp"
 #include "manufactured_swe_true_solution_functions.hpp"
 
-#include "dg_problem/SWE/swe_problem.hpp"
-#include "dg_problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
-#include "dg_problem/SWE/kernels_processor/swe_kernels_processor.hpp"
-#include "dg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
+#include "rkdg_problem/SWE/swe_problem.hpp"
+#include "rkdg_problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "rkdg_problem/SWE/kernels_processor/swe_kernels_processor.hpp"
+#include "rkdg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/rkdg_simulation/rkdg_simulation.hpp"
 #include "simulation/rkdg_simulation/rkdg_stepper.hpp"

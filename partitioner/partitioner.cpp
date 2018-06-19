@@ -2,8 +2,8 @@
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
-#include "dg_problem/swe_partitioner_inputs.hpp"
-#include "dg_problem/default_partitioner_inputs.hpp"
+#include "problem/swe_partitioner_inputs.hpp"
+#include "problem/default_partitioner_inputs.hpp"
 
 #include <cassert>
 #include <chrono>

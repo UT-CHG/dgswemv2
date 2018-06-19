@@ -1,4 +1,4 @@
-#include "../partitioner/dg_problem/default_partitioner_inputs.hpp"
+#include "../partitioner/problem/default_partitioner_inputs.hpp"
 
 #include "preprocessor/ADCIRC_reader/adcirc_format.hpp"
 #include "preprocessor/mesh_metadata.hpp"

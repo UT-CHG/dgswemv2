@@ -1,6 +1,6 @@
 #include "swe_partitioner_inputs.hpp"
 
-#include "dg_problem/SWE/function_files/swe_initial_condition_functions.hpp"
+#include "rkdg_problem/SWE/function_files/swe_initial_condition_functions.hpp"
 
 namespace SWE {
 PartitionerInputs::PartitionerInputs(const MeshMetaData& mesh, Inputs inputs) {

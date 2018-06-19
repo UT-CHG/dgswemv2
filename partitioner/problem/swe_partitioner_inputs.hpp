@@ -4,7 +4,7 @@
 #include "../problem_partitioner_inputs.hpp"
 
 #include "preprocessor/mesh_metadata.hpp"
-#include "dg_problem/SWE/problem_input/swe_inputs.hpp"
+#include "rkdg_problem/SWE/problem_input/swe_inputs.hpp"
 
 namespace SWE {
 class PartitionerInputs final : public ProblemPartitionerInputs {
