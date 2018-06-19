@@ -138,7 +138,9 @@ struct Problem {
 
     static void write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
-    static void write_modal_data_kernel(const RKDGStepper& stepper, ProblemMeshType& mesh, const std::string& output_path);
+    static void write_modal_data_kernel(const RKDGStepper& stepper,
+                                        ProblemMeshType& mesh,
+                                        const std::string& output_path);
 
     template <typename ElementType>
     static double compute_residual_L2_kernel(const RKDGStepper& stepper, ElementType& elt);

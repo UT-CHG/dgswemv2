@@ -214,7 +214,7 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
         } else if (this->IBTYPE[segment_id] % 10 == 4) {
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair) ||
                 has_edge(this->IBCONN.at(segment_id).cbegin(), this->IBCONN.at(segment_id).cend(), node_pair)) {
-                return SWE::BoundaryTypes::land; //levee;
+                return SWE::BoundaryTypes::land;  // levee;
             }
         }
     }

@@ -65,8 +65,8 @@ class RKDGSimulationHPXUnit : public hpx::components::simple_component_base<RKDG
 
 template <typename ProblemType>
 RKDGSimulationHPXUnit<ProblemType>::RKDGSimulationHPXUnit(const std::string& input_string,
-                                                  const uint locality_id,
-                                                  const uint submesh_id) {
+                                                          const uint locality_id,
+                                                          const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
     input.read_mesh();                         // read mesh meta data
@@ -275,7 +275,8 @@ template <typename ProblemType>
 class RKDGSimulationHPXUnitClient
     : hpx::components::client_base<RKDGSimulationHPXUnitClient<ProblemType>, RKDGSimulationHPXUnit<ProblemType>> {
   private:
-    using BaseType = hpx::components::client_base<RKDGSimulationHPXUnitClient<ProblemType>, RKDGSimulationHPXUnit<ProblemType>>;
+    using BaseType =
+        hpx::components::client_base<RKDGSimulationHPXUnitClient<ProblemType>, RKDGSimulationHPXUnit<ProblemType>>;
 
   public:
     RKDGSimulationHPXUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
@@ -399,7 +400,8 @@ hpx::future<double> RKDGSimulationHPX<ProblemType>::ResidualL2() {
 }
 
 template <typename ProblemType>
-class RKDGSimulationHPXClient : hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>> {
+class RKDGSimulationHPXClient
+    : hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>> {
   private:
     using BaseType = hpx::components::client_base<RKDGSimulationHPXClient<ProblemType>, RKDGSimulationHPX<ProblemType>>;
 

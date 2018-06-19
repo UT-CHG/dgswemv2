@@ -46,8 +46,8 @@ class RKDGSimulationOMPIUnit {
 
 template <typename ProblemType>
 RKDGSimulationOMPIUnit<ProblemType>::RKDGSimulationOMPIUnit(const std::string& input_string,
-                                                    const uint locality_id,
-                                                    const uint submesh_id) {
+                                                            const uint locality_id,
+                                                            const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
     input.read_mesh();                         // read mesh meta data
@@ -320,7 +320,8 @@ RKDGSimulationOMPI<ProblemType>::RKDGSimulationOMPI(const std::string& input_str
     uint submesh_id = 0;
 
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        this->simulation_units.emplace_back(new RKDGSimulationOMPIUnit<ProblemType>(input_string, locality_id, submesh_id));
+        this->simulation_units.emplace_back(
+            new RKDGSimulationOMPIUnit<ProblemType>(input_string, locality_id, submesh_id));
 
         ++submesh_id;
     }

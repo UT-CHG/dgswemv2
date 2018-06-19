@@ -65,7 +65,8 @@ void Problem::slope_limiting_prepare_boundary_kernel(const RKDGStepper& stepper,
 }
 
 template <typename DistributedBoundaryType>
-void Problem::slope_limiting_distributed_boundary_send_kernel(const RKDGStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::slope_limiting_distributed_boundary_send_kernel(const RKDGStepper& stepper,
+                                                              DistributedBoundaryType& dbound) {
     auto& wd_state = dbound.data.wet_dry_state;
 
     dbound.boundary_condition.exchanger.SetPostprocWetDryEX(wd_state.wet);
