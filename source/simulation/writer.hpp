@@ -1,8 +1,8 @@
 #ifndef WRITER_HPP
 #define WRITER_HPP
 
-#include "../preprocessor/input_parameters.hpp"
-#include "../utilities/file_exists.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "utilities/file_exists.hpp"
 
 template <typename ProblemType>
 class Writer {

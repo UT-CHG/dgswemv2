@@ -1,7 +1,7 @@
 #ifndef IGNORE_HPP
 #define IGNORE_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Utilities {
 /**

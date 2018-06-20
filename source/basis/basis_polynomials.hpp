@@ -1,7 +1,7 @@
 #ifndef BASIS_POLYNOMIALS_HPP
 #define BASIS_POLYNOMIALS_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Basis {
 /**

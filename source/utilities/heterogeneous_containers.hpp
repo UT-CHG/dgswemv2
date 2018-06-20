@@ -1,7 +1,7 @@
 #ifndef HETEROGENEOUS_CONTAINERS_HPP
 #define HETEROGENEOUS_CONTAINERS_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 #include "tuple_helpers.hpp"
 
 namespace Utilities {

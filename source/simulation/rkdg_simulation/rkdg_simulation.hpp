@@ -1,9 +1,9 @@
 #ifndef RKDG_SIMULATION_HPP
 #define RKDG_SIMULATION_HPP
 
-#include "../../preprocessor/input_parameters.hpp"
-#include "../../preprocessor/initialize_mesh.hpp"
-#include "../writer.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "preprocessor/initialize_mesh.hpp"
+#include "simulation/writer.hpp"
 
 namespace RKDG {
 template <typename ProblemType>

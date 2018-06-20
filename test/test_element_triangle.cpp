@@ -1,7 +1,7 @@
 #include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
 #include "geometry/mesh_definitions.hpp"
-#include "rkdg_problem/SWE/swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/swe_problem.hpp"
 
 const std::vector<double> IntegrationPhi_true = {
     6.881941874331419e-01, -8.89156081756484e-02, 7.216878364870322e-02, 1.20281306081172e-02, 0.00000000000000e+00,
@@ -57,7 +57,7 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);

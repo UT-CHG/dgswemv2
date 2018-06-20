@@ -6,7 +6,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "../rkdg_problem/SWE/problem_input/swe_inputs.hpp"
+#include "problem/SWE/problem_input/swe_inputs.hpp"
 
 struct YamlNodeWrapper {
     YAML::Node node;

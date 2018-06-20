@@ -5,9 +5,9 @@
 
 #include "simulation/stepper/rk_stepper.hpp"
 
-#include "rkdg_problem/SWE/function_files/swe_source_functions.hpp"
-#include "rkdg_problem/SWE/swe_problem.hpp"
-#include "rkdg_problem/SWE/kernels_postprocessor/swe_post_wet_dry.hpp"
+#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
+#include "problem/SWE/discretization_RKDG/swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_postprocessor/swe_post_wet_dry.hpp"
 
 int main() {
     using Utilities::almost_equal;
@@ -15,7 +15,7 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
 
     // the whole test is designed for h_0 = 0.01
     SWE::PostProcessing::h_o = 0.01;
@@ -66,7 +66,7 @@ int main() {
     wd_state.qy_at_vrtx[2] = -3.;
     triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
-    SWE::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
     triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
     triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
@@ -124,7 +124,7 @@ int main() {
     wd_state.qy_at_vrtx[2] = -3.;
     triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
-    SWE::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
     triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
     triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
@@ -179,7 +179,7 @@ int main() {
     wd_state.qy_at_vrtx[2] = -3.;
     triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
-    SWE::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
     triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
     triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
@@ -238,7 +238,7 @@ int main() {
     wd_state.qy_at_vrtx[2] = -3.;
     triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
-    SWE::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
     triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
     triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);
@@ -310,7 +310,7 @@ int main() {
     wd_state.qy_at_vrtx[2] = -3.;
     triangle.L2Projection(wd_state.qy_at_vrtx, state.qy);
 
-    SWE::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
     triangle.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
     triangle.ProjectBasisToLinear(state.qx, wd_state.qx_lin);

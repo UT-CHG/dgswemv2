@@ -1,7 +1,7 @@
 #ifndef ALMOST_EQUAL_HPP
 #define ALMOST_EQUAL_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Utilities {
 /**

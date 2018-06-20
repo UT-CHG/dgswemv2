@@ -1,14 +1,14 @@
 #ifndef RKDG_SIMULATION_OMPI_HPP
 #define RKDG_SIMULATION_OMPI_HPP
 
-#include "../../general_definitions.hpp"
+#include "general_definitions.hpp"
 
-#include "../../preprocessor/input_parameters.hpp"
-#include "../../preprocessor/initialize_mesh.hpp"
-#include "../../communication/ompi_communicator.hpp"
-#include "../../utilities/file_exists.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "preprocessor/initialize_mesh.hpp"
+#include "communication/ompi_communicator.hpp"
+#include "utilities/file_exists.hpp"
 
-#include "../writer.hpp"
+#include "simulation/writer.hpp"
 
 namespace RKDG {
 template <typename ProblemType>

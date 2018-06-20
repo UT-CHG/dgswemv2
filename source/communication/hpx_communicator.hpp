@@ -4,8 +4,8 @@
 #include <hpx/hpx.hpp>
 #include <hpx/include/iostreams.hpp>
 
-#include "../general_definitions.hpp"
-#include "../preprocessor/mesh_metadata.hpp"
+#include "general_definitions.hpp"
+#include "preprocessor/mesh_metadata.hpp"
 
 using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);

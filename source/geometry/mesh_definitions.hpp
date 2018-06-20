@@ -7,11 +7,11 @@
 #include "interface.hpp"
 #include "boundary.hpp"
 
-#include "../master/master_elements_2D.hpp"
-#include "../shape/shapes_2D.hpp"
-#include "../basis/bases_2D.hpp"
-#include "../integration/integrations_1D.hpp"
-#include "../integration/integrations_2D.hpp"
+#include "master/master_elements_2D.hpp"
+#include "shape/shapes_2D.hpp"
+#include "basis/bases_2D.hpp"
+#include "integration/integrations_1D.hpp"
+#include "integration/integrations_2D.hpp"
 
 namespace Geometry {
 template <typename Data>

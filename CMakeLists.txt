@@ -65,7 +65,7 @@ add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)
 
 if(RKDG_SWE)
-  add_subdirectory(source/rkdg_problem/SWE)
+  add_subdirectory(source/problem/SWE/discretization_RKDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/rkdg_swe_manufactured_solution)
   endif()

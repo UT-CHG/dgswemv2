@@ -1,7 +1,7 @@
 #ifndef SHAPES_2D_HPP
 #define SHAPES_2D_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Shape {
 class StraightTriangle : public Shape<2> {

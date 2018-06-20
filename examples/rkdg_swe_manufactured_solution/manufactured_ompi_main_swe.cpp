@@ -2,16 +2,16 @@
 #include <omp.h>
 
 #include "general_definitions.hpp"
-#include "rkdg_problem/SWE/swe_definitions.hpp"
+#include "problem/SWE/swe_definitions.hpp"
 
 #include "manufactured_swe_initial_condition_functions.hpp"
 #include "manufactured_swe_source_functions.hpp"
 #include "manufactured_swe_true_solution_functions.hpp"
 
-#include "rkdg_problem/SWE/swe_problem.hpp"
-#include "rkdg_problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
-#include "rkdg_problem/SWE/kernels_processor/swe_kernels_processor.hpp"
-#include "rkdg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
+#include "problem/SWE/discretization_RKDG/swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_processor/swe_kernels_processor.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/rkdg_simulation/rkdg_simulation_ompi.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
         std::string input_string = std::string(argv[1]);
 
-        RKDG::OMPISimulation<SWE::Problem> simulation(input_string);
+        RKDG::OMPISimulation<SWE::RKDG::Problem> simulation(input_string);
 
         simulation.Run();
 

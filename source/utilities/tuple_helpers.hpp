@@ -1,7 +1,7 @@
 #ifndef TUPLE_HELPERS_HPP
 #define TUPLE_HELPERS_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 #include "ignore.hpp"
 
 namespace Utilities {

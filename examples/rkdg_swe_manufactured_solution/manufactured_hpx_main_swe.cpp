@@ -6,26 +6,27 @@
 #include <hpx/include/lcos.hpp>
 
 #include "general_definitions.hpp"
-#include "rkdg_problem/SWE/swe_definitions.hpp"
+#include "problem/SWE/swe_definitions.hpp"
 
 #include "manufactured_swe_initial_condition_functions.hpp"
 #include "manufactured_swe_source_functions.hpp"
 #include "manufactured_swe_true_solution_functions.hpp"
 
-#include "rkdg_problem/SWE/swe_problem.hpp"
-#include "rkdg_problem/SWE/kernels_preprocessor/swe_kernels_preprocessor.hpp"
-#include "rkdg_problem/SWE/kernels_processor/swe_kernels_processor.hpp"
-#include "rkdg_problem/SWE/kernels_postprocessor/swe_kernels_postprocessor.hpp"
+#include "problem/SWE/discretization_RKDG/swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_preprocessor/swe_kernels_preprocessor.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_processor/swe_kernels_processor.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_postprocessor/swe_kernels_postprocessor.hpp"
 
 #include "simulation/rkdg_simulation/rkdg_simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
-using hpx_simulation_unit_swe           = RKDG::HPXSimulationUnit<SWE::Problem>;
-using hpx_simulation_unit_swe_component = hpx::components::simple_component<RKDG::HPXSimulationUnit<SWE::Problem>>;
+using hpx_simulation_unit_swe = RKDG::HPXSimulationUnit<SWE::RKDG::Problem>;
+using hpx_simulation_unit_swe_component =
+    hpx::components::simple_component<RKDG::HPXSimulationUnit<SWE::RKDG::Problem>>;
 HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component, hpx_simulation_unit_swe);
 
-using hpx_simulation_swe           = RKDG::HPXSimulation<SWE::Problem>;
-using hpx_simulation_swe_component = hpx::components::simple_component<RKDG::HPXSimulation<SWE::Problem>>;
+using hpx_simulation_swe           = RKDG::HPXSimulation<SWE::RKDG::Problem>;
+using hpx_simulation_swe_component = hpx::components::simple_component<RKDG::HPXSimulation<SWE::RKDG::Problem>>;
 HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
 
 int main(int argc, char* argv[]) {
@@ -43,13 +44,14 @@ int hpx_main(int argc, char* argv[]) {
 
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
-    std::vector<RKDG::HPXSimulationClient<SWE::Problem>> simulation_clients;
+    std::vector<RKDG::HPXSimulationClient<SWE::RKDG::Problem>> simulation_clients;
     simulation_clients.reserve(localities.size());
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
         hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx::components::simple_component<RKDG::HPXSimulation<SWE::Problem>>>(locality, input_string);
+            hpx::new_<hpx::components::simple_component<RKDG::HPXSimulation<SWE::RKDG::Problem>>>(locality,
+                                                                                                  input_string);
 
         simulation_clients.emplace_back(std::move(simulation_id));
     }

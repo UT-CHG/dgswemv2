@@ -22,7 +22,7 @@ cd ${DGSWEMV2_TEST}
 
 echo ""
 echo "seting up serial test case"
-MAIN_DIR="${DGSWEMV2_ROOT_}/source/rkdg_problem/SWE/main_files"
+MAIN_DIR="${DGSWEMV2_ROOT_}/source/problem/SWE/discretization_RKDG/main_files"
 sed -i.tmp '/return 0/i\
         simulation.ComputeL2Residual();\
 ' ${MAIN_DIR}/main_swe.cpp
@@ -35,7 +35,7 @@ echo ""
 echo "Running Serial Test case..."
 cd $DGSWEMV2_TEST
 rm -f serial.out
-$DGSWEMV2_ROOT_/build/source/rkdg_problem/SWE/RKDG_SWE_SERIAL dgswemv2_input.15 &> serial.out
+$DGSWEMV2_ROOT_/build/source/problem/SWE/discretization_RKDG/RKDG_SWE_SERIAL dgswemv2_input.15 &> serial.out
 
 echo ""
 echo "Building HPX Test case..."
@@ -54,7 +54,7 @@ echo ""
 echo "Running HPX Test case..."
 cd $DGSWEMV2_TEST
 rm -f hpx.out
-$DGSWEMV2_ROOT_/build/source/rkdg_problem/SWE/RKDG_SWE_HPX dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
+$DGSWEMV2_ROOT_/build/source/problem/SWE/discretization_RKDG/RKDG_SWE_HPX dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
 
 echo ""
 echo "Building MPI Test case..."
@@ -79,7 +79,7 @@ rm -f ompi.out
 # Running MPI as root is strongly discouraged by the OpemMPI people, so it really
 # should only be used inside a container.
 # See: https://github.com/open-mpi/ompi/issues/4451
-OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/source/rkdg_problem/SWE/RKDG_SWE_OMPI dgswemv2_input_parallelized.15 &> ompi.out
+OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/source/problem/SWE/discretization_RKDG/RKDG_SWE_OMPI dgswemv2_input_parallelized.15 &> ompi.out
 
 python $DGSWEMV2_ROOT_/scripts/correctness/compare_l2_errors.py
 exit $?

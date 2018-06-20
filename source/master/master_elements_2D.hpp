@@ -1,7 +1,7 @@
 #ifndef CLASS_MASTER_ELEMENT_HPP
 #define CLASS_MASTER_ELEMENT_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Master {
 /**

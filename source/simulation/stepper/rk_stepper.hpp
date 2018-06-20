@@ -1,8 +1,8 @@
 #ifndef RK_STEPPER_HPP
 #define RK_STEPPER_HPP
 
-#include "../../general_definitions.hpp"
-#include "../../preprocessor/input_parameters.hpp"
+#include "general_definitions.hpp"
+#include "preprocessor/input_parameters.hpp"
 
 class RKStepper {
   public:

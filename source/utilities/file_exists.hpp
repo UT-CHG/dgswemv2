@@ -1,7 +1,7 @@
 #ifndef FILE_EXISTS_HPP
 #define FILE_EXISTS_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Utilities {
 /**

@@ -1,7 +1,7 @@
 #include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
 #include "geometry/mesh_definitions.hpp"
-#include "rkdg_problem/SWE/swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/swe_problem.hpp"
 
 int main() {
     using Utilities::almost_equal;
@@ -9,11 +9,12 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
 
-    using RawBoundaryType = Geometry::RawBoundary<1, SWE::Data>;
-    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::BC::Land>;
-    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::IS::Internal>;
+    using RawBoundaryType = Geometry::RawBoundary<1, SWE::RKDG::Data>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::BC::Land>;
+    using InterfaceType =
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::IS::Internal>;
 
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);

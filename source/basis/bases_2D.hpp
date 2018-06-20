@@ -1,7 +1,7 @@
 #ifndef BASES_2D_HPP
 #define BASES_2D_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 #include "basis_polynomials.hpp"
 
 namespace Basis {

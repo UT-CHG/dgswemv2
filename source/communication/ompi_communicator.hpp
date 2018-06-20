@@ -3,8 +3,8 @@
 
 #include <mpi.h>
 
-#include "../general_definitions.hpp"
-#include "../preprocessor/mesh_metadata.hpp"
+#include "general_definitions.hpp"
+#include "preprocessor/mesh_metadata.hpp"
 
 struct OMPIRankBoundary {
     int send_rank;

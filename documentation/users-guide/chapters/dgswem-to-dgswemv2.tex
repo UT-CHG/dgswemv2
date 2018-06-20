@@ -49,7 +49,7 @@ edge\_int\_ldg\_sediment & Not supported &
 \tabularnewline \hline
 errorelevsum & Not supported &
 \tabularnewline \hline
-flow\_edge\_hydro & SWE::Flow::GetEX$^\dagger$ & source/rkdg_problem/SWE/swe\_kernels\_boundary\_conditions.hpp
+flow\_edge\_hydro & SWE::Flow::GetEX$^\dagger$ & source/problem/SWE/discretization_RKDG/swe\_kernels\_boundary\_conditions.hpp
 \tabularnewline \hline
 flow\_edge\_ldg\_hydro	& Not supported &
 \tabularnewline \hline
@@ -63,23 +63,23 @@ ibarrier\_edge\_hydro	& Not supported &
 \tabularnewline \hline
 ibarrier\_fluxes & Not supported &
 \tabularnewline \hline
-internal\_edge\_hydro & SWE::Problem::interface\_kernel$^\dagger$ & source/rkdg_problem/SWE/swe\_kernels\_processor.hpp
+internal\_edge\_hydro & SWE::RKDG::Problem::interface\_kernel$^\dagger$ & source/problem/SWE/discretization_RKDG/swe\_kernels\_processor.hpp
 \tabularnewline \hline
 internal\_edge\_ldg\_hydro & Not supported &
 \tabularnewline \hline
-land\_edge\_hydro & SWE::Land::GetEX$^\dagger$ & source/rkdg_problem/SWE/swe\_kernels\_boundary\_conditions.hpp
+land\_edge\_hydro & SWE::Land::GetEX$^\dagger$ & source/problem/SWE/discretization_RKDG/swe\_kernels\_boundary\_conditions.hpp
 \tabularnewline \hline
 land\_edge\_ldg\_hydro & Not supported &
 \tabularnewline \hline
 LDG\_hydro & Not supported &
 \tabularnewline \hline
-llf\_flux & SWE::LLF\_flux & source/rkdg_problem/SWE/swe\_LLF\_flux.hpp
+llf\_flux & SWE::LLF\_flux & source/problem/SWE/discretization_RKDG/swe\_LLF\_flux.hpp
 \tabularnewline \hline
 Message\_abort & Not supported	
 \tabularnewline \hline
-Message\_fini & Inlined & source/rkdg_problem/SWE/ompi\_main\_swe.cpp
+Message\_fini & Inlined & source/problem/SWE/discretization_RKDG/ompi\_main\_swe.cpp
 \tabularnewline \hline
-message\_init & Inlined & source/rkdg_problem/SWE/ompi\_main\_swe.cpp
+message\_init & Inlined & source/problem/SWE/discretization_RKDG/ompi\_main\_swe.cpp
 \tabularnewline \hline
 met\_forcing & Not supported	&
 \tabularnewline \hline
@@ -147,7 +147,7 @@ read\_input & InputParameters::InputParameters & source/preprocessor/input\_para
 \tabularnewline \hline
 read\_keyword\_fort\_dg & Not supported & 
 \tabularnewline \hline
-rhs\_dg\_hydro & SWE::Problem::volume\_kernel$^\dagger$ \newline SWE::Problem::source::kernel$^\dagger$ & source/rkdg_problem/SWE/swe\_kernels\_processor.hpp
+rhs\_dg\_hydro & SWE::RKDG::Problem::volume\_kernel$^\dagger$ \newline SWE::RKDG::Problem::source::kernel$^\dagger$ & source/problem/SWE/discretization_RKDG/swe\_kernels\_processor.hpp
 \tabularnewline \hline
 rhs\_ldg\_hydro & Not supported &	
 \tabularnewline \hline
@@ -155,7 +155,7 @@ rk\_time	& RKStepper::RKStepper & source/simulation/stepper.cpp
 \tabularnewline \hline
 roe\_flux & Not supported &
 \tabularnewline \hline
-scrutinize\_solution & SWE::Problem::scrutinize\_solution\_kernel$^\dagger$ & source/rkdg_problem/SWE/swe\_kernels\_processor.hpp
+scrutinize\_solution & SWE::RKDG::Problem::scrutinize\_solution\_kernel$^\dagger$ & source/problem/SWE/discretization_RKDG/swe\_kernels\_processor.hpp
 \tabularnewline \hline
 sta\_basis & Integration::Dunabant\_2D::GetRule & source/integration/integrations\_2D/integration\_dunavant\_2D.cpp
 \tabularnewline \hline
@@ -179,7 +179,7 @@ updater\_elem\_mod3 & OMPICommunicator::SendAll \newline OMPICommunicator::Recei
 \tabularnewline \hline
 wetdry & Not supported	&
 \tabularnewline \hline
-write\_results & SWE::Problem::extract\_VTK\_data\_kernel \newline SWE::Problem::extract\_modal\_data\_kernel &	 source/rkdg_problem/SWE/swe\_kernels\_postprocessor.hpp
+write\_results & SWE::RKDG::Problem::extract\_VTK\_data\_kernel \newline SWE::RKDG::Problem::extract\_modal\_data\_kernel &	 source/problem/SWE/discretization_RKDG/swe\_kernels\_postprocessor.hpp
 \tabularnewline \hline \hline
 \caption{The names of Fortran subroutines with the corresponding \texttt{dgswem-v2} function calls and the location of their implementation. Not supported routines are not implemented in \texttt{dgswem-v2}. The dagger ($\dagger$) signifies that a given implementation is defined element-wise, whereas typical \texttt{dgswem} implementations loop over the entire mesh.}
 \label{tab:dgswemtodgswemv2}

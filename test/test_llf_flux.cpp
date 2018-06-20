@@ -1,6 +1,6 @@
 #include "utilities/almost_equal.hpp"
 
-#include "rkdg_problem/SWE/numerical_fluxes/swe_numerical_fluxes.hpp"
+#include "problem/SWE/discretization_RKDG/numerical_fluxes/swe_numerical_fluxes.hpp"
 
 #include <iostream>
 
@@ -21,7 +21,7 @@ bool test_configuration(const int configuration,
 
     double ze_flux, qx_flux, qy_flux;
 
-    SWE::LLF_flux(
+    SWE::RKDG::LLF_flux(
         SWE::Global::g, ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, sp, normal, ze_flux, qx_flux, qy_flux);
 
     if (!Utilities::almost_equal(ze_flux, true_ze_flux)) {

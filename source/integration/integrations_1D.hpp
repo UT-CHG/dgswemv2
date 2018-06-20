@@ -1,7 +1,7 @@
 #ifndef INTEGRATIONS_1D_HPP
 #define INTEGRATIONS_1D_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 namespace Integration {
 /**

@@ -1,16 +1,16 @@
 #ifndef RKDG_SIMULATION_HPX_HPP
 #define RKDG_SIMULATION_HPX_HPP
 
-#include "../../general_definitions.hpp"
+#include "general_definitions.hpp"
 
-#include "../../preprocessor/input_parameters.hpp"
-#include "../../preprocessor/initialize_mesh.hpp"
-#include "../../communication/hpx_communicator.hpp"
-#include "../../utilities/file_exists.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "preprocessor/initialize_mesh.hpp"
+#include "communication/hpx_communicator.hpp"
+#include "utilities/file_exists.hpp"
 
 #include <hpx/util/unwrapped.hpp>
 
-#include "../writer.hpp"
+#include "simulation/writer.hpp"
 
 namespace RKDG {
 template <typename ClientType>

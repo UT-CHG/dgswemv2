@@ -1,10 +1,10 @@
 #ifndef MESH_METADATA_HPP
 #define MESH_METADATA_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
 #include "ADCIRC_reader/adcirc_format.hpp"
-#include "../utilities/file_exists.hpp"
+#include "utilities/file_exists.hpp"
 
 struct NodeMetaData {
     Point<3> coordinates;
