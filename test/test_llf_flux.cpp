@@ -1,6 +1,6 @@
 #include "utilities/almost_equal.hpp"
 
-#include "problem/SWE/discretization_RKDG/numerical_fluxes/swe_numerical_fluxes.hpp"
+#include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
 
 #include <iostream>
 

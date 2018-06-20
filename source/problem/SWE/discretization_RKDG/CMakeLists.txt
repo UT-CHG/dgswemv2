@@ -20,7 +20,7 @@ list (APPEND RKDG_SWE_SOURCES
 
 add_executable(
   RKDG_SWE_SERIAL
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/main_swe.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/rkdg_main_swe.cpp
   ${RKDG_SWE_SOURCES}
 )
 
@@ -32,7 +32,7 @@ install(TARGETS RKDG_SWE_SERIAL DESTINATION bin)
 if(USE_OMPI)
   add_executable(
     RKDG_SWE_OMPI
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/ompi_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/rkdg_ompi_main_swe.cpp
     ${RKDG_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
   )
@@ -46,7 +46,7 @@ endif()
 if(USE_HPX)
   add_executable(
     RKDG_SWE_HPX
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/hpx_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/rkdg_hpx_main_swe.cpp
     ${RKDG_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )

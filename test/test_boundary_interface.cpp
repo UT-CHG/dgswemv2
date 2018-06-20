@@ -1,7 +1,7 @@
 #include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
 #include "geometry/mesh_definitions.hpp"
-#include "problem/SWE/discretization_RKDG/swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 
 int main() {
     using Utilities::almost_equal;
