@@ -1,8 +1,8 @@
-#ifndef RKDG_SWE_PRE_CREATE_BOUND_HPP
-#define RKDG_SWE_PRE_CREATE_BOUND_HPP
+#ifndef EHDG_SWE_PRE_CREATE_BOUND_HPP
+#define EHDG_SWE_PRE_CREATE_BOUND_HPP
 
 namespace SWE {
-namespace RKDG {
+namespace EHDG {
 template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,

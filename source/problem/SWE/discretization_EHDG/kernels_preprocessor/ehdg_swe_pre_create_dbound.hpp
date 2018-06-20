@@ -1,8 +1,8 @@
-#ifndef RKDG_SWE_PRE_CREATE_DBOUND_HPP
-#define RKDG_SWE_PRE_CREATE_DBOUND_HPP
+#ifndef EHDG_SWE_PRE_CREATE_DBOUND_HPP
+#define EHDG_SWE_PRE_CREATE_DBOUND_HPP
 
 namespace SWE {
-namespace RKDG {
+namespace EHDG {
 template <typename RawBoundaryType>
 void Problem::create_distributed_boundaries_kernel(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
@@ -19,14 +19,11 @@ void Problem::create_distributed_boundaries_kernel(
     Communicator& communicator,
     Writer<Problem>& writer) {
     // *** //
-    using DistributedBoundaryTypes =
-        Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
+    using DistributedBoundaryTypes = Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>;
 
     auto& raw_bound_distributed = raw_boundaries[distributed(SWE::BoundaryTypes::internal)];
-    auto& raw_bound_distr_levee = raw_boundaries[distributed(SWE::BoundaryTypes::levee)];
 
     uint n_distributed = 0;
-    uint n_distr_levee = 0;
 
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
@@ -66,42 +63,21 @@ void Problem::create_distributed_boundaries_kernel(
                 typename DBTypeDistributed::BoundaryIntegrationType boundary_integration;
 
                 ngp = boundary_integration.GetNumGP(2 * p + 1);
-            } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
-                using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
-
-                typename DBTypeDistributedLevee::BoundaryIntegrationType boundary_integration;
-
-                ngp = boundary_integration.GetNumGP(2 * p + 1);
             } else {
                 throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
             DBC::DBIndex index;
 
-            index.x_at_baryctr = begin_index_preproc;
-            index.y_at_baryctr = begin_index_preproc + 1;
+            index.ze_in = begin_index;
+            index.qx_in = begin_index + ngp;
+            index.qy_in = begin_index + 2 * ngp;
 
-            begin_index_preproc += 2;
+            index.ze_ex = begin_index + ngp - 1;
+            index.qx_ex = begin_index + 2 * ngp - 1;
+            index.qy_ex = begin_index + 3 * ngp - 1;
 
-            index.wet_dry = begin_index;
-
-            index.ze_in = begin_index + 1;
-            index.qx_in = begin_index + ngp + 1;
-            index.qy_in = begin_index + 2 * ngp + 1;
-
-            index.ze_ex = begin_index + ngp;
-            index.qx_ex = begin_index + 2 * ngp;
-            index.qy_ex = begin_index + 3 * ngp;
-
-            begin_index += 3 * ngp + 1;
-
-            index.wet_dry_postproc = begin_index_postproc;
-
-            index.ze_at_baryctr = begin_index_postproc + 1;
-            index.qx_at_baryctr = begin_index_postproc + 2;
-            index.qy_at_baryctr = begin_index_postproc + 3;
-
-            begin_index_postproc += 4;
+            begin_index += 3 * ngp;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
@@ -123,48 +99,6 @@ void Problem::create_distributed_boundaries_kernel(
                 n_distributed++;
 
                 raw_bound_distributed.erase(dbound_key);
-            } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
-                using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
-
-                auto& raw_boundary = raw_bound_distr_levee.find(dbound_key)->second;
-
-                raw_boundary.p = p;
-
-                auto& levee_data = input.problem_input.levee_is_data;
-
-                std::vector<LeveeInput> levee;
-
-                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
-                    bool found = false;
-
-                    for (auto& levee_node : levee_data) {
-                        if (levee_node.first.first == raw_boundary.node_ID[node] ||
-                            levee_node.first.second == raw_boundary.node_ID[node]) {
-                            levee.push_back(levee_node.second);
-
-                            found = true;
-                        }
-                    }
-
-                    if (!found) {
-                        throw std::logic_error("Fatal Error: unable to find distributed levee data!\n");
-                    }
-                }
-
-                mesh.template CreateDistributedBoundary<DBTypeDistributedLevee>(
-                    raw_boundary,
-                    DBC::DistributedLevee(DBC::DBDataExchanger(index,
-                                                               send_preproc_buffer_reference,
-                                                               receive_preproc_buffer_reference,
-                                                               send_buffer_reference,
-                                                               receive_buffer_reference,
-                                                               send_postproc_buffer_reference,
-                                                               receive_postproc_buffer_reference),
-                                          levee));
-
-                n_distr_levee++;
-
-                raw_bound_distr_levee.erase(dbound_key);
             }
         }
 
@@ -181,8 +115,7 @@ void Problem::create_distributed_boundaries_kernel(
     mesh.CallForEachDistributedBoundary([](auto& dbound) { dbound.boundary_condition.Initialize(dbound); });
 
     if (writer.WritingLog()) {
-        writer.GetLogFile() << "Number of distributed boundaries: " << n_distributed << std::endl
-                            << "Number of distributed levee boundaries: " << n_distr_levee << std::endl;
+        writer.GetLogFile() << "Number of distributed boundaries: " << n_distributed << std::endl;
     }
 }
 }
