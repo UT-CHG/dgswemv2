@@ -25,12 +25,12 @@ echo "seting up serial test case"
 MAIN_DIR="${DGSWEMV2_ROOT_}/source/problem/SWE/discretization_RKDG/main_files"
 sed -i.tmp '/return 0/i\
         simulation.ComputeL2Residual();\
-' ${MAIN_DIR}/main_swe.cpp
+' ${MAIN_DIR}/rkdg_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
 make -j ${num_build_cores} RKDG_SWE_SERIAL
 cd $MAIN_DIR
 #undo the addition of the ComputeL2Residual call
-mv main_swe.cpp.tmp main_swe.cpp
+mv rkdg_main_swe.cpp.tmp rkdg_main_swe.cpp
 echo ""
 echo "Running Serial Test case..."
 cd $DGSWEMV2_TEST
@@ -45,11 +45,11 @@ $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 3 1
 sed -i.tmp '/    return hpx::finalize();/i\
     hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);\
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;\
-' ${MAIN_DIR}/hpx_main_swe.cpp
+' ${MAIN_DIR}/rkdg_hpx_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
 make -j ${num_build_cores} RKDG_SWE_HPX
 cd $MAIN_DIR
-mv hpx_main_swe.cpp.tmp hpx_main_swe.cpp
+mv rkdg_hpx_main_swe.cpp.tmp rkdg_hpx_main_swe.cpp
 echo ""
 echo "Running HPX Test case..."
 cd $DGSWEMV2_TEST
@@ -60,11 +60,11 @@ echo ""
 echo "Building MPI Test case..."
 sed -i.tmp '/        MPI_Finalize();/i\
         simulation.ComputeL2Residual();\
-' ${MAIN_DIR}/ompi_main_swe.cpp
+' ${MAIN_DIR}/rkdg_ompi_main_swe.cpp
 cd ${DGSWEMV2_ROOT_}/build
 make -j ${num_build_cores} RKDG_SWE_OMPI
 cd $MAIN_DIR
-mv ompi_main_swe.cpp.tmp ompi_main_swe.cpp
+mv rkdg_ompi_main_swe.cpp.tmp rkdg_ompi_main_swe.cpp
 
 echo ""
 echo "Running OMPI Test case..."
