@@ -26,9 +26,9 @@
 
 #include "edge_types.hpp"
 
-typedef unsigned char uchar;
+using uchar = unsigned char;
 
-typedef unsigned int uint;
+using uint = unsigned int;
 
 template <uint dimension>
 using Point = std::array<double, dimension>;
@@ -198,6 +198,8 @@ class Shape {
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };
 
 enum GlobalCoord : uchar { x = 0, y = 1, z = 2 };
+
+enum LocalCoordLin : uchar { l1 = 0, l2 = 1, l3 = 2 };
 
 enum LocalCoordTri : uchar { z1 = 0, z2 = 1, z3 = 2 };
 

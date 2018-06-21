@@ -32,11 +32,10 @@ struct MeshType;
 
 template <typename Data, typename... ISs, typename... BCs, typename... DBCs>
 struct MeshType<Data, std::tuple<ISs...>, std::tuple<BCs...>, std::tuple<DBCs...>> {
-    typedef Mesh<ElementTypeTuple<Data>,
-                 InterfaceTypeTuple<Data, ISs...>,
-                 BoundaryTypeTuple<Data, BCs...>,
-                 DistributedBoundaryTypeTuple<Data, DBCs...>>
-        Type;
+    using Type = Mesh<ElementTypeTuple<Data>,
+                      InterfaceTypeTuple<Data, ISs...>,
+                      BoundaryTypeTuple<Data, BCs...>,
+                      DistributedBoundaryTypeTuple<Data, DBCs...>>;
 };
 }
 

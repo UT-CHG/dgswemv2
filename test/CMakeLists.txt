@@ -35,6 +35,18 @@ add_test(
 )
 
 add_executable(
+  test_basis_legendre_1d_exe
+  test_basis_legendre_1d.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_Legendre_1D.cpp
+)
+
+add_test(
+  Unit_basis_legendre_1d
+  test_basis_legendre_1d_exe
+)
+
+add_executable(
   test_basis_dubiner_2d_exe
   test_basis_dubiner_2d.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -107,6 +119,22 @@ add_executable(
 add_test(
   Unit_boundary_interface
   test_boundary_interface_exe
+)
+
+add_executable(
+  test_edges_exe
+  test_edges.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+)
+
+add_test(
+  Unit_edges
+  test_edges_exe
 )
 
 add_executable(

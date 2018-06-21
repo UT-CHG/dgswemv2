@@ -70,31 +70,32 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     // transfrom gp to master coord in
-    std::vector<Point<dimension + 1>> z_master =
+    std::vector<Point<dimension + 1>> z_master_in =
         raw_boundary_in.master.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
 
     // Compute factors to expand nodal values in
-    this->psi_gp_in = raw_boundary_in.shape.GetPsi(z_master);
+    this->psi_gp_in = raw_boundary_in.shape.GetPsi(z_master_in);
 
     // Compute factors to expand boundary nodal values in
     this->psi_bound_gp_in = raw_boundary_in.shape.GetBoundaryPsi(this->bound_id_in, integration_rule.second);
 
     // Compute factors to expand modal values in
-    this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master);
+    this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master_in);
 
     // transfrom gp to master coord ex
-    z_master = raw_boundary_ex.master.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
+    std::vector<Point<dimension + 1>> z_master_ex =
+        raw_boundary_ex.master.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
 
     // Compute factors to expand nodal values ex
-    this->psi_gp_ex = raw_boundary_ex.shape.GetPsi(z_master);
+    this->psi_gp_ex = raw_boundary_ex.shape.GetPsi(z_master_ex);
 
     // Compute factors to expand boundary nodal values ex
     this->psi_bound_gp_ex = raw_boundary_ex.shape.GetBoundaryPsi(this->bound_id_ex, integration_rule.second);
 
     // Compute factors to expand modal values ex
-    this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master);
+    this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master_ex);
 
-    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(this->bound_id_in, z_master);
+    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(this->bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_in = integration_rule.first;
@@ -123,7 +124,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
 
         this->surface_normal_in =
             Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary_in.shape.GetSurfaceNormal(this->bound_id_in, z_master).begin());
+                            *raw_boundary_in.shape.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
 
         this->surface_normal_ex = this->surface_normal_in;  // same dimensions
 

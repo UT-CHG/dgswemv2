@@ -18,16 +18,16 @@
 namespace SWE {
 namespace RKDG {
 struct Problem {
-    typedef SWE::Inputs ProblemInputType;
+    using ProblemInputType = SWE::Inputs;
 
-    typedef Data ProblemDataType;
+    using ProblemParserType = SWE::Parser;
 
-    typedef Geometry::MeshType<Data,
-                               std::tuple<IS::Internal, IS::Levee>,
-                               std::tuple<BC::Land, BC::Tide, BC::Flow>,
-                               std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type ProblemMeshType;
+    using ProblemDataType = Data;
 
-    typedef SWE::Parser ProblemParserType;
+    using ProblemMeshType = Geometry::MeshType<Data,
+                                               std::tuple<IS::Internal, IS::Levee>,
+                                               std::tuple<BC::Land, BC::Tide, BC::Flow>,
+                                               std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);

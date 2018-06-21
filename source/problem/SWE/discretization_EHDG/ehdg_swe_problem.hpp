@@ -9,25 +9,31 @@
 #include "dist_boundary_conditions/ehdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ehdg_swe_interface_specializations.hpp"
 #include "data_structure/ehdg_swe_data.hpp"
+#include "data_structure/ehdg_swe_edge_data.hpp"
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
 
 #include "geometry/mesh_definitions.hpp"
+#include "geometry/mesh_skeleton_definitions.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
 namespace SWE {
 namespace EHDG {
 struct Problem {
-    typedef SWE::Inputs ProblemInputType;
+    using ProblemInputType = SWE::Inputs;
 
-    typedef Data ProblemDataType;
+    using ProblemParserType = SWE::Parser;
 
-    typedef Geometry::MeshType<Data,
-                               std::tuple<IS::Internal>,
-                               std::tuple<BC::Land, BC::Tide, BC::Flow>,
-                               std::tuple<DBC::Distributed>>::Type ProblemMeshType;
+    using ProblemDataType = Data;
 
-    typedef SWE::Parser ProblemParserType;
+    using ProblemEdgeDataType = EdgeData;
+
+    using ProblemMeshType = Geometry::MeshType<Data,
+                                               std::tuple<IS::Internal>,
+                                               std::tuple<BC::Land, BC::Tide, BC::Flow>,
+                                               std::tuple<DBC::Distributed>>::Type;
+
+    using ProblemMeshSkeletonType = Geometry::MeshSkeletonType<Data, EdgeData>;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
