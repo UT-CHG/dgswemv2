@@ -38,7 +38,7 @@ add_executable(
   test_basis_legendre_1d_exe
   test_basis_legendre_1d.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
-  ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_Legendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp
 )
 
 add_test(
