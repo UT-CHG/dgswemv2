@@ -6,7 +6,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename InterfaceType>
-void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
+void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
     auto& state_in    = intface.data_in.state[stage];

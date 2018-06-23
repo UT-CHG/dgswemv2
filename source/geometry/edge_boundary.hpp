@@ -2,7 +2,7 @@
 #define CLASS_EDGE_BOUNDARY_HPP
 
 namespace Geometry {
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
 class EdgeBoundary {
   public:
     EdgeDataType edge_data;
@@ -11,6 +11,9 @@ class EdgeBoundary {
 
     uint bound_id;
 
+    Master::Master<dimension + 1>& master;
+    Shape::Shape<dimension + 1>& shape;
+
     Array2D<double> surface_normal;
 
   private:
@@ -18,30 +21,31 @@ class EdgeBoundary {
     Array2D<double> int_lambda_fact;
 
   public:
-    EdgeBoundary(const RawBoundary<dimension, DataType>& raw_boundary);
+    template <typename BoundaryType>
+    EdgeBoundary(const BoundaryType& bound);
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     double IntegrationLambda(const uint dof, const std::vector<double>& u_gp);
 };
 
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
-EdgeBoundary<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::EdgeBoundary(
-    const RawBoundary<dimension, DataType>& raw_boundary)
-    : data(raw_boundary.data), bound_id(raw_boundary.bound_id) {
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
+template <typename BoundaryType>
+EdgeBoundary<dimension, BasisType, DataType, EdgeDataType>::EdgeBoundary(const BoundaryType& bound)
+    : data(bound.data), bound_id(bound.bound_id), master(bound.master), shape(bound.shape) {
     // *** //
-    IntegrationType integration;
+    typename BoundaryType::BoundaryIntegrationType integration;
 
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
-        integration.GetRule(2 * raw_boundary.p + 1);
+        integration.GetRule(2 * this->master.p + 1);
 
     BasisType basis;
 
-    this->lambda_gp = basis.GetPhi(raw_boundary.p, integration_rule.second);
+    this->lambda_gp = basis.GetPhi(this->master.p, integration_rule.second);
 
     std::vector<Point<dimension + 1>> z_master =
-        raw_boundary.master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
+        this->master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
-    std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(this->bound_id, z_master);
+    std::vector<double> surface_J = this->shape.GetSurfaceJ(this->bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_lambda_fact = this->lambda_gp;
@@ -52,14 +56,18 @@ EdgeBoundary<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::Edg
         }
 
         this->surface_normal = Array2D<double>(integration_rule.first.size(),
-                                               *raw_boundary.shape.GetSurfaceNormal(this->bound_id, z_master).begin());
+                                               *this->shape.GetSurfaceNormal(this->bound_id, z_master).begin());
     }
+
+    uint ndof = this->lambda_gp.size();
+    uint ngp  = integration_rule.first.size();
+
+    this->edge_data = EdgeDataType(ndof, ngp);
 }
 
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
-void EdgeBoundary<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::ComputeUgp(
-    const std::vector<double>& u,
-    std::vector<double>& u_gp) {
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
+void EdgeBoundary<dimension, BasisType, DataType, EdgeDataType>::ComputeUgp(const std::vector<double>& u,
+                                                                            std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -69,10 +77,9 @@ void EdgeBoundary<dimension, BasisType, IntegrationType, DataType, EdgeDataType>
     }
 }
 
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
-double EdgeBoundary<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::IntegrationLambda(
-    const uint dof,
-    const std::vector<double>& u_gp) {
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
+double EdgeBoundary<dimension, BasisType, DataType, EdgeDataType>::IntegrationLambda(const uint dof,
+                                                                                     const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {

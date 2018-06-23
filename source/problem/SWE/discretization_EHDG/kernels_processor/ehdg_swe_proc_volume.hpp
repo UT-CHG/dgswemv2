@@ -4,7 +4,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename ElementType>
-void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];

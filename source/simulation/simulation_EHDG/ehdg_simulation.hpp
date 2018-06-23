@@ -70,13 +70,15 @@ void Simulation<ProblemType>::Run() {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
 
-    auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
+    auto local_volume_kernel = [this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); };
 
-    auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
+    auto local_source_kernel = [this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); };
 
-    auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
+    auto local_interface_kernel = [this](auto& intface) {
+        ProblemType::local_interface_kernel(this->stepper, intface);
+    };
 
-    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
+    auto local_boundary_kernel = [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); };
 
     auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
@@ -103,13 +105,13 @@ void Simulation<ProblemType>::Run() {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
 
-            this->mesh.CallForEachElement(volume_kernel);
+            this->mesh.CallForEachElement(local_volume_kernel);
 
-            this->mesh.CallForEachElement(source_kernel);
+            this->mesh.CallForEachElement(local_source_kernel);
 
-            this->mesh.CallForEachInterface(interface_kernel);
+            this->mesh.CallForEachInterface(local_interface_kernel);
 
-            this->mesh.CallForEachBoundary(boundary_kernel);
+            this->mesh.CallForEachBoundary(local_boundary_kernel);
 
             this->mesh.CallForEachElement(update_kernel);
 

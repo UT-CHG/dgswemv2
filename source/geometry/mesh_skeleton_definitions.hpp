@@ -12,12 +12,10 @@
 
 namespace Geometry {
 template <typename Data, typename EdgeData>
-using EdgeInternalTypeTuple =
-    std::tuple<EdgeInternal<1, Basis::Legendre_1D, Integration::GaussLegendre_1D, Data, EdgeData>>;
+using EdgeInternalTypeTuple = std::tuple<EdgeInternal<1, Basis::Legendre_1D, Data, EdgeData>>;
 
 template <typename Data, typename EdgeData>
-using EdgeBoundaryTypeTuple =
-    std::tuple<EdgeBoundary<1, Basis::Legendre_1D, Integration::GaussLegendre_1D, Data, EdgeData>>;
+using EdgeBoundaryTypeTuple = std::tuple<EdgeBoundary<1, Basis::Legendre_1D, Data, EdgeData>>;
 
 template <typename Data, typename EdgeData>
 using MeshSkeletonType = MeshSkeleton<EdgeInternalTypeTuple<Data, EdgeData>, EdgeBoundaryTypeTuple<Data, EdgeData>>;

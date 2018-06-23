@@ -15,6 +15,9 @@ int main() {
     using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::EHDG::Data>;
 
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::EHDG::Data>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::BC::Land>;
+    using InterfaceType =
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::IS::Internal>;
     using EdgeInternalType =
         typename std::tuple_element<0, Geometry::EdgeInternalTypeTuple<SWE::EHDG::Data, SWE::EHDG::EdgeData>>::type;
     using EdgeBoundaryType =
@@ -47,10 +50,16 @@ int main() {
     std::vector<double> u_gp(integration.GetNumGP(21));  // ngp for 2*p+1
 
     // generate edge boundaries
-    std::vector<EdgeBoundaryType> edge_boundaries;
+    std::vector<BoundaryType> boundaries;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
-        edge_boundaries.emplace_back(EdgeBoundaryType(rb.second));
+        boundaries.emplace_back(BoundaryType(rb.second));
+    }
+
+    std::vector<EdgeBoundaryType> edge_boundaries;
+
+    for (auto& bound : boundaries) {
+        edge_boundaries.emplace_back(EdgeBoundaryType(bound));
     }
 
     for (uint dof = 0; dof < 11; dof++) {
@@ -70,10 +79,16 @@ int main() {
     }
 
     // generate edge intenrals
-    std::vector<EdgeInternalType> edge_internals;
+    std::vector<InterfaceType> interfaces;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
-        edge_internals.emplace_back(EdgeInternalType(rb.second, rb.second));
+        interfaces.emplace_back(InterfaceType(rb.second, rb.second));
+    }
+
+    std::vector<EdgeInternalType> edge_internals;
+
+    for (auto& intface : interfaces) {
+        edge_internals.emplace_back(EdgeInternalType(intface));
     }
 
     for (uint dof = 0; dof < 11; dof++) {

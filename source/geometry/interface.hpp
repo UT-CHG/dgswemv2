@@ -15,6 +15,12 @@ class Interface {
     std::vector<uint> node_ID_in;
     std::vector<uint> node_ID_ex;
 
+    Master::Master<dimension + 1>& master_in;
+    Master::Master<dimension + 1>& master_ex;
+
+    Shape::Shape<dimension + 1>& shape_in;
+    Shape::Shape<dimension + 1>& shape_ex;
+
     Array2D<double> surface_normal_in;
     Array2D<double> surface_normal_ex;
 
@@ -48,6 +54,9 @@ class Interface {
     double IntegrationEX(const std::vector<double>& u_gp);
     double IntegrationPhiIN(const uint dof, const std::vector<double>& u_gp);
     double IntegrationPhiEX(const uint dof, const std::vector<double>& u_gp);
+
+  public:
+    using InterfaceIntegrationType = IntegrationType;
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
@@ -61,7 +70,11 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
       bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
       node_ID_in(raw_boundary_in.node_ID),
-      node_ID_ex(raw_boundary_ex.node_ID) {
+      node_ID_ex(raw_boundary_ex.node_ID),
+      master_in(raw_boundary_in.master),
+      master_ex(raw_boundary_ex.master),
+      shape_in(raw_boundary_in.shape),
+      shape_ex(raw_boundary_ex.shape) {
     // *** //
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 
@@ -71,31 +84,31 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
 
     // transfrom gp to master coord in
     std::vector<Point<dimension + 1>> z_master_in =
-        raw_boundary_in.master.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
+        this->master_in.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
 
     // Compute factors to expand nodal values in
-    this->psi_gp_in = raw_boundary_in.shape.GetPsi(z_master_in);
+    this->psi_gp_in = this->shape_in.GetPsi(z_master_in);
 
     // Compute factors to expand boundary nodal values in
-    this->psi_bound_gp_in = raw_boundary_in.shape.GetBoundaryPsi(this->bound_id_in, integration_rule.second);
+    this->psi_bound_gp_in = this->shape_in.GetBoundaryPsi(this->bound_id_in, integration_rule.second);
 
     // Compute factors to expand modal values in
     this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master_in);
 
     // transfrom gp to master coord ex
     std::vector<Point<dimension + 1>> z_master_ex =
-        raw_boundary_ex.master.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
+        this->master_ex.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
 
     // Compute factors to expand nodal values ex
-    this->psi_gp_ex = raw_boundary_ex.shape.GetPsi(z_master_ex);
+    this->psi_gp_ex = this->shape_ex.GetPsi(z_master_ex);
 
     // Compute factors to expand boundary nodal values ex
-    this->psi_bound_gp_ex = raw_boundary_ex.shape.GetBoundaryPsi(this->bound_id_ex, integration_rule.second);
+    this->psi_bound_gp_ex = this->shape_ex.GetBoundaryPsi(this->bound_id_ex, integration_rule.second);
 
     // Compute factors to expand modal values ex
     this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master_ex);
 
-    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(this->bound_id_in, z_master_in);
+    std::vector<double> surface_J = this->shape_ex.GetSurfaceJ(this->bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_in = integration_rule.first;
@@ -122,9 +135,8 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
             }
         }
 
-        this->surface_normal_in =
-            Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary_in.shape.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
+        this->surface_normal_in = Array2D<double>(
+            integration_rule.first.size(), *this->shape_in.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
 
         this->surface_normal_ex = this->surface_normal_in;  // same dimensions
 

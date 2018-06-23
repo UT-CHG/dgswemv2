@@ -82,16 +82,16 @@ struct Problem {
 
     // processor kernels
     template <typename ElementType>
-    static void volume_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void source_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename InterfaceType>
-    static void interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
 
     template <typename BoundaryType>
-    static void boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
     static void distributed_boundary_send_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);

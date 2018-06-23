@@ -6,7 +6,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename BoundaryType>
-void Problem::boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];

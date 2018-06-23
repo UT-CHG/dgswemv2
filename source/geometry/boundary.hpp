@@ -12,6 +12,9 @@ class Boundary {
     uint bound_id;
     std::vector<uint> node_ID;
 
+    Master::Master<dimension + 1>& master;
+    Shape::Shape<dimension + 1>& shape;
+
     Array2D<double> surface_normal;
 
   private:
@@ -45,7 +48,9 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     : boundary_condition(boundary_condition),
       data(raw_boundary.data),
       bound_id(raw_boundary.bound_id),
-      node_ID(raw_boundary.node_ID) {
+      node_ID(raw_boundary.node_ID),
+      master(raw_boundary.master),
+      shape(raw_boundary.shape) {
     // *** //
     IntegrationType integration;
 
@@ -53,18 +58,18 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
         integration.GetRule(2 * raw_boundary.p + 1);
 
     std::vector<Point<dimension + 1>> z_master =
-        raw_boundary.master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
+        this->master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
     // Compute factors to expand nodal values
-    this->psi_gp = raw_boundary.shape.GetPsi(z_master);
+    this->psi_gp = this->shape.GetPsi(z_master);
 
     // Compute factors to expand boundary nodal values
-    this->psi_bound_gp = raw_boundary.shape.GetBoundaryPsi(this->bound_id, integration_rule.second);
+    this->psi_bound_gp = this->shape.GetBoundaryPsi(this->bound_id, integration_rule.second);
 
     // Compute factors to expand modal values
     this->phi_gp = raw_boundary.basis.GetPhi(raw_boundary.p, z_master);
 
-    std::vector<double> surface_J = raw_boundary.shape.GetSurfaceJ(this->bound_id, z_master);
+    std::vector<double> surface_J = this->shape.GetSurfaceJ(this->bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact = integration_rule.first;
@@ -80,7 +85,7 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
         }
 
         this->surface_normal = Array2D<double>(integration_rule.first.size(),
-                                               *raw_boundary.shape.GetSurfaceNormal(this->bound_id, z_master).begin());
+                                               *this->shape.GetSurfaceNormal(this->bound_id, z_master).begin());
     }
 
     this->data.set_ngp_boundary(this->bound_id, integration_rule.first.size());

@@ -2,7 +2,7 @@
 #define CLASS_EDGE_INTERNAL_HPP
 
 namespace Geometry {
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
 class EdgeInternal {
   public:
     EdgeDataType edge_data;
@@ -13,6 +13,12 @@ class EdgeInternal {
     uint bound_id_in;
     uint bound_id_ex;
 
+    Master::Master<dimension + 1>& master_in;
+    Master::Master<dimension + 1>& master_ex;
+
+    Shape::Shape<dimension + 1>& shape_in;
+    Shape::Shape<dimension + 1>& shape_ex;
+
     Array2D<double> surface_normal_in;
     Array2D<double> surface_normal_ex;
 
@@ -21,25 +27,28 @@ class EdgeInternal {
     Array2D<double> int_lambda_fact;
 
   public:
-    EdgeInternal(const RawBoundary<dimension, DataType>& raw_boundary_in,
-                 const RawBoundary<dimension, DataType>& raw_boundary_ex);
+    template <typename InterfaceType>
+    EdgeInternal(const InterfaceType& intface);
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
     double IntegrationLambda(const uint dof, const std::vector<double>& u_gp);
 };
 
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
-EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::EdgeInternal(
-    const RawBoundary<dimension, DataType>& raw_boundary_in,
-    const RawBoundary<dimension, DataType>& raw_boundary_ex)
-    : data_in(raw_boundary_in.data),
-      data_ex(raw_boundary_ex.data),
-      bound_id_in(raw_boundary_in.bound_id),
-      bound_id_ex(raw_boundary_ex.bound_id) {
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
+template <typename InterfaceType>
+EdgeInternal<dimension, BasisType, DataType, EdgeDataType>::EdgeInternal(const InterfaceType& intface)
+    : data_in(intface.data_in),
+      data_ex(intface.data_ex),
+      bound_id_in(intface.bound_id_in),
+      bound_id_ex(intface.bound_id_ex),
+      master_in(intface.master_in),
+      master_ex(intface.master_ex),
+      shape_in(intface.shape_in),
+      shape_ex(intface.shape_ex) {
     // *** //
-    uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
+    uint p = std::max(this->master_in.p, this->master_ex.p);
 
-    IntegrationType integration;
+    typename InterfaceType::InterfaceIntegrationType integration;
 
     std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
@@ -49,9 +58,9 @@ EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::Edg
 
     // transfrom gp to master coord in
     std::vector<Point<dimension + 1>> z_master_in =
-        raw_boundary_in.master.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
+        this->master_in.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
 
-    std::vector<double> surface_J = raw_boundary_in.shape.GetSurfaceJ(this->bound_id_in, z_master_in);
+    std::vector<double> surface_J = this->shape_in.GetSurfaceJ(this->bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_lambda_fact = this->lambda_gp;
@@ -61,9 +70,8 @@ EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::Edg
             }
         }
 
-        this->surface_normal_in =
-            Array2D<double>(integration_rule.first.size(),
-                            *raw_boundary_in.shape.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
+        this->surface_normal_in = Array2D<double>(
+            integration_rule.first.size(), *this->shape_in.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
 
         this->surface_normal_ex = this->surface_normal_in;  // same dimensions
 
@@ -76,12 +84,16 @@ EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::Edg
             }
         }
     }
+
+    uint ndof = this->lambda_gp.size();
+    uint ngp  = integration_rule.first.size();
+
+    this->edge_data = EdgeDataType(ndof, ngp);
 }
 
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
-void EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::ComputeUgp(
-    const std::vector<double>& u,
-    std::vector<double>& u_gp) {
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
+void EdgeInternal<dimension, BasisType, DataType, EdgeDataType>::ComputeUgp(const std::vector<double>& u,
+                                                                            std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -91,10 +103,9 @@ void EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>
     }
 }
 
-template <uint dimension, typename BasisType, typename IntegrationType, typename DataType, typename EdgeDataType>
-double EdgeInternal<dimension, BasisType, IntegrationType, DataType, EdgeDataType>::IntegrationLambda(
-    const uint dof,
-    const std::vector<double>& u_gp) {
+template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
+double EdgeInternal<dimension, BasisType, DataType, EdgeDataType>::IntegrationLambda(const uint dof,
+                                                                                     const std::vector<double>& u_gp) {
     double integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
