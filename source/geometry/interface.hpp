@@ -108,7 +108,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     // Compute factors to expand modal values ex
     this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master_ex);
 
-    std::vector<double> surface_J = this->shape_ex.GetSurfaceJ(this->bound_id_in, z_master_in);
+    std::vector<double> surface_J = this->shape_in.GetSurfaceJ(this->bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_in = integration_rule.first;
