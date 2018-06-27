@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
     hpx::serialization::input_archive i_archive(buffer);
     MeshType i_mesh;
     i_archive >> i_mesh;
+    i_mesh.SetMasters();
 
     if ( !equal(o_mesh, i_mesh) ) {
         return 1;
