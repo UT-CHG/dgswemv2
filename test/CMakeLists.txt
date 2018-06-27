@@ -442,23 +442,6 @@ if(USE_HPX)
     test_stepper_serialization_exe
   )
 
-
-  add_executable(
-    test_swe_inputs_serialization_exe
-    test_swe_inputs_serialization.cpp
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-  )
-
-  set_target_properties(test_swe_inputs_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_swe_inputs_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_swe_inputs_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
-
-  add_test(
-    Unit_swe_inputs_serialization
-    test_swe_inputs_serialization_exe
-  )
-
   add_executable(
     test_serialize_chrono_exe
     test_serialize_chrono.cpp
