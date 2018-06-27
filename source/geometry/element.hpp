@@ -52,7 +52,7 @@ class Element {
                                  pre_specialized_interfaces);
 
     uint GetID() { return this->ID; }
-    MasterType& GetMaster() { return this->master; }
+    MasterType& GetMaster() { return *this->master; }
     ShapeType& GetShape() { return this->shape; }
 
     std::vector<uint>& GetNodeID() { return this->node_ID; }
@@ -127,8 +127,8 @@ void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& 
     this->const_J = (det_J.size() == 1);
 
     // Compute factors to expand nodal values and derivatives of nodal values
-    this->shape.psi_gp  = this->shape.GetPsi(this->master.integration_rule.second);
-    this->shape.dpsi_gp = this->shape.GetDPsi(this->master.integration_rule.second);
+    this->shape.psi_gp  = this->shape.GetPsi(this->master->integration_rule.second);
+    this->shape.dpsi_gp = this->shape.GetDPsi(this->master->integration_rule.second);
 
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
@@ -147,11 +147,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& 
             }
         }
 
-        this->dphi_fact.resize(this->master->dphi_gp.size());
+        this->dphi_gp.resize(this->master->dphi_gp.size());
         for (uint dof = 0; dof < this->master->dphi_gp.size(); dof++) {
-            this->dphi_fact[dof].resize(dimension);
+            this->dphi_gp[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->dphi_fact[dof][dir].reserve(this->master->dphi_gp[dof][dir].size());
+                this->dphi_gp[dof][dir].reserve(this->master->dphi_gp[dof][dir].size());
                 for (uint gp = 0; gp < this->master->dphi_gp[dof][dir].size(); gp++) {
                     double dphi = 0;
                     for (uint z = 0; z < dimension; z++) {
@@ -168,22 +168,22 @@ void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& 
             this->int_fact[gp] *= std::abs(det_J[0]);
         }
 
-        this->int_fact_phi = this->master->int_fact_phi;
-        for (uint dof = 0; dof < this->int_fact_phi.size(); dof++) {
-            for (uint gp = 0; gp < this->int_fact_phi[dof].size(); gp++) {
-                this->int_fact_phi[dof][gp] *= std::abs(det_J[0]);
+        this->int_phi_fact = this->master->int_phi_fact;
+        for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
+            for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
+                this->int_phi_fact[dof][gp] *= std::abs(det_J[0]);
             }
         }
 
-        this->int_fact_dphi.resize(this->master->int_fact_dphi.size());
-        for (uint dof = 0; dof < this->master->int_fact_dphi.size(); dof++) {
-            this->int_fact_dphi[dof].resize(dimension);
+        this->int_dphi_fact.resize(this->master->int_dphi_fact.size());
+        for (uint dof = 0; dof < this->master->int_dphi_fact.size(); dof++) {
+            this->int_dphi_fact[dof].resize(dimension);
             for (uint dir = 0; dir < dimension; dir++) {
-                this->int_fact_dphi[dof][dir].reserve(this->master->int_fact_dphi[dof][dir].size());
-                for (uint gp = 0; gp < this->master->int_fact_dphi[dof][dir].size(); gp++) {
+                this->int_dphi_fact[dof][dir].reserve(this->master->int_dphi_fact[dof][dir].size());
+                for (uint gp = 0; gp < this->master->int_dphi_fact[dof][dir].size(); gp++) {
                     double int_dphi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        int_dphi += this->master->int_fact_dphi[dof][z][gp] * J_inv[z][dir][0];
+                        int_dphi += this->master->int_dphi_fact[dof][z][gp] * J_inv[z][dir][0];
                     }
                     int_dphi *= std::abs(det_J[0]);
                     this->int_dphi_fact[dof][dir].push_back(int_dphi);

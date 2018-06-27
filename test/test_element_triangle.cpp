@@ -1,16 +1,6 @@
-<<<<<<< b6e108c4d075e33e1ea0e6068557db30e44f4337
-
-
-int main() {
-    using Utilities::almost_equal;
-    bool error_found = false;
-
-
-=======
 #include "test_element_triangle.hpp"
 
 int main() {
->>>>>>> Adding serialization for `Geometry::Element`
     // make an equilateral triangle
     std::vector<Point<2>> vrtxs(3);
     vrtxs[0] = {-0.5, 0.};

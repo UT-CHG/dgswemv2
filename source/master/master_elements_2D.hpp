@@ -23,7 +23,6 @@ class Triangle : public Master<2> {
     IntegrationType integration;
 
   public:
-    Triangle() = default;
     /**
      * Default constructor
      */

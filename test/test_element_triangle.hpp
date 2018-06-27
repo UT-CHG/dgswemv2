@@ -8,7 +8,7 @@
 
 using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 using ShapeType = Shape::StraightTriangle;
-using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
+using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
 
 using Utilities::almost_equal;
 
@@ -214,8 +214,9 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     // Check L2 projection
     std::vector<double> nodal_vals{1.0, 2.0, 3.0};
     std::vector<double> modal_vals_true{2.0, 0.5, 0.5};
+    std::vector<double> modal_vals_computed(triangle.data.get_ndof());
 
-    std::vector<double> modal_vals_computed = triangle.L2Projection(nodal_vals);
+    triangle.L2Projection(nodal_vals, modal_vals_computed);
 
     for (uint i = 0; i < 3; i++) {
         if (!almost_equal(modal_vals_computed[i], modal_vals_true[i])) {
