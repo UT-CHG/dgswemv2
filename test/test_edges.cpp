@@ -49,6 +49,10 @@ int main() {
     std::vector<double> u(11);                           // ndof for p = 10
     std::vector<double> u_gp(integration.GetNumGP(21));  // ngp for 2*p+1
 
+    std::vector<double> u_proj{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
+    std::vector<double> u_proj_res(11);
+    std::vector<double> u_proj_gp(integration.GetNumGP(21));  // ngp for 2*p+1
+
     // generate edge boundaries
     std::vector<BoundaryType> boundaries;
 
@@ -58,8 +62,19 @@ int main() {
 
     std::vector<EdgeBoundaryType> edge_boundaries;
 
-    for (auto& bound : boundaries) {
+    for (auto bound : boundaries) {
         edge_boundaries.emplace_back(EdgeBoundaryType(bound));
+    }
+
+    for (uint n_bound = 0; n_bound < 3; n_bound++) {
+        edge_boundaries[n_bound].ComputeUgp(u_proj, u_proj_gp);
+        edge_boundaries[n_bound].L2Projection(u_proj_gp, u_proj_res);
+
+        for (uint dof = 0; dof < 11; dof++) {
+            if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
+                error_found = true;
+            }
+        }
     }
 
     for (uint dof = 0; dof < 11; dof++) {
@@ -71,6 +86,14 @@ int main() {
             edge_boundaries[n_bound].ComputeUgp(u, u_gp);
 
             double inner_product = edge_boundaries[n_bound].IntegrationLambda(dof, u_gp);
+
+            if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
+                error_found = true;
+            }
+
+            std::fill(u_gp.begin(), u_gp.end(), 1.0);
+
+            inner_product = edge_boundaries[n_bound].IntegrationLambdaLambda(dof, dof, u_gp);
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
@@ -87,8 +110,19 @@ int main() {
 
     std::vector<EdgeInternalType> edge_internals;
 
-    for (auto& intface : interfaces) {
+    for (auto intface : interfaces) {
         edge_internals.emplace_back(EdgeInternalType(intface));
+    }
+
+    for (uint n_int = 0; n_int < 3; n_int++) {
+        edge_internals[n_int].ComputeUgp(u_proj, u_proj_gp);
+        edge_internals[n_int].L2Projection(u_proj_gp, u_proj_res);
+
+        for (uint dof = 0; dof < 11; dof++) {
+            if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
+                error_found = true;
+            }
+        }
     }
 
     for (uint dof = 0; dof < 11; dof++) {
@@ -100,6 +134,14 @@ int main() {
             edge_internals[n_int].ComputeUgp(u, u_gp);
 
             double inner_product = edge_internals[n_int].IntegrationLambda(dof, u_gp);
+
+            if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
+                error_found = true;
+            }
+
+            std::fill(u_gp.begin(), u_gp.end(), 1.0);
+
+            inner_product = edge_internals[n_int].IntegrationLambdaLambda(dof, dof, u_gp);
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;

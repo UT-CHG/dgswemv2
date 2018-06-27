@@ -163,7 +163,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
 
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
-            std::vector<uint>& node_ID = elt.GetNodeID();
+            const std::vector<uint>& node_ID = elt.GetNodeID();
 
             for (uint node = 0; node < elt.data.get_nnode(); node++) {
                 elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];

@@ -12,19 +12,20 @@ class Interface {
 
     uint bound_id_in;
     uint bound_id_ex;
-    std::vector<uint> node_ID_in;
-    std::vector<uint> node_ID_ex;
 
+    Array2D<double> surface_normal_in;
+    Array2D<double> surface_normal_ex;
+
+  private:
     Master::Master<dimension + 1>& master_in;
     Master::Master<dimension + 1>& master_ex;
 
     Shape::Shape<dimension + 1>& shape_in;
     Shape::Shape<dimension + 1>& shape_ex;
 
-    Array2D<double> surface_normal_in;
-    Array2D<double> surface_normal_ex;
+    std::vector<uint> node_ID_in;
+    std::vector<uint> node_ID_ex;
 
-  private:
     Array2D<double> psi_gp_in;
     Array2D<double> psi_gp_ex;
     Array2D<double> psi_bound_gp_in;
@@ -41,6 +42,15 @@ class Interface {
     Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
               const RawBoundary<dimension, DataType>& raw_boundary_ex,
               const SpecializationType& specialization = SpecializationType());
+
+    Master::Master<dimension + 1>& GetMasterIN() const { return this->master_in; }
+    Master::Master<dimension + 1>& GetMasterEX() const { return this->master_ex; }
+
+    Shape::Shape<dimension + 1>& GetShapeIN() const { return this->shape_in; }
+    Shape::Shape<dimension + 1>& GetShapeEX() const { return this->shape_ex; }
+
+    std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
+    std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
 
     void ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp);

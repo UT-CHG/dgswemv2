@@ -69,9 +69,9 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             this->elements.at(elt_id).neighbor_ID[face_id]   = DEFAULT_ID;
             this->elements.at(elt_id).boundary_type[face_id] = mesh_file.get_ibtype(nodes);
 
-            // find element id on the other side of internal barrier
-            if (this->elements.at(elt_id).boundary_type[face_id] == SWE::BoundaryTypes::levee) {
-                std::array<uint, 2> barrier_np = mesh_file.get_barrier_node_pair(nodes);
+            // find element id on the other side of internal boundary type, e.g. "levee", "periodic", etc.
+            if (is_internal(this->elements.at(elt_id).boundary_type[face_id])) {
+                std::array<uint, 2> barrier_np = mesh_file.get_internal_node_pair(nodes);
                 std::uint64_t key = static_cast<std::uint64_t>(std::min(barrier_np[0], barrier_np[1])) << 32 |
                                     std::max(barrier_np[0], barrier_np[1]);
 

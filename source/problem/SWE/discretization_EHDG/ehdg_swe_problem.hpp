@@ -81,6 +81,35 @@ struct Problem {
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
     // processor kernels
+
+    /* global step */
+
+    template <typename InterfaceType>
+    static void global_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+
+    template <typename EdgeInternalType>
+    static void global_edge_internal_kernel(const RKStepper& stepper, EdgeInternalType& edge_int);
+
+    template <typename EdgeInternalType>
+    static void global_edge_internal_iteration(const RKStepper& stepper, EdgeInternalType& edge_int);
+
+    template <typename EdgeInternalType>
+    static void edge_internal_compute_flux(const RKStepper& stepper, EdgeInternalType& edge_int);
+
+    template <typename BoundaryType>
+    static void global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+
+    template <typename EdgeBoundaryType>
+    static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename EdgeBoundaryType>
+    static void global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename EdgeBoundaryType>
+    static void edge_boundary_compute_flux(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    /* local step */
+
     template <typename ElementType>
     static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
 

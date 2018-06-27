@@ -26,7 +26,7 @@ add_executable(
 )
 
 target_include_directories(EHDG_SWE_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(EHDG_SWE_SERIAL ${YAML_CPP_LIBRARIES})
+target_link_libraries(EHDG_SWE_SERIAL ${YAML_CPP_LIBRARIES} Eigen3::Eigen)
 
 install(TARGETS EHDG_SWE_SERIAL DESTINATION bin)
 

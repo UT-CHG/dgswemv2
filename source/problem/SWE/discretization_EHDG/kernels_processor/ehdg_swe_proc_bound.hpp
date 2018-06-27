@@ -6,7 +6,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename BoundaryType>
-void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];
@@ -15,16 +15,14 @@ void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& boun
     bound.ComputeUgp(state.ze, boundary.ze_at_gp);
     bound.ComputeUgp(state.qx, boundary.qx_at_gp);
     bound.ComputeUgp(state.qy, boundary.qy_at_gp);
+}
 
-    bound.boundary_condition.ComputeFlux(stepper,
-                                         bound.surface_normal,
-                                         boundary.bath_at_gp,
-                                         boundary.ze_at_gp,
-                                         boundary.qx_at_gp,
-                                         boundary.qy_at_gp,
-                                         boundary.ze_numerical_flux_at_gp,
-                                         boundary.qx_numerical_flux_at_gp,
-                                         boundary.qy_numerical_flux_at_gp);
+template <typename BoundaryType>
+void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+    const uint stage = stepper.GetStage();
+
+    auto& state    = bound.data.state[stage];
+    auto& boundary = bound.data.boundary[bound.bound_id];
 
     // now compute contributions to the righthand side
     for (uint dof = 0; dof < bound.data.get_ndof(); ++dof) {

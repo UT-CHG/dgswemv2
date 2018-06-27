@@ -6,6 +6,8 @@
 #include "ehdg_swe_proc_intface.hpp"
 #include "ehdg_swe_proc_bound.hpp"
 #include "ehdg_swe_proc_dbound.hpp"
+#include "ehdg_swe_proc_edge_int.hpp"
+#include "ehdg_swe_proc_edge_bound.hpp"
 #include "ehdg_swe_proc_update.hpp"
 
 #endif
