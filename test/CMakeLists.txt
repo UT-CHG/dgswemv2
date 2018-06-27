@@ -429,7 +429,7 @@ if(USE_HPX)
   add_executable(
     test_stepper_serialization_exe
     test_stepper_serialization.cpp
-    ${PROJECT_SOURCE_DIR}/source/simulation/stepper.cpp
+    ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
   )
 
   set_target_properties(test_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
