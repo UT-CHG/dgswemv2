@@ -101,10 +101,10 @@ void SlopeLimit::serialize(Archive& ar, unsigned) {
         & qx_at_midpts
         & qy_at_midpts
         & bath_at_midpts
+        & wet_neigh
         & ze_at_baryctr_neigh
         & qx_at_baryctr_neigh
         & qy_at_baryctr_neigh
-        & bath_at_baryctr_neigh
         & w_midpt_char
         & w_baryctr_char
         & delta_char

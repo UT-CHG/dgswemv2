@@ -42,7 +42,7 @@ void Source::serialize(Archive& ar, unsigned) {
        & tau_s
        & p_atm
        & tide_pot
-       & manning_n
+       & manning_n;
 }
 #endif
 }

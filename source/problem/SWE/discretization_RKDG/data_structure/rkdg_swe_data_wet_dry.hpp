@@ -43,8 +43,18 @@ struct WetDry {
 #ifdef HAS_HPX
 template <typename Archive>
 void WetDry::serialize(Archive& ar, unsigned) {
-    ar & bath_min & water_volume & ze_lin & qx_lin & qy_lin & ze_at_vrtx & qx_at_vrtx & qy_at_vrtx & bath_at_vrtx
-        & h_at_vrtx & h_at_vrtx_temp & wet;
+    ar & wet
+       & went_completely_dry
+       & bath_min
+       & ze_lin
+       & qx_lin
+       & qy_lin
+       & ze_at_vrtx
+       & qx_at_vrtx
+       & qy_at_vrtx
+       & bath_at_vrtx
+       & h_at_vrtx
+       & h_at_vrtx_temp;
 }
 #endif
 }

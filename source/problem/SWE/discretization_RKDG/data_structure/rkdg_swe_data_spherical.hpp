@@ -21,8 +21,22 @@ struct Spherical {
 
     std::vector<double> sp_at_gp_internal;
     std::vector<std::vector<double>> sp_at_gp_boundary;
-};
-}
-}
 
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
+};
+
+#ifdef HAS_HPX
+template <typename Archive>
+void Spherical::serialize(Archive& ar, unsigned) {
+    ar & x_node
+       & y_node
+       & sp_at_gp_internal
+       & sp_at_gp_boundary;
+}
+#endif
+}
+}
 #endif

@@ -58,9 +58,9 @@ void Internal::serialize(Archive& ar, unsigned) {
     ar & ze_flux_at_gp
        & qx_flux_at_gp
        & qy_flux_at_gp
-       & tau_s_at_gp;
-       & dp_atm_at_gp;
-       & dtide_pot_at_gp;
+       & tau_s_at_gp
+       & dp_atm_at_gp
+       & dtide_pot_at_gp
        & ze_source_term_at_gp
        & qx_source_term_at_gp
        & qy_source_term_at_gp
