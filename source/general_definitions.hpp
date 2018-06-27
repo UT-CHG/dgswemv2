@@ -166,18 +166,15 @@ class Shape {
   public:
     std::vector<Point<dimension>> nodal_coordinates;
 
+    Array2D<double> psi_gp;
+    Array3D<double> dpsi_gp;
+
   public:
     Shape()=default;
     Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(nodal_coordinates) {}
 
     virtual ~Shape() = default;
 
-    virtual bool CheckJacobianPositive(const Point<dimension>& point)= 0;
-
-    Array2D<double> psi_gp;
-    Array3D<double> dpsi_gp;
-
-  public:
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
 
     virtual Point<dimension> GetBarycentricCoordinates()           = 0;
