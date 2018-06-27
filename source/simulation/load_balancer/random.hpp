@@ -129,10 +129,7 @@ void WorldModel<ProblemType>::MigrateOneSubmesh() {
         client_locality_id_pair& curr_target = this->simulation_unit_clients[ 0xdeadbeef % this->simulation_unit_clients.size() ];
         uint target_locality = ( curr_target.second + 1 ) % localities.size();
 
-        std::cout << "Stealing tile from " << curr_target.second << " and moving it to " << target_locality << std::endl;
-
         curr_target.first = hpx::components::migrate(curr_target.first,localities[target_locality]);
-        std::cout << "Made it past steal" << std::endl;
         curr_target.second = target_locality;
         this->tried_moving_one_tile = true;
     }
@@ -147,11 +144,10 @@ SubmeshModel<ProblemType>::SubmeshModel(const std::chrono::duration<double>& reb
 
 template <typename ProblemType>
 void SubmeshModel<ProblemType>::InStep(uint64_t, uint64_t) {
-    /*if ( this->locality_id == 0 && this->submesh_id == 0 && this->beat.Thump() ) {
-        std::cout << "In submeshmode->Instep()\n";
+    if ( this->locality_id == 0 && this->submesh_id == 0 && this->beat.Thump() ) {
         assert(Random<ProblemType>::world_model_client);
         Random<ProblemType>::world_model_client.MigrateOneSubmesh();
-        }*/
+    }
 }
 
 template <typename ProblemType>
