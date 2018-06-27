@@ -427,19 +427,19 @@ if(USE_HPX)
   )
 
   add_executable(
-    test_stepper_serialization_exe
-    test_stepper_serialization.cpp
+    test_rk_stepper_serialization_exe
+    test_rk_stepper_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
   )
 
-  set_target_properties(test_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+  set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
-  target_include_directories(test_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_stepper_serialization_exe ${HPX_LIBRARIES})
+  target_include_directories(test_rk_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_rk_stepper_serialization_exe ${HPX_LIBRARIES})
 
   add_test(
-    Unit_stepper_serialization
-    test_stepper_serialization_exe
+    Unit_rk_stepper_serialization
+    test_rk_stepper_serialization_exe
   )
 
   add_executable(

@@ -27,6 +27,8 @@ class RKStepper {
     RKStepper() = default;
     RKStepper(const StepperInput& stepper_input);
 
+    void InitializeCoefficients();
+
     uint GetOrder() const { return this->order; }
     uint GetNumStages() const { return this->nstages; }
     double GetDT() const { return this->dt; }
@@ -51,6 +53,29 @@ class RKStepper {
 
         return *this;
     }
-};
 
+#ifdef HAS_HPX
+    template <typename Archive>
+    void save(Archive& ar, unsigned) const;
+
+    template <typename Archive>
+    void load(Archive& ar, unsigned);
+
+    HPX_SERIALIZATION_SPLIT_MEMBER()
+#endif
+};
+#ifdef HAS_HPX
+template<typename Archive>
+void RKStepper::save(Archive& ar, unsigned) const {
+    ar & order & nstages & dt & stage & timestamp & t & ramp;
+}
+
+template<typename Archive>
+void RKStepper::load(Archive& ar, unsigned) {
+    ar & order & nstages & dt & stage & timestamp & t & ramp;
+
+    step = timestamp/nstages;
+    InitializeCoefficients();
+}
+#endif
 #endif
