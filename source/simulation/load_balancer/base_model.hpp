@@ -20,6 +20,8 @@ class SubmeshModel {
     }
     HPX_SERIALIZATION_POLYMORPHIC(SubmeshModel);
 
+    virtual std::pair<uint,uint> get_tag() { return std::make_pair(locality_id,submesh_id); }
+
   protected:
     uint locality_id, submesh_id;
 };

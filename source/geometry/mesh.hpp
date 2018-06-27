@@ -67,24 +67,8 @@ class Mesh<std::tuple<Elements...>,
     template <typename F>
     void CallForEachDistributedBoundary(const F& f);
 
-#ifdef HAS_HPX
-    template <typename Archive>
-     void save(Archive& ar, unsigned) const {
-        ar & mesh_name & p;
-        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
-                ar & element_map;
-        });
-    }
-
-    template <typename Archive>
-     void load(Archive& ar, unsigned) {
-        ar & mesh_name & p;
-
+    void SetMasters() {
         this->masters = master_maker<MasterElementTypes>::construct_masters(p);
-
-        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
-                ar & element_map;
-        });
 
         this->CallForEachElement([this](auto& element) {
                 using MasterType = typename std::remove_reference<decltype(element)>::type::ElementMasterType;
@@ -95,7 +79,14 @@ class Mesh<std::tuple<Elements...>,
             });
     }
 
-    HPX_SERIALIZATION_SPLIT_MEMBER()
+#ifdef HAS_HPX
+    template <typename Archive>
+     void serialize(Archive& ar, unsigned) {
+        ar & mesh_name & p;
+        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
+                ar & element_map;
+        });
+    }
 #endif
 };
 

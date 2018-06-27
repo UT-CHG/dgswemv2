@@ -57,7 +57,7 @@ class SubmeshModel : public LoadBalancer::SubmeshModel {
 
     template <typename Archive>
     void serialize(Archive& ar, unsigned);
-    HPX_SERIALIZATION_POLYMORPHIC(SubmeshModel<ProblemType>);
+    HPX_SERIALIZATION_POLYMORPHIC_TEMPLATE(SubmeshModel);
 
   private:
     Utilities::HeartBeat beat;
@@ -108,10 +108,17 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
             this->simulation_unit_clients.back().first.connect_to(std::string{client_t::GetBasename()}+
                                                             std::to_string(locality_id)+'_'+
                                                             std::to_string(submesh_id));
-            std::cout << "Adding client for locality: " << locality_id << " ad submesh: " << submesh_id << '\n';
+            std::cout << "Adding client for locality: " << locality_id << " at submesh: " << submesh_id << '\n';
             ++submesh_id;
         }
     }
+
+    std::cout << "Locality index:" << std::endl;
+    auto localities = hpx::find_all_localities();
+    for ( uint i = 0; i < localities.size(); ++i ) {
+        std::cout << i << " : " << localities[i] << '\n';
+    }
+    std::cout << std::endl;
 }
 
 template <typename ProblemType>

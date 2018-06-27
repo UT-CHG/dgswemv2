@@ -49,7 +49,6 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
             internal.qy_flux_at_gp[GlobalCoord::y][gp] = vvh_at_gp + pe_at_gp;
         }
 
-        // skip dof = 0, which is a constant and thus trivially 0 NOT ALWAYS!
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.rhs_ze[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.ze_flux_at_gp[GlobalCoord::x]) +
                                 elt.IntegrationDPhi(GlobalCoord::y, dof, internal.ze_flux_at_gp[GlobalCoord::y]);

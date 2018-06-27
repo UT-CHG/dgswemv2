@@ -47,7 +47,7 @@ if(USE_OMPI)
 endif()
 
 if(USE_HPX)
-  find_package(HPX REQUIRED)  
+  find_package(HPX REQUIRED)
 endif()
 
 if(COMPILER_WARNINGS)

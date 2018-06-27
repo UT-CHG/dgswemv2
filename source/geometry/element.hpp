@@ -298,11 +298,12 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(cons
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(const std::vector<double>& u,
                                                                             std::vector<double>& u_gp) {
+    assert(this->master);
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp.at(gp) += u.at(dof) * this->master->phi_gp.at(dof).at(gp);
+            u_gp[gp] += u[dof] * this->master->phi_gp[dof][gp];
         }
     }
 }
@@ -324,7 +325,6 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin,
                                                                                   std::vector<double>& u_lin_gp) {
 
-    assert(this->master);
     std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
@@ -519,7 +519,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
     std::vector<double> sq_diff(rule.first.size());
 
     for (uint gp = 0; gp < sq_diff.size(); gp++) {
-        sq_diff[gp] = pow((f_gp[gp] - u_gp[gp]), 2);
+        sq_diff[gp] = std::pow((f_gp[gp] - u_gp[gp]), 2);
     }
 
     double L2 = 0;

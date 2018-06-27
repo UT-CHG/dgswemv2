@@ -33,7 +33,7 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
 }
 
 template <typename ProblemType>
-class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
+class HPXSimulation : public hpx::components::component_base<HPXSimulation<ProblemType>> {
   private:
     uint n_steps;
     uint n_stages;
@@ -105,7 +105,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
             simulation_futures[sim_id] =
                 simulation_futures[sim_id]
-                    .then([this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
+                    .then([this, sim_id](auto&& f) {
+                            f.get(); //check for exceptions
+                            return this->simulation_unit_clients[sim_id].Step(); });
         }
 
         if ( step % 100 == 0 ) {
