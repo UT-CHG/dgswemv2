@@ -351,18 +351,18 @@ add_test(
 
 if(USE_HPX)
   add_executable(
-    test_swe_serialization_exe
-    test_swe_serialization.cpp
+    test_rkdg_swe_serialization_exe
+    test_rkdg_swe_serialization.cpp
   )
 
-  set_target_properties(test_swe_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+  set_target_properties(test_rkdg_swe_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
-  target_include_directories(test_swe_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_swe_serialization_exe ${HPX_LIBRARIES})
+  target_include_directories(test_rkdg_swe_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_rkdg_swe_serialization_exe ${HPX_LIBRARIES})
 
   add_test(
-    Unit_swe_serialization
-    test_swe_serialization_exe
+    Unit_rkdg_swe_serialization
+    test_rkdg_swe_serialization_exe
   )
 
   add_executable(
