@@ -161,13 +161,13 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
-    std::vector<Point<dimension>> nodal_coordinates;
+    std::vector<Point<3>> nodal_coordinates;
 
     Array2D<double> psi_gp;
     Array3D<double> dpsi_gp;
 
   public:
-    Shape(const std::vector<Point<dimension>>& nodal_coordinates) : nodal_coordinates(nodal_coordinates) {}
+    Shape(std::vector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
 

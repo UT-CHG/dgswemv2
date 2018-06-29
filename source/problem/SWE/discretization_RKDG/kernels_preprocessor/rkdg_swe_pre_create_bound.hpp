@@ -22,7 +22,7 @@ void Problem::create_boundaries_kernel(
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                mesh.template CreateBoundary<BoundaryTypeLand>(raw_boundary);
+                mesh.template CreateBoundary<BoundaryTypeLand>(std::move(raw_boundary));
 
                 it->second.erase(itt++);
             }
@@ -54,7 +54,7 @@ void Problem::create_boundaries_kernel(
                     }
                 }
 
-                mesh.template CreateBoundary<BoundaryTypeTide>(raw_boundary, BC::Tide(tide));
+                mesh.template CreateBoundary<BoundaryTypeTide>(std::move(raw_boundary), BC::Tide(tide));
 
                 it->second.erase(itt++);
             }
@@ -86,7 +86,7 @@ void Problem::create_boundaries_kernel(
                     }
                 }
 
-                mesh.template CreateBoundary<BoundaryTypeFlow>(raw_boundary, BC::Flow(flow));
+                mesh.template CreateBoundary<BoundaryTypeFlow>(std::move(raw_boundary), BC::Flow(flow));
 
                 it->second.erase(itt++);
             }

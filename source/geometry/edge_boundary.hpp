@@ -6,6 +6,7 @@ template <uint dimension, typename BasisType, typename DataType, typename EdgeDa
 class EdgeBoundary {
   public:
     EdgeDataType edge_data;
+
     DataType& data;
 
     uint bound_id;
@@ -24,10 +25,10 @@ class EdgeBoundary {
 
   public:
     template <typename BoundaryType>
-    EdgeBoundary(const BoundaryType& bound);
+    EdgeBoundary(BoundaryType& bound);
 
-    Master::Master<dimension + 1>& GetMaster() const { return this->master; }
-    Shape::Shape<dimension + 1>& GetShape() const { return this->shape; }
+    Master::Master<dimension + 1>& GetMaster() { return this->master; }
+    Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
 
     void L2Projection(const std::vector<double>& u_gp, std::vector<double>& projection);
 
@@ -40,7 +41,7 @@ class EdgeBoundary {
 
 template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
 template <typename BoundaryType>
-EdgeBoundary<dimension, BasisType, DataType, EdgeDataType>::EdgeBoundary(const BoundaryType& bound)
+EdgeBoundary<dimension, BasisType, DataType, EdgeDataType>::EdgeBoundary(BoundaryType& bound)
     : data(bound.data), bound_id(bound.bound_id), master(bound.GetMaster()), shape(bound.GetShape()) {
     // *** //
     typename BoundaryType::BoundaryIntegrationType integration;

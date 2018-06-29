@@ -27,11 +27,10 @@ class Boundary {
     Array2D<double> int_phi_fact;
 
   public:
-    Boundary(const RawBoundary<dimension, DataType>& raw_boundary,
-             const ConditonType& boundary_condition = ConditonType());
+    Boundary(RawBoundary<dimension, DataType>&& raw_boundary, ConditonType&& boundary_condition = ConditonType());
 
-    Master::Master<dimension + 1>& GetMaster() const { return this->master; }
-    Shape::Shape<dimension + 1>& GetShape() const { return this->shape; }
+    Master::Master<dimension + 1>& GetMaster() { return this->master; }
+    Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
 
     std::vector<uint>& GetNodeID() { return this->node_ID; }
 
@@ -49,13 +48,12 @@ class Boundary {
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(
-    const RawBoundary<dimension, DataType>& raw_boundary,
-    const ConditonType& boundary_condition)
+Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBoundary<dimension, DataType>&& raw_boundary,
+                                                                       ConditonType&& boundary_condition)
     : boundary_condition(boundary_condition),
       data(raw_boundary.data),
       bound_id(raw_boundary.bound_id),
-      node_ID(raw_boundary.node_ID),
+      node_ID(std::move(raw_boundary.node_ID)),
       master(raw_boundary.master),
       shape(raw_boundary.shape) {
     // *** //

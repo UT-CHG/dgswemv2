@@ -36,7 +36,7 @@ struct HeterogeneousVector {
      * @param args... Arguments supplied to constructor of T
      */
     template <typename T, typename... Args>
-    void emplace_back(Args... args) {
+    void emplace_back(Args&&... args) {
         static_assert(has_type<T, TupleType>::value, "Error in HeterogeneousVector::emplace_back: Type not found");
 
         std::get<index<T, TupleType>::value>(this->data).emplace_back(std::forward<Args>(args)...);

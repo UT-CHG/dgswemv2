@@ -1,7 +1,7 @@
 #include "../shapes_2D.hpp"
 
 namespace Shape {
-StraightTriangle::StraightTriangle(const std::vector<Point<2>>& nodal_coordinates) : Shape<2>(nodal_coordinates) {
+StraightTriangle::StraightTriangle(std::vector<Point<3>>&& nodal_coordinates) : Shape<2>(std::move(nodal_coordinates)) {
     // check if element nodes are ccw, swap if necessary
     // note that point selection doesn't matter since the Jacobian is
     // constant

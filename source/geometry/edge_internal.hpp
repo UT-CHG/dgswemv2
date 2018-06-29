@@ -31,13 +31,13 @@ class EdgeInternal {
 
   public:
     template <typename InterfaceType>
-    EdgeInternal(const InterfaceType& intface);
+    EdgeInternal(InterfaceType& intface);
 
-    Master::Master<dimension + 1>& GetMasterIN() const { return this->master_in; }
-    Master::Master<dimension + 1>& GetMasterEX() const { return this->master_ex; }
+    Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
+    Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
 
-    Shape::Shape<dimension + 1>& GetShapeIN() const { return this->shape_in; }
-    Shape::Shape<dimension + 1>& GetShapeEX() const { return this->shape_ex; }
+    Shape::Shape<dimension + 1>& GetShapeIN() { return this->shape_in; }
+    Shape::Shape<dimension + 1>& GetShapeEX() { return this->shape_ex; }
 
     void L2Projection(const std::vector<double>& u_gp, std::vector<double>& projection);
 
@@ -50,7 +50,7 @@ class EdgeInternal {
 
 template <uint dimension, typename BasisType, typename DataType, typename EdgeDataType>
 template <typename InterfaceType>
-EdgeInternal<dimension, BasisType, DataType, EdgeDataType>::EdgeInternal(const InterfaceType& intface)
+EdgeInternal<dimension, BasisType, DataType, EdgeDataType>::EdgeInternal(InterfaceType& intface)
     : data_in(intface.data_in),
       data_ex(intface.data_ex),
       bound_id_in(intface.bound_id_in),

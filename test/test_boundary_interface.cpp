@@ -17,21 +17,26 @@ int main() {
         Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::IS::Internal>;
 
     // make an equilateral triangle
-    std::vector<Point<2>> vrtxs(3);
-    vrtxs[0] = {-0.5, 0.};
-    vrtxs[1] = {0.5, 0.};
-    vrtxs[2] = {0, std::sqrt(3.) / 2.};
+    std::vector<Point<3>> vrtxs(3);
+    vrtxs[0] = {-0.5, 0., 0.};
+    vrtxs[1] = {0.5, 0., 0.};
+    vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
     MasterType master(10);
-    ShapeType shape(vrtxs);
+    ShapeType shape(std::move(vrtxs));
 
-    ElementType triangle(
-        0,
-        master,
-        vrtxs,
-        std::vector<uint>{0, 0, 0},
-        std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
-        std::vector<unsigned char>{SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land});
+    vrtxs.resize(3);
+    vrtxs[0] = {-0.5, 0., 0.};
+    vrtxs[1] = {0.5, 0., 0.};
+    vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
+
+    ElementType triangle(0,
+                         master,
+                         std::move(vrtxs),
+                         std::move(std::vector<uint>{0, 0, 0}),
+                         std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
+                         std::move(std::vector<unsigned char>{
+                             SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 
@@ -41,7 +46,7 @@ int main() {
     std::vector<BoundaryType> boundaries;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
-        boundaries.emplace_back(BoundaryType(rb.second));
+        boundaries.emplace_back(BoundaryType(std::move(rb.second)));
     }
 
     // Check Integrations
@@ -195,7 +200,7 @@ int main() {
     std::vector<InterfaceType> interfaces;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
-        interfaces.emplace_back(InterfaceType(rb.second, rb.second));
+        interfaces.emplace_back(InterfaceType(std::move(rb.second), std::move(rb.second)));
     }
 
     // Check IntegrationPhiIN/EX

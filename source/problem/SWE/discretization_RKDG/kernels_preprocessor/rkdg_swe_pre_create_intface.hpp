@@ -26,7 +26,8 @@ void Problem::create_interfaces_kernel(
                     auto& raw_boundary_in = itt->second;
                     auto& raw_boundary_ex = it->second.find(key_pre_int_ex)->second;
 
-                    mesh.template CreateInterface<InterfaceTypeInterface>(raw_boundary_in, raw_boundary_ex);
+                    mesh.template CreateInterface<InterfaceTypeInterface>(std::move(raw_boundary_in),
+                                                                          std::move(raw_boundary_ex));
                 }
 
                 it->second.erase(itt++);
@@ -72,7 +73,7 @@ void Problem::create_interfaces_kernel(
                     }
 
                     mesh.template CreateInterface<InterfaceTypeLevee>(
-                        raw_boundary_in, raw_boundary_ex, IS::Levee(levee));
+                        std::move(raw_boundary_in), std::move(raw_boundary_ex), IS::Levee(levee));
                 }
 
                 it->second.erase(itt++);
