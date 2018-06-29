@@ -1,9 +1,7 @@
 #include "preprocessor/input_parameters.hpp"
 #include "geometry/mesh_definitions.hpp"
 
-#include "problem/SWE/swe_definitions.hpp"
-#include "problem/SWE/boundary_conditions/swe_boundary_conditions.hpp"
-#include "problem/SWE/data_structure/swe_data.hpp"
+#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 
 #include "preprocessor/initialize_mesh.hpp"
@@ -13,28 +11,28 @@
 #include "utilities/almost_equal.hpp"
 
 using InputType = InputParameters<SWE::Inputs>;
-using MeshType=Geometry::MeshType<SWE::Data,SWE::Distributed,SWE::Land,SWE::Tidal,SWE::Flow>;
+using MeshType = Geometry::MeshType<SWE::RKDG::Data,
+                                    std::tuple<SWE::RKDG::IS::Internal, SWE::RKDG::IS::Levee>,
+                                    std::tuple<SWE::RKDG::BC::Land, SWE::RKDG::BC::Tide, SWE::RKDG::BC::Flow>,
+                                    std::tuple<SWE::RKDG::DBC::Distributed, SWE::RKDG::DBC::DistributedLevee>>::Type;
 
 struct DummyProblem {
     using ProblemInputType = SWE::Inputs;
-    using ProblemDataType = SWE::Data;
+    using ProblemDataType = SWE::RKDG::Data;
     using ProblemMeshType = MeshType;
-
-    template <typename RawBoundaryType>
-    static void create_boundaries_kernel(ProblemMeshType& mesh,
-                                         std::map<uchar, std::vector<RawBoundaryType>>& pre_boundaries,
-                                         Writer<DummyProblem>& writer) {}
-
-    template <typename RawBoundaryType>
-    static void create_distributed_boundaries_kernel(ProblemMeshType&,
-                                                     std::tuple<>&,
-                                                     std::map<uint, std::map<uint, RawBoundaryType>>&,
-                                                     Writer<DummyProblem>&) {}
-
 };
 
 using WriterType = Writer<DummyProblem>;
 
+//specialization which doesn't connect interfaces
+template<>
+void initialize_mesh_interfaces_boundaries<
+        DummyProblem,
+        std::tuple<>
+    >(typename DummyProblem::ProblemMeshType& mesh,
+      typename DummyProblem::ProblemInputType& input,
+      std::tuple<>& comm,
+      Writer<DummyProblem>& writer) {}
 
 bool equal(MeshType& o_mesh, MeshType& i_mesh) {
     bool is_equal{true};
@@ -71,12 +69,20 @@ bool equal(MeshType& o_mesh, MeshType& i_mesh) {
 
     double o_integral{0};
     o_mesh.CallForEachElement([&sin_fcn, &o_integral] (auto& element) {
-            o_integral += element.IntegrationPhi(0, element.L2Projection(sin_fcn));
+            uint p = element.GetMaster().p;
+            std::vector<double> modal_values((p+2)*(p+1)/2);
+            element.L2Projection(sin_fcn,modal_values);
+
+            o_integral += element.IntegrationPhi(0, modal_values);
         });
 
     double i_integral{0};
     i_mesh.CallForEachElement([&sin_fcn, &i_integral] (auto& element) {
-            i_integral += element.IntegrationPhi(0, element.L2Projection(sin_fcn));
+            uint p = element.GetMaster().p;
+            std::vector<double> modal_values((p+2)*(p+1)/2);
+            element.L2Projection(sin_fcn,modal_values);
+
+            i_integral += element.IntegrationPhi(0, modal_values);
         });
 
     std::cout << "  o_integral: " << o_integral << '\n'
@@ -94,16 +100,15 @@ bool equal(MeshType& o_mesh, MeshType& i_mesh) {
 int main(int argc, char** argv) {
 
     InputType input(argv[1]);
-    input.ReadMesh();
+    input.read_mesh();
 
     MeshType o_mesh(3);
-    o_mesh.SetMeshName(input.mesh_data.mesh_name);
 
-    WriterType writer(input);
+    WriterType writer(input.writer_input);
 
     std::tuple<> empty_comm;
 
-    initialize_mesh<DummyProblem>(o_mesh, input.mesh_data, empty_comm, input.problem_input, writer);
+    initialize_mesh<DummyProblem>(o_mesh, input, empty_comm, writer);
 
     std::vector<char> buffer;
     hpx::serialization::output_archive o_archive(buffer);

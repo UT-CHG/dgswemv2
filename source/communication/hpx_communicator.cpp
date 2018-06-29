@@ -6,6 +6,8 @@ HPXCommunicator::HPXCommunicator(const DistributedBoundaryMetaData& db_data) {
     for (auto& rb_meta_data : db_data.rank_boundary_data) {
         HPXRankBoundary rank_boundary;
 
+        rank_boundary.db_data = rb_meta_data;
+
         std::string my_location;
         std::string neighbor_location;
 

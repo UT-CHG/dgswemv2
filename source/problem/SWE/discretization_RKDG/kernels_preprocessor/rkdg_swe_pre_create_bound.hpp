@@ -7,7 +7,7 @@ template <typename RawBoundaryType>
 void Problem::create_boundaries_kernel(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType& mesh,
-    InputParameters<ProblemInputType>& input,
+    ProblemInputType& problem_input,
     Writer<Problem>& writer) {
     // *** //
     using BoundaryTypes = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
@@ -36,7 +36,7 @@ void Problem::create_boundaries_kernel(
 
             uint n_bound_old_tide = mesh.GetNumberBoundaries();
 
-            auto& tide_data = input.problem_input.tide_bc_data;
+            auto& tide_data = problem_input.tide_bc_data;
 
             auto itt = it->second.begin();
             while (itt != it->second.end()) {
@@ -68,7 +68,7 @@ void Problem::create_boundaries_kernel(
 
             uint n_bound_old_flow = mesh.GetNumberBoundaries();
 
-            auto& flow_data = input.problem_input.flow_bc_data;
+            auto& flow_data = problem_input.flow_bc_data;
 
             auto itt = it->second.begin();
             while (itt != it->second.end()) {

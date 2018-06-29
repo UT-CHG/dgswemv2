@@ -25,7 +25,7 @@ void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
 
     initialize_mesh_elements<ProblemType>(mesh, input, writer);
 
-    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, input, communicator, writer);
+    initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, input.problem_input, communicator, writer);
 }
 
 template <typename ProblemType>
@@ -62,7 +62,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
-                                           InputParameters<typename ProblemType::ProblemInputType>& input,
+                                           typename ProblemType::ProblemInputType& problem_input,
                                            Communicator& communicator,
                                            Writer<ProblemType>& writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
@@ -71,9 +71,9 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
 
     mesh.CallForEachElement([&raw_boundaries](auto& elem) { elem.CreateRawBoundaries(raw_boundaries); });
 
-    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, input, writer);
-    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, input, writer);
-    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, input, communicator, writer);
+    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, problem_input, writer);
+    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, problem_input, writer);
+    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, problem_input, communicator, writer);
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         if (it->second.size() != 0) {

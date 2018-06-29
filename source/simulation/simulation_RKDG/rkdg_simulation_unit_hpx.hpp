@@ -22,6 +22,7 @@ class HPXSimulationUnit
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
     typename ProblemType::ProblemMeshType mesh;
+    typename ProblemType::ProblemInputType problem_input;
     HPXCommunicator communicator;
     std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
@@ -79,7 +80,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     input.read_dbmd(locality_id, submesh_id);  // read distributed boundary meta data
 
     this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
-
+    this->problem_input = input.problem_input;
     this->communicator = HPXCommunicator(input.mesh_input.dbmd_data);
     this->stepper      = RKStepper(input.stepper_input);
     this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
@@ -93,7 +94,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
                                   << std::endl;
     }
 
-    ProblemType::initialize_problem_parameters(input.problem_input);
+    ProblemType::initialize_problem_parameters(this->problem_input);
 
     ProblemType::preprocess_mesh_data(input);
 
@@ -360,7 +361,10 @@ template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::on_migrated() {
     this->mesh.SetMasters();
 
-    initialize_mesh_interfaces_boundaries<ProblemType,HPXCommunicator>(mesh, communicator, writer);
+    initialize_mesh_interfaces_boundaries<ProblemType,HPXCommunicator>(mesh,
+                                                                       problem_input,
+                                                                       communicator,
+                                                                       writer);
 }
 
 template <typename ProblemType>
