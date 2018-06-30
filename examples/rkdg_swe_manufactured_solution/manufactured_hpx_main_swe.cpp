@@ -20,7 +20,7 @@
 #include "simulation/simulation_RKDG/rkdg_simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
-DGSWEMV2_REGISTER_COMPONENTS(SWE::Problem);
+DGSWEMV2_REGISTER_COMPONENTS(SWE::RKDG::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -42,11 +42,9 @@ int hpx_main(int argc, char* argv[]) {
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
-        hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx::components::simple_component<RKDG::HPXSimulation<SWE::RKDG::Problem>>>(locality,
-                                                                                                  input_string);
-
-        simulation_clients.emplace_back(std::move(simulation_id));
+        simulation_clients.emplace_back(
+            hpx::new_<HPXSimulation<SWE::RKDG::Problem>>(locality, input_string)gg
+            );
     }
 
     std::vector<hpx::future<void>> run_futures;

@@ -84,15 +84,12 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
 
     this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 }
+
 template <typename ProblemType>
-void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
+void OMPISimulationUnit<ProblemType>::PostReceivePreprocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.GetTimestamp());
 
     ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh);
-void OMPISimulationUnit<ProblemType>::PostReceivePreprocStage() {
-    this->communicator.WaitAllPreprocReceives(this->stepper.get_timestamp());
-
-    ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh, this->problem_input);
 }
 
 template <typename ProblemType>

@@ -88,8 +88,6 @@ void Simulation<ProblemType>::Run() {
 
     auto resize_data_container = [this](auto& elt) { elt.data.resize(this->n_stages + 1); };
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
-
     this->mesh.CallForEachElement(resize_data_container);
 
     if (this->writer.WritingOutput()) {
@@ -97,9 +95,10 @@ void Simulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= nsteps; ++step) {
-        if (this->parser.ParsingInput()) {
-            this->parser.ParseInput(this->stepper, this->mesh);
-        }
+        for (uint stage = 0; stage < this->n_stages; ++stage) {
+            if (this->parser.ParsingInput()) {
+                this->parser.ParseInput(this->stepper, this->mesh);
+            }
 
             this->mesh.CallForEachElement(volume_kernel);
 

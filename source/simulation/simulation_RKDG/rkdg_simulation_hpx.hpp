@@ -151,12 +151,12 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 }
 
 #define DGSWEMV2_REGISTER_COMPONENTS(ProblemType)\
-    using hpx_simulation_unit_ = HPXSimulationUnit<ProblemType>;\
-    using hpx_simulation_unit_swe_component_ = hpx::components::simple_component<HPXSimulationUnit<ProblemType>>;\
+    using hpx_simulation_unit_ = RKDG::HPXSimulationUnit<ProblemType>;  \
+    using hpx_simulation_unit_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulationUnit<ProblemType>>; \
     HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_);\
     \
-    using hpx_simulation_swe_ = HPXSimulation<ProblemType>;\
-    using hpx_simulation_swe_component_ = hpx::components::simple_component<HPXSimulation<SWE::Problem>>;\
+    using hpx_simulation_swe_ = RKDG::HPXSimulation<ProblemType>;       \
+    using hpx_simulation_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulation<ProblemType>>; \
     HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);\
     \
     DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);

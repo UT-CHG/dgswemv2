@@ -11,6 +11,7 @@
 #include "load_balancer/base_model.hpp"
 #include "load_balancer/abstract_load_balancer_factory.hpp"
 
+namespace RKDG {
 template <typename ProblemType>
 class HPXSimulationUnit
     : public  hpx::components::migration_support<
@@ -405,5 +406,5 @@ class HPXSimulationUnitClient
         return hpx::async<ActionType>(this->get_id());
     }
 };
-
+}
 #endif
