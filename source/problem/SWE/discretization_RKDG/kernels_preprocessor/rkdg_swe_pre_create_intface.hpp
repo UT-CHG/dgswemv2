@@ -14,7 +14,7 @@ void Problem::create_interfaces_kernel(
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         if (it->first == SWE::BoundaryTypes::internal) {
-            using InterfaceTypeInterface = std::tuple_element<0, InterfaceTypes>::type;
+            using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
 
             uint n_intface_old_internal = mesh.GetNumberInterfaces();
 
@@ -26,8 +26,8 @@ void Problem::create_interfaces_kernel(
                     auto& raw_boundary_in = itt->second;
                     auto& raw_boundary_ex = it->second.find(key_pre_int_ex)->second;
 
-                    mesh.template CreateInterface<InterfaceTypeInterface>(std::move(raw_boundary_in),
-                                                                          std::move(raw_boundary_ex));
+                    mesh.template CreateInterface<InterfaceTypeInternal>(std::move(raw_boundary_in),
+                                                                         std::move(raw_boundary_ex));
                 }
 
                 it->second.erase(itt++);

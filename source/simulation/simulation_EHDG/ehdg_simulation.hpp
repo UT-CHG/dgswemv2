@@ -76,8 +76,8 @@ void Simulation<ProblemType>::Run() {
 
     auto global_boundary_kernel = [this](auto& bound) { ProblemType::global_boundary_kernel(this->stepper, bound); };
 
-    auto global_edge_internal_kernel = [this](auto& edge_int) {
-        ProblemType::global_edge_internal_kernel(this->stepper, edge_int);
+    auto global_edge_interface_kernel = [this](auto& edge_int) {
+        ProblemType::global_edge_interface_kernel(this->stepper, edge_int);
     };
 
     auto global_edge_boundary_kernel = [this](auto& edge_bound) {
@@ -121,11 +121,11 @@ void Simulation<ProblemType>::Run() {
             /* Global Step */
             this->mesh.CallForEachInterface(global_interface_kernel);
 
-            // this->mesh.CallForEachBoundary(global_boundary_kernel);
+            this->mesh.CallForEachBoundary(global_boundary_kernel);
 
-            this->mesh_skeleton.CallForEachEdgeInternal(global_edge_internal_kernel);
+            this->mesh_skeleton.CallForEachEdgeInterface(global_edge_interface_kernel);
 
-            // this->mesh_skeleton.CallForEachEdgeBoundary(global_edge_boundary_kernel);
+            this->mesh_skeleton.CallForEachEdgeBoundary(global_edge_boundary_kernel);
             /* Global Step */
 
             /* Local Step */

@@ -21,17 +21,17 @@ class Mesh<std::tuple<Elements...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>> {
   private:
-    using MasterElementTypes             = typename make_master_type<std::tuple<Elements...>>::type;
-    using ElementContainer               = Utilities::HeterogeneousMap<Elements...>;
-    using InterfaceContainer             = Utilities::HeterogeneousVector<Interfaces...>;
-    using BoundaryContainer              = Utilities::HeterogeneousVector<Boundaries...>;
-    using DistributedBoundariesContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
+    using MasterElementTypes           = typename make_master_type<std::tuple<Elements...>>::type;
+    using ElementContainer             = Utilities::HeterogeneousMap<Elements...>;
+    using InterfaceContainer           = Utilities::HeterogeneousVector<Interfaces...>;
+    using BoundaryContainer            = Utilities::HeterogeneousVector<Boundaries...>;
+    using DistributedBoundaryContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
     MasterElementTypes masters;
     ElementContainer elements;
     InterfaceContainer interfaces;
     BoundaryContainer boundaries;
-    DistributedBoundariesContainer distributed_boundaries;
+    DistributedBoundaryContainer distributed_boundaries;
 
     std::string mesh_name;
 
@@ -64,6 +64,15 @@ class Mesh<std::tuple<Elements...>,
     void CallForEachBoundary(const F& f);
     template <typename F>
     void CallForEachDistributedBoundary(const F& f);
+
+    template <typename ElementType, typename F>
+    void CallForEachElementOfType(const F& f);
+    template <typename InterfaceType, typename F>
+    void CallForEachInterfaceOfType(const F& f);
+    template <typename BoundaryType, typename F>
+    void CallForEachBoundaryOfType(const F& f);
+    template <typename DistributedBoundaryType, typename F>
+    void CallForEachDistributedBoundaryOfType(const F& f);
 };
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
@@ -148,6 +157,55 @@ void Mesh<std::tuple<Elements...>,
     Utilities::for_each_in_tuple(this->distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
         std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
     });
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename ElementType, typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachElementOfType(const F& f) {
+    auto& el_container =
+        std::get<Utilities::index<ElementType, typename ElementContainer::TupleType>::value>(this->elements.data);
+
+    std::for_each(el_container.begin(), el_container.end(), f);
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename InterfaceType, typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachInterfaceOfType(const F& f) {
+    auto& intface_container =
+        std::get<Utilities::index<InterfaceType, typename InterfaceContainer::TupleType>::value>(this->interfaces.data);
+
+    std::for_each(intface_container.begin(), intface_container.end(), f);
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename BoundaryType, typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachBoundaryOfType(const F& f) {
+    auto& bound_container =
+        std::get<Utilities::index<BoundaryType, typename BoundaryContainer::TupleType>::value>(this->boundaries.data);
+
+    std::for_each(bound_container.begin(), bound_container.end(), f);
+}
+
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename DistributedBoundaryType, typename F>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::CallForEachDistributedBoundaryOfType(const F& f) {
+    auto& dbound_container =
+        std::get<Utilities::index<DistributedBoundaryType, typename DistributedBoundaryContainer::TupleType>::value>(
+            this->distributed_boundaries.data);
+
+    std::for_each(dbound_container.begin(), dbound_container.end(), f);
 }
 }
 

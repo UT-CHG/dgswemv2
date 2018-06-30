@@ -5,13 +5,13 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename EdgeInternalType>
-inline void add_delta_kernel_tau_terms_LF(EdgeInternalType& edge_int) {
+template <typename EdgeInterfaceType>
+inline void add_delta_kernel_tau_terms_LF(EdgeInterfaceType& edge_int) {
     auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
-    auto& boundary_in = edge_int.data_in.boundary[edge_int.bound_id_in];
-    auto& boundary_ex = edge_int.data_ex.boundary[edge_int.bound_id_ex];
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     double u_hat, v_hat, un_hat;
     double nx, ny;
@@ -25,8 +25,8 @@ inline void add_delta_kernel_tau_terms_LF(EdgeInternalType& edge_int) {
         u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
         v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
 
-        nx = edge_int.surface_normal_in[gp][GlobalCoord::x];
-        ny = edge_int.surface_normal_in[gp][GlobalCoord::y];
+        nx = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
+        ny = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
 
         un_hat = u_hat * nx + v_hat * ny;
 
@@ -81,13 +81,13 @@ inline void add_delta_kernel_tau_terms_LF(EdgeInternalType& edge_int) {
     }
 }
 
-template <typename EdgeInternalType>
-inline void add_rhs_kernel_tau_terms_LF(EdgeInternalType& edge_int) {
+template <typename EdgeInterfaceType>
+inline void add_rhs_kernel_tau_terms_LF(EdgeInterfaceType& edge_int) {
     auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
-    auto& boundary_in = edge_int.data_in.boundary[edge_int.bound_id_in];
-    auto& boundary_ex = edge_int.data_ex.boundary[edge_int.bound_id_ex];
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     double nx, ny;
     double u_hat, v_hat, un_hat;
@@ -100,8 +100,8 @@ inline void add_rhs_kernel_tau_terms_LF(EdgeInternalType& edge_int) {
         u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
         v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
 
-        nx = edge_int.surface_normal_in[gp][GlobalCoord::x];
-        ny = edge_int.surface_normal_in[gp][GlobalCoord::y];
+        nx = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
+        ny = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
 
         un_hat = u_hat * nx + v_hat * ny;
 
@@ -116,13 +116,13 @@ inline void add_rhs_kernel_tau_terms_LF(EdgeInternalType& edge_int) {
     }
 }
 
-template <typename EdgeInternalType>
-inline void add_flux_tau_terms_LF(EdgeInternalType& edge_int) {
+template <typename EdgeInterfaceType>
+inline void add_flux_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
-    auto& boundary_in = edge_int.data_in.boundary[edge_int.bound_id_in];
-    auto& boundary_ex = edge_int.data_ex.boundary[edge_int.bound_id_ex];
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     double nx, ny;
     double u_hat, v_hat, un_hat;
@@ -135,8 +135,8 @@ inline void add_flux_tau_terms_LF(EdgeInternalType& edge_int) {
         u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
         v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
 
-        nx = edge_int.surface_normal_in[gp][GlobalCoord::x];
-        ny = edge_int.surface_normal_in[gp][GlobalCoord::y];
+        nx = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
+        ny = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
 
         un_hat = u_hat * nx + v_hat * ny;
 
@@ -149,6 +149,34 @@ inline void add_flux_tau_terms_LF(EdgeInternalType& edge_int) {
         boundary_ex.ze_numerical_flux_at_gp[gp_ex] += tau * (boundary_ex.ze_at_gp[gp_ex] - edge_state.ze_hat_at_gp[gp]);
         boundary_ex.qx_numerical_flux_at_gp[gp_ex] += tau * (boundary_ex.qx_at_gp[gp_ex] - edge_state.qx_hat_at_gp[gp]);
         boundary_ex.qy_numerical_flux_at_gp[gp_ex] += tau * (boundary_ex.qy_at_gp[gp_ex] - edge_state.qy_hat_at_gp[gp]);
+    }
+}
+
+template <typename EdgeBoundaryType>
+inline void add_flux_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
+    auto& edge_state  = edge_bound.edge_data.edge_state;
+    auto& edge_global = edge_bound.edge_data.edge_global;
+
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    double nx, ny;
+    double u_hat, v_hat, un_hat;
+    double tau;
+
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
+        v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
+
+        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
+        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
+
+        un_hat = u_hat * nx + v_hat * ny;
+
+        tau = std::abs(un_hat) + std::sqrt(Global::g * edge_state.h_hat_at_gp[gp]);
+
+        boundary.ze_numerical_flux_at_gp[gp] += tau * (boundary.ze_at_gp[gp] - edge_state.ze_hat_at_gp[gp]);
+        boundary.qx_numerical_flux_at_gp[gp] += tau * (boundary.qx_at_gp[gp] - edge_state.qx_hat_at_gp[gp]);
+        boundary.qy_numerical_flux_at_gp[gp] += tau * (boundary.qy_at_gp[gp] - edge_state.qy_hat_at_gp[gp]);
     }
 }
 }

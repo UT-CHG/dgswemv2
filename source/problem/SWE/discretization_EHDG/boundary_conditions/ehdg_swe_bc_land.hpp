@@ -13,80 +13,52 @@ class Land {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
 
-    void ComputeFlux(const RKStepper& stepper,
-                     const Array2D<double>& surface_normal,
-                     const std::vector<double>& bath_in,
-                     const std::vector<double>& ze_in,
-                     const std::vector<double>& qx_in,
-                     const std::vector<double>& qy_in,
-                     std::vector<double>& ze_numerical_flux,
-                     std::vector<double>& qx_numerical_flux,
-                     std::vector<double>& qy_numerical_flux);
+    template <typename EdgeBoundaryType>
+    void AddDeltaKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    void GetEX(const RKStepper& stepper,
-               const uint gp,
-               const Array2D<double>& surface_normal,
-               const std::vector<double>& ze_in,
-               const std::vector<double>& qx_in,
-               const std::vector<double>& qy_in,
-               double& ze_ex,
-               double& qx_ex,
-               double& qy_ex);
+    template <typename EdgeBoundaryType>
+    void AddRHSKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 };
 
-void Land::ComputeFlux(const RKStepper& stepper,
-                       const Array2D<double>& surface_normal,
-                       const std::vector<double>& bath_in,
-                       const std::vector<double>& ze_in,
-                       const std::vector<double>& qx_in,
-                       const std::vector<double>& qy_in,
-                       std::vector<double>& ze_numerical_flux,
-                       std::vector<double>& qx_numerical_flux,
-                       std::vector<double>& qy_numerical_flux) {
-    double ze_ex, qx_ex, qy_ex;
-    for (uint gp = 0; gp < ze_in.size(); ++gp) {
-        this->GetEX(stepper, gp, surface_normal, ze_in, qx_in, qy_in, ze_ex, qx_ex, qy_ex);
+template <typename EdgeBoundaryType>
+void Land::AddDeltaKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_global = edge_bound.edge_data.edge_global;
 
-        LLF_flux(Global::g,
-                 ze_in[gp],
-                 ze_ex,
-                 qx_in[gp],
-                 qx_ex,
-                 qy_in[gp],
-                 qy_ex,
-                 bath_in[gp],
-                 surface_normal[gp],
-                 ze_numerical_flux[gp],
-                 qx_numerical_flux[gp],
-                 qy_numerical_flux[gp]);
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        edge_global.delta_ze_hat_kernel_at_gp[Variables::ze][gp] = -1.0;
+        edge_global.delta_ze_hat_kernel_at_gp[Variables::qx][gp] = 0.0;
+        edge_global.delta_ze_hat_kernel_at_gp[Variables::qy][gp] = 0.0;
+
+        edge_global.delta_qx_hat_kernel_at_gp[Variables::ze][gp] = 0.0;
+        edge_global.delta_qx_hat_kernel_at_gp[Variables::qx][gp] = -1.0;
+        edge_global.delta_qx_hat_kernel_at_gp[Variables::qy][gp] = 0.0;
+
+        edge_global.delta_qy_hat_kernel_at_gp[Variables::ze][gp] = 0.0;
+        edge_global.delta_qy_hat_kernel_at_gp[Variables::qx][gp] = 0.0;
+        edge_global.delta_qy_hat_kernel_at_gp[Variables::qy][gp] = -1.0;
     }
 }
 
-void Land::GetEX(const RKStepper& stepper,
-                 const uint gp,
-                 const Array2D<double>& surface_normal,
-                 const std::vector<double>& ze_in,
-                 const std::vector<double>& qx_in,
-                 const std::vector<double>& qy_in,
-                 double& ze_ex,
-                 double& qx_ex,
-                 double& qy_ex) {
-    double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
+template <typename EdgeBoundaryType>
+void Land::AddRHSKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_state  = edge_bound.edge_data.edge_state;
+    auto& edge_global = edge_bound.edge_data.edge_global;
 
-    n_x = surface_normal[gp][GlobalCoord::x];
-    n_y = surface_normal[gp][GlobalCoord::y];
-    t_x = -n_y;
-    t_y = n_x;
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    qn_in = qx_in[gp] * n_x + qy_in[gp] * n_y;
-    qt_in = qx_in[gp] * t_x + qy_in[gp] * t_y;
+    double qn;
+    double nx, ny;
 
-    qn_ex = -qn_in;
-    qt_ex = qt_in;
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
+        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
 
-    ze_ex = ze_in[gp];
-    qx_ex = qn_ex * n_x + qt_ex * t_x;
-    qy_ex = qn_ex * n_y + qt_ex * t_y;
+        qn = boundary.qx_at_gp[gp] * nx + boundary.qy_at_gp[gp] * ny;
+
+        edge_global.ze_rhs_kernel_at_gp[gp] = edge_state.ze_hat_at_gp[gp] - boundary.ze_at_gp[gp];
+        edge_global.qx_rhs_kernel_at_gp[gp] = edge_state.qx_hat_at_gp[gp] - boundary.qx_at_gp[gp] + qn * nx;
+        edge_global.qy_rhs_kernel_at_gp[gp] = edge_state.qy_hat_at_gp[gp] - boundary.qy_at_gp[gp] + qn * ny;
+    }
 }
 }
 }

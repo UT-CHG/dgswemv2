@@ -1,13 +1,13 @@
-#ifndef CLASS_EDGE_BOUNDARY_HPP
-#define CLASS_EDGE_BOUNDARY_HPP
+#ifndef CLASS_EDGE_INTERFACE_HPP
+#define CLASS_EDGE_INTERFACE_HPP
 
 namespace Geometry {
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-class EdgeBoundary {
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+class EdgeInterface {
   public:
     EdgeDataType edge_data;
 
-    BoundaryType& boundary;
+    InterfaceType& interface;
 
   private:
     Array2D<double> lambda_gp;
@@ -17,7 +17,7 @@ class EdgeBoundary {
     std::pair<bool, Array2D<double>> m_inv;
 
   public:
-    EdgeBoundary(BoundaryType& boundary);
+    EdgeInterface(InterfaceType& interface);
 
     void L2Projection(const std::vector<double>& u_gp, std::vector<double>& projection);
 
@@ -28,23 +28,25 @@ class EdgeBoundary {
     void ApplyMinv(const std::vector<double>& rhs, std::vector<double>& solution);
 };
 
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(BoundaryType& boundary)
-    : boundary(boundary) {
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(InterfaceType& interface)
+    : interface(interface) {
     // *** //
-    typename BoundaryType::BoundaryIntegrationType integration;
+    uint p = std::max(this->interface.GetMasterIN().p, this->interface.GetMasterEX().p);
 
-    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
-        integration.GetRule(2 * this->boundary.GetMaster().p + 1);
+    typename InterfaceType::InterfaceIntegrationType integration;
+
+    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     BasisType basis;
 
-    this->lambda_gp = basis.GetPhi(this->boundary.GetMaster().p, integration_rule.second);
+    this->lambda_gp = basis.GetPhi(p, integration_rule.second);
 
-    std::vector<Point<dimension + 1>> z_master =
-        this->boundary.GetMaster().BoundaryToMasterCoordinates(this->boundary.bound_id, integration_rule.second);
+    // transfrom gp to master coord in
+    std::vector<Point<dimension + 1>> z_master_in =
+        this->interface.GetMasterIN().BoundaryToMasterCoordinates(this->interface.bound_id_in, integration_rule.second);
 
-    std::vector<double> surface_J = this->boundary.GetShape().GetSurfaceJ(this->boundary.bound_id, z_master);
+    std::vector<double> surface_J = this->interface.GetShapeIN().GetSurfaceJ(this->interface.bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_lambda_fact = this->lambda_gp;
@@ -64,7 +66,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
             }
         }
 
-        this->m_inv = basis.GetMinv(this->boundary.GetMaster().p);
+        this->m_inv = basis.GetMinv(p);
         for (uint i = 0; i < this->m_inv.second.size(); i++) {
             for (uint j = 0; j < this->m_inv.second[i].size(); j++) {
                 this->m_inv.second[i][j] /= surface_J[0];
@@ -78,9 +80,9 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
     this->edge_data = EdgeDataType(ndof, ngp);
 }
 
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::L2Projection(const std::vector<double>& u_gp,
-                                                                                  std::vector<double>& projection) {
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(const std::vector<double>& u_gp,
+                                                                                    std::vector<double>& projection) {
     std::vector<double> rhs;
 
     for (uint dof = 0; dof < this->lambda_gp.size(); dof++) {
@@ -90,9 +92,9 @@ void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::L2Projectio
     this->ApplyMinv(rhs, projection);
 }
 
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ComputeUgp(const std::vector<double>& u,
-                                                                                std::vector<double>& u_gp) {
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ComputeUgp(const std::vector<double>& u,
+                                                                                  std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -102,8 +104,8 @@ void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ComputeUgp(
     }
 }
 
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-double EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambda(
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+double EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambda(
     const uint dof,
     const std::vector<double>& u_gp) {
     double integral = 0;
@@ -115,8 +117,8 @@ double EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::Integrati
     return integral;
 }
 
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-double EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambdaLambda(
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+double EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambdaLambda(
     const uint dof_i,
     const uint dof_j,
     const std::vector<double>& u_gp) {
@@ -130,9 +132,9 @@ double EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::Integrati
     return integral;
 }
 
-template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ApplyMinv(const std::vector<double>& rhs,
-                                                                               std::vector<double>& solution) {
+template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
+void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ApplyMinv(const std::vector<double>& rhs,
+                                                                                 std::vector<double>& solution) {
     if (this->m_inv.first) {  // diagonal
         for (uint i = 0; i < rhs.size(); i++) {
             solution[i] = this->m_inv.second[0][i] * rhs[i];

@@ -27,25 +27,11 @@ class Tide {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    void ComputeFlux(const RKStepper& stepper,
-                     const Array2D<double>& surface_normal,
-                     const std::vector<double>& bath_in,
-                     const std::vector<double>& ze_in,
-                     const std::vector<double>& qx_in,
-                     const std::vector<double>& qy_in,
-                     std::vector<double>& ze_numerical_flux,
-                     std::vector<double>& qx_numerical_flux,
-                     std::vector<double>& qy_numerical_flux);
+    template <typename EdgeBoundaryType>
+    void AddDeltaKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
 
-    void GetEX(const RKStepper& stepper,
-               const uint gp,
-               const Array2D<double>& surface_normal,
-               const std::vector<double>& ze_in,
-               const std::vector<double>& qx_in,
-               const std::vector<double>& qy_in,
-               double& ze_ex,
-               double& qx_ex,
-               double& qy_ex);
+    template <typename EdgeBoundaryType>
+    void AddRHSKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {
@@ -84,63 +70,6 @@ void Tide::Initialize(BoundaryType& bound) {
         bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
         bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
     }
-}
-
-void Tide::ComputeFlux(const RKStepper& stepper,
-                       const Array2D<double>& surface_normal,
-                       const std::vector<double>& bath_in,
-                       const std::vector<double>& ze_in,
-                       const std::vector<double>& qx_in,
-                       const std::vector<double>& qy_in,
-                       std::vector<double>& ze_numerical_flux,
-                       std::vector<double>& qx_numerical_flux,
-                       std::vector<double>& qy_numerical_flux) {
-    double ze_ex, qx_ex, qy_ex;
-    for (uint gp = 0; gp < ze_in.size(); ++gp) {
-        this->GetEX(stepper, gp, surface_normal, ze_in, qx_in, qy_in, ze_ex, qx_ex, qy_ex);
-
-        LLF_flux(Global::g,
-                 ze_in[gp],
-                 ze_ex,
-                 qx_in[gp],
-                 qx_ex,
-                 qy_in[gp],
-                 qy_ex,
-                 bath_in[gp],
-                 surface_normal[gp],
-                 ze_numerical_flux[gp],
-                 qx_numerical_flux[gp],
-                 qy_numerical_flux[gp]);
-    }
-}
-
-void Tide::GetEX(const RKStepper& stepper,
-                 const uint gp,
-                 const Array2D<double>& surface_normal,
-                 const std::vector<double>& ze_in,
-                 const std::vector<double>& qx_in,
-                 const std::vector<double>& qy_in,
-                 double& ze_ex,
-                 double& qx_ex,
-                 double& qy_ex) {
-    double ze = 0;
-
-    double frequency;
-    double forcing_fact;
-    double eq_argument;
-
-    for (uint con = 0; con < this->frequency.size(); con++) {
-        frequency    = this->frequency[con];
-        forcing_fact = this->forcing_fact[con];
-        eq_argument  = this->equilib_arg[con];
-
-        ze += stepper.GetRamp() * forcing_fact * this->amplitude_gp[con][gp] *
-              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
-    }
-
-    ze_ex = ze;
-    qx_ex = qx_in[gp];
-    qy_ex = qy_in[gp];
 }
 }
 }

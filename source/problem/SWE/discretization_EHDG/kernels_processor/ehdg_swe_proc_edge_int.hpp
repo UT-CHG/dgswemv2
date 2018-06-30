@@ -6,13 +6,13 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename EdgeInternalType>
-void Problem::global_edge_internal_kernel(const RKStepper& stepper, EdgeInternalType& edge_int) {
+template <typename EdgeInterfaceType>
+void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
-    auto& boundary_in = edge_int.data_in.boundary[edge_int.bound_id_in];
-    auto& boundary_ex = edge_int.data_ex.boundary[edge_int.bound_id_ex];
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     /* Take average of in/ex state as initial trace state */
     uint gp_ex = 0;
@@ -33,7 +33,7 @@ void Problem::global_edge_internal_kernel(const RKStepper& stepper, EdgeInternal
 
     uint iter = 0;
     while (true) {
-        Problem::global_edge_internal_iteration(stepper, edge_int);
+        Problem::global_edge_interface_iteration(stepper, edge_int);
 
         iter++;
 
@@ -60,16 +60,16 @@ void Problem::global_edge_internal_kernel(const RKStepper& stepper, EdgeInternal
         }
     }
 
-    Problem::edge_internal_compute_flux(stepper, edge_int);
+    Problem::edge_interface_compute_flux(stepper, edge_int);
 }
 
-template <typename EdgeInternalType>
-void Problem::global_edge_internal_iteration(const RKStepper& stepper, EdgeInternalType& edge_int) {
+template <typename EdgeInterfaceType>
+void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
-    auto& boundary_in = edge_int.data_in.boundary[edge_int.bound_id_in];
-    auto& boundary_ex = edge_int.data_ex.boundary[edge_int.bound_id_ex];
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     edge_int.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
     edge_int.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
@@ -93,8 +93,8 @@ void Problem::global_edge_internal_iteration(const RKStepper& stepper, EdgeInter
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
         // Add F_in * n_in terms
-        nx_in = edge_int.surface_normal_in[gp][GlobalCoord::x];
-        ny_in = edge_int.surface_normal_in[gp][GlobalCoord::y];
+        nx_in = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
+        ny_in = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
 
         edge_global.ze_rhs_kernel_at_gp[gp] = -(boundary_in.ze_flux_at_gp[GlobalCoord::x][gp] * nx_in +
                                                 boundary_in.ze_flux_at_gp[GlobalCoord::y][gp] * ny_in);
@@ -104,8 +104,8 @@ void Problem::global_edge_internal_iteration(const RKStepper& stepper, EdgeInter
                                                 boundary_in.qy_flux_at_gp[GlobalCoord::y][gp] * ny_in);
 
         // Add F_ex * n_ex terms
-        nx_ex = edge_int.surface_normal_ex[gp_ex][GlobalCoord::x];
-        ny_ex = edge_int.surface_normal_ex[gp_ex][GlobalCoord::y];
+        nx_ex = edge_int.interface.surface_normal_ex[gp_ex][GlobalCoord::x];
+        ny_ex = edge_int.interface.surface_normal_ex[gp_ex][GlobalCoord::y];
 
         edge_global.ze_rhs_kernel_at_gp[gp] += -(boundary_ex.ze_flux_at_gp[GlobalCoord::x][gp_ex] * nx_ex +
                                                  boundary_ex.ze_flux_at_gp[GlobalCoord::y][gp_ex] * ny_ex);
@@ -166,13 +166,13 @@ void Problem::global_edge_internal_iteration(const RKStepper& stepper, EdgeInter
     }
 }
 
-template <typename EdgeInternalType>
-void Problem::edge_internal_compute_flux(const RKStepper& stepper, EdgeInternalType& edge_int) {
+template <typename EdgeInterfaceType>
+void Problem::edge_interface_compute_flux(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
-    auto& boundary_in = edge_int.data_in.boundary[edge_int.bound_id_in];
-    auto& boundary_ex = edge_int.data_ex.boundary[edge_int.bound_id_ex];
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     edge_int.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
     edge_int.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
@@ -189,8 +189,8 @@ void Problem::edge_internal_compute_flux(const RKStepper& stepper, EdgeInternalT
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        nx_in = edge_int.surface_normal_in[gp][GlobalCoord::x];
-        ny_in = edge_int.surface_normal_in[gp][GlobalCoord::y];
+        nx_in = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
+        ny_in = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
 
         boundary_in.ze_numerical_flux_at_gp[gp] = boundary_in.ze_flux_at_gp[GlobalCoord::x][gp] * nx_in +
                                                   boundary_in.ze_flux_at_gp[GlobalCoord::y][gp] * ny_in;
@@ -199,8 +199,8 @@ void Problem::edge_internal_compute_flux(const RKStepper& stepper, EdgeInternalT
         boundary_in.qy_numerical_flux_at_gp[gp] = boundary_in.qy_flux_at_gp[GlobalCoord::x][gp] * nx_in +
                                                   boundary_in.qy_flux_at_gp[GlobalCoord::y][gp] * ny_in;
 
-        nx_ex = edge_int.surface_normal_ex[gp_ex][GlobalCoord::x];
-        ny_ex = edge_int.surface_normal_ex[gp_ex][GlobalCoord::y];
+        nx_ex = edge_int.interface.surface_normal_ex[gp_ex][GlobalCoord::x];
+        ny_ex = edge_int.interface.surface_normal_ex[gp_ex][GlobalCoord::y];
 
         boundary_ex.ze_numerical_flux_at_gp[gp_ex] = boundary_ex.ze_flux_at_gp[GlobalCoord::x][gp_ex] * nx_ex +
                                                      boundary_ex.ze_flux_at_gp[GlobalCoord::y][gp_ex] * ny_ex;
@@ -211,7 +211,7 @@ void Problem::edge_internal_compute_flux(const RKStepper& stepper, EdgeInternalT
     }
 
     // Add tau terms
-    add_flux_tau_terms_LF(edge_int);
+    add_flux_tau_terms_intface_LF(edge_int);
 }
 }
 }

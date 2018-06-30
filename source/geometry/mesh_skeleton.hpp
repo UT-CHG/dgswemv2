@@ -8,37 +8,37 @@
 namespace Geometry {
 // Since elements types already come in a tuple. We can use specialization
 // to get easy access to the parameter packs for the element and edge types.
-template <typename EdgeInternalTypeTuple, typename EdgeBoundaryTypeTuple>
+template <typename EdgeInterfaceTypeTuple, typename EdgeBoundaryTypeTuple>
 class MeshSkeleton;
 
 template <typename... EngeInternals, typename... EdgeBoundaries>
 class MeshSkeleton<std::tuple<EngeInternals...>, std::tuple<EdgeBoundaries...>> {
   private:
-    using EdgeInternalContainer = Utilities::HeterogeneousVector<EngeInternals...>;
-    using EdgeBoundaryContainer = Utilities::HeterogeneousVector<EdgeBoundaries...>;
+    using EdgeInterfaceContainer = Utilities::HeterogeneousVector<EngeInternals...>;
+    using EdgeBoundaryContainer  = Utilities::HeterogeneousVector<EdgeBoundaries...>;
 
-    EdgeInternalContainer edge_internals;
+    EdgeInterfaceContainer edge_interfaces;
     EdgeBoundaryContainer edge_boundaries;
 
   public:
-    uint GetNumberEdgeInternals() { return this->edge_internals.size(); }
+    uint GetNumberEdgeInterfaces() { return this->edge_interfaces.size(); }
     uint GetNumberEdgeBoundaries() { return this->edge_boundaries.size(); }
 
-    template <typename EdgeInternalType, typename... Args>
-    void CreateEdgeInternal(Args&&... args);
+    template <typename EdgeInterfaceType, typename... Args>
+    void CreateEdgeInterface(Args&&... args);
     template <typename EdgeBoundaryType, typename... Args>
     void CreateEdgeBoundary(Args&&... args);
 
     template <typename F>
-    void CallForEachEdgeInternal(const F& f);
+    void CallForEachEdgeInterface(const F& f);
     template <typename F>
     void CallForEachEdgeBoundary(const F& f);
 };
 
 template <typename... EngeInternals, typename... EdgeBoundaries>
-template <typename EdgeInternalType, typename... Args>
-void MeshSkeleton<std::tuple<EngeInternals...>, std::tuple<EdgeBoundaries...>>::CreateEdgeInternal(Args&&... args) {
-    this->edge_internals.template emplace_back<EdgeInternalType>(std::forward<Args>(args)...);
+template <typename EdgeInterfaceType, typename... Args>
+void MeshSkeleton<std::tuple<EngeInternals...>, std::tuple<EdgeBoundaries...>>::CreateEdgeInterface(Args&&... args) {
+    this->edge_interfaces.template emplace_back<EdgeInterfaceType>(std::forward<Args>(args)...);
 }
 
 template <typename... EngeInternals, typename... EdgeBoundaries>
@@ -49,9 +49,9 @@ void MeshSkeleton<std::tuple<EngeInternals...>, std::tuple<EdgeBoundaries...>>::
 
 template <typename... EngeInternals, typename... EdgeBoundaries>
 template <typename F>
-void MeshSkeleton<std::tuple<EngeInternals...>, std::tuple<EdgeBoundaries...>>::CallForEachEdgeInternal(const F& f) {
-    Utilities::for_each_in_tuple(this->edge_internals.data, [&f](auto& edge_internal_vector) {
-        std::for_each(edge_internal_vector.begin(), edge_internal_vector.end(), f);
+void MeshSkeleton<std::tuple<EngeInternals...>, std::tuple<EdgeBoundaries...>>::CallForEachEdgeInterface(const F& f) {
+    Utilities::for_each_in_tuple(this->edge_interfaces.data, [&f](auto& edge_interface_vector) {
+        std::for_each(edge_interface_vector.begin(), edge_interface_vector.end(), f);
     });
 }
 

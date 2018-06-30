@@ -8,28 +8,23 @@ namespace SWE {
 namespace EHDG {
 template <typename EdgeBoundaryType>
 void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    const uint stage = stepper.GetStage();
-
     auto& edge_state  = edge_bound.edge_data.edge_state;
     auto& edge_global = edge_bound.edge_data.edge_global;
 
-    auto& state    = edge_bound.data.state[stage];
-    auto& boundary = edge_bound.data.boundary[edge_bound.bound_id];
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    /* Take linear combination of in/ex state as initial edge state */
-    /* THIS IS PERIODIC BC FOR MANU SOLUTION */
+    /* Take in state as initial edge state */
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         edge_state.ze_avg_at_gp[gp] = boundary.ze_at_gp[gp];
         edge_state.qx_avg_at_gp[gp] = boundary.qx_at_gp[gp];
         edge_state.qy_avg_at_gp[gp] = boundary.qy_at_gp[gp];
     }
-    /* THIS IS PERIODIC BC FOR MANU SOLUTION */
 
     edge_bound.L2Projection(edge_state.ze_avg_at_gp, edge_state.ze_hat);
     edge_bound.L2Projection(edge_state.qx_avg_at_gp, edge_state.qx_hat);
     edge_bound.L2Projection(edge_state.qy_avg_at_gp, edge_state.qy_hat);
 
-    /*double q_norm      = 0;
+    double q_norm      = 0;
     double q_norm_prev = 0;
 
     uint iter = 0;
@@ -56,176 +51,36 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
         q_norm      = std::sqrt(q_norm);
         q_norm_prev = std::sqrt(q_norm_prev);
 
-        if (std::abs(q_norm - q_norm_prev) / q_norm < 1.0e-3) {
+        if (std::abs(q_norm - q_norm_prev) / q_norm < 1.0e-6) {
             break;
         }
-    }*/
+    }
 
     Problem::edge_boundary_compute_flux(stepper, edge_bound);
 }
 
 template <typename EdgeBoundaryType>
 void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    const uint stage = stepper.GetStage();
-
     auto& edge_state  = edge_bound.edge_data.edge_state;
     auto& edge_global = edge_bound.edge_data.edge_global;
 
-    auto& state    = edge_bound.data.state[stage];
-    auto& boundary = edge_bound.data.boundary[edge_bound.bound_id];
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     edge_bound.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
     edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
     edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
 
-    /* THIS IS PERIODIC BC FOR MANU SOLUTION */
-    std::vector<double> ze_at_gp_ex(edge_bound.edge_data.get_ngp());
-    std::vector<double> qx_at_gp_ex(edge_bound.edge_data.get_ngp());
-    std::vector<double> qy_at_gp_ex(edge_bound.edge_data.get_ngp());
-
-    uint gp_ex = 0;
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        gp_ex = edge_bound.edge_data.get_ngp() - gp - 1;
-
-        ze_at_gp_ex[gp_ex] = boundary.ze_at_gp[gp];
-        qx_at_gp_ex[gp_ex] = boundary.qx_at_gp[gp];
-        qy_at_gp_ex[gp_ex] = boundary.qy_at_gp[gp];
-    }
-    /* THIS IS PERIODIC BC FOR MANU SOLUTION */
-
     /* Assemble kernels for global matrix */
 
-    double nx = 0.0;
-    double ny = 0.0;
-
-    double u_hat = 0.0;
-    double v_hat = 0.0;
-
-    double uuh_hat = 0.0;
-    double vvh_hat = 0.0;
-    double uvh_hat = 0.0;
-    double pe_hat  = 0.0;
-
-    gp_ex = 0;
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        gp_ex = edge_bound.edge_data.get_ngp() - gp - 1;
-
         edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
-
-        nx = edge_bound.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.surface_normal[gp][GlobalCoord::y];
-
-        u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
-        v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
-
-        // Start with dF_hat/dq_hat * n_in terms
-        edge_global.delta_ze_hat_kernel_at_gp[Variables::ze][gp] = 0.0;
-        edge_global.delta_ze_hat_kernel_at_gp[Variables::qx][gp] =
-            (-u_hat * u_hat + Global::g * edge_state.h_hat_at_gp[gp]) * nx - u_hat * v_hat * ny;
-        edge_global.delta_ze_hat_kernel_at_gp[Variables::qy][gp] =
-            -u_hat * v_hat * nx + (-v_hat * v_hat + Global::g * edge_state.h_hat_at_gp[gp]) * ny;
-
-        edge_global.delta_qx_hat_kernel_at_gp[Variables::ze][gp] = nx;
-        edge_global.delta_qx_hat_kernel_at_gp[Variables::qx][gp] = 2 * u_hat * nx + v_hat * ny;
-        edge_global.delta_qx_hat_kernel_at_gp[Variables::qy][gp] = v_hat * nx;
-
-        edge_global.delta_qy_hat_kernel_at_gp[Variables::ze][gp] = ny;
-        edge_global.delta_qy_hat_kernel_at_gp[Variables::qx][gp] = u_hat * ny;
-        edge_global.delta_qy_hat_kernel_at_gp[Variables::qy][gp] = u_hat * nx + 2 * v_hat * ny;
-
-        // Add dF_hat/dq_hat * n_ex terms
-        nx = -edge_bound.surface_normal[gp][GlobalCoord::x];
-        ny = -edge_bound.surface_normal[gp][GlobalCoord::y];
-
-        edge_global.delta_ze_hat_kernel_at_gp[Variables::ze][gp] += 0.0;
-        edge_global.delta_ze_hat_kernel_at_gp[Variables::qx][gp] +=
-            (-u_hat * u_hat + Global::g * edge_state.h_hat_at_gp[gp]) * nx - u_hat * v_hat * ny;
-        edge_global.delta_ze_hat_kernel_at_gp[Variables::qy][gp] +=
-            -u_hat * v_hat * nx + (-v_hat * v_hat + Global::g * edge_state.h_hat_at_gp[gp]) * ny;
-
-        edge_global.delta_qx_hat_kernel_at_gp[Variables::ze][gp] += nx;
-        edge_global.delta_qx_hat_kernel_at_gp[Variables::qx][gp] += 2 * u_hat * nx + v_hat * ny;
-        edge_global.delta_qx_hat_kernel_at_gp[Variables::qy][gp] += v_hat * nx;
-
-        edge_global.delta_qy_hat_kernel_at_gp[Variables::ze][gp] += ny;
-        edge_global.delta_qy_hat_kernel_at_gp[Variables::qx][gp] += u_hat * ny;
-        edge_global.delta_qy_hat_kernel_at_gp[Variables::qy][gp] += u_hat * nx + 2 * v_hat * ny;
     }
 
-    // Add tau terms
-    add_delta_kernel_tau_LF(edge_bound.surface_normal,
-                            edge_state.ze_hat_at_gp,
-                            edge_state.qx_hat_at_gp,
-                            edge_state.qy_hat_at_gp,
-                            edge_state.h_hat_at_gp,
-                            edge_global.delta_ze_hat_kernel_at_gp,
-                            edge_global.delta_qx_hat_kernel_at_gp,
-                            edge_global.delta_qy_hat_kernel_at_gp);
-
-    // Add dtau/dq_hat * diff_q terms
-    add_delta_kernel_partial_tau_diff_q_LF(edge_bound.surface_normal,
-                                           boundary.ze_at_gp,
-                                           boundary.qx_at_gp,
-                                           boundary.qy_at_gp,
-                                           ze_at_gp_ex,
-                                           qx_at_gp_ex,
-                                           qy_at_gp_ex,
-                                           edge_state.ze_hat_at_gp,
-                                           edge_state.qx_hat_at_gp,
-                                           edge_state.qy_hat_at_gp,
-                                           edge_state.h_hat_at_gp,
-                                           edge_global.delta_ze_hat_kernel_at_gp,
-                                           edge_global.delta_qx_hat_kernel_at_gp,
-                                           edge_global.delta_qy_hat_kernel_at_gp);
+    edge_bound.boundary.boundary_condition.AddDeltaKernelBTerms(stepper, edge_bound);
 
     /* Assemble kernels for global rhs vector */
 
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        gp_ex = edge_bound.edge_data.get_ngp() - gp - 1;
-
-        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
-
-        nx = edge_bound.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.surface_normal[gp][GlobalCoord::y];
-
-        u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
-        v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
-
-        uuh_hat = u_hat * edge_state.qx_hat_at_gp[gp];
-        vvh_hat = v_hat * edge_state.qy_hat_at_gp[gp];
-        uvh_hat = u_hat * edge_state.qy_hat_at_gp[gp];
-        pe_hat  = Global::g * (0.5 * std::pow(edge_state.ze_hat_at_gp[gp], 2) +
-                              edge_state.ze_hat_at_gp[gp] * boundary.bath_at_gp[gp]);
-
-        // Add F_hat * n_in terms
-        edge_global.ze_rhs_kernel_at_gp[gp] = -(edge_state.qx_hat_at_gp[gp] * nx + edge_state.qy_hat_at_gp[gp] * ny);
-        edge_global.qx_rhs_kernel_at_gp[gp] = -((uuh_hat + pe_hat) * nx + uvh_hat * ny);
-        edge_global.qy_rhs_kernel_at_gp[gp] = -(uvh_hat * nx + (vvh_hat + pe_hat) * ny);
-
-        // Add F_hat * n_ex terms
-        nx = -edge_bound.surface_normal[gp][GlobalCoord::x];
-        ny = -edge_bound.surface_normal[gp][GlobalCoord::y];
-
-        edge_global.ze_rhs_kernel_at_gp[gp] -= edge_state.qx_hat_at_gp[gp] * nx + edge_state.qy_hat_at_gp[gp] * ny;
-        edge_global.qx_rhs_kernel_at_gp[gp] -= (uuh_hat + pe_hat) * nx + uvh_hat * ny;
-        edge_global.qy_rhs_kernel_at_gp[gp] -= uvh_hat * nx + (vvh_hat + pe_hat) * ny;
-    }
-
-    // Add tau * diff_q terms
-    add_rhs_kernel_tau_diff_q_LF(edge_bound.surface_normal,
-                                 boundary.ze_at_gp,
-                                 boundary.qx_at_gp,
-                                 boundary.qy_at_gp,
-                                 ze_at_gp_ex,
-                                 qx_at_gp_ex,
-                                 qy_at_gp_ex,
-                                 edge_state.ze_hat_at_gp,
-                                 edge_state.qx_hat_at_gp,
-                                 edge_state.qy_hat_at_gp,
-                                 edge_state.h_hat_at_gp,
-                                 edge_global.ze_rhs_kernel_at_gp,
-                                 edge_global.qx_rhs_kernel_at_gp,
-                                 edge_global.qy_rhs_kernel_at_gp);
+    edge_bound.boundary.boundary_condition.AddRHSKernelBTerms(stepper, edge_bound);
 
     /* Assemble global system */
 
@@ -279,62 +134,35 @@ void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBound
 
 template <typename EdgeBoundaryType>
 void Problem::edge_boundary_compute_flux(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    const uint stage = stepper.GetStage();
-
     auto& edge_state  = edge_bound.edge_data.edge_state;
     auto& edge_global = edge_bound.edge_data.edge_global;
 
-    auto& state    = edge_bound.data.state[stage];
-    auto& boundary = edge_bound.data.boundary[edge_bound.bound_id];
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     edge_bound.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
     edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
     edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
 
-    double nx = 0.0;
-    double ny = 0.0;
-
-    double u_hat = 0.0;
-    double v_hat = 0.0;
-
-    double uuh_hat = 0.0;
-    double vvh_hat = 0.0;
-    double uvh_hat = 0.0;
-    double pe_hat  = 0.0;
-
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
-
-        nx = edge_bound.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.surface_normal[gp][GlobalCoord::y];
-
-        u_hat = edge_state.qx_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
-        v_hat = edge_state.qy_hat_at_gp[gp] / edge_state.h_hat_at_gp[gp];
-
-        uuh_hat = u_hat * edge_state.qx_hat_at_gp[gp];
-        vvh_hat = v_hat * edge_state.qy_hat_at_gp[gp];
-        uvh_hat = u_hat * edge_state.qy_hat_at_gp[gp];
-        pe_hat  = Global::g * (0.5 * std::pow(edge_state.ze_hat_at_gp[gp], 2) +
-                              edge_state.ze_hat_at_gp[gp] * boundary.bath_at_gp[gp]);
-
-        // Add F_hat * n terms
-        boundary.ze_numerical_flux_at_gp[gp] = edge_state.qx_hat_at_gp[gp] * nx + edge_state.qy_hat_at_gp[gp] * ny;
-        boundary.qx_numerical_flux_at_gp[gp] = (uuh_hat + pe_hat) * nx + uvh_hat * ny;
-        boundary.qy_numerical_flux_at_gp[gp] = uvh_hat * nx + (vvh_hat + pe_hat) * ny;
     }
 
-    // Add tau * diff_q terms
-    add_flux_tau_diff_q_LF(edge_bound.surface_normal,
-                           boundary.ze_at_gp,
-                           boundary.qx_at_gp,
-                           boundary.qy_at_gp,
-                           edge_state.ze_hat_at_gp,
-                           edge_state.qx_hat_at_gp,
-                           edge_state.qy_hat_at_gp,
-                           edge_state.h_hat_at_gp,
-                           boundary.ze_numerical_flux_at_gp,
-                           boundary.qx_numerical_flux_at_gp,
-                           boundary.qy_numerical_flux_at_gp);
+    double nx, ny;
+
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
+        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
+
+        boundary.ze_numerical_flux_at_gp[gp] =
+            boundary.ze_flux_at_gp[GlobalCoord::x][gp] * nx + boundary.ze_flux_at_gp[GlobalCoord::y][gp] * ny;
+        boundary.qx_numerical_flux_at_gp[gp] =
+            boundary.qx_flux_at_gp[GlobalCoord::x][gp] * nx + boundary.qx_flux_at_gp[GlobalCoord::y][gp] * ny;
+        boundary.qy_numerical_flux_at_gp[gp] =
+            boundary.qy_flux_at_gp[GlobalCoord::x][gp] * nx + boundary.qy_flux_at_gp[GlobalCoord::y][gp] * ny;
+    }
+
+    // Add tau terms
+    add_flux_tau_terms_bound_LF(edge_bound);
 }
 }
 }
