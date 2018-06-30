@@ -39,4 +39,5 @@ void Spherical::serialize(Archive& ar, unsigned) {
 #endif
 }
 }
+
 #endif

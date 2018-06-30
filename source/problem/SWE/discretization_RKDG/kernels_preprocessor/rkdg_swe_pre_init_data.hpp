@@ -88,8 +88,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
-        auto& state_in = intface.data_in->state[0];
-        auto& state_ex = intface.data_ex->state[0];
+        auto& state_in = intface.data_in.state[0];
+        auto& state_ex = intface.data_ex.state[0];
 
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
@@ -118,8 +118,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     });
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
-        auto& state    = bound.data->state[0];
-        auto& boundary = bound.data->boundary[bound.bound_id];
+        auto& state    = bound.data.state[0];
+        auto& boundary = bound.data.boundary[bound.bound_id];
         auto& sp       = bound.data.spherical_projection;
 
         bound.ComputeUgp(state.bath, boundary.bath_at_gp);
@@ -320,9 +320,9 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     initialize_data_kernel(mesh, mesh_data, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
-        auto& state    = dbound.data->state[0];
-        auto& boundary = dbound.data->boundary[dbound.bound_id];
-        auto& sp       = dbound.data->spherical_projection;
+        auto& state    = dbound.data.state[0];
+        auto& boundary = dbound.data.boundary[dbound.bound_id];
+        auto& sp       = dbound.data.spherical_projection;
 
         dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
 

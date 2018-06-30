@@ -94,7 +94,7 @@ void Simulation<ProblemType>::Run() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    for (uint step = 1; step <= nsteps; ++step) {
+    for (uint step = 1; step <= this->n_steps; ++step) {
         for (uint stage = 0; stage < this->n_stages; ++stage) {
             if (this->parser.ParsingInput()) {
                 this->parser.ParseInput(this->stepper, this->mesh);
