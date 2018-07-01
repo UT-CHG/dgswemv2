@@ -44,7 +44,7 @@ if(USE_OMPI)
   install(TARGETS EHDG_SWE_OMPI DESTINATION bin)
 endif()
 
-#[[if(USE_HPX)
+if(USE_HPX)
   add_executable(
     EHDG_SWE_HPX
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_EHDG/main_files/ehdg_hpx_main_swe.cpp
@@ -58,7 +58,7 @@ endif()
   )
 
   target_include_directories(EHDG_SWE_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
-  target_link_libraries(EHDG_SWE_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+  target_link_libraries(EHDG_SWE_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES} Eigen3::Eigen)
 
   install(TARGETS EHDG_SWE_HPX DESTINATION bin)
-endif()]]
+endif()

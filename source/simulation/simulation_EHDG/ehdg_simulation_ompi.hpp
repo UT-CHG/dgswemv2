@@ -1,5 +1,5 @@
-#ifndef RKDG_SIMULATION_OMPI_HPP
-#define RKDG_SIMULATION_OMPI_HPP
+#ifndef EHDG_SIMULATION_OMPI_HPP
+#define EHDG_SIMULATION_OMPI_HPP
 
 #include "general_definitions.hpp"
 
@@ -203,6 +203,7 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting work after receive" << std::endl;
     }
+
     auto global_edge_distributed_kernel = [this](auto& edge_dbound) {
         ProblemType::global_edge_distributed_kernel(this->stepper, edge_dbound);
     };
