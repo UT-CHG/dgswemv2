@@ -43,17 +43,17 @@ class Element {
             std::vector<uint>&& neighbor_ID,
             std::vector<uchar>&& boundary_type);
 
-    void SetMaster(MasterType& master);
-
-    void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
-                                 pre_specialized_interfaces);
-
     uint GetID() { return this->ID; }
     MasterType& GetMaster() { return *this->master; }
     ShapeType& GetShape() { return this->shape; }
-
     std::vector<uint>& GetNodeID() { return this->node_ID; }
     std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
+
+    void SetMaster(MasterType& master) { this->master = &master; };
+
+    void Initialize();
+    void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
+                                 pre_specialized_interfaces);
 
     template <typename F>
     void L2Projection(const F& f, std::vector<double>& projection);
@@ -106,16 +106,16 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              std::vector<uint>&& neighbor_ID,
                                                              std::vector<uchar>&& boundary_type)
     : ID(ID),
+      master(&master),
       shape(ShapeType(std::move(nodal_coordinates))),
       node_ID(std::move(node_ID)),
       neighbor_ID(std::move(neighbor_ID)),
       boundary_type(std::move(boundary_type)) {
-    SetMaster(master);
+    this->Initialize();
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& master_) {
-    this->master = &master_;
+void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master->integration_rule.second);
 

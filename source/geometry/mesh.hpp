@@ -20,13 +20,14 @@ class Mesh<std::tuple<Elements...>,
            std::tuple<Interfaces...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>> {
-  private:
+  public:
     using MasterElementTypes           = typename make_master_type<std::tuple<Elements...>>::type;
     using ElementContainer             = Utilities::HeterogeneousMap<Elements...>;
     using InterfaceContainer           = Utilities::HeterogeneousVector<Interfaces...>;
     using BoundaryContainer            = Utilities::HeterogeneousVector<Boundaries...>;
     using DistributedBoundaryContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
+  private:
     uint p;
 
     MasterElementTypes masters;
@@ -41,8 +42,13 @@ class Mesh<std::tuple<Elements...>,
     Mesh() = default;
     Mesh(const uint p) : p(p), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
-    void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
     std::string GetMeshName() { return this->mesh_name; }
+    void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
+
+    MasterElementTypes& GetMasters() { return this->masters; }
+    void SetMasters(MasterElementTypes& masters) {
+        this->masters = master_maker<MasterElementTypes>::construct_masters(p);
+    }
 
     uint GetNumberElements() { return this->elements.size(); }
     uint GetNumberInterfaces() { return this->interfaces.size(); }
@@ -76,17 +82,6 @@ class Mesh<std::tuple<Elements...>,
     template <typename DistributedBoundaryType, typename F>
     void CallForEachDistributedBoundaryOfType(const F& f);
 
-    void SetMasters() {
-        this->masters = master_maker<MasterElementTypes>::construct_masters(p);
-
-        this->CallForEachElement([this](auto& element) {
-            using MasterType = typename std::remove_reference<decltype(element)>::type::ElementMasterType;
-
-            MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->masters);
-            element.SetMaster(master_elt);
-        });
-    }
-
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
@@ -104,7 +99,7 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<DistributedBoundaries...>>::CreateElement(const uint n, Args&&... args) {
     using MasterType = typename ElementType::ElementMasterType;
 
-    MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(masters);
+    MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->masters);
 
     this->elements.template emplace<ElementType>(n, ElementType(n, master_elt, std::forward<Args>(args)...));
 }

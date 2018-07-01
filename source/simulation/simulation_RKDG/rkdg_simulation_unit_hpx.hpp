@@ -1,5 +1,5 @@
-#ifndef HPX_SIMULATION_UNIT_HPP
-#define HPX_SIMULATION_UNIT_HPP
+#ifndef RKDG_SIMULATION_UNIT_HPX_HPP
+#define RKDG_SIMULATION_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
 
@@ -330,6 +330,19 @@ void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::on_migrated() {
     this->mesh.SetMasters();
+
+    this->mesh.CallForEachElement([this](auto& elt) {
+        using MasterType = typename std::remove_reference<decltype(elt)>::type::ElementMasterType;
+
+        using MasterElementTypes = typename decltype(this->mesh)::MasterElementTypes;
+
+        MasterType& master_elt =
+            std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->mesh.GetMasters());
+
+        element.SetMaster(master_elt);
+
+        element.Initialize();
+    });
 
     initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(mesh, problem_input, communicator, writer);
 }
