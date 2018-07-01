@@ -339,9 +339,9 @@ void HPXSimulationUnit<ProblemType>::on_migrated() {
         MasterType& master_elt =
             std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->mesh.GetMasters());
 
-        element.SetMaster(master_elt);
+        elt.SetMaster(master_elt);
 
-        element.Initialize();
+        elt.Initialize();
     });
 
     initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(mesh, problem_input, communicator, writer);

@@ -120,9 +120,9 @@ int main(int argc, char** argv) {
         MasterType& master_elt =
             std::get<Utilities::index<MasterType, MasterElementTypes>::value>(i_mesh.GetMasters());
 
-        element.SetMaster(master_elt);
+        elt.SetMaster(master_elt);
 
-        element.Initialize();
+        elt.Initialize();
     });
 
     if (!equal(o_mesh, i_mesh)) {
