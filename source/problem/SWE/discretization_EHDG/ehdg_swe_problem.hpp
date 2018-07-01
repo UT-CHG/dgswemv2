@@ -44,21 +44,21 @@ struct Problem {
     static void create_interfaces_kernel(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType& mesh,
-        InputParameters<ProblemInputType>& input,
+        ProblemInputType& problem_input,
         Writer<Problem>& writer);
 
     template <typename RawBoundaryType>
     static void create_boundaries_kernel(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType& mesh,
-        InputParameters<ProblemInputType>& input,
+        ProblemInputType& problem_input,
         Writer<Problem>& writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries_kernel(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType&,
-        InputParameters<ProblemInputType>& input,
+        ProblemInputType& problem_input,
         std::tuple<>&,
         Writer<Problem>&);
 
@@ -66,7 +66,7 @@ struct Problem {
     static void create_distributed_boundaries_kernel(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType& mesh,
-        InputParameters<ProblemInputType>& input,
+        ProblemInputType& input,
         Communicator& communicator,
         Writer<Problem>& writer);
 

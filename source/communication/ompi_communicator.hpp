@@ -7,6 +7,8 @@
 #include "preprocessor/mesh_metadata.hpp"
 
 struct OMPIRankBoundary {
+    RankBoundaryMetaData db_data;
+
     int send_rank;
     int receive_rank;
 

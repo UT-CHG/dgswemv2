@@ -8,9 +8,9 @@
 #include "general_definitions.hpp"
 #include "problem/SWE/swe_definitions.hpp"
 
-#include "problem/SWE/function_files/swe_initial_condition_functions.hpp"
-#include "problem/SWE/function_files/swe_source_functions.hpp"
-#include "problem/SWE/function_files/swe_true_solution_functions.hpp"
+#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
+#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
+#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
 
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
@@ -43,7 +43,7 @@ int hpx_main(int argc, char* argv[]) {
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
         simulation_clients.emplace_back(
-            hpx::new_<HPXSimulation<SWE::RKDG::Problem>>(locality, input_string)
+            hpx::new_<RKDG::HPXSimulation<SWE::RKDG::Problem>>(locality, input_string)
             );
     }
 

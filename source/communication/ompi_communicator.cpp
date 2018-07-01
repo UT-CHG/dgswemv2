@@ -4,6 +4,8 @@ OMPICommunicator::OMPICommunicator(const DistributedBoundaryMetaData& db_data) {
     for (auto& rb_meta_data : db_data.rank_boundary_data) {
         OMPIRankBoundary rank_boundary;
 
+        rank_boundary.db_data = rb_meta_data;
+
         rank_boundary.send_rank    = rb_meta_data.locality_ex;
         rank_boundary.receive_rank = rb_meta_data.locality_ex;
 
