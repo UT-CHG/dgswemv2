@@ -3,7 +3,6 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/discretization_EHDG/numerical_fluxes/ehdg_swe_numerical_fluxes.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -28,10 +27,10 @@ class Flow {
     void Initialize(BoundaryType& bound);
 
     template <typename EdgeBoundaryType>
-    void AddDeltaKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
 
     template <typename EdgeBoundaryType>
-    void AddRHSKernelBTerms(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
 };
 
 Flow::Flow(const std::vector<FlowInput>& flow_input) {

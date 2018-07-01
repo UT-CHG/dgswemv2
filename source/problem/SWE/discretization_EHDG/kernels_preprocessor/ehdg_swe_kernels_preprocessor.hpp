@@ -8,6 +8,7 @@
 #include "ehdg_swe_pre_create_dbound.hpp"
 #include "ehdg_swe_pre_create_edge_intface.hpp"
 #include "ehdg_swe_pre_create_edge_bound.hpp"
+#include "ehdg_swe_pre_create_edge_dbound.hpp"
 #include "ehdg_swe_pre_init_data.hpp"
 
 #endif

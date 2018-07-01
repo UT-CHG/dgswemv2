@@ -36,7 +36,8 @@ struct Problem {
     using ProblemMeshSkeletonType =
         Geometry::MeshSkeletonType<EdgeData,
                                    Geometry::InterfaceTypeTuple<Data, IS::Internal>,
-                                   Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>>::Type;
+                                   Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
+                                   Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
@@ -81,6 +82,10 @@ struct Problem {
                                               ProblemMeshSkeletonType& mesh_skeleton,
                                               Writer<Problem>& writer);
 
+    static void create_edge_distributeds_kernel(ProblemMeshType& mesh,
+                                                ProblemMeshSkeletonType& mesh_skeleton,
+                                                Writer<Problem>& writer);
+
     static void initialize_data_kernel(ProblemMeshType& mesh,
                                        const MeshMetaData& mesh_data,
                                        const ProblemInputType& problem_specific_input);
@@ -104,9 +109,6 @@ struct Problem {
     template <typename EdgeInterfaceType>
     static void global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int);
 
-    template <typename EdgeInterfaceType>
-    static void edge_interface_compute_flux(const RKStepper& stepper, EdgeInterfaceType& edge_int);
-
     template <typename BoundaryType>
     static void global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
@@ -116,8 +118,14 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    template <typename EdgeBoundaryType>
-    static void edge_boundary_compute_flux(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    template <typename DistributedBoundaryType>
+    static void global_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+
+    template <typename EdgeDistributedType>
+    static void global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+
+    template <typename EdgeDistributedType>
+    static void global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     /* local step */
 
@@ -134,10 +142,9 @@ struct Problem {
     static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void distributed_boundary_send_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
-    template <typename DistributedBoundaryType>
-    static void distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    /* local step */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

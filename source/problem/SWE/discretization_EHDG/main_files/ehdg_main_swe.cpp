@@ -16,7 +16,7 @@
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage\n"
-                  << "    /path/to/DG_HYPER_SWE input_file\n";
+                  << "    /path/to/EHDG_SWE_SERIAL input_file\n";
         return 1;
     } else {
         std::string input_string = std::string(argv[1]);

@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_PROC_BOUND_HPP
 #define EHDG_SWE_PROC_BOUND_HPP
 
-#include "problem/SWE/discretization_EHDG/numerical_fluxes/ehdg_swe_numerical_fluxes.hpp"
-
 namespace SWE {
 namespace EHDG {
 template <typename BoundaryType>
@@ -21,10 +19,14 @@ void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bou
     }
 
     /* Compute fluxes at boundary state */
+    double nx, ny;
     double u, v;
     double uuh, vvh, uvh, pe;
 
     for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
+        nx = bound.surface_normal[gp][GlobalCoord::x];
+        ny = bound.surface_normal[gp][GlobalCoord::y];
+
         u = boundary.qx_at_gp[gp] / boundary.h_at_gp[gp];
         v = boundary.qy_at_gp[gp] / boundary.h_at_gp[gp];
 
@@ -33,14 +35,9 @@ void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bou
         uvh = u * boundary.qy_at_gp[gp];
         pe  = Global::g * (0.5 * std::pow(boundary.ze_at_gp[gp], 2) + boundary.ze_at_gp[gp] * boundary.bath_at_gp[gp]);
 
-        boundary.ze_flux_at_gp[GlobalCoord::x][gp] = boundary.qx_at_gp[gp];
-        boundary.ze_flux_at_gp[GlobalCoord::y][gp] = boundary.qy_at_gp[gp];
-
-        boundary.qx_flux_at_gp[GlobalCoord::x][gp] = (uuh + pe);
-        boundary.qx_flux_at_gp[GlobalCoord::y][gp] = uvh;
-
-        boundary.qy_flux_at_gp[GlobalCoord::x][gp] = uvh;
-        boundary.qy_flux_at_gp[GlobalCoord::y][gp] = vvh + pe;
+        boundary.ze_flux_dot_n_at_gp[gp] = boundary.qx_at_gp[gp] * nx + boundary.qy_at_gp[gp] * ny;
+        boundary.qx_flux_dot_n_at_gp[gp] = (uuh + pe) * nx + uvh * ny;
+        boundary.qy_flux_dot_n_at_gp[gp] = uvh * nx + (vvh + pe) * ny;
     }
 }
 

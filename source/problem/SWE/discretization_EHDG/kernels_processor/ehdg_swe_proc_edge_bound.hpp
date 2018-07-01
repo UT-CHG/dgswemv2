@@ -24,6 +24,8 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
     edge_bound.L2Projection(edge_state.qx_avg_at_gp, edge_state.qx_hat);
     edge_bound.L2Projection(edge_state.qy_avg_at_gp, edge_state.qy_hat);
 
+    /* Newton-Raphson iterator */
+
     double q_norm      = 0;
     double q_norm_prev = 0;
 
@@ -56,7 +58,17 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
         }
     }
 
-    Problem::edge_boundary_compute_flux(stepper, edge_bound);
+    /* Compute Numerical Flux */
+
+    edge_bound.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
+
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
+    }
+
+    edge_bound.boundary.boundary_condition.ComputeNumericalFlux(edge_bound);
 }
 
 template <typename EdgeBoundaryType>
@@ -70,17 +82,13 @@ void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBound
     edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
     edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
 
-    /* Assemble kernels for global matrix */
-
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
     }
 
-    edge_bound.boundary.boundary_condition.AddDeltaKernelBTerms(stepper, edge_bound);
+    /* Assemble global kernels */
 
-    /* Assemble kernels for global rhs vector */
-
-    edge_bound.boundary.boundary_condition.AddRHSKernelBTerms(stepper, edge_bound);
+    edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
 
     /* Assemble global system */
 
@@ -115,7 +123,7 @@ void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBound
             edge_bound.IntegrationLambda(dof_row, edge_global.qy_rhs_kernel_at_gp);
     }
 
-    /* Solve global systel for delta_q */
+    /* Solve global system for delta_q */
 
     edge_global.global_delta_q = edge_global.global_matrix.fullPivLu().solve(edge_global.global_rhs);
 
@@ -130,39 +138,6 @@ void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBound
         edge_state.qx_hat[dof] += edge_global.global_delta_q(3 * dof + 1);
         edge_state.qy_hat[dof] += edge_global.global_delta_q(3 * dof + 2);
     }
-}
-
-template <typename EdgeBoundaryType>
-void Problem::edge_boundary_compute_flux(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    auto& edge_state  = edge_bound.edge_data.edge_state;
-    auto& edge_global = edge_bound.edge_data.edge_global;
-
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-    edge_bound.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
-    edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
-    edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
-
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
-    }
-
-    double nx, ny;
-
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
-
-        boundary.ze_numerical_flux_at_gp[gp] =
-            boundary.ze_flux_at_gp[GlobalCoord::x][gp] * nx + boundary.ze_flux_at_gp[GlobalCoord::y][gp] * ny;
-        boundary.qx_numerical_flux_at_gp[gp] =
-            boundary.qx_flux_at_gp[GlobalCoord::x][gp] * nx + boundary.qx_flux_at_gp[GlobalCoord::y][gp] * ny;
-        boundary.qy_numerical_flux_at_gp[gp] =
-            boundary.qy_flux_at_gp[GlobalCoord::x][gp] * nx + boundary.qy_flux_at_gp[GlobalCoord::y][gp] * ny;
-    }
-
-    // Add tau terms
-    add_flux_tau_terms_bound_LF(edge_bound);
 }
 }
 }

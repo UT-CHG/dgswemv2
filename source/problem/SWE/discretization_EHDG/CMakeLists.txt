@@ -30,7 +30,7 @@ target_link_libraries(EHDG_SWE_SERIAL ${YAML_CPP_LIBRARIES} Eigen3::Eigen)
 
 install(TARGETS EHDG_SWE_SERIAL DESTINATION bin)
 
-#[[if(USE_OMPI)
+if(USE_OMPI)
   add_executable(
     EHDG_SWE_OMPI
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_EHDG/main_files/ehdg_ompi_main_swe.cpp
@@ -39,12 +39,12 @@ install(TARGETS EHDG_SWE_SERIAL DESTINATION bin)
   )
 
   target_include_directories(EHDG_SWE_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
-  target_link_libraries(EHDG_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
+  target_link_libraries(EHDG_SWE_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES} Eigen3::Eigen)
 
   install(TARGETS EHDG_SWE_OMPI DESTINATION bin)
 endif()
 
-if(USE_HPX)
+#[[if(USE_HPX)
   add_executable(
     EHDG_SWE_HPX
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_EHDG/main_files/ehdg_hpx_main_swe.cpp

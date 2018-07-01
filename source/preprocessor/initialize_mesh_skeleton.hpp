@@ -11,6 +11,7 @@ void initialize_mesh_skeleton(typename ProblemType::ProblemMeshType& mesh,
                               Writer<ProblemType>& writer) {
     ProblemType::create_edge_boundaries_kernel(mesh, mesh_skeleton, writer);
     ProblemType::create_edge_interfaces_kernel(mesh, mesh_skeleton, writer);
+    ProblemType::create_edge_distributeds_kernel(mesh, mesh_skeleton, writer);
 }
 
 #endif

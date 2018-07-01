@@ -32,7 +32,7 @@ HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage\n"
-                  << "    /path/to/DG_HYPER_SWE input_file\n";
+                  << "    /path/to/RKDG_SWE_HPX input_file\n";
         return 1;
     } else {
         return hpx::init(argc, argv);

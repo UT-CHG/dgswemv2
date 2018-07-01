@@ -27,13 +27,29 @@ struct EdgeBoundaryTypeTuple<EdgeData, std::tuple<BoundaryTypes...>> {
     using Type = std::tuple<EdgeBoundary<1, Basis::Legendre_1D, EdgeData, BoundaryTypes>...>;
 };
 
-template <typename EdgeData, typename InterfaceType, typename BoundaryType>
+template <typename EdgeData, typename DistributedBoundaryType>
+struct EdgeDistributedTypeTuple;
+
+template <typename EdgeData, typename... DistributedBoundaryTypes>
+struct EdgeDistributedTypeTuple<EdgeData, std::tuple<DistributedBoundaryTypes...>> {
+    using Type = std::tuple<EdgeBoundary<1, Basis::Legendre_1D, EdgeData, DistributedBoundaryTypes>...>;
+};
+
+template <typename EdgeData, typename InterfaceType, typename BoundaryType, typename DistributedBoundaryType>
 struct MeshSkeletonType;
 
-template <typename EdgeData, typename... InterfaceTypes, typename... BoundaryTypes>
-struct MeshSkeletonType<EdgeData, std::tuple<InterfaceTypes...>, std::tuple<BoundaryTypes...>> {
-    using Type = MeshSkeleton<typename EdgeInterfaceTypeTuple<EdgeData, std::tuple<InterfaceTypes...>>::Type,
-                              typename EdgeBoundaryTypeTuple<EdgeData, std::tuple<BoundaryTypes...>>::Type>;
+template <typename EdgeData,
+          typename... InterfaceTypes,
+          typename... BoundaryTypes,
+          typename... DistributedBoundaryTypes>
+struct MeshSkeletonType<EdgeData,
+                        std::tuple<InterfaceTypes...>,
+                        std::tuple<BoundaryTypes...>,
+                        std::tuple<DistributedBoundaryTypes...>> {
+    using Type =
+        MeshSkeleton<typename EdgeInterfaceTypeTuple<EdgeData, std::tuple<InterfaceTypes...>>::Type,
+                     typename EdgeBoundaryTypeTuple<EdgeData, std::tuple<BoundaryTypes...>>::Type,
+                     typename EdgeDistributedTypeTuple<EdgeData, std::tuple<DistributedBoundaryTypes...>>::Type>;
 };
 }
 

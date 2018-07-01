@@ -27,3 +27,6 @@ output:
   path: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/examples/output/
   vtu:
     frequency: 360
+  logfile:
+    name: log
+    verbose: false
