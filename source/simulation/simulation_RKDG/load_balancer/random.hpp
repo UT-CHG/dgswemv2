@@ -1,11 +1,12 @@
 #ifndef LOAD_BALANCER_RANDOM_HPP
 #define LOAD_BALANCER_RANDOM_HPP
-#include "../../utilities/heartbeat.hpp"
+#include "utilities/heartbeat.hpp"
 #include "base_model.hpp"
-#include "../hpx_simulation_unit.hpp"
+#include "../rkdg_simulation_unit_hpx.hpp"
 
 #include <cstdlib>
 
+namespace RKDG {
 namespace LoadBalancer {
 namespace detail_random {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,15 +79,17 @@ struct Random {
     static std::unique_ptr<LoadBalancer::SubmeshModel> create_submesh_model(uint locality_id, uint submesh_id);
 };
 }
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define DGSWEMV2_REGISTER_RANDOM_LOAD_BALANCER(ProblemType)                                                           \
-    using rndm_lb_world_client_ = LoadBalancer::Random<ProblemType>::WorldModelClient;                                \
-    template<> rndm_lb_world_client_ LoadBalancer::Random<ProblemType>::world_model_client = rndm_lb_world_client_(); \
-    using rndm_lb_world_model_ = LoadBalancer::Random<ProblemType>::WorldModel;                                       \
+    using rndm_lb_world_client_ = RKDG::LoadBalancer::Random<ProblemType>::WorldModelClient;                          \
+    template<> rndm_lb_world_client_ RKDG::LoadBalancer::Random<ProblemType>::world_model_client=                     \
+                                                                                              rndm_lb_world_client_();\
+    using rndm_lb_world_model_ = RKDG::LoadBalancer::Random<ProblemType>::WorldModel;                                 \
     using rndm_lb_world_model_component_ = hpx::components::simple_component<rndm_lb_world_model_>;                   \
     HPX_REGISTER_COMPONENT(rndm_lb_world_model_component_,rndm_lb_world_model_);
 /**/
-namespace LoadBalancer { namespace detail_random {
+namespace RKDG { namespace LoadBalancer { namespace detail_random {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WorldModel Implementation
 template <typename ProblemType>
@@ -94,10 +97,11 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
     for ( uint locality_id = 0; locality_id < hpx::get_initial_num_localities(); ++locality_id ) {
-        std::string submesh_file_prefix = input.mesh_file_name.substr(0, input.mesh_file_name.find_last_of('.')) + "_" +
-                                          std::to_string(locality_id) + '_';
-        std::string submesh_file_postfix =
-            input.mesh_file_name.substr(input.mesh_file_name.find_last_of('.'), input.mesh_file_name.size());
+        std::string submesh_file_prefix =
+            input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
+            std::to_string(locality_id) + '_';
+        std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
+            input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
         uint submesh_id = 0;
         while ( Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix) ) {
@@ -189,6 +193,7 @@ void Random<ProblemType>::reset_locality_and_world_models() {
 template <typename ProblemType>
 std::unique_ptr<LoadBalancer::SubmeshModel> Random<ProblemType>::create_submesh_model(uint locality_id, uint submesh_id) {
     return std::make_unique<Random<ProblemType>::SubmeshModel>(std::chrono::duration<double>(2.), locality_id, submesh_id);
+}
 }
 }
 #endif

@@ -4,7 +4,7 @@
 #include "abstract_load_balancer_factory.hpp"
 #include "random.hpp"
 
-
+namespace RKDG {
 namespace LoadBalancer {
 template <typename ProblemType>
 hpx::future<void> AbstractFactory::initialize_locality_and_world_models(const uint locality_id,
@@ -20,6 +20,7 @@ void AbstractFactory::reset_locality_and_world_models() {
 template <typename ProblemType>
 std::unique_ptr<SubmeshModel> AbstractFactory::create_submesh_model(uint locality_id, uint submesh_id) {
     return Random<ProblemType>::create_submesh_model(locality_id, submesh_id);
+}
 }
 }
 #endif

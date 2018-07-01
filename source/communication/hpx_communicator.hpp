@@ -11,16 +11,16 @@ using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
 
 template <typename Archive>
-void serialize(Archive& ar, DistributedBoundaryMetaData db_data,unsigned) {
-    ar >> db_data.locality_in >> db_data.locality_ex
-       >> db_data.submesh_in >> db_data.sbmesh_ex
-       >> db_data.elements_in >> db_data.elements_ex
-       >> db_data.bound_ids_in >> db_data.bound_ids_ex
-       >> db_data.p;
+void serialize(Archive& ar, RankBoundaryMetaData& db_data, unsigned) {
+    ar & db_data.locality_in & db_data.locality_ex
+       & db_data.submesh_in & db_data.submesh_ex
+       & db_data.elements_in & db_data.elements_ex
+       & db_data.bound_ids_in & db_data.bound_ids_ex
+       & db_data.p;
 }
 
 struct HPXRankBoundary {
-    DistributedBoundaryMetaData db_data;
+    RankBoundaryMetaData db_data;
 
     hpx::lcos::channel<array_double> outgoing;
     hpx::lcos::channel<array_double> incoming;
@@ -37,6 +37,8 @@ struct HPXRankBoundary {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         ar & db_data
+           & outgoing
+           & incoming
            & send_preproc_buffer //probably unnecessary (can be optimized later)
            & receive_preproc_buffer
            & send_buffer

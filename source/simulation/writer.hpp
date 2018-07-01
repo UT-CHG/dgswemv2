@@ -37,9 +37,11 @@ class Writer {
 
     Writer(Writer&& rhs)=default;
 
+    Writer& operator=(Writer&& rhs)=default;
+
     bool WritingLog() { return this->writing_log_file; }
-    bool WritingVerboseLog() { return (this->writing_log_file && this->verbose_log_file); }
-    std::ofstream& GetLogFile() { return this->log_file; }
+    bool WritingVerboseLog() const { return (this->writing_log_file && this->verbose_log_file); }
+    std::ofstream& GetLogFile() const { return this->log_file; }
     void StartLog();
 
     bool WritingOutput() { return this->writing_output; }

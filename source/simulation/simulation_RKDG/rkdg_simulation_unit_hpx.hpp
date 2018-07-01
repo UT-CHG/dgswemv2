@@ -1,13 +1,13 @@
 #ifndef HPX_SIMULATION_UNIT_HPP
 #define HPX_SIMULATION_UNIT_HPP
 
-#include "../general_definitions.hpp"
+#include "general_definitions.hpp"
 
-#include "../preprocessor/input_parameters.hpp"
-#include "../preprocessor/initialize_mesh.hpp"
-#include "../communication/hpx_communicator.hpp"
+#include "../../preprocessor/input_parameters.hpp"
+#include "../../preprocessor/initialize_mesh.hpp"
+#include "../../communication/hpx_communicator.hpp"
 
-#include "writer.hpp"
+#include "../writer.hpp"
 #include "load_balancer/base_model.hpp"
 #include "load_balancer/abstract_load_balancer_factory.hpp"
 
@@ -34,8 +34,8 @@ class HPXSimulationUnit
 
     HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs)=default;
 
-    hpx::future<void> Preprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
+    hpx::future<void> FinishPreprocessor();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, FinishPreprocessor, FinishPreprocessorAction);
 
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
@@ -45,12 +45,6 @@ class HPXSimulationUnit
 
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
-
-
-    //This function is part of me debugging. Ignore this for now. It doesn't get called in the code (at the moment)
-    void SerializeAndUnserialize();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, SerializeAndUnserialize, SerializeAndUnserializeAction);
-
 
     template <typename Archive>
     void save(Archive& ar, unsigned) const;
@@ -86,6 +80,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     this->stepper      = RKStepper(input.stepper_input);
     this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
     this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
+    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id,submesh_id);
+    assert(this->submesh_model);
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
@@ -105,10 +101,10 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 }
 
 template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
-    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.get_timestamp());
+hpx::future<void> HPXSimulationUnit<ProblemType>::FinishPreprocessor() {
+    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
 
-    this->communicator.SendPreprocAll(this->stepper.get_timestamp());
+    this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 
     return receive_future.then([this](auto&&) {
             ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh);
@@ -125,7 +121,7 @@ void HPXSimulationUnit<ProblemType>::Launch() {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
     }
 
-    uint n_stages = this->stepper.get_num_stages();
+    uint n_stages = this->stepper.GetNumStages();
 
     auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
 
@@ -148,8 +144,8 @@ void HPXSimulationUnit<ProblemType>::Parse() {
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.get_t_at_curr_stage() << ','
-                                  << this->stepper.get_stage() << ')' << std::endl << "Starting work before receive"
+        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
+                                  << this->stepper.GetStage() << ')' << std::endl << "Starting work before receive"
                                   << std::endl;
     }
 
@@ -171,11 +167,11 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
 
-    hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.get_timestamp());
+    hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.GetTimestamp());
 
     this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
 
-    this->communicator.SendAll(this->stepper.get_timestamp());
+    this->communicator.SendAll(this->stepper.GetTimestamp());
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting work before receive" << std::endl;
@@ -191,7 +187,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work before receive" << std::endl
-                                  << "Starting to wait on receive with timestamp: " << this->stepper.get_timestamp()
+                                  << "Starting to wait on receive with timestamp: " << this->stepper.GetTimestamp()
                                   << std::endl;
     }
 
@@ -230,11 +226,11 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
         this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
     }
 
-    hpx::future<void> receive_future = this->communicator.ReceivePostprocAll(this->stepper.get_timestamp());
+    hpx::future<void> receive_future = this->communicator.ReceivePostprocAll(this->stepper.GetTimestamp());
 
     ProblemType::postprocessor_parallel_pre_send_kernel(this->stepper, this->mesh);
 
-    this->communicator.SendPostprocAll(this->stepper.get_timestamp());
+    this->communicator.SendPostprocAll(this->stepper.GetTimestamp());
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
@@ -245,7 +241,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished postprocessor work before receive" << std::endl
                                   << "Starting to wait on postprocessor receive with timestamp: "
-                                  << this->stepper.get_timestamp() << std::endl;
+                                  << this->stepper.GetTimestamp() << std::endl;
     }
 
     return receive_future.then([this](auto&&) {
@@ -278,7 +274,7 @@ template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     hpx::future<void> step_future = hpx::make_ready_future();
 
-    for (uint stage = 0; stage < this->stepper.get_num_stages(); stage++) {
+    for (uint stage = 0; stage < this->stepper.GetNumStages(); stage++) {
 
         step_future = step_future.then([this](auto&& f) {
                 f.get();
@@ -314,42 +310,19 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
 }
 
 template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::SerializeAndUnserialize() {
-  std::cout << "serializing...\n";
-  std::vector<char> buffer;
-  hpx::serialization::output_archive oarchive(buffer);
-  this->save(oarchive,0);
-
-  stepper=Stepper();
-  writer= std::move(Writer<ProblemType>());
-  //using ParserType  = typename ProblemType::ProblemParserType;
-  //parser=ParserType();
-  //using MeshType = typename ProblemType::ProblemMeshType;
-  //mesh = MeshType();
-  //using ProbInputType = typename ProblemType::ProblemInputType;
-  //problem_input = ProbInputType();
-  //std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
-
-  hpx::serialization::input_archive iarchive(buffer);
-  this->load(iarchive,0);
-  this->on_migrated();
-  std::cout << "...and unserializing" << std::endl;
-}
-
-template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Departing from locality " << hpx::get_locality_id() << std::endl;
     }
 
-    ar & stepper & writer & parser & mesh & communicator & submesh_model;
+    ar & stepper & writer & mesh & problem_input & parser & communicator & submesh_model;
 }
 
 template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
-    ar & stepper & writer & parser & mesh & communicator & submesh_model;
+    ar & stepper & writer & mesh & problem_input & parser & communicator & submesh_model;
 
     this->writer.StartLog();
 
@@ -381,8 +354,8 @@ class HPXSimulationUnitClient
 
     static constexpr const char* GetBasename() { return "Simulation_Unit_Client_"; }
 
-    hpx::future<void> Preprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::PreprocessorAction;
+    hpx::future<void> FinishPreprocessor() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::FinishPreprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
@@ -398,11 +371,6 @@ class HPXSimulationUnitClient
 
     hpx::future<double> ResidualL2() {
         using ActionType = typename HPXSimulationUnit<ProblemType>::ResidualL2Action;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> SerializeAndUnserialize() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::SerializeAndUnserializeAction;
         return hpx::async<ActionType>(this->get_id());
     }
 };

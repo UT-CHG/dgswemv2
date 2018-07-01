@@ -43,7 +43,7 @@ int hpx_main(int argc, char* argv[]) {
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
         simulation_clients.emplace_back(
-            hpx::new_<HPXSimulation<SWE::RKDG::Problem>>(locality, input_string)gg
+            hpx::new_<RKDG::HPXSimulation<SWE::RKDG::Problem>>(locality, input_string)
             );
     }
 

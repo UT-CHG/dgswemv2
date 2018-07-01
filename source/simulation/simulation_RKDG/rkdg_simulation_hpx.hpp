@@ -60,6 +60,9 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
+    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+    this->n_stages = input.stepper_input.nstages;
+
     hpx::future<void> lb_future = LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
 
     std::string submesh_file_prefix =
@@ -68,24 +71,21 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
-    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-    this->n_stages = input.stepper_input.nstages;
     uint submesh_id = 0;
     std::vector<hpx::future<void>> registration_futures;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        this->simulation_unit_clients.emplace_back(hpx::new_<client_t>(
-            here, input_string, locality_id, submesh_id)
-                );
+        this->simulation_unit_clients.emplace_back(
+            hpx::new_<client_t>(here, input_string, locality_id, submesh_id)
+            );
 
-            registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-                                               std::string{client_t::GetBasename()}+
-                                               std::to_string(locality_id)+'_'+std::to_string(submesh_id)));
-            ++submesh_id;
-        }
-
-        hpx::when_all(registration_futures).get();
-        lb_future.get();
+        registration_futures.push_back(this->simulation_unit_clients.back().register_as(
+                                           std::string{client_t::GetBasename()}+
+                                           std::to_string(locality_id)+'_'+std::to_string(submesh_id)));
+        ++submesh_id;
     }
+
+    hpx::when_all(registration_futures).get();
+    lb_future.get();
 }
 
 template <typename ProblemType>
@@ -109,18 +109,10 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
                             f.get(); //check for exceptions
                             return this->simulation_unit_clients[sim_id].Step(); });
         }
-
-        if ( step % 100 == 0 ) {
-            simulation_futures[0] = simulation_futures[0]
-                .then([this](auto&&) {
-                        return this->simulation_unit_clients[0].SerializeAndUnserialize();
-                    });
-        }
     }
 
     return hpx::when_all(simulation_futures).then([](auto&&) {
             LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
-            std::cout << "leaving hpx simulation::Run()" << std::endl;
         });
 }
 

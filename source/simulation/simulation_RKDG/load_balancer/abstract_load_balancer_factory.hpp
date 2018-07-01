@@ -2,7 +2,7 @@
 #define ABSTRACT_LOAD_BALANCER_FACTORY_HPP
 
 #include "base_model.hpp"
-
+namespace RKDG {
 namespace LoadBalancer {
 class AbstractFactory {
 public:
@@ -16,5 +16,6 @@ public:
     template <typename ProblemType>
     static std::unique_ptr<SubmeshModel> create_submesh_model(uint locality_id, uint submesh_id);
 };
+}
 }
 #endif

@@ -15,7 +15,7 @@ template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries_kernel(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType& mesh,
-    ProblemInputType& input,
+    ProblemInputType& problem_input,
     Communicator& communicator,
     Writer<Problem>& writer) {
     // *** //
@@ -47,7 +47,7 @@ void Problem::create_distributed_boundaries_kernel(
         uint begin_index_postproc = 0;
 
         // check if the data in rank_boundary_data matches communicator rank boundary
-        RankBoundaryMetaData& rb_meta_data = rank_boundary.dbmd_data;
+        const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
 
         for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
             element_id_in = rb_meta_data.elements_in.at(dboundary_id);
