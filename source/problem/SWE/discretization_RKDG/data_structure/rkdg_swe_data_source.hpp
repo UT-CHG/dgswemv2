@@ -30,19 +30,12 @@ struct Source {
     template <typename Archive>
     void serialize(Archive& ar, unsigned);
 #endif
-
 };
 
 #ifdef HAS_HPX
 template <typename Archive>
 void Source::serialize(Archive& ar, unsigned) {
-    ar & coriolis_f
-       & manning
-       & g_manning_n_sq
-       & tau_s
-       & p_atm
-       & tide_pot
-       & manning_n;
+    ar& coriolis_f& manning& g_manning_n_sq& tau_s& p_atm& tide_pot& manning_n;
 }
 #endif
 }

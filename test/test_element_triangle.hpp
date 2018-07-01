@@ -6,8 +6,8 @@
 #include "geometry/mesh_definitions.hpp"
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 
-using MasterType = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
-using ShapeType = Shape::StraightTriangle;
+using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
+using ShapeType   = Shape::StraightTriangle;
 using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
 
 using Utilities::almost_equal;
@@ -60,7 +60,6 @@ const std::vector<double> IntegrationDPhiDY_true = {
     2.272727272727273e-02, 1.1080228133985e-01,    4.242424242424243e-02, 1.378321850860735e-01, 6.818181818181821e-02,
     1.8880147989604e-01};
 
-
 bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     // Check integrations
     bool error_found{false};
@@ -82,7 +81,8 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
-                         "in x direction" << std::endl;
+                         "in x direction"
+                      << std::endl;
         }
     }
     // Add 7 more modes
@@ -91,7 +91,8 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
-                         "in y direction" << std::endl;
+                         "in y direction"
+                      << std::endl;
         }
     }
 
@@ -116,14 +117,16 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
-                     "in x direction" << std::endl;
+                     "in x direction"
+                  << std::endl;
     }
 
     if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
-                     "in y direction" << std::endl;
+                     "in y direction"
+                  << std::endl;
     }
 
     // Check nodals through the same integration
@@ -197,7 +200,8 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in x "
-                         "direction" << std::endl;
+                         "direction"
+                      << std::endl;
         }
 
         triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
@@ -207,7 +211,8 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in y "
-                         "direction" << std::endl;
+                         "direction"
+                      << std::endl;
         }
     }
 

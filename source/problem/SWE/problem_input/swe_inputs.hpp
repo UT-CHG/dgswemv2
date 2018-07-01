@@ -121,7 +121,7 @@ struct Inputs {
 #ifdef HAS_HPX
 template <typename Archive>
 void serialize(Archive& ar, SphericalProjection& sp, unsigned) {
-    ar & sp.type & sp.longitude_o & sp.latitude_o & sp.R;
+    ar& sp.type& sp.longitude_o& sp.latitude_o& sp.R;
 }
 
 template <typename Archive>
@@ -131,17 +131,17 @@ void serialize(Archive& ar, InitialConditions& ic, unsigned) {
 
 template <typename Archive>
 void serialize(Archive& ar, TideInput& ti, unsigned) {
-    ar & ti.frequency & ti.forcing_fact & ti.equilib_arg & ti.amplitude & ti.phase;
+    ar& ti.frequency& ti.forcing_fact& ti.equilib_arg& ti.amplitude& ti.phase;
 }
 
 template <typename Archive>
 void serialize(Archive& ar, FlowInput& fi, unsigned) {
-    ar & fi.frequency & fi.forcing_fact & fi.equilib_arg & fi.amplitude & fi.phase;
+    ar& fi.frequency& fi.forcing_fact& fi.equilib_arg& fi.amplitude& fi.phase;
 }
 
 template <typename Archive>
 void serialize(Archive& ar, LeveeInput& li, unsigned) {
-    ar & li.H_barrier & li.C_subcritical & li.C_supercritical;
+    ar& li.H_barrier& li.C_subcritical& li.C_supercritical;
 }
 
 template <typename Archive>
@@ -171,21 +171,19 @@ void serialize(Archive& ar, Coriolis& c, unsigned) {
 
 template <typename Archive>
 void serialize(Archive& ar, WettingDrying& wd, unsigned) {
-    ar & wd.type & wd.h_o;
+    ar& wd.type& wd.h_o;
 }
 
 template <typename Archive>
 void serialize(Archive& ar, SlopeLimiting& sl, unsigned) {
-    ar & sl.type & sl. slope_limiting_type & sl.M & sl.nu;
+    ar& sl.type& sl.slope_limiting_type& sl.M& sl.nu;
 }
 
 template <typename Archive>
 void serialize(Archive& ar, Inputs& in, unsigned) {
-    ar & in.g & in.rho_air & in.rho_water & in.spherical_projection
-       & in.initial_conditions & in.tide_bc_data & in.flow_bc_data
-       & in.levee_is_data & in.function_source & in.bottom_friction
-       & in.meteo_forcing & in.tide_potential & in.coriolis & in.wet_dry
-       & in.slope_limit;
+    ar& in.g& in.rho_air& in.rho_water& in.spherical_projection& in.initial_conditions& in.tide_bc_data& in
+        .flow_bc_data& in.levee_is_data& in.function_source& in.bottom_friction& in.meteo_forcing& in.tide_potential& in
+        .coriolis& in.wet_dry& in.slope_limit;
 }
 #endif
 }

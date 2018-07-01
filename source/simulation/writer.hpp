@@ -30,14 +30,15 @@ class Writer {
     uint modal_output_frequency;
 
     uint version;
+
   public:
     Writer() = default;
     Writer(const WriterInput& writer_input);
     Writer(const WriterInput& writer_input, const uint locality_id, const uint submesh_id);
 
-    Writer(Writer&& rhs)=default;
+    Writer(Writer&& rhs) = default;
 
-    Writer& operator=(Writer&& rhs)=default;
+    Writer& operator=(Writer&& rhs) = default;
 
     bool WritingLog() { return this->writing_log_file; }
     bool WritingVerboseLog() const { return (this->writing_log_file && this->verbose_log_file); }
@@ -83,7 +84,6 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input, const uint locality
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name + '_' + std::to_string(locality_id) + '_' +
                               std::to_string(submesh_id);
-
     }
 }
 
@@ -349,18 +349,9 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 template <typename ProblemType>
 template <typename Archive>
 void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
-    ar & writing_output
-       & output_path
-       & writing_log_file
-       & verbose_log_file
-       & log_file_name
-       & writing_vtk_output
-       & vtk_output_frequency
-       & vtk_file_name_geom
-       & vtk_file_name_raw
-       & writing_modal_output
-       & modal_output_frequency
-       & version;
+    ar& writing_output& output_path& writing_log_file& verbose_log_file& log_file_name& writing_vtk_output&
+        vtk_output_frequency& vtk_file_name_geom& vtk_file_name_raw& writing_modal_output& modal_output_frequency&
+            version;
 }
 #endif
 #endif

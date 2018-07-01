@@ -38,7 +38,7 @@ class Mesh<std::tuple<Elements...>,
     std::string mesh_name;
 
   public:
-    Mesh()=default;
+    Mesh() = default;
     Mesh(const uint p) : p(p), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
 
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
@@ -80,21 +80,18 @@ class Mesh<std::tuple<Elements...>,
         this->masters = master_maker<MasterElementTypes>::construct_masters(p);
 
         this->CallForEachElement([this](auto& element) {
-                using MasterType = typename std::remove_reference<decltype(element)>::type::ElementMasterType;
+            using MasterType = typename std::remove_reference<decltype(element)>::type::ElementMasterType;
 
-                MasterType& master_elt = std::get<Utilities::index<
-                    MasterType, MasterElementTypes>::value>(this->masters);
-                element.SetMaster(master_elt);
-            });
+            MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->masters);
+            element.SetMaster(master_elt);
+        });
     }
 
 #ifdef HAS_HPX
     template <typename Archive>
-     void serialize(Archive& ar, unsigned) {
-        ar & mesh_name & p;
-        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) {
-                ar & element_map;
-        });
+    void serialize(Archive& ar, unsigned) {
+        ar& mesh_name& p;
+        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
     }
 #endif
 };

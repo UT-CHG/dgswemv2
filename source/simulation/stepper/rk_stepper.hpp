@@ -65,16 +65,16 @@ class RKStepper {
 #endif
 };
 #ifdef HAS_HPX
-template<typename Archive>
+template <typename Archive>
 void RKStepper::save(Archive& ar, unsigned) const {
-    ar & order & nstages & dt & stage & timestamp & t & ramp;
+    ar& order& nstages& dt& stage& timestamp& t& ramp;
 }
 
-template<typename Archive>
+template <typename Archive>
 void RKStepper::load(Archive& ar, unsigned) {
-    ar & order & nstages & dt & stage & timestamp & t & ramp;
+    ar& order& nstages& dt& stage& timestamp& t& ramp;
 
-    step = timestamp/nstages;
+    step = timestamp / nstages;
     InitializeCoefficients();
 }
 #endif

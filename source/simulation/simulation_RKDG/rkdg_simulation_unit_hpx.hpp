@@ -14,9 +14,7 @@
 namespace RKDG {
 template <typename ProblemType>
 class HPXSimulationUnit
-    : public  hpx::components::migration_support<
-                  hpx::components::component_base<HPXSimulationUnit<ProblemType>>
-              > {
+    : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
   private:
     RKStepper stepper;
 
@@ -32,7 +30,7 @@ class HPXSimulationUnit
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
     HPXSimulationUnit(HPXSimulationUnit&& rhs) = default;
 
-    HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs)=default;
+    HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs) = default;
 
     hpx::future<void> FinishPreprocessor();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, FinishPreprocessor, FinishPreprocessorAction);
@@ -53,7 +51,7 @@ class HPXSimulationUnit
     void load(Archive& ar, unsigned);
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
-    //Do not rename this is overload member of the base class
+    // Do not rename this is overload member of the base class
     void on_migrated();
 
   private:
@@ -67,20 +65,22 @@ class HPXSimulationUnit
 };
 
 template <typename ProblemType>
-HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id) {
+HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_string,
+                                                  const uint locality_id,
+                                                  const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
     input.read_mesh();                         // read mesh meta data
     input.read_bcis();                         // read bc data
     input.read_dbmd(locality_id, submesh_id);  // read distributed boundary meta data
 
-    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+    this->mesh          = typename ProblemType::ProblemMeshType(input.polynomial_order);
     this->problem_input = input.problem_input;
-    this->communicator = HPXCommunicator(input.mesh_input.dbmd_data);
-    this->stepper      = RKStepper(input.stepper_input);
-    this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
-    this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
-    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id,submesh_id);
+    this->communicator  = HPXCommunicator(input.mesh_input.dbmd_data);
+    this->stepper       = RKStepper(input.stepper_input);
+    this->writer        = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
+    this->parser        = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
+    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id, submesh_id);
     assert(this->submesh_model);
 
     if (this->writer.WritingLog()) {
@@ -106,9 +106,8 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::FinishPreprocessor() {
 
     this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 
-    return receive_future.then([this](auto&&) {
-            ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh);
-        });
+    return receive_future.then(
+        [this](auto&&) { ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh); });
 }
 
 template <typename ProblemType>
@@ -131,10 +130,8 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Parse() {
     if (this->parser.ParsingInput()) {
-
         if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Parsing input"
-                                      << std::endl;
+            this->writer.GetLogFile() << "Parsing input" << std::endl;
         }
 
         this->parser.ParseInput(this->stepper, this->mesh);
@@ -145,8 +142,8 @@ template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
-                                  << this->stepper.GetStage() << ')' << std::endl << "Starting work before receive"
-                                  << std::endl;
+                                  << this->stepper.GetStage() << ')' << std::endl
+                                  << "Starting work before receive" << std::endl;
     }
 
     this->Parse();
@@ -192,7 +189,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     }
 
     return receive_future.then([this](auto&& f) {
-        f.get(); //check for exceptions
+        f.get();  // check for exceptions
 
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Starting work after receive" << std::endl;
@@ -217,7 +214,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
         }
-        });
+    });
 }
 
 template <typename ProblemType>
@@ -256,7 +253,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Finished postprocessor work after receive" << std::endl << std::endl;
         }
-        });
+    });
 }
 
 template <typename ProblemType>
@@ -275,23 +272,22 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     hpx::future<void> step_future = hpx::make_ready_future();
 
     for (uint stage = 0; stage < this->stepper.GetNumStages(); stage++) {
+        step_future = step_future.then([this](auto&& f) {
+            f.get();
+            return this->Stage();
+        });
 
         step_future = step_future.then([this](auto&& f) {
-                f.get();
-                return this->Stage();
-            });
-
-        step_future = step_future.then([this](auto&& f) {
-                f.get();
-                return this->Postprocessor();
-            });
+            f.get();
+            return this->Postprocessor();
+        });
     }
 
     return step_future.then([this](auto&& f) {
-            f.get();
-            this->submesh_model->InStep(0,0);
-            this->SwapStates();
-        });
+        f.get();
+        this->submesh_model->InStep(0, 0);
+        this->SwapStates();
+    });
 }
 
 template <typename ProblemType>
@@ -316,13 +312,13 @@ void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
         this->writer.GetLogFile() << "Departing from locality " << hpx::get_locality_id() << std::endl;
     }
 
-    ar & stepper & writer & mesh & problem_input & parser & communicator & submesh_model;
+    ar& stepper& writer& mesh& problem_input& parser& communicator& submesh_model;
 }
 
 template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
-    ar & stepper & writer & mesh & problem_input & parser & communicator & submesh_model;
+    ar& stepper& writer& mesh& problem_input& parser& communicator& submesh_model;
 
     this->writer.StartLog();
 
@@ -335,10 +331,7 @@ template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::on_migrated() {
     this->mesh.SetMasters();
 
-    initialize_mesh_interfaces_boundaries<ProblemType,HPXCommunicator>(mesh,
-                                                                       problem_input,
-                                                                       communicator,
-                                                                       writer);
+    initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(mesh, problem_input, communicator, writer);
 }
 
 template <typename ProblemType>
@@ -348,7 +341,7 @@ class HPXSimulationUnitClient
     using BaseType = hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>>;
 
   public:
-    HPXSimulationUnitClient()=default;
+    HPXSimulationUnitClient() = default;
     HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
     HPXSimulationUnitClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
 

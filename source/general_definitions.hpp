@@ -170,7 +170,7 @@ class Shape {
     Array3D<double> dpsi_gp;
 
   public:
-    Shape()=default;
+    Shape() = default;
     Shape(std::vector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
     virtual ~Shape() = default;
@@ -196,7 +196,9 @@ class Shape {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, unsigned) { ar & nodal_coordinates; }
+    void serialize(Archive& ar, unsigned) {
+        ar& nodal_coordinates;
+    }
     HPX_SERIALIZATION_POLYMORPHIC_ABSTRACT(Shape);
 #endif
 };

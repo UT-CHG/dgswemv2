@@ -44,7 +44,6 @@ class Boundary {
 
   public:
     using BoundaryIntegrationType = IntegrationType;
-    using BoundaryConditionType   = ConditonType;
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>

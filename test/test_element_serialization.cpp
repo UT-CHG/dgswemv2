@@ -43,7 +43,7 @@ int main() {
 
     bool error_found = check_for_error(i_triangle, f_vals);
 
-    if ( error_found ) {
+    if (error_found) {
         return 1;
     }
     return 0;

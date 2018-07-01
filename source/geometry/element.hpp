@@ -5,9 +5,6 @@ namespace Geometry {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 class Element {
   public:
-    using ElementMasterType = MasterType;
-
-  public:
     DataType data;
 
   private:
@@ -38,7 +35,7 @@ class Element {
     std::pair<bool, Array2D<double>> m_inv;
 
   public:
-    Element()=default;
+    Element() = default;
     Element(const uint ID,
             MasterType& master,
             std::vector<Point<3>>&& nodal_coordinates,
@@ -96,6 +93,9 @@ class Element {
     template <typename Archive>
     void serialize(Archive& ar, unsigned);
 #endif
+
+  public:
+    using ElementMasterType = MasterType;
 };
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -121,7 +121,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& 
 
     // DEFORMATION
     std::vector<double> det_J = this->shape.GetJdet(this->master->integration_rule.second);
-    Array3D<double> J_inv = this->shape.GetJinv(this->master->integration_rule.second);
+    Array3D<double> J_inv     = this->shape.GetJinv(this->master->integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
 
@@ -291,7 +291,7 @@ template <typename F>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f, std::vector<double>& f_gp) {
     for (uint gp = 0; gp < f_gp.size(); gp++) {
         f_gp[gp] = f(this->gp_global_coordinates[gp]);
-   }
+    }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -323,7 +323,6 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<double>& u_lin,
                                                                                   std::vector<double>& u_lin_gp) {
-
     std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u_lin.size(); dof++) {
@@ -538,8 +537,8 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 #ifdef HAS_HPX
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename Archive>
-void Element<dimension, MasterType, ShapeType, DataType>::serialize(Archive& ar,unsigned) {
-    ar & data & ID & shape & node_ID & neighbor_ID & boundary_type;
+void Element<dimension, MasterType, ShapeType, DataType>::serialize(Archive& ar, unsigned) {
+    ar& data& ID& shape& node_ID& neighbor_ID& boundary_type;
 }
 #endif
 }

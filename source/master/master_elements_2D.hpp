@@ -26,7 +26,7 @@ class Triangle : public Master<2> {
     /**
      * Default constructor
      */
-    Triangle()=default;
+    Triangle() = default;
 
     /**
      * Construct a master triangle with polynomial order p.

@@ -5,13 +5,12 @@
 #include <iomanip>
 
 int main() {
-
-    using clock_t = std::chrono::system_clock;
+    using clock_t      = std::chrono::system_clock;
     using time_point_t = std::chrono::time_point<clock_t>;
-    using duration = clock_t::duration;
+    using duration     = clock_t::duration;
 
     time_point_t o_start = clock_t::now();
-    duration o_duration = clock_t::now() - o_start;
+    duration o_duration  = clock_t::now() - o_start;
 
     std::vector<char> buffer;
     hpx::serialization::output_archive o_archive(buffer);
@@ -23,13 +22,13 @@ int main() {
     i_archive >> i_start >> i_duration;
 
     bool error_found{false};
-    if ( o_duration.count() != i_duration.count() ) {
+    if (o_duration.count() != i_duration.count()) {
         error_found = true;
         std::cerr << "Error in serializing std::chrono::duration<>\n"
                   << "o_duration.count(): " << o_duration.count() << '\n'
                   << "i_duration.count(): " << i_duration.count() << '\n';
     }
-    if ( o_start.time_since_epoch().count() != i_start.time_since_epoch().count() ) {
+    if (o_start.time_since_epoch().count() != i_start.time_since_epoch().count()) {
         error_found = true;
         std::cerr << "Error in serializing std::chrono::time_point<>\n"
                   << "o_start.time_since_epoch().count(): " << o_start.time_since_epoch().count() << '\n'

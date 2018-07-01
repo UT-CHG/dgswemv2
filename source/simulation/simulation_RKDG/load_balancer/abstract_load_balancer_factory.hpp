@@ -5,7 +5,7 @@
 namespace RKDG {
 namespace LoadBalancer {
 class AbstractFactory {
-public:
+  public:
     template <typename ProblemType>
     static hpx::future<void> initialize_locality_and_world_models(const uint locality_id,
                                                                   const std::string& input_string);

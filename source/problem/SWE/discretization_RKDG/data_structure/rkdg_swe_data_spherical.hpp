@@ -31,10 +31,7 @@ struct Spherical {
 #ifdef HAS_HPX
 template <typename Archive>
 void Spherical::serialize(Archive& ar, unsigned) {
-    ar & x_node
-       & y_node
-       & sp_at_gp_internal
-       & sp_at_gp_boundary;
+    ar& x_node& y_node& sp_at_gp_internal& sp_at_gp_boundary;
 }
 #endif
 }

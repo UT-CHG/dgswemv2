@@ -35,7 +35,7 @@ struct WetDry {
     std::vector<double> h_at_vrtx_temp;
 
 #ifdef HAS_HPX
-    template<typename Archive>
+    template <typename Archive>
     void serialize(Archive& ar, unsigned);
 #endif
 };
@@ -43,18 +43,8 @@ struct WetDry {
 #ifdef HAS_HPX
 template <typename Archive>
 void WetDry::serialize(Archive& ar, unsigned) {
-    ar & wet
-       & went_completely_dry
-       & bath_min
-       & ze_lin
-       & qx_lin
-       & qy_lin
-       & ze_at_vrtx
-       & qx_at_vrtx
-       & qy_at_vrtx
-       & bath_at_vrtx
-       & h_at_vrtx
-       & h_at_vrtx_temp;
+    ar& wet& went_completely_dry& bath_min& ze_lin& qx_lin& qy_lin& ze_at_vrtx& qx_at_vrtx& qy_at_vrtx& bath_at_vrtx&
+        h_at_vrtx& h_at_vrtx_temp;
 }
 #endif
 }

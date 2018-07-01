@@ -4,10 +4,8 @@
 // This test checks the accuracy of the RKSSP methods by solving
 // y''+y = t/2, whose solution is sin(t) + t/2;
 
-using State = std::array<double, 2>;
-constexpr auto compute_rhs = [](State y, double t) -> State {
-    return {y[1], -y[0] + 0.5 * t};
-};
+using State                = std::array<double, 2>;
+constexpr auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
 
 State solve_ode(RKStepper& rk_stepper, const State& y0, uint nsteps) {
     std::vector<State> y(rk_stepper.GetNumStages() + 1);
@@ -16,10 +14,9 @@ State solve_ode(RKStepper& rk_stepper, const State& y0, uint nsteps) {
 
     for (uint step = 0; step < nsteps; ++step) {
         for (uint stage = 0; stage < rk_stepper.GetNumStages(); ++stage) {
-            rhs[stage] = compute_rhs(y[stage], rk_stepper.GetTimeAtCurrentStage());
+            rhs[stage]   = compute_rhs(y[stage], rk_stepper.GetTimeAtCurrentStage());
             y[stage + 1] = {0, 0};
             for (uint s = 0; s < stage + 1; ++s) {
-
                 y[stage + 1][0] +=
                     rk_stepper.ark[stage][s] * y[s][0] + rk_stepper.GetDT() * rk_stepper.brk[stage][s] * rhs[s][0];
 
@@ -38,7 +35,7 @@ int main() {
     bool error_found{false};
 
     State y0{0, 1.5};
-    double dt = 0.00005;
+    double dt   = 0.00005;
     uint nsteps = 5. / dt + 1;
 
     StepperInput stepper_input;

@@ -6,7 +6,7 @@
 namespace Shape {
 class StraightTriangle : public Shape<2> {
   public:
-    StraightTriangle()=default;
+    StraightTriangle() = default;
     StraightTriangle(std::vector<Point<3>>&& nodal_coordinates);
 
     std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID);
@@ -39,7 +39,7 @@ class StraightTriangle : public Shape<2> {
 #ifdef HAS_HPX
 template <typename Archive>
 void StraightTriangle::serialize(Archive& ar, unsigned) {
-    ar & hpx::serialization::base_object<Shape<2>>(*this);
+    ar& hpx::serialization::base_object<Shape<2>>(*this);
 }
 #endif
 }
