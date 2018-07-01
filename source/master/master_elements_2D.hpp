@@ -13,7 +13,7 @@ template <typename BasisType, typename IntegrationType>
 class Triangle : public Master<2> {
   public:
     /**
-     * The basis used over the elment.
+     * The basis used over the element.
      */
     BasisType basis;
 
@@ -23,7 +23,11 @@ class Triangle : public Master<2> {
     IntegrationType integration;
 
   public:
-    Triangle() = default;
+    /**
+     * Default constructor
+     */
+    Triangle()=default;
+
     /**
      * Construct a master triangle with polynomial order p.
      *

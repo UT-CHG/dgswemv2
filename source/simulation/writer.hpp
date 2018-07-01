@@ -13,7 +13,7 @@ class Writer {
     bool writing_log_file;
     bool verbose_log_file;
     std::string log_file_name;
-    std::ofstream log_file;
+    mutable std::ofstream log_file;
 
     bool writing_vtk_output;
     uint vtk_output_frequency;
@@ -29,14 +29,19 @@ class Writer {
     bool writing_modal_output;
     uint modal_output_frequency;
 
+    uint version;
   public:
     Writer() = default;
     Writer(const WriterInput& writer_input);
     Writer(const WriterInput& writer_input, const uint locality_id, const uint submesh_id);
 
+    Writer(Writer&& rhs)=default;
+
+    Writer& operator=(Writer&& rhs)=default;
+
     bool WritingLog() { return this->writing_log_file; }
-    bool WritingVerboseLog() { return (this->writing_log_file && this->verbose_log_file); }
-    std::ofstream& GetLogFile() { return this->log_file; }
+    bool WritingVerboseLog() const { return (this->writing_log_file && this->verbose_log_file); }
+    std::ofstream& GetLogFile() const { return this->log_file; }
     void StartLog();
 
     bool WritingOutput() { return this->writing_output; }
@@ -46,6 +51,12 @@ class Writer {
   private:
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
     void InitializeMeshGeometryVTU(typename ProblemType::ProblemMeshType& mesh);
+
+  public:
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 template <typename ProblemType>
@@ -59,7 +70,8 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
       writing_vtu_output(writer_input.writing_vtu_output),
       vtu_output_frequency(writer_input.vtu_output_freq_step),
       writing_modal_output(writer_input.writing_modal_output),
-      modal_output_frequency(writer_input.modal_output_freq_step) {
+      modal_output_frequency(writer_input.modal_output_freq_step),
+      version(0) {
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name;
     }
@@ -71,12 +83,13 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input, const uint locality
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name + '_' + std::to_string(locality_id) + '_' +
                               std::to_string(submesh_id);
+
     }
 }
 
 template <typename ProblemType>
 void Writer<ProblemType>::StartLog() {
-    this->log_file = std::ofstream(this->log_file_name, std::ofstream::out);
+    this->log_file = std::ofstream(this->log_file_name + '_' + std::to_string(version++));
 
     if (!this->log_file) {
         std::cerr << "Error in opening log file, presumably the output directory does not exists.\n";
@@ -332,4 +345,22 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
     file.close();
 }
 
+#ifdef HAS_HPX
+template <typename ProblemType>
+template <typename Archive>
+void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
+    ar & writing_output
+       & output_path
+       & writing_log_file
+       & verbose_log_file
+       & log_file_name
+       & writing_vtk_output
+       & vtk_output_frequency
+       & vtk_file_name_geom
+       & vtk_file_name_raw
+       & writing_modal_output
+       & modal_output_frequency
+       & version;
+}
+#endif
 #endif

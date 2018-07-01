@@ -7,7 +7,7 @@ template <typename RawBoundaryType>
 void Problem::create_interfaces_kernel(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType& mesh,
-    InputParameters<ProblemInputType>& input,
+    ProblemInputType& problem_input,
     Writer<Problem>& writer) {
     // *** //
     using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal, IS::Levee>;
@@ -42,7 +42,7 @@ void Problem::create_interfaces_kernel(
 
             uint n_intface_old_levee = mesh.GetNumberInterfaces();
 
-            auto& levee_data = input.problem_input.levee_is_data;
+            auto& levee_data = problem_input.levee_is_data;
 
             auto itt = it->second.begin();
             while (itt != it->second.end()) {

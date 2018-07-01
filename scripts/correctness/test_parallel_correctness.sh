@@ -29,7 +29,7 @@ echo ""
 echo "Setting up runtime files..."
 cd $HOME
 mkdir -p dgswemv2_test
-cp -r $DGSWEMV2_ROOT_/examples/manufactured_solution/input_files/* dgswemv2_test
+cp -r $DGSWEMV2_ROOT_/examples/rkdg_swe_manufactured_solution/input_files/* dgswemv2_test
 
 cd dgswemv2_test
 #Halve the manufactured solution run time to shorten circleci test time

@@ -6,5 +6,4 @@ double bathymetry_function(double x, double y) {
 
     return bath;
 }
-
 #endif

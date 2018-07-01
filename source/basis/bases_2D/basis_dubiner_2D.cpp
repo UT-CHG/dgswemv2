@@ -98,7 +98,7 @@ std::vector<double> Dubiner_2D::ComputePhi(const uint p,
     std::vector<double> psi_pq(jacobi_polynomial(q, 2 * p + 1, 0, n2));
 
     for (uint pt = 0; pt < n_pts; pt++) {
-        phi[pt] = psi_p[pt] * pow((1 - n2[pt]) / 2, (int)p) * psi_pq[pt];
+        phi[pt] = psi_p[pt] * std::pow((1 - n2[pt]) / 2, (int)p) * psi_pq[pt];
 
         if (std::isnan(n1[pt])) {  // value of Dubiner polynomial at singular point (-1,1)
             if (p == 0) {

@@ -11,6 +11,7 @@
 #include <hpx/util/unwrapped.hpp>
 
 #include "simulation/writer.hpp"
+#include "load_balancer/load_balancer_headers.hpp"
 
 namespace RKDG {
 template <typename ClientType>
@@ -32,293 +33,14 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
 }
 
 template <typename ProblemType>
-class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimulationUnit<ProblemType>> {
-  private:
-    typename ProblemType::ProblemMeshType mesh;
-
-    HPXCommunicator communicator;
-    RKStepper stepper;
-    Writer<ProblemType> writer;
-    typename ProblemType::ProblemParserType parser;
-
-  public:
-    HPXSimulationUnit() = default;
-    HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
-
-    hpx::future<void> FinishPreprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, FinishPreprocessor, FinishPreprocessorAction);
-
-    void Launch();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
-
-    hpx::future<void> Stage();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
-
-    hpx::future<void> Postprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Postprocessor, PostprocessorAction);
-
-    void Step();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
-
-    double ResidualL2();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
-};
-
-template <typename ProblemType>
-HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_string,
-                                                  const uint locality_id,
-                                                  const uint submesh_id) {
-    InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
-
-    input.read_mesh();                         // read mesh meta data
-    input.read_bcis();                         // read bc data
-    input.read_dbmd(locality_id, submesh_id);  // read distributed boundary meta data
-
-    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
-
-    this->communicator = HPXCommunicator(input.mesh_input.dbmd_data);
-    this->stepper      = RKStepper(input.stepper_input);
-    this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
-    this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
-
-    if (this->writer.WritingLog()) {
-        this->writer.StartLog();
-
-        this->writer.GetLogFile() << "Starting simulation with p=" << input.polynomial_order << " for "
-                                  << input.mesh_input.mesh_data.mesh_name << " mesh" << std::endl
-                                  << std::endl;
-    }
-
-    ProblemType::initialize_problem_parameters(input.problem_input);
-
-    ProblemType::preprocess_mesh_data(input);
-
-    initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input, this->communicator, this->writer);
-
-    ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
-}
-
-template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::FinishPreprocessor() {
-    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
-
-    this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
-
-    return receive_future.then(
-        [this](auto&&) { ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh); });
-}
-
-template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::Launch() {
-    if (this->writer.WritingLog()) {
-        this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
-    }
-
-    if (this->writer.WritingOutput()) {
-        this->writer.WriteFirstStep(this->stepper, this->mesh);
-    }
-
-    uint n_stages = this->stepper.GetNumStages();
-
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
-
-    this->mesh.CallForEachElement(resize_data_container);
-}
-
-template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
-                                  << this->stepper.GetStage() << ')' << std::endl
-                                  << "Starting work before receive" << std::endl;
-    }
-
-    auto distributed_boundary_send_kernel = [this](auto& dbound) {
-        ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
-    };
-
-    auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
-
-    auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
-
-    auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
-
-    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Exchanging data" << std::endl;
-    }
-
-    hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.GetTimestamp());
-
-    this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
-
-    this->communicator.SendAll(this->stepper.GetTimestamp());
-
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Starting work before receive" << std::endl;
-    }
-
-    if (this->parser.ParsingInput()) {
-        this->parser.ParseInput(this->stepper, this->mesh);
-    }
-
-    this->mesh.CallForEachElement(volume_kernel);
-
-    this->mesh.CallForEachElement(source_kernel);
-
-    this->mesh.CallForEachInterface(interface_kernel);
-
-    this->mesh.CallForEachBoundary(boundary_kernel);
-
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Finished work before receive" << std::endl
-                                  << "Starting to wait on receive with timestamp: " << this->stepper.GetTimestamp()
-                                  << std::endl;
-    }
-
-    return receive_future.then([this](auto&&) {
-        if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Starting work after receive" << std::endl;
-        }
-
-        auto distributed_boundary_kernel = [this](auto& dbound) {
-            ProblemType::distributed_boundary_kernel(this->stepper, dbound);
-        };
-
-        auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
-
-        this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
-
-        this->mesh.CallForEachElement(update_kernel);
-
-        if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
-        }
-    });
-}
-
-template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
-    }
-
-    hpx::future<void> receive_future = this->communicator.ReceivePostprocAll(this->stepper.GetTimestamp());
-
-    ProblemType::postprocessor_parallel_pre_send_kernel(this->stepper, this->mesh);
-
-    this->communicator.SendPostprocAll(this->stepper.GetTimestamp());
-
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
-    }
-
-    ProblemType::postprocessor_parallel_pre_receive_kernel(this->stepper, this->mesh);
-
-    if (this->writer.WritingVerboseLog()) {
-        this->writer.GetLogFile() << "Finished postprocessor work before receive" << std::endl
-                                  << "Starting to wait on postprocessor receive with timestamp: "
-                                  << this->stepper.GetTimestamp() << std::endl;
-    }
-
-    return receive_future.then([this](auto&&) {
-        if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
-        }
-
-        auto scrutinize_solution_kernel = [this](auto& elt) {
-            bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-
-            if (nan_found)
-                hpx::terminate();
-        };
-
-        ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
-
-        this->mesh.CallForEachElement(scrutinize_solution_kernel);
-
-        ++(this->stepper);
-
-        if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Finished postprocessor work after receive" << std::endl << std::endl;
-        }
-    });
-}
-
-template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::Step() {
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
-    this->mesh.CallForEachElement(swap_states_kernel);
-
-    if (this->writer.WritingOutput()) {
-        this->writer.WriteOutput(this->stepper, this->mesh);
-    }
-}
-
-template <typename ProblemType>
-double HPXSimulationUnit<ProblemType>::ResidualL2() {
-    double residual_L2 = 0;
-
-    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
-        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    };
-
-    this->mesh.CallForEachElement(compute_residual_L2_kernel);
-
-    this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
-
-    return residual_L2;
-}
-
-template <typename ProblemType>
-class HPXSimulationUnitClient
-    : hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>> {
-  private:
-    using BaseType = hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>>;
-
-  public:
-    HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
-
-    hpx::future<void> FinishPreprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::FinishPreprocessorAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Launch() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::LaunchAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Stage() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Postprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::PostprocessorAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Step() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::StepAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<double> ResidualL2() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::ResidualL2Action;
-        return hpx::async<ActionType>(this->get_id());
-    }
-};
-
-template <typename ProblemType>
-class HPXSimulation : public hpx::components::simple_component_base<HPXSimulation<ProblemType>> {
+class HPXSimulation : public hpx::components::component_base<HPXSimulation<ProblemType>> {
   private:
     uint n_steps;
     uint n_stages;
 
-    std::vector<HPXSimulationUnitClient<ProblemType>> simulation_unit_clients;
+    using client_t = HPXSimulationUnitClient<ProblemType>;
+
+    std::vector<client_t> simulation_unit_clients;
 
   public:
     HPXSimulation() = default;
@@ -341,6 +63,8 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
     this->n_stages = input.stepper_input.nstages;
 
+    hpx::future<void> lb_future = LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
+
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
         std::to_string(locality_id) + '_';
@@ -348,16 +72,20 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
     uint submesh_id = 0;
-
+    std::vector<hpx::future<void>> registration_futures;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        hpx::future<hpx::id_type> simulation_unit_id =
-            hpx::new_<hpx::components::simple_component<HPXSimulationUnit<ProblemType>>>(
-                here, input_string, locality_id, submesh_id);
+        this->simulation_unit_clients.emplace_back(
+            hpx::new_<client_t>(here, input_string, locality_id, submesh_id)
+            );
 
-        this->simulation_unit_clients.emplace_back(std::move(simulation_unit_id));
-
+        registration_futures.push_back(this->simulation_unit_clients.back().register_as(
+                                           std::string{client_t::GetBasename()}+
+                                           std::to_string(locality_id)+'_'+std::to_string(submesh_id)));
         ++submesh_id;
     }
+
+    hpx::when_all(registration_futures).get();
+    lb_future.get();
 }
 
 template <typename ProblemType>
@@ -374,24 +102,18 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint stage = 0; stage < this->n_stages; stage++) {
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] = simulation_futures[sim_id].then(
-                    [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Stage(); });
-            }
-
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] = simulation_futures[sim_id].then(
-                    [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Postprocessor(); });
-            }
-        }
-
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-            simulation_futures[sim_id] = simulation_futures[sim_id].then(
-                [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Step(); });
+            simulation_futures[sim_id] =
+                simulation_futures[sim_id]
+                    .then([this, sim_id](auto&& f) {
+                            f.get(); //check for exceptions
+                            return this->simulation_unit_clients[sim_id].Step(); });
         }
     }
-    return hpx::when_all(simulation_futures);
+
+    return hpx::when_all(simulation_futures).then([](auto&&) {
+            LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
+        });
 }
 
 template <typename ProblemType>
@@ -406,6 +128,7 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 
   public:
     HPXSimulationClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
+    HPXSimulationClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
 
     hpx::future<void> Run() {
         using ActionType = typename HPXSimulation<ProblemType>::RunAction;
@@ -419,4 +142,15 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 };
 }
 
+#define DGSWEMV2_REGISTER_COMPONENTS(ProblemType)\
+    using hpx_simulation_unit_ = RKDG::HPXSimulationUnit<ProblemType>;  \
+    using hpx_simulation_unit_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulationUnit<ProblemType>>; \
+    HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_);\
+    \
+    using hpx_simulation_swe_ = RKDG::HPXSimulation<ProblemType>;       \
+    using hpx_simulation_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulation<ProblemType>>; \
+    HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);\
+    \
+    DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
+/**/
 #endif

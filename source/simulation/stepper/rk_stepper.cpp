@@ -9,6 +9,10 @@ RKStepper::RKStepper(const StepperInput& stepper_input)
       timestamp(0),
       t(0.),
       ramp(0.) {
+    this->InitializeCoefficients();
+}
+
+void RKStepper::InitializeCoefficients() {
     // Allocate the time stepping arrays
     this->ark.reserve(this->nstages);
     this->brk.reserve(this->nstages);

@@ -25,6 +25,9 @@
 #include <time.h>
 
 #include "edge_types.hpp"
+#ifdef HAS_HPX
+#include "simulation/simulation_RKDG/load_balancer/serialization_headers.hpp"
+#endif
 
 using uchar = unsigned char;
 
@@ -167,7 +170,10 @@ class Shape {
     Array3D<double> dpsi_gp;
 
   public:
+    Shape()=default;
     Shape(std::vector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
+
+    virtual ~Shape() = default;
 
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
 
@@ -187,6 +193,12 @@ class Shape {
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) { ar & nodal_coordinates; }
+    HPX_SERIALIZATION_POLYMORPHIC_ABSTRACT(Shape);
+#endif
 };
 }
 

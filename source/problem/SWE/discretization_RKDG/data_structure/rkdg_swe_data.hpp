@@ -49,12 +49,12 @@ struct Data {
         }
     }
 
-    uint get_nnode() { return this->nnode; }
-    uint get_nvrtx() { return this->nvrtx; }
-    uint get_nbound() { return this->nbound; }
-    uint get_ndof() { return this->ndof; }
-    uint get_ngp_internal() { return this->ngp_internal; }
-    uint get_ngp_boundary(uint nbound) { return this->ngp_boundary[nbound]; }
+    uint get_nnode() const { return this->nnode; }
+    uint get_nvrtx() const { return this->nvrtx; }
+    uint get_nbound() const { return this->nbound; }
+    uint get_ndof() const { return this->ndof; }
+    uint get_ngp_internal() const { return this->ngp_internal; }
+    uint get_ngp_boundary(uint nbound) const { return this->ngp_boundary[nbound]; }
 
     void set_nnode(const uint nnode) { this->nnode = nnode; }
     void set_nvrtx(const uint nvrtx) { this->nvrtx = nvrtx; }
@@ -73,7 +73,32 @@ struct Data {
     uint ndof;
     uint ngp_internal;
     std::vector<uint> ngp_boundary;
+
+  public:
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
+
+#ifdef HAS_HPX
+template <typename Archive>
+void Data::serialize(Archive& ar, unsigned) {
+    ar & state
+       & internal
+       & boundary
+       & spherical_projection
+       & source
+       & wet_dry_state
+       & slope_limit_state
+       & nnode
+       & nvrtx
+       & nbound
+       & ndof
+       & ngp_internal
+       & ngp_boundary;
+}
+#endif
 }
 }
 

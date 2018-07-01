@@ -6,7 +6,7 @@
 
 #include "problem/SWE/swe_definitions.hpp"
 
-#include "utilities//file_exists.hpp"
+#include "utilities/file_exists.hpp"
 
 namespace SWE {
 class Parser {
@@ -31,6 +31,13 @@ class Parser {
   private:
     void ParseMeteoInput(const RKStepper& stepper);
     void InterpolateMeteoData(const RKStepper& stepper);
+
+  public:
+#ifdef HAS_HPX
+  public:
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned);
+#endif
 };
 
 template <typename MeshType>
@@ -68,6 +75,16 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
         });
     }
 }
-}
 
+#ifdef HAS_HPX
+template <typename Archive>
+void Parser::serialize(Archive& ar, unsigned) {
+    ar & parsing_input
+       & meteo_parse_frequency
+       & meteo_data_file
+       & node_meteo_data_step
+       & node_meteo_data_interp;
+}
+#endif
+}
 #endif

@@ -338,3 +338,123 @@ add_test(
   test_partition_exe
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/sample_fort.14
 )
+
+add_executable(
+  test_heartbeat_exe
+  test_heartbeat.cpp
+)
+
+add_test(
+  Unit_heartbeat
+  test_heartbeat_exe
+)
+
+if(USE_HPX)
+  add_executable(
+    test_rkdg_swe_serialization_exe
+    test_rkdg_swe_serialization.cpp
+  )
+
+  set_target_properties(test_rkdg_swe_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_rkdg_swe_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_rkdg_swe_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_rkdg_swe_serialization
+    test_rkdg_swe_serialization_exe
+  )
+
+  add_executable(
+    test_shape_serialization_exe
+    test_shape_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  )
+
+  set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_shape_serialization
+    test_shape_serialization_exe
+  )
+
+  add_executable(
+    test_element_serialization_exe
+    test_element_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+    ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+    ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+    ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+    ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+  )
+
+  set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_element_serialization
+    test_element_serialization_exe
+  )
+
+  add_executable(
+    test_mesh_serialization_exe
+    test_mesh_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+    ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
+    ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+    ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+    ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+    ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+    ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  )
+
+  set_target_properties(test_mesh_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_mesh_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
+
+
+  add_test(
+    Unit_mesh_serialization
+    test_mesh_serialization_exe
+    ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
+  )
+
+  add_executable(
+    test_rk_stepper_serialization_exe
+    test_rk_stepper_serialization.cpp
+    ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+  )
+
+  set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_rk_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_rk_stepper_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_rk_stepper_serialization
+    test_rk_stepper_serialization_exe
+  )
+
+  add_executable(
+    test_serialize_chrono_exe
+    test_serialize_chrono.cpp
+  )
+
+  set_target_properties(test_serialize_chrono_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_serialize_chrono_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_serialize_chrono_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_serialize_chrono
+    test_serialize_chrono_exe
+  )
+
+endif()

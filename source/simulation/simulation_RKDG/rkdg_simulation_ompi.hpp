@@ -25,7 +25,7 @@ class OMPISimulationUnit {
     OMPISimulationUnit() = default;
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
 
-    void PostReceivePrerocStage();
+    void PostReceivePreprocStage();
     void WaitAllPreprocSends();
 
     void Launch();
@@ -86,7 +86,7 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
 }
 
 template <typename ProblemType>
-void OMPISimulationUnit<ProblemType>::PostReceivePrerocStage() {
+void OMPISimulationUnit<ProblemType>::PostReceivePreprocStage() {
     this->communicator.WaitAllPreprocReceives(this->stepper.GetTimestamp());
 
     ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh);
@@ -342,7 +342,7 @@ void OMPISimulation<ProblemType>::Run() {
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->simulation_units.size());
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->PostReceivePrerocStage();
+            this->simulation_units[sim_unit_id]->PostReceivePreprocStage();
         }
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
