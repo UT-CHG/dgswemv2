@@ -42,10 +42,10 @@ if(USE_OMPI)
   install(TARGETS EHDG_MANUFACTURED_SOLUTION_OMPI DESTINATION bin)
 endif()
 
-#[[if(USE_HPX)
+if(USE_HPX)
   add_executable(
     EHDG_MANUFACTURED_SOLUTION_HPX
-    ${PROJECT_SOURCE_DIR}/examples/rkdg_swe_manufactured_solution/manufactured_hpx_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/examples/ehdg_swe_manufactured_solution/manufactured_hpx_main_swe.cpp
     ${EHDG_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )
@@ -56,9 +56,9 @@ endif()
   )
 
   target_include_directories(EHDG_MANUFACTURED_SOLUTION_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
-  target_link_libraries(EHDG_MANUFACTURED_SOLUTION_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+  target_link_libraries(EHDG_MANUFACTURED_SOLUTION_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES} Eigen3::Eigen)
 
   install(TARGETS EHDG_MANUFACTURED_SOLUTION_HPX DESTINATION bin)
 endif()
 
-install(TARGETS EHDG_MANUFACTURED_SOLUTION_SERIAL DESTINATION bin)]]
+install(TARGETS EHDG_MANUFACTURED_SOLUTION_SERIAL DESTINATION bin)
