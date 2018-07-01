@@ -41,10 +41,10 @@ class Element {
     Element()=default;
     Element(const uint ID,
             MasterType& master,
-            const std::vector<Point<dimension>>& nodal_coordinates,
-            const std::vector<uint>& node_ID,
-            const std::vector<uint>& neighbor_ID,
-            const std::vector<uchar>& boundary_type);
+            std::vector<Point<3>>&& nodal_coordinates,
+            std::vector<uint>&& node_ID,
+            std::vector<uint>&& neighbor_ID,
+            std::vector<uchar>&& boundary_type);
 
     void SetMaster(MasterType& master);
 
@@ -101,22 +101,21 @@ class Element {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              MasterType& master,
-                                                             const std::vector<Point<dimension>>& nodal_coordinates,
-                                                             const std::vector<uint>& node_ID,
-                                                             const std::vector<uint>& neighbor_ID,
-                                                             const std::vector<uchar>& boundary_type)
+                                                             std::vector<Point<3>>&& nodal_coordinates,
+                                                             std::vector<uint>&& node_ID,
+                                                             std::vector<uint>&& neighbor_ID,
+                                                             std::vector<uchar>&& boundary_type)
     : ID(ID),
-      shape(ShapeType(nodal_coordinates)),
-      node_ID(node_ID),
-      neighbor_ID(neighbor_ID),
-      boundary_type(boundary_type) {
+      shape(ShapeType(std::move(nodal_coordinates))),
+      node_ID(std::move(node_ID)),
+      neighbor_ID(std::move(neighbor_ID)),
+      boundary_type(std::move(boundary_type)) {
     SetMaster(master);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 void Element<dimension, MasterType, ShapeType, DataType>::SetMaster(MasterType& master_) {
     this->master = &master_;
-
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master->integration_rule.second);
 

@@ -69,15 +69,21 @@ void Problem::create_distributed_boundaries_kernel(
 
             DBC::DBIndex index;
 
-            index.ze_in = begin_index;
-            index.qx_in = begin_index + ngp;
-            index.qy_in = begin_index + 2 * ngp;
+            index.ze_in            = begin_index;
+            index.qx_in            = begin_index + ngp;
+            index.qy_in            = begin_index + 2 * ngp;
+            index.ze_flux_dot_n_in = begin_index + 3 * ngp;
+            index.qx_flux_dot_n_in = begin_index + 4 * ngp;
+            index.qy_flux_dot_n_in = begin_index + 5 * ngp;
 
-            index.ze_ex = begin_index + ngp - 1;
-            index.qx_ex = begin_index + 2 * ngp - 1;
-            index.qy_ex = begin_index + 3 * ngp - 1;
+            index.ze_ex            = begin_index + ngp - 1;
+            index.qx_ex            = begin_index + 2 * ngp - 1;
+            index.qy_ex            = begin_index + 3 * ngp - 1;
+            index.ze_flux_dot_n_ex = begin_index + 4 * ngp - 1;
+            index.qx_flux_dot_n_ex = begin_index + 5 * ngp - 1;
+            index.qy_flux_dot_n_ex = begin_index + 6 * ngp - 1;
 
-            begin_index += 3 * ngp;
+            begin_index += 6 * ngp;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
@@ -87,7 +93,7 @@ void Problem::create_distributed_boundaries_kernel(
                 raw_boundary.p = p;
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
-                    raw_boundary,
+                    std::move(raw_boundary),
                     DBC::Distributed(DBC::DBDataExchanger(index,
                                                           send_preproc_buffer_reference,
                                                           receive_preproc_buffer_reference,

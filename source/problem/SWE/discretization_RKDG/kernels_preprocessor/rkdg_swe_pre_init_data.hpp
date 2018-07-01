@@ -12,18 +12,19 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     std::unordered_map<uint, std::vector<double>> bathymetry;
 
-    std::vector<double> bathymetry_temp;
-    for (const auto& elt : mesh_data.elements) {
-        auto nodal_coordinates = mesh_data.get_nodal_coordinates(elt.first);
+    mesh.CallForEachElement([&bathymetry](auto& elt) {
+        uint id = elt.GetID();
 
-        for (auto& node_coordinate : nodal_coordinates) {
-            bathymetry_temp.push_back(node_coordinate[GlobalCoord::z]);
+        auto& shape = elt.GetShape();
+
+        std::vector<double> bathymetry_temp(elt.data.get_nnode());
+
+        for (uint node_id = 0; node_id < elt.data.get_nnode(); node_id++) {
+            bathymetry_temp[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        bathymetry.insert({elt.first, bathymetry_temp});
-
-        bathymetry_temp.clear();
-    }
+        bathymetry.insert({id, bathymetry_temp});
+    });
 
     mesh.CallForEachElement([&bathymetry, &problem_specific_input](auto& elt) {
         uint id = elt.GetID();
@@ -163,7 +164,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
 
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
-            std::vector<uint>& node_ID = elt.GetNodeID();
+            const std::vector<uint>& node_ID = elt.GetNodeID();
 
             for (uint node = 0; node < elt.data.get_nnode(); node++) {
                 elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];

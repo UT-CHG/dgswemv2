@@ -3,7 +3,6 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/discretization_EHDG/numerical_fluxes/ehdg_swe_numerical_fluxes.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -12,10 +11,16 @@ struct DBIndex {
     uint ze_in;
     uint qx_in;
     uint qy_in;
+    uint ze_flux_dot_n_in;
+    uint qx_flux_dot_n_in;
+    uint qy_flux_dot_n_in;
 
     uint ze_ex;
     uint qx_ex;
     uint qy_ex;
+    uint ze_flux_dot_n_ex;
+    uint qx_flux_dot_n_ex;
+    uint qy_flux_dot_n_ex;
 };
 
 class DBDataExchanger {
@@ -41,8 +46,20 @@ class DBDataExchanger {
                     std::vector<double>& send_postproc_buffer,
                     std::vector<double>& receive_postproc_buffer);
 
-    void SetEX(const std::vector<double>& ze_in, const std::vector<double>& qx_in, const std::vector<double>& qy_in);
-    void GetEX(const uint gp, double& ze_ex, double& qx_ex, double& qy_ex);
+    void SetEX(const std::vector<double>& ze_in,
+               const std::vector<double>& qx_in,
+               const std::vector<double>& qy_in,
+               const std::vector<double>& ze_flux_dot_n_in,
+               const std::vector<double>& qx_flux_dot_n_in,
+               const std::vector<double>& qy_flux_dot_n_in);
+
+    void GetEX(const uint gp,
+               double& ze_ex,
+               double& qx_ex,
+               double& qy_ex,
+               double& ze_flux_dot_n_ex,
+               double& qx_flux_dot_n_ex,
+               double& qy_flux_dot_n_ex);
 };
 
 DBDataExchanger::DBDataExchanger(const DBIndex& index,
@@ -62,18 +79,33 @@ DBDataExchanger::DBDataExchanger(const DBIndex& index,
 
 void DBDataExchanger::SetEX(const std::vector<double>& ze_in,
                             const std::vector<double>& qx_in,
-                            const std::vector<double>& qy_in) {
+                            const std::vector<double>& qy_in,
+                            const std::vector<double>& ze_flux_dot_n_in,
+                            const std::vector<double>& qx_flux_dot_n_in,
+                            const std::vector<double>& qy_flux_dot_n_in) {
     for (uint gp = 0; gp < ze_in.size(); gp++) {
-        this->send_buffer[this->index.ze_in + gp] = ze_in[gp];
-        this->send_buffer[this->index.qx_in + gp] = qx_in[gp];
-        this->send_buffer[this->index.qy_in + gp] = qy_in[gp];
+        this->send_buffer[this->index.ze_in + gp]            = ze_in[gp];
+        this->send_buffer[this->index.qx_in + gp]            = qx_in[gp];
+        this->send_buffer[this->index.qy_in + gp]            = qy_in[gp];
+        this->send_buffer[this->index.ze_flux_dot_n_in + gp] = ze_flux_dot_n_in[gp];
+        this->send_buffer[this->index.qx_flux_dot_n_in + gp] = qx_flux_dot_n_in[gp];
+        this->send_buffer[this->index.qy_flux_dot_n_in + gp] = qy_flux_dot_n_in[gp];
     }
 }
 
-void DBDataExchanger::GetEX(const uint gp, double& ze_ex, double& qx_ex, double& qy_ex) {
-    ze_ex = this->receive_buffer[this->index.ze_ex - gp];
-    qx_ex = this->receive_buffer[this->index.qx_ex - gp];
-    qy_ex = this->receive_buffer[this->index.qy_ex - gp];
+void DBDataExchanger::GetEX(const uint gp,
+                            double& ze_ex,
+                            double& qx_ex,
+                            double& qy_ex,
+                            double& ze_flux_dot_n_ex,
+                            double& qx_flux_dot_n_ex,
+                            double& qy_flux_dot_n_ex) {
+    ze_ex            = this->receive_buffer[this->index.ze_ex - gp];
+    qx_ex            = this->receive_buffer[this->index.qx_ex - gp];
+    qy_ex            = this->receive_buffer[this->index.qy_ex - gp];
+    ze_flux_dot_n_ex = this->receive_buffer[this->index.ze_flux_dot_n_ex - gp];
+    qx_flux_dot_n_ex = this->receive_buffer[this->index.qx_flux_dot_n_ex - gp];
+    qy_flux_dot_n_ex = this->receive_buffer[this->index.qy_flux_dot_n_ex - gp];
 }
 }
 }

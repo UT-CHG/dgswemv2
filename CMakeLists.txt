@@ -8,7 +8,7 @@ option(SET_VERBOSE "Verbose MakeFile" OFF)
 option(BUILD_EXAMPLES "Build Examples" OFF)
 
 option(RKDG_SWE "Build RKDG SWE simulations" ON)
-option(EHDG_SWE "Build EHDG SWE simulations" ON)
+option(EHDG_SWE "Build EHDG SWE simulations" OFF)
 
 enable_testing()
 
@@ -73,6 +73,8 @@ if(RKDG_SWE)
 endif()
 
 if(EHDG_SWE)
+  find_package(Eigen3 REQUIRED)
+
   add_subdirectory(source/problem/SWE/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_swe_manufactured_solution)

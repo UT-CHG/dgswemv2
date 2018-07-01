@@ -14,7 +14,7 @@ void Problem::create_interfaces_kernel(
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
         if (it->first == SWE::BoundaryTypes::internal) {
-            using InterfaceTypeInterface = std::tuple_element<0, InterfaceTypes>::type;
+            using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
 
             uint n_intface_old_internal = mesh.GetNumberInterfaces();
 
@@ -26,7 +26,8 @@ void Problem::create_interfaces_kernel(
                     auto& raw_boundary_in = itt->second;
                     auto& raw_boundary_ex = it->second.find(key_pre_int_ex)->second;
 
-                    mesh.template CreateInterface<InterfaceTypeInterface>(raw_boundary_in, raw_boundary_ex);
+                    mesh.template CreateInterface<InterfaceTypeInternal>(std::move(raw_boundary_in),
+                                                                         std::move(raw_boundary_ex));
                 }
 
                 it->second.erase(itt++);
@@ -35,6 +36,30 @@ void Problem::create_interfaces_kernel(
             if (writer.WritingLog()) {
                 writer.GetLogFile() << "Number of internal interfaces: "
                                     << mesh.GetNumberInterfaces() - n_intface_old_internal << std::endl;
+            }
+        } else if (it->first == SWE::BoundaryTypes::periodic) {
+            using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
+
+            uint n_intface_old_periodic = mesh.GetNumberInterfaces();
+
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
+                std::pair<uint, uint> key_pre_int_ex = std::pair<uint, uint>{itt->first.second, itt->first.first};
+
+                if (it->second.find(key_pre_int_ex) != it->second.end()) {
+                    auto& raw_boundary_in = itt->second;
+                    auto& raw_boundary_ex = it->second.find(key_pre_int_ex)->second;
+
+                    mesh.template CreateInterface<InterfaceTypeInternal>(std::move(raw_boundary_in),
+                                                                         std::move(raw_boundary_ex));
+                }
+
+                it->second.erase(itt++);
+            }
+
+            if (writer.WritingLog()) {
+                writer.GetLogFile() << "Number of periodic interfaces: "
+                                    << mesh.GetNumberInterfaces() - n_intface_old_periodic << std::endl;
             }
         }
     }

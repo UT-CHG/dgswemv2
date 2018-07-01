@@ -37,22 +37,16 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
 
-    std::vector<Point<2>> nodal_coords_temp;
     for (auto& element_meta : mesh_data.elements) {
         uint elt_id = element_meta.first;
 
         auto nodal_coordinates = mesh_data.get_nodal_coordinates(elt_id);
 
-        for (auto& node_coordinate : nodal_coordinates) {
-            nodal_coords_temp.push_back({node_coordinate[GlobalCoord::x], node_coordinate[GlobalCoord::y]});
-        }
-
         mesh.template CreateElement<ElementType>(elt_id,
-                                                 nodal_coords_temp,
-                                                 element_meta.second.node_ID,
-                                                 element_meta.second.neighbor_ID,
-                                                 element_meta.second.boundary_type);
-        nodal_coords_temp.clear();
+                                                 std::move(nodal_coordinates),
+                                                 std::move(element_meta.second.node_ID),
+                                                 std::move(element_meta.second.neighbor_ID),
+                                                 std::move(element_meta.second.boundary_type));
     }
 
     if (writer.WritingLog()) {

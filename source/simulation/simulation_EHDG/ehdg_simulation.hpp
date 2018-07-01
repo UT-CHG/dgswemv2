@@ -70,6 +70,20 @@ void Simulation<ProblemType>::Run() {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
 
+    auto global_interface_kernel = [this](auto& intface) {
+        ProblemType::global_interface_kernel(this->stepper, intface);
+    };
+
+    auto global_boundary_kernel = [this](auto& bound) { ProblemType::global_boundary_kernel(this->stepper, bound); };
+
+    auto global_edge_interface_kernel = [this](auto& edge_int) {
+        ProblemType::global_edge_interface_kernel(this->stepper, edge_int);
+    };
+
+    auto global_edge_boundary_kernel = [this](auto& edge_bound) {
+        ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound);
+    };
+
     auto local_volume_kernel = [this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); };
 
     auto local_source_kernel = [this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); };
@@ -104,7 +118,17 @@ void Simulation<ProblemType>::Run() {
             if (this->parser.ParsingInput()) {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
+            /* Global Step */
+            this->mesh.CallForEachInterface(global_interface_kernel);
 
+            this->mesh.CallForEachBoundary(global_boundary_kernel);
+
+            this->mesh_skeleton.CallForEachEdgeInterface(global_edge_interface_kernel);
+
+            this->mesh_skeleton.CallForEachEdgeBoundary(global_edge_boundary_kernel);
+            /* Global Step */
+
+            /* Local Step */
             this->mesh.CallForEachElement(local_volume_kernel);
 
             this->mesh.CallForEachElement(local_source_kernel);
@@ -116,6 +140,7 @@ void Simulation<ProblemType>::Run() {
             this->mesh.CallForEachElement(update_kernel);
 
             this->mesh.CallForEachElement(scrutinize_solution_kernel);
+            /* Local Step */
 
             ++(this->stepper);
         }

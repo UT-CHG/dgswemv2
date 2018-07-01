@@ -6,12 +6,12 @@ int main() {
     bool error_found = false;
 
     // make an equilateral triangle
-    std::vector<Point<2>> vrtxs(3);
-    vrtxs[0] = {-0.5, 0.};
-    vrtxs[1] = {0.5, 0.};
-    vrtxs[2] = {0, std::sqrt(3.) / 2.};
+    std::vector<Point<3>> vrtxs(3);
+    vrtxs[0] = {-0.5, 0., 0.};
+    vrtxs[1] = {0.5, 0., 0.};
+    vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
-    Shape::StraightTriangle triangle(vrtxs);
+    Shape::StraightTriangle triangle(std::move(vrtxs));
 
     // check Jdet
     double Jdet_true = std::sqrt(3.) / 8.;

@@ -2,22 +2,23 @@
 #define CLASS_BOUNDARY_HPP
 
 namespace Geometry {
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
 class Boundary {
   public:
-    BoundaryType boundary_condition;
+    ConditonType boundary_condition;
 
     DataType& data;
 
     uint bound_id;
-    std::vector<uint> node_ID;
-
-    Master::Master<dimension + 1>& master;
-    Shape::Shape<dimension + 1>& shape;
 
     Array2D<double> surface_normal;
 
   private:
+    Master::Master<dimension + 1>& master;
+    Shape::Shape<dimension + 1>& shape;
+
+    std::vector<uint> node_ID;
+
     Array2D<double> psi_gp;
     Array2D<double> psi_bound_gp;
     Array2D<double> phi_gp;
@@ -26,8 +27,12 @@ class Boundary {
     Array2D<double> int_phi_fact;
 
   public:
-    Boundary(const RawBoundary<dimension, DataType>& raw_boundary,
-             const BoundaryType& boundary_condition = BoundaryType());
+    Boundary(RawBoundary<dimension, DataType>&& raw_boundary, ConditonType&& boundary_condition = ConditonType());
+
+    Master::Master<dimension + 1>& GetMaster() { return this->master; }
+    Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
+
+    std::vector<uint>& GetNodeID() { return this->node_ID; }
 
     void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
 
@@ -39,16 +44,16 @@ class Boundary {
 
   public:
     using BoundaryIntegrationType = IntegrationType;
+    using BoundaryConditionType   = ConditonType;
 };
 
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
-Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
-    const RawBoundary<dimension, DataType>& raw_boundary,
-    const BoundaryType& boundary_condition)
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBoundary<dimension, DataType>&& raw_boundary,
+                                                                       ConditonType&& boundary_condition)
     : boundary_condition(boundary_condition),
       data(raw_boundary.data),
       bound_id(raw_boundary.bound_id),
-      node_ID(raw_boundary.node_ID),
+      node_ID(std::move(raw_boundary.node_ID)),
       master(raw_boundary.master),
       shape(raw_boundary.shape) {
     // *** //
@@ -91,8 +96,8 @@ Boundary<dimension, IntegrationType, DataType, BoundaryType>::Boundary(
     this->data.set_ngp_boundary(this->bound_id, integration_rule.first.size());
 }
 
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
-inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeUgp(const std::vector<double>& u,
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeUgp(const std::vector<double>& u,
                                                                                      std::vector<double>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
@@ -103,8 +108,8 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
     }
 }
 
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
-inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeNodalUgp(
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeNodalUgp(
     const std::vector<double>& u_nodal,
     std::vector<double>& u_nodal_gp) {
     std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
@@ -116,8 +121,8 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
     }
 }
 
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
-inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::ComputeBoundaryNodalUgp(
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeBoundaryNodalUgp(
     const std::vector<double>& u_bound_nodal,
     std::vector<double>& u_bound_nodal_gp) {
     std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
@@ -129,8 +134,8 @@ inline void Boundary<dimension, IntegrationType, DataType, BoundaryType>::Comput
     }
 }
 
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
-inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Integration(
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+inline double Boundary<dimension, IntegrationType, DataType, ConditonType>::Integration(
     const std::vector<double>& u_gp) {
     double integral = 0;
 
@@ -141,8 +146,8 @@ inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::Inte
     return integral;
 }
 
-template <uint dimension, typename IntegrationType, typename DataType, typename BoundaryType>
-inline double Boundary<dimension, IntegrationType, DataType, BoundaryType>::IntegrationPhi(
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+inline double Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(
     const uint dof,
     const std::vector<double>& u_gp) {
     double integral = 0;

@@ -12,19 +12,20 @@ class Interface {
 
     uint bound_id_in;
     uint bound_id_ex;
-    std::vector<uint> node_ID_in;
-    std::vector<uint> node_ID_ex;
 
+    Array2D<double> surface_normal_in;
+    Array2D<double> surface_normal_ex;
+
+  private:
     Master::Master<dimension + 1>& master_in;
     Master::Master<dimension + 1>& master_ex;
 
     Shape::Shape<dimension + 1>& shape_in;
     Shape::Shape<dimension + 1>& shape_ex;
 
-    Array2D<double> surface_normal_in;
-    Array2D<double> surface_normal_ex;
+    std::vector<uint> node_ID_in;
+    std::vector<uint> node_ID_ex;
 
-  private:
     Array2D<double> psi_gp_in;
     Array2D<double> psi_gp_ex;
     Array2D<double> psi_bound_gp_in;
@@ -38,9 +39,18 @@ class Interface {
     Array2D<double> int_phi_fact_ex;
 
   public:
-    Interface(const RawBoundary<dimension, DataType>& raw_boundary_in,
-              const RawBoundary<dimension, DataType>& raw_boundary_ex,
-              const SpecializationType& specialization = SpecializationType());
+    Interface(RawBoundary<dimension, DataType>&& raw_boundary_in,
+              RawBoundary<dimension, DataType>&& raw_boundary_ex,
+              SpecializationType&& specialization = SpecializationType());
+
+    Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
+    Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
+
+    Shape::Shape<dimension + 1>& GetShapeIN() { return this->shape_in; }
+    Shape::Shape<dimension + 1>& GetShapeEX() { return this->shape_ex; }
+
+    std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
+    std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
 
     void ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp);
     void ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp);
@@ -61,16 +71,16 @@ class Interface {
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
 Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
-    const RawBoundary<dimension, DataType>& raw_boundary_in,
-    const RawBoundary<dimension, DataType>& raw_boundary_ex,
-    const SpecializationType& specialization)
+    RawBoundary<dimension, DataType>&& raw_boundary_in,
+    RawBoundary<dimension, DataType>&& raw_boundary_ex,
+    SpecializationType&& specialization)
     : specialization(specialization),
       data_in(raw_boundary_in.data),
       data_ex(raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
-      node_ID_in(raw_boundary_in.node_ID),
-      node_ID_ex(raw_boundary_ex.node_ID),
+      node_ID_in(std::move(raw_boundary_in.node_ID)),
+      node_ID_ex(std::move(raw_boundary_ex.node_ID)),
       master_in(raw_boundary_in.master),
       master_ex(raw_boundary_ex.master),
       shape_in(raw_boundary_in.shape),

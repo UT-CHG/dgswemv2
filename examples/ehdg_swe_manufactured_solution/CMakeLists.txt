@@ -26,18 +26,18 @@ add_executable(
 )
 
 target_include_directories(EHDG_MANUFACTURED_SOLUTION_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(EHDG_MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES})
+target_link_libraries(EHDG_MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES} Eigen3::Eigen)
 
-#[[if(USE_OMPI)
+if(USE_OMPI)
   add_executable(
     EHDG_MANUFACTURED_SOLUTION_OMPI
-    ${PROJECT_SOURCE_DIR}/examples/rkdg_swe_manufactured_solution/manufactured_ompi_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/examples/ehdg_swe_manufactured_solution/manufactured_ompi_main_swe.cpp
     ${EHDG_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/ompi_communicator.cpp
   )
 
   target_include_directories(EHDG_MANUFACTURED_SOLUTION_OMPI PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})  
-  target_link_libraries(EHDG_MANUFACTURED_SOLUTION_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES})
+  target_link_libraries(EHDG_MANUFACTURED_SOLUTION_OMPI ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES} Eigen3::Eigen)
 
   install(TARGETS EHDG_MANUFACTURED_SOLUTION_OMPI DESTINATION bin)
 endif()
@@ -45,7 +45,7 @@ endif()
 if(USE_HPX)
   add_executable(
     EHDG_MANUFACTURED_SOLUTION_HPX
-    ${PROJECT_SOURCE_DIR}/examples/rkdg_swe_manufactured_solution/manufactured_hpx_main_swe.cpp
+    ${PROJECT_SOURCE_DIR}/examples/ehdg_swe_manufactured_solution/manufactured_hpx_main_swe.cpp
     ${EHDG_SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )
@@ -56,9 +56,9 @@ if(USE_HPX)
   )
 
   target_include_directories(EHDG_MANUFACTURED_SOLUTION_HPX PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
-  target_link_libraries(EHDG_MANUFACTURED_SOLUTION_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+  target_link_libraries(EHDG_MANUFACTURED_SOLUTION_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES} Eigen3::Eigen)
 
   install(TARGETS EHDG_MANUFACTURED_SOLUTION_HPX DESTINATION bin)
 endif()
 
-install(TARGETS EHDG_MANUFACTURED_SOLUTION_SERIAL DESTINATION bin)]]
+install(TARGETS EHDG_MANUFACTURED_SOLUTION_SERIAL DESTINATION bin)

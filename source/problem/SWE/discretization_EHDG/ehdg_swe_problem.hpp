@@ -33,7 +33,11 @@ struct Problem {
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed>>::Type;
 
-    using ProblemMeshSkeletonType = Geometry::MeshSkeletonType<Data, EdgeData>;
+    using ProblemMeshSkeletonType =
+        Geometry::MeshSkeletonType<EdgeData,
+                                   Geometry::InterfaceTypeTuple<Data, IS::Internal>,
+                                   Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
+                                   Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
@@ -70,6 +74,18 @@ struct Problem {
         Communicator& communicator,
         Writer<Problem>& writer);
 
+    static void create_edge_interfaces_kernel(ProblemMeshType& mesh,
+                                              ProblemMeshSkeletonType& mesh_skeleton,
+                                              Writer<Problem>& writer);
+
+    static void create_edge_boundaries_kernel(ProblemMeshType& mesh,
+                                              ProblemMeshSkeletonType& mesh_skeleton,
+                                              Writer<Problem>& writer);
+
+    static void create_edge_distributeds_kernel(ProblemMeshType& mesh,
+                                                ProblemMeshSkeletonType& mesh_skeleton,
+                                                Writer<Problem>& writer);
+
     static void initialize_data_kernel(ProblemMeshType& mesh,
                                        const MeshMetaData& mesh_data,
                                        const ProblemInputType& problem_specific_input);
@@ -81,6 +97,38 @@ struct Problem {
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
     // processor kernels
+
+    /* global step */
+
+    template <typename InterfaceType>
+    static void global_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+
+    template <typename EdgeInterfaceType>
+    static void global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename EdgeInterfaceType>
+    static void global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename BoundaryType>
+    static void global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+
+    template <typename EdgeBoundaryType>
+    static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename EdgeBoundaryType>
+    static void global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename DistributedBoundaryType>
+    static void global_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+
+    template <typename EdgeDistributedType>
+    static void global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+
+    template <typename EdgeDistributedType>
+    static void global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+
+    /* local step */
+
     template <typename ElementType>
     static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
 
@@ -94,10 +142,9 @@ struct Problem {
     static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void distributed_boundary_send_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
-    template <typename DistributedBoundaryType>
-    static void distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    /* local step */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

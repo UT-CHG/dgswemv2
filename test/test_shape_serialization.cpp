@@ -22,12 +22,12 @@ bool is_equal(Shape::StraightTriangle& o_tri, Shape::StraightTriangle& i_tri ) {
 }
 
 int main() {
-    std::vector<Point<2>> nodal_coord(3);
-    nodal_coord[0] = {-1, 0};
-    nodal_coord[1] = { 1, 0};
-    nodal_coord[2] = { 0, 1};
+    std::vector<Point<3>> nodal_coord(3);
+    nodal_coord[0] = {-1, 0, 0};
+    nodal_coord[1] = { 1, 0, 0};
+    nodal_coord[2] = { 0, 1, 0};
 
-    Shape::StraightTriangle o_tri(nodal_coord);
+    Shape::StraightTriangle o_tri(std::move(nodal_coord));
     std::vector<char> buffer;
     hpx::serialization::output_archive o_archive(buffer);
     o_archive << o_tri;

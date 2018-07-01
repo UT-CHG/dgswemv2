@@ -7,7 +7,7 @@ namespace Shape {
 class StraightTriangle : public Shape<2> {
   public:
     StraightTriangle()=default;
-    StraightTriangle(const std::vector<Point<2>>& nodal_coordinates);
+    StraightTriangle(std::vector<Point<3>>&& nodal_coordinates);
 
     std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID);
 

@@ -18,27 +18,32 @@ int main() {
     using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::BC::Land>;
     using InterfaceType =
         Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::IS::Internal>;
-    using EdgeInternalType =
-        typename std::tuple_element<0, Geometry::EdgeInternalTypeTuple<SWE::EHDG::Data, SWE::EHDG::EdgeData>>::type;
-    using EdgeBoundaryType =
-        typename std::tuple_element<0, Geometry::EdgeBoundaryTypeTuple<SWE::EHDG::Data, SWE::EHDG::EdgeData>>::type;
+
+    using EdgeBoundaryTypes =
+        Geometry::EdgeBoundaryTypeTuple<SWE::EHDG::EdgeData,
+                                        Geometry::BoundaryTypeTuple<SWE::EHDG::Data, SWE::EHDG::BC::Land>>::Type;
+    using EdgeBoundaryType = typename std::tuple_element<0, EdgeBoundaryTypes>::type;
+
+    using EdgeInterfaceTypes =
+        Geometry::EdgeInterfaceTypeTuple<SWE::EHDG::EdgeData,
+                                         Geometry::InterfaceTypeTuple<SWE::EHDG::Data, SWE::EHDG::IS::Internal>>::Type;
+    using EdgeInterfaceType = typename std::tuple_element<0, EdgeInterfaceTypes>::type;
 
     // make an equilateral triangle
-    std::vector<Point<2>> vrtxs(3);
-    vrtxs[0] = {-0.5, 0.};
-    vrtxs[1] = {0.5, 0.};
-    vrtxs[2] = {0, std::sqrt(3.) / 2.};
+    std::vector<Point<3>> vrtxs(3);
+    vrtxs[0] = {-0.5, 0., 0.};
+    vrtxs[1] = {0.5, 0., 0.};
+    vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
     MasterType master(10);
-    ShapeType shape(vrtxs);
 
-    ElementType triangle(
-        0,
-        master,
-        vrtxs,
-        std::vector<uint>{0, 0, 0},
-        std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
-        std::vector<unsigned char>{SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land});
+    ElementType triangle(0,
+                         master,
+                         std::move(vrtxs),
+                         std::move(std::vector<uint>{0, 0, 0}),
+                         std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
+                         std::move(std::vector<unsigned char>{
+                             SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 
@@ -49,17 +54,32 @@ int main() {
     std::vector<double> u(11);                           // ndof for p = 10
     std::vector<double> u_gp(integration.GetNumGP(21));  // ngp for 2*p+1
 
+    std::vector<double> u_proj{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
+    std::vector<double> u_proj_res(11);
+    std::vector<double> u_proj_gp(integration.GetNumGP(21));  // ngp for 2*p+1
+
     // generate edge boundaries
     std::vector<BoundaryType> boundaries;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
-        boundaries.emplace_back(BoundaryType(rb.second));
+        boundaries.emplace_back(BoundaryType(std::move(rb.second)));
     }
 
     std::vector<EdgeBoundaryType> edge_boundaries;
 
-    for (auto& bound : boundaries) {
+    for (auto bound : boundaries) {
         edge_boundaries.emplace_back(EdgeBoundaryType(bound));
+    }
+
+    for (uint n_bound = 0; n_bound < 3; n_bound++) {
+        edge_boundaries[n_bound].ComputeUgp(u_proj, u_proj_gp);
+        edge_boundaries[n_bound].L2Projection(u_proj_gp, u_proj_res);
+
+        for (uint dof = 0; dof < 11; dof++) {
+            if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
+                error_found = true;
+            }
+        }
     }
 
     for (uint dof = 0; dof < 11; dof++) {
@@ -75,6 +95,14 @@ int main() {
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
             }
+
+            std::fill(u_gp.begin(), u_gp.end(), 1.0);
+
+            inner_product = edge_boundaries[n_bound].IntegrationLambdaLambda(dof, dof, u_gp);
+
+            if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
+                error_found = true;
+            }
         }
     }
 
@@ -82,13 +110,24 @@ int main() {
     std::vector<InterfaceType> interfaces;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
-        interfaces.emplace_back(InterfaceType(rb.second, rb.second));
+        interfaces.emplace_back(InterfaceType(std::move(rb.second), std::move(rb.second)));
     }
 
-    std::vector<EdgeInternalType> edge_internals;
+    std::vector<EdgeInterfaceType> edge_interfaces;
 
-    for (auto& intface : interfaces) {
-        edge_internals.emplace_back(EdgeInternalType(intface));
+    for (auto intface : interfaces) {
+        edge_interfaces.emplace_back(EdgeInterfaceType(intface));
+    }
+
+    for (uint n_int = 0; n_int < 3; n_int++) {
+        edge_interfaces[n_int].ComputeUgp(u_proj, u_proj_gp);
+        edge_interfaces[n_int].L2Projection(u_proj_gp, u_proj_res);
+
+        for (uint dof = 0; dof < 11; dof++) {
+            if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
+                error_found = true;
+            }
+        }
     }
 
     for (uint dof = 0; dof < 11; dof++) {
@@ -97,9 +136,17 @@ int main() {
 
         for (uint n_int = 0; n_int < 3; n_int++) {
             // just checking orthogonality of Legendre 1D poly
-            edge_internals[n_int].ComputeUgp(u, u_gp);
+            edge_interfaces[n_int].ComputeUgp(u, u_gp);
 
-            double inner_product = edge_internals[n_int].IntegrationLambda(dof, u_gp);
+            double inner_product = edge_interfaces[n_int].IntegrationLambda(dof, u_gp);
+
+            if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
+                error_found = true;
+            }
+
+            std::fill(u_gp.begin(), u_gp.end(), 1.0);
+
+            inner_product = edge_interfaces[n_int].IntegrationLambdaLambda(dof, dof, u_gp);
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
