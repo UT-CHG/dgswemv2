@@ -5,7 +5,7 @@
 // y''+y = t/2, whose solution is sin(t) + t/2;
 
 using State                = std::array<double, 2>;
-constexpr auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
+auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
 
 State solve_ode(RKStepper& rk_stepper, const State& y0, uint nsteps) {
     std::vector<State> y(rk_stepper.GetNumStages() + 1);
