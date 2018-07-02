@@ -109,8 +109,9 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
         while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
             this->simulation_unit_clients.push_back(std::make_pair(ClientType(), locality_id));
 
-            this->simulation_unit_clients.back().first.connect_to(
-                std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
+            this->simulation_unit_clients.back().first.connect_to(std::string{ClientType::GetBasename()} +
+                                                                  std::to_string(locality_id) + '_' +
+                                                                  std::to_string(submesh_id));
             std::cout << "Adding client for locality: " << locality_id << " at submesh: " << submesh_id << '\n';
             ++submesh_id;
         }
@@ -159,10 +160,10 @@ void SubmeshModel<ProblemType>::InStep(uint64_t, uint64_t) {
 template <typename ProblemType>
 template <typename Archive>
 void SubmeshModel<ProblemType>::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & hpx::serialization::base_object<LoadBalancer::SubmeshModel>(*this);
     ar  & beat;
-// clang-format on
+    // clang-format on
 }
 }
 

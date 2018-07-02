@@ -121,115 +121,115 @@ struct Inputs {
 #ifdef HAS_HPX
 template <typename Archive>
 void serialize(Archive& ar, SphericalProjection& sp, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & sp.type
         & sp.longitude_o
         & sp.latitude_o
         & sp.R;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, InitialConditions& ic, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & ic.type
         & ic.ze_initial
         & ic.qx_initial
         & ic.qy_initial;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, TideInput& ti, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & ti.frequency
         & ti.forcing_fact
         & ti.equilib_arg
         & ti.amplitude
         & ti.phase;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, FlowInput& fi, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & fi.frequency
         & fi.forcing_fact
         & fi.equilib_arg
         & fi.amplitude
         & fi.phase;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, LeveeInput& li, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & li.H_barrier
         & li.C_subcritical
         & li.C_supercritical;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, FunctionSource& fs, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & fs.type;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, BottomFriction& bf, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & bf.type
         & bf.coefficient
         & bf.manning_data_file;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, MeteoForcing& mf, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & mf.type
         & mf.meteo_data_file
         & mf.frequency;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, TidePotential& tp, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & tp.type;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, Coriolis& c, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & c.type;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, WettingDrying& wd, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & wd.type
         & wd.h_o;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, SlopeLimiting& sl, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & sl.type
         & sl.slope_limiting_type
         & sl.M
         & sl.nu;
-// clang-format on
+    // clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, Inputs& in, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & in.g
         & in.rho_air
         & in.rho_water
@@ -245,7 +245,7 @@ void serialize(Archive& ar, Inputs& in, unsigned) {
         & in.coriolis
         & in.wet_dry
         & in.slope_limit;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

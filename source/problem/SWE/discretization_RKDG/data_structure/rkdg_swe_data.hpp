@@ -84,7 +84,7 @@ struct Data {
 #ifdef HAS_HPX
 template <typename Archive>
 void Data::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & state
         & internal
         & boundary
@@ -98,7 +98,7 @@ void Data::serialize(Archive& ar, unsigned) {
         & ndof
         & ngp_internal
         & ngp_boundary;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

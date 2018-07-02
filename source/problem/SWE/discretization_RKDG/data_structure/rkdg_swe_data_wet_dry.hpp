@@ -43,7 +43,7 @@ struct WetDry {
 #ifdef HAS_HPX
 template <typename Archive>
 void WetDry::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & wet
         & went_completely_dry   
         & bath_min
@@ -56,7 +56,7 @@ void WetDry::serialize(Archive& ar, unsigned) {
         & bath_at_vrtx
         & h_at_vrtx
         & h_at_vrtx_temp;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

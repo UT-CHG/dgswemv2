@@ -41,7 +41,7 @@ struct State {
 #ifdef HAS_HPX
 template <typename Archive>
 void State::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & ze
         & qx
         & qy
@@ -52,7 +52,7 @@ void State::serialize(Archive& ar, unsigned) {
         & solution_ze
         & solution_qx
         & solution_qy;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

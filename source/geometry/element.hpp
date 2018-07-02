@@ -539,14 +539,14 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename Archive>
 void Element<dimension, MasterType, ShapeType, DataType>::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & data  
         & ID
         & shape
         & node_ID
         & neighbor_ID
         & boundary_type;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

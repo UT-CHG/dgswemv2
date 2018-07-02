@@ -80,7 +80,7 @@ struct SlopeLimit {
 #ifdef HAS_HPX
 template <typename Archive>
 void SlopeLimit::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & surface_normal
         & baryctr_coord
         & midpts_coord
@@ -112,7 +112,7 @@ void SlopeLimit::serialize(Archive& ar, unsigned) {
         & delta
         & L
         & R;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

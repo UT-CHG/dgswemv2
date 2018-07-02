@@ -82,14 +82,7 @@ class Mesh<std::tuple<Elements...>,
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-// clang-format off
-        ar  & mesh_name
-            & p;
-
-        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
-// clang-format on
-    }
+    void serialize(Archive& ar, unsigned);
 #endif
 };
 
@@ -225,6 +218,22 @@ void Mesh<std::tuple<Elements...>,
 
     std::for_each(dbound_container.begin(), dbound_container.end(), f);
 }
+
+#ifdef HAS_HPX
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
+template <typename Archive>
+void Mesh<std::tuple<Elements...>,
+          std::tuple<Interfaces...>,
+          std::tuple<Boundaries...>,
+          std::tuple<DistributedBoundaries...>>::serialize(Archive& ar, unsigned) {
+    // clang-format off
+        ar  & mesh_name
+            & p;
+
+        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
+    // clang-format on
+}
+#endif
 }
 
 #endif

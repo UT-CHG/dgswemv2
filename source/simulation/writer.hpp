@@ -349,7 +349,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 template <typename ProblemType>
 template <typename Archive>
 void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & writing_output
         & output_path
         & writing_log_file
@@ -362,7 +362,7 @@ void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
         & writing_modal_output
         & modal_output_frequency
         & version;
-// clang-format on
+    // clang-format on
 }
 #endif
 #endif

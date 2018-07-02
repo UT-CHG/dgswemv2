@@ -31,12 +31,12 @@ struct Spherical {
 #ifdef HAS_HPX
 template <typename Archive>
 void Spherical::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & x_node   
         & y_node
         & sp_at_gp_internal
         & sp_at_gp_boundary;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

@@ -12,7 +12,7 @@ HPX_REGISTER_CHANNEL_DECLARATION(array_double);
 
 template <typename Archive>
 void serialize(Archive& ar, RankBoundaryMetaData& db_data, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & db_data.locality_in
         & db_data.locality_ex
         & db_data.submesh_in
@@ -22,7 +22,7 @@ void serialize(Archive& ar, RankBoundaryMetaData& db_data, unsigned) {
         & db_data.bound_ids_in
         & db_data.bound_ids_ex
         & db_data.p;
-// clang-format on
+    // clang-format on
 }
 
 struct HPXRankBoundary {
@@ -42,15 +42,17 @@ struct HPXRankBoundary {
 
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-// clang-format off
-        ar  & db_data& outgoing
-            & incoming& send_preproc_buffer  // probably unnecessary (can be optimized later)
+        // clang-format off
+        ar  & db_data
+            & outgoing
+            & incoming
+            & send_preproc_buffer  // probably unnecessary (can be optimized later)
             & receive_preproc_buffer
             & send_buffer
             & receive_buffer
             & send_postproc_buffer
             & receive_postproc_buffer;
-// clang-format on
+        // clang-format on
     }
 };
 
@@ -79,9 +81,9 @@ class HPXCommunicator {
 
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-// clang-format off
+        // clang-format off
         ar  & rank_boundaries;
-// clang-format on
+        // clang-format on
     }
 };
 

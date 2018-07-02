@@ -46,10 +46,10 @@ bool HeartBeat::Thump() {
 #ifdef HAS_HPX
 template <typename Archive>
 void HeartBeat::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & period
         & t_next;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

@@ -39,9 +39,9 @@ class StraightTriangle : public Shape<2> {
 #ifdef HAS_HPX
 template <typename Archive>
 void StraightTriangle::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & hpx::serialization::base_object<Shape<2>>(*this);
-// clang-format on
+    // clang-format on
 }
 #endif
 }

@@ -34,7 +34,7 @@ struct Boundary {
 #ifdef HAS_HPX
 template <typename Archive>
 void Boundary::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & ze_at_gp
         & qx_at_gp
         & qy_at_gp
@@ -42,7 +42,7 @@ void Boundary::serialize(Archive& ar, unsigned) {
         & ze_numerical_flux_at_gp
         & qx_numerical_flux_at_gp
         & qy_numerical_flux_at_gp;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

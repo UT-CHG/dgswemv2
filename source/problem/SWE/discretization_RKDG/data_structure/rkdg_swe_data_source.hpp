@@ -35,7 +35,7 @@ struct Source {
 #ifdef HAS_HPX
 template <typename Archive>
 void Source::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & coriolis_f
         & manning
         & g_manning_n_sq
@@ -43,7 +43,7 @@ void Source::serialize(Archive& ar, unsigned) {
         & p_atm
         & tide_pot
         & manning_n;
-// clang-format on
+    // clang-format on
 }
 #endif
 }

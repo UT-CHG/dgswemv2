@@ -55,7 +55,7 @@ struct Internal {
 #ifdef HAS_HPX
 template <typename Archive>
 void Internal::serialize(Archive& ar, unsigned) {
-// clang-format off
+    // clang-format off
     ar  & ze_flux_at_gp
         & qx_flux_at_gp
         & qy_flux_at_gp& tau_s_at_gp
@@ -70,7 +70,7 @@ void Internal::serialize(Archive& ar, unsigned) {
         & h_at_gp
         & bath_deriv_wrt_x_at_gp
         & bath_deriv_wrt_y_at_gp;
-// clang-format on
+    // clang-format on
 }
 #endif
 }
