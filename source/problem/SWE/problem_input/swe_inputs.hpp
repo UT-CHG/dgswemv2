@@ -174,6 +174,7 @@ struct TidePotential {
 
 struct Coriolis {
     CoriolisType type = CoriolisType::None;
+
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {

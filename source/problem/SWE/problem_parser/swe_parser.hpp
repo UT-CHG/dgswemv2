@@ -34,7 +34,6 @@ class Parser {
 
   public:
 #ifdef HAS_HPX
-  public:
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off

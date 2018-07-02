@@ -29,7 +29,6 @@ class StraightTriangle : public Shape<2> {
     void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
 
 #ifdef HAS_HPX
-  public:
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
