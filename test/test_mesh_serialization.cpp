@@ -117,8 +117,7 @@ int main(int argc, char** argv) {
 
         using MasterElementTypes = typename decltype(i_mesh)::MasterElementTypes;
 
-        MasterType& master_elt =
-            std::get<Utilities::index<MasterType, MasterElementTypes>::value>(i_mesh.GetMasters());
+        MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(i_mesh.GetMasters());
 
         elt.SetMaster(master_elt);
 
