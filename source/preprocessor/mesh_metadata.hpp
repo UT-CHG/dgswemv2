@@ -125,17 +125,17 @@ struct RankBoundaryMetaData {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, RankBoundaryMetaData& db_data, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & db_data.locality_in
-            & db_data.locality_ex
-            & db_data.submesh_in
-            & db_data.submesh_ex
-            & db_data.elements_in
-            & db_data.elements_ex
-            & db_data.bound_ids_in
-            & db_data.bound_ids_ex
-            & db_data.p;
+        ar  & locality_in
+            & locality_ex
+            & submesh_in
+            & submesh_ex
+            & elements_in
+            & elements_ex
+            & bound_ids_in
+            & bound_ids_ex
+            & p;
         // clang-format on
     }
 #endif

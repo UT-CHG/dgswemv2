@@ -17,12 +17,12 @@ struct SphericalProjection {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, SphericalProjection& sp, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & sp.type
-            & sp.longitude_o
-            & sp.latitude_o
-            & sp.R;
+        ar  & type
+            & longitude_o
+            & latitude_o
+            & R;
         // clang-format on
     }
 #endif
@@ -36,12 +36,12 @@ struct InitialConditions {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, InitialConditions& ic, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & ic.type
-            & ic.ze_initial
-            & ic.qx_initial
-            & ic.qy_initial;
+        ar  & type
+            & ze_initial
+            & qx_initial
+            & qy_initial;
         // clang-format on
     }
 #endif
@@ -58,13 +58,13 @@ struct TideInput {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, TideInput& ti, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & ti.frequency
-            & ti.forcing_fact
-            & ti.equilib_arg
-            & ti.amplitude
-            & ti.phase;
+        ar  & frequency
+            & forcing_fact
+            & equilib_arg
+            & amplitude
+            & phase;
         // clang-format on
     }
 #endif
@@ -80,13 +80,13 @@ struct FlowInput {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, FlowInput& fi, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & fi.frequency
-            & fi.forcing_fact
-            & fi.equilib_arg
-            & fi.amplitude
-            & fi.phase;
+        ar  & frequency
+            & forcing_fact
+            & equilib_arg
+            & amplitude
+            & phase;
         // clang-format on
     }
 #endif
@@ -99,11 +99,11 @@ struct LeveeInput {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, LeveeInput& li, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & li.H_barrier
-            & li.C_subcritical
-            & li.C_supercritical;
+        ar  & H_barrier
+            & C_subcritical
+            & C_supercritical;
         // clang-format on
     }
 #endif
@@ -115,9 +115,9 @@ struct FunctionSource {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, FunctionSource& fs, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & fs.type;
+        ar  & type;
         // clang-format on
     }
 #endif
@@ -130,11 +130,11 @@ struct BottomFriction {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, BottomFriction& bf, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & bf.type
-            & bf.coefficient
-            & bf.manning_data_file;
+        ar  & type
+            & coefficient
+            & manning_data_file;
         // clang-format on
     }
 #endif
@@ -149,11 +149,11 @@ struct MeteoForcing {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, MeteoForcing& mf, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & mf.type
-            & mf.meteo_data_file
-            & mf.frequency;
+        ar  & type
+            & meteo_data_file
+            & frequency;
         // clang-format on
     }
 #endif
@@ -164,9 +164,9 @@ struct TidePotential {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, TidePotential& tp, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & tp.type;
+        ar  & type;
         // clang-format on
     }
 #endif
@@ -176,9 +176,9 @@ struct Coriolis {
     CoriolisType type = CoriolisType::None;
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, Coriolis& c, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & c.type;
+        ar  & type;
         // clang-format on
     }
 #endif
@@ -191,10 +191,10 @@ struct WettingDrying {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, WettingDrying& wd, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & wd.type
-            & wd.h_o;
+        ar  & type
+            & h_o;
         // clang-format on
     }
 #endif
@@ -208,12 +208,12 @@ struct SlopeLimiting {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, SlopeLimiting& sl, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & sl.type
-            & sl.slope_limiting_type
-            & sl.M
-            & sl.nu;
+        ar  & type
+            & slope_limiting_type
+            & M
+            & nu;
         // clang-format on
     }
 #endif
@@ -250,23 +250,23 @@ struct Inputs {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, Inputs& in, unsigned) {
+    void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & in.g
-            & in.rho_air
-            & in.rho_water
-            & in.spherical_projection
-            & in.initial_conditions
-            & in.tide_bc_data
-            & in.flow_bc_data
-            & in.levee_is_data
-            & in.function_source
-            & in.bottom_friction
-            & in.meteo_forcing
-            & in.tide_potential
-            & in.coriolis
-            & in.wet_dry
-            & in.slope_limit;
+        ar  & g
+            & rho_air
+            & rho_water
+            & spherical_projection
+            & initial_conditions
+            & tide_bc_data
+            & flow_bc_data
+            & levee_is_data
+            & function_source
+            & bottom_friction
+            & meteo_forcing
+            & tide_potential
+            & coriolis
+            & wet_dry
+            & slope_limit;
         // clang-format on
     }
 #endif
