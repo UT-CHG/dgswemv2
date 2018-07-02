@@ -36,7 +36,15 @@ class Parser {
 #ifdef HAS_HPX
   public:
     template <typename Archive>
-    void serialize(Archive& ar, unsigned);
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & parsing_input
+            & meteo_parse_frequency
+            & meteo_data_file
+            & node_meteo_data_step
+            & node_meteo_data_interp;
+        // clang-format on
+    }
 #endif
 };
 
@@ -75,18 +83,6 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
         });
     }
 }
+}
 
-#ifdef HAS_HPX
-template <typename Archive>
-void Parser::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & parsing_input
-        & meteo_parse_frequency
-        & meteo_data_file
-        & node_meteo_data_step
-        & node_meteo_data_interp;
-    // clang-format on
-}
-#endif
-}
 #endif

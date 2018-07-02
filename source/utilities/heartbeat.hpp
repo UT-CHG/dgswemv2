@@ -18,14 +18,20 @@ class HeartBeat {
 
     bool Thump();
 
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned);
-#endif
-
   private:
     clock_t::duration period;
     time_point_t t_next;
+
+  public:
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & period
+            & t_next;
+        // clang-format on
+    }
+#endif
 };
 
 HeartBeat::HeartBeat(const std::chrono::duration<double>& period_)
@@ -42,15 +48,5 @@ bool HeartBeat::Thump() {
     }
     return false;
 }
-
-#ifdef HAS_HPX
-template <typename Archive>
-void HeartBeat::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & period
-        & t_next;
-    // clang-format on
-}
-#endif
 }
 #endif

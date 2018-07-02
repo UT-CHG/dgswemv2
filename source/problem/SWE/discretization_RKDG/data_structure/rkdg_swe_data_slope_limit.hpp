@@ -73,48 +73,43 @@ struct SlopeLimit {
 
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, unsigned);
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & surface_normal
+            & baryctr_coord
+            & midpts_coord
+            & baryctr_coord_neigh
+            & alpha_1
+            & alpha_2
+            & r_sq
+            & ze_lin
+            & qx_lin
+            & qy_lin
+            & ze_at_baryctr
+            & qx_at_baryctr
+            & qy_at_baryctr
+            & bath_at_baryctr
+            & ze_at_vrtx
+            & qx_at_vrtx
+            & qy_at_vrtx
+            & ze_at_midpts
+            & qx_at_midpts
+            & qy_at_midpts
+            & bath_at_midpts
+            & wet_neigh
+            & ze_at_baryctr_neigh
+            & qx_at_baryctr_neigh
+            & qy_at_baryctr_neigh
+            & w_midpt_char
+            & w_baryctr_char
+            & delta_char
+            & delta
+            & L
+            & R;
+        // clang-format on
+    }
 #endif
 };
-
-#ifdef HAS_HPX
-template <typename Archive>
-void SlopeLimit::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & surface_normal
-        & baryctr_coord
-        & midpts_coord
-        & baryctr_coord_neigh
-        & alpha_1
-        & alpha_2
-        & r_sq
-        & ze_lin
-        & qx_lin
-        & qy_lin
-        & ze_at_baryctr
-        & qx_at_baryctr
-        & qy_at_baryctr
-        & bath_at_baryctr
-        & ze_at_vrtx
-        & qx_at_vrtx
-        & qy_at_vrtx
-        & ze_at_midpts
-        & qx_at_midpts
-        & qy_at_midpts
-        & bath_at_midpts
-        & wet_neigh
-        & ze_at_baryctr_neigh
-        & qx_at_baryctr_neigh
-        & qy_at_baryctr_neigh
-        & w_midpt_char
-        & w_baryctr_char
-        & delta_char
-        & delta
-        & L
-        & R;
-    // clang-format on
-}
-#endif
 }
 }
 
