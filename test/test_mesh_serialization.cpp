@@ -112,6 +112,18 @@ int main(int argc, char** argv) {
     MeshType i_mesh;
     i_archive >> i_mesh;
     i_mesh.SetMasters();
+    i_mesh.CallForEachElement([&i_mesh](auto& elt) {
+        using MasterType = typename std::remove_reference<decltype(elt)>::type::ElementMasterType;
+
+        using MasterElementTypes = typename decltype(i_mesh)::MasterElementTypes;
+
+        MasterType& master_elt =
+            std::get<Utilities::index<MasterType, MasterElementTypes>::value>(i_mesh.GetMasters());
+
+        elt.SetMaster(master_elt);
+
+        elt.Initialize();
+    });
 
     if (!equal(o_mesh, i_mesh)) {
         return 1;

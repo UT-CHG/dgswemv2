@@ -40,6 +40,7 @@ int main() {
     ElementType i_triangle;
     i_archive >> i_triangle;
     i_triangle.SetMaster(master);
+    i_triangle.Initialize();
 
     bool error_found = check_for_error(i_triangle, f_vals);
 
