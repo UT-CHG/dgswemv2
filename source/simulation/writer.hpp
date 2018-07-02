@@ -349,9 +349,20 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 template <typename ProblemType>
 template <typename Archive>
 void Writer<ProblemType>::serialize(Archive& ar, unsigned) {
-    ar& writing_output& output_path& writing_log_file& verbose_log_file& log_file_name& writing_vtk_output&
-        vtk_output_frequency& vtk_file_name_geom& vtk_file_name_raw& writing_modal_output& modal_output_frequency&
-            version;
+// clang-format off
+    ar  & writing_output
+        & output_path
+        & writing_log_file
+        & verbose_log_file
+        & log_file_name
+        & writing_vtk_output
+        &vtk_output_frequency
+        & vtk_file_name_geom
+        & vtk_file_name_raw
+        & writing_modal_output
+        & modal_output_frequency
+        & version;
+// clang-format on
 }
 #endif
 #endif

@@ -14,7 +14,10 @@ class SubmeshModel {
 
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-        ar& locality_id& submesh_id;
+// clang-format off
+        ar  & locality_id
+            & submesh_id;
+// clang-format on
     }
     HPX_SERIALIZATION_POLYMORPHIC(SubmeshModel);
 

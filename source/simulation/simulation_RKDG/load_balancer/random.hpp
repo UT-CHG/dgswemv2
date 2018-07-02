@@ -1,5 +1,6 @@
 #ifndef LOAD_BALANCER_RANDOM_HPP
 #define LOAD_BALANCER_RANDOM_HPP
+
 #include "utilities/heartbeat.hpp"
 #include "base_model.hpp"
 #include "../rkdg_simulation_unit_hpx.hpp"
@@ -13,7 +14,7 @@ namespace detail_random {
 template <typename ProblemType>
 class WorldModel : public hpx::components::simple_component_base<WorldModel<ProblemType>> {
   public:
-    using client_t = HPXSimulationUnitClient<ProblemType>;
+    using ClientType = HPXSimulationUnitClient<ProblemType>;
 
     static constexpr const char* GetBasename() { return "LOAD_BALANCER_RANDOMIZED_WORLD_MODEL"; }
 
@@ -23,7 +24,7 @@ class WorldModel : public hpx::components::simple_component_base<WorldModel<Prob
 
   private:
     bool tried_moving_one_tile    = false;
-    using client_locality_id_pair = std::pair<client_t, uint>;
+    using client_locality_id_pair = std::pair<ClientType, uint>;
     std::vector<client_locality_id_pair> simulation_unit_clients;
 };
 
@@ -106,10 +107,10 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
 
         uint submesh_id = 0;
         while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-            this->simulation_unit_clients.push_back(std::make_pair(client_t(), locality_id));
+            this->simulation_unit_clients.push_back(std::make_pair(ClientType(), locality_id));
 
             this->simulation_unit_clients.back().first.connect_to(
-                std::string{client_t::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
+                std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id));
             std::cout << "Adding client for locality: " << locality_id << " at submesh: " << submesh_id << '\n';
             ++submesh_id;
         }
@@ -158,8 +159,10 @@ void SubmeshModel<ProblemType>::InStep(uint64_t, uint64_t) {
 template <typename ProblemType>
 template <typename Archive>
 void SubmeshModel<ProblemType>::serialize(Archive& ar, unsigned) {
-    ar& hpx::serialization::base_object<LoadBalancer::SubmeshModel>(*this);
-    ar& beat;
+// clang-format off
+    ar  & hpx::serialization::base_object<LoadBalancer::SubmeshModel>(*this);
+    ar  & beat;
+// clang-format on
 }
 }
 

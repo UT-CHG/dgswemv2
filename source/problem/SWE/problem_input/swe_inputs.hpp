@@ -121,69 +121,131 @@ struct Inputs {
 #ifdef HAS_HPX
 template <typename Archive>
 void serialize(Archive& ar, SphericalProjection& sp, unsigned) {
-    ar& sp.type& sp.longitude_o& sp.latitude_o& sp.R;
+// clang-format off
+    ar  & sp.type
+        & sp.longitude_o
+        & sp.latitude_o
+        & sp.R;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, InitialConditions& ic, unsigned) {
-    ar& ic.type& ic.ze_initial& ic.qx_initial& ic.qy_initial;
+// clang-format off
+    ar  & ic.type
+        & ic.ze_initial
+        & ic.qx_initial
+        & ic.qy_initial;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, TideInput& ti, unsigned) {
-    ar& ti.frequency& ti.forcing_fact& ti.equilib_arg& ti.amplitude& ti.phase;
+// clang-format off
+    ar  & ti.frequency
+        & ti.forcing_fact
+        & ti.equilib_arg
+        & ti.amplitude
+        & ti.phase;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, FlowInput& fi, unsigned) {
-    ar& fi.frequency& fi.forcing_fact& fi.equilib_arg& fi.amplitude& fi.phase;
+// clang-format off
+    ar  & fi.frequency
+        & fi.forcing_fact
+        & fi.equilib_arg
+        & fi.amplitude
+        & fi.phase;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, LeveeInput& li, unsigned) {
-    ar& li.H_barrier& li.C_subcritical& li.C_supercritical;
+// clang-format off
+    ar  & li.H_barrier
+        & li.C_subcritical
+        & li.C_supercritical;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, FunctionSource& fs, unsigned) {
-    ar& fs.type;
+// clang-format off
+    ar  & fs.type;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, BottomFriction& bf, unsigned) {
-    ar& bf.type& bf.coefficient& bf.manning_data_file;
+// clang-format off
+    ar  & bf.type
+        & bf.coefficient
+        & bf.manning_data_file;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, MeteoForcing& mf, unsigned) {
-    ar& mf.type& mf.meteo_data_file& mf.frequency;
+// clang-format off
+    ar  & mf.type
+        & mf.meteo_data_file
+        & mf.frequency;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, TidePotential& tp, unsigned) {
-    ar& tp.type;
+// clang-format off
+    ar  & tp.type;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, Coriolis& c, unsigned) {
-    ar& c.type;
+// clang-format off
+    ar  & c.type;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, WettingDrying& wd, unsigned) {
-    ar& wd.type& wd.h_o;
+// clang-format off
+    ar  & wd.type
+        & wd.h_o;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, SlopeLimiting& sl, unsigned) {
-    ar& sl.type& sl.slope_limiting_type& sl.M& sl.nu;
+// clang-format off
+    ar  & sl.type
+        & sl.slope_limiting_type
+        & sl.M
+        & sl.nu;
+// clang-format on
 }
 
 template <typename Archive>
 void serialize(Archive& ar, Inputs& in, unsigned) {
-    ar& in.g& in.rho_air& in.rho_water& in.spherical_projection& in.initial_conditions& in.tide_bc_data& in
-        .flow_bc_data& in.levee_is_data& in.function_source& in.bottom_friction& in.meteo_forcing& in.tide_potential& in
-        .coriolis& in.wet_dry& in.slope_limit;
+// clang-format off
+    ar  & in.g
+        & in.rho_air
+        & in.rho_water
+        & in.spherical_projection
+        & in.initial_conditions
+        & in.tide_bc_data
+        & in.flow_bc_data
+        & in.levee_is_data
+        & in.function_source
+        & in.bottom_friction
+        & in.meteo_forcing
+        & in.tide_potential
+        & in.coriolis
+        & in.wet_dry
+        & in.slope_limit;
+// clang-format on
 }
 #endif
 }

@@ -197,7 +197,9 @@ class Shape {
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-        ar& nodal_coordinates;
+// clang-format off
+        ar  & nodal_coordinates;
+// clang-format on
     }
     HPX_SERIALIZATION_POLYMORPHIC_ABSTRACT(Shape);
 #endif

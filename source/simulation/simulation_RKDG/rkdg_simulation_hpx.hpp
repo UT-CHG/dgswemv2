@@ -34,13 +34,14 @@ hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
 
 template <typename ProblemType>
 class HPXSimulation : public hpx::components::component_base<HPXSimulation<ProblemType>> {
+  public:
+    using ClientType = HPXSimulationUnitClient<ProblemType>;
+
   private:
     uint n_steps;
     uint n_stages;
 
-    using client_t = HPXSimulationUnitClient<ProblemType>;
-
-    std::vector<client_t> simulation_unit_clients;
+    std::vector<ClientType> simulation_unit_clients;
 
   public:
     HPXSimulation() = default;
@@ -72,17 +73,20 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
-    uint submesh_id = 0;
     std::vector<hpx::future<void>> registration_futures;
+
+    uint submesh_id = 0;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        this->simulation_unit_clients.emplace_back(hpx::new_<client_t>(here, input_string, locality_id, submesh_id));
+        this->simulation_unit_clients.emplace_back(hpx::new_<ClientType>(here, input_string, locality_id, submesh_id));
 
         registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-            std::string{client_t::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
+            std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
+
         ++submesh_id;
     }
 
     hpx::when_all(registration_futures).get();
+
     lb_future.get();
 }
 

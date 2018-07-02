@@ -83,8 +83,12 @@ class Mesh<std::tuple<Elements...>,
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-        ar& mesh_name& p;
+// clang-format off
+        ar  & mesh_name
+            & p;
+
         Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
+// clang-format on
     }
 #endif
 };
