@@ -1,5 +1,5 @@
-#ifndef EHDG_SIM_UNIT_HPX_HPP
-#define EHDG_SIM_UNIT_HPX_HPP
+#ifndef IHDG_SIM_UNIT_HPX_HPP
+#define IHDG_SIM_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
 
@@ -13,7 +13,7 @@
 
 #include "simulation/writer.hpp"
 
-namespace EHDG {
+namespace IHDG {
 template <typename ClientType>
 hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
     std::vector<hpx::future<double>> res_futures;
@@ -120,7 +120,9 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 
     uint n_stages = this->stepper.GetNumStages();
 
-    this->mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
+    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
+
+    this->mesh.CallForEachElement(resize_data_container);
 }
 
 template <typename ProblemType>
@@ -128,14 +130,43 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
                                   << this->stepper.GetStage() << ')' << std::endl;
+    }
 
+    auto global_distributed_boundary_kernel = [this](auto& dbound) {
+        ProblemType::global_distributed_boundary_kernel(this->stepper, dbound);
+    };
+
+    auto global_interface_kernel = [this](auto& intface) {
+        ProblemType::global_interface_kernel(this->stepper, intface);
+    };
+
+    auto global_boundary_kernel = [this](auto& bound) { ProblemType::global_boundary_kernel(this->stepper, bound); };
+
+    auto global_edge_interface_kernel = [this](auto& edge_int) {
+        ProblemType::global_edge_interface_kernel(this->stepper, edge_int);
+    };
+
+    auto global_edge_boundary_kernel = [this](auto& edge_bound) {
+        ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound);
+    };
+
+    auto local_volume_kernel = [this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); };
+
+    auto local_source_kernel = [this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); };
+
+    auto local_interface_kernel = [this](auto& intface) {
+        ProblemType::local_interface_kernel(this->stepper, intface);
+    };
+
+    auto local_boundary_kernel = [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); };
+
+    if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
 
     hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.GetTimestamp());
 
-    this->mesh.CallForEachDistributedBoundary(
-        [this](auto& dbound) { ProblemType::global_distributed_boundary_kernel(this->stepper, dbound); });
+    this->mesh.CallForEachDistributedBoundary(global_distributed_boundary_kernel);
 
     this->communicator.SendAll(this->stepper.GetTimestamp());
 
@@ -144,35 +175,27 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     }
 
     if (this->parser.ParsingInput()) {
-        if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Parsing input" << std::endl;
-        }
-
         this->parser.ParseInput(this->stepper, this->mesh);
     }
 
     /* Global Pre Receive Step */
-    this->mesh.CallForEachInterface(
-        [this](auto& intface) { ProblemType::global_interface_kernel(this->stepper, intface); });
+    this->mesh.CallForEachInterface(global_interface_kernel);
 
-    this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::global_boundary_kernel(this->stepper, bound); });
+    this->mesh.CallForEachBoundary(global_boundary_kernel);
 
-    this->mesh_skeleton.CallForEachEdgeInterface(
-        [this](auto& edge_int) { ProblemType::global_edge_interface_kernel(this->stepper, edge_int); });
+    this->mesh_skeleton.CallForEachEdgeInterface(global_edge_interface_kernel);
 
-    this->mesh_skeleton.CallForEachEdgeBoundary(
-        [this](auto& edge_bound) { ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound); });
+    this->mesh_skeleton.CallForEachEdgeBoundary(global_edge_boundary_kernel);
     /* Global Pre Receive Step */
 
     /* Local Pre Receive Step */
-    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
+    this->mesh.CallForEachElement(local_volume_kernel);
 
-    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); });
+    this->mesh.CallForEachElement(local_source_kernel);
 
-    this->mesh.CallForEachInterface(
-        [this](auto& intface) { ProblemType::local_interface_kernel(this->stepper, intface); });
+    this->mesh.CallForEachInterface(local_interface_kernel);
 
-    this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); });
+    this->mesh.CallForEachBoundary(local_boundary_kernel);
     /* Local Pre Receive Step */
 
     if (this->writer.WritingVerboseLog()) {
@@ -186,23 +209,33 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
             this->writer.GetLogFile() << "Starting work after receive" << std::endl;
         }
 
-        /* Global Post Receive Step */
-        this->mesh_skeleton.CallForEachEdgeDistributed(
-            [this](auto& edge_dbound) { ProblemType::global_edge_distributed_kernel(this->stepper, edge_dbound); });
-        /* Global Post Receive Step */
+        auto global_edge_distributed_kernel = [this](auto& edge_dbound) {
+            ProblemType::global_edge_distributed_kernel(this->stepper, edge_dbound);
+        };
 
-        /* Local Post Receive Step */
-        this->mesh.CallForEachDistributedBoundary(
-            [this](auto& dbound) { ProblemType::local_distributed_boundary_kernel(this->stepper, dbound); });
+        auto local_distributed_boundary_kernel = [this](auto& dbound) {
+            ProblemType::local_distributed_boundary_kernel(this->stepper, dbound);
+        };
 
-        this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
+        auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
 
-        this->mesh.CallForEachElement([this](auto& elt) {
+        auto scrutinize_solution_kernel = [this](auto& elt) {
             bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
 
             if (nan_found)
                 hpx::terminate();
-        });
+        };
+
+        /* Global Post Receive Step */
+        this->mesh_skeleton.CallForEachEdgeDistributed(global_edge_distributed_kernel);
+        /* Global Post Receive Step */
+
+        /* Local Post Receive Step */
+        this->mesh.CallForEachDistributedBoundary(local_distributed_boundary_kernel);
+
+        this->mesh.CallForEachElement(update_kernel);
+
+        this->mesh.CallForEachElement(scrutinize_solution_kernel);
         /* Local Post Receive Step */
 
         ++(this->stepper);
@@ -215,7 +248,9 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::Step() {
-    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
+    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
+
+    this->mesh.CallForEachElement(swap_states_kernel);
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteOutput(this->stepper, this->mesh);
@@ -226,9 +261,11 @@ template <typename ProblemType>
 double HPXSimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
-    this->mesh.CallForEachElement([this, &residual_L2](auto& elt) {
+    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
         residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    });
+    };
+
+    this->mesh.CallForEachElement(compute_residual_L2_kernel);
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 

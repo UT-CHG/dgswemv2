@@ -1,17 +1,18 @@
-#ifndef RKDG_SIMULATION_OMPI_HPP
-#define RKDG_SIMULATION_OMPI_HPP
+#ifndef IHDG_SIMULATION_OMPI_HPP
+#define IHDG_SIMULATION_OMPI_HPP
 
 #include "general_definitions.hpp"
 
 #include "preprocessor/input_parameters.hpp"
 #include "preprocessor/initialize_mesh.hpp"
+#include "preprocessor/initialize_mesh_skeleton.hpp"
 #include "communication/ompi_communicator.hpp"
 #include "utilities/file_exists.hpp"
 
-#include "rkdg_sim_unit_ompi.hpp"
+#include "ihdg_sim_unit_ompi.hpp"
 #include "simulation/writer.hpp"
 
-namespace RKDG {
+namespace IHDG {
 template <typename ProblemType>
 class OMPISimulation {
   private:
@@ -68,7 +69,7 @@ void OMPISimulation<ProblemType>::Run() {
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->simulation_units.size());
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->PostReceivePreprocStage();
+            this->simulation_units[sim_unit_id]->PostReceivePrerocStage();
         }
 
         for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
@@ -96,26 +97,10 @@ void OMPISimulation<ProblemType>::Run() {
                 for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
                     this->simulation_units[sim_unit_id]->WaitAllSends();
                 }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->ExchangePostprocData();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PreReceivePostprocStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PostReceivePostprocStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->WaitAllPostprocSends();
-                }
             }
 
             for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                this->simulation_units[sim_unit_id]->SwapStates();
+                this->simulation_units[sim_unit_id]->Step();
             }
         }
     }  // close omp parallel region

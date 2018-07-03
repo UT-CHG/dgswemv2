@@ -1,11 +1,12 @@
-#ifndef RKDG_SIMULATION_HPP
-#define RKDG_SIMULATION_HPP
+#ifndef IHDG_SIMULATION_HPP
+#define IHDG_SIMULATION_HPP
 
 #include "preprocessor/input_parameters.hpp"
 #include "preprocessor/initialize_mesh.hpp"
+#include "preprocessor/initialize_mesh_skeleton.hpp"
 #include "simulation/writer.hpp"
 
-namespace RKDG {
+namespace IHDG {
 template <typename ProblemType>
 class Simulation {
   private:
@@ -13,6 +14,7 @@ class Simulation {
     uint n_stages;
 
     typename ProblemType::ProblemMeshType mesh;
+    typename ProblemType::ProblemMeshSkeletonType mesh_skeleton;
 
     RKStepper stepper;
     Writer<ProblemType> writer;
@@ -57,6 +59,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
     std::tuple<> empty_comm;
 
     initialize_mesh<ProblemType>(this->mesh, input, empty_comm, this->writer);
+    initialize_mesh_skeleton<ProblemType>(this->mesh, this->mesh_skeleton, this->writer);
 
     ProblemType::initialize_data_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
 }
@@ -78,19 +81,6 @@ void Simulation<ProblemType>::Run() {
             if (this->parser.ParsingInput()) {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
-
-            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); });
-
-            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); });
-
-            this->mesh.CallForEachInterface(
-                [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); });
-
-            this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); });
-
-            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
-
-            ProblemType::postprocessor_serial_kernel(this->stepper, this->mesh);
 
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);

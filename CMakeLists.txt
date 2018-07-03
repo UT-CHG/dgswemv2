@@ -9,6 +9,7 @@ option(BUILD_EXAMPLES "Build Examples" OFF)
 
 option(RKDG_SWE "Build RKDG SWE simulations" ON)
 option(EHDG_SWE "Build EHDG SWE simulations" OFF)
+option(IHDG_SWE "Build EHDG SWE simulations" OFF)
 
 enable_testing()
 
@@ -79,4 +80,13 @@ if(EHDG_SWE)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_swe_manufactured_solution)
   endif()
+endif()
+
+if(EHDG_SWE)
+  find_package(Eigen3 REQUIRED)
+
+  add_subdirectory(source/problem/SWE/discretization_IHDG)
+  #if(BUILD_EXAMPLES)
+  #  add_subdirectory(examples/ehdg_swe_manufactured_solution)
+  #endif()
 endif()
