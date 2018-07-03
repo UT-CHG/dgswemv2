@@ -10,7 +10,7 @@
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_kernels_processor.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_EHDG/ehdg_simulation.hpp"
+#include "simulation/simulation_EHDG/serial/ehdg_simulation.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {

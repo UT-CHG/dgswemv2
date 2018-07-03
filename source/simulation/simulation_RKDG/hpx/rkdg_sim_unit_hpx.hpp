@@ -1,15 +1,15 @@
-#ifndef RKDG_SIMULATION_UNIT_HPX_HPP
-#define RKDG_SIMULATION_UNIT_HPX_HPP
+#ifndef RKDG_SIM_UNIT_HPX_HPP
+#define RKDG_SIM_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
 
-#include "../../preprocessor/input_parameters.hpp"
-#include "../../preprocessor/initialize_mesh.hpp"
-#include "../../communication/hpx_communicator.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "preprocessor/initialize_mesh.hpp"
+#include "communication/hpx_communicator.hpp"
 
-#include "../writer.hpp"
-#include "load_balancer/base_model.hpp"
-#include "load_balancer/abstract_load_balancer_factory.hpp"
+#include "simulation/writer.hpp"
+#include "simulation/simulation_RKDG/load_balancer/base_model.hpp"
+#include "simulation/simulation_RKDG/load_balancer/abstract_load_balancer_factory.hpp"
 
 namespace RKDG {
 template <typename ProblemType>

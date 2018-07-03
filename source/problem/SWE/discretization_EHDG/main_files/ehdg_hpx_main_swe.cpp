@@ -17,7 +17,7 @@
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_kernels_processor.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_EHDG/ehdg_simulation_hpx.hpp"
+#include "simulation/simulation_EHDG/hpx/ehdg_simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
 using hpx_simulation_unit_swe = EHDG::HPXSimulationUnit<SWE::EHDG::Problem>;

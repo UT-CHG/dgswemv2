@@ -3,11 +3,11 @@
 
 // This test checks the accuracy of the RKSSP methods by solving
 // y''+y = t/2, whose solution is sin(t) + t/2;
-
-using State                = std::array<double, 2>;
-auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
+using State = std::array<double, 2>;
 
 State solve_ode(RKStepper& rk_stepper, const State& y0, uint nsteps) {
+    auto compute_rhs = [](State y, double t) -> State { return {y[1], -y[0] + 0.5 * t}; };
+
     std::vector<State> y(rk_stepper.GetNumStages() + 1);
     y[0] = y0;
     std::vector<State> rhs(rk_stepper.GetNumStages());

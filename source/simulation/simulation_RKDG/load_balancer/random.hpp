@@ -3,7 +3,7 @@
 
 #include "utilities/heartbeat.hpp"
 #include "base_model.hpp"
-#include "../rkdg_simulation_unit_hpx.hpp"
+#include "simulation/simulation_RKDG/hpx/rkdg_sim_unit_hpx.hpp"
 
 #include <cstdlib>
 

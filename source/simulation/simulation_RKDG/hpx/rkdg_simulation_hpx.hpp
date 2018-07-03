@@ -10,8 +10,9 @@
 
 #include <hpx/util/unwrapped.hpp>
 
+#include "rkdg_sim_unit_hpx.hpp"
 #include "simulation/writer.hpp"
-#include "load_balancer/load_balancer_headers.hpp"
+#include "simulation/simulation_RKDG/load_balancer/load_balancer_headers.hpp"
 
 namespace RKDG {
 template <typename ClientType>
@@ -143,7 +144,7 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 };
 }
 
-#define DGSWEMV2_REGISTER_COMPONENTS(ProblemType)                                                              \
+#define RKDG_REGISTER_HPX_COMPONENTS(ProblemType)                                                              \
     using hpx_simulation_unit_ = RKDG::HPXSimulationUnit<ProblemType>;                                         \
     using hpx_simulation_unit_swe_component_ =                                                                 \
         hpx::components::simple_component<RKDG::HPXSimulationUnit<ProblemType>>;                               \

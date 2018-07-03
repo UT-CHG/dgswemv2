@@ -13,7 +13,7 @@
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_kernels_processor.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_EHDG/ehdg_simulation_ompi.hpp"
+#include "simulation/simulation_EHDG/ompi/ehdg_simulation_ompi.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
