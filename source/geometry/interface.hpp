@@ -79,12 +79,12 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
       data_ex(raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),
       bound_id_ex(raw_boundary_ex.bound_id),
-      node_ID_in(std::move(raw_boundary_in.node_ID)),
-      node_ID_ex(std::move(raw_boundary_ex.node_ID)),
       master_in(raw_boundary_in.master),
       master_ex(raw_boundary_ex.master),
       shape_in(raw_boundary_in.shape),
-      shape_ex(raw_boundary_ex.shape) {
+      shape_ex(raw_boundary_ex.shape),
+      node_ID_in(std::move(raw_boundary_in.node_ID)),
+      node_ID_ex(std::move(raw_boundary_ex.node_ID)) {
     // *** //
     uint p = std::max(raw_boundary_in.p, raw_boundary_ex.p);
 

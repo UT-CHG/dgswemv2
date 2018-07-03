@@ -200,7 +200,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     // WETTING-DRYING INITIALIZE
     mesh.CallForEachElement([&bathymetry](auto& elt) {
         auto& state    = elt.data.state[0];
-        auto& internal = elt.data.internal;
         auto& wd_state = elt.data.wet_dry_state;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {

@@ -32,9 +32,6 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
     bool wet_ex;
     this->exchanger.GetWetDryEX(wet_ex);
 
-    const uint stage = stepper.GetStage();
-
-    auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
     auto& sp_at_gp = dbound.data.spherical_projection.sp_at_gp_boundary[dbound.bound_id];
 

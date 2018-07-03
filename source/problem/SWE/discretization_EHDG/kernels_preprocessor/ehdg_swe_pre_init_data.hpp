@@ -29,8 +29,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachElement([&bathymetry, &problem_specific_input](auto& elt) {
         uint id = elt.GetID();
 
-        auto& shape = elt.GetShape();
-
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 

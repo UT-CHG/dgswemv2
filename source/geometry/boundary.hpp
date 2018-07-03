@@ -52,9 +52,9 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     : boundary_condition(boundary_condition),
       data(raw_boundary.data),
       bound_id(raw_boundary.bound_id),
-      node_ID(std::move(raw_boundary.node_ID)),
       master(raw_boundary.master),
-      shape(raw_boundary.shape) {
+      shape(raw_boundary.shape),
+      node_ID(std::move(raw_boundary.node_ID)) {
     // *** //
     IntegrationType integration;
 

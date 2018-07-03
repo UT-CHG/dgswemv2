@@ -152,4 +152,14 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 };
 }
 
+#define EHDG_REGISTER_HPX_COMPONENTS(ProblemType)                                                              \
+    using hpx_simulation_unit_ = EHDG::HPXSimulationUnit<ProblemType>;                                         \
+    using hpx_simulation_unit_swe_component_ =                                                                 \
+        hpx::components::simple_component<EHDG::HPXSimulationUnit<ProblemType>>;                               \
+    HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_);                      \
+                                                                                                               \
+    using hpx_simulation_swe_           = EHDG::HPXSimulation<ProblemType>;                                    \
+    using hpx_simulation_swe_component_ = hpx::components::simple_component<EHDG::HPXSimulation<ProblemType>>; \
+    HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);                                \
+/**/
 #endif

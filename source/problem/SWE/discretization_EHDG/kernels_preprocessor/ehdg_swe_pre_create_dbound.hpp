@@ -37,7 +37,8 @@ void Problem::create_distributed_boundaries_kernel(
         std::vector<double>& send_postproc_buffer_reference    = rank_boundary.send_postproc_buffer;
         std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
 
-        uint element_id_in, element_id_ex, bound_id_in, bound_id_ex, p, ngp;
+        uint element_id_in, bound_id_in, p, ngp;
+        // uint element_id_ex, bound_id_ex;
 
         uint begin_index_preproc  = 0;
         uint begin_index          = 0;
@@ -48,10 +49,11 @@ void Problem::create_distributed_boundaries_kernel(
 
         for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
             element_id_in = rb_meta_data.elements_in.at(dboundary_id);
-            element_id_ex = rb_meta_data.elements_ex.at(dboundary_id);
             bound_id_in   = rb_meta_data.bound_ids_in.at(dboundary_id);
-            bound_id_ex   = rb_meta_data.bound_ids_ex.at(dboundary_id);
             p             = rb_meta_data.p.at(dboundary_id);
+
+            // element_id_ex = rb_meta_data.elements_ex.at(dboundary_id);
+            // bound_id_ex   = rb_meta_data.bound_ids_ex.at(dboundary_id);
 
             std::pair<uint, uint> dbound_key = std::pair<uint, uint>{element_id_in, bound_id_in};
 

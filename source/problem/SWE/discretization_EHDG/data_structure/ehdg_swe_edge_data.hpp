@@ -15,7 +15,7 @@ struct EdgeData {
 
     EdgeData() = default;
     EdgeData(const uint ndof, const uint ngp)
-        : ndof(ndof), ngp(ngp), edge_state(EdgeState(ndof, ngp)), edge_global(EdgeGlobal(ndof, ngp)) {}
+        : edge_state(EdgeState(ndof, ngp)), edge_global(EdgeGlobal(ndof, ngp)), ndof(ndof), ngp(ngp) {}
 
     uint get_ndof() { return this->ndof; }
     uint get_ngp() { return this->ngp; }

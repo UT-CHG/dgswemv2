@@ -72,8 +72,6 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
         this->InterpolateMeteoData(stepper);
 
         mesh.CallForEachElement([this](auto& elt) {
-            const std::vector<uint>& node_ID = elt.GetNodeID();
-
             for (uint node = 0; node < elt.data.get_nnode(); node++) {
                 elt.data.source.tau_s[GlobalCoord::x][node] = elt.data.source.parsed_meteo_data[node]->at(0);
                 elt.data.source.tau_s[GlobalCoord::y][node] = elt.data.source.parsed_meteo_data[node]->at(1);

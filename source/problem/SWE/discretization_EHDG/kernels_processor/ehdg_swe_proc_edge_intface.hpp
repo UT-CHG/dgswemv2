@@ -7,8 +7,7 @@ namespace SWE {
 namespace EHDG {
 template <typename EdgeInterfaceType>
 void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
-    auto& edge_state  = edge_int.edge_data.edge_state;
-    auto& edge_global = edge_int.edge_data.edge_global;
+    auto& edge_state = edge_int.edge_data.edge_state;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
@@ -80,7 +79,6 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
     auto& edge_global = edge_int.edge_data.edge_global;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     edge_int.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
     edge_int.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
