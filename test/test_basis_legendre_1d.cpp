@@ -118,7 +118,7 @@ const std::vector<std::vector<double>> true_Dvals = {
 int main() {
     using Utilities::almost_equal;
 
-    auto is_normal_or_zero = [](double a) -> bool { return (std::isnormal(a) || (a == 0)); };
+    // auto is_normal_or_zero = [](double a) -> bool { return (std::isnormal(a) || (a == 0)); };
 
     Basis::Legendre_1D basis;
     bool error_found = false;
