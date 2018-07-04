@@ -10,7 +10,9 @@ namespace Utilities {
  * <a href="https://herbsutter.com/2009/10/18/mailbag-shutting-up-compiler-warnings/">Herb Sutter's approach</a>.
  */
 template <typename... T>
-void ignore(const T&...) {}
+bool ignore(const T&...) {
+    return true;
+}
 }
 
 #endif
