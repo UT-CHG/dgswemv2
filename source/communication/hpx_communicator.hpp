@@ -10,21 +10,6 @@
 using array_double = std::vector<double>;
 HPX_REGISTER_CHANNEL_DECLARATION(array_double);
 
-template <typename Archive>
-void serialize(Archive& ar, RankBoundaryMetaData& db_data, unsigned) {
-    // clang-format off
-    ar  & db_data.locality_in
-        & db_data.locality_ex
-        & db_data.submesh_in
-        & db_data.submesh_ex
-        & db_data.elements_in
-        & db_data.elements_ex
-        & db_data.bound_ids_in
-        & db_data.bound_ids_ex
-        & db_data.p;
-    // clang-format on
-}
-
 struct HPXRankBoundary {
     RankBoundaryMetaData db_data;
 

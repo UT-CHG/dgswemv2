@@ -61,13 +61,9 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
-    const uint stage = stepper.GetStage();
-
-    auto& state_in    = intface.data_in.state[stage];
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
     auto& sp_at_gp_in = intface.data_in.spherical_projection.sp_at_gp_boundary[intface.bound_id_in];
 
-    auto& state_ex    = intface.data_ex.state[stage];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
     auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
 
@@ -75,7 +71,7 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
-    double ze_in_ex, qx_in_ex, qy_in_ex, ze_ex_ex, qx_ex_ex, qy_ex_ex;
+    double ze_in_ex{0}, qx_in_ex{0}, qy_in_ex{0}, ze_ex_ex{0}, qx_ex_ex{0}, qy_ex_ex{0};
     double gravity_in, gravity_ex;
 
     uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);

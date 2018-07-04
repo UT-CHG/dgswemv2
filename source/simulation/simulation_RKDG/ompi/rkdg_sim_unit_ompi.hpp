@@ -1,5 +1,5 @@
-#ifndef RKDG_SIMULATION_OMPI_HPP
-#define RKDG_SIMULATION_OMPI_HPP
+#ifndef RKDG_SIM_UNIT_OMPI_HPP
+#define RKDG_SIM_UNIT_OMPI_HPP
 
 #include "general_definitions.hpp"
 
@@ -40,7 +40,7 @@ class OMPISimulationUnit {
     void PostReceivePostprocStage();
     void WaitAllPostprocSends();
 
-    void Step();
+    void SwapStates();
 
     double ResidualL2();
 };
@@ -109,9 +109,7 @@ void OMPISimulationUnit<ProblemType>::Launch() {
 
     uint n_stages = this->stepper.GetNumStages();
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
-
-    this->mesh.CallForEachElement(resize_data_container);
+    this->mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 }
 
 template <typename ProblemType>
@@ -123,13 +121,10 @@ void OMPISimulationUnit<ProblemType>::ExchangeData() {
         this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
 
-    auto distributed_boundary_send_kernel = [this](auto& dbound) {
-        ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
-    };
-
     this->communicator.ReceiveAll(this->stepper.GetTimestamp());
 
-    this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
+    this->mesh.CallForEachDistributedBoundary(
+        [this](auto& dbound) { ProblemType::distributed_boundary_send_kernel(this->stepper, dbound); });
 
     this->communicator.SendAll(this->stepper.GetTimestamp());
 }
@@ -140,25 +135,21 @@ void OMPISimulationUnit<ProblemType>::PreReceiveStage() {
         this->writer.GetLogFile() << "Starting work before receive" << std::endl;
     }
 
-    auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
-
-    auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
-
-    auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
-
-    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
     if (this->parser.ParsingInput()) {
+        if (this->writer.WritingVerboseLog()) {
+            this->writer.GetLogFile() << "Parsing input" << std::endl;
+        }
+
         this->parser.ParseInput(this->stepper, this->mesh);
     }
 
-    this->mesh.CallForEachElement(volume_kernel);
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); });
 
-    this->mesh.CallForEachElement(source_kernel);
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); });
 
-    this->mesh.CallForEachInterface(interface_kernel);
+    this->mesh.CallForEachInterface([this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); });
 
-    this->mesh.CallForEachBoundary(boundary_kernel);
+    this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); });
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work before receive" << std::endl;
@@ -178,15 +169,10 @@ void OMPISimulationUnit<ProblemType>::PostReceiveStage() {
         this->writer.GetLogFile() << "Starting work after receive" << std::endl;
     }
 
-    auto distributed_boundary_kernel = [this](auto& dbound) {
-        ProblemType::distributed_boundary_kernel(this->stepper, dbound);
-    };
+    this->mesh.CallForEachDistributedBoundary(
+        [this](auto& dbound) { ProblemType::distributed_boundary_kernel(this->stepper, dbound); });
 
-    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
-
-    this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
-
-    this->mesh.CallForEachElement(update_kernel);
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
@@ -237,16 +223,14 @@ void OMPISimulationUnit<ProblemType>::PostReceivePostprocStage() {
         this->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
     }
 
-    auto scrutinize_solution_kernel = [this](auto& elt) {
+    ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
+
+    this->mesh.CallForEachElement([this](auto& elt) {
         bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
 
         if (nan_found)
             MPI_Abort(MPI_COMM_WORLD, 0);
-    };
-
-    ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
-
-    this->mesh.CallForEachElement(scrutinize_solution_kernel);
+    });
 
     ++(this->stepper);
 
@@ -261,10 +245,8 @@ void OMPISimulationUnit<ProblemType>::WaitAllPostprocSends() {
 }
 
 template <typename ProblemType>
-void OMPISimulationUnit<ProblemType>::Step() {
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
-    this->mesh.CallForEachElement(swap_states_kernel);
+void OMPISimulationUnit<ProblemType>::SwapStates() {
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteOutput(this->stepper, mesh);
@@ -275,143 +257,13 @@ template <typename ProblemType>
 double OMPISimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
-    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+    this->mesh.CallForEachElement([this, &residual_L2](auto& elt) {
         residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    };
-
-    this->mesh.CallForEachElement(compute_residual_L2_kernel);
+    });
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 
     return residual_L2;
-}
-
-template <typename ProblemType>
-class OMPISimulation {
-  private:
-    uint n_steps;
-    uint n_stages;
-
-    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
-
-  public:
-    OMPISimulation() = default;
-    OMPISimulation(const std::string& input_string);
-
-    void Run();
-    void ComputeL2Residual();
-};
-
-template <typename ProblemType>
-OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
-    int locality_id;
-    MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
-
-    InputParameters<typename ProblemType::ProblemInputType> input(input_string);
-
-    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-    this->n_stages = input.stepper_input.nstages;
-
-    std::string submesh_file_prefix =
-        input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
-        std::to_string(locality_id) + '_';
-    std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
-        input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
-
-    uint submesh_id = 0;
-
-    while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        this->simulation_units.emplace_back(new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
-
-        ++submesh_id;
-    }
-}
-
-template <typename ProblemType>
-void OMPISimulation<ProblemType>::Run() {
-#pragma omp parallel
-    {
-        uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
-
-        n_threads = (uint)omp_get_num_threads();
-        thread_id = (uint)omp_get_thread_num();
-
-        sim_per_thread = (this->simulation_units.size() + n_threads - 1) / n_threads;
-
-        begin_sim_id = sim_per_thread * thread_id;
-        end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->simulation_units.size());
-
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->PostReceivePreprocStage();
-        }
-
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->WaitAllPreprocSends();
-        }
-
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->Launch();
-        }
-
-        for (uint step = 1; step <= this->n_steps; step++) {
-            for (uint stage = 0; stage < this->n_stages; stage++) {
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->ExchangeData();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PreReceiveStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PostReceiveStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->WaitAllSends();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->ExchangePostprocData();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PreReceivePostprocStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PostReceivePostprocStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->WaitAllPostprocSends();
-                }
-            }
-
-            for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                this->simulation_units[sim_unit_id]->Step();
-            }
-        }
-    }  // close omp parallel region
-}
-
-template <typename ProblemType>
-void OMPISimulation<ProblemType>::ComputeL2Residual() {
-    int locality_id;
-    MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
-
-    double global_l2{0};
-
-    double residual_l2{0};
-    for (auto& sim_unit : this->simulation_units) {
-        residual_l2 += sim_unit->ResidualL2();
-    }
-
-    MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
-    if (locality_id == 0) {
-        std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
-    }
 }
 }
 

@@ -14,6 +14,18 @@ struct SphericalProjection {
     double longitude_o           = 0.0;
     double latitude_o            = 0.0;
     double R                     = 6378200.0;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type
+            & longitude_o
+            & latitude_o
+            & R;
+        // clang-format on
+    }
+#endif
 };
 
 struct InitialConditions {
@@ -21,6 +33,18 @@ struct InitialConditions {
     double ze_initial          = 0.;
     double qx_initial          = 0.;
     double qy_initial          = 0.;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type
+            & ze_initial
+            & qx_initial
+            & qy_initial;
+        // clang-format on
+    }
+#endif
 };
 
 // Problem specific bcis information containers
@@ -31,6 +55,19 @@ struct TideInput {
 
     std::vector<double> amplitude;
     std::vector<double> phase;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & frequency
+            & forcing_fact
+            & equilib_arg
+            & amplitude
+            & phase;
+        // clang-format on
+    }
+#endif
 };
 
 struct FlowInput {
@@ -40,23 +77,67 @@ struct FlowInput {
 
     std::vector<double> amplitude;
     std::vector<double> phase;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & frequency
+            & forcing_fact
+            & equilib_arg
+            & amplitude
+            & phase;
+        // clang-format on
+    }
+#endif
 };
 
 struct LeveeInput {
     double H_barrier;
     double C_subcritical;
     double C_supercritical;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & H_barrier
+            & C_subcritical
+            & C_supercritical;
+        // clang-format on
+    }
+#endif
 };
 
 // Problem specific forcing terms information containers
 struct FunctionSource {
     FunctionSourceType type = FunctionSourceType::None;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type;
+        // clang-format on
+    }
+#endif
 };
 
 struct BottomFriction {
     BottomFrictionType type = BottomFrictionType::None;
     double coefficient      = 0.0;
     std::string manning_data_file;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type
+            & coefficient
+            & manning_data_file;
+        // clang-format on
+    }
+#endif
 };
 
 struct MeteoForcing {
@@ -65,20 +146,59 @@ struct MeteoForcing {
     std::string raw_meteo_data_file;
     std::string meteo_data_file;
     double frequency;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type
+            & meteo_data_file
+            & frequency;
+        // clang-format on
+    }
+#endif
 };
 
 struct TidePotential {
     TidePotentialType type = TidePotentialType::None;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type;
+        // clang-format on
+    }
+#endif
 };
 
 struct Coriolis {
     CoriolisType type = CoriolisType::None;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type;
+        // clang-format on
+    }
+#endif
 };
 
 // Problem specific postprocessing information containers
 struct WettingDrying {
     WettingDryingType type = WettingDryingType::None;
     double h_o             = 0.1;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type
+            & h_o;
+        // clang-format on
+    }
+#endif
 };
 
 struct SlopeLimiting {
@@ -86,6 +206,18 @@ struct SlopeLimiting {
     std::string slope_limiting_type;
     double M  = 1.0e-8;
     double nu = 1.5;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & type
+            & slope_limiting_type
+            & M
+            & nu;
+        // clang-format on
+    }
+#endif
 };
 
 // Problem specific inputs
@@ -116,137 +248,29 @@ struct Inputs {
     void read_bcis(const std::string& bcis_file);
 
     YAML::Node as_yaml_node();
-};
 
 #ifdef HAS_HPX
-template <typename Archive>
-void serialize(Archive& ar, SphericalProjection& sp, unsigned) {
-    // clang-format off
-    ar  & sp.type
-        & sp.longitude_o
-        & sp.latitude_o
-        & sp.R;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, InitialConditions& ic, unsigned) {
-    // clang-format off
-    ar  & ic.type
-        & ic.ze_initial
-        & ic.qx_initial
-        & ic.qy_initial;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, TideInput& ti, unsigned) {
-    // clang-format off
-    ar  & ti.frequency
-        & ti.forcing_fact
-        & ti.equilib_arg
-        & ti.amplitude
-        & ti.phase;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, FlowInput& fi, unsigned) {
-    // clang-format off
-    ar  & fi.frequency
-        & fi.forcing_fact
-        & fi.equilib_arg
-        & fi.amplitude
-        & fi.phase;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, LeveeInput& li, unsigned) {
-    // clang-format off
-    ar  & li.H_barrier
-        & li.C_subcritical
-        & li.C_supercritical;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, FunctionSource& fs, unsigned) {
-    // clang-format off
-    ar  & fs.type;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, BottomFriction& bf, unsigned) {
-    // clang-format off
-    ar  & bf.type
-        & bf.coefficient
-        & bf.manning_data_file;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, MeteoForcing& mf, unsigned) {
-    // clang-format off
-    ar  & mf.type
-        & mf.meteo_data_file
-        & mf.frequency;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, TidePotential& tp, unsigned) {
-    // clang-format off
-    ar  & tp.type;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, Coriolis& c, unsigned) {
-    // clang-format off
-    ar  & c.type;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, WettingDrying& wd, unsigned) {
-    // clang-format off
-    ar  & wd.type
-        & wd.h_o;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, SlopeLimiting& sl, unsigned) {
-    // clang-format off
-    ar  & sl.type
-        & sl.slope_limiting_type
-        & sl.M
-        & sl.nu;
-    // clang-format on
-}
-
-template <typename Archive>
-void serialize(Archive& ar, Inputs& in, unsigned) {
-    // clang-format off
-    ar  & in.g
-        & in.rho_air
-        & in.rho_water
-        & in.spherical_projection
-        & in.initial_conditions
-        & in.tide_bc_data
-        & in.flow_bc_data
-        & in.levee_is_data
-        & in.function_source
-        & in.bottom_friction
-        & in.meteo_forcing
-        & in.tide_potential
-        & in.coriolis
-        & in.wet_dry
-        & in.slope_limit;
-    // clang-format on
-}
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & g
+            & rho_air
+            & rho_water
+            & spherical_projection
+            & initial_conditions
+            & tide_bc_data
+            & flow_bc_data
+            & levee_is_data
+            & function_source
+            & bottom_friction
+            & meteo_forcing
+            & tide_potential
+            & coriolis
+            & wet_dry
+            & slope_limit;
+        // clang-format on
+    }
 #endif
+};
 }
 #endif

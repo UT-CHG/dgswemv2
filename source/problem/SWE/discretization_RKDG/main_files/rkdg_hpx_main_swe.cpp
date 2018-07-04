@@ -17,10 +17,10 @@
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_kernels_processor.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_postprocessor/rkdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_RKDG/rkdg_simulation_hpx.hpp"
+#include "simulation/simulation_RKDG/hpx/rkdg_simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
-DGSWEMV2_REGISTER_COMPONENTS(SWE::RKDG::Problem);
+RKDG_REGISTER_HPX_COMPONENTS(SWE::RKDG::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

@@ -77,30 +77,25 @@ struct Data {
   public:
 #ifdef HAS_HPX
     template <typename Archive>
-    void serialize(Archive& ar, unsigned);
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & state
+            & internal
+            & boundary
+            & spherical_projection
+            & source
+            & wet_dry_state
+            & slope_limit_state
+            & nnode
+            & nvrtx
+            & nbound
+            & ndof
+            & ngp_internal
+            & ngp_boundary;
+        // clang-format on
+    }
 #endif
 };
-
-#ifdef HAS_HPX
-template <typename Archive>
-void Data::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & state
-        & internal
-        & boundary
-        & spherical_projection
-        & source
-        & wet_dry_state
-        & slope_limit_state
-        & nnode
-        & nvrtx
-        & nbound
-        & ndof
-        & ngp_internal
-        & ngp_boundary;
-    // clang-format on
-}
-#endif
 }
 }
 

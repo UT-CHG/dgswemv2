@@ -8,8 +8,7 @@ namespace SWE {
 namespace EHDG {
 template <typename EdgeDistributedType>
 void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
-    auto& edge_state  = edge_dbound.edge_data.edge_state;
-    auto& edge_global = edge_dbound.edge_data.edge_global;
+    auto& edge_state = edge_dbound.edge_data.edge_state;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 

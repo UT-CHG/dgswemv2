@@ -89,13 +89,22 @@ class Element {
     template <typename F>
     double ComputeResidualL2(const F& f, const std::vector<double>& u);
 
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned);
-#endif
-
   public:
     using ElementMasterType = MasterType;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & data  
+            & ID
+            & shape
+            & node_ID
+            & neighbor_ID
+            & boundary_type;
+        // clang-format on
+    }
+#endif
 };
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -534,21 +543,6 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 
     return L2;
 }
-
-#ifdef HAS_HPX
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename Archive>
-void Element<dimension, MasterType, ShapeType, DataType>::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & data  
-        & ID
-        & shape
-        & node_ID
-        & neighbor_ID
-        & boundary_type;
-    // clang-format on
-}
-#endif
 }
 
 #endif

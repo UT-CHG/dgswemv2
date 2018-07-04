@@ -1,11 +1,15 @@
 #ifndef SWE_DEFINITIONS_HPP
 #define SWE_DEFINITIONS_HPP
 
+#include "utilities/ignore.hpp"
+
 namespace SWE {
 namespace Global {
 static double g         = 9.81;
 static double rho_air   = 1.225;
 static double rho_water = 1000.0;
+
+const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water);
 }
 
 namespace SourceTerms {
@@ -16,6 +20,9 @@ static bool tide_potential  = false;
 static bool coriolis        = false;
 
 static double Cf = 0.0;
+
+const bool ignored_vars =
+    Utilities::ignore(function_source, bottom_friction, meteo_forcing, tide_potential, coriolis, Cf);
 }
 
 namespace PostProcessing {
@@ -28,6 +35,8 @@ static double h_o_threshold = 1.0e5 * std::numeric_limits<double>::epsilon();
 // Cockburn-Shu SL parameters
 static double M  = 1.0e-8;
 static double nu = 1.5;
+
+const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };

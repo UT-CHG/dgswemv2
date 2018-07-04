@@ -17,17 +17,10 @@
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_kernels_processor.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_EHDG/ehdg_simulation_hpx.hpp"
+#include "simulation/simulation_EHDG/hpx/ehdg_simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
-using hpx_simulation_unit_swe = EHDG::HPXSimulationUnit<SWE::EHDG::Problem>;
-using hpx_simulation_unit_swe_component =
-    hpx::components::simple_component<EHDG::HPXSimulationUnit<SWE::EHDG::Problem>>;
-HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component, hpx_simulation_unit_swe);
-
-using hpx_simulation_swe           = EHDG::HPXSimulation<SWE::EHDG::Problem>;
-using hpx_simulation_swe_component = hpx::components::simple_component<EHDG::HPXSimulation<SWE::EHDG::Problem>>;
-HPX_REGISTER_COMPONENT(hpx_simulation_swe_component, hpx_simulation_swe);
+EHDG_REGISTER_HPX_COMPONENTS(SWE::EHDG::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

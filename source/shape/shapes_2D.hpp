@@ -29,20 +29,14 @@ class StraightTriangle : public Shape<2> {
     void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
 
 #ifdef HAS_HPX
-  public:
     template <typename Archive>
-    void serialize(Archive& ar, unsigned);
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & hpx::serialization::base_object<Shape<2>>(*this);
+        // clang-format on
+    }
     HPX_SERIALIZATION_POLYMORPHIC_TEMPLATE(StraightTriangle);
 #endif
 };
-
-#ifdef HAS_HPX
-template <typename Archive>
-void StraightTriangle::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & hpx::serialization::base_object<Shape<2>>(*this);
-    // clang-format on
-}
-#endif
 }
 #endif

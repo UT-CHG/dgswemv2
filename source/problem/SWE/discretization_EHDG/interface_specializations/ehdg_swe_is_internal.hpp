@@ -22,7 +22,6 @@ class Internal {
 
 template <typename EdgeInterfaceType>
 void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
-    auto& edge_state  = edge_int.edge_data.edge_state;
     auto& edge_global = edge_int.edge_data.edge_global;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];

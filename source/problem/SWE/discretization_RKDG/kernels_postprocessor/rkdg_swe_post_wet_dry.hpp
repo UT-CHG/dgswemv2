@@ -9,7 +9,6 @@ void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) 
 
     auto& state    = elt.data.state[stage + 1];
     auto& wd_state = elt.data.wet_dry_state;
-    auto& internal = elt.data.internal;
 
     elt.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
 

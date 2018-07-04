@@ -1,28 +1,29 @@
-#ifndef RKDG_SIMULATION_UNIT_HPX_HPP
-#define RKDG_SIMULATION_UNIT_HPX_HPP
+#ifndef RKDG_SIM_UNIT_HPX_HPP
+#define RKDG_SIM_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
 
-#include "../../preprocessor/input_parameters.hpp"
-#include "../../preprocessor/initialize_mesh.hpp"
-#include "../../communication/hpx_communicator.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "preprocessor/initialize_mesh.hpp"
+#include "communication/hpx_communicator.hpp"
 
-#include "../writer.hpp"
-#include "load_balancer/base_model.hpp"
-#include "load_balancer/abstract_load_balancer_factory.hpp"
+#include "simulation/writer.hpp"
+#include "simulation/simulation_RKDG/load_balancer/base_model.hpp"
+#include "simulation/simulation_RKDG/load_balancer/abstract_load_balancer_factory.hpp"
 
 namespace RKDG {
 template <typename ProblemType>
 class HPXSimulationUnit
     : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
   private:
-    RKStepper stepper;
+    typename ProblemType::ProblemMeshType mesh;
 
+    HPXCommunicator communicator;
+    RKStepper stepper;
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
-    typename ProblemType::ProblemMeshType mesh;
+
     typename ProblemType::ProblemInputType problem_input;
-    HPXCommunicator communicator;
     std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
   public:
@@ -55,8 +56,6 @@ class HPXSimulationUnit
     void on_migrated();
 
   private:
-    void Parse();
-
     hpx::future<void> Stage();
 
     hpx::future<void> Postprocessor();
@@ -74,13 +73,16 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     input.read_bcis();                         // read bc data
     input.read_dbmd(locality_id, submesh_id);  // read distributed boundary meta data
 
-    this->mesh          = typename ProblemType::ProblemMeshType(input.polynomial_order);
+    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+
+    this->communicator = HPXCommunicator(input.mesh_input.dbmd_data);
+    this->stepper      = RKStepper(input.stepper_input);
+    this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
+    this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
+
     this->problem_input = input.problem_input;
-    this->communicator  = HPXCommunicator(input.mesh_input.dbmd_data);
-    this->stepper       = RKStepper(input.stepper_input);
-    this->writer        = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
-    this->parser        = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
     this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id, submesh_id);
+
     assert(this->submesh_model);
 
     if (this->writer.WritingLog()) {
@@ -122,51 +124,22 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 
     uint n_stages = this->stepper.GetNumStages();
 
-    auto resize_data_container = [n_stages](auto& elt) { elt.data.resize(n_stages + 1); };
-
-    this->mesh.CallForEachElement(resize_data_container);
-}
-
-template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::Parse() {
-    if (this->parser.ParsingInput()) {
-        if (this->writer.WritingVerboseLog()) {
-            this->writer.GetLogFile() << "Parsing input" << std::endl;
-        }
-
-        this->parser.ParseInput(this->stepper, this->mesh);
-    }
+    this->mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 }
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Current (time, stage): (" << this->stepper.GetTimeAtCurrentStage() << ','
-                                  << this->stepper.GetStage() << ')' << std::endl
-                                  << "Starting work before receive" << std::endl;
-    }
+                                  << this->stepper.GetStage() << ')' << std::endl;
 
-    this->Parse();
-
-    auto distributed_boundary_send_kernel = [this](auto& dbound) {
-        ProblemType::distributed_boundary_send_kernel(this->stepper, dbound);
-    };
-
-    auto volume_kernel = [this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); };
-
-    auto source_kernel = [this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); };
-
-    auto interface_kernel = [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); };
-
-    auto boundary_kernel = [this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); };
-
-    if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Exchanging data" << std::endl;
     }
 
     hpx::future<void> receive_future = this->communicator.ReceiveAll(this->stepper.GetTimestamp());
 
-    this->mesh.CallForEachDistributedBoundary(distributed_boundary_send_kernel);
+    this->mesh.CallForEachDistributedBoundary(
+        [this](auto& dbound) { ProblemType::distributed_boundary_send_kernel(this->stepper, dbound); });
 
     this->communicator.SendAll(this->stepper.GetTimestamp());
 
@@ -174,13 +147,21 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
         this->writer.GetLogFile() << "Starting work before receive" << std::endl;
     }
 
-    this->mesh.CallForEachElement(volume_kernel);
+    if (this->parser.ParsingInput()) {
+        if (this->writer.WritingVerboseLog()) {
+            this->writer.GetLogFile() << "Parsing input" << std::endl;
+        }
 
-    this->mesh.CallForEachElement(source_kernel);
+        this->parser.ParseInput(this->stepper, this->mesh);
+    }
 
-    this->mesh.CallForEachInterface(interface_kernel);
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::volume_kernel(this->stepper, elt); });
 
-    this->mesh.CallForEachBoundary(boundary_kernel);
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::source_kernel(this->stepper, elt); });
+
+    this->mesh.CallForEachInterface([this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); });
+
+    this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); });
 
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Finished work before receive" << std::endl
@@ -195,21 +176,10 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
             this->writer.GetLogFile() << "Starting work after receive" << std::endl;
         }
 
-        auto distributed_boundary_kernel = [this](auto& dbound) {
-            ProblemType::distributed_boundary_kernel(this->stepper, dbound);
-        };
+        this->mesh.CallForEachDistributedBoundary(
+            [this](auto& dbound) { ProblemType::distributed_boundary_kernel(this->stepper, dbound); });
 
-        auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
-
-        auto scrutinize_solution_kernel = [this](auto& elt) {
-            ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-        };
-
-        this->mesh.CallForEachDistributedBoundary(distributed_boundary_kernel);
-
-        this->mesh.CallForEachElement(update_kernel);
-
-        this->mesh.CallForEachElement(scrutinize_solution_kernel);
+        this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
 
         if (this->writer.WritingVerboseLog()) {
             this->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
@@ -248,6 +218,13 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
 
         ProblemType::postprocessor_parallel_post_receive_kernel(this->stepper, this->mesh);
 
+        this->mesh.CallForEachElement([this](auto& elt) {
+            bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+
+            if (nan_found)
+                hpx::terminate();
+        });
+
         ++(this->stepper);
 
         if (this->writer.WritingVerboseLog()) {
@@ -258,9 +235,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Postprocessor() {
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::SwapStates() {
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
-    this->mesh.CallForEachElement(swap_states_kernel);
+    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteOutput(this->stepper, this->mesh);
@@ -294,11 +269,9 @@ template <typename ProblemType>
 double HPXSimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
-    auto compute_residual_L2_kernel = [this, &residual_L2](auto& elt) {
+    this->mesh.CallForEachElement([this, &residual_L2](auto& elt) {
         residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    };
-
-    this->mesh.CallForEachElement(compute_residual_L2_kernel);
+    });
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 

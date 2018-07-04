@@ -34,9 +34,16 @@ class Parser {
 
   public:
 #ifdef HAS_HPX
-  public:
     template <typename Archive>
-    void serialize(Archive& ar, unsigned);
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & parsing_input
+            & meteo_parse_frequency
+            & meteo_data_file
+            & node_meteo_data_step
+            & node_meteo_data_interp;
+        // clang-format on
+    }
 #endif
 };
 
@@ -65,8 +72,6 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
         this->InterpolateMeteoData(stepper);
 
         mesh.CallForEachElement([this](auto& elt) {
-            const std::vector<uint>& node_ID = elt.GetNodeID();
-
             for (uint node = 0; node < elt.data.get_nnode(); node++) {
                 elt.data.source.tau_s[GlobalCoord::x][node] = elt.data.source.parsed_meteo_data[node]->at(0);
                 elt.data.source.tau_s[GlobalCoord::y][node] = elt.data.source.parsed_meteo_data[node]->at(1);
@@ -75,18 +80,6 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
         });
     }
 }
+}
 
-#ifdef HAS_HPX
-template <typename Archive>
-void Parser::serialize(Archive& ar, unsigned) {
-    // clang-format off
-    ar  & parsing_input
-        & meteo_parse_frequency
-        & meteo_data_file
-        & node_meteo_data_step
-        & node_meteo_data_interp;
-    // clang-format on
-}
-#endif
-}
 #endif

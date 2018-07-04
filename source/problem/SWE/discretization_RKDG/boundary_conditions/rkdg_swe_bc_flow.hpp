@@ -142,7 +142,7 @@ void Flow::GetEX(const RKStepper& stepper,
               cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
     }
 
-    double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
+    double n_x, n_y, t_x, t_y;
 
     n_x = surface_normal[gp][GlobalCoord::x];
     n_y = surface_normal[gp][GlobalCoord::y];
