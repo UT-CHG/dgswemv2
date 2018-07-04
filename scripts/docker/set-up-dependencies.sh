@@ -15,6 +15,8 @@ echo | build/build-jemalloc.sh -c docker/docker.config.txt
 
 echo | build/build-metis.sh -c docker/docker.config.txt
 
+echo | build/build-eigen.sh -c docker/docker.config.txt
+
 #hpx
 cd /usr
 git clone https://github.com/STEllAR-GROUP/hpx.git
