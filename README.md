@@ -1,6 +1,27 @@
 # DGSWEM V2
 [![CircleCI](https://circleci.com/gh/UT-CHG/dgswemv2.svg?style=svg&circle-token=0479b7746d69a87e977936dd4b6105be5b2e6316)](https://circleci.com/gh/UT-CHG/dgswemv2)
 
+## Getting Started
+
+dgswem-v2 has a considerable number of dependencies. If you are simply interested in giving dgswemv2 a quick test. We recommend one of two options. First, if one does not want to build all of the dependencies outlined below, running
+```sh
+cmake -DCMAKE_PREFIX_PATH=<YAML_CPP_INSTALL_PATH>\
+      -DBUILD_EXAMPLES=On\
+    <DGSWEMV2_ROOT>
+```
+will build the code to run using a Runge-Kutta discontinuous Galerkin discretization in serial along with the manufactured solution.
+
+Another alternative is to use our Docker image, which contains the necessary dependencies to build all dgswemv2 targets. Simply, run
+```sh
+docker pull bremerm31/dgswemv2:latest
+docker run -it bremerm31/dgswemv2
+```
+The docker container contains all dependencies, and builds all targets.
+
+For tips, on how to get started, we recommend looking at our users guide, which can be found in `documentation/users-guide/dgswem-v2-users-guide.pdf`. Basic examples about how to run the code and the design philosophy behind dgswemv2 can be found here.
+
+Lastly, for any further questions, we encourage you to either open an issue on the github repository or join our slack channel. Simply open an issue in the repo with the `Slack` tag and the email address with which you would like to be added.
+
 ## Building instructions
 
 ### Dependencies
@@ -74,28 +95,7 @@ Note that there are some additional options, which will create additional target
 | EHDG_SWE       | Build explicit Hybridized discontinuous Galerkin targets              |
 | IHDG_SWE       | Build implicit hybridized discontinuous Galerkin targets              |
 
-Note that by default `RKDG_SWE` is set to `On` and will be built automatically by cmake.
-
-## Getting Started
-
-dgswem-v2 has a considerable number of dependencies. If you are simply interested in giving dgswemv2 a quick test. We recommend one of two options. First, if one does not want to build all of the dependencies outlined above, running
-```sh
-cmake -DCMAKE_PREFIX_PATH=<YAML_CPP_INSTALL_PATH>\
-      -DBUILD_EXAMPLES=On\
-    <DGSWEMV2_ROOT>
-```
-will build the code to run using a Runge-Kutta discontinuous Galerkin discretization in serial along with the manufactured solution.
-
-Another alternative is to use our Docker image, which contains the necessary dependencies to build all dgswemv2 targets. Simply, run
-```sh
-docker pull bremerm31/dgswemv2:latest
-docker run -it bremerm31/dgswemv2
-```
-The docker container contains all dependencies, and builds all targets.
-
-For tips, on how to get started, we recommend looking at our users guide, which can be found in `documentation/users-guide/dgswem-v2-users-guide.pdf`. Basic examples about how to run the code and the design philosophy behind dgswemv2 can be found here.
-
-Lastly, if there are any outstanding questions, we encourage you to either open an issue on the github repository or join our slack channel. Simply open an issue in the repo with the `Slack` tag and the email address with which you would like to be added.
+Note that by default `RKDG_SWE` is set to `On` and associated targets will be built by cmake.
 
 ## License
 
