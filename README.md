@@ -67,27 +67,31 @@ Note that there are some additional options, which will create additional target
 | -------------- | --------------------------------------------------------------------- |
 | USE_OMPI       | Enables MPI OpenMP parallelization; builds target `DG_HYPER_SWE_OMPI` |
 | USE_HPX        | Enables HPX parallelization; builds target `DG_HYPER_SWE_HPX`         |
+| COMPILER_WARNINGS | Display compiler warnings                                          |
 | SET_VERBOSE    | Set the makefile compilation output to Verbose                        |
 | BUILD_EXAMPLES | Build additional executables to run the examples                      |
+| RKDG_SWE       | Build Runge-Kutta discontinuous Galerkin targets                      |
+| EHDG_SWE       | Build explicit Hybridized discontinuous Galerkin targets              |
+| IHDG_SWE       | Build implicit hybridized discontinuous Galerkin targets              |
 
-Note that the two parallel targets are not mutually exclusive. Cmake should be able to build the two targets without any conflicts.
-
+Note that by default `RKDG_SWE` is set to `On` and will be built automatically by cmake.
 
 ## Getting Started
 
-dgswem-v2 has a considerable number of dependencies. If you are simply interested in giving dgswemv2 a quick test. We recommend one of two options. First, if one does not want to build the code to run in distributed, running
+dgswem-v2 has a considerable number of dependencies. If you are simply interested in giving dgswemv2 a quick test. We recommend one of two options. First, if one does not want to build all of the dependencies outlined above, running
 ```sh
 cmake -DCMAKE_PREFIX_PATH=<YAML_CPP_INSTALL_PATH>\
       -DBUILD_EXAMPLES=On\
-      <DGSWEMV2_ROOT>
+    <DGSWEMV2_ROOT>
 ```
-will build the code to run in serial along with the Manufactured solution.
+will build the code to run using a Runge-Kutta discontinuous Galerkin discretization in serial along with the manufactured solution.
 
 Another alternative is to use our Docker image, which contains the necessary dependencies to build all dgswemv2 targets. Simply, run
 ```sh
 docker pull bremerm31/dgswemv2:latest
 docker run -it bremerm31/dgswemv2
 ```
+The docker container contains all dependencies, and builds all targets.
 
 For tips, on how to get started, we recommend looking at our users guide, which can be found in `documentation/users-guide/dgswem-v2-users-guide.pdf`. Basic examples about how to run the code and the design philosophy behind dgswemv2 can be found here.
 
