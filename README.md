@@ -7,13 +7,14 @@
 
 In designing any software package there are clear benefits and disadvantages to using libaries. In dgswem-v2, we have the following dependencies:
 
-| Dependency | Function              |   Dependent Targets                    |
-| ---------- | --------------------- | -------------------------------------- |
-| yaml-cpp   | YAML file parser      | All targets                            |
-| Metis      | Graph partitioner     | `partitioner`                          |
-| HPX        | Asynchronous Runtime  | `DG_HYPER_SWE_HPX`                     |
-| OpenMP     | Application threading | `DG_HYPER_SWE_OMPI`                    |
-| MPI        | Message passing       | `DG_HYPER_SWE_OMPI`,`DG_HYPER_SWE_HPX` |
+| Dependency | Function               |   Dependent Targets       |
+| ---------- | ---------------------- | ------------------------- |
+| yaml-cpp   | YAML file parser       | All targets               |
+| Metis      | Graph partitioner      | `partitioner`             |
+| HPX        | Asynchronous Runtime   | `*_SWE_HPX`               |
+| OpenMP     | Application threading  | `*_SWE_OMPI`              |
+| MPI        | Message passing        | `*_SWE_OMPI`,`*_SWE__HPX` |
+| Eigen      | Linear Algebra Library | `EHDG_*`                  |
 
 To begin select a work directory. On the TACC machines we recommend using the `$WORK` directory and copying all of the meshes into `$SCRATCH` for running jobs. `yaml-cpp`, `Metis`, and `HPX` are all libraries. To assist the user in installing the Libraries we have added some bash scripts in `scripts/build` to assist the user in compiling `dgswem-v2`.
 
@@ -44,6 +45,14 @@ The building of hpx requires a lot of dependencies. In particular, for our bash 
     ./build-hpx.sh
 ```
 
+#### Installing `eigen`
+
+To build the hybridized discontinuous Galerkin targets, the application requires Eigen3. Although it is a header only library, we have provided a `build-eigen.sh` script, which will run download Eigen 3.3.4 from the internet, run cmake to run various checks, and lastly, install the headers to the `config.txt` specified location.
+```
+cd /path/to/build/scripts
+./build-eigen.txt
+```
+
 ### Building the Application
 
 Assuming that `${INSTALL_PATH}` is the path defined in the configuration file. The dgswemv2 uses an out of source build. The application can be built as follows:
@@ -62,6 +71,27 @@ Note that there are some additional options, which will create additional target
 | BUILD_EXAMPLES | Build additional executables to run the examples                      |
 
 Note that the two parallel targets are not mutually exclusive. Cmake should be able to build the two targets without any conflicts.
+
+
+## Getting Started
+
+dgswem-v2 has a considerable number of dependencies. If you are simply interested in giving dgswemv2 a quick test. We recommend one of two options. First, if one does not want to build the code to run in distributed, running
+```sh
+cmake -DCMAKE_PREFIX_PATH=<YAML_CPP_INSTALL_PATH>\
+      -DBUILD_EXAMPLES=On\
+      <DGSWEMV2_ROOT>
+```
+will build the code to run in serial along with the Manufactured solution.
+
+Another alternative is to use our Docker image, which contains the necessary dependencies to build all dgswemv2 targets. Simply, run
+```sh
+docker pull bremerm31/dgswemv2:latest
+docker run -it bremerm31/dgswemv2
+```
+
+For tips, on how to get started, we recommend looking at our users guide, which can be found in `documentation/users-guide/dgswem-v2-users-guide.pdf`. Basic examples about how to run the code and the design philosophy behind dgswemv2 can be found here.
+
+Lastly, if there are any outstanding questions, we encourage you to either open an issue on the github repository or join our slack channel. Simply open an issue in the repo with the `Slack` tag and the email address with which you would like to be added.
 
 ## License
 
