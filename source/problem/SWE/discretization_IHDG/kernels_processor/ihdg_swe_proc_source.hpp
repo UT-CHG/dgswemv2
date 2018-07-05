@@ -4,7 +4,7 @@
 namespace SWE {
 namespace IHDG {
 template <typename ElementType>
-void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::prepare_source_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];
@@ -97,12 +97,6 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
             internal.qx_source_term_at_gp[gp] += source.coriolis_f * internal.qy_at_gp[gp];
             internal.qy_source_term_at_gp[gp] -= source.coriolis_f * internal.qx_at_gp[gp];
         }
-    }
-
-    for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-        state.rhs_ze[dof] += elt.IntegrationPhi(dof, internal.ze_source_term_at_gp);
-        state.rhs_qx[dof] += elt.IntegrationPhi(dof, internal.qx_source_term_at_gp);
-        state.rhs_qy[dof] += elt.IntegrationPhi(dof, internal.qy_source_term_at_gp);
     }
 }
 }

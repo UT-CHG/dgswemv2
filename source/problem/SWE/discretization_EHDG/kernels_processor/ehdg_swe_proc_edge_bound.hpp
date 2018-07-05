@@ -8,20 +8,21 @@ namespace SWE {
 namespace EHDG {
 template <typename EdgeBoundaryType>
 void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    auto& edge_state = edge_bound.edge_data.edge_state;
+    auto& edge_state    = edge_bound.edge_data.edge_state;
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     /* Take in state as initial edge state */
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        edge_state.ze_avg_at_gp[gp] = boundary.ze_at_gp[gp];
-        edge_state.qx_avg_at_gp[gp] = boundary.qx_at_gp[gp];
-        edge_state.qy_avg_at_gp[gp] = boundary.qy_at_gp[gp];
+        edge_internal.ze_avg_at_gp[gp] = boundary.ze_at_gp[gp];
+        edge_internal.qx_avg_at_gp[gp] = boundary.qx_at_gp[gp];
+        edge_internal.qy_avg_at_gp[gp] = boundary.qy_at_gp[gp];
     }
 
-    edge_bound.L2Projection(edge_state.ze_avg_at_gp, edge_state.ze_hat);
-    edge_bound.L2Projection(edge_state.qx_avg_at_gp, edge_state.qx_hat);
-    edge_bound.L2Projection(edge_state.qy_avg_at_gp, edge_state.qy_hat);
+    edge_bound.L2Projection(edge_internal.ze_avg_at_gp, edge_state.ze_hat);
+    edge_bound.L2Projection(edge_internal.qx_avg_at_gp, edge_state.qx_hat);
+    edge_bound.L2Projection(edge_internal.qy_avg_at_gp, edge_state.qy_hat);
 
     /* Newton-Raphson iterator */
 
@@ -59,12 +60,12 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
 
     /* Compute Numerical Flux */
 
-    edge_bound.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
-    edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
-    edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.ze_hat, edge_internal.ze_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.qx_hat, edge_internal.qx_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.qy_hat, edge_internal.qy_hat_at_gp);
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
+        edge_internal.h_hat_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
     }
 
     edge_bound.boundary.boundary_condition.ComputeNumericalFlux(edge_bound);
@@ -72,17 +73,18 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
 
 template <typename EdgeBoundaryType>
 void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    auto& edge_state  = edge_bound.edge_data.edge_state;
-    auto& edge_global = edge_bound.edge_data.edge_global;
+    auto& edge_state    = edge_bound.edge_data.edge_state;
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+    auto& edge_global   = edge_bound.edge_data.edge_global;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    edge_bound.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
-    edge_bound.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
-    edge_bound.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.ze_hat, edge_internal.ze_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.qx_hat, edge_internal.qx_hat_at_gp);
+    edge_bound.ComputeUgp(edge_state.qy_hat, edge_internal.qy_hat_at_gp);
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
+        edge_internal.h_hat_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
     }
 
     /* Assemble global kernels */

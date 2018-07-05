@@ -7,7 +7,8 @@ namespace SWE {
 namespace EHDG {
 template <typename EdgeInterfaceType>
 void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
-    auto& edge_state = edge_int.edge_data.edge_state;
+    auto& edge_state    = edge_int.edge_data.edge_state;
+    auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
@@ -17,14 +18,14 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        edge_state.ze_avg_at_gp[gp] = (boundary_in.ze_at_gp[gp] + boundary_ex.ze_at_gp[gp_ex]) / 2.0;
-        edge_state.qx_avg_at_gp[gp] = (boundary_in.qx_at_gp[gp] + boundary_ex.qx_at_gp[gp_ex]) / 2.0;
-        edge_state.qy_avg_at_gp[gp] = (boundary_in.qy_at_gp[gp] + boundary_ex.qy_at_gp[gp_ex]) / 2.0;
+        edge_internal.ze_avg_at_gp[gp] = (boundary_in.ze_at_gp[gp] + boundary_ex.ze_at_gp[gp_ex]) / 2.0;
+        edge_internal.qx_avg_at_gp[gp] = (boundary_in.qx_at_gp[gp] + boundary_ex.qx_at_gp[gp_ex]) / 2.0;
+        edge_internal.qy_avg_at_gp[gp] = (boundary_in.qy_at_gp[gp] + boundary_ex.qy_at_gp[gp_ex]) / 2.0;
     }
 
-    edge_int.L2Projection(edge_state.ze_avg_at_gp, edge_state.ze_hat);
-    edge_int.L2Projection(edge_state.qx_avg_at_gp, edge_state.qx_hat);
-    edge_int.L2Projection(edge_state.qy_avg_at_gp, edge_state.qy_hat);
+    edge_int.L2Projection(edge_internal.ze_avg_at_gp, edge_state.ze_hat);
+    edge_int.L2Projection(edge_internal.qx_avg_at_gp, edge_state.qx_hat);
+    edge_int.L2Projection(edge_internal.qy_avg_at_gp, edge_state.qy_hat);
 
     /* Newton-Raphson iterator */
 
@@ -62,12 +63,12 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
 
     /* Compute Numerical Flux */
 
-    edge_int.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
-    edge_int.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
-    edge_int.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
+    edge_int.ComputeUgp(edge_state.ze_hat, edge_internal.ze_hat_at_gp);
+    edge_int.ComputeUgp(edge_state.qx_hat, edge_internal.qx_hat_at_gp);
+    edge_int.ComputeUgp(edge_state.qy_hat, edge_internal.qy_hat_at_gp);
 
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary_in.bath_at_gp[gp];
+        edge_internal.h_hat_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] + boundary_in.bath_at_gp[gp];
     }
 
     edge_int.interface.specialization.ComputeNumericalFlux(edge_int);
@@ -75,17 +76,18 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
 
 template <typename EdgeInterfaceType>
 void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
-    auto& edge_state  = edge_int.edge_data.edge_state;
-    auto& edge_global = edge_int.edge_data.edge_global;
+    auto& edge_state    = edge_int.edge_data.edge_state;
+    auto& edge_internal = edge_int.edge_data.edge_internal;
+    auto& edge_global   = edge_int.edge_data.edge_global;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
 
-    edge_int.ComputeUgp(edge_state.ze_hat, edge_state.ze_hat_at_gp);
-    edge_int.ComputeUgp(edge_state.qx_hat, edge_state.qx_hat_at_gp);
-    edge_int.ComputeUgp(edge_state.qy_hat, edge_state.qy_hat_at_gp);
+    edge_int.ComputeUgp(edge_state.ze_hat, edge_internal.ze_hat_at_gp);
+    edge_int.ComputeUgp(edge_state.qx_hat, edge_internal.qx_hat_at_gp);
+    edge_int.ComputeUgp(edge_state.qy_hat, edge_internal.qy_hat_at_gp);
 
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        edge_state.h_hat_at_gp[gp] = edge_state.ze_hat_at_gp[gp] + boundary_in.bath_at_gp[gp];
+        edge_internal.h_hat_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] + boundary_in.bath_at_gp[gp];
     }
 
     /* Assemble global kernels */

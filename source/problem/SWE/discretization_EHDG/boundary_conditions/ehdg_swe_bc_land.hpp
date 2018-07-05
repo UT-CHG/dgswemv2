@@ -21,8 +21,8 @@ class Land {
 
 template <typename EdgeBoundaryType>
 void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    auto& edge_state  = edge_bound.edge_data.edge_state;
-    auto& edge_global = edge_bound.edge_data.edge_global;
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+    auto& edge_global   = edge_bound.edge_data.edge_global;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
@@ -49,9 +49,9 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
 
         qn = boundary.qx_at_gp[gp] * nx + boundary.qy_at_gp[gp] * ny;
 
-        edge_global.ze_rhs_kernel_at_gp[gp] = edge_state.ze_hat_at_gp[gp] - boundary.ze_at_gp[gp];
-        edge_global.qx_rhs_kernel_at_gp[gp] = edge_state.qx_hat_at_gp[gp] - boundary.qx_at_gp[gp] + qn * nx;
-        edge_global.qy_rhs_kernel_at_gp[gp] = edge_state.qy_hat_at_gp[gp] - boundary.qy_at_gp[gp] + qn * ny;
+        edge_global.ze_rhs_kernel_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] - boundary.ze_at_gp[gp];
+        edge_global.qx_rhs_kernel_at_gp[gp] = edge_internal.qx_hat_at_gp[gp] - boundary.qx_at_gp[gp] + qn * nx;
+        edge_global.qy_rhs_kernel_at_gp[gp] = edge_internal.qy_hat_at_gp[gp] - boundary.qy_at_gp[gp] + qn * ny;
     }
 }
 

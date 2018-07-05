@@ -7,6 +7,7 @@
 #include "ihdg_swe_data_internal.hpp"
 #include "ihdg_swe_data_boundary.hpp"
 #include "ihdg_swe_data_source.hpp"
+#include "ihdg_swe_data_local.hpp"
 
 namespace SWE {
 namespace IHDG {
@@ -16,6 +17,8 @@ struct Data {
     std::vector<Boundary> boundary;
 
     Source source;
+
+    Local local;
 
     void initialize() {
         this->state = std::vector<State>{State(this->ndof)};
@@ -27,6 +30,8 @@ struct Data {
         }
 
         this->source = Source(this->nnode);
+
+        this->local = Local(this->ndof, this->ngp_internal);
     }
 
     void resize(const uint nstate) {

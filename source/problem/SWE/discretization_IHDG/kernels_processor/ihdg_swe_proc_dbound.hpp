@@ -4,7 +4,7 @@
 namespace SWE {
 namespace IHDG {
 template <typename DistributedBoundaryType>
-void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::prepare_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];
@@ -46,21 +46,6 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
                                               boundary.ze_flux_dot_n_at_gp,
                                               boundary.qx_flux_dot_n_at_gp,
                                               boundary.qy_flux_dot_n_at_gp);
-}
-
-template <typename DistributedBoundaryType>
-void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
-    const uint stage = stepper.GetStage();
-
-    auto& state    = dbound.data.state[stage];
-    auto& boundary = dbound.data.boundary[dbound.bound_id];
-
-    // now compute contributions to the righthand side
-    for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
-        state.rhs_ze[dof] -= dbound.IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);
-        state.rhs_qx[dof] -= dbound.IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
-        state.rhs_qy[dof] -= dbound.IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
-    }
 }
 }
 }

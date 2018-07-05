@@ -76,9 +76,12 @@ class Element {
     void ComputeNodalUgp(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
     void ComputeNodalDUgp(const uint dir, const std::vector<double>& u_nodal, std::vector<double>& du_nodal_gp);
 
-    double Integration(const std::vector<double>& u_gp);
-    double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
-    double IntegrationDPhi(const uint dir, const uint dof, const std::vector<double>& u_gp);
+    template <typename T>
+    T Integration(const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhi(const uint dof, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationDPhi(const uint dir, const uint dof, const std::vector<T>& u_gp);
 
     void ApplyMinv(const std::vector<double>& rhs, std::vector<double>& solution);
 
@@ -399,8 +402,9 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUg
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::Integration(const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Element<dimension, MasterType, ShapeType, DataType>::Integration(const std::vector<T>& u_gp) {
+    T integral{0};
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_fact[gp];
@@ -410,9 +414,10 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::Integration(c
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
-                                                                                  const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
+                                                                             const std::vector<T>& u_gp) {
+    T integral{0};
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact[dof][gp];
@@ -422,10 +427,11 @@ inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationPh
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-inline double Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
-                                                                                   const uint dof,
-                                                                                   const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
+                                                                              const uint dof,
+                                                                              const std::vector<T>& u_gp) {
+    T integral{0};
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_dphi_fact[dof][dir][gp];
