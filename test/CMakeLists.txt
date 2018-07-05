@@ -274,7 +274,10 @@ output:\n\
     verbose: true\n\
   path: output/\n\
   vtk:\n\
-    frequency: 100\n"
+    frequency: 100\n
+load_balancer:\n\n
+  name: random
+  rebalance_frequency: 10"
 )
 
 file(WRITE files_for_testing/correct_input_no_output.15
