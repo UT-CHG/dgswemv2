@@ -1,6 +1,16 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
+  test_vector_exe
+  test_vector.cpp
+)
+
+add_test(
+  Unit_vector
+  test_vectors_exe
+)
+
+add_executable(
   test_tuple_helpers_exe
   test_tuple_helpers.cpp
 )
