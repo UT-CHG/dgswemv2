@@ -14,7 +14,9 @@ class AbstractFactory {
     static void reset_locality_and_world_models();
 
     template <typename ProblemType>
-    static std::unique_ptr<SubmeshModel> create_submesh_model(uint locality_id, uint submesh_id);
+    static std::unique_ptr<SubmeshModel> create_submesh_model(uint locality_id,
+                                                              uint submesh_id,
+                                                              const LoadBalancerInput& load_balancer_input);
 };
 }
 }

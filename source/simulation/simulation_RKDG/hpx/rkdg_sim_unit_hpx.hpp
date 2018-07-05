@@ -81,9 +81,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     this->problem_input = input.problem_input;
-    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(locality_id, submesh_id);
-
-    assert(this->submesh_model);
+    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
+        locality_id, submesh_id, input.load_balancer_input);
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
@@ -260,7 +259,9 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
 
     return step_future.then([this](auto&& f) {
         f.get();
-        this->submesh_model->InStep(0, 0);
+        if (this->submesh_model) {
+            this->submesh_model->InStep(0, 0);
+        }
         this->SwapStates();
     });
 }
