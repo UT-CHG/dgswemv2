@@ -76,7 +76,9 @@ struct Random {
     static hpx::future<void> initialize_locality_and_world_models(const uint locality_id,
                                                                   const std::string& input_string);
     static void reset_locality_and_world_models();
-    static std::unique_ptr<LoadBalancer::SubmeshModel> create_submesh_model(uint locality_id, uint submesh_id);
+    static std::unique_ptr<LoadBalancer::SubmeshModel> create_submesh_model(uint locality_id,
+                                                                            uint submesh_id,
+                                                                            double rebalance_frequency);
 };
 }
 }
@@ -195,9 +197,10 @@ void Random<ProblemType>::reset_locality_and_world_models() {
 
 template <typename ProblemType>
 std::unique_ptr<LoadBalancer::SubmeshModel> Random<ProblemType>::create_submesh_model(uint locality_id,
-                                                                                      uint submesh_id) {
+                                                                                      uint submesh_id,
+                                                                                      double rebalance_frequency) {
     return std::make_unique<Random<ProblemType>::SubmeshModel>(
-        std::chrono::duration<double>(2.), locality_id, submesh_id);
+        std::chrono::duration<double>(rebalance_frequency), locality_id, submesh_id);
 }
 }
 }
