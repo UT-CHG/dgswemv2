@@ -1,5 +1,5 @@
-#include "utilities/linear_algebra/vector.hpp"
-#include "utilities/linear_algebra/matrix.hpp"
+#include "utilities/linear_algebra/vector_dynamic.hpp"
+#include "utilities/linear_algebra/matrix_dynamic.hpp"
 #include "utilities/almost_equal.hpp"
 #include "general_definitions.hpp"
 
@@ -8,8 +8,8 @@ int main() {
 
     using Utilities::almost_equal;
 
-    Utilities::LinearAlgebra::Vector<double> vec(2);
-    Utilities::LinearAlgebra::Vector<double> vec_res(3);
+    Utilities::LinearAlgebra::VectorDyn<double> vec(2);
+    Utilities::LinearAlgebra::VectorDyn<double> vec_res(3);
 
     vec(0) = 1;
     vec(1) = 2;
@@ -40,7 +40,7 @@ int main() {
     }
 
     // check transpose, expr * vec , vec * expr
-    Utilities::LinearAlgebra::Matrix<double> outer_product(2, 2);
+    Utilities::LinearAlgebra::MatrixDyn<double> outer_product(2, 2);
     outer_product = vec * vec_res.transpose();
 
     if (!almost_equal(outer_product(0, 0), -2.0, 100) || !almost_equal(outer_product(0, 1), -4.0, 100) ||
@@ -66,8 +66,8 @@ int main() {
         error_found = true;
     }
 
-    Utilities::LinearAlgebra::Matrix<double> mat(2, 2);
-    Utilities::LinearAlgebra::Matrix<double> mat_res(2, 2);
+    Utilities::LinearAlgebra::MatrixDyn<double> mat(2, 2);
+    Utilities::LinearAlgebra::MatrixDyn<double> mat_res(2, 2);
 
     mat(0, 0) = 1;
     mat(0, 1) = 2;
@@ -134,6 +134,19 @@ int main() {
     vec_res = vec.transpose() * mat;
 
     if (!almost_equal(vec_res(0), 7.0, 100) || !almost_equal(vec_res(1), 10.0, 100)) {
+        error_found = true;
+    }
+
+    // check vec * mat (outer product)
+    Utilities::LinearAlgebra::MatrixDyn<double> mat_out(1, 2);
+
+    mat_out(0, 0) = -2;
+    mat_out(0, 1) = -4;
+
+    outer_product = vec * mat_out;
+
+    if (!almost_equal(outer_product(0, 0), -2.0, 100) || !almost_equal(outer_product(0, 1), -4.0, 100) ||
+        !almost_equal(outer_product(1, 0), -4.0, 100) || !almost_equal(outer_product(1, 1), -8.0, 100)) {
         error_found = true;
     }
 

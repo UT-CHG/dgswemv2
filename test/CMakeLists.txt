@@ -1,13 +1,23 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 #[[add_executable(
-  test_linear_algebra_exe
-  test_linear_algebra.cpp
+  test_linear_algebra_dyn_exe
+  test_linear_algebra_dyn.cpp
 )
 
 add_test(
-  Unit_linear_algebra
-  test_linear_algebra_exe
+  Unit_linear_algebra_dyn
+  test_linear_algebra_dyn_exe
+)
+
+add_executable(
+  test_linear_algebra_stat_exe
+  test_linear_algebra_stat.cpp
+)
+
+add_test(
+  Unit_linear_algebra_stat
+  test_linear_algebra_stat_exe
 )]]
 
 add_executable(
