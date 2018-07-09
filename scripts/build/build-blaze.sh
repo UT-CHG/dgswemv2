@@ -91,9 +91,9 @@ else
 fi
 
 
-EIGEN_BUILD_PATH="$BUILD_PATH/eigen"
+BLAZE_BUILD_PATH="$BUILD_PATH/blaze"
 if [ "$1" == "clean" ]; then
-    CLEAN_CMD="rm -rf $EIGEN_BUILD_PATH"
+    CLEAN_CMD="rm -rf $BLAZE_BUILD_PATH"
 
     $START_BOLD
     echo "$0 clean:"
@@ -105,7 +105,7 @@ if [ "$1" == "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${EIGEN_BUILD_PATH}"
+	echo "removing build directory ${BLAZE_BUILD_PATH}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
@@ -136,14 +136,13 @@ module list
 
 #echo "MODULES = $MODULES" >> $LOGFILE
 
-if [ ! -d "$EIGEN_BUILD_PATH" ]; then
+if [ ! -d "$BLAZE_BUILD_PATH" ]; then
     set -e
-    mkdir -p $EIGEN_BUILD_PATH
-    cd $EIGEN_BUILD_PATH
-    wget http://bitbucket.org/eigen/eigen/get/3.3.4.tar.gz
-    tar xf 3.3.4.tar.gz
-    cd eigen-eigen-5a0156e40feb
-    EIGEN_REPO_PATH=$(pwd)
+    mkdir -p $BLAZE_BUILD_PATH
+    cd $BLAZE_BUILD_PATH
+    git clone https://bitbucket.org/blaze-lib/blaze.git
+    cd blaze
+    BLAZE_REPO_PATH=$(pwd)
     mkdir build
     cd build
     CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -157,7 +156,7 @@ if [ ! -d "$EIGEN_BUILD_PATH" ]; then
                  -DCMAKE_C_COMPILER=${C_COMPILER}"
     fi
 
-    CMD="cmake ${CMAKE_FLAGS} $EIGEN_REPO_PATH"
+    CMD="cmake ${CMAKE_FLAGS} ${BLAZE_REPO_PATH}"
     echo "CMD = $CMD"
 
     $CMD
@@ -172,7 +171,7 @@ else
     $START_BOLD
     echo "or continue the build process:"
     $END_BOLD
-    echo "cd ${EIGEN_BUILD_PATH}"
+    echo "cd ${BLAZE_BUILD_PATH}"
     echo "make"
     echo "make install"
     exit 0
