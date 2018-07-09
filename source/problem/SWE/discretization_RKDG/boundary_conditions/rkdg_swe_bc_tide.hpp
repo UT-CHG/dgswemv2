@@ -29,16 +29,15 @@ class Tide {
 
     void ComputeFlux(const RKStepper& stepper,
                      const Array2D<double>& surface_normal,
-                     const std::vector<double>& sp_in,
-                     const std::vector<double>& bath_in,
-                     const std::vector<Vector<double, SWE::n_variables>>& u_in,
+                     const std::vector<Vector<double, SWE::n_variables>>& q_in,
+                     const std::vector<Vector<double, SWE::n_auxiliaries>>& aux_in,
                      std::vector<Vector<double, SWE::n_variables>>& F_hat);
 
     void GetEX(const RKStepper& stepper,
                const uint gp,
                const std::vector<double>& surface_normal,
-               const Vector<double, SWE::n_variables>& u_in,
-               Vector<double, SWE::n_variables>& u_ex);
+               const Vector<double, SWE::n_variables>& q_in,
+               Vector<double, SWE::n_variables>& q_ex);
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {
@@ -81,23 +80,22 @@ void Tide::Initialize(BoundaryType& bound) {
 
 void Tide::ComputeFlux(const RKStepper& stepper,
                        const Array2D<double>& surface_normal,
-                       const std::vector<double>& sp_in,
-                       const std::vector<double>& bath_in,
-                       const std::vector<Vector<double, SWE::n_variables>>& u_in,
+                       const std::vector<Vector<double, SWE::n_variables>>& q_in,
+                       const std::vector<Vector<double, SWE::n_auxiliaries>>& aux_in,
                        std::vector<Vector<double, SWE::n_variables>>& F_hat) {
-    Vector<double, SWE::n_variables> u_ex;
-    for (uint gp = 0; gp < u_in.size(); ++gp) {
-        this->GetEX(stepper, gp, surface_normal[gp], u_in[gp], u_ex);
+    Vector<double, SWE::n_variables> q_ex;
+    for (uint gp = 0; gp < q_in.size(); ++gp) {
+        this->GetEX(stepper, gp, surface_normal[gp], q_in[gp], q_ex);
 
-        LLF_flux(Global::g, u_in[gp], u_ex, bath_in[gp], sp_in[gp], surface_normal[gp], F_hat[gp]);
+        LLF_flux(Global::g, q_in[gp], q_ex, aux_in[gp], surface_normal[gp], F_hat[gp]);
     }
 }
 
 void Tide::GetEX(const RKStepper& stepper,
                  const uint gp,
                  const std::vector<double>& surface_normal,
-                 const Vector<double, SWE::n_variables>& u_in,
-                 Vector<double, SWE::n_variables>& u_ex) {
+                 const Vector<double, SWE::n_variables>& q_in,
+                 Vector<double, SWE::n_variables>& q_ex) {
     double ze = 0;
 
     double frequency;
@@ -113,9 +111,9 @@ void Tide::GetEX(const RKStepper& stepper,
               cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
     }
 
-    u_ex[SWE::Variables::ze] = ze;
-    u_ex[SWE::Variables::qx] = u_in[SWE::Variables::qx];
-    u_ex[SWE::Variables::qy] = u_in[SWE::Variables::qy];
+    q_ex[SWE::Variables::ze] = ze;
+    q_ex[SWE::Variables::qx] = q_in[SWE::Variables::qx];
+    q_ex[SWE::Variables::qy] = q_in[SWE::Variables::qy];
 }
 }
 }

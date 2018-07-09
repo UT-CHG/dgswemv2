@@ -20,8 +20,10 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = intface.data_in.get_ngp_boundary(intface.bound_id_in) - gp - 1;
 
-        boundary_in.h_at_gp[gp]    = boundary_in.q_at_gp[gp][SWE::Variables::ze] + boundary_in.bath_at_gp[gp];
-        boundary_ex.h_at_gp[gp_ex] = boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] + boundary_ex.bath_at_gp[gp_ex];
+        boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h] =
+            boundary_in.q_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h] =
+            boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] + boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::bath];
     }
 
     /* Compute fluxes at boundary states */
@@ -42,14 +44,15 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
         nx_in = intface.surface_normal_in[gp][GlobalCoord::x];
         ny_in = intface.surface_normal_in[gp][GlobalCoord::y];
 
-        u_in = boundary_in.q_at_gp[gp][SWE::Variables::qx] / boundary_in.h_at_gp[gp];
-        v_in = boundary_in.q_at_gp[gp][SWE::Variables::qy] / boundary_in.h_at_gp[gp];
+        u_in = boundary_in.q_at_gp[gp][SWE::Variables::qx] / boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h];
+        v_in = boundary_in.q_at_gp[gp][SWE::Variables::qy] / boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h];
 
         uuh_in = u_in * boundary_in.q_at_gp[gp][SWE::Variables::qx];
         vvh_in = v_in * boundary_in.q_at_gp[gp][SWE::Variables::qy];
         uvh_in = u_in * boundary_in.q_at_gp[gp][SWE::Variables::qy];
-        pe_in  = Global::g * (0.5 * std::pow(boundary_in.q_at_gp[gp][SWE::Variables::ze], 2) +
-                             boundary_in.q_at_gp[gp][SWE::Variables::ze] * boundary_in.bath_at_gp[gp]);
+        pe_in  = Global::g *
+                (0.5 * std::pow(boundary_in.q_at_gp[gp][SWE::Variables::ze], 2) +
+                 boundary_in.q_at_gp[gp][SWE::Variables::ze] * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath]);
 
         boundary_in.Fn_at_gp[gp][SWE::Variables::ze] =
             boundary_in.q_at_gp[gp][SWE::Variables::qx] * nx_in + boundary_in.q_at_gp[gp][SWE::Variables::qy] * ny_in;
@@ -61,14 +64,15 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
         nx_ex = intface.surface_normal_ex[gp_ex][GlobalCoord::x];
         ny_ex = intface.surface_normal_ex[gp_ex][GlobalCoord::y];
 
-        u_ex = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx] / boundary_ex.h_at_gp[gp_ex];
-        v_ex = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy] / boundary_ex.h_at_gp[gp_ex];
+        u_ex = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx] / boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h];
+        v_ex = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy] / boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h];
 
         uuh_ex = u_ex * boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx];
         vvh_ex = v_ex * boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy];
         uvh_ex = u_ex * boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy];
-        pe_ex  = Global::g * (0.5 * std::pow(boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze], 2) +
-                             boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] * boundary_ex.bath_at_gp[gp_ex]);
+        pe_ex  = Global::g *
+                (0.5 * std::pow(boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze], 2) +
+                 boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::bath]);
 
         boundary_ex.Fn_at_gp[gp_ex][SWE::Variables::ze] = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx] * nx_ex +
                                                           boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy] * ny_ex;

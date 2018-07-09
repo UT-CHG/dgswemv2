@@ -7,11 +7,12 @@ namespace SWE {
 namespace EHDG {
 struct EdgeInternal {
     EdgeInternal() = default;
-    EdgeInternal(const uint ngp) : q_avg_at_gp(ngp), q_hat_at_gp(ngp), h_hat_at_gp(ngp) {}
+    EdgeInternal(const uint ngp) : q_hat_at_gp(ngp), aux_hat_at_gp(ngp), q_init_at_gp(ngp) {}
 
-    std::vector<Vector<double, SWE::n_variables>> q_avg_at_gp;
     std::vector<Vector<double, SWE::n_variables>> q_hat_at_gp;
-    std::vector<double> h_hat_at_gp;
+    std::vector<Vector<double, SWE::n_auxiliaries>> aux_hat_at_gp;
+
+    std::vector<Vector<double, SWE::n_variables>> q_init_at_gp;
 };
 }
 }

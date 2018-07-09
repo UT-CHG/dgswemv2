@@ -68,7 +68,6 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
     this->exchanger.GetWetDryEX(wet_ex);
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
-    auto& sp_at_gp = dbound.data.spherical_projection.sp_at_gp_boundary[dbound.bound_id];
 
     BC::Land land_boundary;
 
@@ -144,8 +143,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
         LLF_flux(gravity,
                  boundary.q_at_gp[gp],
                  q_ex,
-                 boundary.bath_at_gp[gp],
-                 sp_at_gp[gp],
+                 boundary.aux_at_gp[gp],
                  dbound.surface_normal[gp],
                  boundary.F_hat_at_gp[gp]);
     }

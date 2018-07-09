@@ -39,10 +39,13 @@ static double nu = 1.5;
 const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
-constexpr uint n_variables  = 3;
-constexpr uint n_dimensions = 2;
+constexpr uint n_dimensions  = 2;
+constexpr uint n_variables   = 3;
+constexpr uint n_auxiliaries = 3;
 
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
+
+enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
 
 enum BoundaryTypes : uchar {
     land     = 0,

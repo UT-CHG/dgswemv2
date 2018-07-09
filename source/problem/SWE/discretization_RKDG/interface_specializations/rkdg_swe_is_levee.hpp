@@ -62,10 +62,7 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-    auto& sp_at_gp_in = intface.data_in.spherical_projection.sp_at_gp_boundary[intface.bound_id_in];
-
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
-    auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
 
     BC::Land land_boundary;
 
@@ -159,16 +156,14 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         LLF_flux(gravity_in,
                  boundary_in.q_at_gp[gp],
                  q_in_ex,
-                 boundary_in.bath_at_gp[gp],
-                 sp_at_gp_in[gp],
+                 boundary_in.aux_at_gp[gp],
                  intface.surface_normal_in[gp],
                  boundary_in.F_hat_at_gp[gp]);
 
         LLF_flux(gravity_ex,
                  boundary_ex.q_at_gp[gp_ex],
                  q_ex_ex,
-                 boundary_ex.bath_at_gp[gp_ex],
-                 sp_at_gp_ex[gp_ex],
+                 boundary_ex.aux_at_gp[gp_ex],
                  intface.surface_normal_ex[gp_ex],
                  boundary_ex.F_hat_at_gp[gp_ex]);
     }

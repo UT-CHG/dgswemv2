@@ -29,16 +29,15 @@ class Flow {
 
     void ComputeFlux(const RKStepper& stepper,
                      const Array2D<double>& surface_normal,
-                     const std::vector<double>& sp_in,
-                     const std::vector<double>& bath_in,
-                     const std::vector<Vector<double, SWE::n_variables>>& u_in,
+                     const std::vector<Vector<double, SWE::n_variables>>& q_in,
+                     const std::vector<Vector<double, SWE::n_auxiliaries>>& aux_in,
                      std::vector<Vector<double, SWE::n_variables>>& F_hat);
 
     void GetEX(const RKStepper& stepper,
                const uint gp,
                const std::vector<double>& surface_normal,
-               const Vector<double, SWE::n_variables>& u_in,
-               Vector<double, SWE::n_variables>& u_ex);
+               const Vector<double, SWE::n_variables>& q_in,
+               Vector<double, SWE::n_variables>& q_ex);
 };
 
 Flow::Flow(const std::vector<FlowInput>& flow_input) {
@@ -81,23 +80,22 @@ void Flow::Initialize(BoundaryType& bound) {
 
 void Flow::ComputeFlux(const RKStepper& stepper,
                        const Array2D<double>& surface_normal,
-                       const std::vector<double>& sp_in,
-                       const std::vector<double>& bath_in,
-                       const std::vector<Vector<double, SWE::n_variables>>& u_in,
+                       const std::vector<Vector<double, SWE::n_variables>>& q_in,
+                       const std::vector<Vector<double, SWE::n_auxiliaries>>& aux_in,
                        std::vector<Vector<double, SWE::n_variables>>& F_hat) {
-    Vector<double, SWE::n_variables> u_ex;
-    for (uint gp = 0; gp < u_in.size(); ++gp) {
-        this->GetEX(stepper, gp, surface_normal[gp], u_in[gp], u_ex);
+    Vector<double, SWE::n_variables> q_ex;
+    for (uint gp = 0; gp < q_in.size(); ++gp) {
+        this->GetEX(stepper, gp, surface_normal[gp], q_in[gp], q_ex);
 
-        LLF_flux(Global::g, u_in[gp], u_ex, bath_in[gp], sp_in[gp], surface_normal[gp], F_hat[gp]);
+        LLF_flux(Global::g, q_in[gp], q_ex, aux_in[gp], surface_normal[gp], F_hat[gp]);
     }
 }
 
 void Flow::GetEX(const RKStepper& stepper,
                  const uint gp,
                  const std::vector<double>& surface_normal,
-                 const Vector<double, SWE::n_variables>& u_in,
-                 Vector<double, SWE::n_variables>& u_ex) {
+                 const Vector<double, SWE::n_variables>& q_in,
+                 Vector<double, SWE::n_variables>& q_ex) {
     double qn = 0;
     double qt = 0;
 
@@ -121,9 +119,9 @@ void Flow::GetEX(const RKStepper& stepper,
     t_x = -n_y;
     t_y = n_x;
 
-    u_ex[SWE::Variables::ze] = u_in[SWE::Variables::ze];
-    u_ex[SWE::Variables::qx] = qn * n_x + qt * t_x;
-    u_ex[SWE::Variables::qy] = qn * n_y + qt * t_y;
+    q_ex[SWE::Variables::ze] = q_in[SWE::Variables::ze];
+    q_ex[SWE::Variables::qx] = qn * n_x + qt * t_x;
+    q_ex[SWE::Variables::qy] = qn * n_y + qt * t_y;
 }
 }
 }

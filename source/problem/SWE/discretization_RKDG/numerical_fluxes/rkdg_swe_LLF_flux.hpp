@@ -7,12 +7,14 @@ namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
 inline void LLF_flux(const double gravity,
-                     const Vector<double, SWE::n_variables> q_in,
-                     const Vector<double, SWE::n_variables> q_ex,
-                     const double bath,
-                     const double sp,
-                     const std::vector<double>& normal,
+                     const Vector<double, SWE::n_variables>& q_in,
+                     const Vector<double, SWE::n_variables>& q_ex,
+                     const Vector<double, SWE::n_auxiliaries>& aux,
+                     const std::vector<double>& surface_normal,
                      Vector<double, SWE::n_variables>& F_hat) {
+    double bath = aux[SWE::Auxiliaries::bath];
+    double sp   = aux[SWE::Auxiliaries::sp];
+
     double h_in = q_in[SWE::Variables::ze] + bath;
     double u_in = q_in[SWE::Variables::qx] / h_in;
     double v_in = q_in[SWE::Variables::qy] / h_in;
@@ -21,10 +23,11 @@ inline void LLF_flux(const double gravity,
     double u_ex = q_ex[SWE::Variables::qx] / h_ex;
     double v_ex = q_ex[SWE::Variables::qy] / h_ex;
 
-    double un_in = u_in * normal[GlobalCoord::x] + v_in * normal[GlobalCoord::y];
-    double un_ex = u_ex * normal[GlobalCoord::x] + v_ex * normal[GlobalCoord::y];
+    double un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
+    double un_ex = u_ex * surface_normal[GlobalCoord::x] + v_ex * surface_normal[GlobalCoord::y];
 
-    double sp_correction = std::pow(normal[GlobalCoord::x] * sp, 2) + std::pow(normal[GlobalCoord::y], 2);
+    double sp_correction =
+        std::pow(surface_normal[GlobalCoord::x] * sp, 2) + std::pow(surface_normal[GlobalCoord::y], 2);
 
     double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(gravity * h_in * sp_correction),
                                      std::abs(un_ex) + std::sqrt(gravity * h_ex * sp_correction));
@@ -60,12 +63,12 @@ inline void LLF_flux(const double gravity,
     double qy_flux_y_ex = vvh_ex + pe_ex;
 
     // compute numerical flux
-    double ze_flux_avg =
-        (ze_flux_x_in + ze_flux_x_ex) * normal[GlobalCoord::x] + (ze_flux_y_in + ze_flux_y_ex) * normal[GlobalCoord::y];
-    double qx_flux_avg =
-        (qx_flux_x_in + qx_flux_x_ex) * normal[GlobalCoord::x] + (qx_flux_y_in + qx_flux_y_ex) * normal[GlobalCoord::y];
-    double qy_flux_avg =
-        (qy_flux_x_in + qy_flux_x_ex) * normal[GlobalCoord::x] + (qy_flux_y_in + qy_flux_y_ex) * normal[GlobalCoord::y];
+    double ze_flux_avg = (ze_flux_x_in + ze_flux_x_ex) * surface_normal[GlobalCoord::x] +
+                         (ze_flux_y_in + ze_flux_y_ex) * surface_normal[GlobalCoord::y];
+    double qx_flux_avg = (qx_flux_x_in + qx_flux_x_ex) * surface_normal[GlobalCoord::x] +
+                         (qx_flux_y_in + qx_flux_y_ex) * surface_normal[GlobalCoord::y];
+    double qy_flux_avg = (qy_flux_x_in + qy_flux_x_ex) * surface_normal[GlobalCoord::x] +
+                         (qy_flux_y_in + qy_flux_y_ex) * surface_normal[GlobalCoord::y];
 
     F_hat[SWE::Variables::ze] =
         0.5 * (ze_flux_avg + max_eigenvalue * (q_in[SWE::Variables::ze] - q_ex[SWE::Variables::ze]));

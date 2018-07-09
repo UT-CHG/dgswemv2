@@ -22,16 +22,18 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
 
     // assemble flux
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-        internal.h_at_gp[gp] = internal.q_at_gp[gp][SWE::Variables::ze] + internal.bath_at_gp[gp];
+        internal.aux_at_gp[gp][SWE::Auxiliaries::h] =
+            internal.q_at_gp[gp][SWE::Variables::ze] + internal.aux_at_gp[gp][SWE::Auxiliaries::bath];
 
-        u_at_gp = internal.q_at_gp[gp][SWE::Variables::qx] / internal.h_at_gp[gp];
-        v_at_gp = internal.q_at_gp[gp][SWE::Variables::qy] / internal.h_at_gp[gp];
+        u_at_gp = internal.q_at_gp[gp][SWE::Variables::qx] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+        v_at_gp = internal.q_at_gp[gp][SWE::Variables::qy] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
 
         uuh_at_gp = u_at_gp * internal.q_at_gp[gp][SWE::Variables::qx];
         vvh_at_gp = v_at_gp * internal.q_at_gp[gp][SWE::Variables::qy];
         uvh_at_gp = u_at_gp * internal.q_at_gp[gp][SWE::Variables::qy];
-        pe_at_gp  = Global::g * (0.5 * std::pow(internal.q_at_gp[gp][SWE::Variables::ze], 2) +
-                                internal.q_at_gp[gp][SWE::Variables::ze] * internal.bath_at_gp[gp]);
+        pe_at_gp =
+            Global::g * (0.5 * std::pow(internal.q_at_gp[gp][SWE::Variables::ze], 2) +
+                         internal.q_at_gp[gp][SWE::Variables::ze] * internal.aux_at_gp[gp][SWE::Auxiliaries::bath]);
 
         internal.Fx_at_gp[gp][SWE::Variables::ze] = internal.q_at_gp[gp][SWE::Variables::qx];
         internal.Fx_at_gp[gp][SWE::Variables::qx] = (uuh_at_gp + pe_at_gp);

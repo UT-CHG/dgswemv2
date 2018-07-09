@@ -23,10 +23,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-    auto& sp_at_gp_in = intface.data_in.spherical_projection.sp_at_gp_boundary[intface.bound_id_in];
-
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
-    auto& sp_at_gp_ex = intface.data_ex.spherical_projection.sp_at_gp_boundary[intface.bound_id_ex];
 
     // assemble numerical fluxes
     uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
@@ -37,8 +34,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         LLF_flux(Global::g,
                  boundary_in.q_at_gp[gp],
                  boundary_ex.q_at_gp[gp_ex],
-                 boundary_in.bath_at_gp[gp],
-                 sp_at_gp_in[gp],
+                 boundary_in.aux_at_gp[gp],
                  intface.surface_normal_in[gp],
                  boundary_in.F_hat_at_gp[gp]);
 
@@ -62,9 +58,8 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             land_boundary.ComputeFlux(stepper,
                                       intface.surface_normal_ex,
-                                      sp_at_gp_ex,
-                                      boundary_ex.bath_at_gp,
                                       boundary_ex.q_at_gp,
+                                      boundary_ex.aux_at_gp,
                                       boundary_ex.F_hat_at_gp);
 
             net_volume_flux_in = 0;
@@ -76,8 +71,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 LLF_flux(0.0,
                          boundary_ex.q_at_gp[gp_ex],
                          boundary_in.q_at_gp[gp],
-                         boundary_ex.bath_at_gp[gp_ex],
-                         sp_at_gp_ex[gp_ex],
+                         boundary_ex.aux_at_gp[gp_ex],
                          intface.surface_normal_ex[gp_ex],
                          boundary_ex.F_hat_at_gp[gp_ex]);
             }
@@ -95,9 +89,8 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             land_boundary.ComputeFlux(stepper,
                                       intface.surface_normal_in,
-                                      sp_at_gp_in,
-                                      boundary_in.bath_at_gp,
                                       boundary_in.q_at_gp,
+                                      boundary_in.aux_at_gp,
                                       boundary_in.F_hat_at_gp);
 
             net_volume_flux_in = 0;
@@ -109,8 +102,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 LLF_flux(0.0,
                          boundary_in.q_at_gp[gp],
                          boundary_ex.q_at_gp[gp_ex],
-                         boundary_in.bath_at_gp[gp],
-                         sp_at_gp_in[gp],
+                         boundary_in.aux_at_gp[gp],
                          intface.surface_normal_in[gp],
                          boundary_in.F_hat_at_gp[gp]);
             }

@@ -9,8 +9,7 @@ struct Internal {
     Internal() = default;
     Internal(const uint ngp)
         : q_at_gp(ngp),
-          bath_at_gp(ngp),
-          h_at_gp(ngp),
+          aux_at_gp(ngp),
           Fx_at_gp(ngp),
           Fy_at_gp(ngp),
           source_at_gp(ngp),
@@ -21,8 +20,7 @@ struct Internal {
           bath_deriv_wrt_y_at_gp(ngp) {}
 
     std::vector<Vector<double, SWE::n_variables>> q_at_gp;
-    std::vector<double> bath_at_gp;
-    std::vector<double> h_at_gp;
+    std::vector<Vector<double, SWE::n_auxiliaries>> aux_at_gp;
 
     std::vector<Vector<double, SWE::n_variables>> Fx_at_gp;
     std::vector<Vector<double, SWE::n_variables>> Fy_at_gp;

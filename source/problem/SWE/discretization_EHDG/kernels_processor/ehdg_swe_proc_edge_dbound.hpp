@@ -17,10 +17,10 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
 
-        edge_internal.q_avg_at_gp[gp] = (boundary.q_at_gp[gp] + q_ex) / 2.0;
+        edge_internal.q_init_at_gp[gp] = (boundary.q_at_gp[gp] + q_ex) / 2.0;
     }
 
-    edge_dbound.L2Projection(edge_internal.q_avg_at_gp, edge_state.q_hat);
+    edge_dbound.L2Projection(edge_internal.q_init_at_gp, edge_state.q_hat);
 
     /* Newton-Raphson iterator */
 
@@ -58,7 +58,8 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
     edge_dbound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_internal.h_hat_at_gp[gp] = edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.bath_at_gp[gp];
+        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
+            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
     }
 
     edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
@@ -75,7 +76,8 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
     edge_dbound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_internal.h_hat_at_gp[gp] = edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.bath_at_gp[gp];
+        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
+            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
     }
 
     /* Assemble global kernels */

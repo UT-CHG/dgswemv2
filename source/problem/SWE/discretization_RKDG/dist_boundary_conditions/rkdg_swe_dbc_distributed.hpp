@@ -33,7 +33,6 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
     this->exchanger.GetWetDryEX(wet_ex);
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
-    auto& sp_at_gp = dbound.data.spherical_projection.sp_at_gp_boundary[dbound.bound_id];
 
     Vector<double, SWE::n_variables> q_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
@@ -42,8 +41,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
         LLF_flux(Global::g,
                  boundary.q_at_gp[gp],
                  q_ex,
-                 boundary.bath_at_gp[gp],
-                 sp_at_gp[gp],
+                 boundary.aux_at_gp[gp],
                  dbound.surface_normal[gp],
                  boundary.F_hat_at_gp[gp]);
     }
@@ -68,7 +66,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
             BC::Land land_boundary;
 
             land_boundary.ComputeFlux(
-                stepper, dbound.surface_normal, sp_at_gp, boundary.bath_at_gp, boundary.q_at_gp, boundary.F_hat_at_gp);
+                stepper, dbound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);
 
             net_volume_flux_in = 0;
         } else if (!wet_in) {  // water flowing to dry IN element
@@ -78,8 +76,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
                 LLF_flux(0.0,
                          boundary.q_at_gp[gp],
                          q_ex,
-                         boundary.bath_at_gp[gp],
-                         sp_at_gp[gp],
+                         boundary.aux_at_gp[gp],
                          dbound.surface_normal[gp],
                          boundary.F_hat_at_gp[gp]);
             }

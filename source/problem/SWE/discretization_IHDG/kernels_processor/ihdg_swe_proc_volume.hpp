@@ -24,16 +24,17 @@ void Problem::prepare_volume_kernel(const RKStepper& stepper, ElementType& elt) 
     double uuh_at_gp, vvh_at_gp, uvh_at_gp, pe_at_gp;
 
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-        internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+        internal.aux_at_gp[gp][SWE::Auxiliaries::h] =
+            internal.ze_at_gp[gp] + internal.aux_at_gp[gp][SWE::Auxiliaries::bath];
 
-        u_at_gp = internal.qx_at_gp[gp] / internal.h_at_gp[gp];
-        v_at_gp = internal.qy_at_gp[gp] / internal.h_at_gp[gp];
+        u_at_gp = internal.qx_at_gp[gp] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+        v_at_gp = internal.qy_at_gp[gp] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
 
         uuh_at_gp = u_at_gp * internal.qx_at_gp[gp];
         vvh_at_gp = v_at_gp * internal.qy_at_gp[gp];
         uvh_at_gp = u_at_gp * internal.qy_at_gp[gp];
-        pe_at_gp =
-            Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
+        pe_at_gp  = Global::g * (0.5 * std::pow(internal.ze_at_gp[gp], 2) +
+                                internal.ze_at_gp[gp] * internal.aux_at_gp[gp][SWE::Auxiliaries::bath]);
 
         local.delta_ze_kernel_at_gp[gp] = 1.0 / stepper.GetDT();  // there is a good reason this should be set only once
         local.delta_qx_kernel_at_gp[gp] = 1.0 / stepper.GetDT();  // there is a good reason this should be set only once
@@ -44,11 +45,11 @@ void Problem::prepare_volume_kernel(const RKStepper& stepper, ElementType& elt) 
         // local.delta_ze_grad_x_kernel_at_gp[Variables::ze][gp] = 0.0;
         // local.delta_ze_grad_y_kernel_at_gp[Variables::ze][gp] = 0.0;
         local.delta_ze_grad_x_kernel_at_gp[Variables::qx][gp] =
-            -std::pow(u_at_gp, 2) + Global::g * internal.h_at_gp[gp];
+            -std::pow(u_at_gp, 2) + Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::h];
         local.delta_ze_grad_y_kernel_at_gp[Variables::qx][gp] = -u_at_gp * v_at_gp;
         local.delta_ze_grad_x_kernel_at_gp[Variables::qy][gp] = -u_at_gp * v_at_gp;
         local.delta_ze_grad_y_kernel_at_gp[Variables::qy][gp] =
-            -std::pow(v_at_gp, 2) + Global::g * internal.h_at_gp[gp];
+            -std::pow(v_at_gp, 2) + Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::h];
 
         /* there is a good reason this should be set only once */
         local.delta_qx_grad_x_kernel_at_gp[Variables::ze][gp] =
