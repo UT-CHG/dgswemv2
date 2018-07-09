@@ -47,16 +47,11 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
+
 find_package(Eigen3 REQUIRED)
 find_package(blaze REQUIRED)
-
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-
-#[[if(blaze_FOUND)
-   add_library(blaze_target INTERFACE)
-   target_link_libraries(blaze_target INTERFACE blaze::blaze)
-endif()]]
 
 if(USE_OMPI)
   find_package(OpenMP REQUIRED)
