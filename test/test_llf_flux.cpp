@@ -19,26 +19,29 @@ bool test_configuration(const int configuration,
                         const double true_qy_flux) {
     bool error_found = false;
 
-    double ze_flux, qx_flux, qy_flux;
+    Vector<double, 3> q_in{ze_in, qx_in, qy_in};
+    Vector<double, 3> q_ex{ze_ex, qx_ex, qy_ex};
+    Vector<double, 3> aux_in{bath, ze_in + bath, sp};
 
-    SWE::RKDG::LLF_flux(
-        SWE::Global::g, ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, sp, normal, ze_flux, qx_flux, qy_flux);
+    Vector<double, 3> F_hat;
 
-    if (!Utilities::almost_equal(ze_flux, true_ze_flux)) {
+    SWE::RKDG::LLF_flux(SWE::Global::g, q_in, q_ex, aux_in, normal, F_hat);
+
+    if (!Utilities::almost_equal(F_hat[0], true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";
-        std::cerr << "Got: " << ze_flux << " Should be:  " << true_ze_flux << "\n";
+        std::cerr << "Got: " << F_hat[0] << " Should be:  " << true_ze_flux << "\n";
         error_found = true;
     }
 
-    if (!Utilities::almost_equal(qx_flux, true_qx_flux)) {
+    if (!Utilities::almost_equal(F_hat[1], true_qx_flux)) {
         std::cerr << "Error in configuration " << configuration << " in x-momentum flux\n";
-        std::cerr << "Got: " << qx_flux << " Should be:  " << true_qx_flux << "\n";
+        std::cerr << "Got: " << F_hat[1] << " Should be:  " << true_qx_flux << "\n";
         error_found = true;
     }
 
-    if (!Utilities::almost_equal(qy_flux, true_qy_flux)) {
+    if (!Utilities::almost_equal(F_hat[2], true_qy_flux)) {
         std::cerr << "Error in configuration 1 in y-momentum flux\n";
-        std::cerr << "Got: " << qy_flux << " Should be:  " << true_qy_flux << "\n";
+        std::cerr << "Got: " << F_hat[2] << " Should be:  " << true_qy_flux << "\n";
         error_found = true;
     }
 

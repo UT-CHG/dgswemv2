@@ -121,7 +121,7 @@ add_test(
   test_boundary_interface_exe
 )
 
-#[[add_executable(
+add_executable(
   test_edges_exe
   test_edges.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -135,7 +135,7 @@ add_test(
 add_test(
   Unit_edges
   test_edges_exe
-)]]
+)
 
 add_executable(
   test_rk_stepper_exe
@@ -148,7 +148,7 @@ add_test(
   test_rk_stepper_exe
 )
 
-#[[add_executable(
+add_executable(
   test_llf_flux_exe
   test_llf_flux.cpp
 )
@@ -156,9 +156,9 @@ add_test(
 add_test(
   Unit_llf_flux
   test_llf_flux_exe
-)]]
+)
 
-#[[add_executable(
+add_executable(
   test_wetting_drying_exe
   test_wetting_drying.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -172,7 +172,7 @@ add_test(
 add_test(
   Unit_wetting_drying
   test_wetting_drying_exe
-)]]
+)
 
 add_executable(
   test_mesh_metadata_exe
