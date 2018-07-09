@@ -29,6 +29,15 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
+if(COMPILER_WARNINGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif()
+
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+if(SET_VERBOSE)
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+endif()
+
 get_filename_component (default_prefix "../install" ABSOLUTE)
 set (CMAKE_INSTALL_PREFIX ${default_prefix} CACHE STRING
       "Choose the installation directory; by default it installs in install."
@@ -38,6 +47,13 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(blaze REQUIRED)
+
+#[[if(blaze_FOUND)
+   add_library(blaze_target INTERFACE)
+   target_link_libraries(blaze_target INTERFACE blaze::blaze)
+endif()]]
 
 if(USE_OMPI)
   find_package(OpenMP REQUIRED)
@@ -51,14 +67,26 @@ if(USE_HPX)
   find_package(HPX REQUIRED)
 endif()
 
-if(COMPILER_WARNINGS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
+list (APPEND SOURCES
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-if(SET_VERBOSE)
-  set(CMAKE_VERBOSE_MAKEFILE ON)
-endif()
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+)
+
+list(APPEND SWE_SOURCES
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_parser/swe_parser.cpp
+)
 
 include_directories(source)
 
@@ -74,14 +102,6 @@ if(RKDG_SWE)
 endif()
 
 if(EHDG_SWE)
-  find_package(Eigen3 REQUIRED)
-
-  find_package( blaze )
-  if( blaze_FOUND )
-     add_library( blaze_target INTERFACE )
-     target_link_libraries( blaze_target INTERFACE blaze::blaze )
-  endif()
-
   add_subdirectory(source/problem/SWE/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_swe_manufactured_solution)
@@ -89,8 +109,6 @@ if(EHDG_SWE)
 endif()
 
 if(IHDG_SWE)
-  find_package(Eigen3 REQUIRED)
-
   add_subdirectory(source/problem/SWE/discretization_IHDG)
   #if(BUILD_EXAMPLES)
   #  add_subdirectory(examples/ehdg_swe_manufactured_solution)

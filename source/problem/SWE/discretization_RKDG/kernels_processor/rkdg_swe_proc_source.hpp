@@ -28,10 +28,10 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute contribution of hydrostatic pressure
             internal.source_at_gp[gp][SWE::Variables::qx] += Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::sp] *
-                                                             internal.bath_deriv_wrt_x_at_gp[gp] *
+                                                             internal.dbath_at_gp[gp][GlobalCoord::x] *
                                                              internal.q_at_gp[gp][SWE::Variables::ze];
             internal.source_at_gp[gp][SWE::Variables::qy] +=
-                Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.q_at_gp[gp][SWE::Variables::ze];
+                Global::g * internal.dbath_at_gp[gp][GlobalCoord::y] * internal.q_at_gp[gp][SWE::Variables::ze];
         }
 
         if (SWE::SourceTerms::bottom_friction) {

@@ -11,8 +11,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
-        uint ID = elt.GetID();
-
         auto& shape = elt.GetShape();
 
         auto& state    = elt.data.state[0];
@@ -29,16 +27,18 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.L2Projection(bathymetry, state.bath);
 
         std::vector<double> bath_at_gp(ngp);
+        std::vector<double> dbath_dx_at_gp(ngp);
+        std::vector<double> dbath_dy_at_gp(ngp);
 
         elt.ComputeNodalUgp(bathymetry, bath_at_gp);
-
-        elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry, internal.bath_deriv_wrt_x_at_gp);
-        elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry, internal.bath_deriv_wrt_y_at_gp);
+        elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry, dbath_dx_at_gp);
+        elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry, dbath_dy_at_gp);
 
         for (uint gp = 0; gp < ngp; gp++) {
             internal.aux_at_gp[gp][SWE::Auxiliaries::bath] = bath_at_gp[gp];
+            internal.dbath_at_gp[gp][GlobalCoord::x]       = dbath_dx_at_gp[gp];
+            internal.dbath_at_gp[gp][GlobalCoord::y]       = dbath_dy_at_gp[gp];
         }
-
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             std::vector<double> y_node;
 
@@ -81,9 +81,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
         auto& shape_in = intface.GetShapeIN();
-
-        auto& state_in = intface.data_in.state[0];
-        auto& state_ex = intface.data_ex.state[0];
 
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
@@ -143,7 +140,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
         auto& shape = bound.GetShape();
 
-        auto& state    = bound.data.state[0];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
         uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
@@ -374,7 +370,6 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();
 
-        auto& state    = dbound.data.state[0];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
 
         uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);

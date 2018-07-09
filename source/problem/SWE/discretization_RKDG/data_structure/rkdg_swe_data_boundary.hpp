@@ -11,6 +11,7 @@ struct Boundary {
 
     std::vector<Vector<double, SWE::n_variables>> q_at_gp;
     std::vector<Vector<double, SWE::n_auxiliaries>> aux_at_gp;
+
     std::vector<Vector<double, SWE::n_variables>> F_hat_at_gp;
 
 #ifdef HAS_HPX
