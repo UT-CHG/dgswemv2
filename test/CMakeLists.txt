@@ -350,7 +350,7 @@ add_test(
 )
 
 if(USE_HPX)
-  add_executable(
+  #[[add_executable(
     test_rkdg_swe_serialization_exe
     test_rkdg_swe_serialization.cpp
   )
@@ -363,7 +363,7 @@ if(USE_HPX)
   add_test(
     Unit_rkdg_swe_serialization
     test_rkdg_swe_serialization_exe
-  )
+  )]]
 
   add_executable(
     test_shape_serialization_exe

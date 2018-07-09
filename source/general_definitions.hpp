@@ -25,7 +25,9 @@
 #include <time.h>
 
 #include "edge_types.hpp"
+
 #ifdef HAS_HPX
+#include "utilities/blaze_serialization.hpp"
 #include "simulation/simulation_RKDG/load_balancer/serialization_headers.hpp"
 #endif
 
