@@ -31,13 +31,10 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         std::vector<double> dbath_dy_at_gp(ngp);
 
         elt.ComputeNodalUgp(bathymetry, bath_at_gp);
-        elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry, dbath_dx_at_gp);
-        elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry, dbath_dy_at_gp);
+        elt.ComputeNodalDUgp(bathymetry, internal.dbath_at_gp);
 
         for (uint gp = 0; gp < ngp; gp++) {
             internal.aux_at_gp[gp][SWE::Auxiliaries::bath] = bath_at_gp[gp];
-            internal.dbath_at_gp[gp][GlobalCoord::x]       = dbath_dx_at_gp[gp];
-            internal.dbath_at_gp[gp][GlobalCoord::y]       = dbath_dy_at_gp[gp];
         }
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {

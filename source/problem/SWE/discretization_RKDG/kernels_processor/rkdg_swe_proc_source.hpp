@@ -60,41 +60,37 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         }
 
         if (SWE::SourceTerms::meteo_forcing) {
-            elt.ComputeNodalUgp(source.tau_s[GlobalCoord::x], internal.tau_s_at_gp[GlobalCoord::x]);
-            elt.ComputeNodalUgp(source.tau_s[GlobalCoord::y], internal.tau_s_at_gp[GlobalCoord::y]);
-
-            elt.ComputeNodalDUgp(GlobalCoord::x, source.p_atm, internal.dp_atm_at_gp[GlobalCoord::x]);
-            elt.ComputeNodalDUgp(GlobalCoord::y, source.p_atm, internal.dp_atm_at_gp[GlobalCoord::y]);
+            elt.ComputeNodalUgp(source.tau_s, internal.tau_s_at_gp);
+            elt.ComputeNodalDUgp(source.p_atm, internal.dp_atm_at_gp);
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute surface friction contribution
                 internal.source_at_gp[gp][SWE::Variables::qx] +=
-                    internal.tau_s_at_gp[GlobalCoord::x][gp] / Global::rho_water;
+                    internal.tau_s_at_gp[gp][GlobalCoord::x] / Global::rho_water;
                 internal.source_at_gp[gp][SWE::Variables::qy] +=
-                    internal.tau_s_at_gp[GlobalCoord::y][gp] / Global::rho_water;
+                    internal.tau_s_at_gp[gp][GlobalCoord::y] / Global::rho_water;
 
                 // compute atmospheric pressure contribution
                 internal.source_at_gp[gp][SWE::Variables::qx] -=
                     internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * internal.aux_at_gp[gp][SWE::Auxiliaries::h] *
-                    internal.dp_atm_at_gp[GlobalCoord::x][gp] / Global::rho_water;
+                    internal.dp_atm_at_gp[gp][GlobalCoord::x] / Global::rho_water;
                 internal.source_at_gp[gp][SWE::Variables::qy] -= internal.aux_at_gp[gp][SWE::Auxiliaries::h] *
-                                                                 internal.dp_atm_at_gp[GlobalCoord::y][gp] /
+                                                                 internal.dp_atm_at_gp[gp][GlobalCoord::y] /
                                                                  Global::rho_water;
             }
         }
 
         if (SWE::SourceTerms::tide_potential) {
-            elt.ComputeNodalDUgp(GlobalCoord::x, source.tide_pot, internal.dtide_pot_at_gp[GlobalCoord::x]);
-            elt.ComputeNodalDUgp(GlobalCoord::y, source.tide_pot, internal.dtide_pot_at_gp[GlobalCoord::y]);
+            elt.ComputeNodalDUgp(source.tide_pot, internal.dtide_pot_at_gp);
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute tide potential contribution
                 internal.source_at_gp[gp][SWE::Variables::qx] +=
                     Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::sp] *
-                    internal.aux_at_gp[gp][SWE::Auxiliaries::h] * internal.dtide_pot_at_gp[GlobalCoord::x][gp];
+                    internal.aux_at_gp[gp][SWE::Auxiliaries::h] * internal.dtide_pot_at_gp[gp][GlobalCoord::x];
                 internal.source_at_gp[gp][SWE::Variables::qy] += Global::g *
                                                                  internal.aux_at_gp[gp][SWE::Auxiliaries::h] *
-                                                                 internal.dtide_pot_at_gp[GlobalCoord::y][gp];
+                                                                 internal.dtide_pot_at_gp[gp][GlobalCoord::y];
             }
         }
 

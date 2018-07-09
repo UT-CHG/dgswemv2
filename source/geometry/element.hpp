@@ -71,6 +71,8 @@ class Element {
     void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
     template <typename T>
     void ComputeDUgp(const uint dir, const std::vector<T>& u, std::vector<T>& du_gp);
+    template <typename T>
+    void ComputeDUgp(const std::vector<T>& u, std::vector<Vector<T, dimension>>& du_gp);
 
     template <typename T>
     void ComputeLinearUgp(const std::vector<T>& u_lin, std::vector<T>& u_lin_gp);
@@ -87,6 +89,8 @@ class Element {
     void ComputeNodalUgp(const std::vector<T>& u_nodal, std::vector<T>& u_nodal_gp);
     template <typename T>
     void ComputeNodalDUgp(const uint dir, const std::vector<T>& u_nodal, std::vector<T>& du_nodal_gp);
+    template <typename T>
+    void ComputeNodalDUgp(const std::vector<T>& u_nodal, std::vector<Vector<T, dimension>>& du_nodal_gp);
 
     template <typename T>
     T Integration(const std::vector<T>& u_gp);
@@ -353,6 +357,21 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename T>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const std::vector<T>& u,
+                                                                             std::vector<Vector<T, dimension>>& du_gp) {
+    std::fill(du_gp.begin(), du_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u.size(); dof++) {
+        for (uint gp = 0; gp < du_gp.size(); gp++) {
+            for (uint dir = 0; dir < dimension; dir++) {
+                du_gp[gp][dir] += u[dof] * this->dphi_gp[dof][dir][gp];
+            }
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename T>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<T>& u_lin,
                                                                                   std::vector<T>& u_lin_gp) {
     std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
@@ -422,6 +441,23 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUg
     for (uint dof = 0; dof < u_nodal.size(); dof++) {
         for (uint gp = 0; gp < du_nodal_gp.size(); gp++) {
             du_nodal_gp[gp] += u_nodal[dof] * this->shape.dpsi_gp[dof][dir][gp];
+        }
+    }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename T>
+inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(
+    const std::vector<T>& u_nodal,
+    std::vector<Vector<T, dimension>>& du_nodal_gp) {
+    // *** //
+    std::fill(du_nodal_gp.begin(), du_nodal_gp.end(), 0.0);
+
+    for (uint dof = 0; dof < u_nodal.size(); dof++) {
+        for (uint gp = 0; gp < du_nodal_gp.size(); gp++) {
+            for (uint dir = 0; dir < dimension; dir++) {
+                du_nodal_gp[gp][dir] += u_nodal[dof] * this->shape.dpsi_gp[dof][dir][gp];
+            }
         }
     }
 }

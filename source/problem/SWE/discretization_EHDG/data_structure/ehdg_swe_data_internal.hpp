@@ -14,9 +14,9 @@ struct Internal {
           Fy_at_gp(ngp),
           source_at_gp(ngp),
           dbath_at_gp(ngp),
-          tau_s_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
-          dp_atm_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}),
-          dtide_pot_at_gp({std::vector<double>(ngp), std::vector<double>(ngp)}) {}
+          tau_s_at_gp(ngp),
+          dp_atm_at_gp(ngp),
+          dtide_pot_at_gp(ngp) {}
 
     std::vector<Vector<double, SWE::n_variables>> q_at_gp;
     std::vector<Vector<double, SWE::n_auxiliaries>> aux_at_gp;
@@ -26,10 +26,9 @@ struct Internal {
 
     std::vector<Vector<double, SWE::n_variables>> source_at_gp;
     std::vector<Vector<double, SWE::n_dimensions>> dbath_at_gp;
-
-    std::array<std::vector<double>, 2> tau_s_at_gp;
-    std::array<std::vector<double>, 2> dp_atm_at_gp;
-    std::array<std::vector<double>, 2> dtide_pot_at_gp;
+    std::vector<Vector<double, SWE::n_dimensions>> tau_s_at_gp;
+    std::vector<Vector<double, SWE::n_dimensions>> dp_atm_at_gp;
+    std::vector<Vector<double, SWE::n_dimensions>> dtide_pot_at_gp;
 };
 }
 }
