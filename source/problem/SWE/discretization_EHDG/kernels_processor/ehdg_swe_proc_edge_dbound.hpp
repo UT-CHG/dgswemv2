@@ -1,9 +1,6 @@
 #ifndef EHDG_SWE_PROC_EDGE_DBOUND_HPP
 #define EHDG_SWE_PROC_EDGE_DBOUND_HPP
 
-#include <eigen3/Eigen/Dense>
-#include "problem/SWE/discretization_EHDG/stabilization_parameters/ehdg_swe_stabilization_params.hpp"
-
 namespace SWE {
 namespace EHDG {
 template <typename EdgeDistributedType>
@@ -14,21 +11,16 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
     /* Take average of in/ex state as initial trace state */
-    double ze_ex, qx_ex, qy_ex;
-    double ze_flux_dot_n_ex, qx_flux_dot_n_ex, qy_flux_dot_n_ex;
+    Vector<double, SWE::n_variables> q_ex;
+    Vector<double, SWE::n_variables> Fn_ex;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_dbound.boundary.boundary_condition.exchanger.GetEX(
-            gp, ze_ex, qx_ex, qy_ex, ze_flux_dot_n_ex, qx_flux_dot_n_ex, qy_flux_dot_n_ex);
+        edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
 
-        edge_internal.ze_avg_at_gp[gp] = (boundary.ze_at_gp[gp] + ze_ex) / 2.0;
-        edge_internal.qx_avg_at_gp[gp] = (boundary.qx_at_gp[gp] + qx_ex) / 2.0;
-        edge_internal.qy_avg_at_gp[gp] = (boundary.qy_at_gp[gp] + qy_ex) / 2.0;
+        edge_internal.q_avg_at_gp[gp] = (boundary.q_at_gp[gp] + q_ex) / 2.0;
     }
 
-    edge_dbound.L2Projection(edge_internal.ze_avg_at_gp, edge_state.ze_hat);
-    edge_dbound.L2Projection(edge_internal.qx_avg_at_gp, edge_state.qx_hat);
-    edge_dbound.L2Projection(edge_internal.qy_avg_at_gp, edge_state.qy_hat);
+    edge_dbound.L2Projection(edge_internal.q_avg_at_gp, edge_state.q_hat);
 
     /* Newton-Raphson iterator */
 
@@ -37,7 +29,7 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
 
     uint iter = 0;
     while (true) {
-        Problem::global_edge_boundary_iteration(stepper, edge_dbound);
+        Problem::global_edge_distributed_iteration(stepper, edge_dbound);
 
         iter++;
 
@@ -49,11 +41,8 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
         q_norm_prev = 0;
 
         for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-            q_norm += std::pow(edge_state.ze_hat[dof], 2) + std::pow(edge_state.qx_hat[dof], 2) +
-                      std::pow(edge_state.qy_hat[dof], 2);
-
-            q_norm_prev += std::pow(edge_state.ze_hat_prev[dof], 2) + std::pow(edge_state.qx_hat_prev[dof], 2) +
-                           std::pow(edge_state.qy_hat_prev[dof], 2);
+            q_norm += sqrNorm(edge_state.q_hat[dof]);
+            q_norm_prev += sqrNorm(edge_state.q_hat_prev[dof]);
         }
 
         q_norm      = std::sqrt(q_norm);
@@ -66,12 +55,10 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
 
     /* Compute Numerical Flux */
 
-    edge_dbound.ComputeUgp(edge_state.ze_hat, edge_internal.ze_hat_at_gp);
-    edge_dbound.ComputeUgp(edge_state.qx_hat, edge_internal.qx_hat_at_gp);
-    edge_dbound.ComputeUgp(edge_state.qy_hat, edge_internal.qy_hat_at_gp);
+    edge_dbound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_internal.h_hat_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
+        edge_internal.h_hat_at_gp[gp] = edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.bath_at_gp[gp];
     }
 
     edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
@@ -85,12 +72,10 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    edge_dbound.ComputeUgp(edge_state.ze_hat, edge_internal.ze_hat_at_gp);
-    edge_dbound.ComputeUgp(edge_state.qx_hat, edge_internal.qx_hat_at_gp);
-    edge_dbound.ComputeUgp(edge_state.qy_hat, edge_internal.qy_hat_at_gp);
+    edge_dbound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_internal.h_hat_at_gp[gp] = edge_internal.ze_hat_at_gp[gp] + boundary.bath_at_gp[gp];
+        edge_internal.h_hat_at_gp[gp] = edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.bath_at_gp[gp];
     }
 
     /* Assemble global kernels */
@@ -99,35 +84,29 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     /* Assemble global system */
 
-    for (uint dof_row = 0; dof_row < edge_dbound.edge_data.get_ndof(); ++dof_row) {
-        for (uint dof_col = 0; dof_col < edge_dbound.edge_data.get_ndof(); ++dof_col) {
-            edge_global.global_matrix(3 * dof_row, 3 * dof_col) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_ze_hat_kernel_at_gp[Variables::ze]);
-            edge_global.global_matrix(3 * dof_row + 1, 3 * dof_col) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_ze_hat_kernel_at_gp[Variables::qx]);
-            edge_global.global_matrix(3 * dof_row + 2, 3 * dof_col) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_ze_hat_kernel_at_gp[Variables::qy]);
+    for (uint dof_i = 0; dof_i < edge_dbound.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_dbound.edge_data.get_ndof(); ++dof_j) {
+            Matrix<double, 3, 3> A =
+                edge_dbound.IntegrationLambdaLambda(dof_i, dof_j, edge_global.delta_hat_kernel_at_gp);
 
-            edge_global.global_matrix(3 * dof_row, 3 * dof_col + 1) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_qx_hat_kernel_at_gp[Variables::ze]);
-            edge_global.global_matrix(3 * dof_row + 1, 3 * dof_col + 1) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_qx_hat_kernel_at_gp[Variables::qx]);
-            edge_global.global_matrix(3 * dof_row + 2, 3 * dof_col + 1) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_qx_hat_kernel_at_gp[Variables::qy]);
+            edge_global.global_matrix(3 * dof_i, 3 * dof_j)     = A(0, 0);
+            edge_global.global_matrix(3 * dof_i + 1, 3 * dof_j) = A(1, 0);
+            edge_global.global_matrix(3 * dof_i + 2, 3 * dof_j) = A(2, 0);
 
-            edge_global.global_matrix(3 * dof_row, 3 * dof_col + 2) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_qy_hat_kernel_at_gp[Variables::ze]);
-            edge_global.global_matrix(3 * dof_row + 1, 3 * dof_col + 2) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_qy_hat_kernel_at_gp[Variables::qx]);
-            edge_global.global_matrix(3 * dof_row + 2, 3 * dof_col + 2) = edge_dbound.IntegrationLambdaLambda(
-                dof_row, dof_col, edge_global.delta_qy_hat_kernel_at_gp[Variables::qy]);
+            edge_global.global_matrix(3 * dof_i, 3 * dof_j + 1)     = A(0, 1);
+            edge_global.global_matrix(3 * dof_i + 1, 3 * dof_j + 1) = A(1, 1);
+            edge_global.global_matrix(3 * dof_i + 2, 3 * dof_j + 1) = A(2, 1);
+
+            edge_global.global_matrix(3 * dof_i, 3 * dof_j + 2)     = A(0, 2);
+            edge_global.global_matrix(3 * dof_i + 1, 3 * dof_j + 2) = A(1, 2);
+            edge_global.global_matrix(3 * dof_i + 2, 3 * dof_j + 2) = A(2, 2);
         }
 
-        edge_global.global_rhs(3 * dof_row) = edge_dbound.IntegrationLambda(dof_row, edge_global.ze_rhs_kernel_at_gp);
-        edge_global.global_rhs(3 * dof_row + 1) =
-            edge_dbound.IntegrationLambda(dof_row, edge_global.qx_rhs_kernel_at_gp);
-        edge_global.global_rhs(3 * dof_row + 2) =
-            edge_dbound.IntegrationLambda(dof_row, edge_global.qy_rhs_kernel_at_gp);
+        Vector<double, 3> b = edge_dbound.IntegrationLambda(dof_i, edge_global.rhs_kernel_at_gp);
+
+        edge_global.global_rhs(3 * dof_i)     = b[0];
+        edge_global.global_rhs(3 * dof_i + 1) = b[1];
+        edge_global.global_rhs(3 * dof_i + 2) = b[2];
     }
 
     /* Solve global system for delta_q */
@@ -136,14 +115,12 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     /* Increment q */
 
-    for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-        edge_state.ze_hat_prev[dof] = edge_state.ze_hat[dof];
-        edge_state.qx_hat_prev[dof] = edge_state.qx_hat[dof];
-        edge_state.qy_hat_prev[dof] = edge_state.qy_hat[dof];
+    edge_state.q_hat_prev = edge_state.q_hat;
 
-        edge_state.ze_hat[dof] += edge_global.global_delta_q(3 * dof);
-        edge_state.qx_hat[dof] += edge_global.global_delta_q(3 * dof + 1);
-        edge_state.qy_hat[dof] += edge_global.global_delta_q(3 * dof + 2);
+    for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
+        edge_state.q_hat[dof][SWE::Variables::ze] += edge_global.global_delta_q(3 * dof);
+        edge_state.q_hat[dof][SWE::Variables::qx] += edge_global.global_delta_q(3 * dof + 1);
+        edge_state.q_hat[dof][SWE::Variables::qy] += edge_global.global_delta_q(3 * dof + 2);
     }
 }
 }

@@ -9,7 +9,6 @@
 
 namespace SWE {
 namespace RKDG {
-
 namespace DBC {
 class DistributedLevee {
   public:
@@ -75,11 +74,11 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
-    double ze_ex, qx_ex, qy_ex;
+    Vector<double, SWE::n_variables> q_ex;
     double gravity;
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        this->exchanger.GetEX(gp, ze_ex, qx_ex, qy_ex);
+        this->exchanger.GetEX(gp, q_ex);
 
         H_levee     = this->H_bar_gp[gp];
         C_subcrit   = this->C_subcrit_gp[gp];
@@ -87,21 +86,13 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
         gravity = Global::g;
 
-        h_above_levee_in = boundary.ze_at_gp[gp] - H_levee;
-        h_above_levee_ex = ze_ex - H_levee;
+        h_above_levee_in = boundary.q_at_gp[gp][SWE::Variables::ze] - H_levee;
+        h_above_levee_ex = q_ex[SWE::Variables::ze] - H_levee;
 
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
             // reflective boundary
-            land_boundary.GetEX(stepper,
-                                gp,
-                                dbound.surface_normal,
-                                boundary.ze_at_gp,
-                                boundary.qx_at_gp,
-                                boundary.qy_at_gp,
-                                ze_ex,
-                                qx_ex,
-                                qy_ex);
+            land_boundary.GetEX(stepper, dbound.surface_normal[gp], boundary.q_at_gp[gp], q_ex);
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 
@@ -120,9 +111,9 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
                 qt_in = 0.0;
             }
 
-            ze_ex = boundary.ze_at_gp[gp];
-            qx_ex = qn_in * n_x + qt_in * t_x;
-            qy_ex = qn_in * n_y + qt_in * t_y;
+            q_ex[SWE::Variables::ze] = boundary.q_at_gp[gp][SWE::Variables::ze];
+            q_ex[SWE::Variables::qx] = qn_in * n_x + qt_in * t_x;
+            q_ex[SWE::Variables::qy] = qn_in * n_y + qt_in * t_y;
         } else if (h_above_levee_in < h_above_levee_ex) {  // overtopping from ex to in
             double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
 
@@ -141,9 +132,9 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
                 qt_ex = 0.0;
             }
 
-            ze_ex = boundary.ze_at_gp[gp];
-            qx_ex = -(qn_ex * n_x + qt_ex * t_x);
-            qy_ex = -(qn_ex * n_y + qt_ex * t_y);
+            q_ex[SWE::Variables::ze] = boundary.q_at_gp[gp][SWE::Variables::ze];
+            q_ex[SWE::Variables::qx] = -(qn_ex * n_x + qt_ex * t_x);
+            q_ex[SWE::Variables::qy] = -(qn_ex * n_y + qt_ex * t_y);
 
             if (!wet_in) {
                 gravity = 0.0;
@@ -151,18 +142,12 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
         }
 
         LLF_flux(gravity,
-                 boundary.ze_at_gp[gp],
-                 ze_ex,
-                 boundary.qx_at_gp[gp],
-                 qx_ex,
-                 boundary.qy_at_gp[gp],
-                 qy_ex,
+                 boundary.q_at_gp[gp],
+                 q_ex,
                  boundary.bath_at_gp[gp],
                  sp_at_gp[gp],
                  dbound.surface_normal[gp],
-                 boundary.ze_numerical_flux_at_gp[gp],
-                 boundary.qx_numerical_flux_at_gp[gp],
-                 boundary.qy_numerical_flux_at_gp[gp]);
+                 boundary.F_hat_at_gp[gp]);
     }
 }
 }

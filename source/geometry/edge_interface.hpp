@@ -19,13 +19,19 @@ class EdgeInterface {
   public:
     EdgeInterface(InterfaceType& interface);
 
-    void L2Projection(const std::vector<double>& u_gp, std::vector<double>& projection);
+    template <typename T>
+    void L2Projection(const std::vector<T>& u_gp, std::vector<T>& projection);
 
-    void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
-    double IntegrationLambda(const uint dof, const std::vector<double>& u_gp);
-    double IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const std::vector<double>& u_gp);
+    template <typename T>
+    void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
 
-    void ApplyMinv(const std::vector<double>& rhs, std::vector<double>& solution);
+    template <typename T>
+    T IntegrationLambda(const uint dof, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+
+    template <typename T>
+    void ApplyMinv(const std::vector<T>& rhs, std::vector<T>& solution);
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
@@ -81,9 +87,10 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(const std::vector<double>& u_gp,
-                                                                                    std::vector<double>& projection) {
-    std::vector<double> rhs;
+template <typename T>
+void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(const std::vector<T>& u_gp,
+                                                                                    std::vector<T>& projection) {
+    std::vector<T> rhs;
 
     for (uint dof = 0; dof < this->lambda_gp.size(); dof++) {
         rhs.push_back(this->IntegrationLambda(dof, u_gp));
@@ -93,8 +100,9 @@ void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Project
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ComputeUgp(const std::vector<double>& u,
-                                                                                  std::vector<double>& u_gp) {
+template <typename T>
+void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ComputeUgp(const std::vector<T>& u,
+                                                                                  std::vector<T>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -105,10 +113,12 @@ void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ComputeUg
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-double EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambda(
-    const uint dof,
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+T EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambda(const uint dof,
+                                                                                      const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_lambda_fact[dof][gp];
@@ -118,12 +128,15 @@ double EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::Integra
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-double EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambdaLambda(
+template <typename T>
+T EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambdaLambda(
     const uint dof_i,
     const uint dof_j,
-    const std::vector<double>& u_gp) {
+    const std::vector<T>& u_gp) {
     // *** //
-    double integral = 0;
+    T integral;
+
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_lambda_lambda_fact[dof_i][dof_j][gp];
@@ -133,8 +146,9 @@ double EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::Integra
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ApplyMinv(const std::vector<double>& rhs,
-                                                                                 std::vector<double>& solution) {
+template <typename T>
+void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ApplyMinv(const std::vector<T>& rhs,
+                                                                                 std::vector<T>& solution) {
     if (this->m_inv.first) {  // diagonal
         for (uint i = 0; i < rhs.size(); i++) {
             solution[i] = this->m_inv.second[0][i] * rhs[i];

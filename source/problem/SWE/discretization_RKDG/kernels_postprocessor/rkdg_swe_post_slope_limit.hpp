@@ -15,17 +15,9 @@ void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, El
 
         auto& state = elt.data.state[stage + 1];
 
-        elt.ProjectBasisToLinear(state.ze, sl_state.ze_lin);
-        elt.ProjectBasisToLinear(state.qx, sl_state.qx_lin);
-        elt.ProjectBasisToLinear(state.qy, sl_state.qy_lin);
-
-        elt.ComputeLinearUbaryctr(sl_state.ze_lin, sl_state.ze_at_baryctr);
-        elt.ComputeLinearUbaryctr(sl_state.qx_lin, sl_state.qx_at_baryctr);
-        elt.ComputeLinearUbaryctr(sl_state.qy_lin, sl_state.qy_at_baryctr);
-
-        elt.ComputeLinearUmidpts(sl_state.ze_lin, sl_state.ze_at_midpts);
-        elt.ComputeLinearUmidpts(sl_state.qx_lin, sl_state.qx_at_midpts);
-        elt.ComputeLinearUmidpts(sl_state.qy_lin, sl_state.qy_at_midpts);
+        elt.ProjectBasisToLinear(state.q, sl_state.q_lin);
+        elt.ComputeLinearUbaryctr(sl_state.q_lin, sl_state.q_at_baryctr);
+        elt.ComputeLinearUmidpts(sl_state.q_lin, sl_state.q_at_midpts);
     }
 }
 
@@ -41,13 +33,8 @@ void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, 
     sl_state_ex.wet_neigh[intface.bound_id_ex] = wd_state_in.wet;
 
     if (wd_state_in.wet && wd_state_ex.wet) {
-        sl_state_in.ze_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.ze_at_baryctr;
-        sl_state_in.qx_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qx_at_baryctr;
-        sl_state_in.qy_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.qy_at_baryctr;
-
-        sl_state_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.ze_at_baryctr;
-        sl_state_ex.qx_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qx_at_baryctr;
-        sl_state_ex.qy_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.qy_at_baryctr;
+        sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.q_at_baryctr;
+        sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.q_at_baryctr;
     }
 }
 
@@ -59,9 +46,7 @@ void Problem::slope_limiting_prepare_boundary_kernel(const RKStepper& stepper, B
     sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
 
     if (wd_state.wet) {
-        sl_state.ze_at_baryctr_neigh[bound.bound_id] = sl_state.ze_at_baryctr;
-        sl_state.qx_at_baryctr_neigh[bound.bound_id] = sl_state.qx_at_baryctr;
-        sl_state.qy_at_baryctr_neigh[bound.bound_id] = sl_state.qy_at_baryctr;
+        sl_state.q_at_baryctr_neigh[bound.bound_id] = sl_state.q_at_baryctr;
     }
 }
 
@@ -75,8 +60,7 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
     if (wd_state.wet) {
         auto& sl_state = dbound.data.slope_limit_state;
 
-        dbound.boundary_condition.exchanger.SetPostprocEX(
-            sl_state.ze_at_baryctr, sl_state.qx_at_baryctr, sl_state.qy_at_baryctr);
+        dbound.boundary_condition.exchanger.SetPostprocEX(sl_state.q_at_baryctr);
     }
 }
 
@@ -92,9 +76,7 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper
     sl_state.wet_neigh[dbound.bound_id] = wet_ex;
 
     if (wd_state.wet && wet_ex) {
-        dbound.boundary_condition.exchanger.GetPostprocEX(sl_state.ze_at_baryctr_neigh[dbound.bound_id],
-                                                          sl_state.qx_at_baryctr_neigh[dbound.bound_id],
-                                                          sl_state.qy_at_baryctr_neigh[dbound.bound_id]);
+        dbound.boundary_condition.exchanger.GetPostprocEX(sl_state.q_at_baryctr_neigh[dbound.bound_id]);
     }
 }
 
@@ -109,72 +91,45 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
 
         auto& state = elt.data.state[stage + 1];
 
-        double u = sl_state.qx_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
-        double v = sl_state.qy_at_baryctr / (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr);
-        double c = std::sqrt(Global::g * (sl_state.ze_at_baryctr + sl_state.bath_at_baryctr));
+        double u = sl_state.q_at_baryctr[SWE::Variables::qx] /
+                   (sl_state.q_at_baryctr[SWE::Variables::ze] + sl_state.bath_at_baryctr);
+        double v = sl_state.q_at_baryctr[SWE::Variables::qy] /
+                   (sl_state.q_at_baryctr[SWE::Variables::ze] + sl_state.bath_at_baryctr);
+        double c = std::sqrt(Global::g * (sl_state.q_at_baryctr[SWE::Variables::ze] + sl_state.bath_at_baryctr));
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
             uint element_1 = bound;
             uint element_2 = (bound + 1) % 3;
 
-            sl_state.R[0][0] = 1.0;
-            sl_state.R[1][0] = u + c * sl_state.surface_normal[bound][GlobalCoord::x];
-            sl_state.R[2][0] = v + c * sl_state.surface_normal[bound][GlobalCoord::y];
+            sl_state.R(0, 0) = 1.0;
+            sl_state.R(1, 0) = u + c * sl_state.surface_normal[bound][GlobalCoord::x];
+            sl_state.R(2, 0) = v + c * sl_state.surface_normal[bound][GlobalCoord::y];
 
-            sl_state.R[0][1] = 0.0;
-            sl_state.R[1][1] = -sl_state.surface_normal[bound][GlobalCoord::y];
-            sl_state.R[2][1] = sl_state.surface_normal[bound][GlobalCoord::x];
+            sl_state.R(0, 1) = 0.0;
+            sl_state.R(1, 1) = -sl_state.surface_normal[bound][GlobalCoord::y];
+            sl_state.R(2, 1) = sl_state.surface_normal[bound][GlobalCoord::x];
 
-            sl_state.R[0][2] = 1.0;
-            sl_state.R[1][2] = u - c * sl_state.surface_normal[bound][GlobalCoord::x];
-            sl_state.R[2][2] = v - c * sl_state.surface_normal[bound][GlobalCoord::y];
+            sl_state.R(0, 2) = 1.0;
+            sl_state.R(1, 2) = u - c * sl_state.surface_normal[bound][GlobalCoord::x];
+            sl_state.R(2, 2) = v - c * sl_state.surface_normal[bound][GlobalCoord::y];
 
-            double det = sl_state.R[0][0] * sl_state.R[1][1] * sl_state.R[2][2] +
-                         sl_state.R[0][1] * sl_state.R[1][2] * sl_state.R[2][0] +
-                         sl_state.R[0][2] * sl_state.R[1][0] * sl_state.R[2][1] -
-                         sl_state.R[0][0] * sl_state.R[1][2] * sl_state.R[2][1] -
-                         sl_state.R[0][1] * sl_state.R[1][0] * sl_state.R[2][2] -
-                         sl_state.R[0][2] * sl_state.R[1][1] * sl_state.R[2][0];
+            sl_state.L = inv(sl_state.R);
 
-            sl_state.L[0][0] = (sl_state.R[1][1] * sl_state.R[2][2] - sl_state.R[1][2] * sl_state.R[2][1]) / det;
-            sl_state.L[1][0] = (sl_state.R[1][2] * sl_state.R[2][0] - sl_state.R[1][0] * sl_state.R[2][2]) / det;
-            sl_state.L[2][0] = (sl_state.R[1][0] * sl_state.R[2][1] - sl_state.R[1][1] * sl_state.R[2][0]) / det;
+            sl_state.w_midpt_char = sl_state.L * sl_state.q_at_midpts[bound];
 
-            sl_state.L[0][1] = (sl_state.R[0][2] * sl_state.R[2][1] - sl_state.R[0][1] * sl_state.R[2][2]) / det;
-            sl_state.L[1][1] = (sl_state.R[0][0] * sl_state.R[2][2] - sl_state.R[0][2] * sl_state.R[2][0]) / det;
-            sl_state.L[2][1] = (sl_state.R[0][1] * sl_state.R[2][0] - sl_state.R[0][0] * sl_state.R[2][1]) / det;
-
-            sl_state.L[0][2] = (sl_state.R[0][1] * sl_state.R[1][2] - sl_state.R[0][2] * sl_state.R[1][1]) / det;
-            sl_state.L[1][2] = (sl_state.R[0][2] * sl_state.R[1][0] - sl_state.R[0][0] * sl_state.R[1][2]) / det;
-            sl_state.L[2][2] = (sl_state.R[0][0] * sl_state.R[1][1] - sl_state.R[0][1] * sl_state.R[1][0]) / det;
-
-            for (uint var = 0; var < 3; var++) {
-                sl_state.w_midpt_char[var] = sl_state.L[var][0] * sl_state.ze_at_midpts[bound] +
-                                             sl_state.L[var][1] * sl_state.qx_at_midpts[bound] +
-                                             sl_state.L[var][2] * sl_state.qy_at_midpts[bound];
-
-                sl_state.w_baryctr_char[var][0] = sl_state.L[var][0] * sl_state.ze_at_baryctr +
-                                                  sl_state.L[var][1] * sl_state.qx_at_baryctr +
-                                                  sl_state.L[var][2] * sl_state.qy_at_baryctr;
-
-                sl_state.w_baryctr_char[var][1] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_1] +
-                                                  sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_1] +
-                                                  sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_1];
-
-                sl_state.w_baryctr_char[var][2] = sl_state.L[var][0] * sl_state.ze_at_baryctr_neigh[element_2] +
-                                                  sl_state.L[var][1] * sl_state.qx_at_baryctr_neigh[element_2] +
-                                                  sl_state.L[var][2] * sl_state.qy_at_baryctr_neigh[element_2];
-            }
+            blaze::column<0>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr;
+            blaze::column<1>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
+            blaze::column<2>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
 
             double w_tilda;
             double w_delta;
 
             for (uint var = 0; var < 3; var++) {
-                w_tilda = sl_state.w_midpt_char[var] - sl_state.w_baryctr_char[var][0];
+                w_tilda = sl_state.w_midpt_char[var] - sl_state.w_baryctr_char(var, 0);
 
                 w_delta =
-                    sl_state.alpha_1[bound] * (sl_state.w_baryctr_char[var][1] - sl_state.w_baryctr_char[var][0]) +
-                    sl_state.alpha_2[bound] * (sl_state.w_baryctr_char[var][2] - sl_state.w_baryctr_char[var][0]);
+                    sl_state.alpha_1[bound] * (sl_state.w_baryctr_char(var, 1) - sl_state.w_baryctr_char(var, 0)) +
+                    sl_state.alpha_2[bound] * (sl_state.w_baryctr_char(var, 2) - sl_state.w_baryctr_char(var, 0));
 
                 // TVB modified minmod
                 if (std::abs(w_tilda) <= PostProcessing::M * sl_state.r_sq[bound]) {
@@ -187,18 +142,14 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
                 }
             }
 
-            for (uint var = 0; var < 3; var++) {
-                sl_state.delta[var][bound] = sl_state.R[var][0] * sl_state.delta_char[0] +
-                                             sl_state.R[var][1] * sl_state.delta_char[1] +
-                                             sl_state.R[var][2] * sl_state.delta_char[2];
-            }
+            blaze::column(sl_state.delta, bound) = sl_state.R * sl_state.delta_char;
         }
 
         for (uint var = 0; var < 3; var++) {
             double delta_sum = 0.0;
 
             for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                delta_sum += sl_state.delta[var][bound];
+                delta_sum += sl_state.delta(var, bound);
             }
 
             if (delta_sum != 0.0) {
@@ -206,56 +157,46 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
                 double negative = 0.0;
 
                 for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                    positive += std::max(0.0, sl_state.delta[var][bound]);
-                    negative += std::max(0.0, -sl_state.delta[var][bound]);
+                    positive += std::max(0.0, sl_state.delta(var, bound));
+                    negative += std::max(0.0, -sl_state.delta(var, bound));
                 }
 
                 double theta_positive = std::min(1.0, negative / positive);
                 double theta_negative = std::min(1.0, positive / negative);
 
                 for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                    sl_state.delta[var][bound] = theta_positive * std::max(0.0, sl_state.delta[var][bound]) -
-                                                 theta_negative * std::max(0.0, -sl_state.delta[var][bound]);
+                    sl_state.delta(var, bound) = theta_positive * std::max(0.0, sl_state.delta(var, bound)) -
+                                                 theta_negative * std::max(0.0, -sl_state.delta(var, bound));
                 }
             }
         }
 
-        Array2D<double> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+        Matrix<double, SWE::n_variables, SWE::n_variables> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            sl_state.ze_at_vrtx[vrtx] = sl_state.ze_at_baryctr;
-            sl_state.qx_at_vrtx[vrtx] = sl_state.qx_at_baryctr;
-            sl_state.qy_at_vrtx[vrtx] = sl_state.qy_at_baryctr;
+            sl_state.q_at_vrtx[vrtx] = sl_state.q_at_baryctr;
 
             for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                sl_state.ze_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[0][bound];
-                sl_state.qx_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[1][bound];
-                sl_state.qy_at_vrtx[vrtx] += T[vrtx][bound] * sl_state.delta[2][bound];
+                sl_state.q_at_vrtx[vrtx][SWE::Variables::ze] += T(vrtx, bound) * sl_state.delta(0, bound);
+                sl_state.q_at_vrtx[vrtx][SWE::Variables::qx] += T(vrtx, bound) * sl_state.delta(1, bound);
+                sl_state.q_at_vrtx[vrtx][SWE::Variables::qy] += T(vrtx, bound) * sl_state.delta(2, bound);
             }
         }
 
-        std::vector<bool> limit(3, false);
+        bool limit = false;
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            if (std::abs((sl_state.ze_at_vrtx[vrtx] - sl_state.ze_lin[vrtx]) / sl_state.ze_lin[vrtx]) > 1.0e-6) {
-                limit[0] = true;
-            }
+            double del_q_norm = blaze::norm(sl_state.q_at_vrtx[vrtx] - sl_state.q_lin[vrtx]);
+            double q_norm     = blaze::norm(sl_state.q_lin[vrtx]);
 
-            if (std::abs((sl_state.qx_at_vrtx[vrtx] - sl_state.qx_lin[vrtx]) / sl_state.qy_lin[vrtx]) > 1.0e-6) {
-                limit[1] = true;
-            }
-
-            if (std::abs((sl_state.qy_at_vrtx[vrtx] - sl_state.qy_lin[vrtx]) / sl_state.qy_lin[vrtx]) > 1.0e-6) {
-                limit[2] = true;
+            if (del_q_norm / q_norm > 1.0e-6) {
+                limit = true;
             }
         }
 
-        if (limit[0])
-            elt.ProjectLinearToBasis(sl_state.ze_at_vrtx, state.ze);
-        if (limit[1])
-            elt.ProjectLinearToBasis(sl_state.qx_at_vrtx, state.qx);
-        if (limit[2])
-            elt.ProjectLinearToBasis(sl_state.qy_at_vrtx, state.qy);
+        if (limit) {
+            elt.ProjectLinearToBasis(sl_state.q_at_vrtx, state.q);
+        }
     }
 }
 }

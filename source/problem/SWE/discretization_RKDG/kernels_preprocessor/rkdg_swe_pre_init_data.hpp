@@ -68,23 +68,17 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
             uint n_node = elt.GetShape().nodal_coordinates.size();
 
-            std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
-            elt.L2Projection(ze_node, state.ze);
+            Vector<double, SWE::n_variables> u_init{problem_specific_input.initial_conditions.ze_initial,
+                                                    problem_specific_input.initial_conditions.qx_initial,
+                                                    problem_specific_input.initial_conditions.qy_initial};
 
-            std::vector<double> qx_node(n_node, problem_specific_input.initial_conditions.qx_initial);
-            elt.L2Projection(qx_node, state.qx);
+            std::vector<Vector<double, SWE::n_variables>> u_node(n_node, u_init);
 
-            std::vector<double> qy_node(n_node, problem_specific_input.initial_conditions.qy_initial);
-            elt.L2Projection(qy_node, state.qy);
+            elt.L2Projection(u_node, state.q);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
-            auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
-            elt.L2Projection(ze_init, state.ze);
+            auto u_init = [](Point<2>& pt) { return SWE::ic_u(0, pt); };
 
-            auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
-            elt.L2Projection(qx_init, state.qx);
-
-            auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
-            elt.L2Projection(qy_init, state.qy);
+            elt.L2Projection(u_init, state.q);
         }
     });
 
@@ -208,19 +202,19 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
         wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
 
-        elt.ProjectBasisToLinear(state.ze, wd_state.ze_lin);
+        elt.ProjectBasisToLinear(state.q, wd_state.q_lin);
 
-        elt.ComputeLinearUvrtx(wd_state.ze_lin, wd_state.ze_at_vrtx);
+        elt.ComputeLinearUvrtx(wd_state.q_lin, wd_state.q_at_vrtx);
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
-            wd_state.h_at_vrtx[vrtx] = wd_state.ze_at_vrtx[vrtx] + wd_state.bath_at_vrtx[vrtx];
+            wd_state.h_at_vrtx[vrtx] = wd_state.q_at_vrtx[vrtx][SWE::Variables::ze] + wd_state.bath_at_vrtx[vrtx];
         }
 
         bool set_wet_element = true;
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
-                wd_state.ze_at_vrtx[vrtx] = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
+                wd_state.q_at_vrtx[vrtx][SWE::Variables::ze] = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
 
                 set_wet_element = false;
             }
@@ -231,13 +225,14 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         } else {
             wd_state.wet = false;
 
-            elt.ProjectLinearToBasis(wd_state.ze_at_vrtx, state.ze);
-            std::fill(state.qx.begin(), state.qx.end(), 0.0);
-            std::fill(state.qy.begin(), state.qy.end(), 0.0);
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+                wd_state.q_at_vrtx[vrtx][SWE::Variables::qx] = 0.0;
+                wd_state.q_at_vrtx[vrtx][SWE::Variables::qy] = 0.0;
+            }
 
-            std::fill(state.rhs_ze.begin(), state.rhs_ze.end(), 0.0);
-            std::fill(state.rhs_qx.begin(), state.rhs_qx.end(), 0.0);
-            std::fill(state.rhs_qy.begin(), state.rhs_qy.end(), 0.0);
+            elt.ProjectLinearToBasis(wd_state.q_at_vrtx, state.q);
+
+            std::fill(state.rhs.begin(), state.rhs.end(), 0.0);
         }
     });
 

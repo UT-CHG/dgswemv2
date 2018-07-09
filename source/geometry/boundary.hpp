@@ -34,13 +34,16 @@ class Boundary {
 
     std::vector<uint>& GetNodeID() { return this->node_ID; }
 
-    void ComputeUgp(const std::vector<double>& u, std::vector<double>& u_gp);
+    template <typename T>
+    void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
 
     void ComputeNodalUgp(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
     void ComputeBoundaryNodalUgp(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
 
-    double Integration(const std::vector<double>& u_gp);
-    double IntegrationPhi(const uint dof, const std::vector<double>& u_gp);
+    template <typename T>
+    T Integration(const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhi(const uint dof, const std::vector<T>& u_gp);
 
   public:
     using BoundaryIntegrationType = IntegrationType;
@@ -96,8 +99,9 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeUgp(const std::vector<double>& u,
-                                                                                     std::vector<double>& u_gp) {
+template <typename T>
+inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeUgp(const std::vector<T>& u,
+                                                                                     std::vector<T>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -134,9 +138,11 @@ inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::Comput
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-inline double Boundary<dimension, IntegrationType, DataType, ConditonType>::Integration(
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::Integration(const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_fact[gp];
@@ -146,10 +152,12 @@ inline double Boundary<dimension, IntegrationType, DataType, ConditonType>::Inte
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-inline double Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(
-    const uint dof,
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(const uint dof,
+                                                                                      const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact[dof][gp];

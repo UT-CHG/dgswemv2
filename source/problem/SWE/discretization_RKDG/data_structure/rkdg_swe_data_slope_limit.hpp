@@ -7,27 +7,20 @@ namespace SWE {
 namespace RKDG {
 struct SlopeLimit {
     SlopeLimit() = default;
-    SlopeLimit(const uint nbound)
+    SlopeLimit(const uint nvrtx, const uint nbound)
         : surface_normal(nbound, std::vector<double>(2)),
           midpts_coord(nbound),
           baryctr_coord_neigh(nbound),
           alpha_1(nbound),
           alpha_2(nbound),
           r_sq(nbound),
-          ze_lin(nbound),
-          qx_lin(nbound),
-          qy_lin(nbound),
-          ze_at_vrtx(nbound),
-          qx_at_vrtx(nbound),
-          qy_at_vrtx(nbound),
-          ze_at_midpts(nbound),
-          qx_at_midpts(nbound),
-          qy_at_midpts(nbound),
+          q_lin(nvrtx),
+          q_at_vrtx(nvrtx),
+          q_at_midpts(nbound),
+          bath_at_vrtx(nvrtx),
           bath_at_midpts(nbound),
           wet_neigh(nbound),
-          ze_at_baryctr_neigh(nbound),
-          qx_at_baryctr_neigh(nbound),
-          qy_at_baryctr_neigh(nbound) {}
+          q_at_baryctr_neigh(nbound) {}
 
     Array2D<double> surface_normal;
 
@@ -39,73 +32,54 @@ struct SlopeLimit {
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
 
-    std::vector<double> ze_lin;
-    std::vector<double> qx_lin;
-    std::vector<double> qy_lin;
+    std::vector<Vector<double, SWE::n_variables>> q_lin;
 
-    double ze_at_baryctr;
-    double qx_at_baryctr;
-    double qy_at_baryctr;
+    Vector<double, SWE::n_variables> q_at_baryctr;
+    std::vector<Vector<double, SWE::n_variables>> q_at_vrtx;
+    std::vector<Vector<double, SWE::n_variables>> q_at_midpts;
+
     double bath_at_baryctr;
-
-    std::vector<double> ze_at_vrtx;
-    std::vector<double> qx_at_vrtx;
-    std::vector<double> qy_at_vrtx;
-
-    std::vector<double> ze_at_midpts;
-    std::vector<double> qx_at_midpts;
-    std::vector<double> qy_at_midpts;
+    std::vector<double> bath_at_vrtx;
     std::vector<double> bath_at_midpts;
 
     std::vector<bool> wet_neigh;
-    std::vector<double> ze_at_baryctr_neigh;
-    std::vector<double> qx_at_baryctr_neigh;
-    std::vector<double> qy_at_baryctr_neigh;
+    std::vector<Vector<double, SWE::n_variables>> q_at_baryctr_neigh;
 
-    std::vector<double> w_midpt_char = std::vector<double>(3);
-    Array2D<double> w_baryctr_char   = Array2D<double>(3, std::vector<double>(3));
+    Matrix<double, SWE::n_variables, SWE::n_variables> L;
+    Matrix<double, SWE::n_variables, SWE::n_variables> R;
 
-    std::vector<double> delta_char = std::vector<double>(3);
-    Array2D<double> delta          = Array2D<double>(3, std::vector<double>(3));
+    Vector<double, SWE::n_variables> w_midpt_char;
+    Matrix<double, SWE::n_variables, SWE::n_variables> w_baryctr_char;
 
-    Array2D<double> L = Array2D<double>(3, std::vector<double>(3));
-    Array2D<double> R = Array2D<double>(3, std::vector<double>(3));
+    Vector<double, SWE::n_variables> delta_char;
+    Matrix<double, SWE::n_variables, SWE::n_variables> delta;
 
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & surface_normal
+        /*ar  & surface_normal
             & baryctr_coord
             & midpts_coord
             & baryctr_coord_neigh
             & alpha_1
             & alpha_2
             & r_sq
-            & ze_lin
-            & qx_lin
-            & qy_lin
-            & ze_at_baryctr
-            & qx_at_baryctr
-            & qy_at_baryctr
+            & q_lin
+            & q_at_baryctr
+            & q_at_vrtx
+            & q_at_midpts
             & bath_at_baryctr
-            & ze_at_vrtx
-            & qx_at_vrtx
-            & qy_at_vrtx
-            & ze_at_midpts
-            & qx_at_midpts
-            & qy_at_midpts
+            & bath_at_vrtx
             & bath_at_midpts
             & wet_neigh
-            & ze_at_baryctr_neigh
-            & qx_at_baryctr_neigh
-            & qy_at_baryctr_neigh
+            & q_at_baryctr_neigh
             & w_midpt_char
             & w_baryctr_char
             & delta_char
             & delta
             & L
-            & R;
+            & R;*/
         // clang-format on
     }
 #endif

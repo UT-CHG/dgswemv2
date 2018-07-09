@@ -34,22 +34,14 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    double ze_ex, qx_ex, qy_ex;
-    double ze_flux_dot_n_ex, qx_flux_dot_n_ex, qy_flux_dot_n_ex;
+    Vector<double, SWE::n_variables> q_ex;
+    Vector<double, SWE::n_variables> Fn_ex;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_dbound.boundary.boundary_condition.exchanger.GetEX(
-            gp, ze_ex, qx_ex, qy_ex, ze_flux_dot_n_ex, qx_flux_dot_n_ex, qy_flux_dot_n_ex);
+        edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
 
-        // Add F_in * n_in terms
-        edge_global.ze_rhs_kernel_at_gp[gp] = -boundary.ze_flux_dot_n_at_gp[gp];
-        edge_global.qx_rhs_kernel_at_gp[gp] = -boundary.qx_flux_dot_n_at_gp[gp];
-        edge_global.qy_rhs_kernel_at_gp[gp] = -boundary.qy_flux_dot_n_at_gp[gp];
-
-        // Add F_ex * n_ex terms
-        edge_global.ze_rhs_kernel_at_gp[gp] += -ze_flux_dot_n_ex;
-        edge_global.qx_rhs_kernel_at_gp[gp] += -qx_flux_dot_n_ex;
-        edge_global.qy_rhs_kernel_at_gp[gp] += -qy_flux_dot_n_ex;
+        edge_global.rhs_kernel_at_gp[gp] = -boundary.Fn_at_gp[gp];
+        edge_global.rhs_kernel_at_gp[gp] += -Fn_ex;
     }
 
     // Add tau terms
@@ -60,11 +52,7 @@ template <typename EdgeDistributedType>
 void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        boundary.ze_numerical_flux_at_gp[gp] = boundary.ze_flux_dot_n_at_gp[gp];
-        boundary.qx_numerical_flux_at_gp[gp] = boundary.qx_flux_dot_n_at_gp[gp];
-        boundary.qy_numerical_flux_at_gp[gp] = boundary.qy_flux_dot_n_at_gp[gp];
-    }
+    boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
     // Add tau terms
     add_flux_tau_terms_bound_LF(edge_dbound);

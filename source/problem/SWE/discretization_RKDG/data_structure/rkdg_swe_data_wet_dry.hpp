@@ -8,28 +8,16 @@ namespace RKDG {
 struct WetDry {
     WetDry() = default;
     WetDry(const uint nvrtx)
-        : ze_lin(nvrtx),
-          qx_lin(nvrtx),
-          qy_lin(nvrtx),
-          ze_at_vrtx(nvrtx),
-          qx_at_vrtx(nvrtx),
-          qy_at_vrtx(nvrtx),
-          bath_at_vrtx(nvrtx),
-          h_at_vrtx(nvrtx),
-          h_at_vrtx_temp(nvrtx) {}
+        : q_lin(nvrtx), q_at_vrtx(nvrtx), bath_at_vrtx(nvrtx), h_at_vrtx(nvrtx), h_at_vrtx_temp(nvrtx) {}
 
     bool wet;
     bool went_completely_dry;
 
     double bath_min;
 
-    std::vector<double> ze_lin;
-    std::vector<double> qx_lin;
-    std::vector<double> qy_lin;
+    std::vector<Vector<double, SWE::n_variables>> q_lin;
 
-    std::vector<double> ze_at_vrtx;
-    std::vector<double> qx_at_vrtx;
-    std::vector<double> qy_at_vrtx;
+    std::vector<Vector<double, SWE::n_variables>> q_at_vrtx;
     std::vector<double> bath_at_vrtx;
     std::vector<double> h_at_vrtx;
     std::vector<double> h_at_vrtx_temp;
@@ -38,18 +26,14 @@ struct WetDry {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & wet
+        /*ar  & wet
             & went_completely_dry   
             & bath_min
-            & ze_lin
-            & qx_lin
-            & qy_lin
-            & ze_at_vrtx
-            & qx_at_vrtx
-            & qy_at_vrtx
+            & q_lin
+            & q_at_vrtx
             & bath_at_vrtx
             & h_at_vrtx
-            & h_at_vrtx_temp;
+            & h_at_vrtx_temp;*/
         // clang-format on
     }
 #endif

@@ -47,23 +47,17 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
             uint n_node = elt.GetShape().nodal_coordinates.size();
 
-            std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
-            elt.L2Projection(ze_node, state.ze);
+            Vector<double, SWE::n_variables> u_init{problem_specific_input.initial_conditions.ze_initial,
+                                                    problem_specific_input.initial_conditions.qx_initial,
+                                                    problem_specific_input.initial_conditions.qy_initial};
 
-            std::vector<double> qx_node(n_node, problem_specific_input.initial_conditions.qx_initial);
-            elt.L2Projection(qx_node, state.qx);
+            std::vector<Vector<double, SWE::n_variables>> u_node(n_node, u_init);
 
-            std::vector<double> qy_node(n_node, problem_specific_input.initial_conditions.qy_initial);
-            elt.L2Projection(qy_node, state.qy);
+            elt.L2Projection(u_node, state.q);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
-            auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
-            elt.L2Projection(ze_init, state.ze);
+            auto u_init = [](Point<2>& pt) { return SWE::ic_u(0, pt); };
 
-            auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
-            elt.L2Projection(qx_init, state.qx);
-
-            auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
-            elt.L2Projection(qy_init, state.qy);
+            elt.L2Projection(u_init, state.q);
         }
     });
 

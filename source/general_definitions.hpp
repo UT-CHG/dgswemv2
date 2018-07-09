@@ -45,6 +45,21 @@ using Array3D = std::vector<std::vector<std::vector<type>>>;
 template <typename type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
+/* This will have to go into linear_algebra.hpp */
+
+#include <eigen3/Eigen/Dense>
+
+#include <blaze/Math.h>
+#include <blaze/math/Column.h>
+
+template <typename T, uint m>
+using Vector = blaze::StaticVector<T, m>;
+
+template <typename T, uint m, uint n>
+using Matrix = blaze::StaticMatrix<T, m, n>;
+
+/* This will have to go into linear_algebra.hpp */
+
 namespace Basis {
 /**
  * Base class for the basis types over the element.
@@ -87,8 +102,10 @@ class Basis {
      */
     virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
 
-    virtual void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) = 0;
-    virtual void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) = 0;
+    template <typename T>
+    void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
+    template <typename T>
+    void ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u);
 };
 }
 
@@ -154,9 +171,12 @@ class Master {
         const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 
-    virtual void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr)            = 0;
-    virtual void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts) = 0;
-    virtual void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx)     = 0;
+    template <typename T>
+    void ComputeLinearUbaryctr(const std::vector<T>& u_lin, T& u_lin_baryctr);
+    template <typename T>
+    void ComputeLinearUmidpts(const std::vector<T>& u_lin, std::vector<T>& u_lin_midpts);
+    template <typename T>
+    void ComputeLinearUvrtx(const std::vector<T>& u_lin, std::vector<T>& u_lin_vrtx);
 };
 }
 

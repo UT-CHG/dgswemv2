@@ -7,16 +7,10 @@ namespace SWE {
 namespace EHDG {
 struct EdgeState {
     EdgeState() = default;
-    EdgeState(const uint ndof)
-        : ze_hat(ndof), qx_hat(ndof), qy_hat(ndof), ze_hat_prev(ndof), qx_hat_prev(ndof), qy_hat_prev(ndof) {}
+    EdgeState(const uint ndof) : q_hat(ndof), q_hat_prev(ndof) {}
 
-    std::vector<double> ze_hat;
-    std::vector<double> qx_hat;
-    std::vector<double> qy_hat;
-
-    std::vector<double> ze_hat_prev;
-    std::vector<double> qx_hat_prev;
-    std::vector<double> qy_hat_prev;
+    std::vector<Vector<double, SWE::n_variables>> q_hat;
+    std::vector<Vector<double, SWE::n_variables>> q_hat_prev;
 };
 }
 }

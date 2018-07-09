@@ -12,8 +12,10 @@ class Legendre_1D : Basis<1> {
 
     std::pair<bool, Array2D<double>> GetMinv(const uint p);
 
-    void ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin);
-    void ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u);
+    template <typename T>
+    void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
+    template <typename T>
+    void ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u);
 };
 }
 

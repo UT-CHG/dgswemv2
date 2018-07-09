@@ -38,7 +38,7 @@ struct Data {
 
         this->wet_dry_state = WetDry(this->nvrtx);
 
-        this->slope_limit_state = SlopeLimit(this->nbound);
+        this->slope_limit_state = SlopeLimit(this->nvrtx, this->nbound);
     }
 
     void resize(const uint nstate) {

@@ -49,12 +49,14 @@ std::pair<bool, Array2D<double>> Legendre_1D::GetMinv(const uint p) {
     return m_inv;
 }
 
-void Legendre_1D::ProjectBasisToLinear(const std::vector<double>& u, std::vector<double>& u_lin) {
+template <typename T>
+void Legendre_1D::ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin) {
     u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
     u_lin[1] = 0.5 * u[0] + 0.5 * u[1];
 }
 
-void Legendre_1D::ProjectLinearToBasis(const std::vector<double>& u_lin, std::vector<double>& u) {
+template <typename T>
+void Legendre_1D::ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u) {
     u[0] = u_lin[0] + u_lin[1];
     u[1] = -u_lin[0] + u_lin[1];
 }

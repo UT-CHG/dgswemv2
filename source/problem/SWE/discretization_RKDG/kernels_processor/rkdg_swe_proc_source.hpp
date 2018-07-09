@@ -18,28 +18,21 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         double t = stepper.GetTimeAtCurrentStage();
 
         if (SWE::SourceTerms::function_source) {
-            auto source_ze = [t](Point<2>& pt) { return SWE::source_ze(t, pt); };
+            auto source_u = [t](Point<2>& pt) { return SWE::source_u(t, pt); };
 
-            auto source_qx = [t](Point<2>& pt) { return SWE::source_qx(t, pt); };
-
-            auto source_qy = [t](Point<2>& pt) { return SWE::source_qy(t, pt); };
-
-            elt.ComputeFgp(source_ze, internal.ze_source_term_at_gp);
-            elt.ComputeFgp(source_qx, internal.qx_source_term_at_gp);
-            elt.ComputeFgp(source_qy, internal.qy_source_term_at_gp);
+            elt.ComputeFgp(source_u, internal.source_at_gp);
         } else {
-            std::fill(internal.ze_source_term_at_gp.begin(), internal.ze_source_term_at_gp.end(), 0.0);
-            std::fill(internal.qx_source_term_at_gp.begin(), internal.qx_source_term_at_gp.end(), 0.0);
-            std::fill(internal.qy_source_term_at_gp.begin(), internal.qy_source_term_at_gp.end(), 0.0);
+            std::fill(internal.source_at_gp.begin(), internal.source_at_gp.end(), 0.0);
         }
 
         // note we assume that the values at gauss points have already been computed
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute contribution of hydrostatic pressure
-            internal.qx_source_term_at_gp[gp] +=
-                Global::g * sp_at_gp[gp] * internal.bath_deriv_wrt_x_at_gp[gp] * internal.ze_at_gp[gp];
-            internal.qy_source_term_at_gp[gp] +=
-                Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.ze_at_gp[gp];
+            internal.source_at_gp[gp][SWE::Variables::qx] += Global::g * sp_at_gp[gp] *
+                                                             internal.bath_deriv_wrt_x_at_gp[gp] *
+                                                             internal.q_at_gp[gp][SWE::Variables::ze];
+            internal.source_at_gp[gp][SWE::Variables::qy] +=
+                Global::g * internal.bath_deriv_wrt_y_at_gp[gp] * internal.q_at_gp[gp][SWE::Variables::ze];
         }
 
         if (SWE::SourceTerms::bottom_friction) {
@@ -47,8 +40,8 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute bottom friction contribution
-                double u_at_gp = internal.qx_at_gp[gp] / internal.h_at_gp[gp];
-                double v_at_gp = internal.qy_at_gp[gp] / internal.h_at_gp[gp];
+                double u_at_gp = internal.q_at_gp[gp][SWE::Variables::qx] / internal.h_at_gp[gp];
+                double v_at_gp = internal.q_at_gp[gp][SWE::Variables::qy] / internal.h_at_gp[gp];
 
                 // compute manning friction factor
                 if (source.manning) {
@@ -59,8 +52,10 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
                 double bottom_friction_stress = Cf * std::hypot(u_at_gp, v_at_gp) / internal.h_at_gp[gp];
 
-                internal.qx_source_term_at_gp[gp] -= bottom_friction_stress * internal.qx_at_gp[gp];
-                internal.qy_source_term_at_gp[gp] -= bottom_friction_stress * internal.qy_at_gp[gp];
+                internal.source_at_gp[gp][SWE::Variables::qx] -=
+                    bottom_friction_stress * internal.q_at_gp[gp][SWE::Variables::qx];
+                internal.source_at_gp[gp][SWE::Variables::qy] -=
+                    bottom_friction_stress * internal.q_at_gp[gp][SWE::Variables::qy];
             }
         }
 
@@ -73,13 +68,15 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute surface friction contribution
-                internal.qx_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::x][gp] / Global::rho_water;
-                internal.qy_source_term_at_gp[gp] += internal.tau_s_at_gp[GlobalCoord::y][gp] / Global::rho_water;
+                internal.source_at_gp[gp][SWE::Variables::qx] +=
+                    internal.tau_s_at_gp[GlobalCoord::x][gp] / Global::rho_water;
+                internal.source_at_gp[gp][SWE::Variables::qy] +=
+                    internal.tau_s_at_gp[GlobalCoord::y][gp] / Global::rho_water;
 
                 // compute atmospheric pressure contribution
-                internal.qx_source_term_at_gp[gp] -=
+                internal.source_at_gp[gp][SWE::Variables::qx] -=
                     sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::x][gp] / Global::rho_water;
-                internal.qy_source_term_at_gp[gp] -=
+                internal.source_at_gp[gp][SWE::Variables::qy] -=
                     internal.h_at_gp[gp] * internal.dp_atm_at_gp[GlobalCoord::y][gp] / Global::rho_water;
             }
         }
@@ -90,9 +87,9 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute tide potential contribution
-                internal.qx_source_term_at_gp[gp] +=
+                internal.source_at_gp[gp][SWE::Variables::qx] +=
                     Global::g * sp_at_gp[gp] * internal.h_at_gp[gp] * internal.dtide_pot_at_gp[GlobalCoord::x][gp];
-                internal.qy_source_term_at_gp[gp] +=
+                internal.source_at_gp[gp][SWE::Variables::qy] +=
                     Global::g * internal.h_at_gp[gp] * internal.dtide_pot_at_gp[GlobalCoord::y][gp];
             }
         }
@@ -100,15 +97,15 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         if (SWE::SourceTerms::coriolis) {
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute coriolis contribution
-                internal.qx_source_term_at_gp[gp] += source.coriolis_f * internal.qy_at_gp[gp];
-                internal.qy_source_term_at_gp[gp] -= source.coriolis_f * internal.qx_at_gp[gp];
+                internal.source_at_gp[gp][SWE::Variables::qx] +=
+                    source.coriolis_f * internal.q_at_gp[gp][SWE::Variables::qy];
+                internal.source_at_gp[gp][SWE::Variables::qy] -=
+                    source.coriolis_f * internal.q_at_gp[gp][SWE::Variables::qx];
             }
         }
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.rhs_ze[dof] += elt.IntegrationPhi(dof, internal.ze_source_term_at_gp);
-            state.rhs_qx[dof] += elt.IntegrationPhi(dof, internal.qx_source_term_at_gp);
-            state.rhs_qy[dof] += elt.IntegrationPhi(dof, internal.qy_source_term_at_gp);
+            state.rhs[dof] += elt.IntegrationPhi(dof, internal.source_at_gp);
         }
     }
 }

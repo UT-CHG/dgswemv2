@@ -8,19 +8,11 @@ namespace SWE {
 namespace EHDG {
 namespace DBC {
 struct DBIndex {
-    uint ze_in;
-    uint qx_in;
-    uint qy_in;
-    uint ze_flux_dot_n_in;
-    uint qx_flux_dot_n_in;
-    uint qy_flux_dot_n_in;
+    uint q_in;
+    uint Fn_in;
 
-    uint ze_ex;
-    uint qx_ex;
-    uint qy_ex;
-    uint ze_flux_dot_n_ex;
-    uint qx_flux_dot_n_ex;
-    uint qy_flux_dot_n_ex;
+    uint q_ex;
+    uint Fn_ex;
 };
 
 class DBDataExchanger {
@@ -46,20 +38,10 @@ class DBDataExchanger {
                     std::vector<double>& send_postproc_buffer,
                     std::vector<double>& receive_postproc_buffer);
 
-    void SetEX(const std::vector<double>& ze_in,
-               const std::vector<double>& qx_in,
-               const std::vector<double>& qy_in,
-               const std::vector<double>& ze_flux_dot_n_in,
-               const std::vector<double>& qx_flux_dot_n_in,
-               const std::vector<double>& qy_flux_dot_n_in);
+    void SetEX(const std::vector<Vector<double, SWE::n_variables>>& q_in,
+               const std::vector<Vector<double, SWE::n_variables>>& Fn_in);
 
-    void GetEX(const uint gp,
-               double& ze_ex,
-               double& qx_ex,
-               double& qy_ex,
-               double& ze_flux_dot_n_ex,
-               double& qx_flux_dot_n_ex,
-               double& qy_flux_dot_n_ex);
+    void GetEX(const uint gp, Vector<double, SWE::n_variables>& q_ex, Vector<double, SWE::n_variables>& Fn_ex);
 };
 
 DBDataExchanger::DBDataExchanger(const DBIndex& index,
@@ -77,35 +59,23 @@ DBDataExchanger::DBDataExchanger(const DBIndex& index,
       send_postproc_buffer(send_postproc_buffer),
       receive_postproc_buffer(receive_postproc_buffer) {}
 
-void DBDataExchanger::SetEX(const std::vector<double>& ze_in,
-                            const std::vector<double>& qx_in,
-                            const std::vector<double>& qy_in,
-                            const std::vector<double>& ze_flux_dot_n_in,
-                            const std::vector<double>& qx_flux_dot_n_in,
-                            const std::vector<double>& qy_flux_dot_n_in) {
-    for (uint gp = 0; gp < ze_in.size(); gp++) {
-        this->send_buffer[this->index.ze_in + gp]            = ze_in[gp];
-        this->send_buffer[this->index.qx_in + gp]            = qx_in[gp];
-        this->send_buffer[this->index.qy_in + gp]            = qy_in[gp];
-        this->send_buffer[this->index.ze_flux_dot_n_in + gp] = ze_flux_dot_n_in[gp];
-        this->send_buffer[this->index.qx_flux_dot_n_in + gp] = qx_flux_dot_n_in[gp];
-        this->send_buffer[this->index.qy_flux_dot_n_in + gp] = qy_flux_dot_n_in[gp];
+void DBDataExchanger::SetEX(const std::vector<Vector<double, SWE::n_variables>>& q_in,
+                            const std::vector<Vector<double, SWE::n_variables>>& Fn_in) {
+    for (uint gp = 0; gp < q_in.size(); gp++) {
+        for (uint var = 0; var < SWE::n_variables; var++) {
+            this->send_buffer[this->index.q_in + SWE::n_variables * gp + var]  = q_in[gp][var];
+            this->send_buffer[this->index.Fn_in + SWE::n_variables * gp + var] = Fn_in[gp][var];
+        }
     }
 }
 
 void DBDataExchanger::GetEX(const uint gp,
-                            double& ze_ex,
-                            double& qx_ex,
-                            double& qy_ex,
-                            double& ze_flux_dot_n_ex,
-                            double& qx_flux_dot_n_ex,
-                            double& qy_flux_dot_n_ex) {
-    ze_ex            = this->receive_buffer[this->index.ze_ex - gp];
-    qx_ex            = this->receive_buffer[this->index.qx_ex - gp];
-    qy_ex            = this->receive_buffer[this->index.qy_ex - gp];
-    ze_flux_dot_n_ex = this->receive_buffer[this->index.ze_flux_dot_n_ex - gp];
-    qx_flux_dot_n_ex = this->receive_buffer[this->index.qx_flux_dot_n_ex - gp];
-    qy_flux_dot_n_ex = this->receive_buffer[this->index.qy_flux_dot_n_ex - gp];
+                            Vector<double, SWE::n_variables>& q_ex,
+                            Vector<double, SWE::n_variables>& Fn_ex) {
+    for (uint var = 0; var < SWE::n_variables; var++) {
+        q_ex[SWE::n_variables - var - 1]  = this->receive_buffer[this->index.q_ex - SWE::n_variables * gp - var];
+        Fn_ex[SWE::n_variables - var - 1] = this->receive_buffer[this->index.Fn_ex - SWE::n_variables * gp - var];
+    }
 }
 }
 }

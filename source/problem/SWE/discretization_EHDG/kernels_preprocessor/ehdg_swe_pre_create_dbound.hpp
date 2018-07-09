@@ -71,21 +71,13 @@ void Problem::create_distributed_boundaries_kernel(
 
             DBC::DBIndex index;
 
-            index.ze_in            = begin_index;
-            index.qx_in            = begin_index + ngp;
-            index.qy_in            = begin_index + 2 * ngp;
-            index.ze_flux_dot_n_in = begin_index + 3 * ngp;
-            index.qx_flux_dot_n_in = begin_index + 4 * ngp;
-            index.qy_flux_dot_n_in = begin_index + 5 * ngp;
+            index.q_in  = begin_index;
+            index.Fn_in = begin_index + SWE::n_variables * ngp;
 
-            index.ze_ex            = begin_index + ngp - 1;
-            index.qx_ex            = begin_index + 2 * ngp - 1;
-            index.qy_ex            = begin_index + 3 * ngp - 1;
-            index.ze_flux_dot_n_ex = begin_index + 4 * ngp - 1;
-            index.qx_flux_dot_n_ex = begin_index + 5 * ngp - 1;
-            index.qy_flux_dot_n_ex = begin_index + 6 * ngp - 1;
+            index.q_ex  = begin_index + SWE::n_variables * ngp - 1;
+            index.Fn_ex = begin_index + 2 * SWE::n_variables * ngp - 1;
 
-            begin_index += 6 * ngp;
+            begin_index += 2 * SWE::n_variables * ngp;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;

@@ -52,18 +52,24 @@ class Interface {
     std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
     std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
 
-    void ComputeUgpIN(const std::vector<double>& u, std::vector<double>& u_gp);
-    void ComputeUgpEX(const std::vector<double>& u, std::vector<double>& u_gp);
+    template <typename T>
+    void ComputeUgpIN(const std::vector<T>& u, std::vector<T>& u_gp);
+    template <typename T>
+    void ComputeUgpEX(const std::vector<T>& u, std::vector<T>& u_gp);
 
     void ComputeNodalUgpIN(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
     void ComputeNodalUgpEX(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
     void ComputeBoundaryNodalUgpIN(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
     void ComputeBoundaryNodalUgpEX(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
 
-    double IntegrationIN(const std::vector<double>& u_gp);
-    double IntegrationEX(const std::vector<double>& u_gp);
-    double IntegrationPhiIN(const uint dof, const std::vector<double>& u_gp);
-    double IntegrationPhiEX(const uint dof, const std::vector<double>& u_gp);
+    template <typename T>
+    T IntegrationIN(const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationEX(const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiIN(const uint dof, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiEX(const uint dof, const std::vector<T>& u_gp);
 
   public:
     using InterfaceIntegrationType = IntegrationType;
@@ -165,9 +171,9 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpIN(
-    const std::vector<double>& u,
-    std::vector<double>& u_gp) {
+template <typename T>
+inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpIN(const std::vector<T>& u,
+                                                                                              std::vector<T>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -204,9 +210,12 @@ inline void Interface<dimension, IntegrationType, DataType, SpecializationType>:
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline double Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationIN(
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationIN(
+    const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_fact_in[gp];
@@ -216,10 +225,13 @@ inline double Interface<dimension, IntegrationType, DataType, SpecializationType
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline double Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiIN(
+template <typename T>
+inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiIN(
     const uint dof,
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+    const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact_in[dof][gp];
@@ -229,9 +241,9 @@ inline double Interface<dimension, IntegrationType, DataType, SpecializationType
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpEX(
-    const std::vector<double>& u,
-    std::vector<double>& u_gp) {
+template <typename T>
+inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpEX(const std::vector<T>& u,
+                                                                                              std::vector<T>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -268,9 +280,12 @@ inline void Interface<dimension, IntegrationType, DataType, SpecializationType>:
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline double Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationEX(
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+template <typename T>
+inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationEX(
+    const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_fact_ex[gp];
@@ -280,10 +295,13 @@ inline double Interface<dimension, IntegrationType, DataType, SpecializationType
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline double Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiEX(
+template <typename T>
+inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiEX(
     const uint dof,
-    const std::vector<double>& u_gp) {
-    double integral = 0;
+    const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact_ex[dof][gp];

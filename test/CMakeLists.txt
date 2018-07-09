@@ -1,25 +1,5 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
-#[[add_executable(
-  test_linear_algebra_dyn_exe
-  test_linear_algebra_dyn.cpp
-)
-
-add_test(
-  Unit_linear_algebra_dyn
-  test_linear_algebra_dyn_exe
-)
-
-add_executable(
-  test_linear_algebra_stat_exe
-  test_linear_algebra_stat.cpp
-)
-
-add_test(
-  Unit_linear_algebra_stat
-  test_linear_algebra_stat_exe
-)]]
-
 add_executable(
   test_tuple_helpers_exe
   test_tuple_helpers.cpp
@@ -168,7 +148,7 @@ add_test(
   test_rk_stepper_exe
 )
 
-add_executable(
+#[[add_executable(
   test_llf_flux_exe
   test_llf_flux.cpp
 )
@@ -176,9 +156,9 @@ add_executable(
 add_test(
   Unit_llf_flux
   test_llf_flux_exe
-)
+)]]
 
-add_executable(
+#[[add_executable(
   test_wetting_drying_exe
   test_wetting_drying.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -192,7 +172,7 @@ add_executable(
 add_test(
   Unit_wetting_drying
   test_wetting_drying_exe
-)
+)]]
 
 add_executable(
   test_mesh_metadata_exe

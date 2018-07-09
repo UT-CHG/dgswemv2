@@ -76,13 +76,19 @@ endif()
 if(EHDG_SWE)
   find_package(Eigen3 REQUIRED)
 
+  find_package( blaze )
+  if( blaze_FOUND )
+     add_library( blaze_target INTERFACE )
+     target_link_libraries( blaze_target INTERFACE blaze::blaze )
+  endif()
+
   add_subdirectory(source/problem/SWE/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_swe_manufactured_solution)
   endif()
 endif()
 
-if(EHDG_SWE)
+if(IHDG_SWE)
   find_package(Eigen3 REQUIRED)
 
   add_subdirectory(source/problem/SWE/discretization_IHDG)
