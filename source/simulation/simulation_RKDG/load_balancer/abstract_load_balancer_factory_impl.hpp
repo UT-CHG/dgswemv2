@@ -18,8 +18,20 @@ void AbstractFactory::reset_locality_and_world_models() {
 }
 
 template <typename ProblemType>
-std::unique_ptr<SubmeshModel> AbstractFactory::create_submesh_model(uint locality_id, uint submesh_id) {
-    return Random<ProblemType>::create_submesh_model(locality_id, submesh_id);
+std::unique_ptr<SubmeshModel> AbstractFactory::create_submesh_model(uint locality_id,
+                                                                    uint submesh_id,
+                                                                    const LoadBalancerInput& load_balancer_input) {
+    if (load_balancer_input.use_load_balancer) {
+        if (load_balancer_input.name == "random") {
+            return Random<ProblemType>::create_submesh_model(
+                locality_id, submesh_id, load_balancer_input.rebalance_frequency);
+        } else {
+            std::string err_msg{"Error: Unknown RKDG load balancer of type: " + load_balancer_input.name};
+            throw std::logic_error(err_msg);
+        }
+    } else {
+        return nullptr;
+    }
 }
 }
 }

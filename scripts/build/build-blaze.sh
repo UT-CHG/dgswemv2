@@ -90,10 +90,10 @@ else
     set +x
 fi
 
-METIS_BUILD_PATH="${BUILD_PATH}/metis"
 
+BLAZE_BUILD_PATH="$BUILD_PATH/blaze"
 if [ "$1" == "clean" ]; then
-    CLEAN_CMD="rm -rf $METIS_BUILD_PATH"
+    CLEAN_CMD="rm -rf $BLAZE_BUILD_PATH"
 
     $START_BOLD
     echo "$0 clean:"
@@ -105,7 +105,7 @@ if [ "$1" == "clean" ]; then
     $END_BOLD
     read answer
     if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${METIS_BUILD_PATH}"
+	echo "removing build directory ${BLAZE_BUILD_PATH}"
 	$CLEAN_CMD
     else
 	echo "doing nothing."
@@ -136,17 +136,32 @@ module list
 
 #echo "MODULES = $MODULES" >> $LOGFILE
 
-if [ ! -d "$METIS_BUILD_PATH" ]; then
+if [ ! -d "$BLAZE_BUILD_PATH" ]; then
     set -e
-    mkdir -p ${METIS_BUILD_PATH}
-    cd ${METIS_BUILD_PATH}
-    wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
-    tar xf metis-5.1.0.tar.gz
-    cd metis-5.1.0
-    sed -i 's/#define IDXTYPEWIDTH 32/#define IDXTYPEWIDTH 64/g' include/metis.h
-    sed -i 's/#define REALTYPEWIDTH 32/#define REALTYPEWIDTH 64/g' include/metis.h
-    make config prefix=${INSTALL_PATH} CC=${C_COMPILER} CXX=${CXX_COMPILER}
-    make
+    mkdir -p $BLAZE_BUILD_PATH
+    cd $BLAZE_BUILD_PATH
+    git clone https://bitbucket.org/blaze-lib/blaze.git
+    cd blaze
+    BLAZE_REPO_PATH=$(pwd)
+    mkdir build
+    cd build
+    CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH}"
+    if [ -v CXX_COMPILER ]; then
+    CMAKE_FLAGS="$CMAKE_FLAGS \
+                 -DCMAKE_CXX_COMPILER=${CXX_COMPILER}"
+    fi
+    if [ -v C_COMPILER ]; then
+    CMAKE_FLAGS="$CMAKE_FLAGS \
+                 -DCMAKE_C_COMPILER=${C_COMPILER}"
+    fi
+
+    CMD="cmake ${CMAKE_FLAGS} ${BLAZE_REPO_PATH}"
+    echo "CMD = $CMD"
+
+    $CMD
+
+    make -k -j$NUM_BUILDCORES
     make install
 else
     $START_BOLD
@@ -156,7 +171,7 @@ else
     $START_BOLD
     echo "or continue the build process:"
     $END_BOLD
-    echo "cd ${METIS_BUILD_PATH}"
+    echo "cd ${BLAZE_BUILD_PATH}"
     echo "make"
     echo "make install"
     exit 0

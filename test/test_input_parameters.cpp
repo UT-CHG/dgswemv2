@@ -23,6 +23,20 @@ const static auto equal_writer = [](const WriterInput& wa, const WriterInput& wb
     return output_nodes_are_equal;
 };
 
+const static auto equal_load_balancer = [](const LoadBalancerInput& lba, const LoadBalancerInput& lbb) -> bool {
+    bool load_balancer_nodes_are_equal = (lba.use_load_balancer == lbb.use_load_balancer) && (lba.name == lbb.name) &&
+                                         Utilities::almost_equal(lba.rebalance_frequency, lbb.rebalance_frequency);
+
+    if (!load_balancer_nodes_are_equal) {
+        std::cerr << "Load Balancer nodes are not equal" << std::endl;
+        std::cerr << "        " << std::boolalpha << lba.use_load_balancer << " : " << lbb.use_load_balancer << '\n'
+                  << "        " << lba.name << " : " << lbb.name << '\n'
+                  << "        " << lba.rebalance_frequency << " : " << lbb.rebalance_frequency << '\n';
+    }
+
+    return load_balancer_nodes_are_equal;
+};
+
 const static auto equal = [](const InputParameters<typename SWE::Inputs>& ipa,
                              const InputParameters<typename SWE::Inputs>& ipb) -> bool {
     const SWE::Inputs& ia = ipa.problem_input;
@@ -47,7 +61,9 @@ const static auto equal = [](const InputParameters<typename SWE::Inputs>& ipa,
            Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
            Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
            (ipa.polynomial_order == ipb.polynomial_order) && inputs_are_equal &&
-           equal_writer(ipa.writer_input, ipb.writer_input);
+           equal_writer(ipa.writer_input, ipb.writer_input) &&
+           equal_load_balancer(ipa.load_balancer_input, ipb.load_balancer_input);
+    ;
 };
 
 const static auto equal2 = [](const InputParameters<>& ipa, const InputParameters<>& ipb) -> bool {
@@ -79,7 +95,8 @@ const static auto equal2 = [](const InputParameters<>& ipa, const InputParameter
            Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
            Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
            (ipa.polynomial_order == ipb.polynomial_order) && swe_nodes_are_equal &&
-           equal_writer(ipa.writer_input, ipb.writer_input);
+           equal_writer(ipa.writer_input, ipb.writer_input) &&
+           equal_load_balancer(ipa.load_balancer_input, ipb.load_balancer_input);
 };
 
 int main(int argc, char** argv) {

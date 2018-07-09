@@ -1,8 +1,8 @@
 #ifndef INPUT_PARAMETERS_HPP
 #define INPUT_PARAMETERS_HPP
 
-#include "mesh_metadata.hpp"
 #include "ADCIRC_reader/adcirc_format.hpp"
+#include "mesh_metadata.hpp"
 
 #include <yaml-cpp/yaml.h>
 
@@ -58,6 +58,12 @@ struct WriterInput {
     uint modal_output_freq_step{std::numeric_limits<uint>::max()};
 };
 
+struct LoadBalancerInput {
+    bool use_load_balancer{false};
+    std::string name;
+    double rebalance_frequency;
+};
+
 template <typename ProblemInput = YamlNodeWrapper>
 struct InputParameters {
     uint polynomial_order;
@@ -66,6 +72,7 @@ struct InputParameters {
     StepperInput stepper_input;
     ProblemInput problem_input;
     WriterInput writer_input;
+    LoadBalancerInput load_balancer_input;
 
     InputParameters() = default;
     InputParameters(const std::string& input_string);
@@ -164,8 +171,21 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
     if (input_file["problem"]) {
         this->problem_input = problem_specific_ctor_helper(input_file);
     } else {
-        std::string err_msg("Error: Problem YAML node not specified\n");
+        std::string err_msg{"Error: Problem YAML node not specified\n"};
         throw std::logic_error(err_msg);
+    }
+
+    // Process dynamic load balancing information
+    if (input_file["load_balancer"]) {
+        YAML::Node lb_node = input_file["load_balancer"];
+        if (lb_node["name"] && lb_node["rebalance_frequency"]) {
+            this->load_balancer_input.use_load_balancer   = true;
+            this->load_balancer_input.name                = lb_node["name"].as<std::string>();
+            this->load_balancer_input.rebalance_frequency = lb_node["rebalance_frequency"].as<double>();
+        } else {
+            std::string err_msg{"Error: Load Balancer YAML node is malformatted\n"};
+            throw std::logic_error(err_msg);
+        }
     }
 
     // Process output information (else no output)
@@ -180,7 +200,7 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
                 this->writer_input.output_path += "/";
             }
         } else {
-            std::string err_msg("Error: Output YAML node is malformatted\n");
+            std::string err_msg{"Error: Output YAML node is malformatted\n"};
             throw std::logic_error(err_msg);
         }
 
@@ -336,6 +356,15 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
 
         output << YAML::Key << "output";
         output << YAML::Value << writer;
+    }
+
+    if (this->load_balancer_input.use_load_balancer) {
+        YAML::Node load_balancer;
+        load_balancer["name"]                = this->load_balancer_input.name;
+        load_balancer["rebalance_frequency"] = this->load_balancer_input.rebalance_frequency;
+
+        output << YAML::Key << "load_balancer";
+        output << YAML::Value << load_balancer;
     }
 
     output << YAML::EndMap;
