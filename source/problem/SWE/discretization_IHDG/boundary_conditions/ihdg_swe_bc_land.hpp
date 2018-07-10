@@ -50,10 +50,6 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
 
 template <typename EdgeBoundaryType>
 void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-    boundary.F_hat_at_gp = boundary.Fn_at_gp;
-
     add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 }

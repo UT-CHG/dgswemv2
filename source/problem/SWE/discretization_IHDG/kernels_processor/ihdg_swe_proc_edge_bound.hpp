@@ -8,9 +8,12 @@ namespace SWE {
 namespace IHDG {
 template <typename EdgeBoundaryType>
 void Problem::prepare_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    edge_bound.boundary.boundary_condition.ComputeNumericalFlux(edge_bound);
+    // Add tau * del_q terms to F_hat
+    add_F_hat_tau_terms_bound_LF(edge_bound);
 
-    add_dF_hat_tau_terms_boundary_LF(edge_bound);
+    // Add dtau/dq * del_q - tau * del_q term to dF_hat_dq_hat
+    // and tau * del_q term to dF_hat_dq
+    add_dF_hat_tau_terms_bound_LF(edge_bound);
 
     edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
 }

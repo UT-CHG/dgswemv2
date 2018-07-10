@@ -25,6 +25,7 @@ class Boundary {
 
     std::vector<double> int_fact;
     Array2D<double> int_phi_fact;
+    Array3D<double> int_phi_phi_fact;
 
   public:
     Boundary(RawBoundary<dimension, DataType>&& raw_boundary, ConditonType&& boundary_condition = ConditonType());
@@ -44,6 +45,8 @@ class Boundary {
     T Integration(const std::vector<T>& u_gp);
     template <typename T>
     T IntegrationPhi(const uint dof, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiPhi(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
 
   public:
     using BoundaryIntegrationType = IntegrationType;
@@ -88,6 +91,16 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
         for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
             for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
                 this->int_phi_fact[dof][gp] *= integration_rule.first[gp] * surface_J[0];
+            }
+        }
+
+        this->int_phi_phi_fact.resize(this->phi_gp.size());
+        for (uint dof_i = 0; dof_i < this->phi_gp.size(); dof_i++) {
+            this->int_phi_phi_fact[dof_i] = this->int_phi_fact;
+            for (uint dof_j = 0; dof_j < this->phi_gp.size(); dof_j++) {
+                for (uint gp = 0; gp < this->int_phi_phi_fact[dof_i][dof_j].size(); gp++) {
+                    this->int_phi_phi_fact[dof_i][dof_j][gp] *= this->phi_gp[dof_i][gp];
+                }
             }
         }
 
@@ -161,6 +174,22 @@ inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::Integrati
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact[dof][gp];
+    }
+
+    return integral;
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+template <typename T>
+inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhiPhi(const uint dof_i,
+                                                                                         const uint dof_j,
+                                                                                         const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
+
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_phi_phi_fact[dof_i][dof_j][gp];
     }
 
     return integral;

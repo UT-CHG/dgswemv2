@@ -60,6 +60,12 @@ using Vector = blaze::StaticVector<T, m>;
 template <typename T, uint m, uint n>
 using Matrix = blaze::StaticMatrix<T, m, n>;
 
+template <typename T>
+using DVector = blaze::DynamicVector<T>;
+
+template <typename T>
+using DMatrix = blaze::DynamicMatrix<T>;
+
 /* This will have to go into linear_algebra.hpp */
 
 namespace Basis {

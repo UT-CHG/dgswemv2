@@ -36,10 +36,10 @@ void Problem::prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bo
                           boundary.q_at_gp[gp][SWE::Variables::ze] * boundary.aux_at_gp[gp][SWE::Auxiliaries::bath]);
 
         // Fn terms
-        boundary.Fn_at_gp[gp][SWE::Variables::ze] =
+        boundary.F_hat_at_gp[gp][SWE::Variables::ze] =
             boundary.q_at_gp[gp][SWE::Variables::qx] * nx + boundary.q_at_gp[gp][SWE::Variables::qy] * ny;
-        boundary.Fn_at_gp[gp][SWE::Variables::qx] = (uuh + pe) * nx + uvh * ny;
-        boundary.Fn_at_gp[gp][SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
+        boundary.F_hat_at_gp[gp][SWE::Variables::qx] = (uuh + pe) * nx + uvh * ny;
+        boundary.F_hat_at_gp[gp][SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
 
         // dFn/dq terms
         boundary.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 0.0;

@@ -37,5 +37,6 @@ int main() {
     if (error_found) {
         return 1;
     }
+
     return 0;
 }

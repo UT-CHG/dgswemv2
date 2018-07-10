@@ -30,7 +30,9 @@ class Element {
     bool const_J;
     std::vector<double> int_fact;
     Array2D<double> int_phi_fact;
+    Array3D<double> int_phi_phi_fact;
     Array3D<double> int_dphi_fact;
+    Array4D<double> int_phi_dphi_fact;
 
     std::pair<bool, Array2D<double>> m_inv;
 
@@ -97,7 +99,11 @@ class Element {
     template <typename T>
     T IntegrationPhi(const uint dof, const std::vector<T>& u_gp);
     template <typename T>
+    T IntegrationPhiPhi(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename T>
     T IntegrationDPhi(const uint dir, const uint dof, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiDPhi(const uint dof_i, const uint dir_j, const uint dof_j, const std::vector<T>& u_gp);
 
     template <typename T>
     void ApplyMinv(const std::vector<T>& rhs, std::vector<T>& solution);
@@ -205,6 +211,16 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
             }
         }
 
+        this->int_phi_phi_fact.resize(this->master->phi_gp.size());
+        for (uint dof_i = 0; dof_i < this->master->phi_gp.size(); dof_i++) {
+            this->int_phi_phi_fact[dof_i] = this->int_phi_fact;
+            for (uint dof_j = 0; dof_j < this->master->phi_gp.size(); dof_j++) {
+                for (uint gp = 0; gp < this->int_phi_phi_fact[dof_i][dof_j].size(); gp++) {
+                    this->int_phi_phi_fact[dof_i][dof_j][gp] *= this->master->phi_gp[dof_i][gp];
+                }
+            }
+        }
+
         this->int_dphi_fact.resize(this->master->int_dphi_fact.size());
         for (uint dof = 0; dof < this->master->int_dphi_fact.size(); dof++) {
             this->int_dphi_fact[dof].resize(dimension);
@@ -217,6 +233,18 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
                     }
                     int_dphi *= std::abs(det_J[0]);
                     this->int_dphi_fact[dof][dir].push_back(int_dphi);
+                }
+            }
+        }
+
+        this->int_phi_dphi_fact.resize(this->master->phi_gp.size());
+        for (uint dof_i = 0; dof_i < this->master->phi_gp.size(); dof_i++) {
+            this->int_phi_dphi_fact[dof_i] = this->int_dphi_fact;
+            for (uint dof_j = 0; dof_j < this->master->phi_gp.size(); dof_j++) {
+                for (uint dir = 0; dir < dimension; dir++) {
+                    for (uint gp = 0; gp < this->int_phi_phi_fact[dof_i][dof_j].size(); gp++) {
+                        this->int_phi_dphi_fact[dof_i][dof_j][dir][gp] *= this->master->phi_gp[dof_i][gp];
+                    }
                 }
             }
         }
@@ -493,6 +521,22 @@ inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(con
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename T>
+inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiPhi(const uint dof_i,
+                                                                                const uint dof_j,
+                                                                                const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
+
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_phi_phi_fact[dof_i][dof_j][gp];
+    }
+
+    return integral;
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename T>
 inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
                                                                               const uint dof,
                                                                               const std::vector<T>& u_gp) {
@@ -502,6 +546,23 @@ inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(co
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_dphi_fact[dof][dir][gp];
+    }
+
+    return integral;
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename T>
+inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiDPhi(const uint dof_i,
+                                                                                 const uint dir_j,
+                                                                                 const uint dof_j,
+                                                                                 const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
+
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_phi_dphi_fact[dof_i][dof_j][dir_j][gp];
     }
 
     return integral;

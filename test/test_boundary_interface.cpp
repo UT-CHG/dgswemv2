@@ -196,6 +196,26 @@ int main() {
         }
     }
 
+    // Check integrations PhiPhi
+    for (uint n_bound = 0; n_bound < 3; n_bound++) {
+        for (uint dof = 0; dof < 66; dof++) {
+            std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
+            mod_vals[dof] = 1.0;
+
+            boundaries[n_bound].ComputeUgp(mod_vals, gp_vals);
+
+            for (uint doff = 0; doff < 66; doff++) {
+                if (!almost_equal(boundaries[n_bound].IntegrationPhi(doff, gp_vals),
+                                  boundaries[n_bound].IntegrationPhiPhi(dof, doff, unit),
+                                  1.e+03)) {
+                    error_found = true;
+
+                    std::cerr << "Error found in boundary in IntegrationPhiPhi" << std::endl;
+                }
+            }
+        }
+    }
+
     // generate Interfaces
     std::vector<InterfaceType> interfaces;
 
@@ -329,6 +349,38 @@ int main() {
             error_found = true;
 
             std::cerr << "Error found in boundary in IntegrationEX" << std::endl;
+        }
+    }
+
+    // Check integrations PhiPhi
+    for (uint n_intface = 0; n_intface < 3; n_intface++) {
+        for (uint dof = 0; dof < 66; dof++) {
+            std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
+            mod_vals[dof] = 1.0;
+
+            interfaces[n_intface].ComputeUgpIN(mod_vals, gp_vals);
+
+            for (uint doff = 0; doff < 66; doff++) {
+                if (!almost_equal(interfaces[n_intface].IntegrationPhiIN(doff, gp_vals),
+                                  interfaces[n_intface].IntegrationPhiPhiIN(dof, doff, unit),
+                                  1.e+03)) {
+                    error_found = true;
+
+                    std::cerr << "Error found in interface in IntegrationPhiPhiIN" << std::endl;
+                }
+            }
+            
+            interfaces[n_intface].ComputeUgpEX(mod_vals, gp_vals);
+
+            for (uint doff = 0; doff < 66; doff++) {
+                if (!almost_equal(interfaces[n_intface].IntegrationPhiEX(doff, gp_vals),
+                                  interfaces[n_intface].IntegrationPhiPhiEX(dof, doff, unit),
+                                  1.e+03)) {
+                    error_found = true;
+
+                    std::cerr << "Error found in interface in IntegrationPhiPhiEX" << std::endl;
+                }
+            }
         }
     }
 

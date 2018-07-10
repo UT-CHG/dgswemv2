@@ -41,12 +41,6 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
 
 template <typename EdgeInterfaceType>
 void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
-    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
-
-    boundary_in.F_hat_at_gp = boundary_in.Fn_at_gp;
-    boundary_ex.F_hat_at_gp = boundary_ex.Fn_at_gp;
-
     add_F_hat_tau_terms_intface_LF(edge_int);
 }
 }

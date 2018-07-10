@@ -45,6 +45,12 @@ void Problem::prepare_volume_kernel(const RKStepper& stepper, ElementType& elt) 
         internal.Fy_at_gp[gp][SWE::Variables::qx] = uvh;
         internal.Fy_at_gp[gp][SWE::Variables::qy] = vvh + pe;
 
+        // del_q / DT
+        internal.del_q_DT_at_gp[gp] = (internal.q_at_gp[gp] - internal.q_prev_at_gp[gp]) / stepper.GetDT();
+
+        // Kronecker delta / DT
+        internal.kronecker_DT_at_gp[gp] = blaze::IdentityMatrix<double>(SWE::n_variables) / stepper.GetDT();
+
         // dFx/dq terms
         internal.dFx_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
         internal.dFx_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qx) = 1.0;

@@ -37,6 +37,8 @@ class Interface {
     std::vector<double> int_fact_ex;
     Array2D<double> int_phi_fact_in;
     Array2D<double> int_phi_fact_ex;
+    Array3D<double> int_phi_phi_fact_in;
+    Array3D<double> int_phi_phi_fact_ex;
 
   public:
     Interface(RawBoundary<dimension, DataType>&& raw_boundary_in,
@@ -70,6 +72,10 @@ class Interface {
     T IntegrationPhiIN(const uint dof, const std::vector<T>& u_gp);
     template <typename T>
     T IntegrationPhiEX(const uint dof, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiPhiIN(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiPhiEX(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
 
   public:
     using InterfaceIntegrationType = IntegrationType;
@@ -148,6 +154,26 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         for (uint dof = 0; dof < this->int_phi_fact_ex.size(); dof++) {
             for (uint gp = 0; gp < this->int_phi_fact_ex[dof].size(); gp++) {
                 this->int_phi_fact_ex[dof][gp] *= integration_rule.first[gp] * surface_J[0];
+            }
+        }
+
+        this->int_phi_phi_fact_in.resize(this->phi_gp_in.size());
+        for (uint dof_i = 0; dof_i < this->phi_gp_in.size(); dof_i++) {
+            this->int_phi_phi_fact_in[dof_i] = this->int_phi_fact_in;
+            for (uint dof_j = 0; dof_j < this->phi_gp_in.size(); dof_j++) {
+                for (uint gp = 0; gp < this->int_phi_phi_fact_in[dof_i][dof_j].size(); gp++) {
+                    this->int_phi_phi_fact_in[dof_i][dof_j][gp] *= this->phi_gp_in[dof_i][gp];
+                }
+            }
+        }
+
+        this->int_phi_phi_fact_ex.resize(this->phi_gp_ex.size());
+        for (uint dof_i = 0; dof_i < this->phi_gp_ex.size(); dof_i++) {
+            this->int_phi_phi_fact_ex[dof_i] = this->int_phi_fact_ex;
+            for (uint dof_j = 0; dof_j < this->phi_gp_ex.size(); dof_j++) {
+                for (uint gp = 0; gp < this->int_phi_phi_fact_ex[dof_i][dof_j].size(); gp++) {
+                    this->int_phi_phi_fact_ex[dof_i][dof_j][gp] *= this->phi_gp_ex[dof_i][gp];
+                }
             }
         }
 
@@ -242,6 +268,23 @@ inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::In
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
 template <typename T>
+inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiPhiIN(
+    const uint dof_i,
+    const uint dof_j,
+    const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0;
+
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_phi_phi_fact_in[dof_i][dof_j][gp];
+    }
+
+    return integral;
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename T>
 inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpEX(const std::vector<T>& u,
                                                                                               std::vector<T>& u_gp) {
     std::fill(u_gp.begin(), u_gp.end(), 0.0);
@@ -305,6 +348,23 @@ inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::In
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact_ex[dof][gp];
+    }
+
+    return integral;
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename T>
+inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiPhiEX(
+    const uint dof_i,
+    const uint dof_j,
+    const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0;
+
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_phi_phi_fact_ex[dof_i][dof_j][gp];
     }
 
     return integral;
