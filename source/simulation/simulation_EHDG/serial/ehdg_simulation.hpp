@@ -70,44 +70,7 @@ void Simulation<ProblemType>::Run() {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
 
-    auto global_interface_kernel = [this](auto& intface) {
-        ProblemType::global_interface_kernel(this->stepper, intface);
-    };
-
-    auto global_boundary_kernel = [this](auto& bound) { ProblemType::global_boundary_kernel(this->stepper, bound); };
-
-    auto global_edge_interface_kernel = [this](auto& edge_int) {
-        ProblemType::global_edge_interface_kernel(this->stepper, edge_int);
-    };
-
-    auto global_edge_boundary_kernel = [this](auto& edge_bound) {
-        ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound);
-    };
-
-    auto local_volume_kernel = [this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); };
-
-    auto local_source_kernel = [this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); };
-
-    auto local_interface_kernel = [this](auto& intface) {
-        ProblemType::local_interface_kernel(this->stepper, intface);
-    };
-
-    auto local_boundary_kernel = [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); };
-
-    auto update_kernel = [this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); };
-
-    auto scrutinize_solution_kernel = [this](auto& elt) {
-        bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
-
-        if (nan_found)
-            abort();
-    };
-
-    auto swap_states_kernel = [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); };
-
-    auto resize_data_container = [this](auto& elt) { elt.data.resize(this->n_stages + 1); };
-
-    this->mesh.CallForEachElement(resize_data_container);
+    this->mesh.CallForEachElement([this](auto& elt) { elt.data.resize(this->n_stages + 1); });
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);
@@ -119,33 +82,44 @@ void Simulation<ProblemType>::Run() {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
             /* Global Step */
-            this->mesh.CallForEachInterface(global_interface_kernel);
+            this->mesh.CallForEachInterface(
+                [this](auto& intface) { ProblemType::global_interface_kernel(this->stepper, intface); });
 
-            this->mesh.CallForEachBoundary(global_boundary_kernel);
+            this->mesh.CallForEachBoundary(
+                [this](auto& bound) { ProblemType::global_boundary_kernel(this->stepper, bound); });
 
-            this->mesh_skeleton.CallForEachEdgeInterface(global_edge_interface_kernel);
+            this->mesh_skeleton.CallForEachEdgeInterface(
+                [this](auto& edge_int) { ProblemType::global_edge_interface_kernel(this->stepper, edge_int); });
 
-            this->mesh_skeleton.CallForEachEdgeBoundary(global_edge_boundary_kernel);
+            this->mesh_skeleton.CallForEachEdgeBoundary(
+                [this](auto& edge_bound) { ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound); });
             /* Global Step */
 
             /* Local Step */
-            this->mesh.CallForEachElement(local_volume_kernel);
+            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachElement(local_source_kernel);
+            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachInterface(local_interface_kernel);
+            this->mesh.CallForEachInterface(
+                [this](auto& intface) { ProblemType::local_interface_kernel(this->stepper, intface); });
 
-            this->mesh.CallForEachBoundary(local_boundary_kernel);
+            this->mesh.CallForEachBoundary(
+                [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); });
 
-            this->mesh.CallForEachElement(update_kernel);
+            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachElement(scrutinize_solution_kernel);
+            this->mesh.CallForEachElement({
+                bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
+
+                if (nan_found)
+                    abort();
+            });
             /* Local Step */
 
             ++(this->stepper);
         }
 
-        this->mesh.CallForEachElement(swap_states_kernel);
+        this->mesh.CallForEachElement([this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
 
         if (this->writer.WritingOutput()) {
             this->writer.WriteOutput(this->stepper, this->mesh);

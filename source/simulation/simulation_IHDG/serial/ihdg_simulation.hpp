@@ -85,6 +85,12 @@ void Simulation<ProblemType>::Run() {
             this->mesh.CallForEachElement(
                 [this](auto& elt) { ProblemType::prepare_volume_kernel(this->stepper, elt); });
 
+            this->mesh.CallForEachElement(
+                [this](auto& elt) { ProblemType::prepare_source_kernel(this->stepper, elt); });
+
+            this->mesh.CallForEachInterface(
+                [this](auto& intface) { ProblemType::prepare_interface_kernel(this->stepper, intface); });
+
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
 

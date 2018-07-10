@@ -8,11 +8,7 @@ namespace IHDG {
 struct Source {
     Source() = default;
     Source(const uint nnode)
-        : parsed_meteo_data(nnode),
-          tau_s({std::vector<double>(nnode), std::vector<double>(nnode)}),
-          p_atm(nnode),
-          tide_pot(nnode),
-          manning_n(nnode) {}
+        : parsed_meteo_data(nnode), tau_s(nnode), p_atm(nnode), tide_pot(nnode), manning_n(nnode) {}
 
     double coriolis_f = 0.0;
 
@@ -20,7 +16,8 @@ struct Source {
     double g_manning_n_sq = 0.0;
 
     std::vector<std::vector<double>*> parsed_meteo_data;
-    std::array<std::vector<double>, 2> tau_s;
+
+    std::vector<Vector<double, SWE::n_dimensions>> tau_s;
     std::vector<double> p_atm;
 
     std::vector<double> tide_pot;

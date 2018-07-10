@@ -35,7 +35,7 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
 
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute bottom friction contribution
-            double q_at_gp = internal.q_at_gp[gp][SWE::Variables::qx] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+            double u_at_gp = internal.q_at_gp[gp][SWE::Variables::qx] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
             double v_at_gp = internal.q_at_gp[gp][SWE::Variables::qy] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
 
             // compute manning friction factor
@@ -46,7 +46,7 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
             }
 
             double bottom_friction_stress =
-                Cf * std::hypot(q_at_gp, v_at_gp) / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+                Cf * std::hypot(u_at_gp, v_at_gp) / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
 
             internal.source_at_gp[gp][SWE::Variables::qx] -=
                 bottom_friction_stress * internal.q_at_gp[gp][SWE::Variables::qx];

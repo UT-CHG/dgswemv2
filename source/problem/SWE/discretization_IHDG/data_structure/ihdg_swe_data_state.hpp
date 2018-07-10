@@ -7,30 +7,12 @@ namespace SWE {
 namespace IHDG {
 struct State {
     State() = default;
-    State(const uint ndof)
-        : ze(ndof),
-          qx(ndof),
-          qy(ndof),
-          bath(ndof),
-          rhs_ze(ndof),
-          rhs_qx(ndof),
-          rhs_qy(ndof),
-          solution_ze(ndof),
-          solution_qx(ndof),
-          solution_qy(ndof) {}
+    State(const uint ndof) : q(ndof), bath(ndof), rhs(ndof), solution(ndof) {}
 
-    std::vector<double> ze;
-    std::vector<double> qx;
-    std::vector<double> qy;
+    std::vector<Vector<double, SWE::n_variables>> q;
     std::vector<double> bath;
-
-    std::vector<double> rhs_ze;
-    std::vector<double> rhs_qx;
-    std::vector<double> rhs_qy;
-
-    std::vector<double> solution_ze;
-    std::vector<double> solution_qx;
-    std::vector<double> solution_qy;
+    std::vector<Vector<double, SWE::n_variables>> rhs;
+    std::vector<Vector<double, SWE::n_variables>> solution;
 };
 }
 }
