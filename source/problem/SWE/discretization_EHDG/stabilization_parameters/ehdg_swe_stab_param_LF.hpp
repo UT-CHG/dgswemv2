@@ -124,7 +124,7 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 }
 
 template <typename EdgeInterfaceType>
-inline void add_flux_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
+inline void add_F_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
@@ -156,7 +156,7 @@ inline void add_flux_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
 }
 
 template <typename EdgeBoundaryType>
-inline void add_flux_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
+inline void add_F_hat_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];

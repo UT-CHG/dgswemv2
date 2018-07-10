@@ -8,20 +8,11 @@ namespace SWE {
 namespace IHDG {
 template <typename EdgeBoundaryType>
 void Problem::prepare_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    auto& edge_state = edge_bound.edge_data.edge_state;
+    edge_bound.boundary.boundary_condition.ComputeNumericalFlux(edge_bound);
 
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+    add_dF_hat_tau_terms_boundary_LF(edge_bound);
 
-    /* Take in state as initial edge state */
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        edge_state.ze_avg_at_gp[gp] = boundary.ze_at_gp[gp];
-        edge_state.qx_avg_at_gp[gp] = boundary.qx_at_gp[gp];
-        edge_state.qy_avg_at_gp[gp] = boundary.qy_at_gp[gp];
-    }
-
-    edge_bound.L2Projection(edge_state.ze_avg_at_gp, edge_state.ze_hat);
-    edge_bound.L2Projection(edge_state.qx_avg_at_gp, edge_state.qx_hat);
-    edge_bound.L2Projection(edge_state.qy_avg_at_gp, edge_state.qy_hat);
+    edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
 }
 }
 }

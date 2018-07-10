@@ -32,20 +32,21 @@ inline void LLF_flux(const double gravity,
     double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(gravity * h_in * sp_correction),
                                      std::abs(un_ex) + std::sqrt(gravity * h_ex * sp_correction));
 
+    Vector<double, SWE::n_variables> Fn_in;
+    Vector<double, SWE::n_variables> Fn_ex;
+
+    double nx = surface_normal[GlobalCoord::x];
+    double ny = surface_normal[GlobalCoord::y];
+
     // compute internal flux matrix
     double uuh_in = u_in * q_in[SWE::Variables::qx];
     double vvh_in = v_in * q_in[SWE::Variables::qy];
     double uvh_in = u_in * q_in[SWE::Variables::qy];
     double pe_in  = gravity * (std::pow(q_in[SWE::Variables::ze], 2) / 2 + q_in[SWE::Variables::ze] * bath);
 
-    double ze_flux_x_in = sp * q_in[SWE::Variables::qx];
-    double ze_flux_y_in = q_in[SWE::Variables::qy];
-
-    double qx_flux_x_in = sp * (uuh_in + pe_in);
-    double qx_flux_y_in = uvh_in;
-
-    double qy_flux_x_in = sp * uvh_in;
-    double qy_flux_y_in = vvh_in + pe_in;
+    Fn_in[SWE::Variables::ze] = sp * q_in[SWE::Variables::qx] * nx + q_in[SWE::Variables::qy] * ny;
+    Fn_in[SWE::Variables::qx] = sp * (uuh_in + pe_in) * nx + uvh_in * ny;
+    Fn_in[SWE::Variables::qy] = sp * uvh_in * nx + (vvh_in + pe_in) * ny;
 
     // compute external flux matrix
     double uuh_ex = u_ex * q_ex[SWE::Variables::qx];
@@ -53,29 +54,11 @@ inline void LLF_flux(const double gravity,
     double uvh_ex = u_ex * q_ex[SWE::Variables::qy];
     double pe_ex  = gravity * (std::pow(q_ex[SWE::Variables::ze], 2) / 2 + q_ex[SWE::Variables::ze] * bath);
 
-    double ze_flux_x_ex = sp * q_ex[SWE::Variables::qx];
-    double ze_flux_y_ex = q_ex[SWE::Variables::qy];
+    Fn_ex[SWE::Variables::ze] = q_ex[SWE::Variables::qx] * nx + q_ex[SWE::Variables::qy] * ny;
+    Fn_ex[SWE::Variables::qx] = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
+    Fn_ex[SWE::Variables::qy] = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
 
-    double qx_flux_x_ex = sp * (uuh_ex + pe_ex);
-    double qx_flux_y_ex = uvh_ex;
-
-    double qy_flux_x_ex = sp * uvh_ex;
-    double qy_flux_y_ex = vvh_ex + pe_ex;
-
-    // compute numerical flux
-    double ze_flux_avg = (ze_flux_x_in + ze_flux_x_ex) * surface_normal[GlobalCoord::x] +
-                         (ze_flux_y_in + ze_flux_y_ex) * surface_normal[GlobalCoord::y];
-    double qx_flux_avg = (qx_flux_x_in + qx_flux_x_ex) * surface_normal[GlobalCoord::x] +
-                         (qx_flux_y_in + qx_flux_y_ex) * surface_normal[GlobalCoord::y];
-    double qy_flux_avg = (qy_flux_x_in + qy_flux_x_ex) * surface_normal[GlobalCoord::x] +
-                         (qy_flux_y_in + qy_flux_y_ex) * surface_normal[GlobalCoord::y];
-
-    F_hat[SWE::Variables::ze] =
-        0.5 * (ze_flux_avg + max_eigenvalue * (q_in[SWE::Variables::ze] - q_ex[SWE::Variables::ze]));
-    F_hat[SWE::Variables::qx] =
-        0.5 * (qx_flux_avg + max_eigenvalue * (q_in[SWE::Variables::qx] - q_ex[SWE::Variables::qx]));
-    F_hat[SWE::Variables::qy] =
-        0.5 * (qy_flux_avg + max_eigenvalue * (q_in[SWE::Variables::qy] - q_ex[SWE::Variables::qy]));
+    F_hat = 0.5 * (Fn_in + Fn_ex + max_eigenvalue * (q_in - q_ex));
 }
 }
 }

@@ -7,19 +7,17 @@ template <typename BoundaryType>
 void Problem::prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
-    auto& state    = bound.data.state[stage];
+    auto& state    = bound.data.state[stage + 1];
     auto& boundary = bound.data.boundary[bound.bound_id];
 
-    bound.ComputeUgp(state.ze, boundary.ze_at_gp);
-    bound.ComputeUgp(state.qx, boundary.qx_at_gp);
-    bound.ComputeUgp(state.qy, boundary.qy_at_gp);
+    bound.ComputeUgp(state.q, boundary.q_at_gp);
 
     for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
         boundary.aux_at_gp[gp][SWE::Auxiliaries::h] =
-            boundary.ze_at_gp[gp] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+            boundary.q_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
     }
 
-    /* Compute fluxes at boundary state */
+    /* Compute fluxes at boundary states */
     double nx, ny;
     double u, v;
     double uuh, vvh, uvh, pe;
@@ -28,18 +26,35 @@ void Problem::prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bo
         nx = bound.surface_normal[gp][GlobalCoord::x];
         ny = bound.surface_normal[gp][GlobalCoord::y];
 
-        u = boundary.qx_at_gp[gp] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
-        v = boundary.qy_at_gp[gp] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
+        u = boundary.q_at_gp[gp][SWE::Variables::qx] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
+        v = boundary.q_at_gp[gp][SWE::Variables::qy] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
 
-        uuh = u * boundary.qx_at_gp[gp];
-        vvh = v * boundary.qy_at_gp[gp];
-        uvh = u * boundary.qy_at_gp[gp];
-        pe  = Global::g * (0.5 * std::pow(boundary.ze_at_gp[gp], 2) +
-                          boundary.ze_at_gp[gp] * boundary.aux_at_gp[gp][SWE::Auxiliaries::bath]);
+        uuh = u * boundary.q_at_gp[gp][SWE::Variables::qx];
+        vvh = v * boundary.q_at_gp[gp][SWE::Variables::qy];
+        uvh = u * boundary.q_at_gp[gp][SWE::Variables::qy];
+        pe  = Global::g * (0.5 * std::pow(boundary.q_at_gp[gp][SWE::Variables::ze], 2) +
+                          boundary.q_at_gp[gp][SWE::Variables::ze] * boundary.aux_at_gp[gp][SWE::Auxiliaries::bath]);
 
-        boundary.ze_flux_dot_n_at_gp[gp] = boundary.qx_at_gp[gp] * nx + boundary.qy_at_gp[gp] * ny;
-        boundary.qx_flux_dot_n_at_gp[gp] = (uuh + pe) * nx + uvh * ny;
-        boundary.qy_flux_dot_n_at_gp[gp] = uvh * nx + (vvh + pe) * ny;
+        // Fn terms
+        boundary.Fn_at_gp[gp][SWE::Variables::ze] =
+            boundary.q_at_gp[gp][SWE::Variables::qx] * nx + boundary.q_at_gp[gp][SWE::Variables::qy] * ny;
+        boundary.Fn_at_gp[gp][SWE::Variables::qx] = (uuh + pe) * nx + uvh * ny;
+        boundary.Fn_at_gp[gp][SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
+
+        // dFn/dq terms
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qx) = nx;
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = ny;
+
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) =
+            (-u * u + Global::g * boundary.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx + -u * v * ny;
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = 2 * u * nx + v * ny;
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = u * ny;
+
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::ze) =
+            -u * v * nx + (-v * v + Global::g * boundary.aux_at_gp[gp][SWE::Auxiliaries::h]) * ny;
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qx) = v * nx;
+        boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = u * nx + 2 * v * ny;
     }
 }
 }

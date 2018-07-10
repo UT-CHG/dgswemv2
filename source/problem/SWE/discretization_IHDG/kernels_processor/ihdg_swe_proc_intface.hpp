@@ -7,10 +7,10 @@ template <typename InterfaceType>
 void Problem::prepare_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
-    auto& state_in    = intface.data_in.state[stage];
+    auto& state_in    = intface.data_in.state[stage + 1];
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
 
-    auto& state_ex    = intface.data_ex.state[stage];
+    auto& state_ex    = intface.data_ex.state[stage + 1];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
     intface.ComputeUgpIN(state_in.q, boundary_in.q_at_gp);
@@ -54,10 +54,26 @@ void Problem::prepare_interface_kernel(const RKStepper& stepper, InterfaceType& 
                 (0.5 * std::pow(boundary_in.q_at_gp[gp][SWE::Variables::ze], 2) +
                  boundary_in.q_at_gp[gp][SWE::Variables::ze] * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath]);
 
+        // Fn terms
         boundary_in.Fn_at_gp[gp][SWE::Variables::ze] =
             boundary_in.q_at_gp[gp][SWE::Variables::qx] * nx_in + boundary_in.q_at_gp[gp][SWE::Variables::qy] * ny_in;
         boundary_in.Fn_at_gp[gp][SWE::Variables::qx] = (uuh_in + pe_in) * nx_in + uvh_in * ny_in;
         boundary_in.Fn_at_gp[gp][SWE::Variables::qy] = uvh_in * nx_in + (vvh_in + pe_in) * ny_in;
+
+        // dFn/dq terms
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qx) = nx_in;
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = ny_in;
+
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) =
+            (-u_in * u_in + Global::g * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx_in + -u_in * v_in * ny_in;
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = 2 * u_in * nx_in + v_in * ny_in;
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = u_in * ny_in;
+
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::ze) =
+            -u_in * v_in * nx_in + (-v_in * v_in + Global::g * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h]) * ny_in;
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qx) = v_in * nx_in;
+        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = u_in * nx_in + 2 * v_in * ny_in;
 
         /* EX State */
 
@@ -74,10 +90,28 @@ void Problem::prepare_interface_kernel(const RKStepper& stepper, InterfaceType& 
                 (0.5 * std::pow(boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze], 2) +
                  boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::bath]);
 
+        // Fn terms
         boundary_ex.Fn_at_gp[gp_ex][SWE::Variables::ze] = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx] * nx_ex +
                                                           boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy] * ny_ex;
         boundary_ex.Fn_at_gp[gp_ex][SWE::Variables::qx] = (uuh_ex + pe_ex) * nx_ex + uvh_ex * ny_ex;
         boundary_ex.Fn_at_gp[gp_ex][SWE::Variables::qy] = uvh_ex * nx_ex + (vvh_ex + pe_ex) * ny_ex;
+
+        // dFn/dq terms
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::qx) = nx_ex;
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::qy) = ny_ex;
+
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::ze) =
+            (-u_ex * u_ex + Global::g * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h]) * nx_ex +
+            -u_ex * v_ex * ny_ex;
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::qx) = 2 * u_ex * nx_ex + v_ex * ny_ex;
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::qy) = u_ex * ny_ex;
+
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qy, SWE::Variables::ze) =
+            -u_ex * v_ex * nx_ex +
+            (-v_ex * v_ex + Global::g * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h]) * ny_ex;
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qy, SWE::Variables::qx) = v_ex * nx_ex;
+        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qy, SWE::Variables::qy) = u_ex * nx_ex + 2 * v_ex * ny_ex;
     }
 }
 }

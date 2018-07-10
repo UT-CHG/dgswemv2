@@ -108,7 +108,7 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachElement({
+            this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
 
                 if (nan_found)
