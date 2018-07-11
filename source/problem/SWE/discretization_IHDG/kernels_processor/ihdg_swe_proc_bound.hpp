@@ -4,7 +4,7 @@
 namespace SWE {
 namespace IHDG {
 template <typename BoundaryType>
-void Problem::prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage + 1];

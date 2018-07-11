@@ -13,6 +13,7 @@ class EdgeBoundary {
     Array2D<double> lambda_gp;
     Array2D<double> int_lambda_fact;
     Array3D<double> int_lambda_lambda_fact;
+    Array3D<double> int_phi_lambda_fact;
 
     std::pair<bool, Array2D<double>> m_inv;
 
@@ -29,6 +30,8 @@ class EdgeBoundary {
     T IntegrationLambda(const uint dof, const std::vector<T>& u_gp);
     template <typename T>
     T IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename T>
+    T IntegrationPhiLambda(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
 
     template <typename T>
     void ApplyMinv(const std::vector<T>& rhs, std::vector<T>& solution);
@@ -70,6 +73,16 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
             }
         }
 
+        this->int_phi_lambda_fact.resize(this->boundary.GetMaster().phi_gp.size());
+        for (uint dof_i = 0; dof_i < this->boundary.GetMaster().phi_gp.size(); dof_i++) {
+            this->int_phi_lambda_fact[dof_i] = this->int_lambda_fact;
+            for (uint dof_j = 0; dof_j < this->lambda_gp.size(); dof_j++) {
+                for (uint gp = 0; gp < this->int_phi_lambda_fact[dof_i][dof_j].size(); gp++) {
+                    this->int_phi_lambda_fact[dof_i][dof_j][gp] *= this->boundary.phi_gp[dof_i][gp];
+                }
+            }
+        }
+
         this->m_inv = basis.GetMinv(this->boundary.GetMaster().p);
         for (uint i = 0; i < this->m_inv.second.size(); i++) {
             for (uint j = 0; j < this->m_inv.second[i].size(); j++) {
@@ -78,10 +91,11 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
         }
     }
 
-    uint ndof = this->lambda_gp.size();
-    uint ngp  = integration_rule.first.size();
+    this->edge_data.set_ndof_global(this->lambda_gp.size());
+    this->edge_data.set_ndof_local(this->boundary.data.get_ndof());
+    this->edge_data.set_ngp(integration_rule.first.size());
 
-    this->edge_data = EdgeDataType(ndof, ngp);
+    this->edge_data.initialize();
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
@@ -130,13 +144,28 @@ template <typename T>
 T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambdaLambda(const uint dof_i,
                                                                                           const uint dof_j,
                                                                                           const std::vector<T>& u_gp) {
-    // *** //
     T integral;
 
     integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_lambda_lambda_fact[dof_i][dof_j][gp];
+    }
+
+    return integral;
+}
+
+template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
+template <typename T>
+T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationPhiLambda(const uint dof_i,
+                                                                                       const uint dof_j,
+                                                                                       const std::vector<T>& u_gp) {
+    T integral;
+
+    integral = 0.0;
+
+    for (uint gp = 0; gp < u_gp.size(); gp++) {
+        integral += u_gp[gp] * this->int_phi_lambda_fact[dof_i][dof_j][gp];
     }
 
     return integral;

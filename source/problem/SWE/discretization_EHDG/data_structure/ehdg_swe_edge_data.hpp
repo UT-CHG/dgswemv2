@@ -15,19 +15,23 @@ struct EdgeData {
 
     EdgeGlobal edge_global;
 
-    EdgeData() = default;
-    EdgeData(const uint ndof, const uint ngp)
-        : edge_state(EdgeState(ndof)),
-          edge_internal(EdgeInternal(ngp)),
-          edge_global(EdgeGlobal(ndof, ngp)),
-          ndof(ndof),
-          ngp(ngp) {}
+    void initialize() {
+        this->edge_state    = EdgeState(this->ndof_global);
+        this->edge_internal = EdgeInternal(this->ngp);
 
-    uint get_ndof() { return this->ndof; }
+        this->edge_global = EdgeGlobal(this->ndof_global, this->ngp);
+    }
+
+    uint get_ndof_global() { return this->ndof_global; }
     uint get_ngp() { return this->ngp; }
 
+    void set_ndof_global(const uint ndof_global) { this->ndof_global = ndof_global; }
+    void set_ndof_local(const uint ndof_local) { this->ndof_local = ndof_local; }
+    void set_ngp(const uint ngp) { this->ngp = ngp; }
+
   private:
-    uint ndof;
+    uint ndof_global;
+    uint ndof_local;
     uint ngp;
 };
 }

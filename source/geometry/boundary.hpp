@@ -50,6 +50,10 @@ class Boundary {
 
   public:
     using BoundaryIntegrationType = IntegrationType;
+
+  private:
+    template <uint d, typename BT, typename EDT, typename BdT>
+    friend class EdgeBoundary;
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>

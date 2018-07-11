@@ -7,14 +7,14 @@ namespace SWE {
 namespace IHDG {
 struct Local {
     Local() = default;
-    Local(const uint ndof, const uint ngp)
-        : A(SWE::n_variables * ndof, SWE::n_variables * ndof),
-          B(SWE::n_variables * ndof, SWE::n_variables * ndof),
-          c(SWE::n_variables * ndof) {}
+    Local(const uint ndof)
+        : delta_matrix(SWE::n_variables * ndof, SWE::n_variables * ndof),
+          delta_matrix_inv(SWE::n_variables * ndof, SWE::n_variables * ndof),
+          rhs(SWE::n_variables * ndof) {}
 
-    DMatrix<double> A;
-    DMatrix<double> B;
-    DVector<double> c;
+    DMatrix<double> delta_matrix;
+    DMatrix<double> delta_matrix_inv;
+    DVector<double> rhs;
 };
 }
 }

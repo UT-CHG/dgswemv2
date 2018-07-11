@@ -4,9 +4,10 @@
 namespace SWE {
 namespace IHDG {
 template <typename ElementType>
-void Problem::prepare_source_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
     auto& source   = elt.data.source;
+    auto& local    = elt.data.local;
 
     double t = stepper.GetTimeAtCurrentStage();
 
@@ -92,6 +93,11 @@ void Problem::prepare_source_kernel(const RKStepper& stepper, ElementType& elt) 
             internal.source_at_gp[gp][SWE::Variables::qy] -=
                 source.coriolis_f * internal.q_at_gp[gp][SWE::Variables::qx];
         }
+    }
+
+    for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        blaze::subvector(local.rhs, SWE::n_variables * dof, SWE::n_variables) +=
+            elt.IntegrationPhi(dof, internal.source_at_gp);
     }
 }
 }

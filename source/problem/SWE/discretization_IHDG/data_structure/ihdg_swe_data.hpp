@@ -31,7 +31,7 @@ struct Data {
 
         this->source = Source(this->nnode);
 
-        this->local = Local(this->ndof, this->ngp_internal);
+        this->local = Local(this->ndof);
     }
 
     void resize(const uint nstate) {

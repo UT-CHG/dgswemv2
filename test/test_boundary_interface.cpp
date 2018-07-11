@@ -369,7 +369,7 @@ int main() {
                     std::cerr << "Error found in interface in IntegrationPhiPhiIN" << std::endl;
                 }
             }
-            
+
             interfaces[n_intface].ComputeUgpEX(mod_vals, gp_vals);
 
             for (uint doff = 0; doff < 66; doff++) {

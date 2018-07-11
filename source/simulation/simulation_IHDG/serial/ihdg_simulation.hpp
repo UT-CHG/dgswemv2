@@ -82,23 +82,21 @@ void Simulation<ProblemType>::Run() {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
 
-            this->mesh.CallForEachElement(
-                [this](auto& elt) { ProblemType::prepare_volume_kernel(this->stepper, elt); });
+            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachElement(
-                [this](auto& elt) { ProblemType::prepare_source_kernel(this->stepper, elt); });
+            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); });
 
             this->mesh.CallForEachInterface(
-                [this](auto& intface) { ProblemType::prepare_interface_kernel(this->stepper, intface); });
+                [this](auto& intface) { ProblemType::local_interface_kernel(this->stepper, intface); });
 
             this->mesh.CallForEachBoundary(
-                [this](auto& bound) { ProblemType::prepare_boundary_kernel(this->stepper, bound); });
+                [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); });
 
             this->mesh_skeleton.CallForEachEdgeInterface(
-                [this](auto& edge_int) { ProblemType::prepare_edge_interface_kernel(this->stepper, edge_int); });
+                [this](auto& edge_int) { ProblemType::local_edge_interface_kernel(this->stepper, edge_int); });
 
             this->mesh_skeleton.CallForEachEdgeBoundary(
-                [this](auto& edge_bound) { ProblemType::prepare_edge_boundary_kernel(this->stepper, edge_bound); });
+                [this](auto& edge_bound) { ProblemType::local_edge_boundary_kernel(this->stepper, edge_bound); });
 
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);

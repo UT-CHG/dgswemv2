@@ -242,7 +242,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
             this->int_phi_dphi_fact[dof_i] = this->int_dphi_fact;
             for (uint dof_j = 0; dof_j < this->master->phi_gp.size(); dof_j++) {
                 for (uint dir = 0; dir < dimension; dir++) {
-                    for (uint gp = 0; gp < this->int_phi_phi_fact[dof_i][dof_j].size(); gp++) {
+                    for (uint gp = 0; gp < this->int_phi_dphi_fact[dof_i][dof_j][dir].size(); gp++) {
                         this->int_phi_dphi_fact[dof_i][dof_j][dir][gp] *= this->master->phi_gp[dof_i][gp];
                     }
                 }

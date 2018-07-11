@@ -267,6 +267,14 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
             }
+
+            if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals),
+                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::x, dof, unit_gp),
+                              1.e+05)) {
+                error_found = true;
+
+                std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
+            }
         }
 
         triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
@@ -275,6 +283,14 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
             if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::y, doff, gp_vals),
                               triangle.IntegrationPhiDPhi(dof, GlobalCoord::y, doff, unit_gp),
                               1.e+03)) {
+                error_found = true;
+
+                std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
+            }
+
+            if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals),
+                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::y, dof, unit_gp),
+                              1.e+05)) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;

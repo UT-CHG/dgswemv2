@@ -79,6 +79,10 @@ class Interface {
 
   public:
     using InterfaceIntegrationType = IntegrationType;
+
+  private:
+    template <uint d, typename BT, typename EDT, typename InT>
+    friend class EdgeInterface;
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>

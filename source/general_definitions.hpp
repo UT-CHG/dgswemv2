@@ -52,6 +52,8 @@ using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 #include <eigen3/Eigen/Dense>
 
 #include <blaze/Math.h>
+#include <blaze/math/Subvector.h>
+#include <blaze/math/Submatrix.h>
 #include <blaze/math/Column.h>
 
 template <typename T, uint m>

@@ -4,7 +4,7 @@
 namespace SWE {
 namespace IHDG {
 template <typename DistributedBoundaryType>
-void Problem::prepare_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];

@@ -7,15 +7,40 @@
 namespace SWE {
 namespace IHDG {
 template <typename EdgeBoundaryType>
-void Problem::prepare_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_state    = edge_bound.edge_data.edge_state;
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+    auto& local    = edge_bound.boundary.data.local;
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
+            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+    }
+
     // Add tau * del_q terms to F_hat
     add_F_hat_tau_terms_bound_LF(edge_bound);
 
-    // Add dtau/dq * del_q - tau * del_q term to dF_hat_dq_hat
-    // and tau * del_q term to dF_hat_dq
+    // Add dtau/dq_hat * del_q - tau term to dF_hat_dq_hat
+    // and tau term to dF_hat_dq
     add_dF_hat_tau_terms_bound_LF(edge_bound);
 
-    edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
+    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
+            blaze::submatrix(local.delta_matrix,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) +=
+                edge_bound.boundary.IntegrationPhiPhi(dof_j, dof_i, boundary.dF_hat_dq_at_gp);
+        }
+
+        blaze::subvector(local.rhs, SWE::n_variables * dof_i, SWE::n_variables) +=
+            -edge_bound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
+    }
 }
 }
 }

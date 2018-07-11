@@ -40,7 +40,7 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
         q_norm      = 0;
         q_norm_prev = 0;
 
-        for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
+        for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof_global(); ++dof) {
             q_norm += sqrNorm(edge_state.q_hat[dof]);
             q_norm_prev += sqrNorm(edge_state.q_hat_prev[dof]);
         }
@@ -86,8 +86,8 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     /* Assemble global system */
 
-    for (uint dof_i = 0; dof_i < edge_dbound.edge_data.get_ndof(); ++dof_i) {
-        for (uint dof_j = 0; dof_j < edge_dbound.edge_data.get_ndof(); ++dof_j) {
+    for (uint dof_i = 0; dof_i < edge_dbound.edge_data.get_ndof_global(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_dbound.edge_data.get_ndof_global(); ++dof_j) {
             Matrix<double, 3, 3> A =
                 edge_dbound.IntegrationLambdaLambda(dof_i, dof_j, edge_global.delta_hat_kernel_at_gp);
 
@@ -119,7 +119,7 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     edge_state.q_hat_prev = edge_state.q_hat;
 
-    for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
+    for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof_global(); ++dof) {
         edge_state.q_hat[dof][SWE::Variables::ze] += edge_global.global_delta_q(3 * dof);
         edge_state.q_hat[dof][SWE::Variables::qx] += edge_global.global_delta_q(3 * dof + 1);
         edge_state.q_hat[dof][SWE::Variables::qy] += edge_global.global_delta_q(3 * dof + 2);

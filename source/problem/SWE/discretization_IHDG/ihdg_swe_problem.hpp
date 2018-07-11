@@ -101,28 +101,28 @@ struct Problem {
     /* prepare kernels */
 
     template <typename ElementType>
-    static void prepare_volume_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void prepare_source_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename InterfaceType>
-    static void prepare_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
 
     template <typename BoundaryType>
-    static void prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void prepare_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
     template <typename EdgeInterfaceType>
-    static void prepare_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+    static void local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeBoundaryType>
-    static void prepare_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    static void local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeDistributedType>
-    static void prepare_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    static void local_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     /* prepare step */
 
