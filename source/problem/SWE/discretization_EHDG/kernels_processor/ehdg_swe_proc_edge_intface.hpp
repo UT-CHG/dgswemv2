@@ -12,7 +12,7 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     /* Take average of in/ex state as initial trace state */
-    uint gp_ex = 0;
+    uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 

@@ -98,7 +98,7 @@ struct Problem {
 
     // processor kernels
 
-    /* prepare kernels */
+    /* local step */
 
     template <typename ElementType>
     static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
@@ -124,7 +124,17 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void local_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
-    /* prepare step */
+    /* local step */
+
+    /* global step */
+
+    template <typename EdgeInterfaceType>
+    static void global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename EdgeBoundaryType>
+    static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    /* local step */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

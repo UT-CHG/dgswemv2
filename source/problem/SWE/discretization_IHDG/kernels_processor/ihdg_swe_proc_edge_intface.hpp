@@ -90,6 +90,11 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
         }
     }
 }
+
+template <typename EdgeInterfaceType>
+void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+    edge_int.interface.specialization.ComputeGlobalKernels(edge_int);
+}
 }
 }
 

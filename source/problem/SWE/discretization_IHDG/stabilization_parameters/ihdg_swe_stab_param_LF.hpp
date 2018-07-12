@@ -16,7 +16,7 @@ inline void add_F_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     double u_hat, v_hat, un_hat;
     double tau;
 
-    uint gp_ex = 0;
+    uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
@@ -79,7 +79,7 @@ inline void add_dF_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     Vector<double, SWE::n_variables> del_q_in;
     Vector<double, SWE::n_variables> del_q_ex;
 
-    uint gp_ex = 0;
+    uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 

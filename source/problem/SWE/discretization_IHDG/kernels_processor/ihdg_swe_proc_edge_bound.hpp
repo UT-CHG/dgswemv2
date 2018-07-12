@@ -58,6 +58,10 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
         }
     }
 }
+
+template <typename EdgeBoundaryType>
+void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+}
 }
 }
 

@@ -82,6 +82,7 @@ void Simulation<ProblemType>::Run() {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
 
+            /* Local Step */
             this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
 
             this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); });
@@ -97,6 +98,15 @@ void Simulation<ProblemType>::Run() {
 
             this->mesh_skeleton.CallForEachEdgeBoundary(
                 [this](auto& edge_bound) { ProblemType::local_edge_boundary_kernel(this->stepper, edge_bound); });
+            /* Local Step */
+
+            /* Global Step */
+            this->mesh_skeleton.CallForEachEdgeInterface(
+                [this](auto& edge_int) { ProblemType::global_edge_interface_kernel(this->stepper, edge_int); });
+
+            this->mesh_skeleton.CallForEachEdgeBoundary(
+                [this](auto& edge_bound) { ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound); });
+            /* Global Step */
 
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);

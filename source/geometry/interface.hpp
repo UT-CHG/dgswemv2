@@ -187,7 +187,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->surface_normal_ex = this->surface_normal_in;  // same dimensions
 
         uint ngp   = this->surface_normal_ex.size();
-        uint gp_ex = 0;
+        uint gp_ex;
         for (uint gp = 0; gp < this->surface_normal_ex.size(); gp++) {
             gp_ex = ngp - gp - 1;
             for (uint dir = 0; dir < this->surface_normal_ex[gp].size(); dir++) {
