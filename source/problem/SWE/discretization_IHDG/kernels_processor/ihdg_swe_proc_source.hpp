@@ -8,7 +8,7 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
     auto& source   = elt.data.source;
 
-    double t = stepper.GetTimeAtCurrentStage();
+    double t = stepper.GetTimeAtCurrentStage() + stepper.GetDT();
 
     if (SWE::SourceTerms::function_source) {
         auto source_u = [t](Point<2>& pt) { return SWE::source_u(t, pt); };

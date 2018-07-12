@@ -66,7 +66,7 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
         boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = ny_in;
 
         boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) =
-            (-u_in * u_in + Global::g * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx_in + -u_in * v_in * ny_in;
+            (-u_in * u_in + Global::g * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx_in - u_in * v_in * ny_in;
         boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = 2 * u_in * nx_in + v_in * ny_in;
         boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = u_in * ny_in;
 
@@ -102,8 +102,8 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
         boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::qy) = ny_ex;
 
         boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::ze) =
-            (-u_ex * u_ex + Global::g * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h]) * nx_ex +
-            -u_ex * v_ex * ny_ex;
+            (-u_ex * u_ex + Global::g * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h]) * nx_ex -
+            u_ex * v_ex * ny_ex;
         boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::qx) = 2 * u_ex * nx_ex + v_ex * ny_ex;
         boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::qy) = u_ex * ny_ex;
 

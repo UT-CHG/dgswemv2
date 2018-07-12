@@ -38,7 +38,7 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
 
         // Flux terms
         internal.Fx_at_gp[gp][SWE::Variables::ze] = internal.q_at_gp[gp][SWE::Variables::qx];
-        internal.Fx_at_gp[gp][SWE::Variables::qx] = (uuh + pe);
+        internal.Fx_at_gp[gp][SWE::Variables::qx] = uuh + pe;
         internal.Fx_at_gp[gp][SWE::Variables::qy] = uvh;
 
         internal.Fy_at_gp[gp][SWE::Variables::ze] = internal.q_at_gp[gp][SWE::Variables::qy];
@@ -91,7 +91,7 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
                              SWE::n_variables * dof_j,
                              SWE::n_variables,
                              SWE::n_variables) =
-                elt.IntegrationPhiPhi(dof_j, dof_i, internal.kronecker_DT_at_gp) -
+                elt.IntegrationPhiPhi(dof_i, dof_j, internal.kronecker_DT_at_gp) -
                 elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, internal.dFx_dq_at_gp) -
                 elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp);
         }

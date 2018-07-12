@@ -47,7 +47,7 @@ void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& boun
         boundary.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = ny;
 
         boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) =
-            (-u * u + Global::g * boundary.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx + -u * v * ny;
+            (-u * u + Global::g * boundary.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx - u * v * ny;
         boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = 2 * u * nx + v * ny;
         boundary.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = u * ny;
 
