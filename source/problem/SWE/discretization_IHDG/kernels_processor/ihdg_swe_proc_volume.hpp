@@ -10,7 +10,6 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& state_prev = elt.data.state[stage];
     auto& state      = elt.data.state[stage + 1];
     auto& internal   = elt.data.internal;
-    auto& local      = elt.data.local;
 
     elt.ComputeUgp(state.q, internal.q_at_gp);
     elt.ComputeUgp(state_prev.q, internal.q_prev_at_gp);
@@ -81,9 +80,13 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
         internal.dFy_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = 2 * v;
     }
 
+    // Initialize delta and rhs containers
+    internal.delta_local.resize(SWE::n_variables * elt.data.get_ndof(), SWE::n_variables * elt.data.get_ndof(), false);
+    internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof(), false);
+
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < elt.data.get_ndof(); dof_j++) {
-            blaze::submatrix(local.delta_matrix,
+            blaze::submatrix(internal.delta_local,
                              SWE::n_variables * dof_i,
                              SWE::n_variables * dof_j,
                              SWE::n_variables,
@@ -93,7 +96,7 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
                 elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp);
         }
 
-        blaze::subvector(local.rhs, SWE::n_variables * dof_i, SWE::n_variables) =
+        blaze::subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) =
             -elt.IntegrationPhi(dof_i, internal.del_q_DT_at_gp) +
             elt.IntegrationDPhi(GlobalCoord::x, dof_i, internal.Fx_at_gp) +
             elt.IntegrationDPhi(GlobalCoord::y, dof_i, internal.Fy_at_gp);

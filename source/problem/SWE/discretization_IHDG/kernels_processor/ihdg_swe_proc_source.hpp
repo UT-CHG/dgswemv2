@@ -7,7 +7,6 @@ template <typename ElementType>
 void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
     auto& source   = elt.data.source;
-    auto& local    = elt.data.local;
 
     double t = stepper.GetTimeAtCurrentStage();
 
@@ -96,7 +95,7 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
     }
 
     for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-        blaze::subvector(local.rhs, SWE::n_variables * dof, SWE::n_variables) +=
+        blaze::subvector(internal.rhs_local, SWE::n_variables * dof, SWE::n_variables) +=
             elt.IntegrationPhi(dof, internal.source_at_gp);
     }
 }

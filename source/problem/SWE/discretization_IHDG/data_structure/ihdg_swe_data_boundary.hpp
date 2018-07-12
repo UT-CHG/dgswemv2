@@ -16,6 +16,10 @@ struct Boundary {
     std::vector<Vector<double, SWE::n_variables>> F_hat_at_gp;
     std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_at_gp;
     std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_hat_at_gp;
+    std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> delta_global_kernel_at_gp;
+
+    DMatrix<double> delta_global;
+    DMatrix<double> delta_hat_local;
 };
 }
 }

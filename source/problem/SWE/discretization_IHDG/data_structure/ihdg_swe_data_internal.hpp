@@ -43,6 +43,10 @@ struct Internal {
     std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> kronecker_DT_at_gp;
     std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> dFx_dq_at_gp;
     std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> dFy_dq_at_gp;
+
+    DMatrix<double> delta_local;
+    DMatrix<double> delta_local_inv;
+    DVector<double> rhs_local;
 };
 }
 }

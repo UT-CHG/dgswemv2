@@ -11,7 +11,7 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
-    auto& local    = edge_bound.boundary.data.local;
+    auto& internal = edge_bound.boundary.data.internal;
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
@@ -28,9 +28,14 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
     // and tau term to dF_hat_dq
     add_dF_hat_tau_terms_bound_LF(edge_bound);
 
+    // Initialize delta_hat container
+    boundary.delta_hat_local.resize(SWE::n_variables * edge_bound.boundary.data.get_ndof(),
+                                    SWE::n_variables * edge_bound.edge_data.get_ndof(),
+                                    false);
+
     for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
-            blaze::submatrix(local.delta_matrix,
+            blaze::submatrix(internal.delta_local,
                              SWE::n_variables * dof_i,
                              SWE::n_variables * dof_j,
                              SWE::n_variables,
@@ -38,8 +43,19 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
                 edge_bound.boundary.IntegrationPhiPhi(dof_j, dof_i, boundary.dF_hat_dq_at_gp);
         }
 
-        blaze::subvector(local.rhs, SWE::n_variables * dof_i, SWE::n_variables) +=
+        blaze::subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) +=
             -edge_bound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
+    }
+
+    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); dof_j++) {
+            blaze::submatrix(boundary.delta_hat_local,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_bound.IntegrationPhiLambda(dof_i, dof_j, boundary.dF_hat_dq_hat_at_gp);
+        }
     }
 }
 }

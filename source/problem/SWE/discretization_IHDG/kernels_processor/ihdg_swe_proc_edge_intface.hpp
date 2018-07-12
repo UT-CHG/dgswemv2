@@ -10,8 +10,8 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
-    auto& local_in = edge_int.interface.data_in.local;
-    auto& local_ex = edge_int.interface.data_ex.local;
+    auto& internal_in = edge_int.interface.data_in.internal;
+    auto& internal_ex = edge_int.interface.data_ex.internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
@@ -32,7 +32,7 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
 
     for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); dof_j++) {
-            blaze::submatrix(local_in.delta_matrix,
+            blaze::submatrix(internal_in.delta_local,
                              SWE::n_variables * dof_i,
                              SWE::n_variables * dof_j,
                              SWE::n_variables,
@@ -40,13 +40,13 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                 edge_int.interface.IntegrationPhiPhiIN(dof_j, dof_i, boundary_in.dF_hat_dq_at_gp);
         }
 
-        blaze::subvector(local_in.rhs, SWE::n_variables * dof_i, SWE::n_variables) +=
+        blaze::subvector(internal_in.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) +=
             -edge_int.interface.IntegrationPhiIN(dof_i, boundary_in.F_hat_at_gp);
     }
 
     for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); dof_j++) {
-            blaze::submatrix(local_ex.delta_matrix,
+            blaze::submatrix(internal_ex.delta_local,
                              SWE::n_variables * dof_i,
                              SWE::n_variables * dof_j,
                              SWE::n_variables,
@@ -54,8 +54,40 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                 edge_int.interface.IntegrationPhiPhiEX(dof_j, dof_i, boundary_ex.dF_hat_dq_at_gp);
         }
 
-        blaze::subvector(local_ex.rhs, SWE::n_variables * dof_i, SWE::n_variables) +=
+        blaze::subvector(internal_ex.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) +=
             -edge_int.interface.IntegrationPhiEX(dof_i, boundary_ex.F_hat_at_gp);
+    }
+
+    // Initialize delta_hat container
+    boundary_in.delta_hat_local.resize(SWE::n_variables * edge_int.interface.data_in.get_ndof(),
+                                       SWE::n_variables * edge_int.edge_data.get_ndof(),
+                                       false);
+
+    for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
+            blaze::submatrix(boundary_in.delta_hat_local,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_int.IntegrationPhiLambdaIN(dof_i, dof_j, boundary_in.dF_hat_dq_hat_at_gp);
+        }
+    }
+
+    // Initialize delta_hat container
+    boundary_ex.delta_hat_local.resize(SWE::n_variables * edge_int.interface.data_ex.get_ndof(),
+                                       SWE::n_variables * edge_int.edge_data.get_ndof(),
+                                       false);
+
+    for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
+            blaze::submatrix(boundary_in.delta_hat_local,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_int.IntegrationPhiLambdaEX(dof_i, dof_j, boundary_ex.dF_hat_dq_hat_at_gp);
+        }
     }
 }
 }

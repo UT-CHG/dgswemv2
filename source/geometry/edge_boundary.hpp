@@ -91,8 +91,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
         }
     }
 
-    this->edge_data.set_ndof_global(this->lambda_gp.size());
-    this->edge_data.set_ndof_local(this->boundary.data.get_ndof());
+    this->edge_data.set_ndof(this->lambda_gp.size());
     this->edge_data.set_ngp(integration_rule.first.size());
 
     this->edge_data.initialize();
