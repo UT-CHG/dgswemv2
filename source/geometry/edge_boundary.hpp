@@ -73,8 +73,8 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
             }
         }
 
-        this->int_phi_lambda_fact.resize(this->boundary.GetMaster().phi_gp.size());
-        for (uint dof_i = 0; dof_i < this->boundary.GetMaster().phi_gp.size(); dof_i++) {
+        this->int_phi_lambda_fact.resize(this->boundary.phi_gp.size());
+        for (uint dof_i = 0; dof_i < this->boundary.phi_gp.size(); dof_i++) {
             this->int_phi_lambda_fact[dof_i] = this->int_lambda_fact;
             for (uint dof_j = 0; dof_j < this->lambda_gp.size(); dof_j++) {
                 for (uint gp = 0; gp < this->int_phi_lambda_fact[dof_i][dof_j].size(); gp++) {
