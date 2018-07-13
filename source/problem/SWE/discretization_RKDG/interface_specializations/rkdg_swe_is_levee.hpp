@@ -71,7 +71,7 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     Vector<double, SWE::n_variables> q_in_ex, q_ex_ex;
     double gravity_in, gravity_ex;
 
-    uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+    uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
     uint gp_ex;
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = ngp - gp - 1;

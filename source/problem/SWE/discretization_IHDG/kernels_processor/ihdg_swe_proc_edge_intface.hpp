@@ -93,7 +93,63 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
 
 template <typename EdgeInterfaceType>
 void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+    auto& edge_internal = edge_int.edge_data.edge_internal;
+
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+
     edge_int.interface.specialization.ComputeGlobalKernels(edge_int);
+
+    // Initialize delta_hat and rhs containers
+    edge_internal.delta_hat_global.resize(
+        SWE::n_variables * edge_int.edge_data.get_ndof(), SWE::n_variables * edge_int.edge_data.get_ndof(), false);
+    edge_internal.rhs_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(), false);
+
+    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
+            blaze::submatrix(edge_internal.delta_hat_global,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
+        }
+
+        blaze::subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
+            -edge_int.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
+    }
+
+    // Initialize delta_hat and rhs containers
+    boundary_in.delta_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
+                                    SWE::n_variables * edge_int.interface.data_in.get_ndof(),
+                                    false);
+
+    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); dof_j++) {
+            blaze::submatrix(boundary_in.delta_global,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_int.IntegrationPhiLambdaIN(dof_j, dof_i, boundary_in.delta_global_kernel_at_gp);
+        }
+    }
+
+    // Initialize delta_hat and rhs containers
+    boundary_ex.delta_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
+                                    SWE::n_variables * edge_int.interface.data_ex.get_ndof(),
+                                    false);
+
+    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); dof_j++) {
+            blaze::submatrix(boundary_ex.delta_global,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_int.IntegrationPhiLambdaEX(dof_j, dof_i, boundary_ex.delta_global_kernel_at_gp);
+        }
+    }
 }
 }
 }

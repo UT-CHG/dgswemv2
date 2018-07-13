@@ -37,7 +37,7 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
         edge_internal.delta_hat_global_kernel_at_gp[gp] = boundary_in.dF_hat_dq_hat_at_gp[gp];
         edge_internal.delta_hat_global_kernel_at_gp[gp] += boundary_ex.dF_hat_dq_hat_at_gp[gp_ex];
 
-        boundary_in.delta_global_kernel_at_gp[gp] = boundary_in.dF_hat_dq_at_gp[gp];
+        boundary_in.delta_global_kernel_at_gp[gp]    = boundary_in.dF_hat_dq_at_gp[gp];
         boundary_ex.delta_global_kernel_at_gp[gp_ex] = boundary_in.dF_hat_dq_at_gp[gp_ex];
     }
 }

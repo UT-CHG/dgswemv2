@@ -34,7 +34,7 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
     double nx_ex, ny_ex;
     double u_ex, v_ex;
     double uuh_ex, vvh_ex, uvh_ex, pe_ex;
-  
+
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = intface.data_in.get_ngp_boundary(intface.bound_id_in) - gp - 1;
 

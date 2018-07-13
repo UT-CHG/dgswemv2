@@ -26,7 +26,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
     // assemble numerical fluxes
-    uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+    uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
     uint gp_ex;
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = ngp - gp - 1;
