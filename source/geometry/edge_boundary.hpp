@@ -10,6 +10,8 @@ class EdgeBoundary {
     BoundaryType& boundary;
 
   private:
+    uint ID;
+
     Array2D<double> lambda_gp;
     Array2D<double> int_lambda_fact;
     Array3D<double> int_lambda_lambda_fact;
@@ -19,6 +21,9 @@ class EdgeBoundary {
 
   public:
     EdgeBoundary(BoundaryType& boundary);
+
+    uint GetID() { return this->ID; }
+    void SetID(uint ID) { this->ID = ID; }
 
     template <typename T>
     void L2Projection(const std::vector<T>& u_gp, std::vector<T>& projection);

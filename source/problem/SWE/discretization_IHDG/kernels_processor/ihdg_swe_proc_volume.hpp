@@ -80,10 +80,6 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
         internal.dFy_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = 2 * v;
     }
 
-    // Initialize delta and rhs containers
-    internal.delta_local.resize(SWE::n_variables * elt.data.get_ndof(), SWE::n_variables * elt.data.get_ndof(), false);
-    internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof(), false);
-
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < elt.data.get_ndof(); dof_j++) {
             blaze::submatrix(internal.delta_local,

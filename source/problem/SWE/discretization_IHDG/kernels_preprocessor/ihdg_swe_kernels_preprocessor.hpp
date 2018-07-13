@@ -10,5 +10,6 @@
 #include "ihdg_swe_pre_create_edge_bound.hpp"
 #include "ihdg_swe_pre_create_edge_dbound.hpp"
 #include "ihdg_swe_pre_init_data.hpp"
+#include "ihdg_swe_pre_init_global_prob.hpp"
 
 #endif

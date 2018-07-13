@@ -16,7 +16,7 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
     intface.ComputeUgpIN(state_in.q, boundary_in.q_at_gp);
     intface.ComputeUgpEX(state_ex.q, boundary_ex.q_at_gp);
 
-    uint gp_ex;
+    uint gp_ex = 0;
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = intface.data_in.get_ngp_boundary(intface.bound_id_in) - gp - 1;
 

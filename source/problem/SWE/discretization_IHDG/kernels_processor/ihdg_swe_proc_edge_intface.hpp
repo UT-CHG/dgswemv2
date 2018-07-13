@@ -58,11 +58,6 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
             -edge_int.interface.IntegrationPhiEX(dof_i, boundary_ex.F_hat_at_gp);
     }
 
-    // Initialize delta_hat container
-    boundary_in.delta_hat_local.resize(SWE::n_variables * edge_int.interface.data_in.get_ndof(),
-                                       SWE::n_variables * edge_int.edge_data.get_ndof(),
-                                       false);
-
     for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
             blaze::submatrix(boundary_in.delta_hat_local,
@@ -73,11 +68,6 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                 edge_int.IntegrationPhiLambdaIN(dof_i, dof_j, boundary_in.dF_hat_dq_hat_at_gp);
         }
     }
-
-    // Initialize delta_hat container
-    boundary_ex.delta_hat_local.resize(SWE::n_variables * edge_int.interface.data_ex.get_ndof(),
-                                       SWE::n_variables * edge_int.edge_data.get_ndof(),
-                                       false);
 
     for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
@@ -100,11 +90,6 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
 
     edge_int.interface.specialization.ComputeGlobalKernels(edge_int);
 
-    // Initialize delta_hat and rhs containers
-    edge_internal.delta_hat_global.resize(
-        SWE::n_variables * edge_int.edge_data.get_ndof(), SWE::n_variables * edge_int.edge_data.get_ndof(), false);
-    edge_internal.rhs_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(), false);
-
     for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
             blaze::submatrix(edge_internal.delta_hat_global,
@@ -119,11 +104,6 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
             -edge_int.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
     }
 
-    // Initialize delta_hat and rhs containers
-    boundary_in.delta_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
-                                    SWE::n_variables * edge_int.interface.data_in.get_ndof(),
-                                    false);
-
     for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); dof_j++) {
             blaze::submatrix(boundary_in.delta_global,
@@ -134,11 +114,6 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
                 edge_int.IntegrationPhiLambdaIN(dof_j, dof_i, boundary_in.delta_global_kernel_at_gp);
         }
     }
-
-    // Initialize delta_hat and rhs containers
-    boundary_ex.delta_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
-                                    SWE::n_variables * edge_int.interface.data_ex.get_ndof(),
-                                    false);
 
     for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); dof_j++) {

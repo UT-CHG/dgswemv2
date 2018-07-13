@@ -20,12 +20,23 @@ class Simulation {
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
+    DMatrix<DMatrix<double>> delta_local_inv;
+    DMatrix<DMatrix<double>> delta_hat_local;
+    DVector<DVector<double>> rhs_local;
+
+    DMatrix<DMatrix<double>> delta_global;
+    DMatrix<DMatrix<double>> delta_hat_global;
+    DVector<DVector<double>> rhs_global;
+
   public:
     Simulation() = default;
     Simulation(const std::string& input_string);
 
     void Run();
     void ComputeL2Residual();
+
+  private:
+    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -71,6 +82,8 @@ void Simulation<ProblemType>::Run() {
     }
 
     this->mesh.CallForEachElement([this](auto& elt) { elt.data.resize(this->n_stages + 1); });
+
+    ProblemType::initialize_global_problem(this);
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);

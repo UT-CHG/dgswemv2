@@ -1,7 +1,7 @@
 #ifndef IHDG_SWE_PRE_INIT_DATA_HPP
 #define IHDG_SWE_PRE_INIT_DATA_HPP
 
-#include "utilities//file_exists.hpp"
+#include "utilities/file_exists.hpp"
 
 namespace SWE {
 namespace IHDG {
