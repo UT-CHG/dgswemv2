@@ -68,7 +68,6 @@ template <typename EdgeInterfaceType>
 void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
-    auto& edge_global   = edge_int.edge_data.edge_global;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
 
@@ -87,40 +86,32 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
 
     for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); ++dof_j) {
-            Matrix<double, 3, 3> A = edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_global.delta_hat_kernel_at_gp);
-
-            edge_global.global_matrix(3 * dof_i, 3 * dof_j)     = A(0, 0);
-            edge_global.global_matrix(3 * dof_i + 1, 3 * dof_j) = A(1, 0);
-            edge_global.global_matrix(3 * dof_i + 2, 3 * dof_j) = A(2, 0);
-
-            edge_global.global_matrix(3 * dof_i, 3 * dof_j + 1)     = A(0, 1);
-            edge_global.global_matrix(3 * dof_i + 1, 3 * dof_j + 1) = A(1, 1);
-            edge_global.global_matrix(3 * dof_i + 2, 3 * dof_j + 1) = A(2, 1);
-
-            edge_global.global_matrix(3 * dof_i, 3 * dof_j + 2)     = A(0, 2);
-            edge_global.global_matrix(3 * dof_i + 1, 3 * dof_j + 2) = A(1, 2);
-            edge_global.global_matrix(3 * dof_i + 2, 3 * dof_j + 2) = A(2, 2);
+            blaze::submatrix(edge_internal.delta_hat_global,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
         }
 
-        Vector<double, 3> b = edge_int.IntegrationLambda(dof_i, edge_global.rhs_kernel_at_gp);
-
-        edge_global.global_rhs(3 * dof_i)     = b[0];
-        edge_global.global_rhs(3 * dof_i + 1) = b[1];
-        edge_global.global_rhs(3 * dof_i + 2) = b[2];
+        blaze::subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
+            -edge_int.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
     }
 
     /* Solve global system for delta_q */
 
-    edge_global.global_delta_q = edge_global.global_matrix.fullPivLu().solve(edge_global.global_rhs);
+    int ipiv[edge_internal.rhs_global.size()];
+
+    blaze::gesv(edge_internal.delta_hat_global, edge_internal.rhs_global, ipiv);
 
     /* Increment q */
 
     edge_state.q_hat_prev = edge_state.q_hat;
 
     for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-        edge_state.q_hat[dof][SWE::Variables::ze] += edge_global.global_delta_q(3 * dof);
-        edge_state.q_hat[dof][SWE::Variables::qx] += edge_global.global_delta_q(3 * dof + 1);
-        edge_state.q_hat[dof][SWE::Variables::qy] += edge_global.global_delta_q(3 * dof + 2);
+        edge_state.q_hat[dof][SWE::Variables::ze] += edge_internal.rhs_global[3 * dof];
+        edge_state.q_hat[dof][SWE::Variables::qx] += edge_internal.rhs_global[3 * dof + 1];
+        edge_state.q_hat[dof][SWE::Variables::qy] += edge_internal.rhs_global[3 * dof + 2];
     }
 }
 }

@@ -137,7 +137,14 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    /* local step */
+    /* global step */
+
+    /* solving global system */
+
+    template <typename SimulationType>
+    static void assemble_global_problem(SimulationType* simulation);
+
+    /* solving global system */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

@@ -63,6 +63,17 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
     edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
 
     for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
+            blaze::submatrix(boundary.delta_global,
+                             SWE::n_variables * dof_i,
+                             SWE::n_variables * dof_j,
+                             SWE::n_variables,
+                             SWE::n_variables) =
+                edge_bound.IntegrationPhiLambda(dof_j, dof_i, boundary.delta_global_kernel_at_gp);
+        }
+    }
+
+    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); dof_j++) {
             blaze::submatrix(edge_internal.delta_hat_global,
                              SWE::n_variables * dof_i,
@@ -74,17 +85,6 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
 
         blaze::subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
             -edge_bound.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
-    }
-
-    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
-            blaze::submatrix(boundary.delta_global,
-                             SWE::n_variables * dof_i,
-                             SWE::n_variables * dof_j,
-                             SWE::n_variables,
-                             SWE::n_variables) =
-                edge_bound.IntegrationPhiLambda(dof_j, dof_i, boundary.delta_global_kernel_at_gp);
-        }
     }
 }
 }

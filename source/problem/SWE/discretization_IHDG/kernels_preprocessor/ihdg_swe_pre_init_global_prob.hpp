@@ -5,24 +5,27 @@ namespace SWE {
 namespace IHDG {
 template <typename SimulationType>
 void Problem::initialize_global_problem(SimulationType* simulation) {
-    uint dof_local = simulation->mesh.GetNumberElements();
-    uint dof_global =
-        simulation->mesh_skeleton.GetNumberEdgeInterfaces() + simulation->mesh_skeleton.GetNumberEdgeBoundaries();
+    uint dof_local  = simulation->mesh.GetNumberElements() * 9;  // hardcode for p=1
+    uint dof_global = simulation->mesh_skeleton.GetNumberEdgeInterfaces() * 6 +
+                      simulation->mesh_skeleton.GetNumberEdgeBoundaries() * 6;  // hardcode for p=1
 
     simulation->delta_local_inv.resize(dof_local, dof_local);
     simulation->delta_hat_local.resize(dof_local, dof_global);
     simulation->rhs_local.resize(dof_local);
 
-    simulation->delta_global.resize(dof_global, dof_global);
-    simulation->delta_hat_global.resize(dof_global, dof_local);
+    simulation->delta_global.resize(dof_global, dof_local);
+    simulation->delta_hat_global.resize(dof_global, dof_global);
     simulation->rhs_global.resize(dof_global);
+
+    simulation->global.resize(dof_global, dof_global);
+    simulation->rhs.resize(dof_global);
 
     simulation->mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
 
         // Set IDs for global matrix construction
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            elt.data.boundary[bound_id].ElementID = elt.GetID();
+            elt.data.boundary[bound_id].elt_ID = elt.GetID();
         }
 
         // Initialize delta_local and rhs_local containers
@@ -37,8 +40,8 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
         // Set IDs for global matrix construction
-        boundary_in.EdgeID = edge_int.GetID();
-        boundary_ex.EdgeID = edge_int.GetID();
+        boundary_in.edg_ID = edge_int.GetID();
+        boundary_ex.edg_ID = edge_int.GetID();
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
@@ -64,7 +67,7 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
         // Set IDs for global matrix construction
-        boundary.EdgeID = edge_bound.GetID();
+        boundary.edg_ID = edge_bound.GetID();
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),

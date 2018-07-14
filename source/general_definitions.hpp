@@ -68,6 +68,9 @@ using DVector = blaze::DynamicVector<T>;
 template <typename T>
 using DMatrix = blaze::DynamicMatrix<T>;
 
+template <typename T>
+using SparseMatrix = blaze::CompressedMatrix<T>;
+
 /* This will have to go into linear_algebra.hpp */
 
 namespace Basis {

@@ -61,6 +61,9 @@ class HPXSimulationUnit : public hpx::components::simple_component_base<HPXSimul
 
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
+
+  private:
+    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -113,6 +116,8 @@ void HPXSimulationUnit<ProblemType>::Launch() {
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
+
+    ProblemType::initialize_global_problem(this);
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);

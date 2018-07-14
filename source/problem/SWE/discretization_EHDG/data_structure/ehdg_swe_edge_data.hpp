@@ -5,7 +5,6 @@
 
 #include "ehdg_swe_edge_data_state.hpp"
 #include "ehdg_swe_edge_data_internal.hpp"
-#include "ehdg_swe_edge_data_global.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -13,13 +12,9 @@ struct EdgeData {
     EdgeState edge_state;
     EdgeInternal edge_internal;
 
-    EdgeGlobal edge_global;
-
     void initialize() {
         this->edge_state    = EdgeState(this->ndof);
         this->edge_internal = EdgeInternal(this->ngp);
-
-        this->edge_global = EdgeGlobal(this->ndof, this->ngp);
     }
 
     uint get_ndof() { return this->ndof; }

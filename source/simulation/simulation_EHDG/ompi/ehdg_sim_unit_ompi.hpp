@@ -40,6 +40,9 @@ class OMPISimulationUnit {
     void Step();
 
     double ResidualL2();
+
+  private:
+    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -100,6 +103,8 @@ void OMPISimulationUnit<ProblemType>::Launch() {
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
+
+    ProblemType::initialize_global_problem(this);
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->mesh);

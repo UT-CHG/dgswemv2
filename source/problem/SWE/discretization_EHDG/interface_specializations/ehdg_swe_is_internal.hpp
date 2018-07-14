@@ -22,7 +22,7 @@ class Internal {
 
 template <typename EdgeInterfaceType>
 void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
-    auto& edge_global = edge_int.edge_data.edge_global;
+    auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
@@ -31,8 +31,8 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        edge_global.rhs_kernel_at_gp[gp] = -boundary_in.Fn_at_gp[gp];
-        edge_global.rhs_kernel_at_gp[gp] += -boundary_ex.Fn_at_gp[gp_ex];
+        edge_internal.rhs_global_kernel_at_gp[gp] = boundary_in.Fn_at_gp[gp];
+        edge_internal.rhs_global_kernel_at_gp[gp] += boundary_ex.Fn_at_gp[gp_ex];
     }
 
     // Add tau terms

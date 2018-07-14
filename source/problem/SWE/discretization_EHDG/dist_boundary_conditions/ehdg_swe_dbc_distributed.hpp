@@ -30,7 +30,7 @@ Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger
 
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
-    auto& edge_global = edge_dbound.edge_data.edge_global;
+    auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
@@ -40,8 +40,8 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
 
-        edge_global.rhs_kernel_at_gp[gp] = -boundary.Fn_at_gp[gp];
-        edge_global.rhs_kernel_at_gp[gp] += -Fn_ex;
+        edge_internal.rhs_global_kernel_at_gp[gp] = boundary.Fn_at_gp[gp];
+        edge_internal.rhs_global_kernel_at_gp[gp] += Fn_ex;
     }
 
     // Add tau terms
@@ -55,7 +55,7 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
     // Add tau terms
-    add_flux_tau_terms_bound_LF(edge_dbound);
+    add_F_hat_tau_terms_bound_LF(edge_dbound);
 }
 }
 }

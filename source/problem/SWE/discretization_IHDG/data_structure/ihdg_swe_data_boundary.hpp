@@ -26,8 +26,8 @@ struct Boundary {
     DMatrix<double> delta_global;
     DMatrix<double> delta_hat_local;
 
-    uint ElementID;
-    uint EdgeID;
+    uint elt_ID;
+    uint edg_ID;
 };
 }
 }

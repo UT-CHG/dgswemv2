@@ -34,23 +34,23 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
 
         qn = boundary.q_at_gp[gp][SWE::Variables::qx] * nx + boundary.q_at_gp[gp][SWE::Variables::qy] * ny;
 
-        edge_internal.rhs_global_kernel_at_gp[gp] = edge_internal.q_hat_at_gp[gp] - boundary.q_at_gp[gp];
-        edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qx] += qn * nx;
-        edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qy] += qn * ny;
-
-        edge_internal.delta_hat_global_kernel_at_gp[gp] = -blaze::IdentityMatrix<double>(SWE::n_variables);
-
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 1.0;
+        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = -1.0;
         boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::qx) = 0.0;
         boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = 0.0;
 
         boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) = 0.0;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = 1.0 - nx * nx;
+        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = -1.0 + nx * nx;
         boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = nx * ny;
 
         boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::ze) = 0.0;
         boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::qx) = nx * ny;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = 1 - ny * ny;
+        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = -1.0 + ny * ny;
+
+        edge_internal.delta_hat_global_kernel_at_gp[gp] = blaze::IdentityMatrix<double>(SWE::n_variables);
+
+        edge_internal.rhs_global_kernel_at_gp[gp] = edge_internal.q_hat_at_gp[gp] - boundary.q_at_gp[gp];
+        edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qx] += qn * nx;
+        edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qy] += qn * ny;
     }
 }
 

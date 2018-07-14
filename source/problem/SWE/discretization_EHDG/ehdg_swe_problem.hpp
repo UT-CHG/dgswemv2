@@ -96,6 +96,9 @@ struct Problem {
 
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
+    template <typename SimulationType>
+    static void initialize_global_problem(SimulationType* simulation);
+
     // processor kernels
 
     /* global step */

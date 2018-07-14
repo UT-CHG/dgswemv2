@@ -20,13 +20,16 @@ class Simulation {
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
-    DMatrix<DMatrix<double>> delta_local_inv;
-    DMatrix<DMatrix<double>> delta_hat_local;
-    DVector<DVector<double>> rhs_local;
+    SparseMatrix<double> delta_local_inv;
+    SparseMatrix<double> delta_hat_local;
+    DVector<double> rhs_local;
 
-    DMatrix<DMatrix<double>> delta_global;
-    DMatrix<DMatrix<double>> delta_hat_global;
-    DVector<DVector<double>> rhs_global;
+    SparseMatrix<double> delta_global;
+    SparseMatrix<double> delta_hat_global;
+    DVector<double> rhs_global;
+
+    SparseMatrix<double> global;
+    DVector<double> rhs;
 
   public:
     Simulation() = default;
@@ -120,6 +123,8 @@ void Simulation<ProblemType>::Run() {
             this->mesh_skeleton.CallForEachEdgeBoundary(
                 [this](auto& edge_bound) { ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound); });
             /* Global Step */
+
+            ProblemType::assemble_global_problem(this);
 
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);
