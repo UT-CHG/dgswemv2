@@ -12,13 +12,14 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
     simulation->delta_local_inv.resize(dof_local, dof_local);
     simulation->delta_hat_local.resize(dof_local, dof_global);
     simulation->rhs_local.resize(dof_local);
+    simulation->rhs_local_prev.resize(dof_local);
 
     simulation->delta_global.resize(dof_global, dof_local);
     simulation->delta_hat_global.resize(dof_global, dof_global);
     simulation->rhs_global.resize(dof_global);
+    simulation->rhs_global_prev.resize(dof_global);
 
     simulation->global.resize(dof_global, dof_global);
-    simulation->rhs.resize(dof_global);
 
     simulation->mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;

@@ -28,8 +28,10 @@ class Simulation {
     SparseMatrix<double> delta_hat_global;
     DVector<double> rhs_global;
 
-    SparseMatrix<double> global;
-    DVector<double> rhs;
+    DMatrix<double> global;
+
+    DVector<double> rhs_local_prev;
+    DVector<double> rhs_global_prev;
 
   public:
     Simulation() = default;
@@ -98,33 +100,50 @@ void Simulation<ProblemType>::Run() {
                 this->parser.ParseInput(this->stepper, this->mesh);
             }
 
-            /* Local Step */
-            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
+            ProblemType::initialize_iteration(this);
 
-            this->mesh.CallForEachElement([this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); });
+            uint iter = 0;
+            while (true) {
+                /* Local Step */
+                this->mesh.CallForEachElement(
+                    [this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachInterface(
-                [this](auto& intface) { ProblemType::local_interface_kernel(this->stepper, intface); });
+                this->mesh.CallForEachElement(
+                    [this](auto& elt) { ProblemType::local_source_kernel(this->stepper, elt); });
 
-            this->mesh.CallForEachBoundary(
-                [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); });
+                this->mesh.CallForEachInterface(
+                    [this](auto& intface) { ProblemType::local_interface_kernel(this->stepper, intface); });
 
-            this->mesh_skeleton.CallForEachEdgeInterface(
-                [this](auto& edge_int) { ProblemType::local_edge_interface_kernel(this->stepper, edge_int); });
+                this->mesh.CallForEachBoundary(
+                    [this](auto& bound) { ProblemType::local_boundary_kernel(this->stepper, bound); });
 
-            this->mesh_skeleton.CallForEachEdgeBoundary(
-                [this](auto& edge_bound) { ProblemType::local_edge_boundary_kernel(this->stepper, edge_bound); });
-            /* Local Step */
+                this->mesh_skeleton.CallForEachEdgeInterface(
+                    [this](auto& edge_int) { ProblemType::local_edge_interface_kernel(this->stepper, edge_int); });
 
-            /* Global Step */
-            this->mesh_skeleton.CallForEachEdgeInterface(
-                [this](auto& edge_int) { ProblemType::global_edge_interface_kernel(this->stepper, edge_int); });
+                this->mesh_skeleton.CallForEachEdgeBoundary(
+                    [this](auto& edge_bound) { ProblemType::local_edge_boundary_kernel(this->stepper, edge_bound); });
+                /* Local Step */
 
-            this->mesh_skeleton.CallForEachEdgeBoundary(
-                [this](auto& edge_bound) { ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound); });
-            /* Global Step */
+                /* Global Step */
+                this->mesh_skeleton.CallForEachEdgeInterface(
+                    [this](auto& edge_int) { ProblemType::global_edge_interface_kernel(this->stepper, edge_int); });
 
-            ProblemType::assemble_global_problem(this);
+                this->mesh_skeleton.CallForEachEdgeBoundary(
+                    [this](auto& edge_bound) { ProblemType::global_edge_boundary_kernel(this->stepper, edge_bound); });
+                /* Global Step */
+
+                bool converged = ProblemType::solve_global_problem(this);
+
+                if (converged) {
+                    break;
+                }
+
+                iter++;
+
+                if (iter == 10) {
+                    break;
+                }
+            }
 
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);

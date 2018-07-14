@@ -142,7 +142,10 @@ struct Problem {
     /* solving global system */
 
     template <typename SimulationType>
-    static void assemble_global_problem(SimulationType* simulation);
+    static void initialize_iteration(SimulationType* simulation);
+
+    template <typename SimulationType>
+    static bool solve_global_problem(SimulationType* simulation);
 
     /* solving global system */
 

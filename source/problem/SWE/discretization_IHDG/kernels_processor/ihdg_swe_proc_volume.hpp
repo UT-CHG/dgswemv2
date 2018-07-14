@@ -7,12 +7,10 @@ template <typename ElementType>
 void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& state_prev = elt.data.state[stage];
-    auto& state      = elt.data.state[stage + 1];
-    auto& internal   = elt.data.internal;
+    auto& state    = elt.data.state[stage + 1];
+    auto& internal = elt.data.internal;
 
     elt.ComputeUgp(state.q, internal.q_at_gp);
-    elt.ComputeUgp(state_prev.q, internal.q_prev_at_gp);
 
     double u = 0.0;
     double v = 0.0;
