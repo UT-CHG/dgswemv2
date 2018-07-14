@@ -53,6 +53,8 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         blaze::submatrix(simulation->delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
     });
 
+    simulation->global = 0.0;
+
     simulation->global = simulation->delta_hat_global -
                          simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
 
@@ -66,7 +68,10 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->rhs_local =
         simulation->delta_local_inv * (simulation->rhs_local - simulation->delta_hat_local * simulation->rhs_global);
 
-    simulation->mesh.CallForEachElement([simulation](auto& elt) {
+    double q_norm     = 0;
+    double q_hat_norm = 0;
+
+    simulation->mesh.CallForEachElement([simulation, &q_norm](auto& elt) {
         const uint stage = simulation->stepper.GetStage();
 
         auto& state    = elt.data.state[stage + 1];
@@ -81,9 +86,13 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             state.q[dof][SWE::Variables::qx] += rhs_local[3 * dof + 1];
             state.q[dof][SWE::Variables::qy] += rhs_local[3 * dof + 2];
         }
+
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
+            q_norm += sqrNorm(state.q[dof]);
+        }
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
+    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation, &q_hat_norm](auto& edge_int) {
         auto& edge_state    = edge_int.edge_data.edge_state;
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
@@ -102,9 +111,13 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global[3 * dof + 1];
             edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global[3 * dof + 2];
         }
+
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
+            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
+        }
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
+    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation, &q_hat_norm](auto& edge_bound) {
         auto& edge_state    = edge_bound.edge_data.edge_state;
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
@@ -120,17 +133,16 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global[3 * dof + 1];
             edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global[3 * dof + 2];
         }
+
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
+            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
+        }
     });
 
-    double del_norm = std::hypot(blaze::norm(simulation->rhs_local_prev - simulation->rhs_local),
-                                 blaze::norm(simulation->rhs_global_prev - simulation->rhs_global));
+    double delta_norm = std::hypot(blaze::norm(simulation->rhs_local), blaze::norm(simulation->rhs_global));
+    double norm       = std::sqrt(q_norm + q_hat_norm);
 
-    double norm = std::hypot(blaze::norm(simulation->rhs_local), blaze::norm(simulation->rhs_global));
-
-    simulation->rhs_local_prev  = simulation->rhs_local;
-    simulation->rhs_global_prev = simulation->rhs_global;
-
-    if (del_norm / norm < 1e-3) {
+    if (delta_norm / norm < 1e-6) {
         return true;
     }
 

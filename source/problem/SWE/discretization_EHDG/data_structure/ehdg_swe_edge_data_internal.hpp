@@ -24,7 +24,6 @@ struct EdgeInternal {
 
     DMatrix<double> delta_hat_global;
     DVector<double> rhs_global;
-    DVector<double> delta_q_hat;
 };
 }
 }

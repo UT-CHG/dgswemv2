@@ -23,31 +23,26 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
 
     /* Newton-Raphson iterator */
 
-    double q_norm;
-    double q_norm_prev;
-
     uint iter = 0;
     while (true) {
-        Problem::global_edge_interface_iteration(stepper, edge_int);
-
         iter++;
+
+        Problem::global_edge_interface_iteration(stepper, edge_int);
 
         if (iter == 100) {
             break;
         }
 
-        q_norm      = 0;
-        q_norm_prev = 0;
+        double q_hat_norm     = 0;
+        double delta_hat_norm = blaze::norm(edge_internal.rhs_global);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            q_norm += sqrNorm(edge_state.q_hat[dof]);
-            q_norm_prev += sqrNorm(edge_state.q_hat_prev[dof]);
+            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
         }
 
-        q_norm      = std::sqrt(q_norm);
-        q_norm_prev = std::sqrt(q_norm_prev);
+        q_hat_norm = std::sqrt(q_hat_norm);
 
-        if ((std::abs(q_norm - q_norm_prev) / q_norm) < 1.0e-6) {
+        if (delta_hat_norm / q_hat_norm < 1.0e-6) {
             break;
         }
     }

@@ -5,9 +5,6 @@ namespace SWE {
 namespace IHDG {
 template <typename SimulationType>
 void Problem::initialize_iteration(SimulationType* simulation) {
-    simulation->rhs_local_prev  = 0.0;
-    simulation->rhs_global_prev = 0.0;
-
     simulation->mesh.CallForEachElement([simulation](auto& elt) {
         const uint stage = simulation->stepper.GetStage();
 

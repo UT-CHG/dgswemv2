@@ -30,9 +30,6 @@ class Simulation {
 
     DMatrix<double> global;
 
-    DVector<double> rhs_local_prev;
-    DVector<double> rhs_global_prev;
-
   public:
     Simulation() = default;
     Simulation(const std::string& input_string);
@@ -104,6 +101,8 @@ void Simulation<ProblemType>::Run() {
 
             uint iter = 0;
             while (true) {
+                iter++;
+
                 /* Local Step */
                 this->mesh.CallForEachElement(
                     [this](auto& elt) { ProblemType::local_volume_kernel(this->stepper, elt); });
@@ -138,9 +137,7 @@ void Simulation<ProblemType>::Run() {
                     break;
                 }
 
-                iter++;
-
-                if (iter == 10) {
+                if (iter == 100) {
                     break;
                 }
             }
