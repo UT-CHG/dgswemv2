@@ -159,7 +159,7 @@ template <typename T>
 inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::Integration(const std::vector<T>& u_gp) {
     T integral;
 
-    integral = 0;
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_fact[gp];

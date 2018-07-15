@@ -41,8 +41,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             uint n_node = elt.GetShape().nodal_coordinates.size();
 
             StatVector<double, SWE::n_variables> u_init{problem_specific_input.initial_conditions.ze_initial,
-                                                    problem_specific_input.initial_conditions.qx_initial,
-                                                    problem_specific_input.initial_conditions.qy_initial};
+                                                        problem_specific_input.initial_conditions.qx_initial,
+                                                        problem_specific_input.initial_conditions.qy_initial};
 
             std::vector<StatVector<double, SWE::n_variables>> u_node(n_node, u_init);
 

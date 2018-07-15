@@ -10,7 +10,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
 
         uint elt_ID = elt.GetID();
 
-        submatrix(simulation->delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inv(internal.delta_local);
+        submatrix(simulation->delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
         subvector(simulation->rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
 
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
@@ -61,9 +61,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->rhs_global =
         simulation->rhs_global - simulation->delta_global * simulation->delta_local_inv * simulation->rhs_local;
 
-    int ipiv[simulation->rhs_global.size()];
-
-    blaze::gesv(simulation->global, simulation->rhs_global, ipiv);
+    solve_sle(simulation->global, simulation->rhs_global);
 
     simulation->rhs_local =
         simulation->delta_local_inv * (simulation->rhs_local - simulation->delta_hat_local * simulation->rhs_global);

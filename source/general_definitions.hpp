@@ -49,9 +49,8 @@ using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 /* This will have to go into linear_algebra.hpp */
 
-#include <eigen3/Eigen/Dense>
-
 #include "utilities/linear_algebra/blaze_compatibility.hpp"
+//#include "utilities/linear_algebra/use_eigen.hpp"
 
 /* This will have to go into linear_algebra.hpp */
 

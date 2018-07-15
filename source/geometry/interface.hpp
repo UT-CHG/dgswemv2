@@ -278,7 +278,7 @@ inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::In
     const std::vector<T>& u_gp) {
     T integral;
 
-    integral = 0;
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_phi_fact_in[dof_i][dof_j][gp];
@@ -332,7 +332,7 @@ inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::In
     const std::vector<T>& u_gp) {
     T integral;
 
-    integral = 0;
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_fact_ex[gp];
@@ -348,7 +348,7 @@ inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::In
     const std::vector<T>& u_gp) {
     T integral;
 
-    integral = 0;
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_fact_ex[dof][gp];
@@ -365,7 +365,7 @@ inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::In
     const std::vector<T>& u_gp) {
     T integral;
 
-    integral = 0;
+    integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
         integral += u_gp[gp] * this->int_phi_phi_fact_ex[dof_i][dof_j][gp];

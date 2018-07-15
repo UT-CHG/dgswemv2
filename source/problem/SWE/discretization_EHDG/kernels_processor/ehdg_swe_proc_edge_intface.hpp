@@ -95,9 +95,7 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
 
     /* Solve global system for delta_q */
 
-    int ipiv[edge_internal.rhs_global.size()];
-
-    blaze::gesv(edge_internal.delta_hat_global, edge_internal.rhs_global, ipiv);
+    solve_sle(edge_internal.delta_hat_global, edge_internal.rhs_global);
 
     /* Increment q */
 

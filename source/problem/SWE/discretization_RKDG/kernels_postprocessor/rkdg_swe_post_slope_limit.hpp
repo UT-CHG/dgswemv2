@@ -113,7 +113,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
             sl_state.R(1, 2) = u - c * sl_state.surface_normal[bound][GlobalCoord::x];
             sl_state.R(2, 2) = v - c * sl_state.surface_normal[bound][GlobalCoord::y];
 
-            sl_state.L = inv(sl_state.R);
+            sl_state.L = inverse(sl_state.R);
 
             sl_state.w_midpt_char = sl_state.L * sl_state.q_at_midpts[bound];
 
