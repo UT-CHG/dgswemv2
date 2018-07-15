@@ -74,7 +74,7 @@ class Element {
     template <typename T>
     void ComputeDUgp(const uint dir, const std::vector<T>& u, std::vector<T>& du_gp);
     template <typename T>
-    void ComputeDUgp(const std::vector<T>& u, std::vector<Vector<T, dimension>>& du_gp);
+    void ComputeDUgp(const std::vector<T>& u, std::vector<StatVector<T, dimension>>& du_gp);
 
     template <typename T>
     void ComputeLinearUgp(const std::vector<T>& u_lin, std::vector<T>& u_lin_gp);
@@ -92,7 +92,7 @@ class Element {
     template <typename T>
     void ComputeNodalDUgp(const uint dir, const std::vector<T>& u_nodal, std::vector<T>& du_nodal_gp);
     template <typename T>
-    void ComputeNodalDUgp(const std::vector<T>& u_nodal, std::vector<Vector<T, dimension>>& du_nodal_gp);
+    void ComputeNodalDUgp(const std::vector<T>& u_nodal, std::vector<StatVector<T, dimension>>& du_nodal_gp);
 
     template <typename T>
     T Integration(const std::vector<T>& u_gp);
@@ -386,7 +386,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(con
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename T>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const std::vector<T>& u,
-                                                                             std::vector<Vector<T, dimension>>& du_gp) {
+                                                                             std::vector<StatVector<T, dimension>>& du_gp) {
     std::fill(du_gp.begin(), du_gp.end(), 0.0);
 
     for (uint dof = 0; dof < u.size(); dof++) {
@@ -477,7 +477,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename T>
 inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(
     const std::vector<T>& u_nodal,
-    std::vector<Vector<T, dimension>>& du_nodal_gp) {
+    std::vector<StatVector<T, dimension>>& du_nodal_gp) {
     // *** //
     std::fill(du_nodal_gp.begin(), du_nodal_gp.end(), 0.0);
 

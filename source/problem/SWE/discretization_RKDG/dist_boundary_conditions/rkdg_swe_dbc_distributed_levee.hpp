@@ -73,7 +73,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
-    Vector<double, SWE::n_variables> q_ex;
+    StatVector<double, SWE::n_variables> q_ex;
     double gravity;
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {

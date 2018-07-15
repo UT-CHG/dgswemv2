@@ -15,16 +15,16 @@ struct Boundary {
           dF_hat_dq_hat_at_gp(ngp),
           delta_global_kernel_at_gp(ngp) {}
 
-    std::vector<Vector<double, SWE::n_variables>> q_at_gp;
-    std::vector<Vector<double, SWE::n_auxiliaries>> aux_at_gp;
+    std::vector<StatVector<double, SWE::n_variables>> q_at_gp;
+    std::vector<StatVector<double, SWE::n_auxiliaries>> aux_at_gp;
 
-    std::vector<Vector<double, SWE::n_variables>> F_hat_at_gp;
-    std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_at_gp;
-    std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_hat_at_gp;
-    std::vector<Matrix<double, SWE::n_variables, SWE::n_variables>> delta_global_kernel_at_gp;
+    std::vector<StatVector<double, SWE::n_variables>> F_hat_at_gp;
+    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_at_gp;
+    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_hat_at_gp;
+    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> delta_global_kernel_at_gp;
 
-    DMatrix<double> delta_global;
-    DMatrix<double> delta_hat_local;
+    DynMatrix<double> delta_global;
+    DynMatrix<double> delta_hat_local;
 
     uint elt_ID;
     uint edg_ID;

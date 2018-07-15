@@ -34,7 +34,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    Vector<double, SWE::n_variables> q_ex;
+    StatVector<double, SWE::n_variables> q_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
         this->exchanger.GetEX(gp, q_ex);
 

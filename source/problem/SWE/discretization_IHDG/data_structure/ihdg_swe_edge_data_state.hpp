@@ -9,8 +9,8 @@ struct EdgeState {
     EdgeState() = default;
     EdgeState(const uint ndof) : q_hat(ndof), q_hat_prev(ndof) {}
 
-    std::vector<Vector<double, SWE::n_variables>> q_hat;
-    std::vector<Vector<double, SWE::n_variables>> q_hat_prev;
+    std::vector<StatVector<double, SWE::n_variables>> q_hat;
+    std::vector<StatVector<double, SWE::n_variables>> q_hat_prev;
 };
 }
 }

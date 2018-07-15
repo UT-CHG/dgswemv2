@@ -55,7 +55,7 @@ inline double ic_qy(const double t, const Point<2>& pt) {
            (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
 }
 
-inline Vector<double, SWE::n_variables> ic_u(const double t, const Point<2>& pt) {
+inline StatVector<double, SWE::n_variables> ic_u(const double t, const Point<2>& pt) {
     constexpr double x1 = 40000.;
     constexpr double x2 = 83200.;
     constexpr double y1 = 10000.;
@@ -77,7 +77,7 @@ inline Vector<double, SWE::n_variables> ic_u(const double t, const Point<2>& pt)
     double ic_qy = zo * cos(w * (pt[GlobalCoord::x] - x1)) * sin(w * (pt[GlobalCoord::y] - y1)) * sin(w * (t + tau)) /
                    (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
 
-    Vector<double, SWE::n_variables> ic_u{ic_ze, ic_qx, ic_qy};
+    StatVector<double, SWE::n_variables> ic_u{ic_ze, ic_qx, ic_qy};
 
     return ic_u;
 }

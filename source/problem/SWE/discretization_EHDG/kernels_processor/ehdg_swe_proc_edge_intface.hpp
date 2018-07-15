@@ -34,10 +34,10 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
         }
 
         double q_hat_norm     = 0;
-        double delta_hat_norm = blaze::norm(edge_internal.rhs_global);
+        double delta_hat_norm = norm(edge_internal.rhs_global);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
+            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
         }
 
         q_hat_norm = std::sqrt(q_hat_norm);
@@ -81,15 +81,15 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
 
     for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); ++dof_j) {
-            blaze::submatrix(edge_internal.delta_hat_global,
-                             SWE::n_variables * dof_i,
-                             SWE::n_variables * dof_j,
-                             SWE::n_variables,
-                             SWE::n_variables) =
+            submatrix(edge_internal.delta_hat_global,
+                      SWE::n_variables * dof_i,
+                      SWE::n_variables * dof_j,
+                      SWE::n_variables,
+                      SWE::n_variables) =
                 edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
         }
 
-        blaze::subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
+        subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
             -edge_int.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
     }
 

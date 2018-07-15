@@ -19,11 +19,11 @@ bool test_configuration(const int configuration,
                         const double true_qy_flux) {
     bool error_found = false;
 
-    Vector<double, 3> q_in{ze_in, qx_in, qy_in};
-    Vector<double, 3> q_ex{ze_ex, qx_ex, qy_ex};
-    Vector<double, 3> aux_in{bath, ze_in + bath, sp};
+    StatVector<double, 3> q_in{ze_in, qx_in, qy_in};
+    StatVector<double, 3> q_ex{ze_ex, qx_ex, qy_ex};
+    StatVector<double, 3> aux_in{bath, ze_in + bath, sp};
 
-    Vector<double, 3> F_hat;
+    StatVector<double, 3> F_hat;
 
     SWE::RKDG::LLF_flux(SWE::Global::g, q_in, q_ex, aux_in, normal, F_hat);
 

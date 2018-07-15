@@ -7,11 +7,11 @@ namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
 inline void LLF_flux(const double gravity,
-                     const Vector<double, SWE::n_variables>& q_in,
-                     const Vector<double, SWE::n_variables>& q_ex,
-                     const Vector<double, SWE::n_auxiliaries>& aux,
+                     const StatVector<double, SWE::n_variables>& q_in,
+                     const StatVector<double, SWE::n_variables>& q_ex,
+                     const StatVector<double, SWE::n_auxiliaries>& aux,
                      const std::vector<double>& surface_normal,
-                     Vector<double, SWE::n_variables>& F_hat) {
+                     StatVector<double, SWE::n_variables>& F_hat) {
     double bath = aux[SWE::Auxiliaries::bath];
     double sp   = aux[SWE::Auxiliaries::sp];
 
@@ -32,8 +32,8 @@ inline void LLF_flux(const double gravity,
     double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(gravity * h_in * sp_correction),
                                      std::abs(un_ex) + std::sqrt(gravity * h_ex * sp_correction));
 
-    Vector<double, SWE::n_variables> Fn_in;
-    Vector<double, SWE::n_variables> Fn_ex;
+    StatVector<double, SWE::n_variables> Fn_in;
+    StatVector<double, SWE::n_variables> Fn_ex;
 
     double nx = surface_normal[GlobalCoord::x];
     double ny = surface_normal[GlobalCoord::y];

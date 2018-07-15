@@ -76,8 +76,8 @@ inline void add_dF_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
     double sgn;
 
-    Vector<double, SWE::n_variables> del_q_in;
-    Vector<double, SWE::n_variables> del_q_ex;
+    StatVector<double, SWE::n_variables> del_q_in;
+    StatVector<double, SWE::n_variables> del_q_ex;
 
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
@@ -112,21 +112,21 @@ inline void add_dF_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
         del_q_ex = boundary_ex.q_at_gp[gp_ex] - edge_internal.q_hat_at_gp[gp];
 
         // dF_hat_dq tau terms
-        boundary_in.dF_hat_dq_at_gp[gp] += tau * blaze::IdentityMatrix<double>(SWE::n_variables);
-        boundary_ex.dF_hat_dq_at_gp[gp_ex] += tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        boundary_in.dF_hat_dq_at_gp[gp] += tau * IdentityMatrix<double>(SWE::n_variables);
+        boundary_ex.dF_hat_dq_at_gp[gp_ex] += tau * IdentityMatrix<double>(SWE::n_variables);
 
         // dF_hat_dq_hat tau terms
-        blaze::column<SWE::Variables::ze>(boundary_in.dF_hat_dq_hat_at_gp[gp]) = dtau_dze_hat * del_q_in;
-        blaze::column<SWE::Variables::qx>(boundary_in.dF_hat_dq_hat_at_gp[gp]) = dtau_dqx_hat * del_q_in;
-        blaze::column<SWE::Variables::qy>(boundary_in.dF_hat_dq_hat_at_gp[gp]) = dtau_dqy_hat * del_q_in;
+        column<SWE::Variables::ze>(boundary_in.dF_hat_dq_hat_at_gp[gp]) = dtau_dze_hat * del_q_in;
+        column<SWE::Variables::qx>(boundary_in.dF_hat_dq_hat_at_gp[gp]) = dtau_dqx_hat * del_q_in;
+        column<SWE::Variables::qy>(boundary_in.dF_hat_dq_hat_at_gp[gp]) = dtau_dqy_hat * del_q_in;
 
-        boundary_in.dF_hat_dq_hat_at_gp[gp] += -tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        boundary_in.dF_hat_dq_hat_at_gp[gp] += -tau * IdentityMatrix<double>(SWE::n_variables);
 
-        blaze::column<SWE::Variables::ze>(boundary_ex.dF_hat_dq_hat_at_gp[gp_ex]) = dtau_dze_hat * del_q_ex;
-        blaze::column<SWE::Variables::qx>(boundary_ex.dF_hat_dq_hat_at_gp[gp_ex]) = dtau_dqx_hat * del_q_ex;
-        blaze::column<SWE::Variables::qy>(boundary_ex.dF_hat_dq_hat_at_gp[gp_ex]) = dtau_dqy_hat * del_q_ex;
+        column<SWE::Variables::ze>(boundary_ex.dF_hat_dq_hat_at_gp[gp_ex]) = dtau_dze_hat * del_q_ex;
+        column<SWE::Variables::qx>(boundary_ex.dF_hat_dq_hat_at_gp[gp_ex]) = dtau_dqx_hat * del_q_ex;
+        column<SWE::Variables::qy>(boundary_ex.dF_hat_dq_hat_at_gp[gp_ex]) = dtau_dqy_hat * del_q_ex;
 
-        boundary_ex.dF_hat_dq_hat_at_gp[gp_ex] += -tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        boundary_ex.dF_hat_dq_hat_at_gp[gp_ex] += -tau * IdentityMatrix<double>(SWE::n_variables);
     }
 }
 
@@ -141,7 +141,7 @@ inline void add_dF_hat_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
     double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
     double sgn;
 
-    Vector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> del_q;
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         u_hat =
@@ -172,14 +172,14 @@ inline void add_dF_hat_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
         del_q = boundary.q_at_gp[gp] - edge_internal.q_hat_at_gp[gp];
 
         // dF_hat_dq tau terms
-        boundary.dF_hat_dq_at_gp[gp] += tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        boundary.dF_hat_dq_at_gp[gp] += tau * IdentityMatrix<double>(SWE::n_variables);
 
         // dF_hat_dq_hat tau terms
-        blaze::column<SWE::Variables::ze>(boundary.dF_hat_dq_hat_at_gp[gp]) = dtau_dze_hat * del_q;
-        blaze::column<SWE::Variables::qx>(boundary.dF_hat_dq_hat_at_gp[gp]) = dtau_dqx_hat * del_q;
-        blaze::column<SWE::Variables::qy>(boundary.dF_hat_dq_hat_at_gp[gp]) = dtau_dqy_hat * del_q;
+        column<SWE::Variables::ze>(boundary.dF_hat_dq_hat_at_gp[gp]) = dtau_dze_hat * del_q;
+        column<SWE::Variables::qx>(boundary.dF_hat_dq_hat_at_gp[gp]) = dtau_dqx_hat * del_q;
+        column<SWE::Variables::qy>(boundary.dF_hat_dq_hat_at_gp[gp]) = dtau_dqy_hat * del_q;
 
-        boundary.dF_hat_dq_hat_at_gp[gp] += -tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        boundary.dF_hat_dq_hat_at_gp[gp] += -tau * IdentityMatrix<double>(SWE::n_variables);
     }
 }
 
@@ -195,9 +195,9 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
     double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
     double sgn;
 
-    Vector<double, SWE::n_variables> del_q;
-    Vector<double, SWE::n_variables> q_ex;
-    Vector<double, SWE::n_variables> Fn_ex;
+    StatVector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> q_ex;
+    StatVector<double, SWE::n_variables> Fn_ex;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
@@ -231,11 +231,11 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
         /* delta kernels */
 
-        blaze::column<SWE::Variables::ze>(edge_global.delta_hat_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
-        blaze::column<SWE::Variables::qx>(edge_global.delta_hat_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
-        blaze::column<SWE::Variables::qy>(edge_global.delta_hat_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
+        column<SWE::Variables::ze>(edge_global.delta_hat_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
+        column<SWE::Variables::qx>(edge_global.delta_hat_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
+        column<SWE::Variables::qy>(edge_global.delta_hat_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
 
-        edge_global.delta_hat_kernel_at_gp[gp] += -2 * tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        edge_global.delta_hat_kernel_at_gp[gp] += -2 * tau * IdentityMatrix<double>(SWE::n_variables);
 
         /* RHS kernels */
 

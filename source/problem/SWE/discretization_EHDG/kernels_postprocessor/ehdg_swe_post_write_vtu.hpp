@@ -6,8 +6,8 @@
 namespace SWE {
 namespace EHDG {
 void Problem::write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
-    std::vector<Vector<double, SWE::n_variables>> u_point_data;
-    std::vector<Vector<double, SWE::n_variables>> u_cell_data;
+    std::vector<StatVector<double, SWE::n_variables>> u_point_data;
+    std::vector<StatVector<double, SWE::n_variables>> u_cell_data;
 
     std::vector<double> bath_point_data;
     std::vector<double> bath_cell_data;

@@ -34,8 +34,8 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    Vector<double, SWE::n_variables> q_ex;
-    Vector<double, SWE::n_variables> Fn_ex;
+    StatVector<double, SWE::n_variables> q_ex;
+    StatVector<double, SWE::n_variables> Fn_ex;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);

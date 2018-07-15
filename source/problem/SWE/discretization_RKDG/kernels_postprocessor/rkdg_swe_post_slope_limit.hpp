@@ -117,9 +117,9 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
 
             sl_state.w_midpt_char = sl_state.L * sl_state.q_at_midpts[bound];
 
-            blaze::column<0>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr;
-            blaze::column<1>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
-            blaze::column<2>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
+            column<0>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr;
+            column<1>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
+            column<2>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
 
             double w_tilda;
             double w_delta;
@@ -142,7 +142,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
                 }
             }
 
-            blaze::column(sl_state.delta, bound) = sl_state.R * sl_state.delta_char;
+            column(sl_state.delta, bound) = sl_state.R * sl_state.delta_char;
         }
 
         for (uint var = 0; var < 3; var++) {
@@ -171,7 +171,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
             }
         }
 
-        Matrix<double, SWE::n_variables, SWE::n_variables> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+        StatMatrix<double, SWE::n_variables, SWE::n_variables> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
             sl_state.q_at_vrtx[vrtx] = sl_state.q_at_baryctr;
@@ -186,8 +186,8 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         bool limit = false;
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            double del_q_norm = blaze::norm(sl_state.q_at_vrtx[vrtx] - sl_state.q_lin[vrtx]);
-            double q_norm     = blaze::norm(sl_state.q_lin[vrtx]);
+            double del_q_norm = norm(sl_state.q_at_vrtx[vrtx] - sl_state.q_lin[vrtx]);
+            double q_norm     = norm(sl_state.q_lin[vrtx]);
 
             if (del_q_norm / q_norm > 1.0e-6) {
                 limit = true;

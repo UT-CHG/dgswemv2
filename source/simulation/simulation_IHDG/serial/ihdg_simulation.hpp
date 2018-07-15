@@ -22,13 +22,13 @@ class Simulation {
 
     SparseMatrix<double> delta_local_inv;
     SparseMatrix<double> delta_hat_local;
-    DVector<double> rhs_local;
+    DynVector<double> rhs_local;
 
     SparseMatrix<double> delta_global;
     SparseMatrix<double> delta_hat_global;
-    DVector<double> rhs_global;
+    DynVector<double> rhs_global;
 
-    DMatrix<double> global;
+    DynMatrix<double> global;
 
   public:
     Simulation() = default;

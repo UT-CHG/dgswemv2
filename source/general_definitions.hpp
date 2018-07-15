@@ -51,25 +51,7 @@ using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
 #include <eigen3/Eigen/Dense>
 
-#include <blaze/Math.h>
-#include <blaze/math/Subvector.h>
-#include <blaze/math/Submatrix.h>
-#include <blaze/math/Column.h>
-
-template <typename T, uint m>
-using Vector = blaze::StaticVector<T, m>;
-
-template <typename T, uint m, uint n>
-using Matrix = blaze::StaticMatrix<T, m, n>;
-
-template <typename T>
-using DVector = blaze::DynamicVector<T>;
-
-template <typename T>
-using DMatrix = blaze::DynamicMatrix<T>;
-
-template <typename T>
-using SparseMatrix = blaze::CompressedMatrix<T>;
+#include "utilities/linear_algebra/blaze_compatibility.hpp"
 
 /* This will have to go into linear_algebra.hpp */
 

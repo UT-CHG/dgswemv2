@@ -63,11 +63,11 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
             uint n_node = elt.GetShape().nodal_coordinates.size();
 
-            Vector<double, SWE::n_variables> u_init{problem_specific_input.initial_conditions.ze_initial,
+            StatVector<double, SWE::n_variables> u_init{problem_specific_input.initial_conditions.ze_initial,
                                                     problem_specific_input.initial_conditions.qx_initial,
                                                     problem_specific_input.initial_conditions.qy_initial};
 
-            std::vector<Vector<double, SWE::n_variables>> u_node(n_node, u_init);
+            std::vector<StatVector<double, SWE::n_variables>> u_node(n_node, u_init);
 
             elt.L2Projection(u_node, state.q);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {

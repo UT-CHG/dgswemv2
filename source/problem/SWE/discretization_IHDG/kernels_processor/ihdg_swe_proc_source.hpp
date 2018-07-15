@@ -95,7 +95,7 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
     }
 
     for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-        blaze::subvector(internal.rhs_local, SWE::n_variables * dof, SWE::n_variables) +=
+        subvector(internal.rhs_local, SWE::n_variables * dof, SWE::n_variables) +=
             elt.IntegrationPhi(dof, internal.source_at_gp);
     }
 }

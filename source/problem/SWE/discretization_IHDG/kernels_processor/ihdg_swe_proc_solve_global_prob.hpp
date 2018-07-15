@@ -10,13 +10,13 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
 
         uint elt_ID = elt.GetID();
 
-        blaze::submatrix(simulation->delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inv(internal.delta_local);
-        blaze::subvector(simulation->rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
+        submatrix(simulation->delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inv(internal.delta_local);
+        subvector(simulation->rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
 
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
             uint edg_ID = elt.data.boundary[bound_id].edg_ID;
 
-            blaze::submatrix(simulation->delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) =
+            submatrix(simulation->delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) =
                 elt.data.boundary[bound_id].delta_hat_local;
         }
     });
@@ -32,11 +32,11 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
 
         uint edg_ID = edge_int.GetID();
 
-        blaze::submatrix(simulation->delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        blaze::subvector(simulation->rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(simulation->delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
+        subvector(simulation->rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
 
-        blaze::submatrix(simulation->delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
-        blaze::submatrix(simulation->delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+        submatrix(simulation->delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
+        submatrix(simulation->delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
     });
 
     simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
@@ -47,10 +47,10 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         uint elt_ID = boundary.elt_ID;
         uint edg_ID = edge_bound.GetID();
 
-        blaze::submatrix(simulation->delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        blaze::subvector(simulation->rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(simulation->delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
+        subvector(simulation->rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
 
-        blaze::submatrix(simulation->delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+        submatrix(simulation->delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
     });
 
     simulation->global = 0.0;
@@ -79,7 +79,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
 
         uint elt_ID = elt.GetID();
 
-        auto rhs_local = blaze::subvector(simulation->rhs_local, elt_ID * 9, 9);
+        auto rhs_local = subvector(simulation->rhs_local, elt_ID * 9, 9);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q[dof][SWE::Variables::ze] += rhs_local[3 * dof];
@@ -88,7 +88,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         }
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            q_norm += sqrNorm(state.q[dof]);
+            q_norm += sqr_norm(state.q[dof]);
         }
     });
 
@@ -104,7 +104,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
 
         uint edg_ID = edge_int.GetID();
 
-        auto rhs_global = blaze::subvector(simulation->rhs_global, edg_ID * 6, 6);
+        auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global[3 * dof];
@@ -113,7 +113,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         }
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
+            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
         }
     });
 
@@ -126,7 +126,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         uint elt_ID = boundary.elt_ID;
         uint edg_ID = edge_bound.GetID();
 
-        auto rhs_global = blaze::subvector(simulation->rhs_global, edg_ID * 6, 6);
+        auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global[3 * dof];
@@ -135,11 +135,11 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         }
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
+            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
         }
     });
 
-    double delta_norm = std::hypot(blaze::norm(simulation->rhs_local), blaze::norm(simulation->rhs_global));
+    double delta_norm = std::hypot(norm(simulation->rhs_local), norm(simulation->rhs_global));
     double norm       = std::sqrt(q_norm + q_hat_norm);
 
     if (delta_norm / norm < 1e-6) {

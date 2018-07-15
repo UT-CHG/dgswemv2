@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
-    std::vector<std::pair<uint, std::vector<Vector<double, SWE::n_variables>>>> modal_u;
+    std::vector<std::pair<uint, std::vector<StatVector<double, SWE::n_variables>>>> modal_u;
     std::vector<std::pair<uint, std::vector<double>>> modal_bath;
 
     mesh.CallForEachElement([&modal_u, &modal_bath](auto& elt) {

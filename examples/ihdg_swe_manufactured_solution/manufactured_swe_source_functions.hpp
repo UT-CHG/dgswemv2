@@ -94,7 +94,7 @@ inline double source_qy(const double t, const Point<2>& pt) {
                    2);
 }
 
-inline Vector<double, SWE::n_variables> source_u(const double t, const Point<2>& pt) {
+inline StatVector<double, SWE::n_variables> source_u(const double t, const Point<2>& pt) {
     constexpr double x1 = 40000.;
     constexpr double x2 = 83200.;
     constexpr double y1 = 10000.;
@@ -167,7 +167,7 @@ inline Vector<double, SWE::n_variables> source_u(const double t, const Point<2>&
                          (1. / cos(w * (-y1 + y2))),
                 2);
 
-    Vector<double, SWE::n_variables> source_u{source_ze, source_qx, source_qy};
+    StatVector<double, SWE::n_variables> source_u{source_ze, source_qx, source_qy};
 
     return source_u;
 }

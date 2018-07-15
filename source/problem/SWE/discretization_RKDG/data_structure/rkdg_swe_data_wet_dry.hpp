@@ -15,9 +15,9 @@ struct WetDry {
 
     double bath_min;
 
-    std::vector<Vector<double, SWE::n_variables>> q_lin;
+    std::vector<StatVector<double, SWE::n_variables>> q_lin;
 
-    std::vector<Vector<double, SWE::n_variables>> q_at_vrtx;
+    std::vector<StatVector<double, SWE::n_variables>> q_at_vrtx;
     std::vector<double> bath_at_vrtx;
     std::vector<double> h_at_vrtx;
     std::vector<double> h_at_vrtx_temp;

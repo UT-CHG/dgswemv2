@@ -16,12 +16,12 @@ inline double true_qy(const double t, const Point<2>& pt) {
     return 0;
 }
 
-inline Vector<double, SWE::n_variables> true_u(const double t, const Point<2>& pt) {
+inline StatVector<double, SWE::n_variables> true_u(const double t, const Point<2>& pt) {
     double true_ze = 0.0;
     double true_qx = 0.0;
     double true_qy = 0.0;
 
-    Vector<double, SWE::n_variables> true_u{true_ze, true_qx, true_qy};
+    StatVector<double, SWE::n_variables> true_u{true_ze, true_qx, true_qy};
 
     return true_u;
 }

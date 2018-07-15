@@ -29,15 +29,15 @@ class Tide {
 
     void ComputeFlux(const RKStepper& stepper,
                      const Array2D<double>& surface_normal,
-                     const std::vector<Vector<double, SWE::n_variables>>& q_in,
-                     const std::vector<Vector<double, SWE::n_auxiliaries>>& aux_in,
-                     std::vector<Vector<double, SWE::n_variables>>& F_hat);
+                     const std::vector<StatVector<double, SWE::n_variables>>& q_in,
+                     const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
+                     std::vector<StatVector<double, SWE::n_variables>>& F_hat);
 
     void GetEX(const RKStepper& stepper,
                const uint gp,
                const std::vector<double>& surface_normal,
-               const Vector<double, SWE::n_variables>& q_in,
-               Vector<double, SWE::n_variables>& q_ex);
+               const StatVector<double, SWE::n_variables>& q_in,
+               StatVector<double, SWE::n_variables>& q_ex);
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {
@@ -80,10 +80,10 @@ void Tide::Initialize(BoundaryType& bound) {
 
 void Tide::ComputeFlux(const RKStepper& stepper,
                        const Array2D<double>& surface_normal,
-                       const std::vector<Vector<double, SWE::n_variables>>& q_in,
-                       const std::vector<Vector<double, SWE::n_auxiliaries>>& aux_in,
-                       std::vector<Vector<double, SWE::n_variables>>& F_hat) {
-    Vector<double, SWE::n_variables> q_ex;
+                       const std::vector<StatVector<double, SWE::n_variables>>& q_in,
+                       const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
+                       std::vector<StatVector<double, SWE::n_variables>>& F_hat) {
+    StatVector<double, SWE::n_variables> q_ex;
     for (uint gp = 0; gp < q_in.size(); ++gp) {
         this->GetEX(stepper, gp, surface_normal[gp], q_in[gp], q_ex);
 
@@ -94,8 +94,8 @@ void Tide::ComputeFlux(const RKStepper& stepper,
 void Tide::GetEX(const RKStepper& stepper,
                  const uint gp,
                  const std::vector<double>& surface_normal,
-                 const Vector<double, SWE::n_variables>& q_in,
-                 Vector<double, SWE::n_variables>& q_ex) {
+                 const StatVector<double, SWE::n_variables>& q_in,
+                 StatVector<double, SWE::n_variables>& q_ex) {
     double ze = 0;
 
     double frequency;

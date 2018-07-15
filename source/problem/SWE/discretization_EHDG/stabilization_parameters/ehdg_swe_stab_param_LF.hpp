@@ -17,7 +17,7 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
     double sgn;
 
-    Vector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> del_q;
 
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
@@ -52,11 +52,11 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
 
         /* delta kernels */
 
-        blaze::column<SWE::Variables::ze>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
-        blaze::column<SWE::Variables::qx>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
-        blaze::column<SWE::Variables::qy>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
+        column<SWE::Variables::ze>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
+        column<SWE::Variables::qx>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
+        column<SWE::Variables::qy>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
 
-        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * IdentityMatrix<double>(SWE::n_variables);
 
         /* RHS kernels */
 
@@ -75,9 +75,9 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
     double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
     double sgn;
 
-    Vector<double, SWE::n_variables> del_q;
-    Vector<double, SWE::n_variables> q_ex;
-    Vector<double, SWE::n_variables> Fn_ex;
+    StatVector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> q_ex;
+    StatVector<double, SWE::n_variables> Fn_ex;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
@@ -111,11 +111,11 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
         /* delta kernels */
 
-        blaze::column<SWE::Variables::ze>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
-        blaze::column<SWE::Variables::qx>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
-        blaze::column<SWE::Variables::qy>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
+        column<SWE::Variables::ze>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
+        column<SWE::Variables::qx>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
+        column<SWE::Variables::qy>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
 
-        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * blaze::IdentityMatrix<double>(SWE::n_variables);
+        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * IdentityMatrix<double>(SWE::n_variables);
 
         /* RHS kernels */
 

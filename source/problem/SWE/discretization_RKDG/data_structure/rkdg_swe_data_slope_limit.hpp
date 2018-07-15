@@ -32,27 +32,27 @@ struct SlopeLimit {
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
 
-    std::vector<Vector<double, SWE::n_variables>> q_lin;
+    std::vector<StatVector<double, SWE::n_variables>> q_lin;
 
-    Vector<double, SWE::n_variables> q_at_baryctr;
-    std::vector<Vector<double, SWE::n_variables>> q_at_vrtx;
-    std::vector<Vector<double, SWE::n_variables>> q_at_midpts;
+    StatVector<double, SWE::n_variables> q_at_baryctr;
+    std::vector<StatVector<double, SWE::n_variables>> q_at_vrtx;
+    std::vector<StatVector<double, SWE::n_variables>> q_at_midpts;
 
     double bath_at_baryctr;
     std::vector<double> bath_at_vrtx;
     std::vector<double> bath_at_midpts;
 
     std::vector<bool> wet_neigh;
-    std::vector<Vector<double, SWE::n_variables>> q_at_baryctr_neigh;
+    std::vector<StatVector<double, SWE::n_variables>> q_at_baryctr_neigh;
 
-    Matrix<double, SWE::n_variables, SWE::n_variables> L;
-    Matrix<double, SWE::n_variables, SWE::n_variables> R;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
 
-    Vector<double, SWE::n_variables> w_midpt_char;
-    Matrix<double, SWE::n_variables, SWE::n_variables> w_baryctr_char;
+    StatVector<double, SWE::n_variables> w_midpt_char;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> w_baryctr_char;
 
-    Vector<double, SWE::n_variables> delta_char;
-    Matrix<double, SWE::n_variables, SWE::n_variables> delta;
+    StatVector<double, SWE::n_variables> delta_char;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> delta;
 
 #ifdef HAS_HPX
     template <typename Archive>

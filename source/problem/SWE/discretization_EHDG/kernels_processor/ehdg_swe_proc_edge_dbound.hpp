@@ -11,8 +11,8 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
     /* Take average of in/ex state as initial trace state */
-    Vector<double, SWE::n_variables> q_ex;
-    Vector<double, SWE::n_variables> Fn_ex;
+    StatVector<double, SWE::n_variables> q_ex;
+    StatVector<double, SWE::n_variables> Fn_ex;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
@@ -35,10 +35,10 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
         }
 
         double q_hat_norm     = 0;
-        double delta_hat_norm = blaze::norm(edge_internal.rhs_global);
+        double delta_hat_norm = norm(edge_internal.rhs_global);
 
         for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqrNorm(edge_state.q_hat[dof]);
+            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
         }
 
         q_hat_norm = std::sqrt(q_hat_norm);
@@ -82,15 +82,15 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     for (uint dof_i = 0; dof_i < edge_dbound.edge_data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_dbound.edge_data.get_ndof(); ++dof_j) {
-            blaze::submatrix(edge_internal.delta_hat_global,
-                             SWE::n_variables * dof_i,
-                             SWE::n_variables * dof_j,
-                             SWE::n_variables,
-                             SWE::n_variables) =
+            submatrix(edge_internal.delta_hat_global,
+                      SWE::n_variables * dof_i,
+                      SWE::n_variables * dof_j,
+                      SWE::n_variables,
+                      SWE::n_variables) =
                 edge_dbound.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
         }
 
-        blaze::subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
+        subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
             -edge_dbound.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
     }
 

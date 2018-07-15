@@ -9,10 +9,10 @@ struct State {
     State() = default;
     State(const uint ndof) : q(ndof), bath(ndof), rhs(ndof), solution(ndof) {}
 
-    std::vector<Vector<double, SWE::n_variables>> q;
+    std::vector<StatVector<double, SWE::n_variables>> q;
     std::vector<double> bath;
-    std::vector<Vector<double, SWE::n_variables>> rhs;
-    std::vector<Vector<double, SWE::n_variables>> solution;
+    std::vector<StatVector<double, SWE::n_variables>> rhs;
+    std::vector<StatVector<double, SWE::n_variables>> solution;
 
 #ifdef HAS_HPX
     template <typename Archive>

@@ -47,7 +47,7 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
         internal.del_q_DT_at_gp[gp] = (internal.q_at_gp[gp] - internal.q_prev_at_gp[gp]) / stepper.GetDT();
 
         // Kronecker delta / DT
-        internal.kronecker_DT_at_gp[gp] = blaze::IdentityMatrix<double>(SWE::n_variables) / stepper.GetDT();
+        internal.kronecker_DT_at_gp[gp] = IdentityMatrix<double>(SWE::n_variables) / stepper.GetDT();
 
         // dFx/dq terms
         internal.dFx_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
@@ -80,17 +80,16 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
 
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {
         for (uint dof_j = 0; dof_j < elt.data.get_ndof(); dof_j++) {
-            blaze::submatrix(internal.delta_local,
-                             SWE::n_variables * dof_i,
-                             SWE::n_variables * dof_j,
-                             SWE::n_variables,
-                             SWE::n_variables) =
-                elt.IntegrationPhiPhi(dof_i, dof_j, internal.kronecker_DT_at_gp) -
-                elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, internal.dFx_dq_at_gp) -
-                elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp);
+            submatrix(internal.delta_local,
+                      SWE::n_variables * dof_i,
+                      SWE::n_variables * dof_j,
+                      SWE::n_variables,
+                      SWE::n_variables) = elt.IntegrationPhiPhi(dof_i, dof_j, internal.kronecker_DT_at_gp) -
+                                          elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, internal.dFx_dq_at_gp) -
+                                          elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp);
         }
 
-        blaze::subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) =
+        subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) =
             -elt.IntegrationPhi(dof_i, internal.del_q_DT_at_gp) +
             elt.IntegrationDPhi(GlobalCoord::x, dof_i, internal.Fx_at_gp) +
             elt.IntegrationDPhi(GlobalCoord::y, dof_i, internal.Fy_at_gp);
