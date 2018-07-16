@@ -1,8 +1,18 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
-  test_dmatrix_exe
-  test_dmatrix.cpp
+  test_jacobians_ehdg_exe
+  test_jacobians_ehdg.cpp
+  ${SOURCES}
+  ${SWE_SOURCES}
+)
+
+target_include_directories(test_jacobians_ehdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_test(
+  Unit_test_jacobians_ehdg
+  test_jacobians_ehdg_exe
 )
 
 add_executable(
@@ -105,6 +115,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
+
+target_link_libraries(test_element_triangle_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_element_triangle

@@ -1,0 +1,10 @@
+Starting simulation with p=1 for rectangle mesh
+
+Number of elements: 128
+Number of internal interfaces: 176
+Number of land boundaries: 32
+Number of land edges: 32
+Number of tide edges: 0
+Number of flow edges: 0
+Number of internal edges: 176
+Number of distributed edges: 0
