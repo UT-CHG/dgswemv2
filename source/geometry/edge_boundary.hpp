@@ -12,12 +12,12 @@ class EdgeBoundary {
   private:
     uint ID;
 
-    Array2D<double> lambda_gp;
-    Array2D<double> int_lambda_fact;
-    Array3D<double> int_lambda_lambda_fact;
-    Array3D<double> int_phi_lambda_fact;
+    DynMatrix<double> lambda_gp;
+    DynMatrix<double> int_lambda_fact;
+    DynMatrix<double> int_lambda_lambda_fact;
+    DynMatrix<double> int_phi_lambda_fact;
 
-    std::pair<bool, Array2D<double>> m_inv;
+    std::pair<bool, DynMatrix<double>> m_inv;
 
   public:
     EdgeBoundary(BoundaryType& boundary);
@@ -48,56 +48,59 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
     // *** //
     typename BoundaryType::BoundaryIntegrationType integration;
 
-    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
+    std::pair<DynVector<double>, DynVector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * this->boundary.GetMaster().p + 1);
+
+    uint ngp = integration_rule.first.size();
 
     BasisType basis;
 
     this->lambda_gp = basis.GetPhi(this->boundary.GetMaster().p, integration_rule.second);
 
-    std::vector<Point<dimension + 1>> z_master =
+    uint ndof = row(this->lambda_gp, 0).size();
+
+    DynVector<Point<dimension + 1>> z_master =
         this->boundary.GetMaster().BoundaryToMasterCoordinates(this->boundary.bound_id, integration_rule.second);
 
-    std::vector<double> surface_J = this->boundary.GetShape().GetSurfaceJ(this->boundary.bound_id, z_master);
+    DynVector<double> surface_J = this->boundary.GetShape().GetSurfaceJ(this->boundary.bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
-        this->int_lambda_fact = this->lambda_gp;
-        for (uint dof = 0; dof < this->int_lambda_fact.size(); dof++) {
-            for (uint gp = 0; gp < this->int_lambda_fact[dof].size(); gp++) {
-                this->int_lambda_fact[dof][gp] *= integration_rule.first[gp] * surface_J[0];
+        this->int_lambda_fact = transpose(this->lambda_gp);
+        for (uint dof = 0; dof < ndof; dof++) {
+            for (uint gp = 0; gp < ngp; gp++) {
+                this->int_lambda_fact(dof, gp) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
-        this->int_lambda_lambda_fact.resize(this->lambda_gp.size());
-        for (uint dof_i = 0; dof_i < this->lambda_gp.size(); dof_i++) {
-            this->int_lambda_lambda_fact[dof_i] = this->int_lambda_fact;
-            for (uint dof_j = 0; dof_j < this->lambda_gp.size(); dof_j++) {
-                for (uint gp = 0; gp < this->int_lambda_lambda_fact[dof_i][dof_j].size(); gp++) {
-                    this->int_lambda_lambda_fact[dof_i][dof_j][gp] *= this->lambda_gp[dof_i][gp];
+        this->int_lambda_lambda_fact.resize(std::pow(ndof, 2), ngp);
+        for (uint dof_i = 0; dof_i < ndof; dof_i++) {
+            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+                uint lookup = ndof * dof_i + dof_j;
+                for (uint gp = 0; gp < ngp; gp++) {
+                    this->int_lambda_lambda_fact(lookup, gp) =
+                        this->lambda_gp(gp, dof_i) * this->int_lambda_fact(dof_j, gp);
                 }
             }
         }
 
-        this->int_phi_lambda_fact.resize(this->boundary.phi_gp.size());
-        for (uint dof_i = 0; dof_i < this->boundary.phi_gp.size(); dof_i++) {
-            this->int_phi_lambda_fact[dof_i] = this->int_lambda_fact;
-            for (uint dof_j = 0; dof_j < this->lambda_gp.size(); dof_j++) {
-                for (uint gp = 0; gp < this->int_phi_lambda_fact[dof_i][dof_j].size(); gp++) {
-                    this->int_phi_lambda_fact[dof_i][dof_j][gp] *= this->boundary.phi_gp[dof_i][gp];
+        uint ndof_loc = this->boundary.data.get_ndof();
+        this->int_phi_lambda_fact.resize(ndof * ndof_loc, ngp);
+        for (uint dof_i = 0; dof_i < ndof_loc; dof_i++) {
+            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+                uint lookup = ndof * dof_i + dof_j;
+                for (uint gp = 0; gp < ngp; gp++) {
+                    this->int_phi_lambda_fact(lookup, gp) =
+                        this->boundary.phi_gp(gp, dof_i) * this->int_lambda_fact(dof_j, gp);
                 }
             }
         }
 
         this->m_inv = basis.GetMinv(this->boundary.GetMaster().p);
-        for (uint i = 0; i < this->m_inv.second.size(); i++) {
-            for (uint j = 0; j < this->m_inv.second[i].size(); j++) {
-                this->m_inv.second[i][j] /= surface_J[0];
-            }
-        }
+        this->m_inv.second /= surface_J[0];
     }
 
-    this->edge_data.set_ndof(this->lambda_gp.size());
-    this->edge_data.set_ngp(integration_rule.first.size());
+    this->edge_data.set_ndof(ndof);
+    this->edge_data.set_ngp(ngp);
 
     this->edge_data.initialize();
 }
@@ -108,7 +111,7 @@ void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::L2Projectio
                                                                                   std::vector<T>& projection) {
     std::vector<T> rhs;
 
-    for (uint dof = 0; dof < this->lambda_gp.size(); dof++) {
+    for (uint dof = 0; dof < this->edge_data.get_ndof(); dof++) {
         rhs.push_back(this->IntegrationLambda(dof, u_gp));
     }
 
@@ -123,7 +126,7 @@ void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ComputeUgp(
 
     for (uint dof = 0; dof < u.size(); dof++) {
         for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->lambda_gp[dof][gp];
+            u_gp[gp] += u[dof] * this->lambda_gp(gp, dof);
         }
     }
 }
@@ -137,7 +140,7 @@ T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLam
     integral = 0.0;
 
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_lambda_fact[dof][gp];
+        integral += u_gp[gp] * this->int_lambda_fact(dof, gp);
     }
 
     return integral;
@@ -152,8 +155,10 @@ T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLam
 
     integral = 0.0;
 
+    uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
+
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_lambda_lambda_fact[dof_i][dof_j][gp];
+        integral += u_gp[gp] * this->int_lambda_lambda_fact(lookup, gp);
     }
 
     return integral;
@@ -168,8 +173,10 @@ T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationPhi
 
     integral = 0.0;
 
+    uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
+
     for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_lambda_fact[dof_i][dof_j][gp];
+        integral += u_gp[gp] * this->int_phi_lambda_fact(lookup, gp);
     }
 
     return integral;
@@ -181,13 +188,13 @@ void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ApplyMinv(c
                                                                                std::vector<T>& solution) {
     if (this->m_inv.first) {  // diagonal
         for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = this->m_inv.second[0][i] * rhs[i];
+            solution[i] = this->m_inv.second(i, i) * rhs[i];
         }
     } else if (!(this->m_inv.first)) {  // not diagonal
-        for (uint i = 0; i < this->m_inv.second.size(); i++) {
+        for (uint i = 0; i < rhs.size(); i++) {
             solution[i] = 0.0;
             for (uint j = 0; j < rhs.size(); j++) {
-                solution[i] += this->m_inv.second[i][j] * rhs[j];
+                solution[i] += this->m_inv.second(i, j) * rhs[j];
             }
         }
     }

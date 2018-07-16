@@ -13,7 +13,7 @@ bool test_configuration(const int configuration,
                         const double qy_ex,
                         const double bath,
                         const double sp,
-                        std::vector<double>& normal,
+                        const StatVector<double, 2>& normal,
                         const double true_ze_flux,
                         const double true_qx_flux,
                         const double true_qy_flux) {
@@ -67,7 +67,7 @@ int main() {
         double qy_in = 0.1;
         double qy_ex = -0.2;
 
-        std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
+        StatVector<double, 2> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
         double sp   = 1;
@@ -97,7 +97,7 @@ int main() {
         double qy_in = 0;
         double qy_ex = 0;
 
-        std::vector<double> normal{1. / std::sqrt(2.), -1. / std::sqrt(2.)};
+        StatVector<double, 2> normal{1. / std::sqrt(2.), -1. / std::sqrt(2.)};
 
         double bath = 0;
         double sp   = 1;
@@ -127,7 +127,7 @@ int main() {
         double qy_in = 7.1;
         double qy_ex = 6.2;
 
-        std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
+        StatVector<double, 2> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
         double sp   = 1;

@@ -30,7 +30,7 @@ int main() {
     using EdgeInterfaceType = typename std::tuple_element<0, EdgeInterfaceTypes>::type;
 
     // make an equilateral triangle
-    std::vector<Point<3>> vrtxs(3);
+    DynVector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
@@ -40,9 +40,9 @@ int main() {
     ElementType triangle(0,
                          master,
                          std::move(vrtxs),
-                         std::move(std::vector<uint>{0, 0, 0}),
-                         std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
-                         std::move(std::vector<unsigned char>{
+                         std::move(DynVector<uint>{0, 0, 0}),
+                         std::move(DynVector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
+                         std::move(DynVector<unsigned char>{
                              SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
@@ -78,6 +78,8 @@ int main() {
         for (uint dof = 0; dof < 11; dof++) {
             if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
                 error_found = true;
+
+                std::cout << "Error found edge bound L2Projection" << std::endl;
             }
         }
     }
@@ -94,6 +96,8 @@ int main() {
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
+
+                std::cout << "Error found edge bound int lambda" << std::endl;
             }
 
             std::fill(u_gp.begin(), u_gp.end(), 1.0);
@@ -102,6 +106,8 @@ int main() {
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
+
+                std::cout << "Error found edge bound int lambda lambda" << std::endl;
             }
         }
     }
@@ -126,6 +132,8 @@ int main() {
         for (uint dof = 0; dof < 11; dof++) {
             if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
                 error_found = true;
+
+                std::cout << "Error found edge int L2Projection" << std::endl;
             }
         }
     }
@@ -142,6 +150,8 @@ int main() {
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
+
+                std::cout << "Error found edge int int lambda" << std::endl;
             }
 
             std::fill(u_gp.begin(), u_gp.end(), 1.0);
@@ -150,6 +160,8 @@ int main() {
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
+
+                std::cout << "Error found edge int int lambda lambda" << std::endl;
             }
         }
     }
@@ -179,7 +191,7 @@ int main() {
             }
         }
     }
-
+    
     for (uint n_int = 0; n_int < 3; n_int++) {
         for (uint dof = 0; dof < 66; dof++) {
             std::fill(u_phi.begin(), u_phi.end(), 0.0);

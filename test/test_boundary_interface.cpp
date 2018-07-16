@@ -34,8 +34,8 @@ int main() {
                          master,
                          std::move(vrtxs),
                          std::move(DynVector<uint>(3, 0)),
-                         std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
-                         std::move(std::vector<unsigned char>{
+                         std::move(DynVector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
+                         std::move(DynVector<unsigned char>{
                              SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;

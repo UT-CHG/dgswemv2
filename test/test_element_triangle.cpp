@@ -12,9 +12,9 @@ int main() {
     ElementType triangle(0,
                          master,
                          std::move(vrtxs),
-                         std::move(std::vector<uint>(0)),
-                         std::move(std::vector<uint>(0)),
-                         std::move(std::vector<unsigned char>(0)));
+                         std::move(DynVector<uint>(0)),
+                         std::move(DynVector<uint>(0)),
+                         std::move(DynVector<unsigned char>(0)));
 
     Integration::Dunavant_2D integ;
     DynVector<Point<2>> gp = integ.GetRule(20).second;

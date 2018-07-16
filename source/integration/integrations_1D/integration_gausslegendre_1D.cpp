@@ -9,7 +9,7 @@ std::pair<DynVector<double>, DynVector<Point<1>>> GaussLegendre_1D::GetRule(cons
         exit(1);
     }
 
-    std::pair<std::vector<double>, std::vector<Point<1>>> gp_data = this->GPData(p);
+    std::pair<std::vector<double>, std::vector<Point<1>>> gp_data = this->GPData(this->GetNumGP(p));
 
     uint ngp = gp_data.first.size();
 
