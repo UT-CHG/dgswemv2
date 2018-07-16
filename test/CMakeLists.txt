@@ -439,8 +439,7 @@ if(USE_HPX)
   set_target_properties(test_mesh_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
   target_include_directories(test_mesh_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
-
+  target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   add_test(
     Unit_mesh_serialization

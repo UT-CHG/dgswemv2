@@ -1,4 +1,4 @@
-Starting simulation with p=1 for rectangle mesh
+Starting check jacobian with p=1 for rectangle mesh
 
 Number of elements: 128
 Number of internal interfaces: 176

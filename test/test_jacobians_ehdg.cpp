@@ -15,6 +15,8 @@
 #include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
+    srand(time(NULL));
+
     std::string input_string = "../../test/files_for_testing/jacobians/input.15";
 
     InputParameters<typename SWE::EHDG::Problem::ProblemInputType> input(input_string);
@@ -31,7 +33,7 @@ int main(int argc, char* argv[]) {
     mesh = typename SWE::EHDG::Problem::ProblemMeshType(input.polynomial_order);
 
     stepper = RKStepper(input.stepper_input);
-    writer = Writer<SWE::EHDG::Problem>(input.writer_input);
+    writer  = Writer<SWE::EHDG::Problem>(input.writer_input);
 
     if (writer.WritingLog()) {
         writer.StartLog();
@@ -52,8 +54,37 @@ int main(int argc, char* argv[]) {
 
     SWE::EHDG::Problem::initialize_data_kernel(mesh, input.mesh_input.mesh_data, input.problem_input);
 
-    mesh.CallForEachInterface(
-        [&](auto& intface) { SWE::EHDG::Problem::global_interface_kernel(stepper, intface); });
+    mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        // Initialize delta_hat_global and rhs_global containers
+        edge_internal.delta_hat_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
+                                              SWE::n_variables * edge_int.edge_data.get_ndof());
+        edge_internal.rhs_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof());
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([](auto& edge_bound) {
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        // Initialize delta_hat_global and rhs_global containers
+        edge_internal.delta_hat_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
+                                              SWE::n_variables * edge_bound.edge_data.get_ndof());
+        edge_internal.rhs_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof());
+    });
+
+    mesh.CallForEachElement([&](auto& elt) {
+        // randomly assign q
+        const uint stage = stepper.GetStage();
+        auto& state    = elt.data.state[stage];
+
+        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+            state.q[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+        }
+    });
+
+    mesh.CallForEachInterface([&](auto& intface) { SWE::EHDG::Problem::global_interface_kernel(stepper, intface); });
 
     mesh.CallForEachBoundary([&](auto& bound) { SWE::EHDG::Problem::global_boundary_kernel(stepper, bound); });
 
@@ -62,6 +93,13 @@ int main(int argc, char* argv[]) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+
+        // randomly assign q_hat
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+        }
 
         edge_int.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
@@ -96,6 +134,13 @@ int main(int argc, char* argv[]) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        // randomly assign q_hat
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+        }
 
         edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
