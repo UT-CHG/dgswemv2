@@ -72,8 +72,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->mesh.CallForEachElement([simulation, &q_norm](auto& elt) {
         const uint stage = simulation->stepper.GetStage();
 
-        auto& state    = elt.data.state[stage + 1];
-        auto& internal = elt.data.internal;
+        auto& state = elt.data.state[stage + 1];
 
         uint elt_ID = elt.GetID();
 
@@ -91,14 +90,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     });
 
     simulation->mesh_skeleton.CallForEachEdgeInterface([simulation, &q_hat_norm](auto& edge_int) {
-        auto& edge_state    = edge_int.edge_data.edge_state;
-        auto& edge_internal = edge_int.edge_data.edge_internal;
-
-        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-        auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
-
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+        auto& edge_state = edge_int.edge_data.edge_state;
 
         uint edg_ID = edge_int.GetID();
 
@@ -116,12 +108,8 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     });
 
     simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation, &q_hat_norm](auto& edge_bound) {
-        auto& edge_state    = edge_bound.edge_data.edge_state;
-        auto& edge_internal = edge_bound.edge_data.edge_internal;
+        auto& edge_state = edge_bound.edge_data.edge_state;
 
-        auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-        uint elt_ID = boundary.elt_ID;
         uint edg_ID = edge_bound.GetID();
 
         auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);

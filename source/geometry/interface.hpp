@@ -183,7 +183,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
             ngp, *this->shape_in.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
 
         this->surface_normal_ex = DynVector<StatVector<double, dimension + 1>>(
-            ngp, *this->shape_ex.GetSurfaceNormal(this->bound_id_in, z_master_ex).begin());
+            ngp, *this->shape_ex.GetSurfaceNormal(this->bound_id_ex, z_master_ex).begin());
     }
 
     this->data_in.set_ngp_boundary(this->bound_id_in, ngp);

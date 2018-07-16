@@ -191,7 +191,7 @@ int main() {
             }
         }
     }
-    
+
     for (uint n_int = 0; n_int < 3; n_int++) {
         for (uint dof = 0; dof < 66; dof++) {
             std::fill(u_phi.begin(), u_phi.end(), 0.0);
