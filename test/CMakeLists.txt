@@ -101,6 +101,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_link_libraries(test_shape_straight_triangle_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_shape_straight_triangle
   test_shape_straight_triangle_exe

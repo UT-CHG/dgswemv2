@@ -22,6 +22,7 @@ int main(int argc, char* argv[]) {
     typename SWE::EHDG::Problem::ProblemMeshType mesh;
     typename SWE::EHDG::Problem::ProblemMeshSkeletonType mesh_skeleton;
 
+    RKStepper stepper;
     Writer<SWE::EHDG::Problem> writer;
 
     input.read_mesh();  // read mesh meta data
@@ -29,6 +30,7 @@ int main(int argc, char* argv[]) {
 
     mesh = typename SWE::EHDG::Problem::ProblemMeshType(input.polynomial_order);
 
+    stepper = RKStepper(input.stepper_input);
     writer = Writer<SWE::EHDG::Problem>(input.writer_input);
 
     if (writer.WritingLog()) {
@@ -49,4 +51,77 @@ int main(int argc, char* argv[]) {
     initialize_mesh_skeleton<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
 
     SWE::EHDG::Problem::initialize_data_kernel(mesh, input.mesh_input.mesh_data, input.problem_input);
+
+    mesh.CallForEachInterface(
+        [&](auto& intface) { SWE::EHDG::Problem::global_interface_kernel(stepper, intface); });
+
+    mesh.CallForEachBoundary([&](auto& bound) { SWE::EHDG::Problem::global_boundary_kernel(stepper, bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
+        auto& edge_state    = edge_int.edge_data.edge_state;
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+
+        edge_int.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+
+        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+            edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
+                edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        }
+
+        /* Assemble global kernels */
+
+        edge_int.interface.specialization.ComputeGlobalKernels(edge_int);
+
+        /* Assemble global system */
+
+        for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); ++dof_i) {
+            for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); ++dof_j) {
+                submatrix(edge_internal.delta_hat_global,
+                          SWE::n_variables * dof_i,
+                          SWE::n_variables * dof_j,
+                          SWE::n_variables,
+                          SWE::n_variables) =
+                    edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
+            }
+
+            subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
+                -edge_int.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
+        }
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
+        auto& edge_state    = edge_bound.edge_data.edge_state;
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+
+        for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+            edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
+                edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        }
+
+        /* Assemble global kernels */
+
+        edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
+
+        /* Assemble global system */
+
+        for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); ++dof_i) {
+            for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); ++dof_j) {
+                submatrix(edge_internal.delta_hat_global,
+                          SWE::n_variables * dof_i,
+                          SWE::n_variables * dof_j,
+                          SWE::n_variables,
+                          SWE::n_variables) =
+                    edge_bound.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
+            }
+
+            subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
+                -edge_bound.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
+        }
+    });
 }
