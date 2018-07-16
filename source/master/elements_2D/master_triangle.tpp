@@ -8,39 +8,51 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
 
     this->integration_rule = this->integration.GetRule(2 * this->p);
 
-    this->chi_gp = Array2D<double>(3, std::vector<double>(this->integration_rule.first.size()));
+    this->ndof = (p + 1) * (p + 2) / 2;
+    this->ngp  = this->integration_rule.first.size();
 
-    for (uint gp = 0; gp < this->integration_rule.first.size(); gp++) {
-        this->chi_gp[0][gp] = -(this->integration_rule.second[gp][LocalCoordTri::z1] +
+    this->chi_gp.resize(this->ngp, 3);
+    this->dchi_gp[LocalCoordTri::z1].resize(this->ngp, 3);
+    this->dchi_gp[LocalCoordTri::z2].resize(this->ngp, 3);
+
+    for (uint gp = 0; gp < this->ngp; gp++) {
+        this->chi_gp(gp, 0) = -(this->integration_rule.second[gp][LocalCoordTri::z1] +
                                 this->integration_rule.second[gp][LocalCoordTri::z2]) /
                               2.0;
-        this->chi_gp[1][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z1]) / 2.0;
-        this->chi_gp[2][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
-    }
+        this->chi_gp(gp, 1) = (1 + this->integration_rule.second[gp][LocalCoordTri::z1]) / 2.0;
+        this->chi_gp(gp, 2) = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
 
-    this->dchi_gp = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};
+        this->dchi_gp[LocalCoordTri::z1](gp, 0) = -0.5;
+        this->dchi_gp[LocalCoordTri::z2](gp, 0) = -0.5;
+
+        this->dchi_gp[LocalCoordTri::z1](gp, 1) = 0.5;
+        this->dchi_gp[LocalCoordTri::z2](gp, 1) = 0.0;
+
+        this->dchi_gp[LocalCoordTri::z1](gp, 2) = 0.0;
+        this->dchi_gp[LocalCoordTri::z2](gp, 2) = 0.5;
+    }
 
     this->phi_gp  = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
 
-    std::vector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
-    this->phi_postprocessor_cell               = this->basis.GetPhi(this->p, z_postprocessor_cell);
+    DynVector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
+    this->phi_postprocessor_cell             = this->basis.GetPhi(this->p, z_postprocessor_cell);
 
-    std::vector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
-    this->phi_postprocessor_point               = this->basis.GetPhi(this->p, z_postprocessor_point);
+    DynVector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
+    this->phi_postprocessor_point             = this->basis.GetPhi(this->p, z_postprocessor_point);
 
-    this->int_phi_fact = this->phi_gp;
-    for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
-        for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
-            this->int_phi_fact[dof][gp] *= this->integration_rule.first[gp];
+    this->int_phi_fact = transpose(this->phi_gp);
+    for (uint dof = 0; dof < this->ndof; dof++) {
+        for (uint gp = 0; gp < this->ngp; gp++) {
+            this->int_phi_fact(dof, gp) *= this->integration_rule.first[gp];
         }
     }
 
-    this->int_dphi_fact = this->dphi_gp;
-    for (uint dof = 0; dof < this->int_dphi_fact.size(); dof++) {
-        for (uint dir = 0; dir < this->int_dphi_fact[dof].size(); dir++) {
-            for (uint gp = 0; gp < this->int_dphi_fact[dof][dir].size(); gp++) {
-                this->int_dphi_fact[dof][dir][gp] *= this->integration_rule.first[gp];
+    for (uint dir = 0; dir < 2; dir++) {
+        this->int_dphi_fact[dir] = transpose(this->dphi_gp[dir]);
+        for (uint dof = 0; dof < this->ndof; dof++) {
+            for (uint gp = 0; gp < this->ngp; gp++) {
+                this->int_dphi_fact[dir](dof, gp) *= this->integration_rule.first[gp];
             }
         }
     }
@@ -49,32 +61,34 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
+DynVector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
     const uint bound_id,
-    const std::vector<Point<1>>& z_boundary) {
+    const DynVector<Point<1>>& z_boundary) {
     // *** //
-    std::vector<Point<2>> z_master(z_boundary.size());
+    uint ngp = z_boundary.size();
+
+    DynVector<Point<2>> z_master(ngp);
 
     if (bound_id == 0) {
-        for (uint gp = 0; gp < z_master.size(); gp++) {
+        for (uint gp = 0; gp < ngp; gp++) {
             assert(std::abs(z_boundary[gp][LocalCoordTri::z1]) < 1 + 100 * std::numeric_limits<double>::epsilon());
 
             z_master[gp][LocalCoordTri::z1] = -z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = z_boundary[gp][LocalCoordTri::z1];
         }
     } else if (bound_id == 1) {
-        for (uint gp = 0; gp < z_master.size(); gp++) {
+        for (uint gp = 0; gp < ngp; gp++) {
             assert(std::abs(z_boundary[gp][LocalCoordTri::z1]) < 1 + 100 * std::numeric_limits<double>::epsilon());
 
-            z_master[gp][LocalCoordTri::z1] = -1;
+            z_master[gp][LocalCoordTri::z1] = -1.0;
             z_master[gp][LocalCoordTri::z2] = -z_boundary[gp][LocalCoordTri::z1];
         }
     } else if (bound_id == 2) {
-        for (uint gp = 0; gp < z_master.size(); gp++) {
+        for (uint gp = 0; gp < ngp; gp++) {
             assert(std::abs(z_boundary[gp][LocalCoordTri::z1]) < 1 + 100 * std::numeric_limits<double>::epsilon());
 
             z_master[gp][LocalCoordTri::z1] = z_boundary[gp][LocalCoordTri::z1];
-            z_master[gp][LocalCoordTri::z2] = -1;
+            z_master[gp][LocalCoordTri::z2] = -1.0;
         }
     }
 
@@ -104,8 +118,8 @@ inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
-    std::vector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
+DynVector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
+    DynVector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
 
     double dz = 2.0 / N_DIV;
 
@@ -129,8 +143,8 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() {
-    std::vector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
+DynVector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() {
+    DynVector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
 
     double dz = 2.0 / N_DIV;
 

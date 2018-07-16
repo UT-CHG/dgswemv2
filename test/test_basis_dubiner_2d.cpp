@@ -1,22 +1,6 @@
 #include "utilities/almost_equal.hpp"
 #include "basis/bases_2D.hpp"
 
-const std::vector<Point<2>> points = {{1.0000000000000000e+00, -1.0000000000000000e+00},
-                                      {5.0000000000000000e-01, -1.0000000000000000e+00},
-                                      {5.0000000000000000e-01, -5.0000000000000000e-01},
-                                      {0.0000000000000000e+00, -1.0000000000000000e+00},
-                                      {0.0000000000000000e+00, -5.0000000000000000e-01},
-                                      {0.0000000000000000e+00, 0.0000000000000000e+00},
-                                      {-5.0000000000000000e-01, -1.0000000000000000e+00},
-                                      {-5.0000000000000000e-01, -5.0000000000000000e-01},
-                                      {-5.0000000000000000e-01, 0.0000000000000000e+00},
-                                      {-5.0000000000000000e-01, 5.0000000000000000e-01},
-                                      {-1.0000000000000000e+00, -1.0000000000000000e+00},
-                                      {-1.0000000000000000e+00, -5.0000000000000000e-01},
-                                      {-1.0000000000000000e+00, 0.0000000000000000e+00},
-                                      {-1.0000000000000000e+00, 5.0000000000000000e-01},
-                                      {-1.0000000000000000e+00, 1.0000000000000000e+00}};
-
 const std::vector<std::vector<double>> true_vals = {{1.0000000000000000e+00,
                                                      1.0000000000000000e+00,
                                                      1.0000000000000000e+00,
@@ -1541,29 +1525,62 @@ const std::vector<std::vector<double>> true_Dvals = {
 int main() {
     using Utilities::almost_equal;
 
+    DynVector<Point<2>> points(15);
+
+    points[0][0]  = 1.0000000000000000e+00;
+    points[0][1]  = -1.0000000000000000e+00;
+    points[1][0]  = 5.0000000000000000e-01;
+    points[1][1]  = -1.0000000000000000e+00;
+    points[2][0]  = 5.0000000000000000e-01;
+    points[2][1]  = -5.0000000000000000e-01;
+    points[3][0]  = 0.0000000000000000e+00;
+    points[3][1]  = -1.0000000000000000e+00;
+    points[4][0]  = 0.0000000000000000e+00;
+    points[4][1]  = -5.0000000000000000e-01;
+    points[5][0]  = 0.0000000000000000e+00;
+    points[5][1]  = 0.0000000000000000e+00;
+    points[6][0]  = -5.0000000000000000e-01;
+    points[6][1]  = -1.0000000000000000e+00;
+    points[7][0]  = -5.0000000000000000e-01;
+    points[7][1]  = -5.0000000000000000e-01;
+    points[8][0]  = -5.0000000000000000e-01;
+    points[8][1]  = 0.0000000000000000e+00;
+    points[9][0]  = -5.0000000000000000e-01;
+    points[9][1]  = 5.0000000000000000e-01;
+    points[10][0] = -1.0000000000000000e+00;
+    points[10][1] = -1.0000000000000000e+00;
+    points[11][0] = -1.0000000000000000e+00;
+    points[11][1] = -5.0000000000000000e-01;
+    points[12][0] = -1.0000000000000000e+00;
+    points[12][1] = 0.0000000000000000e+00;
+    points[13][0] = -1.0000000000000000e+00;
+    points[13][1] = 5.0000000000000000e-01;
+    points[14][0] = -1.0000000000000000e+00;
+    points[14][1] = 1.0000000000000000e+00;
+
     auto is_normal_or_zero = [](double a) -> bool { return (std::isnormal(a) || (a == 0)); };
 
     Basis::Dubiner_2D basis;
     bool error_found = false;
 
-    Array2D<double> my_evals  = basis.GetPhi(10, points);
-    Array3D<double> my_Devals = basis.GetDPhi(10, points);
+    DynMatrix<double> my_evals                 = basis.GetPhi(10, points);
+    StatVector<DynMatrix<double>, 2> my_Devals = basis.GetDPhi(10, points);
 
     for (uint dof = 0; dof < 66; ++dof) {
         // Check the evaluations of the Dubiner polynomials
         for (uint pt = 0; pt < 15; ++pt) {
-            if (!is_normal_or_zero(my_evals[dof][pt])) {
+            if (!is_normal_or_zero(my_evals(pt, dof))) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
-                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
+                          << " your computed value  = " << my_evals(pt, dof) << std::endl;
 
                 error_found = true;
             }
         }
 
         for (uint pt = 0; pt < 15; ++pt) {
-            if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
+            if (!almost_equal(true_vals[dof][pt], my_evals(pt, dof))) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
-                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
+                          << " your computed value  = " << my_evals(pt, dof) << std::endl;
 
                 error_found = true;
             }
@@ -1571,11 +1588,11 @@ int main() {
 
         // Check the Gradient evaluations of the Dubiner polynomials
         for (int pt = 0; pt < 15; ++pt) {
-            if (!is_normal_or_zero(my_Devals[dof][LocalCoordTri::z1][pt]) ||
-                !is_normal_or_zero(my_Devals[dof][LocalCoordTri::z2][pt])) {
+            if (!is_normal_or_zero(my_Devals[LocalCoordTri::z1](pt, dof)) ||
+                !is_normal_or_zero(my_Devals[LocalCoordTri::z2](pt, dof))) {
                 std::cerr << "Error in Gradient dof(" << dof << "): the true value = (" << true_Dvals[dof][2 * pt]
                           << ", " << true_Dvals[dof][2 * pt + 1] << ") your computed value  = ("
-                          << my_Devals[dof][LocalCoordTri::z1][pt] << ", " << my_Devals[dof][LocalCoordTri::z2][pt]
+                          << my_Devals[LocalCoordTri::z1](pt, dof) << ", " << my_Devals[LocalCoordTri::z2](pt, dof)
                           << ")\n";
 
                 error_found = true;
@@ -1583,12 +1600,12 @@ int main() {
         }
 
         for (int pt = 0; pt < 15; ++pt) {
-            if (!almost_equal(true_Dvals[dof][2 * pt], my_Devals[dof][LocalCoordTri::z1][pt], 1000) ||
-                !almost_equal(true_Dvals[dof][2 * pt + 1], my_Devals[dof][LocalCoordTri::z2][pt], 1000)) {
+            if (!almost_equal(true_Dvals[dof][2 * pt], my_Devals[LocalCoordTri::z1](pt, dof), 1000) ||
+                !almost_equal(true_Dvals[dof][2 * pt + 1], my_Devals[LocalCoordTri::z2](pt, dof), 1000)) {
                 std::cerr << "Error in Gradient dof(" << dof << pt << "): the true value = (" << std::setprecision(14)
                           << true_Dvals[dof][2 * pt] << ", " << true_Dvals[dof][2 * pt + 1]
-                          << ") your computed value  = (" << my_Devals[dof][LocalCoordTri::z1][pt] << ", "
-                          << my_Devals[dof][LocalCoordTri::z2][pt] << ")\n";
+                          << ") your computed value  = (" << my_Devals[LocalCoordTri::z1](pt, dof) << ", "
+                          << my_Devals[LocalCoordTri::z2](pt, dof) << ")\n";
 
                 error_found = true;
             }

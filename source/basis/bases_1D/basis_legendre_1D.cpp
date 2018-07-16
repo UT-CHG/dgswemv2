@@ -1,49 +1,55 @@
 #include "../bases_1D.hpp"
 
 namespace Basis {
-Array2D<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>& points) {
-    uint n_pts = points.size();
+DynMatrix<double> Legendre_1D::GetPhi(const uint p, const DynVector<Point<1>>& points) {
+    uint ndof = p + 1;
+    uint npt  = points.size();
 
-    Array2D<double> phi(p + 1);
+    DynMatrix<double> phi(npt, ndof);
 
-    std::vector<double> l1(n_pts);
+    DynVector<double> l1(npt);
 
-    for (uint pt = 0; pt < n_pts; pt++) {
+    for (uint pt = 0; pt < npt; pt++) {
         l1[pt] = points[pt][LocalCoordLin::l1];
     }
 
-    for (uint dof = 0; dof < phi.size(); dof++) {
-        phi[dof] = jacobi_polynomial(dof, 0, 0, l1);
+    for (uint dof = 0; dof < ndof; dof++) {
+        column(phi, dof) = jacobi_polynomial(dof, 0, 0, l1);
     }
 
     return phi;
 }
 
-Array3D<double> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
-    uint n_pts = points.size();
+StatVector<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const DynVector<Point<1>>& points) {
+    uint ndof = p + 1;
+    uint npt  = points.size();
 
-    Array3D<double> dphi(p + 1);
+    StatVector<DynMatrix<double>, 1> dphi;
 
-    std::vector<double> l1(n_pts);
+    DynMatrix<double> dphi_dl1(npt, ndof);
 
-    for (uint pt = 0; pt < n_pts; pt++) {
+    DynVector<double> l1(npt);
+
+    for (uint pt = 0; pt < npt; pt++) {
         l1[pt] = points[pt][LocalCoordLin::l1];
     }
 
-    for (uint dof = 0; dof < dphi.size(); dof++) {
-        dphi[dof].push_back(jacobi_polynomial_derivative(dof, 0, 0, l1));
+    for (uint dof = 0; dof < ndof; dof++) {
+        column(dphi_dl1, dof) = jacobi_polynomial_derivative(dof, 0, 0, l1);
     }
+
+    dphi[LocalCoordLin::l1] = dphi_dl1;
 
     return dphi;
 }
 
-std::pair<bool, Array2D<double>> Legendre_1D::GetMinv(const uint p) {
-    std::pair<bool, Array2D<double>> m_inv(true, Array2D<double>(1));  // diagonal
+std::pair<bool, DynMatrix<double>> Legendre_1D::GetMinv(const uint p) {
+    uint ndof = p + 1;
 
-    m_inv.second[0].resize(p + 1);
+    std::pair<bool, DynMatrix<double>> m_inv(true, DynMatrix<double>(ndof, ndof, 0.0));  // diagonal
 
-    for (uint dof = 0; dof < m_inv.second[0].size(); dof++) {
-        m_inv.second[0][dof] = (2 * dof + 1) / 2.0;
+    for (uint dof = 0; dof < ndof; dof++) {
+        m_inv.second(dof, dof) = (2 * dof + 1) / 2.0;
     }
 
     return m_inv;

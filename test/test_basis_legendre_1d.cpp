@@ -1,12 +1,6 @@
 #include "utilities/almost_equal.hpp"
 #include "basis/bases_1D.hpp"
 
-const std::vector<Point<1>> points = {{-1.0000000000000000e+00},
-                                      {-5.0000000000000000e-01},
-                                      {0.0000000000000000e+00},
-                                      {5.0000000000000000e-01},
-                                      {1.0000000000000000e+00}};
-
 const std::vector<std::vector<double>> true_vals = {
     {1.000000000000000e+00, 1.000000000000000e+00, 1.000000000000000e+00, 1.000000000000000e+00, 1.000000000000000e+00},
     {-1.000000000000000e+00,
@@ -118,20 +112,28 @@ const std::vector<std::vector<double>> true_Dvals = {
 int main() {
     using Utilities::almost_equal;
 
+    DynVector<Point<1>> points(5);
+
+    points[0][0] = -1.0000000000000000e+00;
+    points[1][0] = -5.0000000000000000e-01;
+    points[2][0] = 0.0000000000000000e+00;
+    points[3][0] = 5.0000000000000000e-01;
+    points[4][0] = 1.0000000000000000e+00;
+
     // auto is_normal_or_zero = [](double a) -> bool { return (std::isnormal(a) || (a == 0)); };
 
     Basis::Legendre_1D basis;
     bool error_found = false;
 
-    Array2D<double> my_evals  = basis.GetPhi(10, points);
-    Array3D<double> my_Devals = basis.GetDPhi(10, points);
+    DynMatrix<double> my_evals                 = basis.GetPhi(10, points);
+    StatVector<DynMatrix<double>, 1> my_Devals = basis.GetDPhi(10, points);
 
     for (uint dof = 0; dof < 11; ++dof) {
         // Check the evaluations of the Legendre polynomials
         for (uint pt = 0; pt < 5; ++pt) {
-            if (!almost_equal(true_vals[dof][pt], my_evals[dof][pt])) {
+            if (!almost_equal(true_vals[dof][pt], my_evals(pt, dof))) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
-                          << " your computed value  = " << my_evals[dof][pt] << std::endl;
+                          << " your computed value  = " << my_evals(pt, dof) << std::endl;
 
                 error_found = true;
             }
@@ -139,10 +141,10 @@ int main() {
 
         // Check the Gradient evaluations of the Legendre polynomials
         for (int pt = 0; pt < 5; ++pt) {
-            if (!almost_equal(true_Dvals[dof][pt], my_Devals[dof][LocalCoordLin::l1][pt], 1000)) {
+            if (!almost_equal(true_Dvals[dof][pt], my_Devals[LocalCoordLin::l1](pt, dof), 1000)) {
                 std::cerr << "Error in Gradient dof and pt (" << dof << ',' << pt << "): the true value = ("
                           << std::setprecision(14) << true_Dvals[dof][pt] << ") your computed value  = ("
-                          << my_Devals[dof][LocalCoordLin::l1][pt] << ")\n";
+                          << my_Devals[LocalCoordLin::l1](pt, dof) << ")\n";
 
                 error_found = true;
             }

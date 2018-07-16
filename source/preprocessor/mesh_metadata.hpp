@@ -28,9 +28,9 @@ struct ElementMetaData {
     ElementMetaData() = default;
     ElementMetaData(uint n_faces) : node_ID(n_faces), neighbor_ID(n_faces), boundary_type(n_faces) {}
 
-    std::vector<uint> node_ID;
-    std::vector<uint> neighbor_ID;
-    std::vector<uchar> boundary_type;
+    DynVector<uint> node_ID;
+    DynVector<uint> neighbor_ID;
+    DynVector<uchar> boundary_type;
 
     friend std::ostream& operator<<(std::ostream& s, const ElementMetaData& elt) {
         s << elt.node_ID.size();
@@ -85,7 +85,7 @@ struct MeshMetaData {
 
     void write_to(const std::string& file);  // write to file
 
-    std::vector<Point<3>> get_nodal_coordinates(uint elt_id) const;
+    DynVector<Point<3>> get_nodal_coordinates(uint elt_id) const;
 
     std::string mesh_name;
     std::unordered_map<uint, ElementMetaData> elements;

@@ -10,7 +10,7 @@ inline void LLF_flux(const double gravity,
                      const StatVector<double, SWE::n_variables>& q_in,
                      const StatVector<double, SWE::n_variables>& q_ex,
                      const StatVector<double, SWE::n_auxiliaries>& aux,
-                     const std::vector<double>& surface_normal,
+                     const StatVector<double, SWE::n_dimensions>& surface_normal,
                      StatVector<double, SWE::n_variables>& F_hat) {
     double bath = aux[SWE::Auxiliaries::bath];
     double sp   = aux[SWE::Auxiliaries::sp];

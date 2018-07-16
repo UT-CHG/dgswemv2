@@ -1,6 +1,5 @@
 #ifndef TEST_ELEMENT_TRIANGLE_HPP
 #define TEST_ELEMENT_TRIANGLE_HPP
-
 #include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
 #include "geometry/mesh_definitions.hpp"
@@ -80,6 +79,9 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
         if (!almost_equal(IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals), 1.e+04)) {
             error_found = true;
 
+            std::cout << IntegrationDPhiDX_true[dof] << ' ' << triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals)
+                      << std::endl;
+
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
                          "in x direction"
                       << std::endl;
@@ -109,6 +111,8 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
 
     if (!almost_equal(0.866025403784442, triangle.Integration(u_gp), 1.e+04)) {
         error_found = true;
+
+        std::cout << triangle.Integration(u_gp);
 
         std::cerr << "Error found in Triangle element in ComputeLinearUgp" << std::endl;
     }
@@ -253,6 +257,9 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
                     triangle.IntegrationPhi(doff, gp_vals), triangle.IntegrationPhiPhi(dof, doff, unit_gp), 1.e+03)) {
                 error_found = true;
 
+                std::cout << triangle.IntegrationPhi(doff, gp_vals) << ' '
+                          << triangle.IntegrationPhiPhi(dof, doff, unit_gp) << std::endl;
+
                 std::cerr << "Error found in Triangle element in IntegrationPhiPhi" << std::endl;
             }
         }
@@ -300,4 +307,5 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
 
     return error_found;
 }
+
 #endif

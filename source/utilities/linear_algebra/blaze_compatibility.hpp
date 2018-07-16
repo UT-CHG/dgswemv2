@@ -7,6 +7,7 @@
 #include <blaze/math/Subvector.h>
 #include <blaze/math/Submatrix.h>
 #include <blaze/math/Column.h>
+#include <blaze/math/Row.h>
 
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;
@@ -27,6 +28,11 @@ template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
 /* Vector/Matrix (aka Tensor) Operations */
+template <typename TensorType>
+decltype(auto) transpose(TensorType& tensor) {
+    return blaze::trans(tensor);
+}
+
 template <typename TensorType>
 double norm(TensorType& tensor) {
     return blaze::norm(tensor);
@@ -49,9 +55,24 @@ decltype(auto) submatrix(MatrixType& matrix, uint start_row, uint start_col, uin
     return blaze::submatrix(matrix, start_row, start_col, size_row, size_col);
 }
 
+template <typename MatrixType>
+decltype(auto) row(MatrixType& matrix, uint row) {
+    return blaze::row(matrix, row);
+}
+
+template <typename MatrixType>
+decltype(auto) column(MatrixType& matrix, uint col) {
+    return blaze::column(matrix, col);
+}
+
 template <typename MatrixType, uint col>
 decltype(auto) column(MatrixType& matrix) {
     return blaze::column<col>(matrix);
+}
+
+template <typename MatrixType>
+double determinant(MatrixType& matrix) {
+    return blaze::det(matrix);
 }
 
 template <typename MatrixType>

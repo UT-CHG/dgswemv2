@@ -17,7 +17,7 @@ int main() {
         Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::IS::Internal>;
 
     // make an equilateral triangle
-    std::vector<Point<3>> vrtxs(3);
+    DynVector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
@@ -33,7 +33,7 @@ int main() {
     ElementType triangle(0,
                          master,
                          std::move(vrtxs),
-                         std::move(std::vector<uint>{0, 0, 0}),
+                         std::move(DynVector<uint>(3, 0)),
                          std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
                          std::move(std::vector<unsigned char>{
                              SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
@@ -51,7 +51,7 @@ int main() {
 
     // Check Integrations
     Integration::Dunavant_2D integ_2D;
-    std::vector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
+    DynVector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
 
     std::vector<double> x(gp_2D.size());
     std::vector<double> y(gp_2D.size());
@@ -73,8 +73,8 @@ int main() {
     }
 
     Integration::GaussLegendre_1D integ_1D;
-    std::vector<Point<1>> gp_1D = integ_1D.GetRule(21).second;
-    std::vector<Point<2>> gp_bound;
+    DynVector<Point<1>> gp_1D = integ_1D.GetRule(21).second;
+    DynVector<Point<2>> gp_bound;
 
     Array2D<double> F_vals_bound(2);
     F_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));
@@ -151,11 +151,11 @@ int main() {
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
 
-        Array2D<double> psi_gp = shape.GetPsi(gp_bound);
+        DynMatrix<double> psi_gp = shape.GetPsi(gp_bound);
 
         for (uint gp = 0; gp < gp_bound.size(); gp++) {
             nodal_vals_gp[gp] =
-                psi_gp[0][gp] * nodal_vals[0] + psi_gp[1][gp] * nodal_vals[1] + psi_gp[2][gp] * nodal_vals[2];
+                psi_gp(gp, 0) * nodal_vals[0] + psi_gp(gp, 1) * nodal_vals[1] + psi_gp(gp, 2) * nodal_vals[2];
         }
 
         boundaries[n_bound].ComputeNodalUgp(nodal_vals, nodal_vals_gp_comp);
@@ -171,10 +171,10 @@ int main() {
         bound_nodal_vals[0] = nodal_vals[(n_bound + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(n_bound + 2) % 3];
 
-        Array2D<double> psi_bound_gp = shape.GetBoundaryPsi(n_bound, gp_1D);
+        DynMatrix<double> psi_bound_gp = shape.GetBoundaryPsi(n_bound, gp_1D);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            nodal_vals_gp[gp] = psi_bound_gp[0][gp] * bound_nodal_vals[0] + psi_bound_gp[1][gp] * bound_nodal_vals[1];
+            nodal_vals_gp[gp] = psi_bound_gp(gp, 0) * bound_nodal_vals[0] + psi_bound_gp(gp, 1) * bound_nodal_vals[1];
         }
 
         boundaries[n_bound].ComputeBoundaryNodalUgp(bound_nodal_vals, nodal_vals_gp_comp);
@@ -275,11 +275,11 @@ int main() {
     for (uint n_intface = 0; n_intface < 3; n_intface++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_intface, gp_1D);
 
-        Array2D<double> psi_gp = shape.GetPsi(gp_bound);
+        DynMatrix<double> psi_gp = shape.GetPsi(gp_bound);
 
         for (uint gp = 0; gp < gp_bound.size(); gp++) {
             nodal_vals_gp[gp] =
-                psi_gp[0][gp] * nodal_vals[0] + psi_gp[1][gp] * nodal_vals[1] + psi_gp[2][gp] * nodal_vals[2];
+                psi_gp(gp, 0) * nodal_vals[0] + psi_gp(gp, 1) * nodal_vals[1] + psi_gp(gp, 2) * nodal_vals[2];
         }
 
         interfaces[n_intface].ComputeNodalUgpIN(nodal_vals, nodal_vals_gp_comp);
@@ -295,10 +295,10 @@ int main() {
         bound_nodal_vals[0] = nodal_vals[(n_intface + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(n_intface + 2) % 3];
 
-        Array2D<double> psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
+        DynMatrix<double> psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            nodal_vals_gp[gp] = psi_bound_gp[0][gp] * bound_nodal_vals[0] + psi_bound_gp[1][gp] * bound_nodal_vals[1];
+            nodal_vals_gp[gp] = psi_bound_gp(gp, 0) * bound_nodal_vals[0] + psi_bound_gp(gp, 1) * bound_nodal_vals[1];
         }
 
         interfaces[n_intface].ComputeBoundaryNodalUgpIN(bound_nodal_vals, nodal_vals_gp_comp);
@@ -332,7 +332,7 @@ int main() {
         psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            nodal_vals_gp[gp] = psi_bound_gp[0][gp] * bound_nodal_vals[0] + psi_bound_gp[1][gp] * bound_nodal_vals[1];
+            nodal_vals_gp[gp] = psi_bound_gp(gp, 0) * bound_nodal_vals[0] + psi_bound_gp(gp, 1) * bound_nodal_vals[1];
         }
 
         interfaces[n_intface].ComputeBoundaryNodalUgpEX(bound_nodal_vals, nodal_vals_gp_comp);

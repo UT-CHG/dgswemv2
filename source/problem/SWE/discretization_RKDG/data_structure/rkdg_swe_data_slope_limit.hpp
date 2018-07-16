@@ -8,7 +8,7 @@ namespace RKDG {
 struct SlopeLimit {
     SlopeLimit() = default;
     SlopeLimit(const uint nvrtx, const uint nbound)
-        : surface_normal(nbound, std::vector<double>(2)),
+        : surface_normal(nbound),
           midpts_coord(nbound),
           baryctr_coord_neigh(nbound),
           alpha_1(nbound),
@@ -22,10 +22,10 @@ struct SlopeLimit {
           wet_neigh(nbound),
           q_at_baryctr_neigh(nbound) {}
 
-    Array2D<double> surface_normal;
+    DynVector<StatVector<double, SWE::n_dimensions>> surface_normal;
 
     Point<2> baryctr_coord;
-    std::vector<Point<2>> midpts_coord;
+    DynVector<Point<2>> midpts_coord;
     std::vector<Point<2>> baryctr_coord_neigh;
 
     std::vector<double> alpha_1;

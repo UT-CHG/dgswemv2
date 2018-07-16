@@ -28,14 +28,14 @@ class Flow {
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const Array2D<double>& surface_normal,
+                     const DynVector<StatVector<double, SWE::n_dimensions>>& surface_normal,
                      const std::vector<StatVector<double, SWE::n_variables>>& q_in,
                      const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
                      std::vector<StatVector<double, SWE::n_variables>>& F_hat);
 
     void GetEX(const RKStepper& stepper,
                const uint gp,
-               const std::vector<double>& surface_normal,
+               const StatVector<double, SWE::n_dimensions>& surface_normal,
                const StatVector<double, SWE::n_variables>& q_in,
                StatVector<double, SWE::n_variables>& q_ex);
 };
@@ -79,7 +79,7 @@ void Flow::Initialize(BoundaryType& bound) {
 }
 
 void Flow::ComputeFlux(const RKStepper& stepper,
-                       const Array2D<double>& surface_normal,
+                       const DynVector<StatVector<double, SWE::n_dimensions>>& surface_normal,
                        const std::vector<StatVector<double, SWE::n_variables>>& q_in,
                        const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
                        std::vector<StatVector<double, SWE::n_variables>>& F_hat) {
@@ -93,7 +93,7 @@ void Flow::ComputeFlux(const RKStepper& stepper,
 
 void Flow::GetEX(const RKStepper& stepper,
                  const uint gp,
-                 const std::vector<double>& surface_normal,
+                 const StatVector<double, SWE::n_dimensions>& surface_normal,
                  const StatVector<double, SWE::n_variables>& q_in,
                  StatVector<double, SWE::n_variables>& q_ex) {
     double qn = 0;

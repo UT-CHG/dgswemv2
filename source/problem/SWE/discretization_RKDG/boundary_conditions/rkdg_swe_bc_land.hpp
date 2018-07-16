@@ -14,19 +14,19 @@ class Land {
     void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
 
     void ComputeFlux(const RKStepper& stepper,
-                     const Array2D<double>& surface_normal,
+                     const DynVector<StatVector<double, SWE::n_dimensions>>& surface_normal,
                      const std::vector<StatVector<double, SWE::n_variables>>& q_in,
                      const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
                      std::vector<StatVector<double, SWE::n_variables>>& F_hat);
 
     void GetEX(const RKStepper& stepper,
-               const std::vector<double>& surface_normal,
+               const StatVector<double, SWE::n_dimensions>& surface_normal,
                const StatVector<double, SWE::n_variables>& q_in,
                StatVector<double, SWE::n_variables>& q_ex);
 };
 
 void Land::ComputeFlux(const RKStepper& stepper,
-                       const Array2D<double>& surface_normal,
+                       const DynVector<StatVector<double, SWE::n_dimensions>>& surface_normal,
                        const std::vector<StatVector<double, SWE::n_variables>>& q_in,
                        const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
                        std::vector<StatVector<double, SWE::n_variables>>& F_hat) {
@@ -39,7 +39,7 @@ void Land::ComputeFlux(const RKStepper& stepper,
 }
 
 void Land::GetEX(const RKStepper& stepper,
-                 const std::vector<double>& surface_normal,
+                 const StatVector<double, SWE::n_dimensions>& surface_normal,
                  const StatVector<double, SWE::n_variables>& q_in,
                  StatVector<double, SWE::n_variables>& q_ex) {
     double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;

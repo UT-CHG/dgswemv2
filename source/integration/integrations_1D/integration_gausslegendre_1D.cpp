@@ -1,7 +1,7 @@
 #include "../integrations_1D.hpp"
 
 namespace Integration {
-std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GetRule(const uint p) {
+std::pair<DynVector<double>, DynVector<Point<1>>> GaussLegendre_1D::GetRule(const uint p) {
     if (p < 0 || p > 65) {
         printf("\n");
         printf("GAUSS LEGENDRE 1D - Fatal error!\n");
@@ -9,7 +9,20 @@ std::pair<std::vector<double>, std::vector<Point<1>>> GaussLegendre_1D::GetRule(
         exit(1);
     }
 
-    return this->GPData(this->GetNumGP(p));
+    std::pair<std::vector<double>, std::vector<Point<1>>> gp_data = this->GPData(p);
+
+    uint ngp = gp_data.first.size();
+
+    std::pair<DynVector<double>, DynVector<Point<1>>> rule;
+    rule.first.resize(ngp);
+    rule.second.resize(ngp);
+
+    for (uint gp = 0; gp < ngp; gp++) {
+        rule.first[gp]  = gp_data.first[gp];
+        rule.second[gp] = gp_data.second[gp];
+    }
+
+    return rule;
 }
 
 uint GaussLegendre_1D::GetNumGP(const uint p) {

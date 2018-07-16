@@ -50,7 +50,7 @@ class Triangle : public Master<2> {
      * @param bound_id The ID of the boundary
      * @param The points on the boundary
      */
-    std::vector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const std::vector<Point<1>>& z_boundary);
+    DynVector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const DynVector<Point<1>>& z_boundary);
 
     template <typename T>
     void ComputeLinearUbaryctr(const std::vector<T>& u_lin, T& u_lin_baryctr);
@@ -60,8 +60,8 @@ class Triangle : public Master<2> {
     void ComputeLinearUvrtx(const std::vector<T>& u_lin, std::vector<T>& u_lin_vrtx);
 
   private:
-    std::vector<Point<2>> VTKPostCell();
-    std::vector<Point<2>> VTKPostPoint();
+    DynVector<Point<2>> VTKPostCell();
+    DynVector<Point<2>> VTKPostPoint();
 };
 }
 

@@ -35,6 +35,11 @@ using uchar = unsigned char;
 
 using uint = unsigned int;
 
+/* This will have to go into linear_algebra.hpp */
+
+#include "utilities/linear_algebra/blaze_compatibility.hpp"
+//#include "utilities/linear_algebra/use_eigen.hpp"
+
 template <uint dimension>
 using Point = std::array<double, dimension>;
 
@@ -46,11 +51,6 @@ using Array3D = std::vector<std::vector<std::vector<type>>>;
 
 template <typename type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
-
-/* This will have to go into linear_algebra.hpp */
-
-#include "utilities/linear_algebra/blaze_compatibility.hpp"
-//#include "utilities/linear_algebra/use_eigen.hpp"
 
 /* This will have to go into linear_algebra.hpp */
 
@@ -73,7 +73,7 @@ class Basis {
      * @param points vector of points at which the basis functions are evaluated
      * @return 2-dimensional array indexed as [dof][point]
      */
-    virtual Array2D<double> GetPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual DynMatrix<double> GetPhi(const uint p, const DynVector<Point<dimension>>& points) = 0;
     /**
      * Evaluate the gradients of the basis function at points.
      * Evaluate gradients of all basis functions evaluated at points up to polynomial order p.
@@ -85,7 +85,8 @@ class Basis {
      * @return 3-dimensional array indexed as [dof][point][coordinate] where coordinate
      *         corresponds to the dimension in which the derivative is taken.
      */
-    virtual Array3D<double> GetDPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual StatVector<DynMatrix<double>, dimension> GetDPhi(const uint p,
+                                                             const DynVector<Point<dimension>>& points) = 0;
 
     /**
      * Obtain the inverted mass matrix of basis functions of polynomial order p.
@@ -94,7 +95,7 @@ class Basis {
      * @param return a pair with a boolean, which states whether the basis is orthogonal,
      *        and a 2-dimensional array corresponding to the mass matrix over the master element
      */
-    virtual std::pair<bool, Array2D<double>> GetMinv(const uint p) = 0;
+    virtual std::pair<bool, DynMatrix<double>> GetMinv(const uint p) = 0;
 
     template <typename T>
     void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
@@ -113,6 +114,14 @@ template <uint dimension>
 class Integration {
   public:
     /**
+     * Returns a vector of weights and quadrature points.
+     *
+     * @param p Polynomial order for which the rule should return exact results.
+     * @return Number of Gauss points
+     */
+    virtual std::pair<DynVector<double>, DynVector<Point<dimension>>> GetRule(const uint p) = 0;
+
+    /**
      * Returns the number of Gauss points required for a rule of strength p
      * GetNumGP returns the number of quadrature points for a rule of strength p without
      * without having to construct the rule.
@@ -121,14 +130,6 @@ class Integration {
      * @return Pair of weights and quadrature points on the master triangle.
      */
     virtual uint GetNumGP(const uint p) = 0;
-
-    /**
-     * Returns a vector of weights and quadrature points.
-     *
-     * @param p Polynomial order for which the rule should return exact results.
-     * @return Number of Gauss points
-     */
-    virtual std::pair<std::vector<double>, std::vector<Point<dimension>>> GetRule(const uint p) = 0;
 };
 }
 
@@ -138,32 +139,34 @@ class Master {
   public:
     uint p;
 
+    uint ndof;
+    uint ngp;
     uint nvrtx;
     uint nbound;
 
-    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule;
+    std::pair<DynVector<double>, DynVector<Point<dimension>>> integration_rule;
 
-    Array2D<double> chi_gp;
-    Array2D<double> phi_gp;
+    DynMatrix<double> chi_gp;
+    DynMatrix<double> phi_gp;
 
-    Array2D<double> dchi_gp;
-    Array3D<double> dphi_gp;
+    StatVector<DynMatrix<double>, dimension> dchi_gp;
+    StatVector<DynMatrix<double>, dimension> dphi_gp;
 
-    Array2D<double> int_phi_fact;
-    Array3D<double> int_dphi_fact;
+    DynMatrix<double> int_phi_fact;
+    StatVector<DynMatrix<double>, dimension> int_dphi_fact;
 
-    std::pair<bool, Array2D<double>> m_inv;
+    std::pair<bool, DynMatrix<double>> m_inv;
 
-    Array2D<double> phi_postprocessor_cell;
-    Array2D<double> phi_postprocessor_point;
+    DynMatrix<double> phi_postprocessor_cell;
+    DynMatrix<double> phi_postprocessor_point;
 
   public:
     Master() = default;
     Master(const uint p) : p(p) {}
 
-    virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
+    virtual DynVector<Point<dimension>> BoundaryToMasterCoordinates(
         const uint bound_id,
-        const std::vector<Point<dimension - 1>>& z_boundary) = 0;
+        const DynVector<Point<dimension - 1>>& z_boundary) = 0;
 
     template <typename T>
     void ComputeLinearUbaryctr(const std::vector<T>& u_lin, T& u_lin_baryctr);
@@ -178,33 +181,34 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
-    std::vector<Point<3>> nodal_coordinates;
+    DynVector<Point<3>> nodal_coordinates;
 
-    Array2D<double> psi_gp;
-    Array3D<double> dpsi_gp;
+    DynMatrix<double> psi_gp;
+    StatVector<DynMatrix<double>, dimension> dpsi_gp;
 
   public:
     Shape() = default;
-    Shape(std::vector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
+    Shape(DynVector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
     virtual ~Shape() = default;
 
-    virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
+    virtual DynVector<uint> GetBoundaryNodeID(const uint bound_id, const DynVector<uint> node_ID) = 0;
 
-    virtual Point<dimension> GetBarycentricCoordinates()           = 0;
-    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
+    virtual Point<dimension> GetBarycentricCoordinates()         = 0;
+    virtual DynVector<Point<dimension>> GetMidpointCoordinates() = 0;
 
-    virtual std::vector<double> GetJdet(const std::vector<Point<dimension>>& points)                           = 0;
-    virtual Array3D<double> GetJinv(const std::vector<Point<dimension>>& points)                               = 0;
-    virtual std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points)  = 0;
-    virtual Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual DynVector<double> GetJdet(const DynVector<Point<dimension>>& points)                                   = 0;
+    virtual DynVector<StatMatrix<double, dimension, dimension>> GetJinv(const DynVector<Point<dimension>>& points) = 0;
+    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const DynVector<Point<dimension>>& points)          = 0;
+    virtual DynVector<StatVector<double, dimension>> GetSurfaceNormal(const uint bound_id,
+                                                                      const DynVector<Point<dimension>>& points)   = 0;
 
-    virtual Array2D<double> GetPsi(const std::vector<Point<dimension>>& points)  = 0;
-    virtual Array3D<double> GetDPsi(const std::vector<Point<dimension>>& points) = 0;
+    virtual DynMatrix<double> GetPsi(const DynVector<Point<dimension>>& points)                         = 0;
+    virtual StatVector<DynMatrix<double>, dimension> GetDPsi(const DynVector<Point<dimension>>& points) = 0;
 
-    virtual Array2D<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<dimension - 1>>& points) = 0;
+    virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id, const DynVector<Point<dimension - 1>>& points) = 0;
 
-    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
+    virtual DynVector<Point<dimension>> LocalToGlobalCoordinates(const DynVector<Point<dimension>>& points) = 0;
 
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 
