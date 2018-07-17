@@ -242,7 +242,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
-target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
+target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_input_parameters
@@ -363,7 +363,7 @@ add_executable(
 )
 
 target_include_directories(test_partition_exe PRIVATE ${METIS_INCLUDE_DIRS})
-target_link_libraries(test_partition_exe ${METIS_LIBRARIES})
+target_link_libraries(test_partition_exe ${METIS_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_partition
