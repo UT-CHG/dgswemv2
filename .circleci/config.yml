@@ -42,7 +42,7 @@ jobs:
                 -DBUILD_RKDG_SWE=On \
                 -DBUILD_EHDG_SWE=On \
                 /usr/dgswemv2
-            make -j2
+            make -j
       - persist_to_workspace:
           root: /usr/dgswemv2
           paths:
