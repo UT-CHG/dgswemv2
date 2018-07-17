@@ -58,26 +58,6 @@ int main(int argc, char* argv[]) {
 
     mesh.CallForEachElement([](auto& elt) { elt.data.resize(2); });
 
-    SparseMatrix<double> delta_local_inv;
-    SparseMatrix<double> delta_hat_local;
-    DynVector<double> rhs_local;
-
-    SparseMatrix<double> delta_global;
-    SparseMatrix<double> delta_hat_global;
-    DynVector<double> rhs_global;
-
-    uint dof_local = mesh.GetNumberElements() * 9;  // hardcode for p=1
-    uint dof_global =
-        mesh_skeleton.GetNumberEdgeInterfaces() * 6 + mesh_skeleton.GetNumberEdgeBoundaries() * 6;  // hardcode for p=1
-
-    delta_local_inv.resize(dof_local, dof_local);
-    delta_hat_local.resize(dof_local, dof_global);
-    rhs_local.resize(dof_local);
-
-    delta_global.resize(dof_global, dof_local);
-    delta_hat_global.resize(dof_global, dof_global);
-    rhs_global.resize(dof_global);
-
     mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
 
