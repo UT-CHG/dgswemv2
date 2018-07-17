@@ -42,6 +42,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_link_libraries(test_adcirc_format_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_adcirc_format
   test_adcirc_format_exe
@@ -135,6 +137,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_link_libraries(test_boundary_interface_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_boundary_interface
   test_boundary_interface_exe
@@ -150,6 +154,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
+
+target_link_libraries(test_edges_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_edges
@@ -188,6 +194,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
+target_link_libraries(test_wetting_drying_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_wetting_drying
   test_wetting_drying_exe
@@ -200,6 +208,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 )
+
+target_link_libraries(test_mesh_metadata_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_mesh_metadata
@@ -396,7 +406,7 @@ if(USE_HPX)
   set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
   target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES})
+  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   add_test(
     Unit_shape_serialization
@@ -416,7 +426,7 @@ if(USE_HPX)
   set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
   target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES})
+  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   add_test(
     Unit_element_serialization
