@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
     mesh.CallForEachElement([&](auto& elt) {
         // randomly assign q
         const uint stage = stepper.GetStage();
-        auto& state      = elt.data.state[stage];
+        auto& state      = elt.data.state[stage + 1];
 
         for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
             state.q[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -175,6 +175,7 @@ int main(int argc, char* argv[]) {
         }
     });
 
+    // do one pass to compute all jacobians and rhs
     mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
 
     mesh.CallForEachInterface([&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
@@ -187,9 +188,22 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeBoundary(
         [&](auto& edge_bound) { SWE::IHDG::Problem::local_edge_boundary_kernel(stepper, edge_bound); });
 
-    /*mesh.CallForEachElement([&](auto& elt) {
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::global_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+    // do one pass to compute all jacobians and rhs
+
+    // containers to store data
+    DynVector<DynVector<double>> rhs_local_prev(mesh.GetNumberElements());
+    DynVector<DynVector<double>> delta_local_diff_est(mesh.GetNumberElements());
+    DynVector<DynVector<double>> delta_q_store(mesh.GetNumberElements());
+    // containers to store data
+
+    mesh.CallForEachElement([&](auto& elt) {
         const uint stage = stepper.GetStage();
-        auto& state      = elt.data.state[stage];
+        auto& state      = elt.data.state[stage + 1];
 
         // randomly assign delta_q and increment
         DynVector<double> delta_q(SWE::n_variables * elt.data.get_ndof());
@@ -209,13 +223,343 @@ int main(int argc, char* argv[]) {
         }
         // randomly assign delta_q and increment
 
-        // difference estimate
-        DynVector<double> diff_est(SWE::n_variables * elt.data.get_ndof());
+        // store for global jacobian checks
+        delta_q_store[elt.GetID()] = delta_q;
 
-        diff_est = elt.data.internal.delta_local * delta_q;
         // difference estimate
+        delta_local_diff_est[elt.GetID()] = elt.data.internal.delta_local * delta_q;
 
-        // subtract from rhs for future comparison
-        elt.data.internal.rhs_local =- diff_est;
-    });*/
+        // store rhs_local for future comparison
+        rhs_local_prev[elt.GetID()] = elt.data.internal.rhs_local;
+    });
+
+    // containers to store data
+    DynVector<DynVector<double>> rhs_global_prev(mesh_skeleton.GetNumberEdgeBoundaries() +
+                                                 mesh_skeleton.GetNumberEdgeInterfaces());
+    DynVector<DynVector<double>> delta_global_diff_est(mesh_skeleton.GetNumberEdgeBoundaries() +
+                                                       mesh_skeleton.GetNumberEdgeInterfaces());
+    // containers to store data
+
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+        auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+
+        // difference estimate
+        delta_global_diff_est[edge_int.GetID()] = boundary_in.delta_global * delta_q_store[boundary_in.elt_ID];
+        delta_global_diff_est[edge_int.GetID()] += boundary_ex.delta_global * delta_q_store[boundary_ex.elt_ID];
+
+        // store rhs_global for future comparison
+        rhs_global_prev[edge_int.GetID()] = edge_internal.rhs_global;
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        // difference estimate
+        delta_global_diff_est[edge_bound.GetID()] = boundary.delta_global * delta_q_store[boundary.elt_ID];
+
+        // store rhs_global for future comparison
+        rhs_global_prev[edge_bound.GetID()] = edge_internal.rhs_global;
+    });
+
+    // do one pass to compute next rhs
+    mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+
+    mesh.CallForEachInterface([&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
+
+    mesh.CallForEachBoundary([&](auto& bound) { SWE::IHDG::Problem::local_boundary_kernel(stepper, bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::local_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::local_edge_boundary_kernel(stepper, edge_bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::global_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+    // do one pass to compute next rhs
+
+    mesh.CallForEachElement([&](auto& elt) {
+        // subtract to find diff true
+        rhs_local_prev[elt.GetID()] -= elt.data.internal.rhs_local;
+
+        // compare
+        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+            if (!Utilities::almost_equal(
+                    delta_local_diff_est[elt.GetID()][3 * dof], rhs_local_prev[elt.GetID()][3 * dof], 1.0e12)) {
+                std::cerr << "error del_local in ze" << std::endl;
+                std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof] << ' '
+                          << rhs_local_prev[elt.GetID()][3 * dof] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(
+                    delta_local_diff_est[elt.GetID()][3 * dof + 1], rhs_local_prev[elt.GetID()][3 * dof + 1], 1.0e12)) {
+                std::cerr << "error del_local in qx" << std::endl;
+                std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 1] << ' '
+                          << rhs_local_prev[elt.GetID()][3 * dof + 1] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(
+                    delta_local_diff_est[elt.GetID()][3 * dof + 2], rhs_local_prev[elt.GetID()][3 * dof + 2], 1.0e12)) {
+                std::cerr << "error del_local in qy" << std::endl;
+                std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 2] << ' '
+                          << rhs_local_prev[elt.GetID()][3 * dof + 2] << std::endl;
+            }
+        }
+
+        // difference estimate zero out for future
+        delta_local_diff_est[elt.GetID()] = 0.0;
+
+        // store rhs_local for future comparison
+        rhs_local_prev[elt.GetID()] = elt.data.internal.rhs_local;
+    });
+
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
+        auto& edge_state    = edge_int.edge_data.edge_state;
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+        auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+
+        // subtract to find diff true
+        rhs_global_prev[edge_int.GetID()] -= edge_internal.rhs_global;
+
+        // compare
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof],
+                                         rhs_global_prev[edge_int.GetID()][3 * dof],
+                                         1.0e12)) {
+                std::cerr << "error edge int del_global in ze" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof] << ' '
+                          << rhs_global_prev[edge_int.GetID()][3 * dof] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 1],
+                                         rhs_global_prev[edge_int.GetID()][3 * dof + 1],
+                                         1.0e12)) {
+                std::cerr << "error edge int del_global in qx" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 1] << ' '
+                          << rhs_global_prev[edge_int.GetID()][3 * dof + 1] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 2],
+                                         rhs_global_prev[edge_int.GetID()][3 * dof + 2],
+                                         1.0e12)) {
+                std::cerr << "error edge int del_global in qy" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 2] << ' '
+                          << rhs_global_prev[edge_int.GetID()][3 * dof + 2] << std::endl;
+            }
+        }
+
+        // randomly assign delta_q_hat and increment
+        DynVector<double> delta_q_hat(SWE::n_variables * edge_int.edge_data.get_ndof());
+
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+            delta_q_hat[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            delta_q_hat[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            delta_q_hat[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+        }
+
+        delta_q_hat *= 1.0e-8;  // make it small
+
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
+            edge_state.q_hat[dof][SWE::Variables::ze] += delta_q_hat[3 * dof];
+            edge_state.q_hat[dof][SWE::Variables::qx] += delta_q_hat[3 * dof + 1];
+            edge_state.q_hat[dof][SWE::Variables::qy] += delta_q_hat[3 * dof + 2];
+        }
+        // randomly assign delta_q_hat and increment
+
+        // difference estimate
+        rhs_global_prev[edge_int.GetID()] = edge_internal.rhs_global;
+
+        delta_global_diff_est[edge_int.GetID()] = edge_internal.delta_hat_global * delta_q_hat;
+
+        delta_local_diff_est[boundary_in.elt_ID] += boundary_in.delta_hat_local * delta_q_hat;
+        delta_local_diff_est[boundary_ex.elt_ID] += boundary_ex.delta_hat_local * delta_q_hat;
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
+        auto& edge_state    = edge_bound.edge_data.edge_state;
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        // subtract to find diff true
+        rhs_global_prev[edge_bound.GetID()] -= edge_internal.rhs_global;
+
+        // compare
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof],
+                                         rhs_global_prev[edge_bound.GetID()][3 * dof],
+                                         1.0e12)) {
+                std::cerr << "error edge bound del_global in ze" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof] << ' '
+                          << rhs_global_prev[edge_bound.GetID()][3 * dof] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 1],
+                                         rhs_global_prev[edge_bound.GetID()][3 * dof + 1],
+                                         1.0e12)) {
+                std::cerr << "error edge bound del_global in qx" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 1] << ' '
+                          << rhs_global_prev[edge_bound.GetID()][3 * dof + 1] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 2],
+                                         rhs_global_prev[edge_bound.GetID()][3 * dof + 2],
+                                         1.0e12)) {
+                std::cerr << "error edge bound del_global in qy" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 2] << ' '
+                          << rhs_global_prev[edge_bound.GetID()][3 * dof + 2] << std::endl;
+            }
+        }
+
+        // randomly assign delta_q_hat and increment
+        DynVector<double> delta_q_hat(SWE::n_variables * edge_bound.edge_data.get_ndof());
+
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+            delta_q_hat[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            delta_q_hat[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            delta_q_hat[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+        }
+
+        delta_q_hat *= 1.0e-8;  // make it small
+
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
+            edge_state.q_hat[dof][SWE::Variables::ze] += delta_q_hat[3 * dof];
+            edge_state.q_hat[dof][SWE::Variables::qx] += delta_q_hat[3 * dof + 1];
+            edge_state.q_hat[dof][SWE::Variables::qy] += delta_q_hat[3 * dof + 2];
+        }
+        // randomly assign delta_q_hat and increment
+
+        rhs_global_prev[edge_bound.GetID()] = edge_internal.rhs_global;
+
+        delta_global_diff_est[edge_bound.GetID()] = edge_internal.delta_hat_global * delta_q_hat;
+
+        delta_local_diff_est[boundary.elt_ID] += boundary.delta_hat_local * delta_q_hat;
+    });
+
+    // do one pass to compute next rhs
+    mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+
+    mesh.CallForEachInterface([&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
+
+    mesh.CallForEachBoundary([&](auto& bound) { SWE::IHDG::Problem::local_boundary_kernel(stepper, bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::local_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::local_edge_boundary_kernel(stepper, edge_bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::global_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+    // do one pass to compute next rhs
+
+    mesh.CallForEachElement([&](auto& elt) {
+        // subtract to find diff true
+        rhs_local_prev[elt.GetID()] -= elt.data.internal.rhs_local;
+
+        // compare
+        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+            if (!Utilities::almost_equal(
+                    delta_local_diff_est[elt.GetID()][3 * dof], rhs_local_prev[elt.GetID()][3 * dof], 1.0e12)) {
+                std::cerr << "error del_hat_local in ze" << std::endl;
+                std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof] << ' '
+                          << rhs_local_prev[elt.GetID()][3 * dof] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(
+                    delta_local_diff_est[elt.GetID()][3 * dof + 1], rhs_local_prev[elt.GetID()][3 * dof + 1], 1.0e12)) {
+                std::cerr << "error del_hat_local in qx" << std::endl;
+                std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 1] << ' '
+                          << rhs_local_prev[elt.GetID()][3 * dof + 1] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(
+                    delta_local_diff_est[elt.GetID()][3 * dof + 2], rhs_local_prev[elt.GetID()][3 * dof + 2], 1.0e12)) {
+                std::cerr << "error del_hat_local in qy" << std::endl;
+                std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 2] << ' '
+                          << rhs_local_prev[elt.GetID()][3 * dof + 2] << std::endl;
+            }
+        }
+    });
+
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        // subtract to find diff true
+        rhs_global_prev[edge_int.GetID()] -= edge_internal.rhs_global;
+
+        // compare
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof],
+                                         rhs_global_prev[edge_int.GetID()][3 * dof],
+                                         1.0e12)) {
+                std::cerr << "error edge int del_hat_global in ze" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof] << ' '
+                          << rhs_global_prev[edge_int.GetID()][3 * dof] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 1],
+                                         rhs_global_prev[edge_int.GetID()][3 * dof + 1],
+                                         1.0e12)) {
+                std::cerr << "error edge int del_hat_global in qx" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 1] << ' '
+                          << rhs_global_prev[edge_int.GetID()][3 * dof + 1] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 2],
+                                         rhs_global_prev[edge_int.GetID()][3 * dof + 2],
+                                         1.0e12)) {
+                std::cerr << "error edge int del_hat_global in qy" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 2] << ' '
+                          << rhs_global_prev[edge_int.GetID()][3 * dof + 2] << std::endl;
+            }
+        }
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        // subtract to find diff true
+        rhs_global_prev[edge_bound.GetID()] -= edge_internal.rhs_global;
+
+        // compare
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof],
+                                         rhs_global_prev[edge_bound.GetID()][3 * dof],
+                                         1.0e12)) {
+                std::cerr << "error edge bound del_hat_global in ze" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof] << ' '
+                          << rhs_global_prev[edge_bound.GetID()][3 * dof] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 1],
+                                         rhs_global_prev[edge_bound.GetID()][3 * dof + 1],
+                                         1.0e12)) {
+                std::cerr << "error edge bound del_hat_global in qx" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 1] << ' '
+                          << rhs_global_prev[edge_bound.GetID()][3 * dof + 1] << std::endl;
+            }
+
+            if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 2],
+                                         rhs_global_prev[edge_bound.GetID()][3 * dof + 2],
+                                         1.0e12)) {
+                std::cerr << "error edge bound del_hat_global in qy" << std::endl;
+                std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 2] << ' '
+                          << rhs_global_prev[edge_bound.GetID()][3 * dof + 2] << std::endl;
+            }
+        }
+    });
 }

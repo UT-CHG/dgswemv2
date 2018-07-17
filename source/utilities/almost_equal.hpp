@@ -14,11 +14,9 @@ namespace Utilities {
  * @return whether or not the numbers are approximately equal.
  */
 constexpr bool almost_equal(double a, double b, double factor = 100) {
-    if (std::max(std::abs(a), std::abs(b)) < std::numeric_limits<double>::epsilon() * factor) {
-        return true;
-    }
-
-    return std::abs(a - b) < (std::max(std::abs(a), std::abs(b)) * std::numeric_limits<double>::epsilon() * factor);
+    // implementation from https://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
+    return std::abs(a - b) <= std::numeric_limits<double>::epsilon() * std::abs(a + b) * factor ||
+           std::abs(a - b) < std::numeric_limits<double>::min();
 };
 }
 
