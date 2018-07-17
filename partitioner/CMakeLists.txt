@@ -17,6 +17,6 @@ add_executable(
 )
 
 target_include_directories(partitioner PRIVATE ${YAML_CPP_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
-target_link_libraries(partitioner ${YAML_CPP_LIBRARIES} ${METIS_LIBRARIES})
+target_link_libraries(partitioner ${YAML_CPP_LIBRARIES} ${METIS_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 install(TARGETS partitioner DESTINATION bin/utilities/partitioner)

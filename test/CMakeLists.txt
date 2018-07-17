@@ -16,6 +16,21 @@ add_test(
 )
 
 add_executable(
+  test_jacobians_ihdg_exe
+  test_jacobians_ihdg.cpp
+  ${SOURCES}
+  ${SWE_SOURCES}
+)
+
+target_include_directories(test_jacobians_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(test_jacobians_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_test(
+  Unit_test_jacobians_ihdg
+  test_jacobians_ihdg_exe
+)
+
+add_executable(
   test_tuple_helpers_exe
   test_tuple_helpers.cpp
 )
