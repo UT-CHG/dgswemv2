@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
                 -edge_int.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
         }
         // find next rhs and substract to find diff
-        
+
         // difference estimate
         DynVector<double> diff_est(SWE::n_variables * edge_int.edge_data.get_ndof());
 
@@ -261,7 +261,7 @@ int main(int argc, char* argv[]) {
                 -edge_bound.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
         }
         // find next rhs and substract to find diff
-        
+
         // difference estimate
         DynVector<double> diff_est(SWE::n_variables * edge_bound.edge_data.get_ndof());
 
