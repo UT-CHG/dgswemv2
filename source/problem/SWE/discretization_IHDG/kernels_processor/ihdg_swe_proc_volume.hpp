@@ -84,7 +84,7 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
-                      SWE::n_variables) = elt.IntegrationPhiPhi(dof_i, dof_j, internal.kronecker_DT_at_gp) -
+                      SWE::n_variables) = elt.IntegrationPhiPhi(dof_j, dof_i, internal.kronecker_DT_at_gp) -
                                           elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, internal.dFx_dq_at_gp) -
                                           elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp);
         }

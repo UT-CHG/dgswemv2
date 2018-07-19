@@ -633,6 +633,7 @@ int main(int argc, char* argv[]) {
 
         uint elt_ID = elt.GetID();
 
+        submatrix(delta_local, elt_ID * 9, elt_ID * 9, 9, 9)     = internal.delta_local;
         submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
         subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
 
@@ -685,6 +686,142 @@ int main(int argc, char* argv[]) {
         if (!Utilities::almost_equal(diff_est[dof], rhs_prev[dof], 1.0e12)) {
             std::cerr << "error del compound" << std::endl;
             std::cout << std::setprecision(15) << diff_est[dof] << ' ' << rhs_prev[dof] << std::endl;
+        }
+    }
+
+    // randomly assign delta_q_hat
+    for (uint dof = 0; dof < dof_global; dof++) {
+        delta_q_hat[dof] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+    }
+
+    delta_q_hat *= 1.0e-8;  // make it small
+
+    delta_q = delta_local_inv * (rhs_local - delta_local_inv * delta_hat_local * delta_q_hat);
+
+    delta_q *= 1.0e-8; // delta_q is too large cause we have delta_local_inv * rhs_local term in there
+
+    rhs_global_prev       = rhs_global;
+    delta_global_diff_est = delta_hat_global * delta_q_hat + delta_global * delta_q;
+
+    mesh.CallForEachElement([&](auto& elt) {
+        const uint stage = stepper.GetStage();
+
+        auto& state = elt.data.state[stage + 1];
+
+        uint elt_ID = elt.GetID();
+
+        auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
+
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
+            state.q[dof][SWE::Variables::ze] += rhs_local_ref[3 * dof];
+            state.q[dof][SWE::Variables::qx] += rhs_local_ref[3 * dof + 1];
+            state.q[dof][SWE::Variables::qy] += rhs_local_ref[3 * dof + 2];
+        }
+    });
+
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
+        auto& edge_state = edge_int.edge_data.edge_state;
+
+        uint edg_ID = edge_int.GetID();
+
+        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
+            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
+            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+        }
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
+        auto& edge_state = edge_bound.edge_data.edge_state;
+
+        uint edg_ID = edge_bound.GetID();
+
+        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
+            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
+            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+        }
+    });
+
+    // do one pass to compute all jacobians and rhs
+    mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+
+    mesh.CallForEachInterface([&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
+
+    mesh.CallForEachBoundary([&](auto& bound) { SWE::IHDG::Problem::local_boundary_kernel(stepper, bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::local_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::local_edge_boundary_kernel(stepper, edge_bound); });
+
+    mesh_skeleton.CallForEachEdgeInterface(
+        [&](auto& edge_int) { SWE::IHDG::Problem::global_edge_interface_kernel(stepper, edge_int); });
+
+    mesh_skeleton.CallForEachEdgeBoundary(
+        [&](auto& edge_bound) { SWE::IHDG::Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+    // do one pass to compute all jacobians and rhs
+
+    // assemble global
+    mesh.CallForEachElement([&](auto& elt) {
+        auto& internal = elt.data.internal;
+
+        uint elt_ID = elt.GetID();
+
+        submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
+        subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
+
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
+            uint edg_ID = elt.data.boundary[bound_id].edg_ID;
+
+            submatrix(delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) = elt.data.boundary[bound_id].delta_hat_local;
+        }
+    });
+
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+        auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+
+        uint elt_in_ID = boundary_in.elt_ID;
+        uint elt_ex_ID = boundary_ex.elt_ID;
+
+        uint edg_ID = edge_int.GetID();
+
+        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
+        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+
+        submatrix(delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
+        submatrix(delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        uint elt_ID = boundary.elt_ID;
+        uint edg_ID = edge_bound.GetID();
+
+        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
+        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+
+        submatrix(delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+    });
+
+    rhs_global_prev -= rhs_global;
+
+    for (uint dof = 0; dof < dof_global; dof++) {
+        if (!Utilities::almost_equal(delta_global_diff_est[dof], rhs_global_prev[dof], 1.0e12)) {
+            std::cerr << "error back substitute del global" << std::endl;
+            std::cout << std::setprecision(15) << delta_global_diff_est[dof] << ' ' << rhs_global_prev[dof]
+                      << std::endl;
         }
     }
 }

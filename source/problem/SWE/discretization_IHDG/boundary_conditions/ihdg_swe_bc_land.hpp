@@ -14,9 +14,6 @@ class Land {
 
     template <typename EdgeBoundaryType>
     void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
-
-    template <typename EdgeBoundaryType>
-    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 };
 
 template <typename EdgeBoundaryType>
@@ -52,11 +49,6 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
         edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qx] += qn * nx;
         edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qy] += qn * ny;
     }
-}
-
-template <typename EdgeBoundaryType>
-void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
-    add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 }
 }

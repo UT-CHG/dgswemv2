@@ -12,7 +12,7 @@ mesh:
 timestepping:
   start_time: 25-11-1987 00:00
   end_time: 25-11-1987 12:00               
-  dt: 120                           
+  dt: 5                          
   order: 1
   nstages: 1
 
@@ -30,7 +30,7 @@ problem:
 output:
   path: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/examples/output/
   vtu:
-    frequency: 120.0
+    frequency: 360.0
   logfile:
     name: log
     verbose: false

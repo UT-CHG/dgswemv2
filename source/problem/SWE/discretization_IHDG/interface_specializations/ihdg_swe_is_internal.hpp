@@ -15,9 +15,6 @@ class Internal {
 
     template <typename EdgeInterfaceType>
     void ComputeGlobalKernels(EdgeInterfaceType& edge_int);
-
-    template <typename EdgeInterfaceType>
-    void ComputeNumericalFlux(EdgeInterfaceType& edge_int);
 };
 
 template <typename EdgeInterfaceType>
@@ -40,11 +37,6 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
         edge_internal.rhs_global_kernel_at_gp[gp] = boundary_in.F_hat_at_gp[gp];
         edge_internal.rhs_global_kernel_at_gp[gp] += boundary_ex.F_hat_at_gp[gp_ex];
     }
-}
-
-template <typename EdgeInterfaceType>
-void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
-    add_F_hat_tau_terms_intface_LF(edge_int);
 }
 }
 }
