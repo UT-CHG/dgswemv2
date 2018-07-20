@@ -18,6 +18,9 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     double sgn;
 
     StatVector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> dtau_dq_hat;
+
+    StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
@@ -41,10 +44,11 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
             sgn = 0.0;
         }
 
-        dtau_dze_hat = std::sqrt(Global::g / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h]) / 2.0 -
-                       sgn * un_hat / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
-        dtau_dqx_hat = sgn * nx / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
-        dtau_dqy_hat = sgn * ny / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
+        dtau_dq_hat[SWE::Variables::ze] =
+            std::sqrt(Global::g / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h]) / 2.0 -
+            sgn * un_hat / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
+        dtau_dq_hat[SWE::Variables::qx] = sgn * nx / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
+        dtau_dq_hat[SWE::Variables::qy] = sgn * ny / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
 
         tau = std::abs(un_hat) + std::sqrt(Global::g * edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h]);
 
@@ -52,11 +56,14 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
 
         /* delta kernels */
 
-        column<SWE::Variables::ze>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
-        column<SWE::Variables::qx>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
-        column<SWE::Variables::qy>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
+        subvector(edge_internal.delta_hat_global_kernel_at_gp[gp], SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+            dtau_dq_hat * del_q[SWE::Variables::ze];
+        subvector(edge_internal.delta_hat_global_kernel_at_gp[gp], SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+            dtau_dq_hat * del_q[SWE::Variables::qx];
+        subvector(edge_internal.delta_hat_global_kernel_at_gp[gp], SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+            dtau_dq_hat * del_q[SWE::Variables::qy];
 
-        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * IdentityMatrix<double>(SWE::n_variables);
+        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * I_vector;
 
         /* RHS kernels */
 
@@ -76,8 +83,12 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
     double sgn;
 
     StatVector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> dtau_dq_hat;
+
     StatVector<double, SWE::n_variables> q_ex;
     StatVector<double, SWE::n_variables> Fn_ex;
+
+    StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
@@ -100,10 +111,11 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
             sgn = 0.0;
         }
 
-        dtau_dze_hat = std::sqrt(Global::g / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h]) / 2.0 -
-                       sgn * un_hat / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
-        dtau_dqx_hat = sgn * nx / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
-        dtau_dqy_hat = sgn * ny / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
+        dtau_dq_hat[SWE::Variables::ze] =
+            std::sqrt(Global::g / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h]) / 2.0 -
+            sgn * un_hat / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
+        dtau_dq_hat[SWE::Variables::qx] = sgn * nx / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
+        dtau_dq_hat[SWE::Variables::qy] = sgn * ny / edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h];
 
         tau = std::abs(un_hat) + std::sqrt(Global::g * edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h]);
 
@@ -111,11 +123,14 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
         /* delta kernels */
 
-        column<SWE::Variables::ze>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dze_hat * del_q;
-        column<SWE::Variables::qx>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqx_hat * del_q;
-        column<SWE::Variables::qy>(edge_internal.delta_hat_global_kernel_at_gp[gp]) = dtau_dqy_hat * del_q;
+        subvector(edge_internal.delta_hat_global_kernel_at_gp[gp], SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+            dtau_dq_hat * del_q[SWE::Variables::ze];
+        subvector(edge_internal.delta_hat_global_kernel_at_gp[gp], SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+            dtau_dq_hat * del_q[SWE::Variables::qx];
+        subvector(edge_internal.delta_hat_global_kernel_at_gp[gp], SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+            dtau_dq_hat * del_q[SWE::Variables::qy];
 
-        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * IdentityMatrix<double>(SWE::n_variables);
+        edge_internal.delta_hat_global_kernel_at_gp[gp] += -2 * tau * I_vector;
 
         /* RHS kernels */
 

@@ -27,6 +27,17 @@ using SparseMatrix = blaze::CompressedMatrix<T>;
 template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
+template <typename T>
+DynVector<T> IdentityVector(uint size) {
+    DynVector<double> I_vector(size * size, 0.0);
+
+    for (uint i = 0; i < size; i++) {
+        I_vector[i * size + i] = 1.0;
+    }
+
+    return I_vector;
+}
+
 /* Vector/Matrix (aka Tensor) Operations */
 template <typename TensorType>
 decltype(auto) transpose(TensorType& tensor) {
@@ -47,6 +58,12 @@ double sqr_norm(TensorType& tensor) {
 template <typename VectorType>
 decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
     return blaze::subvector(vector, start_row, size_row);
+}
+
+template <typename T, uint m, uint n, uint mn>
+StatMatrix<T, m, n> reshape(const StatVector<T, mn>& vector) {
+    static_assert(m * n == mn);
+    return StatMatrix<T, m, n>(m, n, vector.data());
 }
 
 /* Matrix Operations */

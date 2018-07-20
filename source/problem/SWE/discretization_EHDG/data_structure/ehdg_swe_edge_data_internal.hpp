@@ -19,7 +19,7 @@ struct EdgeInternal {
 
     std::vector<StatVector<double, SWE::n_variables>> q_init_at_gp;
 
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> delta_hat_global_kernel_at_gp;
+    std::vector<StatVector<double, SWE::n_variables * SWE::n_variables>> delta_hat_global_kernel_at_gp;
     std::vector<StatVector<double, SWE::n_variables>> rhs_global_kernel_at_gp;
 
     DynMatrix<double> delta_hat_global;

@@ -698,7 +698,7 @@ int main(int argc, char* argv[]) {
 
     delta_q = delta_local_inv * (rhs_local - delta_local_inv * delta_hat_local * delta_q_hat);
 
-    delta_q *= 1.0e-8; // delta_q is too large cause we have delta_local_inv * rhs_local term in there
+    delta_q *= 1.0e-8;  // delta_q is too large cause we have delta_local_inv * rhs_local term in there
 
     rhs_global_prev       = rhs_global;
     delta_global_diff_est = delta_hat_global * delta_q_hat + delta_global * delta_q;

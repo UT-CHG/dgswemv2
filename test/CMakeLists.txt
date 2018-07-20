@@ -1,6 +1,13 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
+  test_linear_algebra_exe
+  test_linear_algebra.cpp
+)
+
+target_link_libraries(test_linear_algebra_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
   ${SOURCES}
