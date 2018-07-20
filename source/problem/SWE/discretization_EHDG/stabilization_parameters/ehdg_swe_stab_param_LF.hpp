@@ -14,7 +14,7 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
 
     double u_hat, v_hat, un_hat;
     double nx, ny;
-    double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
+    double tau;
     double sgn;
 
     StatVector<double, SWE::n_variables> del_q;
@@ -79,7 +79,7 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
     double u_hat, v_hat, un_hat;
     double nx, ny;
-    double tau, dtau_dze_hat, dtau_dqx_hat, dtau_dqy_hat;
+    double tau;
     double sgn;
 
     StatVector<double, SWE::n_variables> del_q;

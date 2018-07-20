@@ -40,9 +40,9 @@ struct Internal {
     std::vector<StatVector<double, SWE::n_dimensions>> dtide_pot_at_gp;
 
     std::vector<StatVector<double, SWE::n_variables>> del_q_DT_at_gp;
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> kronecker_DT_at_gp;
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dFx_dq_at_gp;
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dFy_dq_at_gp;
+    std::vector<StatVector<double, SWE::n_variables * SWE::n_variables>> kronecker_DT_at_gp;
+    std::vector<StatVector<double, SWE::n_variables * SWE::n_variables>> dFx_dq_at_gp;
+    std::vector<StatVector<double, SWE::n_variables * SWE::n_variables>> dFy_dq_at_gp;
 
     DynMatrix<double> delta_local;
     DynVector<double> rhs_local;

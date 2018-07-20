@@ -62,7 +62,7 @@ decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
 
 template <typename T, uint m, uint n, uint mn>
 StatMatrix<T, m, n> reshape(const StatVector<T, mn>& vector) {
-    static_assert(m * n == mn);
+    static_assert(m * n == mn, "reshape static_assert fail!");
     return StatMatrix<T, m, n>(m, n, vector.data());
 }
 
