@@ -140,12 +140,8 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
             }
         }
 
-        LLF_flux(gravity,
-                 boundary.q_at_gp[gp],
-                 q_ex,
-                 boundary.aux_at_gp[gp],
-                 dbound.surface_normal[gp],
-                 boundary.F_hat_at_gp[gp]);
+        column(boundary.F_hat_at_gp, gp) = LLF_flux(
+            gravity, column(boundary.q_at_gp, gp), q_ex, column(boundary.aux_at_gp, gp), dbound.surface_normal[gp]);
     }
 }
 }

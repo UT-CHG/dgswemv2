@@ -63,10 +63,10 @@ class Element {
     template <typename InputArrayType>
     decltype(auto) L2ProjectionNode(const InputArrayType& nodal_values);
 
-    template <typename T>
-    void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
-    template <typename T>
-    void ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u);
+    template <typename InputArrayType>
+    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
+    template <typename InputArrayType>
+    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
 
     template <typename F>
     decltype(auto) ComputeFgp(const F& f);
@@ -289,23 +289,26 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2Pro
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const std::vector<T>& u,
-                                                                                      std::vector<T>& u_lin) {
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
+    const InputArrayType& u) {
     if (const_J) {
-        this->master->basis.ProjectBasisToLinear(u, u_lin);
+        return this->master->basis.ProjectBasisToLinear(u);
     } else {
+        return 0;
         // Placeholder for nonconstant Jacobian
     }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(const std::vector<T>& u_lin,
-                                                                                      std::vector<T>& u) {
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
+    const uint ndof,
+    const InputArrayType& u_lin) {
     if (const_J) {
-        this->master->basis.ProjectLinearToBasis(u_lin, u);
+        return this->master->basis.ProjectLinearToBasis(ndof, u_lin);
     } else {
+        return 0;
         // Placeholder for nonconstant Jacobian
     }
 }

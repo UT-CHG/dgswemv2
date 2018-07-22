@@ -39,9 +39,9 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
                              internal.q_at_gp(SWE::Variables::ze, gp) * internal.aux_at_gp(SWE::Auxiliaries::bath, gp));
 
             internal.Fx_at_gp(SWE::Variables::ze, gp) =
-                internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * internal.q_at_gp(SWE::Variables::qx, gp);
-            internal.Fx_at_gp(SWE::Variables::qx, gp) = internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * (uuh + pe);
-            internal.Fx_at_gp(SWE::Variables::qy, gp) = internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * uvh;
+                internal.aux_at_gp(SWE::Auxiliaries::sp, gp) * internal.q_at_gp(SWE::Variables::qx, gp);
+            internal.Fx_at_gp(SWE::Variables::qx, gp) = internal.aux_at_gp(SWE::Auxiliaries::sp, gp) * (uuh + pe);
+            internal.Fx_at_gp(SWE::Variables::qy, gp) = internal.aux_at_gp(SWE::Auxiliaries::sp, gp) * uvh;
 
             internal.Fy_at_gp(SWE::Variables::ze, gp) = internal.q_at_gp(SWE::Variables::qy, gp);
             internal.Fy_at_gp(SWE::Variables::qx, gp) = uvh;
@@ -49,8 +49,8 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
         }
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.rhs[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.Fx_at_gp) +
-                             elt.IntegrationDPhi(GlobalCoord::y, dof, internal.Fy_at_gp);
+            column(state.rhs, dof) = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.Fx_at_gp) +
+                                     elt.IntegrationDPhi(GlobalCoord::y, dof, internal.Fy_at_gp);
         }
     }
 }

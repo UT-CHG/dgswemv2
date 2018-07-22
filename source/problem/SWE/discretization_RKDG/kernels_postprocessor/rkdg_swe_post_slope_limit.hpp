@@ -7,7 +7,7 @@ namespace SWE {
 namespace RKDG {
 template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, ElementType& elt) {
-    auto& wd_state = elt.data.wet_dry_state;
+    /*auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet) {
@@ -18,12 +18,12 @@ void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, El
         elt.ProjectBasisToLinear(state.q, sl_state.q_lin);
         elt.ComputeLinearUbaryctr(sl_state.q_lin, sl_state.q_at_baryctr);
         elt.ComputeLinearUmidpts(sl_state.q_lin, sl_state.q_at_midpts);
-    }
+    }*/
 }
 
 template <typename InterfaceType>
 void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
-    auto& wd_state_in = intface.data_in.wet_dry_state;
+    /*auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
     auto& sl_state_in = intface.data_in.slope_limit_state;
@@ -35,25 +35,25 @@ void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, 
     if (wd_state_in.wet && wd_state_ex.wet) {
         sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.q_at_baryctr;
         sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.q_at_baryctr;
-    }
+    }*/
 }
 
 template <typename BoundaryType>
 void Problem::slope_limiting_prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
-    auto& wd_state = bound.data.wet_dry_state;
+    /*auto& wd_state = bound.data.wet_dry_state;
     auto& sl_state = bound.data.slope_limit_state;
 
     sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
 
     if (wd_state.wet) {
         sl_state.q_at_baryctr_neigh[bound.bound_id] = sl_state.q_at_baryctr;
-    }
+    }*/
 }
 
 template <typename DistributedBoundaryType>
 void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& stepper,
                                                               DistributedBoundaryType& dbound) {
-    auto& wd_state = dbound.data.wet_dry_state;
+    /*auto& wd_state = dbound.data.wet_dry_state;
 
     dbound.boundary_condition.exchanger.SetPostprocWetDryEX(wd_state.wet);
 
@@ -61,13 +61,13 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
         auto& sl_state = dbound.data.slope_limit_state;
 
         dbound.boundary_condition.exchanger.SetPostprocEX(sl_state.q_at_baryctr);
-    }
+    }*/
 }
 
 template <typename DistributedBoundaryType>
 void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper& stepper,
                                                                  DistributedBoundaryType& dbound) {
-    auto& wd_state = dbound.data.wet_dry_state;
+    /*auto& wd_state = dbound.data.wet_dry_state;
     auto& sl_state = dbound.data.slope_limit_state;
 
     bool wet_ex;
@@ -77,12 +77,12 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper
 
     if (wd_state.wet && wet_ex) {
         dbound.boundary_condition.exchanger.GetPostprocEX(sl_state.q_at_baryctr_neigh[dbound.bound_id]);
-    }
+    }*/
 }
 
 template <typename ElementType>
 void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) {
-    auto& wd_state = elt.data.wet_dry_state;
+    /*auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet &&
@@ -197,7 +197,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         if (limit) {
             elt.ProjectLinearToBasis(sl_state.q_at_vrtx, state.q);
         }
-    }
+    }*/
 }
 }
 }

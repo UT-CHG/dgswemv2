@@ -86,11 +86,12 @@ void Simulation<ProblemType>::Run() {
             this->mesh.CallForEachInterface(
                 [this](auto& intface) { ProblemType::interface_kernel(this->stepper, intface); });
 
-            this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound); });
+            this->mesh.CallForEachBoundary([this](auto& bound) { ProblemType::boundary_kernel(this->stepper, bound);
+            });
 
             this->mesh.CallForEachElement([this](auto& elt) { ProblemType::update_kernel(this->stepper, elt); });
 
-            ProblemType::postprocessor_serial_kernel(this->stepper, this->mesh);
+            /*ProblemType::postprocessor_serial_kernel(this->stepper, this->mesh);*/
 
             this->mesh.CallForEachElement([this](auto& elt) {
                 bool nan_found = ProblemType::scrutinize_solution_kernel(this->stepper, elt);

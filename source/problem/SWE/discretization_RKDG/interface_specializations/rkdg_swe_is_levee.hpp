@@ -51,9 +51,9 @@ void Levee::Initialize(InterfaceType& intface) {
     this->C_subcrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
     this->C_supercrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
 
-    intface.ComputeBoundaryNodalUgpIN(this->H_barrier, this->H_bar_gp);
-    intface.ComputeBoundaryNodalUgpIN(this->C_subcritical, this->C_subcrit_gp);
-    intface.ComputeBoundaryNodalUgpIN(this->C_supercritical, this->C_supercrit_gp);
+    // intface.ComputeBoundaryNodalUgpIN(this->H_barrier, this->H_bar_gp);
+    // intface.ComputeBoundaryNodalUgpIN(this->C_subcritical, this->C_subcrit_gp);
+    // intface.ComputeBoundaryNodalUgpIN(this->C_supercritical, this->C_supercrit_gp);
 }
 
 template <typename InterfaceType>
@@ -68,8 +68,9 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
-    StatVector<double, SWE::n_variables> q_in_ex, q_ex_ex;
     double gravity_in, gravity_ex;
+    DynVector<double> q_in_ex(SWE::n_variables);
+    DynVector<double> q_ex_ex(SWE::n_variables);
 
     uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
     uint gp_ex;
@@ -89,10 +90,10 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
             // reflective boundary in
-            land_boundary.GetEX(stepper, intface.surface_normal_in[gp], row(boundary_in.q_at_gp, gp), q_in_ex);
+            land_boundary.GetEX(stepper, intface.surface_normal_in[gp], column(boundary_in.q_at_gp, gp), q_in_ex);
 
             // reflective boundary ex
-            land_boundary.GetEX(stepper, intface.surface_normal_ex[gp_ex], row(boundary_ex.q_at_gp, gp_ex), q_ex_ex);
+            land_boundary.GetEX(stepper, intface.surface_normal_ex[gp_ex], column(boundary_ex.q_at_gp, gp_ex), q_ex_ex);
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 
@@ -153,19 +154,17 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
             }
         }
 
-        LLF_flux(gravity_in,
-                 row(boundary_in.q_at_gp, gp),
-                 q_in_ex,
-                 boundary_in.aux_at_gp[gp],
-                 intface.surface_normal_in[gp],
-                 row(boundary_in.F_hat_at_gp, gp));
+        column(boundary_in.F_hat_at_gp, gp) = LLF_flux(gravity_in,
+                                                       column(boundary_in.q_at_gp, gp),
+                                                       q_in_ex,
+                                                       column(boundary_in.aux_at_gp, gp),
+                                                       intface.surface_normal_in[gp]);
 
-        LLF_flux(gravity_ex,
-                 row(boundary_ex.q_at_gp, gp_ex),
-                 q_ex_ex,
-                 boundary_ex.aux_at_gp[gp_ex],
-                 intface.surface_normal_ex[gp_ex],
-                 row(boundary_ex.F_hat_at_gp, gp_ex));
+        column(boundary_ex.F_hat_at_gp, gp_ex) = LLF_flux(gravity_ex,
+                                                          column(boundary_ex.q_at_gp, gp_ex),
+                                                          q_ex_ex,
+                                                          column(boundary_ex.aux_at_gp, gp_ex),
+                                                          intface.surface_normal_ex[gp_ex]);
     }
 }
 }

@@ -19,18 +19,18 @@ void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface)
         auto& state_ex    = intface.data_ex.state[stage];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        intface.ComputeUgpIN(state_in.q, boundary_in.q_at_gp);
-        intface.ComputeUgpEX(state_ex.q, boundary_ex.q_at_gp);
+        boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
+        boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
         intface.specialization.ComputeFlux(stepper, intface);
 
         // now compute contributions to the righthand side
         for (uint dof = 0; dof < intface.data_in.get_ndof(); ++dof) {
-            state_in.rhs[dof] -= intface.IntegrationPhiIN(dof, boundary_in.F_hat_at_gp);
+            column(state_in.rhs, dof) -= intface.IntegrationPhiIN(dof, boundary_in.F_hat_at_gp);
         }
 
         for (uint dof = 0; dof < intface.data_ex.get_ndof(); ++dof) {
-            state_ex.rhs[dof] -= intface.IntegrationPhiEX(dof, boundary_ex.F_hat_at_gp);
+            column(state_ex.rhs, dof) -= intface.IntegrationPhiEX(dof, boundary_ex.F_hat_at_gp);
         }
     }
 }

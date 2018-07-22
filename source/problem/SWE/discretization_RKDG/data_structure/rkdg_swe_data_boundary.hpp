@@ -7,12 +7,13 @@ namespace SWE {
 namespace RKDG {
 struct Boundary {
     Boundary() = default;
-    Boundary(const uint ngp) : q_at_gp(ngp), aux_at_gp(ngp), F_hat_at_gp(ngp) {}
+    Boundary(const uint ngp)
+        : q_at_gp(SWE::n_variables, ngp), aux_at_gp(SWE::n_auxiliaries, ngp), F_hat_at_gp(SWE::n_variables, ngp) {}
 
-    std::vector<StatVector<double, SWE::n_variables>> q_at_gp;
-    std::vector<StatVector<double, SWE::n_auxiliaries>> aux_at_gp;
+    DynMatrix<double> q_at_gp;
+    DynMatrix<double> aux_at_gp;
 
-    std::vector<StatVector<double, SWE::n_variables>> F_hat_at_gp;
+    DynMatrix<double> F_hat_at_gp;
 
 #ifdef HAS_HPX
     template <typename Archive>

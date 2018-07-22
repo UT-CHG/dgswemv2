@@ -55,15 +55,15 @@ DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
     return m_inv;
 }
 
-template <typename T>
-void Legendre_1D::ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin) {
-    u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
-    u_lin[1] = 0.5 * u[0] + 0.5 * u[1];
+template <typename InputArrayType>
+inline decltype(auto) Legendre_1D::ProjectBasisToLinear(const InputArrayType& u) {
+    /*u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
+    u_lin[1] = 0.5 * u[0] + 0.5 * u[1];*/
 }
 
-template <typename T>
-void Legendre_1D::ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u) {
-    u[0] = u_lin[0] + u_lin[1];
-    u[1] = -u_lin[0] + u_lin[1];
+template <typename InputArrayType>
+inline decltype(auto) Legendre_1D::ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin) {
+    /*u[0] = u_lin[0] + u_lin[1];
+    u[1] = -u_lin[0] + u_lin[1];*/
 }
 }

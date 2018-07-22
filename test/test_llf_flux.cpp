@@ -25,7 +25,7 @@ bool test_configuration(const int configuration,
 
     StatVector<double, 3> F_hat;
 
-    SWE::RKDG::LLF_flux(SWE::Global::g, q_in, q_ex, aux_in, normal, F_hat);
+    F_hat = SWE::RKDG::LLF_flux(SWE::Global::g, q_in, q_ex, aux_in, normal);
 
     if (!Utilities::almost_equal(F_hat[0], true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";

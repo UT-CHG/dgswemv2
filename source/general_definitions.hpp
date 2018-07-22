@@ -97,10 +97,10 @@ class Basis {
      */
     virtual DynMatrix<double> GetMinv(const uint p) = 0;
 
-    template <typename T>
-    void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
-    template <typename T>
-    void ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u);
+    template <typename InputArrayType>
+    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
+    template <typename InputArrayType>
+    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
 };
 }
 

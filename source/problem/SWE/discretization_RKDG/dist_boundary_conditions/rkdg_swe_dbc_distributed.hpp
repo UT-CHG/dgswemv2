@@ -38,12 +38,8 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
         this->exchanger.GetEX(gp, q_ex);
 
-        LLF_flux(Global::g,
-                 boundary.q_at_gp[gp],
-                 q_ex,
-                 boundary.aux_at_gp[gp],
-                 dbound.surface_normal[gp],
-                 boundary.F_hat_at_gp[gp]);
+        column(boundary.F_hat_at_gp, gp) = LLF_flux(
+            Global::g, column(boundary.q_at_gp, gp), q_ex, column(boundary.aux_at_gp, gp), dbound.surface_normal[gp]);
     }
 
     // compute net volume flux out of IN/EX elements
@@ -73,12 +69,8 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
             for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
                 this->exchanger.GetEX(gp, q_ex);
 
-                LLF_flux(0.0,
-                         boundary.q_at_gp[gp],
-                         q_ex,
-                         boundary.aux_at_gp[gp],
-                         dbound.surface_normal[gp],
-                         boundary.F_hat_at_gp[gp]);
+                column(boundary.F_hat_at_gp, gp) = LLF_flux(
+                    0.0, column(boundary.q_at_gp, gp), q_ex, column(boundary.aux_at_gp, gp), dbound.surface_normal[gp]);
             }
 
             net_volume_flux_in = dbound.Integration(boundary.F_hat_at_gp)[SWE::Variables::ze];
