@@ -13,8 +13,8 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
     auto& state_ex    = intface.data_ex.state[stage + 1];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-    intface.ComputeUgpIN(state_in.q, boundary_in.q_at_gp);
-    intface.ComputeUgpEX(state_ex.q, boundary_ex.q_at_gp);
+    boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
+    boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
     uint gp_ex = 0;
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
@@ -60,19 +60,19 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
         boundary_in.F_hat_at_gp(SWE::Variables::qy, gp) = uvh_in * nx_in + (vvh_in + pe_in) * ny_in;
 
         // dFn/dq terms
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::ze_ze] = 0.0;
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::ze_qx] = nx_in;
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::ze_qy] = ny_in;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::ze_ze, gp) = 0.0;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::ze_qx, gp) = nx_in;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::ze_qy, gp) = ny_in;
 
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::qx_ze] =
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::qx_ze, gp) =
             (-u_in * u_in + Global::g * boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp)) * nx_in - u_in * v_in * ny_in;
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::qx_qx] = 2 * u_in * nx_in + v_in * ny_in;
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::qx_qy] = u_in * ny_in;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::qx_qx, gp) = 2 * u_in * nx_in + v_in * ny_in;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::qx_qy, gp) = u_in * ny_in;
 
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::qy_ze] =
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::qy_ze, gp) =
             -u_in * v_in * nx_in + (-v_in * v_in + Global::g * boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp)) * ny_in;
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::qy_qx] = v_in * nx_in;
-        boundary_in.dF_hat_dq_at_gp[gp][JacobianVariables::qy_qy] = u_in * nx_in + 2 * v_in * ny_in;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::qy_qx, gp) = v_in * nx_in;
+        boundary_in.dF_hat_dq_at_gp(JacobianVariables::qy_qy, gp) = u_in * nx_in + 2 * v_in * ny_in;
 
         /* EX State */
 
@@ -96,21 +96,21 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
         boundary_ex.F_hat_at_gp(SWE::Variables::qy, gp_ex) = uvh_ex * nx_ex + (vvh_ex + pe_ex) * ny_ex;
 
         // dFn/dq terms
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::ze_ze] = 0.0;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::ze_qx] = nx_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::ze_qy] = ny_ex;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::ze_ze, gp_ex) = 0.0;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::ze_qx, gp_ex) = nx_ex;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::ze_qy, gp_ex) = ny_ex;
 
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::qx_ze] =
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::qx_ze, gp_ex) =
             (-u_ex * u_ex + Global::g * boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex)) * nx_ex -
             u_ex * v_ex * ny_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::qx_qx] = 2 * u_ex * nx_ex + v_ex * ny_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::qx_qy] = u_ex * ny_ex;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::qx_qx, gp_ex) = 2 * u_ex * nx_ex + v_ex * ny_ex;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::qx_qy, gp_ex) = u_ex * ny_ex;
 
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::qy_ze] =
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::qy_ze, gp_ex) =
             -u_ex * v_ex * nx_ex +
             (-v_ex * v_ex + Global::g * boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex)) * ny_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::qy_qx] = v_ex * nx_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex][JacobianVariables::qy_qy] = u_ex * nx_ex + 2 * v_ex * ny_ex;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::qy_qx, gp_ex) = v_ex * nx_ex;
+        boundary_ex.dF_hat_dq_at_gp(JacobianVariables::qy_qy, gp_ex) = u_ex * nx_ex + 2 * v_ex * ny_ex;
     }
 }
 }

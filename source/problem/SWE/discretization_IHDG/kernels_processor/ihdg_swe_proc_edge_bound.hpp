@@ -14,7 +14,7 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
     auto& internal = edge_bound.boundary.data.internal;
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+    edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =

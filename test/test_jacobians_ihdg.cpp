@@ -127,9 +127,9 @@ int main(int argc, char* argv[]) {
         auto& state      = elt.data.state[stage + 1];
 
         for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-            state.q[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -138,9 +138,9 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q_hat
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
-            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -149,9 +149,9 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q_hat
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
-            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -197,9 +197,9 @@ int main(int argc, char* argv[]) {
         delta_q *= 1.0e-8;  // make it small
 
         for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-            state.q[dof][SWE::Variables::ze] += delta_q[3 * dof];
-            state.q[dof][SWE::Variables::qx] += delta_q[3 * dof + 1];
-            state.q[dof][SWE::Variables::qy] += delta_q[3 * dof + 2];
+            state.q(SWE::Variables::ze, dof) += delta_q[3 * dof];
+            state.q(SWE::Variables::qx, dof) += delta_q[3 * dof + 1];
+            state.q(SWE::Variables::qy, dof) += delta_q[3 * dof + 2];
         }
         // randomly assign delta_q and increment
 
@@ -350,9 +350,9 @@ int main(int argc, char* argv[]) {
         delta_q_hat *= 1.0e-8;  // make it small
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += delta_q_hat[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += delta_q_hat[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += delta_q_hat[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += delta_q_hat[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += delta_q_hat[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += delta_q_hat[3 * dof + 2];
         }
         // randomly assign delta_q_hat and increment
 
@@ -413,9 +413,9 @@ int main(int argc, char* argv[]) {
         delta_q_hat *= 1.0e-8;  // make it small
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += delta_q_hat[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += delta_q_hat[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += delta_q_hat[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += delta_q_hat[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += delta_q_hat[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += delta_q_hat[3 * dof + 2];
         }
         // randomly assign delta_q_hat and increment
 

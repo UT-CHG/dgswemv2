@@ -158,9 +158,9 @@ int main(int argc, char* argv[]) {
         auto& state      = elt.data.state[stage + 1];
 
         for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-            state.q[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -169,9 +169,9 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q_hat
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
-            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -180,9 +180,9 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q_hat
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
-            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -305,9 +305,9 @@ int main(int argc, char* argv[]) {
         auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global_ref[3 * dof + 2];
         }
     });
 
@@ -319,9 +319,9 @@ int main(int argc, char* argv[]) {
         auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global_ref[3 * dof + 2];
         }
     });
 
@@ -430,9 +430,9 @@ int main(int argc, char* argv[]) {
         auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q[dof][SWE::Variables::ze] += rhs_local_ref[3 * dof];
-            state.q[dof][SWE::Variables::qx] += rhs_local_ref[3 * dof + 1];
-            state.q[dof][SWE::Variables::qy] += rhs_local_ref[3 * dof + 2];
+            state.q(SWE::Variables::ze, dof) += rhs_local_ref[3 * dof];
+            state.q(SWE::Variables::qx, dof) += rhs_local_ref[3 * dof + 1];
+            state.q(SWE::Variables::qy, dof) += rhs_local_ref[3 * dof + 2];
         }
     });
 
@@ -573,9 +573,9 @@ int main(int argc, char* argv[]) {
         auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q[dof][SWE::Variables::ze] += rhs_local_ref[3 * dof];
-            state.q[dof][SWE::Variables::qx] += rhs_local_ref[3 * dof + 1];
-            state.q[dof][SWE::Variables::qy] += rhs_local_ref[3 * dof + 2];
+            state.q(SWE::Variables::ze, dof) += rhs_local_ref[3 * dof];
+            state.q(SWE::Variables::qx, dof) += rhs_local_ref[3 * dof + 1];
+            state.q(SWE::Variables::qy, dof) += rhs_local_ref[3 * dof + 2];
         }
     });
 
@@ -587,9 +587,9 @@ int main(int argc, char* argv[]) {
         auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global_ref[3 * dof + 2];
         }
     });
 
@@ -601,9 +601,9 @@ int main(int argc, char* argv[]) {
         auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global_ref[3 * dof + 2];
         }
     });
 
@@ -713,9 +713,9 @@ int main(int argc, char* argv[]) {
         auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q[dof][SWE::Variables::ze] += rhs_local_ref[3 * dof];
-            state.q[dof][SWE::Variables::qx] += rhs_local_ref[3 * dof + 1];
-            state.q[dof][SWE::Variables::qy] += rhs_local_ref[3 * dof + 2];
+            state.q(SWE::Variables::ze, dof) += rhs_local_ref[3 * dof];
+            state.q(SWE::Variables::qx, dof) += rhs_local_ref[3 * dof + 1];
+            state.q(SWE::Variables::qy, dof) += rhs_local_ref[3 * dof + 2];
         }
     });
 
@@ -727,9 +727,9 @@ int main(int argc, char* argv[]) {
         auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global_ref[3 * dof + 2];
         }
     });
 
@@ -741,9 +741,9 @@ int main(int argc, char* argv[]) {
         auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global_ref[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global_ref[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global_ref[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global_ref[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global_ref[3 * dof + 2];
         }
     });
 

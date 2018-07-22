@@ -33,16 +33,17 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
 
         qn = boundary.q_at_gp(SWE::Variables::qx, gp) * nx + boundary.q_at_gp(SWE::Variables::qy, gp) * ny;
 
-        boundary.delta_global_kernel_at_gp[gp] = -I_vector;
+        column(boundary.delta_global_kernel_at_gp, gp) = -I_vector;
 
-        boundary.delta_global_kernel_at_gp[gp][JacobianVariables::qx_qx] += nx * nx;
-        boundary.delta_global_kernel_at_gp[gp][JacobianVariables::qx_qy] += nx * ny;
-        boundary.delta_global_kernel_at_gp[gp][JacobianVariables::qy_qx] += nx * ny;
-        boundary.delta_global_kernel_at_gp[gp][JacobianVariables::qy_qy] += ny * ny;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qx_qx, gp) += nx * nx;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qx_qy, gp) += nx * ny;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qy_qx, gp) += nx * ny;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qy_qy, gp) += ny * ny;
 
-        row(edge_internal.delta_hat_global_kernel_at_gp, gp) = I_vector;
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = I_vector;
 
-        row(edge_internal.rhs_global_kernel_at_gp, gp) = row(edge_internal.q_hat_at_gp, gp) - boundary.q_at_gp[gp];
+        column(edge_internal.rhs_global_kernel_at_gp, gp) =
+            column(edge_internal.q_hat_at_gp, gp) - column(boundary.q_at_gp, gp);
         edge_internal.rhs_global_kernel_at_gp(SWE::Variables::qx, gp) += qn * nx;
         edge_internal.rhs_global_kernel_at_gp(SWE::Variables::qy, gp) += qn * ny;
     }

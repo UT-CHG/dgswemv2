@@ -45,38 +45,39 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
         internal.Fy_at_gp(SWE::Variables::qy, gp) = vvh + pe;
 
         // del_q / DT
-        internal.del_q_DT_at_gp[gp] = (internal.q_at_gp[gp] - internal.q_prev_at_gp[gp]) / stepper.GetDT();
+        column(internal.del_q_DT_at_gp, gp) =
+            (column(internal.q_at_gp, gp) - column(internal.q_prev_at_gp, gp)) / stepper.GetDT();
 
         // Kronecker delta / DT
-        internal.kronecker_DT_at_gp[gp] = I_vector / stepper.GetDT();
+        column(internal.kronecker_DT_at_gp, gp) = I_vector / stepper.GetDT();
 
         // dFx/dq terms
-        internal.dFx_dq_at_gp[gp][JacobianVariables::ze_ze] = 0.0;
-        internal.dFx_dq_at_gp[gp][JacobianVariables::ze_qx] = 1.0;
-        internal.dFx_dq_at_gp[gp][JacobianVariables::ze_qy] = 0.0;
+        internal.dFx_dq_at_gp(JacobianVariables::ze_ze, gp) = 0.0;
+        internal.dFx_dq_at_gp(JacobianVariables::ze_qx, gp) = 1.0;
+        internal.dFx_dq_at_gp(JacobianVariables::ze_qy, gp) = 0.0;
 
-        internal.dFx_dq_at_gp[gp][JacobianVariables::qx_ze] =
+        internal.dFx_dq_at_gp(JacobianVariables::qx_ze, gp) =
             -u * u + Global::g * internal.aux_at_gp(SWE::Auxiliaries::h, gp);
-        internal.dFx_dq_at_gp[gp][JacobianVariables::qx_qx] = 2 * u;
-        internal.dFx_dq_at_gp[gp][JacobianVariables::qx_qy] = 0.0;
+        internal.dFx_dq_at_gp(JacobianVariables::qx_qx, gp) = 2 * u;
+        internal.dFx_dq_at_gp(JacobianVariables::qx_qy, gp) = 0.0;
 
-        internal.dFx_dq_at_gp[gp][JacobianVariables::qy_ze] = -u * v;
-        internal.dFx_dq_at_gp[gp][JacobianVariables::qy_qx] = v;
-        internal.dFx_dq_at_gp[gp][JacobianVariables::qy_qy] = u;
+        internal.dFx_dq_at_gp(JacobianVariables::qy_ze, gp) = -u * v;
+        internal.dFx_dq_at_gp(JacobianVariables::qy_qx, gp) = v;
+        internal.dFx_dq_at_gp(JacobianVariables::qy_qy, gp) = u;
 
         // dFy/dq terms
-        internal.dFy_dq_at_gp[gp][JacobianVariables::ze_ze] = 0.0;
-        internal.dFy_dq_at_gp[gp][JacobianVariables::ze_qx] = 0.0;
-        internal.dFy_dq_at_gp[gp][JacobianVariables::ze_qy] = 1.0;
+        internal.dFy_dq_at_gp(JacobianVariables::ze_ze, gp) = 0.0;
+        internal.dFy_dq_at_gp(JacobianVariables::ze_qx, gp) = 0.0;
+        internal.dFy_dq_at_gp(JacobianVariables::ze_qy, gp) = 1.0;
 
-        internal.dFy_dq_at_gp[gp][JacobianVariables::qx_ze] = -u * v;
-        internal.dFy_dq_at_gp[gp][JacobianVariables::qx_qx] = v;
-        internal.dFy_dq_at_gp[gp][JacobianVariables::qx_qy] = u;
+        internal.dFy_dq_at_gp(JacobianVariables::qx_ze, gp) = -u * v;
+        internal.dFy_dq_at_gp(JacobianVariables::qx_qx, gp) = v;
+        internal.dFy_dq_at_gp(JacobianVariables::qx_qy, gp) = u;
 
-        internal.dFy_dq_at_gp[gp][JacobianVariables::qy_ze] =
+        internal.dFy_dq_at_gp(JacobianVariables::qy_ze, gp) =
             -v * v + Global::g * internal.aux_at_gp(SWE::Auxiliaries::h, gp);
-        internal.dFy_dq_at_gp[gp][JacobianVariables::qy_qx] = 0.0;
-        internal.dFy_dq_at_gp[gp][JacobianVariables::qy_qy] = 2 * v;
+        internal.dFy_dq_at_gp(JacobianVariables::qy_qx, gp) = 0.0;
+        internal.dFy_dq_at_gp(JacobianVariables::qy_qy, gp) = 2 * v;
     }
 
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {

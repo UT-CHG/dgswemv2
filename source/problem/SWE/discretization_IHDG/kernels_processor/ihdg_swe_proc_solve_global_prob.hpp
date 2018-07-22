@@ -66,10 +66,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->rhs_local =
         simulation->delta_local_inv * (simulation->rhs_local - simulation->delta_hat_local * simulation->rhs_global);
 
-    double q_norm     = 0;
-    double q_hat_norm = 0;
-
-    simulation->mesh.CallForEachElement([simulation, &q_norm](auto& elt) {
+    simulation->mesh.CallForEachElement([simulation](auto& elt) {
         const uint stage = simulation->stepper.GetStage();
 
         auto& state = elt.data.state[stage + 1];
@@ -83,13 +80,9 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             state.q(SWE::Variables::qx, dof) += rhs_local[3 * dof + 1];
             state.q(SWE::Variables::qy, dof) += rhs_local[3 * dof + 2];
         }
-
-        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            q_norm += sqr_norm(state.q[dof]);
-        }
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation, &q_hat_norm](auto& edge_int) {
+    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
         uint edg_ID = edge_int.GetID();
@@ -101,13 +94,9 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global[3 * dof + 1];
             edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global[3 * dof + 2];
         }
-
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
-        }
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation, &q_hat_norm](auto& edge_bound) {
+    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
         uint edg_ID = edge_bound.GetID();
@@ -119,16 +108,11 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global[3 * dof + 1];
             edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global[3 * dof + 2];
         }
-
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
-        }
     });
 
     double delta_norm = std::hypot(norm(simulation->rhs_local), norm(simulation->rhs_global));
-    double norm       = std::sqrt(q_norm + q_hat_norm);
 
-    if (delta_norm / norm < 1e-6) {
+    if (delta_norm < 1e-6) {
         return true;
     }
 
