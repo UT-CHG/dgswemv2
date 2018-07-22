@@ -57,7 +57,7 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
         // Initialize container to store parsed data and store pointers for fast access
         if (stepper.GetStep() == 0 && stepper.GetStage() == 0) {
             mesh.CallForEachElement([this](auto& elt) {
-                const DynVector<uint>& node_ID = elt.GetNodeID();
+                const std::vector<uint>& node_ID = elt.GetNodeID();
 
                 for (uint node = 0; node < elt.data.get_nnode(); node++) {
                     if (this->node_meteo_data_interp.find(node_ID[node]) == this->node_meteo_data_interp.end()) {

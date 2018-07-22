@@ -28,7 +28,7 @@ class Tide {
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const DynVector<StatVector<double, SWE::n_dimensions>>& surface_normal,
+                     const std::vector<StatVector<double, SWE::n_dimensions>>& surface_normal,
                      const DynMatrix<double>& q_in,
                      const DynMatrix<double>& aux_in,
                      DynMatrix<double>& F_hat);
@@ -70,7 +70,7 @@ void Tide::Initialize(BoundaryType& bound) {
 }
 
 void Tide::ComputeFlux(const RKStepper& stepper,
-                       const DynVector<StatVector<double, SWE::n_dimensions>>& surface_normal,
+                       const std::vector<StatVector<double, SWE::n_dimensions>>& surface_normal,
                        const DynMatrix<double>& q_in,
                        const DynMatrix<double>& aux_in,
                        DynMatrix<double>& F_hat) {

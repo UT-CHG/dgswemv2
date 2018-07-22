@@ -48,7 +48,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
     // *** //
     typename BoundaryType::BoundaryIntegrationType integration;
 
-    std::pair<DynVector<double>, DynVector<Point<dimension>>> integration_rule =
+    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * this->boundary.GetMaster().p + 1);
 
     uint ngp = integration_rule.first.size();
@@ -59,7 +59,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
 
     uint ndof = row(this->lambda_gp, 0).size();
 
-    DynVector<Point<dimension + 1>> z_master =
+    std::vector<Point<dimension + 1>> z_master =
         this->boundary.GetMaster().BoundaryToMasterCoordinates(this->boundary.bound_id, integration_rule.second);
 
     DynVector<double> surface_J = this->boundary.GetShape().GetSurfaceJ(this->boundary.bound_id, z_master);

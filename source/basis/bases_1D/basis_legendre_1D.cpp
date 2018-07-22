@@ -1,13 +1,13 @@
 #include "../bases_1D.hpp"
 
 namespace Basis {
-DynMatrix<double> Legendre_1D::GetPhi(const uint p, const DynVector<Point<1>>& points) {
+DynMatrix<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>& points) {
     uint ndof = p + 1;
     uint npt  = points.size();
 
     DynMatrix<double> phi(ndof, npt);
 
-    DynVector<double> l1(npt);
+    std::vector<double> l1(npt);
 
     for (uint pt = 0; pt < npt; pt++) {
         l1[pt] = points[pt][LocalCoordLin::l1];
@@ -20,15 +20,15 @@ DynMatrix<double> Legendre_1D::GetPhi(const uint p, const DynVector<Point<1>>& p
     return phi;
 }
 
-StatVector<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const DynVector<Point<1>>& points) {
+std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
     uint ndof = p + 1;
     uint npt  = points.size();
 
-    StatVector<DynMatrix<double>, 1> dphi;
+    std::array<DynMatrix<double>, 1> dphi;
 
     DynMatrix<double> dphi_dl1(ndof, npt);
 
-    DynVector<double> l1(npt);
+    std::vector<double> l1(npt);
 
     for (uint pt = 0; pt < npt; pt++) {
         l1[pt] = points[pt][LocalCoordLin::l1];

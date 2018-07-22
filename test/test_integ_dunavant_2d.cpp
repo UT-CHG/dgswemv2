@@ -6,7 +6,7 @@ int main() {
 
     bool any_error = false;
     Integration::Dunavant_2D dunavant;
-    std::pair<DynVector<double>, DynVector<Point<2>>> rule;
+    std::pair<DynVector<double>, std::vector<Point<2>>> rule;
 
     for (uint p = 1; p < 20; ++p) {
         double exact_integration =

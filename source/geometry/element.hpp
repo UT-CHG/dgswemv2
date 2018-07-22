@@ -13,11 +13,11 @@ class Element {
     MasterType* master = nullptr;
     ShapeType shape;
 
-    DynVector<uint> node_ID;
-    DynVector<uint> neighbor_ID;
-    DynVector<uchar> boundary_type;
+    std::vector<uint> node_ID;
+    std::vector<uint> neighbor_ID;
+    std::vector<uchar> boundary_type;
 
-    DynVector<Point<dimension>> gp_global_coordinates;
+    std::vector<Point<dimension>> gp_global_coordinates;
 
     bool const_J;
 
@@ -26,14 +26,14 @@ class Element {
     /* phi_gp stroed in master */  // modal basis
 
     /* dpsi_gp stored in shape */                      // nodal basis, i.e. shape functions
-    StatVector<DynMatrix<double>, dimension> dchi_gp;  // linear basis
-    StatVector<DynMatrix<double>, dimension> dphi_gp;  // modal basis
+    std::array<DynMatrix<double>, dimension> dchi_gp;  // linear basis
+    std::array<DynMatrix<double>, dimension> dphi_gp;  // modal basis
 
     DynVector<double> int_fact;
     DynMatrix<double> int_phi_fact;
     DynMatrix<double> int_phi_phi_fact;
-    StatVector<DynMatrix<double>, dimension> int_dphi_fact;
-    StatVector<DynMatrix<double>, dimension> int_phi_dphi_fact;
+    std::array<DynMatrix<double>, dimension> int_dphi_fact;
+    std::array<DynMatrix<double>, dimension> int_phi_dphi_fact;
 
     DynMatrix<double> m_inv;
 
@@ -41,16 +41,16 @@ class Element {
     Element() = default;
     Element(const uint ID,
             MasterType& master,
-            DynVector<Point<3>>&& nodal_coordinates,
-            DynVector<uint>&& node_ID,
-            DynVector<uint>&& neighbor_ID,
-            DynVector<uchar>&& boundary_type);
+            std::vector<Point<3>>&& nodal_coordinates,
+            std::vector<uint>&& node_ID,
+            std::vector<uint>&& neighbor_ID,
+            std::vector<uchar>&& boundary_type);
 
     uint GetID() { return this->ID; }
     MasterType& GetMaster() { return *this->master; }
     ShapeType& GetShape() { return this->shape; }
-    DynVector<uint>& GetNodeID() { return this->node_ID; }
-    DynVector<uchar>& GetBoundaryType() { return this->boundary_type; }
+    std::vector<uint>& GetNodeID() { return this->node_ID; }
+    std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
 
@@ -135,10 +135,10 @@ class Element {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              MasterType& master,
-                                                             DynVector<Point<3>>&& nodal_coordinates,
-                                                             DynVector<uint>&& node_ID,
-                                                             DynVector<uint>&& neighbor_ID,
-                                                             DynVector<uchar>&& boundary_type)
+                                                             std::vector<Point<3>>&& nodal_coordinates,
+                                                             std::vector<uint>&& node_ID,
+                                                             std::vector<uint>&& neighbor_ID,
+                                                             std::vector<uchar>&& boundary_type)
     : ID(ID),
       master(&master),
       shape(ShapeType(std::move(nodal_coordinates))),
@@ -155,7 +155,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
 
     // DEFORMATION
     DynVector<double> det_J = this->shape.GetJdet(this->master->integration_rule.second);
-    DynVector<StatMatrix<double, dimension, dimension>> J_inv =
+    std::vector<StatMatrix<double, dimension, dimension>> J_inv =
         this->shape.GetJinv(this->master->integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
@@ -257,7 +257,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     Shape::Shape<dimension>* my_shape    = (Shape::Shape<dimension>*)(&this->shape);
 
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
-        DynVector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);
+        std::vector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);
 
         if (is_internal(this->boundary_type[bound_id])) {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
@@ -494,14 +494,14 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename F, typename InputArrayType>
 double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
     // At this point we use maximum possible p for Dunavant integration
-    std::pair<DynVector<double>, DynVector<Point<2>>> rule = this->master->integration.GetRule(20);
+    std::pair<DynVector<double>, std::vector<Point<2>>> rule = this->master->integration.GetRule(20);
 
     // get u_gp
     DynMatrix<double> phi_gp = this->master->basis.GetPhi(this->master->p, rule.second);
     DynMatrix<double> u_gp   = u * phi_gp;
 
     // get true_gp
-    DynVector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
+    std::vector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
 
     uint nvar = f(*(gp_global.begin())).size();
     uint ngp  = gp_global.size();

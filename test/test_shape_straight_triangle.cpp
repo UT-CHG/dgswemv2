@@ -6,7 +6,7 @@ int main() {
     bool error_found = false;
 
     // make an equilateral triangle
-    DynVector<Point<3>> vrtxs(3);
+    std::vector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
@@ -15,7 +15,7 @@ int main() {
 
     // check Jdet
     double Jdet_true = std::sqrt(3.) / 8.;
-    double Jdet_comp = triangle.GetJdet(DynVector<Point<2>>(0))[0];
+    double Jdet_comp = triangle.GetJdet(std::vector<Point<2>>(0))[0];
 
     if (!almost_equal(Jdet_true, Jdet_comp)) {
         std::cerr << "Error GetJdet\n";
@@ -29,7 +29,7 @@ int main() {
     Jinv_true(1, 0) = 0.0;
     Jinv_true(1, 1) = 4. / std::sqrt(3.);
 
-    StatMatrix<double, 2, 2> Jinv_comp = triangle.GetJinv(DynVector<Point<2>>(0))[0];
+    StatMatrix<double, 2, 2> Jinv_comp = triangle.GetJinv(std::vector<Point<2>>(0))[0];
 
     if (!almost_equal(Jinv_true(0, 0), Jinv_comp(0, 0)) || !almost_equal(Jinv_true(0, 1), Jinv_comp(0, 1)) ||
         !almost_equal(Jinv_true(1, 0), Jinv_comp(1, 0)) || !almost_equal(Jinv_true(1, 1), Jinv_comp(1, 1))) {
@@ -40,7 +40,7 @@ int main() {
     // check SurfaceJ
     for (uint i = 0; i < 3; ++i) {
         double SurfaceJ_true = 0.5;
-        double SurfaceJ_comp = triangle.GetSurfaceJ(i, DynVector<Point<2>>(0))[0];
+        double SurfaceJ_comp = triangle.GetSurfaceJ(i, std::vector<Point<2>>(0))[0];
 
         if (!almost_equal(SurfaceJ_true, SurfaceJ_comp)) {
             std::cerr << "Error GetSurfaceJ\n";
@@ -49,7 +49,7 @@ int main() {
     }
 
     // check SurfaceNormal
-    DynVector<StatVector<double, 2>> SurfaceNormal_true(3);
+    std::vector<StatVector<double, 2>> SurfaceNormal_true(3);
 
     SurfaceNormal_true[0][GlobalCoord::x] = std::sqrt(3.) / 2.;
     SurfaceNormal_true[0][GlobalCoord::y] = 0.5;
@@ -61,7 +61,7 @@ int main() {
     SurfaceNormal_true[2][GlobalCoord::y] = -1.0;
 
     for (uint i = 0; i < 3; ++i) {
-        StatVector<double, 2> SurfaceNormal_comp = triangle.GetSurfaceNormal(i, DynVector<Point<2>>(0))[0];
+        StatVector<double, 2> SurfaceNormal_comp = triangle.GetSurfaceNormal(i, std::vector<Point<2>>(0))[0];
 
         if (!almost_equal(SurfaceNormal_true[i][GlobalCoord::x], SurfaceNormal_comp[GlobalCoord::x]) ||
             !almost_equal(SurfaceNormal_true[i][GlobalCoord::y], SurfaceNormal_comp[GlobalCoord::y])) {
@@ -73,7 +73,7 @@ int main() {
     // check GetPsi
     std::vector<double> nodal_vals = {-2., 2., 3.};
 
-    DynVector<Point<2>> interpolation_pts(7);
+    std::vector<Point<2>> interpolation_pts(7);
     interpolation_pts[0] = {-1, -1};
     interpolation_pts[1] = {1, -1};
     interpolation_pts[2] = {-1, 1};
@@ -101,7 +101,7 @@ int main() {
     // check GetBoudaryPsi
     std::vector<double> bound_nodal_vals(2);
 
-    DynVector<Point<1>> bound_interpolation_pts(5);
+    std::vector<Point<1>> bound_interpolation_pts(5);
     bound_interpolation_pts[0] = {-1};
     bound_interpolation_pts[1] = {-0.5};
     bound_interpolation_pts[2] = {0};
@@ -142,7 +142,7 @@ int main() {
 
     Array2D<double> interpolation_derivative_true = {{1.0}, {1.0 / std::sqrt(3.)}};
 
-    StatVector<DynMatrix<double>, 2> dpsi_interp = triangle.GetDPsi(DynVector<Point<2>>(1, {0, 0}));
+    std::array<DynMatrix<double>, 2> dpsi_interp = triangle.GetDPsi(std::vector<Point<2>>(1, {0, 0}));
 
     Array2D<double> interpolation_derivative_comp(2, std::vector<double>(1));
 

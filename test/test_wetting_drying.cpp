@@ -21,7 +21,7 @@ int main() {
     SWE::PostProcessing::h_o = 0.01;
 
     // make an equilateral triangle
-    DynVector<Point<3>> vrtxs(3);
+    std::vector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
@@ -31,9 +31,9 @@ int main() {
     ElementType triangle(0,
                          master,
                          std::move(vrtxs),
-                         std::move(DynVector<uint>(0)),
-                         std::move(DynVector<uint>(0)),
-                         std::move(DynVector<unsigned char>(0)));
+                         std::move(std::vector<uint>(0)),
+                         std::move(std::vector<uint>(0)),
+                         std::move(std::vector<unsigned char>(0)));
 
     triangle.data.initialize();
     triangle.data.resize(2);

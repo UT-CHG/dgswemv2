@@ -1,14 +1,14 @@
 #include "../bases_2D.hpp"
 
 namespace Basis {
-DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const DynVector<Point<2>>& points) {
+DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const std::vector<Point<2>>& points) {
     uint ndof = (p + 1) * (p + 2) / 2;
     uint npt  = points.size();
 
     DynMatrix<double> phi(ndof, npt);
 
-    DynVector<double> n1(npt);
-    DynVector<double> n2(npt);
+    std::vector<double> n1(npt);
+    std::vector<double> n2(npt);
 
     for (uint pt = 0; pt < npt; pt++) {
         n1[pt] = 2 * (1 + points[pt][LocalCoordTri::z1]) / (1 - points[pt][LocalCoordTri::z2]) - 1;
@@ -28,17 +28,17 @@ DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const DynVector<Point<2>>& po
     return phi;
 }
 
-StatVector<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const DynVector<Point<2>>& points) {
+std::array<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const std::vector<Point<2>>& points) {
     uint ndof = (p + 1) * (p + 2) / 2;
     uint npt  = points.size();
 
-    StatVector<DynMatrix<double>, 2> dphi;
+    std::array<DynMatrix<double>, 2> dphi;
 
     DynMatrix<double> dphi_dz1(ndof, npt);
     DynMatrix<double> dphi_dz2(ndof, npt);
 
-    DynVector<double> n1(npt);
-    DynVector<double> n2(npt);
+    std::vector<double> n1(npt);
+    std::vector<double> n2(npt);
 
     for (uint pt = 0; pt < npt; pt++) {
         n1[pt] = 2 * (1 + points[pt][LocalCoordTri::z1]) / (1 - points[pt][LocalCoordTri::z2]) - 1;
@@ -82,8 +82,8 @@ DynMatrix<double> Dubiner_2D::GetMinv(const uint p) {
 
 DynVector<double> Dubiner_2D::ComputePhi(const uint p,
                                          const uint q,
-                                         const DynVector<double>& n1,
-                                         const DynVector<double>& n2) {
+                                         const std::vector<double>& n1,
+                                         const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
 
     uint npt = n1.size();
@@ -110,8 +110,8 @@ DynVector<double> Dubiner_2D::ComputePhi(const uint p,
 
 DynVector<double> Dubiner_2D::ComputeDPhiDZ1(const uint p,
                                              const uint q,
-                                             const DynVector<double>& n1,
-                                             const DynVector<double>& n2) {
+                                             const std::vector<double>& n1,
+                                             const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
 
     uint npt = n1.size();
@@ -138,8 +138,8 @@ DynVector<double> Dubiner_2D::ComputeDPhiDZ1(const uint p,
 
 DynVector<double> Dubiner_2D::ComputeDPhiDZ2(const uint p,
                                              const uint q,
-                                             const DynVector<double>& n1,
-                                             const DynVector<double>& n2) {
+                                             const std::vector<double>& n1,
+                                             const std::vector<double>& n2) {
     assert(n1.size() == n2.size());
 
     uint npt = n1.size();

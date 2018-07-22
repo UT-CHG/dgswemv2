@@ -53,7 +53,7 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 
     typename InterfaceType::InterfaceIntegrationType integration;
 
-    std::pair<DynVector<double>, DynVector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
+    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     uint ngp = integration_rule.first.size();
 
@@ -64,7 +64,7 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
     uint ndof = row(this->lambda_gp, 0).size();
 
     // transfrom gp to master coord in
-    DynVector<Point<dimension + 1>> z_master_in =
+    std::vector<Point<dimension + 1>> z_master_in =
         this->interface.GetMasterIN().BoundaryToMasterCoordinates(this->interface.bound_id_in, integration_rule.second);
 
     DynVector<double> surface_J = this->interface.GetShapeIN().GetSurfaceJ(this->interface.bound_id_in, z_master_in);

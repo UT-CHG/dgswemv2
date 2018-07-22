@@ -73,7 +73,7 @@ class Basis {
      * @param points vector of points at which the basis functions are evaluated
      * @return 2-dimensional array indexed as [dof][point]
      */
-    virtual DynMatrix<double> GetPhi(const uint p, const DynVector<Point<dimension>>& points) = 0;
+    virtual DynMatrix<double> GetPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
     /**
      * Evaluate the gradients of the basis function at points.
      * Evaluate gradients of all basis functions evaluated at points up to polynomial order p.
@@ -85,8 +85,8 @@ class Basis {
      * @return 3-dimensional array indexed as [dof][point][coordinate] where coordinate
      *         corresponds to the dimension in which the derivative is taken.
      */
-    virtual StatVector<DynMatrix<double>, dimension> GetDPhi(const uint p,
-                                                             const DynVector<Point<dimension>>& points) = 0;
+    virtual std::array<DynMatrix<double>, dimension> GetDPhi(const uint p,
+                                                             const std::vector<Point<dimension>>& points) = 0;
 
     /**
      * Obtain the inverted mass matrix of basis functions of polynomial order p.
@@ -119,7 +119,7 @@ class Integration {
      * @param p Polynomial order for which the rule should return exact results.
      * @return Number of Gauss points
      */
-    virtual std::pair<DynVector<double>, DynVector<Point<dimension>>> GetRule(const uint p) = 0;
+    virtual std::pair<DynVector<double>, std::vector<Point<dimension>>> GetRule(const uint p) = 0;
 
     /**
      * Returns the number of Gauss points required for a rule of strength p
@@ -144,16 +144,16 @@ class Master {
     uint nvrtx;
     uint nbound;
 
-    std::pair<DynVector<double>, DynVector<Point<dimension>>> integration_rule;
+    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule;
 
     DynMatrix<double> chi_gp;
     DynMatrix<double> phi_gp;
 
-    StatVector<DynMatrix<double>, dimension> dchi_gp;
-    StatVector<DynMatrix<double>, dimension> dphi_gp;
+    std::array<DynMatrix<double>, dimension> dchi_gp;
+    std::array<DynMatrix<double>, dimension> dphi_gp;
 
     DynMatrix<double> int_phi_fact;
-    StatVector<DynMatrix<double>, dimension> int_dphi_fact;
+    std::array<DynMatrix<double>, dimension> int_dphi_fact;
 
     DynMatrix<double> m_inv;
 
@@ -164,9 +164,9 @@ class Master {
     Master() = default;
     Master(const uint p) : p(p) {}
 
-    virtual DynVector<Point<dimension>> BoundaryToMasterCoordinates(
+    virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
         const uint bound_id,
-        const DynVector<Point<dimension - 1>>& z_boundary) = 0;
+        const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 
     template <typename InputArrayType>
     decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
@@ -181,34 +181,36 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
-    DynVector<Point<3>> nodal_coordinates;
+    std::vector<Point<3>> nodal_coordinates;
 
     DynMatrix<double> psi_gp;
-    StatVector<DynMatrix<double>, dimension> dpsi_gp;
+    std::array<DynMatrix<double>, dimension> dpsi_gp;
 
   public:
     Shape() = default;
-    Shape(DynVector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
+    Shape(std::vector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
     virtual ~Shape() = default;
 
-    virtual DynVector<uint> GetBoundaryNodeID(const uint bound_id, const DynVector<uint> node_ID) = 0;
+    virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
 
-    virtual Point<dimension> GetBarycentricCoordinates()         = 0;
-    virtual DynVector<Point<dimension>> GetMidpointCoordinates() = 0;
+    virtual Point<dimension> GetBarycentricCoordinates()           = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
 
-    virtual DynVector<double> GetJdet(const DynVector<Point<dimension>>& points)                                   = 0;
-    virtual DynVector<StatMatrix<double, dimension, dimension>> GetJinv(const DynVector<Point<dimension>>& points) = 0;
-    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const DynVector<Point<dimension>>& points)          = 0;
-    virtual DynVector<StatVector<double, dimension>> GetSurfaceNormal(const uint bound_id,
-                                                                      const DynVector<Point<dimension>>& points)   = 0;
+    virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points)                          = 0;
+    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<StatMatrix<double, dimension, dimension>> GetJinv(
+        const std::vector<Point<dimension>>& points) = 0;
+    virtual std::vector<StatVector<double, dimension>> GetSurfaceNormal(
+        const uint bound_id,
+        const std::vector<Point<dimension>>& points) = 0;
 
-    virtual DynMatrix<double> GetPsi(const DynVector<Point<dimension>>& points)                         = 0;
-    virtual StatVector<DynMatrix<double>, dimension> GetDPsi(const DynVector<Point<dimension>>& points) = 0;
+    virtual DynMatrix<double> GetPsi(const std::vector<Point<dimension>>& points)                         = 0;
+    virtual std::array<DynMatrix<double>, dimension> GetDPsi(const std::vector<Point<dimension>>& points) = 0;
 
-    virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id, const DynVector<Point<dimension - 1>>& points) = 0;
+    virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<dimension - 1>>& points) = 0;
 
-    virtual DynVector<Point<dimension>> LocalToGlobalCoordinates(const DynVector<Point<dimension>>& points) = 0;
+    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
 
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
 

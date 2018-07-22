@@ -1525,7 +1525,7 @@ const std::vector<std::vector<double>> true_Dvals = {
 int main() {
     using Utilities::almost_equal;
 
-    DynVector<Point<2>> points(15);
+    std::vector<Point<2>> points(15);
 
     points[0][0]  = 1.0000000000000000e+00;
     points[0][1]  = -1.0000000000000000e+00;
@@ -1564,7 +1564,7 @@ int main() {
     bool error_found = false;
 
     DynMatrix<double> my_evals                 = basis.GetPhi(10, points);
-    StatVector<DynMatrix<double>, 2> my_Devals = basis.GetDPhi(10, points);
+    std::array<DynMatrix<double>, 2> my_Devals = basis.GetDPhi(10, points);
 
     for (uint dof = 0; dof < 66; ++dof) {
         // Check the evaluations of the Dubiner polynomials

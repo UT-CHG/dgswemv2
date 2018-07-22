@@ -11,13 +11,13 @@ class Boundary {
 
     uint bound_id;
 
-    DynVector<StatVector<double, dimension + 1>> surface_normal;
+    std::vector<StatVector<double, dimension + 1>> surface_normal;
 
   private:
     Master::Master<dimension + 1>& master;
     Shape::Shape<dimension + 1>& shape;
 
-    DynVector<uint> node_ID;
+    std::vector<uint> node_ID;
 
     DynMatrix<double> psi_gp;
     DynMatrix<double> psi_bound_gp;
@@ -33,7 +33,7 @@ class Boundary {
     Master::Master<dimension + 1>& GetMaster() { return this->master; }
     Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
 
-    DynVector<uint>& GetNodeID() { return this->node_ID; }
+    std::vector<uint>& GetNodeID() { return this->node_ID; }
 
     template <typename InputArrayType>
     decltype(auto) ComputeUgp(const InputArrayType& u);
@@ -70,12 +70,12 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     // *** //
     IntegrationType integration;
 
-    std::pair<DynVector<double>, DynVector<Point<dimension>>> integration_rule =
+    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p + 1);
 
     uint ngp = integration_rule.first.size();
 
-    DynVector<Point<dimension + 1>> z_master =
+    std::vector<Point<dimension + 1>> z_master =
         this->master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
     // Compute factors to expand nodal values
@@ -109,7 +109,7 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
             }
         }
 
-        this->surface_normal = DynVector<StatVector<double, dimension + 1>>(
+        this->surface_normal = std::vector<StatVector<double, dimension + 1>>(
             ngp, *this->shape.GetSurfaceNormal(this->bound_id, z_master).begin());
     }
 

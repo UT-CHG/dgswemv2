@@ -1,7 +1,7 @@
 #include "../basis_polynomials.hpp"
 
 namespace Basis {
-DynVector<double> jacobi_polynomial(const uint n, const uint a, const uint b, const DynVector<double>& x) {
+DynVector<double> jacobi_polynomial(const uint n, const uint a, const uint b, const std::vector<double>& x) {
     uint npt = x.size();
 
     DynVector<double> P(npt);
@@ -42,7 +42,7 @@ DynVector<double> jacobi_polynomial(const uint n, const uint a, const uint b, co
     return P;
 }
 
-DynVector<double> jacobi_polynomial_derivative(const uint n, const uint a, const uint b, const DynVector<double>& x) {
+DynVector<double> jacobi_polynomial_derivative(const uint n, const uint a, const uint b, const std::vector<double>& x) {
     uint npt = x.size();
 
     DynVector<double> dP(npt);

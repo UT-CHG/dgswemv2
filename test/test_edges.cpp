@@ -30,7 +30,7 @@ int main() {
     using EdgeInterfaceType = typename std::tuple_element<0, EdgeInterfaceTypes>::type;
 
     // make an equilateral triangle
-    DynVector<Point<3>> vrtxs(3);
+    std::vector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
@@ -40,9 +40,9 @@ int main() {
     ElementType triangle(0,
                          master,
                          std::move(vrtxs),
-                         std::move(DynVector<uint>{0, 0, 0}),
-                         std::move(DynVector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
-                         std::move(DynVector<unsigned char>{
+                         std::move(std::vector<uint>{0, 0, 0}),
+                         std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
+                         std::move(std::vector<unsigned char>{
                              SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;

@@ -1,7 +1,7 @@
 #include "../integrations_2D.hpp"
 
 namespace Integration {
-std::pair<DynVector<double>, DynVector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
+std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
     if (p < 0 || p > 20) {
         printf("\n");
         printf("DUNAVANT 2D - Fatal error!\n");
@@ -23,7 +23,7 @@ std::pair<DynVector<double>, DynVector<Point<2>>> Dunavant_2D::GetRule(const uin
     for (uint i = 0; i < permutation.size(); i++)
         ngp += permutation[i];
 
-    std::pair<DynVector<double>, DynVector<Point<2>>> rule;
+    std::pair<DynVector<double>, std::vector<Point<2>>> rule;
     rule.first.resize(ngp);
     rule.second.resize(ngp);
 

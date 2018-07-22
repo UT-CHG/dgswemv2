@@ -62,17 +62,18 @@ bool equal(MeshType& o_mesh, MeshType& i_mesh) {
     std::cout << '\n';
 
     int sin_fcn;
-    //const auto sin_fcn = [](Point<2>& x) -> StatVector<double, 1> { return StatVector<double, 1>{x[0] * x[0] + x[1] * x[1]}; };
+    // const auto sin_fcn = [](Point<2>& x) -> StatVector<double, 1> { return StatVector<double, 1>{x[0] * x[0] + x[1] *
+    // x[1]}; };
 
     double o_integral{0};
-    //o_mesh.CallForEachElement([&sin_fcn, &o_integral](auto& element) {
-        //uint p = element.GetMaster().p;
+    // o_mesh.CallForEachElement([&sin_fcn, &o_integral](auto& element) {
+    // uint p = element.GetMaster().p;
 
-        //DynMatrix<double> modal_values(1, (p + 2) * (p + 1) / 2);
+    // DynMatrix<double> modal_values(1, (p + 2) * (p + 1) / 2);
 
-        //modal_values = element.L2ProjectionF(sin_fcn);
+    // modal_values = element.L2ProjectionF(sin_fcn);
 
-        //o_integral += element.IntegrationPhi(0, modal_values)[0];
+    // o_integral += element.IntegrationPhi(0, modal_values)[0];
     //});
 
     double i_integral{0};

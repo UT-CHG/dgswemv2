@@ -22,10 +22,10 @@ struct SlopeLimit {
           wet_neigh(nbound),
           q_at_baryctr_neigh(nbound) {}
 
-    DynVector<StatVector<double, SWE::n_dimensions>> surface_normal;
+    std::vector<StatVector<double, SWE::n_dimensions>> surface_normal;
 
     Point<2> baryctr_coord;
-    DynVector<Point<2>> midpts_coord;
+    std::vector<Point<2>> midpts_coord;
     std::vector<Point<2>> baryctr_coord_neigh;
 
     std::vector<double> alpha_1;

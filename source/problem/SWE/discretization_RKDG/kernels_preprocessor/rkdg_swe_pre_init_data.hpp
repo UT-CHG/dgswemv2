@@ -195,7 +195,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         }
 
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
-            const DynVector<uint>& node_ID = elt.GetNodeID();
+            const std::vector<uint>& node_ID = elt.GetNodeID();
 
             for (uint node = 0; node < elt.data.get_nnode(); node++) {
                 elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
@@ -294,7 +294,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         sl_state.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
 
         for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-            sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, DynVector<Point<2>>(0))[0];
+            sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
         }
     });
 

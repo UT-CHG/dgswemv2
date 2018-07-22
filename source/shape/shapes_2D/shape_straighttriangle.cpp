@@ -1,17 +1,17 @@
 #include "../shapes_2D.hpp"
 
 namespace Shape {
-StraightTriangle::StraightTriangle(DynVector<Point<3>>&& nodal_coordinates) : Shape<2>(std::move(nodal_coordinates)) {
+StraightTriangle::StraightTriangle(std::vector<Point<3>>&& nodal_coordinates) : Shape<2>(std::move(nodal_coordinates)) {
     // check if element nodes are ccw, swap if necessary
     // note that point selection doesn't matter since the Jacobian is
     // constant
-    if (this->GetJdet(DynVector<Point<2>>(0))[0] < 0) {
+    if (this->GetJdet(std::vector<Point<2>>(0))[0] < 0) {
         std::swap(this->nodal_coordinates[0], this->nodal_coordinates[2]);
     }
 }
 
-DynVector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const DynVector<uint> node_ID) {
-    DynVector<uint> bound_node_ID(2);
+std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) {
+    std::vector<uint> bound_node_ID(2);
 
     bound_node_ID[0] = node_ID[(bound_id + 1) % 3];
     bound_node_ID[1] = node_ID[(bound_id + 2) % 3];
@@ -35,8 +35,8 @@ Point<2> StraightTriangle::GetBarycentricCoordinates() {
     return baryctr_coord;
 }
 
-DynVector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
-    DynVector<Point<2>> midpoint_coord(3);
+std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
+    std::vector<Point<2>> midpoint_coord(3);
 
     for (uint midpt = 0; midpt < 3; midpt++) {
         midpoint_coord[midpt][GlobalCoord::x] = (this->nodal_coordinates[(midpt + 1) % 3][GlobalCoord::x] +
@@ -51,7 +51,7 @@ DynVector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
     return midpoint_coord;
 }
 
-DynVector<double> StraightTriangle::GetJdet(const DynVector<Point<2>>& points) {
+DynVector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) {
     DynVector<double> J_det(1);
 
     StatMatrix<double, 2, 2> J;
@@ -66,22 +66,7 @@ DynVector<double> StraightTriangle::GetJdet(const DynVector<Point<2>>& points) {
     return J_det;
 }
 
-DynVector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const DynVector<Point<2>>& points) {
-    DynVector<StatMatrix<double, 2, 2>> J_inv(1);
-
-    StatMatrix<double, 2, 2> J;
-
-    J(0, 0) = (this->nodal_coordinates[1][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) / 2.0;
-    J(0, 1) = (this->nodal_coordinates[2][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) / 2.0;
-    J(1, 0) = (this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) / 2.0;
-    J(1, 1) = (this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) / 2.0;
-
-    J_inv[0] = inverse(J);
-
-    return J_inv;
-}
-
-DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const DynVector<Point<2>>& points) {
+DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) {
     DynVector<double> surface_J(1);
 
     surface_J[0] = sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
@@ -95,9 +80,24 @@ DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const DynVe
     return surface_J;
 }
 
-DynVector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint bound_id,
-                                                                    const DynVector<Point<2>>& points) {
-    DynVector<StatVector<double, 2>> surface_normal(1);
+std::vector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
+    std::vector<StatMatrix<double, 2, 2>> J_inv(1);
+
+    StatMatrix<double, 2, 2> J;
+
+    J(0, 0) = (this->nodal_coordinates[1][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) / 2.0;
+    J(0, 1) = (this->nodal_coordinates[2][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) / 2.0;
+    J(1, 0) = (this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) / 2.0;
+    J(1, 1) = (this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) / 2.0;
+
+    J_inv[0] = inverse(J);
+
+    return J_inv;
+}
+
+std::vector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint bound_id,
+                                                                      const std::vector<Point<2>>& points) {
+    std::vector<StatVector<double, 2>> surface_normal(1);
 
     StatMatrix<double, 2, 2> J;
 
@@ -128,7 +128,7 @@ DynVector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint b
     return surface_normal;
 }
 
-DynMatrix<double> StraightTriangle::GetPsi(const DynVector<Point<2>>& points) {
+DynMatrix<double> StraightTriangle::GetPsi(const std::vector<Point<2>>& points) {
     uint ndof = 3;
     uint npt  = points.size();
 
@@ -143,11 +143,11 @@ DynMatrix<double> StraightTriangle::GetPsi(const DynVector<Point<2>>& points) {
     return psi;
 }
 
-StatVector<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const DynVector<Point<2>>& points) {
+std::array<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const std::vector<Point<2>>& points) {
     uint ndof = 3;
     uint npt  = points.size();
 
-    StatVector<DynMatrix<double>, 2> dpsi;
+    std::array<DynMatrix<double>, 2> dpsi;
 
     DynMatrix<double> dpsi_dx(ndof, npt);
     DynMatrix<double> dpsi_dy(ndof, npt);
@@ -173,7 +173,7 @@ StatVector<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const DynVector<Point
     return dpsi;
 }
 
-DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const DynVector<Point<1>>& points) {
+DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points) {
     uint ndof = 2;
     uint npt  = points.size();
 
@@ -187,10 +187,10 @@ DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const Dy
     return psi_bound;
 }
 
-DynVector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const DynVector<Point<2>>& points) {
+std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
     uint npt = points.size();
 
-    DynVector<Point<2>> global_coordinates(npt);
+    std::vector<Point<2>> global_coordinates(npt);
 
     DynMatrix<double> psi_pts = this->GetPsi(points);
 

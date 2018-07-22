@@ -7,7 +7,7 @@ class RawBoundary {
   public:
     uint p;
     uint bound_id;
-    DynVector<uint> node_ID;
+    std::vector<uint> node_ID;
 
     DataType& data;
 
@@ -18,7 +18,7 @@ class RawBoundary {
   public:
     RawBoundary(uint p,
                 uint bound_id,
-                DynVector<uint>& node_ID,
+                std::vector<uint>& node_ID,
                 DataType& data,
                 Basis::Basis<dimension + 1>& basis,
                 Master::Master<dimension + 1>& master,

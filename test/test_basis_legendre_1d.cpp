@@ -112,7 +112,7 @@ const std::vector<std::vector<double>> true_Dvals = {
 int main() {
     using Utilities::almost_equal;
 
-    DynVector<Point<1>> points(5);
+    std::vector<Point<1>> points(5);
 
     points[0][0] = -1.0000000000000000e+00;
     points[1][0] = -5.0000000000000000e-01;
@@ -126,7 +126,7 @@ int main() {
     bool error_found = false;
 
     DynMatrix<double> my_evals                 = basis.GetPhi(10, points);
-    StatVector<DynMatrix<double>, 1> my_Devals = basis.GetDPhi(10, points);
+    std::array<DynMatrix<double>, 1> my_Devals = basis.GetDPhi(10, points);
 
     for (uint dof = 0; dof < 11; ++dof) {
         // Check the evaluations of the Legendre polynomials
