@@ -8,19 +8,24 @@ namespace RKDG {
 struct WetDry {
     WetDry() = default;
     WetDry(const uint nvrtx)
-        : q_lin(nvrtx), q_at_vrtx(nvrtx), bath_at_vrtx(nvrtx), h_at_vrtx(nvrtx), h_at_vrtx_temp(nvrtx) {}
+        : q_lin(SWE::n_variables, nvrtx),
+          q_at_vrtx(SWE::n_variables, nvrtx),
+          bath_at_vrtx(nvrtx),
+          h_at_vrtx(nvrtx),
+          h_at_vrtx_temp(nvrtx) {}
 
     bool wet;
     bool went_completely_dry;
 
     double bath_min;
 
-    std::vector<StatVector<double, SWE::n_variables>> q_lin;
+    DynMatrix<double> q_lin;
 
-    std::vector<StatVector<double, SWE::n_variables>> q_at_vrtx;
-    std::vector<double> bath_at_vrtx;
-    std::vector<double> h_at_vrtx;
-    std::vector<double> h_at_vrtx_temp;
+    DynMatrix<double> q_at_vrtx;
+
+    DynVector<double> bath_at_vrtx;
+    DynVector<double> h_at_vrtx;
+    DynVector<double> h_at_vrtx_temp;
 
 #ifdef HAS_HPX
     template <typename Archive>

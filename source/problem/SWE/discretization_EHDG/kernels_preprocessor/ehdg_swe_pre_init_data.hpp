@@ -30,7 +30,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
         row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
 
-        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
+        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant ||
+            problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Default) {
             uint nnode = elt.GetShape().nodal_coordinates.size();
 
             DynMatrix<double> u_node(SWE::n_variables, nnode);

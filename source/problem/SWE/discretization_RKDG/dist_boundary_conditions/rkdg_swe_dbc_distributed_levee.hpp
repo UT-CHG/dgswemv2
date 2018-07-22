@@ -16,13 +16,13 @@ class DistributedLevee {
 
     double H_tolerance = 0.01;
 
-    std::vector<double> H_barrier;
-    std::vector<double> C_subcritical;
-    std::vector<double> C_supercritical;
+    DynRowVector<double> H_barrier;
+    DynRowVector<double> C_subcritical;
+    DynRowVector<double> C_supercritical;
 
-    std::vector<double> H_bar_gp;
-    std::vector<double> C_subcrit_gp;
-    std::vector<double> C_supercrit_gp;
+    DynRowVector<double> H_bar_gp;
+    DynRowVector<double> C_subcrit_gp;
+    DynRowVector<double> C_supercrit_gp;
 
   public:
     DistributedLevee() = default;
@@ -52,13 +52,9 @@ DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger, const std::
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
-    this->H_bar_gp.resize(dbound.data.get_ngp_boundary(dbound.bound_id));
-    this->C_subcrit_gp.resize(dbound.data.get_ngp_boundary(dbound.bound_id));
-    this->C_supercrit_gp.resize(dbound.data.get_ngp_boundary(dbound.bound_id));
-
-    dbound.ComputeBoundaryNodalUgp(this->H_barrier, this->H_bar_gp);
-    dbound.ComputeBoundaryNodalUgp(this->C_subcritical, this->C_subcrit_gp);
-    dbound.ComputeBoundaryNodalUgp(this->C_supercritical, this->C_supercrit_gp);
+    this->H_bar_gp       = dbound.ComputeBoundaryNodalUgp(this->H_barrier);
+    this->C_subcrit_gp   = dbound.ComputeBoundaryNodalUgp(this->C_subcritical);
+    this->C_supercrit_gp = dbound.ComputeBoundaryNodalUgp(this->C_supercritical);
 }
 
 template <typename DistributedBoundaryType>
@@ -73,8 +69,8 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
-    StatVector<double, SWE::n_variables> q_ex;
     double gravity;
+    DynVector<double> q_ex(SWE::n_variables);
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
         this->exchanger.GetEX(gp, q_ex);
@@ -91,7 +87,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
             // reflective boundary
-            land_boundary.GetEX(stepper, dbound.surface_normal[gp], boundary.q_at_gp[gp], q_ex);
+            land_boundary.GetEX(stepper, dbound.surface_normal[gp], column(boundary.q_at_gp, gp), q_ex);
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 

@@ -295,7 +295,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
     if (const_J) {
         return this->master->basis.ProjectBasisToLinear(u);
     } else {
-        return 0;
+        return DynMatrix<double>();
         // Placeholder for nonconstant Jacobian
     }
 }
@@ -308,7 +308,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
     if (const_J) {
         return this->master->basis.ProjectLinearToBasis(ndof, u_lin);
     } else {
-        return 0;
+        return DynMatrix<double>();
         // Placeholder for nonconstant Jacobian
     }
 }

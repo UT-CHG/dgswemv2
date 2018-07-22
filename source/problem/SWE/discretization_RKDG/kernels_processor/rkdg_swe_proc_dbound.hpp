@@ -12,7 +12,7 @@ void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, Distrib
     auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    dbound.ComputeUgp(state.q, boundary.q_at_gp);
+    boundary.q_at_gp = dbound.ComputeUgp(state.q);
 
     dbound.boundary_condition.exchanger.SetEX(boundary.q_at_gp);
 
@@ -36,7 +36,7 @@ void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedB
 
         // now compute contributions to the righthand side
         for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
-            state.rhs[dof] -= dbound.IntegrationPhi(dof, boundary.F_hat_at_gp);
+            column(state.rhs, dof) -= dbound.IntegrationPhi(dof, boundary.F_hat_at_gp);
         }
     }
 }

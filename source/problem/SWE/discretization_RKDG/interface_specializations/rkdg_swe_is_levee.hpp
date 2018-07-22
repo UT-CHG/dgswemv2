@@ -12,13 +12,13 @@ class Levee {
   private:
     double H_tolerance = 0.01;
 
-    std::vector<double> H_barrier;
-    std::vector<double> C_subcritical;
-    std::vector<double> C_supercritical;
+    DynRowVector<double> H_barrier;
+    DynRowVector<double> C_subcritical;
+    DynRowVector<double> C_supercritical;
 
-    std::vector<double> H_bar_gp;
-    std::vector<double> C_subcrit_gp;
-    std::vector<double> C_supercrit_gp;
+    DynRowVector<double> H_bar_gp;
+    DynRowVector<double> C_subcrit_gp;
+    DynRowVector<double> C_supercrit_gp;
 
   public:
     Levee() = default;
@@ -47,13 +47,9 @@ Levee::Levee(const std::vector<LeveeInput>& levee_input) {
 
 template <typename InterfaceType>
 void Levee::Initialize(InterfaceType& intface) {
-    this->H_bar_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-    this->C_subcrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-    this->C_supercrit_gp.resize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
-
-    // intface.ComputeBoundaryNodalUgpIN(this->H_barrier, this->H_bar_gp);
-    // intface.ComputeBoundaryNodalUgpIN(this->C_subcritical, this->C_subcrit_gp);
-    // intface.ComputeBoundaryNodalUgpIN(this->C_supercritical, this->C_supercrit_gp);
+    this->H_bar_gp       = intface.ComputeBoundaryNodalUgpIN(this->H_barrier);
+    this->C_subcrit_gp   = intface.ComputeBoundaryNodalUgpIN(this->C_subcritical);
+    this->C_supercrit_gp = intface.ComputeBoundaryNodalUgpIN(this->C_supercritical);
 }
 
 template <typename InterfaceType>

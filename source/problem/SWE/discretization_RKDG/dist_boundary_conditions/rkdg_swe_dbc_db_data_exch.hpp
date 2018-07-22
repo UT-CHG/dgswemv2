@@ -46,7 +46,7 @@ class DBDataExchanger {
     void SetPreprocEX(const double x_at_baryctr_in, const double y_at_baryctr_in);
 
     void SetWetDryEX(const bool wet_in);
-    void SetEX(const std::vector<StatVector<double, SWE::n_variables>>& q_in);
+    void SetEX(const DynMatrix<double>& q_in);
 
     void SetPostprocWetDryEX(const bool wet_in);
     void SetPostprocEX(const StatVector<double, SWE::n_variables>& q_at_baryctr_in);
@@ -54,7 +54,7 @@ class DBDataExchanger {
     void GetPreprocEX(double& x_at_baryctr_ex, double& y_at_baryctr_ex);
 
     void GetWetDryEX(bool& wet_ex);
-    void GetEX(const uint gp, StatVector<double, SWE::n_variables>& q_ex);
+    void GetEX(const uint gp, DynVector<double>& q_ex);
 
     void GetPostprocWetDryEX(bool& wet_ex);
     void GetPostprocEX(StatVector<double, SWE::n_variables>& q_at_baryctr_ex);
@@ -84,10 +84,10 @@ void DBDataExchanger::SetWetDryEX(const bool wet_in) {
     this->send_buffer[this->index.wet_dry] = (double)wet_in;
 }
 
-void DBDataExchanger::SetEX(const std::vector<StatVector<double, SWE::n_variables>>& q_in) {
-    for (uint gp = 0; gp < q_in.size(); gp++) {
+void DBDataExchanger::SetEX(const DynMatrix<double>& q_in) {
+    for (uint gp = 0; gp < columns(q_in); gp++) {
         for (uint var = 0; var < SWE::n_variables; var++) {
-            this->send_buffer[this->index.q_in + SWE::n_variables * gp + var] = q_in[gp][var];
+            this->send_buffer[this->index.q_in + SWE::n_variables * gp + var] = q_in(var, gp);
         }
     }
 }
@@ -111,7 +111,7 @@ void DBDataExchanger::GetWetDryEX(bool& wet_ex) {
     wet_ex = (bool)this->receive_buffer[this->index.wet_dry];
 }
 
-void DBDataExchanger::GetEX(const uint gp, StatVector<double, SWE::n_variables>& q_ex) {
+void DBDataExchanger::GetEX(const uint gp, DynVector<double>& q_ex) {
     for (uint var = 0; var < SWE::n_variables; var++) {
         q_ex[SWE::n_variables - var - 1] = this->receive_buffer[this->index.q_ex - SWE::n_variables * gp - var];
     }

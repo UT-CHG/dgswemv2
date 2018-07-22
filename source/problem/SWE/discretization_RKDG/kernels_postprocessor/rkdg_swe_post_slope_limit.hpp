@@ -7,7 +7,7 @@ namespace SWE {
 namespace RKDG {
 template <typename ElementType>
 void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, ElementType& elt) {
-    /*auto& wd_state = elt.data.wet_dry_state;
+    auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet) {
@@ -15,15 +15,15 @@ void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, El
 
         auto& state = elt.data.state[stage + 1];
 
-        elt.ProjectBasisToLinear(state.q, sl_state.q_lin);
-        elt.ComputeLinearUbaryctr(sl_state.q_lin, sl_state.q_at_baryctr);
-        elt.ComputeLinearUmidpts(sl_state.q_lin, sl_state.q_at_midpts);
-    }*/
+        sl_state.q_lin        = elt.ProjectBasisToLinear(state.q);
+        sl_state.q_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.q_lin);
+        sl_state.q_at_midpts  = elt.ComputeLinearUmidpts(sl_state.q_lin);
+    }
 }
 
 template <typename InterfaceType>
 void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
-    /*auto& wd_state_in = intface.data_in.wet_dry_state;
+    auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
     auto& sl_state_in = intface.data_in.slope_limit_state;
@@ -35,25 +35,25 @@ void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, 
     if (wd_state_in.wet && wd_state_ex.wet) {
         sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.q_at_baryctr;
         sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.q_at_baryctr;
-    }*/
+    }
 }
 
 template <typename BoundaryType>
 void Problem::slope_limiting_prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
-    /*auto& wd_state = bound.data.wet_dry_state;
+    auto& wd_state = bound.data.wet_dry_state;
     auto& sl_state = bound.data.slope_limit_state;
 
     sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
 
     if (wd_state.wet) {
         sl_state.q_at_baryctr_neigh[bound.bound_id] = sl_state.q_at_baryctr;
-    }*/
+    }
 }
 
 template <typename DistributedBoundaryType>
 void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& stepper,
                                                               DistributedBoundaryType& dbound) {
-    /*auto& wd_state = dbound.data.wet_dry_state;
+    auto& wd_state = dbound.data.wet_dry_state;
 
     dbound.boundary_condition.exchanger.SetPostprocWetDryEX(wd_state.wet);
 
@@ -61,13 +61,13 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
         auto& sl_state = dbound.data.slope_limit_state;
 
         dbound.boundary_condition.exchanger.SetPostprocEX(sl_state.q_at_baryctr);
-    }*/
+    }
 }
 
 template <typename DistributedBoundaryType>
 void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper& stepper,
                                                                  DistributedBoundaryType& dbound) {
-    /*auto& wd_state = dbound.data.wet_dry_state;
+    auto& wd_state = dbound.data.wet_dry_state;
     auto& sl_state = dbound.data.slope_limit_state;
 
     bool wet_ex;
@@ -77,12 +77,12 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper
 
     if (wd_state.wet && wet_ex) {
         dbound.boundary_condition.exchanger.GetPostprocEX(sl_state.q_at_baryctr_neigh[dbound.bound_id]);
-    }*/
+    }
 }
 
 template <typename ElementType>
 void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) {
-    /*auto& wd_state = elt.data.wet_dry_state;
+    auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet &&
@@ -115,7 +115,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
 
             sl_state.L = inverse(sl_state.R);
 
-            sl_state.w_midpt_char = sl_state.L * sl_state.q_at_midpts[bound];
+            sl_state.w_midpt_char = sl_state.L * column(sl_state.q_at_midpts, bound);
 
             column<0>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr;
             column<1>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
@@ -174,20 +174,20 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            sl_state.q_at_vrtx[vrtx] = sl_state.q_at_baryctr;
+            column(sl_state.q_at_vrtx, vrtx) = sl_state.q_at_baryctr;
 
             for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                sl_state.q_at_vrtx[vrtx][SWE::Variables::ze] += T(vrtx, bound) * sl_state.delta(0, bound);
-                sl_state.q_at_vrtx[vrtx][SWE::Variables::qx] += T(vrtx, bound) * sl_state.delta(1, bound);
-                sl_state.q_at_vrtx[vrtx][SWE::Variables::qy] += T(vrtx, bound) * sl_state.delta(2, bound);
+                sl_state.q_at_vrtx(SWE::Variables::ze, vrtx) += T(vrtx, bound) * sl_state.delta(0, bound);
+                sl_state.q_at_vrtx(SWE::Variables::qx, vrtx) += T(vrtx, bound) * sl_state.delta(1, bound);
+                sl_state.q_at_vrtx(SWE::Variables::qy, vrtx) += T(vrtx, bound) * sl_state.delta(2, bound);
             }
         }
 
         bool limit = false;
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            double del_q_norm = norm(sl_state.q_at_vrtx[vrtx] - sl_state.q_lin[vrtx]);
-            double q_norm     = norm(sl_state.q_lin[vrtx]);
+            double del_q_norm = norm(column(sl_state.q_at_vrtx, vrtx) - column(sl_state.q_lin, vrtx));
+            double q_norm     = norm(column(sl_state.q_lin, vrtx));
 
             if (del_q_norm / q_norm > 1.0e-6) {
                 limit = true;
@@ -195,9 +195,9 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         }
 
         if (limit) {
-            elt.ProjectLinearToBasis(sl_state.q_at_vrtx, state.q);
+            state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), sl_state.q_at_vrtx);
         }
-    }*/
+    }
 }
 }
 }

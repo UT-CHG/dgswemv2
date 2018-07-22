@@ -37,7 +37,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             internal.aux_at_gp(SWE::Auxiliaries::bath, gp) = bath_at_gp[gp];
         }
 
-        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
+        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant ||
+            problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Default) {
             uint n_node = elt.GetShape().nodal_coordinates.size();
 
             StatVector<double, SWE::n_variables> u_init{problem_specific_input.initial_conditions.ze_initial,

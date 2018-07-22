@@ -14,9 +14,9 @@ struct SlopeLimit {
           alpha_1(nbound),
           alpha_2(nbound),
           r_sq(nbound),
-          q_lin(nvrtx),
-          q_at_vrtx(nvrtx),
-          q_at_midpts(nbound),
+          q_lin(SWE::n_variables, nvrtx),
+          q_at_vrtx(SWE::n_variables, nvrtx),
+          q_at_midpts(SWE::n_variables, nbound),
           bath_at_vrtx(nvrtx),
           bath_at_midpts(nbound),
           wet_neigh(nbound),
@@ -32,15 +32,15 @@ struct SlopeLimit {
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
 
-    std::vector<StatVector<double, SWE::n_variables>> q_lin;
+    DynMatrix<double> q_lin;
 
     StatVector<double, SWE::n_variables> q_at_baryctr;
-    std::vector<StatVector<double, SWE::n_variables>> q_at_vrtx;
-    std::vector<StatVector<double, SWE::n_variables>> q_at_midpts;
+    DynMatrix<double> q_at_vrtx;
+    DynMatrix<double> q_at_midpts;
 
     double bath_at_baryctr;
-    std::vector<double> bath_at_vrtx;
-    std::vector<double> bath_at_midpts;
+    DynVector<double> bath_at_vrtx;
+    DynRowVector<double> bath_at_midpts;
 
     std::vector<bool> wet_neigh;
     std::vector<StatVector<double, SWE::n_variables>> q_at_baryctr_neigh;

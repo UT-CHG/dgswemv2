@@ -14,11 +14,11 @@ class Tide {
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
 
-    Array2D<double> amplitude;
-    Array2D<double> phase;
+    DynMatrix<double> amplitude;
+    DynMatrix<double> phase;
 
-    Array2D<double> amplitude_gp;
-    Array2D<double> phase_gp;
+    DynMatrix<double> amplitude_gp;
+    DynMatrix<double> phase_gp;
 
   public:
     Tide() = default;
@@ -48,16 +48,13 @@ Tide::Tide(const std::vector<TideInput>& tide_input) {
     uint n_contituents = this->frequency.size();
     uint n_nodes       = tide_input.size();
 
-    this->amplitude.resize(n_contituents);
-    this->phase.resize(n_contituents);
+    this->amplitude.resize(n_contituents, n_nodes);
+    this->phase.resize(n_contituents, n_nodes);
 
     for (uint con = 0; con < n_contituents; con++) {
-        this->amplitude[con].resize(n_nodes);
-        this->phase[con].resize(n_nodes);
-
         for (uint node = 0; node < n_nodes; node++) {
-            this->amplitude[con][node] = tide_input[node].amplitude[con];
-            this->phase[con][node]     = tide_input[node].phase[con];
+            this->amplitude(con, node) = tide_input[node].amplitude[con];
+            this->phase(con, node)     = tide_input[node].phase[con];
         }
     }
 }
@@ -66,15 +63,9 @@ template <typename BoundaryType>
 void Tide::Initialize(BoundaryType& bound) {
     uint n_contituents = this->frequency.size();
 
-    this->amplitude_gp.resize(n_contituents);
-    this->phase_gp.resize(n_contituents);
-
     for (uint con = 0; con < n_contituents; con++) {
-        this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-        this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-
-        // bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
-        // bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+        this->amplitude_gp = bound.ComputeBoundaryNodalUgp(this->amplitude);
+        this->phase_gp     = bound.ComputeBoundaryNodalUgp(this->phase);
     }
 }
 
@@ -108,8 +99,8 @@ void Tide::GetEX(const RKStepper& stepper,
         forcing_fact = this->forcing_fact[con];
         eq_argument  = this->equilib_arg[con];
 
-        ze += stepper.GetRamp() * forcing_fact * this->amplitude_gp[con][gp] *
-              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
+        ze += stepper.GetRamp() * forcing_fact * this->amplitude_gp(con, gp) *
+              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp(con, gp));
     }
 
     q_ex[SWE::Variables::ze] = ze;

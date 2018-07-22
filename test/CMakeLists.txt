@@ -1,6 +1,6 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
-add_executable(
+#[[add_executable(
   test_linear_algebra_exe
   test_linear_algebra.cpp
 )
@@ -50,7 +50,7 @@ target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS
 add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
-)
+)]]
 
 add_executable(
   test_tuple_helpers_exe
@@ -470,7 +470,7 @@ if(USE_HPX)
     test_element_serialization_exe
   )
 
-  add_executable(
+  #[[add_executable(
     test_mesh_serialization_exe
     test_mesh_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
@@ -492,7 +492,7 @@ if(USE_HPX)
     Unit_mesh_serialization
     test_mesh_serialization_exe
     ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
-  )
+  )]]
 
   add_executable(
     test_rk_stepper_serialization_exe

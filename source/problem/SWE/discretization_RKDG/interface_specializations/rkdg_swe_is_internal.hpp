@@ -41,7 +41,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     }
 
     // compute net volume flux out of IN/EX elements
-    /*double net_volume_flux_in = 0;
+    double net_volume_flux_in = 0;
     // double net_volume_flux_ex = 0;
 
     net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
@@ -106,8 +106,8 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
             // net_volume_flux_ex = intface.IntegrationEX(boundary_ex.ze_numerical_flux_at_gp);
-        
-    }*/
+        }
+    }
 }
 }
 }
