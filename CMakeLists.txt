@@ -56,9 +56,6 @@ find_package(LAPACK REQUIRED)
 if(USE_OMPI)
   find_package(OpenMP REQUIRED)
   find_package(MPI REQUIRED)
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
 if(USE_HPX)
