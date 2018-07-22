@@ -15,8 +15,8 @@ void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, Distri
     dbound.ComputeUgp(state.qy, boundary.qy_at_gp);
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        boundary.aux_at_gp[gp][SWE::Auxiliaries::h] =
-            boundary.ze_at_gp[gp] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
+            boundary.ze_at_gp[gp] + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
     }
 
     /* Compute fluxes at boundary state */
@@ -28,14 +28,14 @@ void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, Distri
         nx = dbound.surface_normal[gp][GlobalCoord::x];
         ny = dbound.surface_normal[gp][GlobalCoord::y];
 
-        u = boundary.qx_at_gp[gp] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
-        v = boundary.qy_at_gp[gp] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
+        u = boundary.qx_at_gp[gp] / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
+        v = boundary.qy_at_gp[gp] / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
 
         uuh = u * boundary.qx_at_gp[gp];
         vvh = v * boundary.qy_at_gp[gp];
         uvh = u * boundary.qy_at_gp[gp];
         pe  = Global::g * (0.5 * std::pow(boundary.ze_at_gp[gp], 2) +
-                          boundary.ze_at_gp[gp] * boundary.aux_at_gp[gp][SWE::Auxiliaries::bath]);
+                          boundary.ze_at_gp[gp] * boundary.aux_at_gp(SWE::Auxiliaries::bath, gp));
 
         boundary.ze_flux_dot_n_at_gp[gp] = boundary.qx_at_gp[gp] * nx + boundary.qy_at_gp[gp] * ny;
         boundary.qx_flux_dot_n_at_gp[gp] = (uuh + pe) * nx + uvh * ny;

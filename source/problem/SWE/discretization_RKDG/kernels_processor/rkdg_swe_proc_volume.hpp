@@ -13,7 +13,7 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
         auto& state    = elt.data.state[stage];
         auto& internal = elt.data.internal;
 
-        elt.ComputeUgp(state.q, internal.q_at_gp);
+        internal.q_at_gp = elt.ComputeUgp(state.q);
 
         double u = 0.0;
         double v = 0.0;
@@ -25,27 +25,27 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
 
         // assemble flux
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            internal.aux_at_gp[gp][SWE::Auxiliaries::h] =
-                internal.q_at_gp[gp][SWE::Variables::ze] + internal.aux_at_gp[gp][SWE::Auxiliaries::bath];
+            internal.aux_at_gp(SWE::Auxiliaries::h, gp) =
+                internal.q_at_gp(SWE::Variables::ze, gp) + internal.aux_at_gp(SWE::Auxiliaries::bath, gp);
 
-            u = internal.q_at_gp[gp][SWE::Variables::qx] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
-            v = internal.q_at_gp[gp][SWE::Variables::qy] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+            u = internal.q_at_gp(SWE::Variables::qx, gp) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
+            v = internal.q_at_gp(SWE::Variables::qy, gp) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
 
-            uuh = u * internal.q_at_gp[gp][SWE::Variables::qx];
-            vvh = v * internal.q_at_gp[gp][SWE::Variables::qy];
-            uvh = u * internal.q_at_gp[gp][SWE::Variables::qy];
+            uuh = u * internal.q_at_gp(SWE::Variables::qx, gp);
+            vvh = v * internal.q_at_gp(SWE::Variables::qy, gp);
+            uvh = u * internal.q_at_gp(SWE::Variables::qy, gp);
             pe =
-                Global::g * (0.5 * std::pow(internal.q_at_gp[gp][SWE::Variables::ze], 2) +
-                             internal.q_at_gp[gp][SWE::Variables::ze] * internal.aux_at_gp[gp][SWE::Auxiliaries::bath]);
+                Global::g * (0.5 * std::pow(internal.q_at_gp(SWE::Variables::ze, gp), 2) +
+                             internal.q_at_gp(SWE::Variables::ze, gp) * internal.aux_at_gp(SWE::Auxiliaries::bath, gp));
 
-            internal.Fx_at_gp[gp][SWE::Variables::ze] =
-                internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * internal.q_at_gp[gp][SWE::Variables::qx];
-            internal.Fx_at_gp[gp][SWE::Variables::qx] = internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * (uuh + pe);
-            internal.Fx_at_gp[gp][SWE::Variables::qy] = internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * uvh;
+            internal.Fx_at_gp(SWE::Variables::ze, gp) =
+                internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * internal.q_at_gp(SWE::Variables::qx, gp);
+            internal.Fx_at_gp(SWE::Variables::qx, gp) = internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * (uuh + pe);
+            internal.Fx_at_gp(SWE::Variables::qy, gp) = internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * uvh;
 
-            internal.Fy_at_gp[gp][SWE::Variables::ze] = internal.q_at_gp[gp][SWE::Variables::qy];
-            internal.Fy_at_gp[gp][SWE::Variables::qx] = uvh;
-            internal.Fy_at_gp[gp][SWE::Variables::qy] = vvh + pe;
+            internal.Fy_at_gp(SWE::Variables::ze, gp) = internal.q_at_gp(SWE::Variables::qy, gp);
+            internal.Fy_at_gp(SWE::Variables::qx, gp) = uvh;
+            internal.Fy_at_gp(SWE::Variables::qy, gp) = vvh + pe;
         }
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {

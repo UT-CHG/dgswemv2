@@ -37,7 +37,8 @@ void Problem::initialize_iteration(SimulationType* simulation) {
         for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
             gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-            edge_internal.q_init_at_gp[gp] = (boundary_in.q_at_gp[gp] + boundary_ex.q_at_gp[gp_ex]) / 2.0;
+            row(edge_internal.q_init_at_gp, gp) =
+                (row(boundary_in.q_at_gp, gp) + row(boundary_ex.q_at_gp, gp_ex)) / 2.0;
         }
 
         edge_int.L2Projection(edge_internal.q_init_at_gp, edge_state.q_hat);

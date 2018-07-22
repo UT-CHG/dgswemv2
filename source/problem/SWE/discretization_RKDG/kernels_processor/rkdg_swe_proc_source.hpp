@@ -27,11 +27,11 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         // note we assume that the values at gauss points have already been computed
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute contribution of hydrostatic pressure
-            internal.source_at_gp[gp][SWE::Variables::qx] += Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::sp] *
+            internal.source_at_gp(SWE::Variables::qx, gp) += Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::sp] *
                                                              internal.dbath_at_gp[gp][GlobalCoord::x] *
-                                                             internal.q_at_gp[gp][SWE::Variables::ze];
-            internal.source_at_gp[gp][SWE::Variables::qy] +=
-                Global::g * internal.dbath_at_gp[gp][GlobalCoord::y] * internal.q_at_gp[gp][SWE::Variables::ze];
+                                                             internal.q_at_gp(SWE::Variables::ze, gp);
+            internal.source_at_gp(SWE::Variables::qy, gp) +=
+                Global::g * internal.dbath_at_gp[gp][GlobalCoord::y] * internal.q_at_gp(SWE::Variables::ze, gp);
         }
 
         if (SWE::SourceTerms::bottom_friction) {
@@ -39,22 +39,22 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute bottom friction contribution
-                double u = internal.q_at_gp[gp][SWE::Variables::qx] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
-                double v = internal.q_at_gp[gp][SWE::Variables::qy] / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+                double u = internal.q_at_gp(SWE::Variables::qx, gp) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
+                double v = internal.q_at_gp(SWE::Variables::qy, gp) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
 
                 // compute manning friction factor
                 if (source.manning) {
-                    Cf = source.g_manning_n_sq / std::pow(internal.aux_at_gp[gp][SWE::Auxiliaries::h], 1.0 / 3.0);
+                    Cf = source.g_manning_n_sq / std::pow(internal.aux_at_gp(SWE::Auxiliaries::h, gp), 1.0 / 3.0);
                     if (Cf < SWE::SourceTerms::Cf)
                         Cf = SWE::SourceTerms::Cf;
                 }
 
-                double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp[gp][SWE::Auxiliaries::h];
+                double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
 
-                internal.source_at_gp[gp][SWE::Variables::qx] -=
-                    bottom_friction_stress * internal.q_at_gp[gp][SWE::Variables::qx];
-                internal.source_at_gp[gp][SWE::Variables::qy] -=
-                    bottom_friction_stress * internal.q_at_gp[gp][SWE::Variables::qy];
+                internal.source_at_gp(SWE::Variables::qx, gp) -=
+                    bottom_friction_stress * internal.q_at_gp(SWE::Variables::qx, gp);
+                internal.source_at_gp(SWE::Variables::qy, gp) -=
+                    bottom_friction_stress * internal.q_at_gp(SWE::Variables::qy, gp);
             }
         }
 
@@ -64,16 +64,16 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute surface friction contribution
-                internal.source_at_gp[gp][SWE::Variables::qx] +=
+                internal.source_at_gp(SWE::Variables::qx, gp) +=
                     internal.tau_s_at_gp[gp][GlobalCoord::x] / Global::rho_water;
-                internal.source_at_gp[gp][SWE::Variables::qy] +=
+                internal.source_at_gp(SWE::Variables::qy, gp) +=
                     internal.tau_s_at_gp[gp][GlobalCoord::y] / Global::rho_water;
 
                 // compute atmospheric pressure contribution
-                internal.source_at_gp[gp][SWE::Variables::qx] -=
-                    internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * internal.aux_at_gp[gp][SWE::Auxiliaries::h] *
+                internal.source_at_gp(SWE::Variables::qx, gp) -=
+                    internal.aux_at_gp[gp][SWE::Auxiliaries::sp] * internal.aux_at_gp(SWE::Auxiliaries::h, gp) *
                     internal.dp_atm_at_gp[gp][GlobalCoord::x] / Global::rho_water;
-                internal.source_at_gp[gp][SWE::Variables::qy] -= internal.aux_at_gp[gp][SWE::Auxiliaries::h] *
+                internal.source_at_gp(SWE::Variables::qy, gp) -= internal.aux_at_gp(SWE::Auxiliaries::h, gp) *
                                                                  internal.dp_atm_at_gp[gp][GlobalCoord::y] /
                                                                  Global::rho_water;
             }
@@ -84,11 +84,11 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
 
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute tide potential contribution
-                internal.source_at_gp[gp][SWE::Variables::qx] +=
+                internal.source_at_gp(SWE::Variables::qx, gp) +=
                     Global::g * internal.aux_at_gp[gp][SWE::Auxiliaries::sp] *
-                    internal.aux_at_gp[gp][SWE::Auxiliaries::h] * internal.dtide_pot_at_gp[gp][GlobalCoord::x];
-                internal.source_at_gp[gp][SWE::Variables::qy] += Global::g *
-                                                                 internal.aux_at_gp[gp][SWE::Auxiliaries::h] *
+                    internal.aux_at_gp(SWE::Auxiliaries::h, gp) * internal.dtide_pot_at_gp[gp][GlobalCoord::x];
+                internal.source_at_gp(SWE::Variables::qy, gp) += Global::g *
+                                                                 internal.aux_at_gp(SWE::Auxiliaries::h, gp) *
                                                                  internal.dtide_pot_at_gp[gp][GlobalCoord::y];
             }
         }
@@ -96,10 +96,10 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         if (SWE::SourceTerms::coriolis) {
             for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
                 // compute coriolis contribution
-                internal.source_at_gp[gp][SWE::Variables::qx] +=
-                    source.coriolis_f * internal.q_at_gp[gp][SWE::Variables::qy];
-                internal.source_at_gp[gp][SWE::Variables::qy] -=
-                    source.coriolis_f * internal.q_at_gp[gp][SWE::Variables::qx];
+                internal.source_at_gp(SWE::Variables::qx, gp) +=
+                    source.coriolis_f * internal.q_at_gp(SWE::Variables::qy, gp);
+                internal.source_at_gp(SWE::Variables::qy, gp) -=
+                    source.coriolis_f * internal.q_at_gp(SWE::Variables::qx, gp);
             }
         }
 

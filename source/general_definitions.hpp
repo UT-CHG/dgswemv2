@@ -95,7 +95,7 @@ class Basis {
      * @param return a pair with a boolean, which states whether the basis is orthogonal,
      *        and a 2-dimensional array corresponding to the mass matrix over the master element
      */
-    virtual std::pair<bool, DynMatrix<double>> GetMinv(const uint p) = 0;
+    virtual DynMatrix<double> GetMinv(const uint p) = 0;
 
     template <typename T>
     void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
@@ -155,7 +155,7 @@ class Master {
     DynMatrix<double> int_phi_fact;
     StatVector<DynMatrix<double>, dimension> int_dphi_fact;
 
-    std::pair<bool, DynMatrix<double>> m_inv;
+    DynMatrix<double> m_inv;
 
     DynMatrix<double> phi_postprocessor_cell;
     DynMatrix<double> phi_postprocessor_point;
@@ -168,12 +168,12 @@ class Master {
         const uint bound_id,
         const DynVector<Point<dimension - 1>>& z_boundary) = 0;
 
-    template <typename T>
-    void ComputeLinearUbaryctr(const std::vector<T>& u_lin, T& u_lin_baryctr);
-    template <typename T>
-    void ComputeLinearUmidpts(const std::vector<T>& u_lin, std::vector<T>& u_lin_midpts);
-    template <typename T>
-    void ComputeLinearUvrtx(const std::vector<T>& u_lin, std::vector<T>& u_lin_vrtx);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 };
 }
 

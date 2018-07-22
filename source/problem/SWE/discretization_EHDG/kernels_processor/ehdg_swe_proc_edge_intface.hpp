@@ -16,10 +16,11 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        edge_internal.q_init_at_gp[gp] = (boundary_in.q_at_gp[gp] + boundary_ex.q_at_gp[gp_ex]) / 2.0;
+        column(edge_internal.q_init_at_gp, gp) =
+            (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
     }
 
-    edge_int.L2Projection(edge_internal.q_init_at_gp, edge_state.q_hat);
+    edge_state.q_hat = edge_int.L2Projection(edge_internal.q_init_at_gp);
 
     /* Newton-Raphson iterator */
 
@@ -33,14 +34,8 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
             break;
         }
 
-        double q_hat_norm     = 0;
+        double q_hat_norm     = norm(edge_state.q_hat);
         double delta_hat_norm = norm(edge_internal.rhs_global);
-
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
-        }
-
-        q_hat_norm = std::sqrt(q_hat_norm);
 
         if (delta_hat_norm / q_hat_norm < 1.0e-6) {
             break;
@@ -49,11 +44,11 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
 
     /* Compute Numerical Flux */
 
-    edge_int.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+    edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+            edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
     }
 
     edge_int.interface.specialization.ComputeNumericalFlux(edge_int);
@@ -66,11 +61,11 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
 
-    edge_int.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+    edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+            edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
     }
 
     /* Assemble global kernels */
@@ -103,9 +98,9 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
     edge_state.q_hat_prev = edge_state.q_hat;
 
     for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-        edge_state.q_hat[dof][SWE::Variables::ze] += edge_internal.rhs_global[3 * dof];
-        edge_state.q_hat[dof][SWE::Variables::qx] += edge_internal.rhs_global[3 * dof + 1];
-        edge_state.q_hat[dof][SWE::Variables::qy] += edge_internal.rhs_global[3 * dof + 2];
+        edge_state.q_hat(SWE::Variables::ze, dof) += edge_internal.rhs_global[3 * dof];
+        edge_state.q_hat(SWE::Variables::qx, dof) += edge_internal.rhs_global[3 * dof + 1];
+        edge_state.q_hat(SWE::Variables::qy, dof) += edge_internal.rhs_global[3 * dof + 2];
     }
 }
 }

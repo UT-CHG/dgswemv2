@@ -131,9 +131,9 @@ int main() {
     for (uint dof = 0; dof < 11; ++dof) {
         // Check the evaluations of the Legendre polynomials
         for (uint pt = 0; pt < 5; ++pt) {
-            if (!almost_equal(true_vals[dof][pt], my_evals(pt, dof))) {
+            if (!almost_equal(true_vals[dof][pt], my_evals(dof, pt))) {
                 std::cerr << "Error dof(" << dof << "): the true value = " << true_vals[dof][pt]
-                          << " your computed value  = " << my_evals(pt, dof) << std::endl;
+                          << " your computed value  = " << my_evals(dof, pt) << std::endl;
 
                 error_found = true;
             }
@@ -141,10 +141,10 @@ int main() {
 
         // Check the Gradient evaluations of the Legendre polynomials
         for (int pt = 0; pt < 5; ++pt) {
-            if (!almost_equal(true_Dvals[dof][pt], my_Devals[LocalCoordLin::l1](pt, dof), 1000)) {
+            if (!almost_equal(true_Dvals[dof][pt], my_Devals[LocalCoordLin::l1](dof, pt), 1000)) {
                 std::cerr << "Error in Gradient dof and pt (" << dof << ',' << pt << "): the true value = ("
                           << std::setprecision(14) << true_Dvals[dof][pt] << ") your computed value  = ("
-                          << my_Devals[LocalCoordLin::l1](pt, dof) << ")\n";
+                          << my_Devals[LocalCoordLin::l1](dof, pt) << ")\n";
 
                 error_found = true;
             }

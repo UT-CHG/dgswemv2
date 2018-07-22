@@ -132,12 +132,12 @@ DynMatrix<double> StraightTriangle::GetPsi(const DynVector<Point<2>>& points) {
     uint ndof = 3;
     uint npt  = points.size();
 
-    DynMatrix<double> psi(npt, ndof);
+    DynMatrix<double> psi(ndof, npt);
 
     for (uint pt = 0; pt < npt; pt++) {
-        psi(pt, 0) = -(points[pt][LocalCoordTri::z1] + points[pt][LocalCoordTri::z2]) / 2;  // N1
-        psi(pt, 1) = (1 + points[pt][LocalCoordTri::z1]) / 2;                               // N2
-        psi(pt, 2) = (1 + points[pt][LocalCoordTri::z2]) / 2;                               // N3
+        psi(0, pt) = -(points[pt][LocalCoordTri::z1] + points[pt][LocalCoordTri::z2]) / 2;  // N1
+        psi(1, pt) = (1 + points[pt][LocalCoordTri::z1]) / 2;                               // N2
+        psi(2, pt) = (1 + points[pt][LocalCoordTri::z2]) / 2;                               // N3
     }
 
     return psi;
@@ -149,22 +149,22 @@ StatVector<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const DynVector<Point
 
     StatVector<DynMatrix<double>, 2> dpsi;
 
-    DynMatrix<double> dpsi_dx(npt, ndof);
-    DynMatrix<double> dpsi_dy(npt, ndof);
+    DynMatrix<double> dpsi_dx(ndof, npt);
+    DynMatrix<double> dpsi_dy(ndof, npt);
 
     StatMatrix<double, 2, 2> J_inv = this->GetJinv(points)[0];
 
     for (uint pt = 0; pt < points.size(); pt++) {
-        dpsi_dx(pt, 0) =
+        dpsi_dx(0, pt) =
             -0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::x) - 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::x);
-        dpsi_dy(pt, 0) =
+        dpsi_dy(0, pt) =
             -0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::y) - 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::y);
 
-        dpsi_dx(pt, 1) = 0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::x);
-        dpsi_dy(pt, 1) = 0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::y);
+        dpsi_dx(1, pt) = 0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::x);
+        dpsi_dy(1, pt) = 0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::y);
 
-        dpsi_dx(pt, 2) = 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::x);
-        dpsi_dy(pt, 2) = 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::y);
+        dpsi_dx(2, pt) = 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::x);
+        dpsi_dy(2, pt) = 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::y);
     }
 
     dpsi[GlobalCoord::x] = dpsi_dx;
@@ -177,11 +177,11 @@ DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const Dy
     uint ndof = 2;
     uint npt  = points.size();
 
-    DynMatrix<double> psi_bound(npt, ndof);
+    DynMatrix<double> psi_bound(ndof, npt);
 
     for (uint pt = 0; pt < npt; pt++) {
-        psi_bound(pt, 0) = (1 - points[pt][LocalCoordTri::z1]) / 2;  // N1
-        psi_bound(pt, 1) = (1 + points[pt][LocalCoordTri::z1]) / 2;  // N2
+        psi_bound(0, pt) = (1 - points[pt][LocalCoordTri::z1]) / 2;  // N1
+        psi_bound(1, pt) = (1 + points[pt][LocalCoordTri::z1]) / 2;  // N2
     }
 
     return psi_bound;
@@ -195,13 +195,13 @@ DynVector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const DynVector<P
     DynMatrix<double> psi_pts = this->GetPsi(points);
 
     for (uint pt = 0; pt < npt; pt++) {
-        global_coordinates[pt][GlobalCoord::x] = this->nodal_coordinates[0][GlobalCoord::x] * psi_pts(pt, 0) +
-                                                 this->nodal_coordinates[1][GlobalCoord::x] * psi_pts(pt, 1) +
-                                                 this->nodal_coordinates[2][GlobalCoord::x] * psi_pts(pt, 2);
+        global_coordinates[pt][GlobalCoord::x] = this->nodal_coordinates[0][GlobalCoord::x] * psi_pts(0, pt) +
+                                                 this->nodal_coordinates[1][GlobalCoord::x] * psi_pts(1, pt) +
+                                                 this->nodal_coordinates[2][GlobalCoord::x] * psi_pts(2, pt);
 
-        global_coordinates[pt][GlobalCoord::y] = this->nodal_coordinates[0][GlobalCoord::y] * psi_pts(pt, 0) +
-                                                 this->nodal_coordinates[1][GlobalCoord::y] * psi_pts(pt, 1) +
-                                                 this->nodal_coordinates[2][GlobalCoord::y] * psi_pts(pt, 2);
+        global_coordinates[pt][GlobalCoord::y] = this->nodal_coordinates[0][GlobalCoord::y] * psi_pts(0, pt) +
+                                                 this->nodal_coordinates[1][GlobalCoord::y] * psi_pts(1, pt) +
+                                                 this->nodal_coordinates[2][GlobalCoord::y] * psi_pts(2, pt);
     }
 
     return global_coordinates;

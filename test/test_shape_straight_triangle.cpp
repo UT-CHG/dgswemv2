@@ -90,7 +90,7 @@ int main() {
 
     for (uint i = 0; i < 6; i++) {
         interpolation_comp[i] =
-            psi_interp(i, 0) * nodal_vals[0] + psi_interp(i, 1) * nodal_vals[1] + psi_interp(i, 2) * nodal_vals[2];
+            psi_interp(0, i) * nodal_vals[0] + psi_interp(1, i) * nodal_vals[1] + psi_interp(2, i) * nodal_vals[2];
 
         if (!almost_equal(interpolation_true[i], interpolation_comp[i])) {
             std::cerr << "Error in GetPsi\n";
@@ -123,7 +123,7 @@ int main() {
 
         for (uint i = 0; i < 5; i++) {
             bound_interpolation_comp[bound_id][i] =
-                psi_bound_interp(i, 0) * bound_nodal_vals[0] + psi_bound_interp(i, 1) * bound_nodal_vals[1];
+                psi_bound_interp(0, i) * bound_nodal_vals[0] + psi_bound_interp(1, i) * bound_nodal_vals[1];
         }
     }
 
@@ -146,11 +146,11 @@ int main() {
 
     Array2D<double> interpolation_derivative_comp(2, std::vector<double>(1));
 
-    interpolation_derivative_comp[0][0] = dpsi_interp[0](0, 0) * nodal_vals[0] + dpsi_interp[0](0, 1) * nodal_vals[1] +
-                                          dpsi_interp[0](0, 2) * nodal_vals[2];
+    interpolation_derivative_comp[0][0] = dpsi_interp[0](0, 0) * nodal_vals[0] + dpsi_interp[0](1, 0) * nodal_vals[1] +
+                                          dpsi_interp[0](2, 0) * nodal_vals[2];
 
-    interpolation_derivative_comp[1][0] = dpsi_interp[1](0, 0) * nodal_vals[0] + dpsi_interp[1](0, 1) * nodal_vals[1] +
-                                          dpsi_interp[1](0, 2) * nodal_vals[2];
+    interpolation_derivative_comp[1][0] = dpsi_interp[1](0, 0) * nodal_vals[0] + dpsi_interp[1](1, 0) * nodal_vals[1] +
+                                          dpsi_interp[1](2, 0) * nodal_vals[2];
 
     if (!almost_equal(interpolation_derivative_true[0][0], interpolation_derivative_comp[0][0]) ||
         !almost_equal(interpolation_derivative_true[1][0], interpolation_derivative_comp[1][0])) {

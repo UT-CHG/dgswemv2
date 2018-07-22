@@ -54,28 +54,32 @@ class Interface {
     DynVector<uint>& GetNodeIDIN() { return this->node_ID_in; }
     DynVector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
 
-    template <typename T>
-    void ComputeUgpIN(const std::vector<T>& u, std::vector<T>& u_gp);
-    template <typename T>
-    void ComputeUgpEX(const std::vector<T>& u, std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeUgpIN(const InputArrayType& u);
+    template <typename InputArrayType>
+    decltype(auto) ComputeUgpEX(const InputArrayType& u);
 
-    void ComputeNodalUgpIN(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
-    void ComputeNodalUgpEX(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
-    void ComputeBoundaryNodalUgpIN(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
-    void ComputeBoundaryNodalUgpEX(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeNodalUgpIN(const InputArrayType& u_nodal);
+    template <typename InputArrayType>
+    decltype(auto) ComputeNodalUgpEX(const InputArrayType& u_nodal);
+    template <typename InputArrayType>
+    decltype(auto) ComputeBoundaryNodalUgpIN(const InputArrayType& u_bound_nodal);
+    template <typename InputArrayType>
+    decltype(auto) ComputeBoundaryNodalUgpEX(const InputArrayType& u_bound_nodal);
 
-    template <typename T>
-    T IntegrationIN(const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationEX(const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiIN(const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiEX(const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiPhiIN(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiPhiEX(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationIN(const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationEX(const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiIN(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiEX(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiPhiIN(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiPhiEX(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
 
   public:
     using InterfaceIntegrationType = IntegrationType;
@@ -146,35 +150,35 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->int_phi_fact_in = transpose(this->phi_gp_in);
         for (uint dof = 0; dof < this->master_in.ndof; dof++) {
             for (uint gp = 0; gp < ngp; gp++) {
-                this->int_phi_fact_in(dof, gp) *= integration_rule.first[gp] * surface_J[0];
+                this->int_phi_fact_in(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
         this->int_phi_fact_ex = transpose(this->phi_gp_ex);
         for (uint dof = 0; dof < this->master_ex.ndof; dof++) {
             for (uint gp = 0; gp < ngp; gp++) {
-                this->int_phi_fact_ex(dof, gp) *= integration_rule.first[gp] * surface_J[0];
+                this->int_phi_fact_ex(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
-        this->int_phi_phi_fact_in.resize(std::pow(this->master_in.ndof, 2), ngp);
+        this->int_phi_phi_fact_in.resize(ngp, std::pow(this->master_in.ndof, 2));
         for (uint dof_i = 0; dof_i < this->master_in.ndof; dof_i++) {
             for (uint dof_j = 0; dof_j < this->master_in.ndof; dof_j++) {
                 uint lookup = this->master_in.ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
-                    this->int_phi_phi_fact_in(lookup, gp) =
-                        this->phi_gp_in(gp, dof_i) * this->int_phi_fact_in(dof_j, gp);
+                    this->int_phi_phi_fact_in(gp, lookup) =
+                        this->phi_gp_in(dof_i, gp) * this->int_phi_fact_in(gp, dof_j);
                 }
             }
         }
 
-        this->int_phi_phi_fact_ex.resize(std::pow(this->master_ex.ndof, 2), ngp);
+        this->int_phi_phi_fact_ex.resize(ngp, std::pow(this->master_ex.ndof, 2));
         for (uint dof_i = 0; dof_i < this->master_ex.ndof; dof_i++) {
             for (uint dof_j = 0; dof_j < this->master_ex.ndof; dof_j++) {
                 uint lookup = this->master_ex.ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
-                    this->int_phi_phi_fact_ex(lookup, gp) =
-                        this->phi_gp_ex(gp, dof_i) * this->int_phi_fact_ex(dof_j, gp);
+                    this->int_phi_phi_fact_ex(gp, lookup) =
+                        this->phi_gp_ex(dof_i, gp) * this->int_phi_fact_ex(gp, dof_j);
                 }
             }
         }
@@ -191,181 +195,109 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpIN(const std::vector<T>& u,
-                                                                                              std::vector<T>& u_gp) {
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->phi_gp_in(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpIN(
+    const InputArrayType& u) {
+    // u_gp(q, gp) = u(q, dof) * phi_gp(dof, gp)
+    return u * this->phi_gp_in;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeNodalUgpIN(
-    const std::vector<double>& u_nodal,
-    std::vector<double>& u_nodal_gp) {
-    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
-            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp_in(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeNodalUgpIN(
+    const InputArrayType& u_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_nodal * this->psi_gp_in;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeBoundaryNodalUgpIN(
-    const std::vector<double>& u_bound_nodal,
-    std::vector<double>& u_bound_nodal_gp) {
-    std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_bound_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_bound_nodal_gp.size(); gp++) {
-            u_bound_nodal_gp[gp] += u_bound_nodal[dof] * this->psi_bound_gp_in(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeBoundaryNodalUgpIN(
+    const InputArrayType& u_bound_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_bound_nodal * this->psi_bound_gp_in;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationIN(
-    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_in[gp];
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationIN(
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_fact[gp]
+    return u_gp * this->int_fact_in;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiIN(
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiIN(
     const uint dof,
-    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_fact_in(dof, gp);
-    }
-
-    return integral;
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * column(this->int_phi_fact_in, dof);
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiPhiIN(
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiPhiIN(
     const uint dof_i,
     const uint dof_j,
-    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
     uint lookup = this->master_in.ndof * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_phi_fact_in(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_phi_fact_in, lookup);
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpEX(const std::vector<T>& u,
-                                                                                              std::vector<T>& u_gp) {
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->phi_gp_ex(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeUgpEX(
+    const InputArrayType& u) {
+    // u_gp(q, gp) = u(q, dof) * phi_gp(dof, gp)
+    return u * this->phi_gp_ex;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeNodalUgpEX(
-    const std::vector<double>& u_nodal,
-    std::vector<double>& u_nodal_gp) {
-    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
-            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp_ex(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeNodalUgpEX(
+    const InputArrayType& u_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_nodal * this->psi_gp_ex;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-inline void Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeBoundaryNodalUgpEX(
-    const std::vector<double>& u_bound_nodal,
-    std::vector<double>& u_bound_nodal_gp) {
-    std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_bound_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_bound_nodal_gp.size(); gp++) {
-            u_bound_nodal_gp[gp] += u_bound_nodal[dof] * this->psi_bound_gp_ex(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeBoundaryNodalUgpEX(
+    const InputArrayType& u_bound_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_bound_nodal * this->psi_bound_gp_ex;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationEX(
-    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact_ex[gp];
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationEX(
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_fact[gp]
+    return u_gp * this->int_fact_ex;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiEX(
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiEX(
     const uint dof,
-    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_fact_ex(dof, gp);
-    }
-
-    return integral;
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * column(this->int_phi_fact_ex, dof);
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
-template <typename T>
-inline T Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiPhiEX(
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiPhiEX(
     const uint dof_i,
     const uint dof_j,
-    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
     uint lookup = this->master_ex.ndof * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_phi_fact_ex(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_phi_fact_ex, lookup);
 }
 }
 

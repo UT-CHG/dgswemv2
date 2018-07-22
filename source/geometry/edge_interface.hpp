@@ -18,7 +18,7 @@ class EdgeInterface {
     DynMatrix<double> int_phi_lambda_fact_in;
     DynMatrix<double> int_phi_lambda_fact_ex;
 
-    std::pair<bool, DynMatrix<double>> m_inv;
+    DynMatrix<double> m_inv;
 
   public:
     EdgeInterface(InterfaceType& interface);
@@ -26,23 +26,23 @@ class EdgeInterface {
     uint GetID() { return this->ID; }
     void SetID(uint ID) { this->ID = ID; }
 
-    template <typename T>
-    void L2Projection(const std::vector<T>& u_gp, std::vector<T>& projection);
+    template <typename InputArrayType>
+    decltype(auto) L2Projection(const InputArrayType& u_gp);
 
-    template <typename T>
-    void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeUgp(const InputArrayType& u);
 
-    template <typename T>
-    T IntegrationLambda(const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiLambdaIN(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiLambdaEX(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationLambda(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiLambdaIN(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiLambdaEX(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
 
-    template <typename T>
-    void ApplyMinv(const std::vector<T>& rhs, std::vector<T>& solution);
+    template <typename InputArrayType>
+    decltype(auto) ApplyMinv(const InputArrayType& rhs);
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
@@ -73,48 +73,47 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
         this->int_lambda_fact = transpose(this->lambda_gp);
         for (uint dof = 0; dof < ndof; dof++) {
             for (uint gp = 0; gp < ngp; gp++) {
-                this->int_lambda_fact(dof, gp) *= integration_rule.first[gp] * surface_J[0];
+                this->int_lambda_fact(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
-        this->int_lambda_lambda_fact.resize(std::pow(ndof, 2), ngp);
+        this->int_lambda_lambda_fact.resize(ngp, std::pow(ndof, 2));
         for (uint dof_i = 0; dof_i < ndof; dof_i++) {
             for (uint dof_j = 0; dof_j < ndof; dof_j++) {
                 uint lookup = ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
-                    this->int_lambda_lambda_fact(lookup, gp) =
-                        this->lambda_gp(gp, dof_i) * this->int_lambda_fact(dof_j, gp);
+                    this->int_lambda_lambda_fact(gp, lookup) =
+                        this->lambda_gp(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
             }
         }
 
         uint ndof_loc_in = this->interface.data_in.get_ndof();
-        this->int_phi_lambda_fact_in.resize(ndof * ndof_loc_in, ngp);
+        this->int_phi_lambda_fact_in.resize(ngp, ndof * ndof_loc_in);
         for (uint dof_i = 0; dof_i < ndof_loc_in; dof_i++) {
             for (uint dof_j = 0; dof_j < ndof; dof_j++) {
                 uint lookup = ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
-                    this->int_phi_lambda_fact_in(lookup, gp) =
-                        this->interface.phi_gp_in(gp, dof_i) * this->int_lambda_fact(dof_j, gp);
+                    this->int_phi_lambda_fact_in(gp, lookup) =
+                        this->interface.phi_gp_in(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
             }
         }
 
         uint ndof_loc_ex = this->interface.data_ex.get_ndof();
-        this->int_phi_lambda_fact_ex.resize(ndof * ndof_loc_ex, ngp);
+        this->int_phi_lambda_fact_ex.resize(ngp, ndof * ndof_loc_ex);
         for (uint dof_i = 0; dof_i < ndof_loc_ex; dof_i++) {
             for (uint dof_j = 0; dof_j < ndof; dof_j++) {
                 uint lookup = ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
                     uint gp_ex = ngp - gp - 1;
-                    this->int_phi_lambda_fact_ex(lookup, gp) =
-                        this->interface.phi_gp_ex(gp, dof_i) * this->int_lambda_fact(dof_j, gp_ex);
+                    this->int_phi_lambda_fact_ex(gp, lookup) =
+                        this->interface.phi_gp_ex(dof_i, gp) * this->int_lambda_fact(gp_ex, dof_j);
                 }
             }
         }
 
-        this->m_inv = basis.GetMinv(p);
-        this->m_inv.second /= surface_J[0];
+        this->m_inv = basis.GetMinv(p) / surface_J[0];
     }
 
     this->edge_data.set_ndof(ndof);
@@ -124,118 +123,72 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(const std::vector<T>& u_gp,
-                                                                                    std::vector<T>& projection) {
-    std::vector<T> rhs;
-
-    for (uint dof = 0; dof < this->edge_data.get_ndof(); dof++) {
-        rhs.push_back(this->IntegrationLambda(dof, u_gp));
-    }
-
-    this->ApplyMinv(rhs, projection);
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(
+    const InputArrayType& u_gp) {
+    // *** //
+    return this->ApplyMinv(u_gp * this->int_lambda_fact);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ComputeUgp(const std::vector<T>& u,
-                                                                                  std::vector<T>& u_gp) {
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->lambda_gp(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ComputeUgp(
+    const InputArrayType& u) {
+    // u_gp(q, gp) = u(q, dof) * lambda_gp(dof, gp)
+    return u * this->lambda_gp;
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-T EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambda(const uint dof,
-                                                                                      const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_lambda_fact(dof, gp);
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambda(
+    const uint dof,
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_lambda_fact(gp, dof)
+    return u_gp * column(this->int_lambda_fact, dof);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-T EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambdaLambda(
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationLambdaLambda(
     const uint dof_i,
     const uint dof_j,
-    const std::vector<T>& u_gp) {
-    // *** //
-    T integral;
-
-    integral = 0.0;
-
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * int_lambda_lambda_fact(gp, lookup)
     uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_lambda_lambda_fact(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_lambda_lambda_fact, lookup);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-T EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationPhiLambdaIN(const uint dof_i,
-                                                                                           const uint dof_j,
-                                                                                           const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationPhiLambdaIN(
+    const uint dof_i,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * int_phi_lambda_fact(gp, lookup)
     uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_lambda_fact_in(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_lambda_fact_in, lookup);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-T EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationPhiLambdaEX(const uint dof_i,
-                                                                                           const uint dof_j,
-                                                                                           const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::IntegrationPhiLambdaEX(
+    const uint dof_i,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * int_phi_lambda_fact(gp, lookup)
     uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_lambda_fact_ex(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_lambda_fact_ex, lookup);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-template <typename T>
-void EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ApplyMinv(const std::vector<T>& rhs,
-                                                                                 std::vector<T>& solution) {
-    if (this->m_inv.first) {  // diagonal
-        for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = this->m_inv.second(i, i) * rhs[i];
-        }
-    } else if (!(this->m_inv.first)) {  // not diagonal
-        for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = 0.0;
-            for (uint j = 0; j < rhs.size(); j++) {
-                solution[i] += this->m_inv.second(i, j) * rhs[j];
-            }
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::ApplyMinv(
+    const InputArrayType& rhs) {
+    // solution(q, dof) = rhs(q, dof) * this->m_inv(dof, dof)
+    return rhs * this->m_inv;
 }
 }
 

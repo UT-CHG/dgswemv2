@@ -17,6 +17,8 @@ using StatMatrix = blaze::StaticMatrix<T, m, n>;
 template <typename T>
 using DynVector = blaze::DynamicVector<T>;
 template <typename T>
+using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
+template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
 
 template <typename T>
@@ -40,7 +42,7 @@ DynVector<T> IdentityVector(uint size) {
 
 /* Vector/Matrix (aka Tensor) Operations */
 template <typename TensorType>
-decltype(auto) transpose(TensorType& tensor) {
+decltype(auto) transpose(const TensorType& tensor) {
     return blaze::trans(tensor);
 }
 
@@ -66,7 +68,22 @@ StatMatrix<T, m, n> reshape(const StatVector<T, mn>& vector) {
     return StatMatrix<T, m, n>(m, n, vector.data());
 }
 
+template <typename T, uint n>
+DynMatrix<T> reshape_jacobian_vector(const DynVector<T>& vector) {
+    return DynMatrix<T>(n, n, vector.data());
+}
+
 /* Matrix Operations */
+template <typename MatrixType>
+uint rows(const MatrixType& matrix) {
+    return blaze::rows(matrix);
+}
+
+template <typename MatrixType>
+uint columns(const MatrixType& matrix) {
+    return blaze::columns(matrix);
+}
+
 template <typename MatrixType>
 decltype(auto) submatrix(MatrixType& matrix, uint start_row, uint start_col, uint size_row, uint size_col) {
     return blaze::submatrix(matrix, start_row, start_col, size_row, size_col);

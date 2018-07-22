@@ -17,7 +17,7 @@ class EdgeBoundary {
     DynMatrix<double> int_lambda_lambda_fact;
     DynMatrix<double> int_phi_lambda_fact;
 
-    std::pair<bool, DynMatrix<double>> m_inv;
+    DynMatrix<double> m_inv;
 
   public:
     EdgeBoundary(BoundaryType& boundary);
@@ -25,21 +25,21 @@ class EdgeBoundary {
     uint GetID() { return this->ID; }
     void SetID(uint ID) { this->ID = ID; }
 
-    template <typename T>
-    void L2Projection(const std::vector<T>& u_gp, std::vector<T>& projection);
+    template <typename InputArrayType>
+    decltype(auto) L2Projection(const InputArrayType& u_gp);
 
-    template <typename T>
-    void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeUgp(const InputArrayType& u);
 
-    template <typename T>
-    T IntegrationLambda(const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiLambda(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationLambda(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationLambdaLambda(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiLambda(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
 
-    template <typename T>
-    void ApplyMinv(const std::vector<T>& rhs, std::vector<T>& solution);
+    template <typename InputArrayType>
+    decltype(auto) ApplyMinv(const InputArrayType& rhs);
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
@@ -68,35 +68,34 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
         this->int_lambda_fact = transpose(this->lambda_gp);
         for (uint dof = 0; dof < ndof; dof++) {
             for (uint gp = 0; gp < ngp; gp++) {
-                this->int_lambda_fact(dof, gp) *= integration_rule.first[gp] * surface_J[0];
+                this->int_lambda_fact(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
-        this->int_lambda_lambda_fact.resize(std::pow(ndof, 2), ngp);
+        this->int_lambda_lambda_fact.resize(ngp, std::pow(ndof, 2));
         for (uint dof_i = 0; dof_i < ndof; dof_i++) {
             for (uint dof_j = 0; dof_j < ndof; dof_j++) {
                 uint lookup = ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
-                    this->int_lambda_lambda_fact(lookup, gp) =
-                        this->lambda_gp(gp, dof_i) * this->int_lambda_fact(dof_j, gp);
+                    this->int_lambda_lambda_fact(gp, lookup) =
+                        this->lambda_gp(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
             }
         }
 
         uint ndof_loc = this->boundary.data.get_ndof();
-        this->int_phi_lambda_fact.resize(ndof * ndof_loc, ngp);
+        this->int_phi_lambda_fact.resize(ngp, ndof * ndof_loc);
         for (uint dof_i = 0; dof_i < ndof_loc; dof_i++) {
             for (uint dof_j = 0; dof_j < ndof; dof_j++) {
                 uint lookup = ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < ngp; gp++) {
-                    this->int_phi_lambda_fact(lookup, gp) =
-                        this->boundary.phi_gp(gp, dof_i) * this->int_lambda_fact(dof_j, gp);
+                    this->int_phi_lambda_fact(gp, lookup) =
+                        this->boundary.phi_gp(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
             }
         }
 
-        this->m_inv = basis.GetMinv(this->boundary.GetMaster().p);
-        this->m_inv.second /= surface_J[0];
+        this->m_inv = basis.GetMinv(this->boundary.GetMaster().p) / surface_J[0];
     }
 
     this->edge_data.set_ndof(ndof);
@@ -106,98 +105,60 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-template <typename T>
-void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::L2Projection(const std::vector<T>& u_gp,
-                                                                                  std::vector<T>& projection) {
-    std::vector<T> rhs;
-
-    for (uint dof = 0; dof < this->edge_data.get_ndof(); dof++) {
-        rhs.push_back(this->IntegrationLambda(dof, u_gp));
-    }
-
-    this->ApplyMinv(rhs, projection);
+template <typename InputArrayType>
+inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::L2Projection(
+    const InputArrayType& u_gp) {
+    // *** //
+    return this->ApplyMinv(u_gp * this->int_lambda_fact);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-template <typename T>
-void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ComputeUgp(const std::vector<T>& u,
-                                                                                std::vector<T>& u_gp) {
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->lambda_gp(gp, dof);
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ComputeUgp(
+    const InputArrayType& u) {
+    // u_gp(q, gp) = u(q, dof) * lambda_gp(dof, gp)
+    return u * this->lambda_gp;
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-template <typename T>
-T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambda(const uint dof,
-                                                                                    const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_lambda_fact(dof, gp);
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambda(
+    const uint dof,
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_lambda_fact(gp, dof)
+    return u_gp * column(this->int_lambda_fact, dof);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-template <typename T>
-T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambdaLambda(const uint dof_i,
-                                                                                          const uint dof_j,
-                                                                                          const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+template <typename InputArrayType>
+inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationLambdaLambda(
+    const uint dof_i,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * int_lambda_lambda_fact(gp, lookup)
     uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_lambda_lambda_fact(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_lambda_lambda_fact, lookup);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-template <typename T>
-T EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationPhiLambda(const uint dof_i,
-                                                                                       const uint dof_j,
-                                                                                       const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+template <typename InputArrayType>
+inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::IntegrationPhiLambda(
+    const uint dof_i,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * int_phi_lambda_fact(gp, lookup)
     uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_lambda_fact(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_lambda_fact, lookup);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-template <typename T>
-void EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ApplyMinv(const std::vector<T>& rhs,
-                                                                               std::vector<T>& solution) {
-    if (this->m_inv.first) {  // diagonal
-        for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = this->m_inv.second(i, i) * rhs[i];
-        }
-    } else if (!(this->m_inv.first)) {  // not diagonal
-        for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = 0.0;
-            for (uint j = 0; j < rhs.size(); j++) {
-                solution[i] += this->m_inv.second(i, j) * rhs[j];
-            }
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::ApplyMinv(
+    const InputArrayType& rhs) {
+    // solution(q, dof) = rhs(q, dof) * this->m_inv(dof, dof)
+    return rhs * this->m_inv;
 }
 }
 

@@ -17,8 +17,8 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
     edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+            edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
     }
 
     // Add tau * del_q terms to F_hat

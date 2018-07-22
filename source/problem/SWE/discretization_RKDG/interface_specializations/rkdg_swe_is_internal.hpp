@@ -32,13 +32,13 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         gp_ex = ngp - gp - 1;
 
         LLF_flux(Global::g,
-                 boundary_in.q_at_gp[gp],
-                 boundary_ex.q_at_gp[gp_ex],
+                 row(boundary_in.q_at_gp, gp),
+                 row(boundary_ex.q_at_gp, gp_ex),
                  boundary_in.aux_at_gp[gp],
                  intface.surface_normal_in[gp],
-                 boundary_in.F_hat_at_gp[gp]);
+                 row(boundary_in.F_hat_at_gp, gp));
 
-        boundary_ex.F_hat_at_gp[gp_ex] = -boundary_in.F_hat_at_gp[gp];
+        row(boundary_ex.F_hat_at_gp, gp_ex) = -row(boundary_in.F_hat_at_gp, gp);
     }
 
     // compute net volume flux out of IN/EX elements
@@ -69,11 +69,11 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 gp_ex = ngp - gp - 1;
 
                 LLF_flux(0.0,
-                         boundary_ex.q_at_gp[gp_ex],
-                         boundary_in.q_at_gp[gp],
+                         row(boundary_ex.q_at_gp, gp_ex),
+                         row(boundary_in.q_at_gp, gp),
                          boundary_ex.aux_at_gp[gp_ex],
                          intface.surface_normal_ex[gp_ex],
-                         boundary_ex.F_hat_at_gp[gp_ex]);
+                         row(boundary_ex.F_hat_at_gp, gp_ex));
             }
 
             net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
@@ -100,11 +100,11 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 gp_ex = ngp - gp - 1;
 
                 LLF_flux(0.0,
-                         boundary_in.q_at_gp[gp],
-                         boundary_ex.q_at_gp[gp_ex],
+                         row(boundary_in.q_at_gp, gp),
+                         row(boundary_ex.q_at_gp, gp_ex),
                          boundary_in.aux_at_gp[gp],
                          intface.surface_normal_in[gp],
-                         boundary_in.F_hat_at_gp[gp]);
+                         row(boundary_in.F_hat_at_gp, gp));
             }
 
             net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];

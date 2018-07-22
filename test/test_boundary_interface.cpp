@@ -53,65 +53,68 @@ int main() {
     Integration::Dunavant_2D integ_2D;
     DynVector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
 
-    std::vector<double> x(gp_2D.size());
-    std::vector<double> y(gp_2D.size());
+    DynMatrix<double> x_node(1, 3);
+    DynMatrix<double> y_node(1, 3);
 
-    triangle.ComputeNodalUgp({-0.5, 0.5, 0}, x);
-    triangle.ComputeNodalUgp({0, 0, std::sqrt(3.) / 2.}, y);
+    x_node(0, 0) = -0.5;
+    x_node(0, 1) = 0.5;
+    x_node(0, 2) = 0.0;
 
-    Array2D<double> F_vals_int(2);
-    F_vals_int[GlobalCoord::x].resize(triangle.data.get_ngp_internal());
-    F_vals_int[GlobalCoord::y].resize(triangle.data.get_ngp_internal());
+    y_node(0, 0) = 0.0;
+    y_node(0, 1) = 0.0;
+    y_node(0, 2) = std::sqrt(3.0) / 2.0;
 
-    std::vector<double> divF_vals_int(triangle.data.get_ngp_internal());
+    DynMatrix<double> x(1, triangle.data.get_ngp_internal());
+    DynMatrix<double> y(1, triangle.data.get_ngp_internal());
+
+    x = triangle.ComputeNodalUgp(x_node);
+    y = triangle.ComputeNodalUgp(y_node);
+
+    DynMatrix<double> F_vals_int(2, triangle.data.get_ngp_internal());
+    DynMatrix<double> divF_vals_int(1, triangle.data.get_ngp_internal());
 
     for (uint gp = 0; gp < triangle.data.get_ngp_internal(); gp++) {
-        F_vals_int[GlobalCoord::x][gp] = std::pow(x[gp], 2);
-        F_vals_int[GlobalCoord::y][gp] = std::pow(y[gp], 2);
+        F_vals_int(GlobalCoord::x, gp) = std::pow(x(0, gp), 2);
+        F_vals_int(GlobalCoord::y, gp) = std::pow(y(0, gp), 2);
 
-        divF_vals_int[gp] = 2 * x[gp] + 2 * y[gp];
+        divF_vals_int(0, gp) = 2 * x(0, gp) + 2 * y(0, gp);
     }
 
     Integration::GaussLegendre_1D integ_1D;
     DynVector<Point<1>> gp_1D = integ_1D.GetRule(21).second;
     DynVector<Point<2>> gp_bound;
 
-    Array2D<double> F_vals_bound(2);
-    F_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));
-    F_vals_bound[1].resize(triangle.data.get_ngp_boundary(0));
-
-    Array2D<double> Fn_vals_bound(3);
-    Fn_vals_bound[0].resize(triangle.data.get_ngp_boundary(0));
-    Fn_vals_bound[1].resize(triangle.data.get_ngp_boundary(0));
-    Fn_vals_bound[2].resize(triangle.data.get_ngp_boundary(0));
+    DynMatrix<double> F_vals_bound(2, triangle.data.get_ngp_boundary(0));
+    DynMatrix<double> Fn_vals_bound(3, triangle.data.get_ngp_boundary(0));
 
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
 
-        x.resize(triangle.data.get_ngp_boundary(0));
-        y.resize(triangle.data.get_ngp_boundary(0));
+        x.resize(1, triangle.data.get_ngp_boundary(0));
+        y.resize(1, triangle.data.get_ngp_boundary(0));
 
-        boundaries[n_bound].ComputeNodalUgp({-0.5, 0.5, 0}, x);
-        boundaries[n_bound].ComputeNodalUgp({0, 0, std::sqrt(3.) / 2.}, y);
+        x = boundaries[n_bound].ComputeNodalUgp(x_node);
+        y = boundaries[n_bound].ComputeNodalUgp(y_node);
 
         for (uint gp = 0; gp < triangle.data.get_ngp_boundary(0); gp++) {
-            F_vals_bound[GlobalCoord::x][gp] = std::pow(x[gp], 2);
-            F_vals_bound[GlobalCoord::y][gp] = std::pow(y[gp], 2);
+            F_vals_bound(GlobalCoord::x, gp) = std::pow(x(0, gp), 2);
+            F_vals_bound(GlobalCoord::y, gp) = std::pow(y(0, gp), 2);
 
-            Fn_vals_bound[n_bound][gp] =
-                F_vals_bound[GlobalCoord::x][gp] * boundaries[n_bound].surface_normal[gp][GlobalCoord::x] +
-                F_vals_bound[GlobalCoord::y][gp] * boundaries[n_bound].surface_normal[gp][GlobalCoord::y];
+            Fn_vals_bound(n_bound, gp) =
+                F_vals_bound(GlobalCoord::x, gp) * boundaries[n_bound].surface_normal[gp][GlobalCoord::x] +
+                F_vals_bound(GlobalCoord::y, gp) * boundaries[n_bound].surface_normal[gp][GlobalCoord::y];
         }
     }
+
     double divergence;
 
     for (uint dof = 0; dof < 66; dof++) {
-        divergence = triangle.IntegrationPhi(dof, divF_vals_int) +
-                     triangle.IntegrationDPhi(GlobalCoord::x, dof, F_vals_int[GlobalCoord::x]) +
-                     triangle.IntegrationDPhi(GlobalCoord::y, dof, F_vals_int[GlobalCoord::y]) -
-                     boundaries[0].IntegrationPhi(dof, Fn_vals_bound[0]) -
-                     boundaries[1].IntegrationPhi(dof, Fn_vals_bound[1]) -
-                     boundaries[2].IntegrationPhi(dof, Fn_vals_bound[2]);
+        divergence = triangle.IntegrationPhi(dof, row(divF_vals_int, 0)) +
+                     triangle.IntegrationDPhi(GlobalCoord::x, dof, row(F_vals_int, GlobalCoord::x)) +
+                     triangle.IntegrationDPhi(GlobalCoord::y, dof, row(F_vals_int, GlobalCoord::y)) -
+                     boundaries[0].IntegrationPhi(dof, row(Fn_vals_bound, 0)) -
+                     boundaries[1].IntegrationPhi(dof, row(Fn_vals_bound, 1)) -
+                     boundaries[2].IntegrationPhi(dof, row(Fn_vals_bound, 2));
 
         if (!almost_equal(divergence, 0.0, 1.e+03)) {
             error_found = true;
@@ -120,19 +123,19 @@ int main() {
         }
     }
 
-    std::vector<double> mod_vals(triangle.data.get_ndof());
-    std::vector<double> gp_vals(triangle.data.get_ngp_boundary(0));
-    std::vector<double> unit(triangle.data.get_ngp_boundary(0), 1.0);
+    DynMatrix<double> mod_vals(1, triangle.data.get_ndof());
+    DynMatrix<double> gp_vals(1, triangle.data.get_ngp_boundary(0));
+    DynMatrix<double> unit(1, triangle.data.get_ngp_boundary(0), 1.0);
 
     // Check ComputeUgp
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-        mod_vals[dof] = 1.0;
+        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        row(mod_vals, 0)[dof] = 1.0;
 
         for (uint n_bound = 0; n_bound < 3; n_bound++) {
-            boundaries[n_bound].ComputeUgp(mod_vals, gp_vals);
-            if (!almost_equal(boundaries[n_bound].IntegrationPhi(dof, unit),
-                              boundaries[n_bound].IntegrationPhi(0, gp_vals),
+            gp_vals = boundaries[n_bound].ComputeUgp(mod_vals);
+            if (!almost_equal(boundaries[n_bound].IntegrationPhi(dof, unit)[0],
+                              boundaries[n_bound].IntegrationPhi(0, gp_vals)[0],
                               1.e+03)) {
                 error_found = true;
 
@@ -142,11 +145,14 @@ int main() {
     }
 
     // Check ComputeNodalUgp, ComputeBoundaryNodalUgp and Integration
-    std::vector<double> nodal_vals = {1.0, 2.0, 3.0};
-    std::vector<double> bound_nodal_vals(2);
+    DynMatrix<double> nodal_vals(1, 3);
+    nodal_vals(0, 0) = 1.0;
+    nodal_vals(0, 1) = 2.0;
+    nodal_vals(0, 2) = 3.0;
 
-    std::vector<double> nodal_vals_gp(gp_1D.size());
-    std::vector<double> nodal_vals_gp_comp(gp_1D.size());
+    DynMatrix<double> bound_nodal_vals(1, 2);
+    DynMatrix<double> nodal_vals_gp(1, gp_1D.size());
+    DynMatrix<double> nodal_vals_gp_comp(1, gp_1D.size());
 
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
@@ -154,42 +160,43 @@ int main() {
         DynMatrix<double> psi_gp = shape.GetPsi(gp_bound);
 
         for (uint gp = 0; gp < gp_bound.size(); gp++) {
-            nodal_vals_gp[gp] =
-                psi_gp(gp, 0) * nodal_vals[0] + psi_gp(gp, 1) * nodal_vals[1] + psi_gp(gp, 2) * nodal_vals[2];
+            nodal_vals_gp(0, gp) =
+                psi_gp(0, gp) * nodal_vals(0, 0) + psi_gp(1, gp) * nodal_vals(0, 1) + psi_gp(2, gp) * nodal_vals(0, 2);
         }
 
-        boundaries[n_bound].ComputeNodalUgp(nodal_vals, nodal_vals_gp_comp);
+        nodal_vals_gp_comp = boundaries[n_bound].ComputeNodalUgp(nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgp" << std::endl;
             }
         }
 
-        bound_nodal_vals[0] = nodal_vals[(n_bound + 1) % 3];
-        bound_nodal_vals[1] = nodal_vals[(n_bound + 2) % 3];
+        bound_nodal_vals(0, 0) = nodal_vals(0, (n_bound + 1) % 3);
+        bound_nodal_vals(0, 1) = nodal_vals(0, (n_bound + 2) % 3);
 
         DynMatrix<double> psi_bound_gp = shape.GetBoundaryPsi(n_bound, gp_1D);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            nodal_vals_gp[gp] = psi_bound_gp(gp, 0) * bound_nodal_vals[0] + psi_bound_gp(gp, 1) * bound_nodal_vals[1];
+            nodal_vals_gp(0, gp) =
+                psi_bound_gp(0, gp) * bound_nodal_vals(0, 0) + psi_bound_gp(1, gp) * bound_nodal_vals(0, 1);
         }
 
-        boundaries[n_bound].ComputeBoundaryNodalUgp(bound_nodal_vals, nodal_vals_gp_comp);
+        nodal_vals_gp_comp = boundaries[n_bound].ComputeBoundaryNodalUgp(bound_nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeBoundaryNodalUgp" << std::endl;
             }
         }
 
-        double exact_integration = (nodal_vals[(n_bound + 1) % 3] + nodal_vals[(n_bound + 2) % 3]) / 2.0;
+        double exact_integration = (nodal_vals(0, (n_bound + 1) % 3) + nodal_vals(0, (n_bound + 2) % 3)) / 2.0;
 
-        if (!almost_equal(exact_integration, boundaries[n_bound].Integration(nodal_vals_gp_comp))) {
+        if (!almost_equal(exact_integration, boundaries[n_bound].Integration(nodal_vals_gp_comp)[0])) {
             error_found = true;
 
             std::cerr << "Error found in boundary in Integration" << std::endl;
@@ -199,14 +206,14 @@ int main() {
     // Check integrations PhiPhi
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-            mod_vals[dof] = 1.0;
+            std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+            row(mod_vals, 0)[dof] = 1.0;
 
-            boundaries[n_bound].ComputeUgp(mod_vals, gp_vals);
+            gp_vals = boundaries[n_bound].ComputeUgp(mod_vals);
 
             for (uint doff = 0; doff < 66; doff++) {
-                if (!almost_equal(boundaries[n_bound].IntegrationPhi(doff, gp_vals),
-                                  boundaries[n_bound].IntegrationPhiPhi(dof, doff, unit),
+                if (!almost_equal(boundaries[n_bound].IntegrationPhi(doff, gp_vals)[0],
+                                  boundaries[n_bound].IntegrationPhiPhi(dof, doff, unit)[0],
                                   1.e+03)) {
                     error_found = true;
 
@@ -225,19 +232,19 @@ int main() {
 
     // Check IntegrationPhiIN/EX
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-        mod_vals[dof] = 1.0;
+        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        row(mod_vals, 0)[dof] = 1.0;
 
         for (uint n_intface = 0; n_intface < 3; n_intface++) {
-            if (!almost_equal(boundaries[n_intface].IntegrationPhi(dof, Fn_vals_bound[n_intface]),
-                              interfaces[n_intface].IntegrationPhiIN(dof, Fn_vals_bound[n_intface]))) {
+            if (!almost_equal(boundaries[n_intface].IntegrationPhi(dof, row(Fn_vals_bound, n_intface)),
+                              interfaces[n_intface].IntegrationPhiIN(dof, row(Fn_vals_bound, n_intface)))) {
                 error_found = true;
 
                 std::cerr << "Error found in interface in IntegrationPhiIN" << std::endl;
             }
 
-            if (!almost_equal(boundaries[n_intface].IntegrationPhi(dof, Fn_vals_bound[n_intface]),
-                              interfaces[n_intface].IntegrationPhiEX(dof, Fn_vals_bound[n_intface]))) {
+            if (!almost_equal(boundaries[n_intface].IntegrationPhi(dof, row(Fn_vals_bound, n_intface)),
+                              interfaces[n_intface].IntegrationPhiEX(dof, row(Fn_vals_bound, n_intface)))) {
                 error_found = true;
 
                 std::cerr << "Error found in interface in IntegrationPhiEX" << std::endl;
@@ -247,22 +254,22 @@ int main() {
 
     // Check ComputeUgpIN/EX
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-        mod_vals[dof] = 1.0;
+        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        row(mod_vals, 0)[dof] = 1.0;
 
         for (uint n_intface = 0; n_intface < 3; n_intface++) {
-            interfaces[n_intface].ComputeUgpIN(mod_vals, gp_vals);
-            if (!almost_equal(interfaces[n_intface].IntegrationPhiIN(dof, unit),
-                              interfaces[n_intface].IntegrationPhiIN(0, gp_vals),
+            gp_vals = interfaces[n_intface].ComputeUgpIN(mod_vals);
+            if (!almost_equal(interfaces[n_intface].IntegrationPhiIN(dof, unit)[0],
+                              interfaces[n_intface].IntegrationPhiIN(0, gp_vals)[0],
                               1.e+03)) {
                 error_found = true;
 
                 std::cerr << "Error found in interface in ComputeUgpIN" << std::endl;
             }
 
-            interfaces[n_intface].ComputeUgpEX(mod_vals, gp_vals);
-            if (!almost_equal(interfaces[n_intface].IntegrationPhiEX(dof, unit),
-                              interfaces[n_intface].IntegrationPhiEX(0, gp_vals),
+            gp_vals = interfaces[n_intface].ComputeUgpEX(mod_vals);
+            if (!almost_equal(interfaces[n_intface].IntegrationPhiEX(dof, unit)[0],
+                              interfaces[n_intface].IntegrationPhiEX(0, gp_vals)[0],
                               1.e+03)) {
                 error_found = true;
 
@@ -278,51 +285,52 @@ int main() {
         DynMatrix<double> psi_gp = shape.GetPsi(gp_bound);
 
         for (uint gp = 0; gp < gp_bound.size(); gp++) {
-            nodal_vals_gp[gp] =
-                psi_gp(gp, 0) * nodal_vals[0] + psi_gp(gp, 1) * nodal_vals[1] + psi_gp(gp, 2) * nodal_vals[2];
+            nodal_vals_gp(0, gp) =
+                psi_gp(0, gp) * nodal_vals(0, 0) + psi_gp(1, gp) * nodal_vals(0, 1) + psi_gp(2, gp) * nodal_vals(0, 2);
         }
 
-        interfaces[n_intface].ComputeNodalUgpIN(nodal_vals, nodal_vals_gp_comp);
+        nodal_vals_gp_comp = interfaces[n_intface].ComputeNodalUgpIN(nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgpIN" << std::endl;
             }
         }
 
-        bound_nodal_vals[0] = nodal_vals[(n_intface + 1) % 3];
-        bound_nodal_vals[1] = nodal_vals[(n_intface + 2) % 3];
+        bound_nodal_vals(0, 0) = nodal_vals(0, (n_intface + 1) % 3);
+        bound_nodal_vals(0, 1) = nodal_vals(0, (n_intface + 2) % 3);
 
         DynMatrix<double> psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            nodal_vals_gp[gp] = psi_bound_gp(gp, 0) * bound_nodal_vals[0] + psi_bound_gp(gp, 1) * bound_nodal_vals[1];
+            nodal_vals_gp(0, gp) =
+                psi_bound_gp(0, gp) * bound_nodal_vals(0, 0) + psi_bound_gp(1, gp) * bound_nodal_vals(0, 1);
         }
 
-        interfaces[n_intface].ComputeBoundaryNodalUgpIN(bound_nodal_vals, nodal_vals_gp_comp);
+        nodal_vals_gp_comp = interfaces[n_intface].ComputeBoundaryNodalUgpIN(bound_nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeBoundaryNodalUgpIN" << std::endl;
             }
         }
 
-        double exact_integration = (nodal_vals[(n_intface + 1) % 3] + nodal_vals[(n_intface + 2) % 3]) / 2.0;
+        double exact_integration = (nodal_vals(0, (n_intface + 1) % 3) + nodal_vals(0, (n_intface + 2) % 3)) / 2.0;
 
-        if (!almost_equal(exact_integration, interfaces[n_intface].IntegrationIN(nodal_vals_gp_comp))) {
+        if (!almost_equal(exact_integration, interfaces[n_intface].IntegrationIN(nodal_vals_gp_comp)[0])) {
             error_found = true;
 
             std::cerr << "Error found in boundary in IntegrationIN" << std::endl;
         }
 
-        interfaces[n_intface].ComputeNodalUgpEX(nodal_vals, nodal_vals_gp_comp);
+        nodal_vals_gp_comp = interfaces[n_intface].ComputeNodalUgpEX(nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgpEX" << std::endl;
@@ -332,20 +340,21 @@ int main() {
         psi_bound_gp = shape.GetBoundaryPsi(n_intface, gp_1D);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            nodal_vals_gp[gp] = psi_bound_gp(gp, 0) * bound_nodal_vals[0] + psi_bound_gp(gp, 1) * bound_nodal_vals[1];
+            nodal_vals_gp(0, gp) =
+                psi_bound_gp(0, gp) * bound_nodal_vals(0, 0) + psi_bound_gp(1, gp) * bound_nodal_vals(0, 1);
         }
 
-        interfaces[n_intface].ComputeBoundaryNodalUgpEX(bound_nodal_vals, nodal_vals_gp_comp);
+        nodal_vals_gp_comp = interfaces[n_intface].ComputeBoundaryNodalUgpEX(bound_nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); gp++) {
-            if (!almost_equal(nodal_vals_gp[gp], nodal_vals_gp_comp[gp])) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeBoundaryNodalUgpEX" << std::endl;
             }
         }
 
-        if (!almost_equal(exact_integration, interfaces[n_intface].IntegrationEX(nodal_vals_gp_comp))) {
+        if (!almost_equal(exact_integration, interfaces[n_intface].IntegrationEX(nodal_vals_gp_comp)[0])) {
             error_found = true;
 
             std::cerr << "Error found in boundary in IntegrationEX" << std::endl;
@@ -355,14 +364,14 @@ int main() {
     // Check integrations PhiPhi
     for (uint n_intface = 0; n_intface < 3; n_intface++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-            mod_vals[dof] = 1.0;
+            std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+            row(mod_vals, 0)[dof] = 1.0;
 
-            interfaces[n_intface].ComputeUgpIN(mod_vals, gp_vals);
+            gp_vals = interfaces[n_intface].ComputeUgpIN(mod_vals);
 
             for (uint doff = 0; doff < 66; doff++) {
-                if (!almost_equal(interfaces[n_intface].IntegrationPhiIN(doff, gp_vals),
-                                  interfaces[n_intface].IntegrationPhiPhiIN(dof, doff, unit),
+                if (!almost_equal(interfaces[n_intface].IntegrationPhiIN(doff, gp_vals)[0],
+                                  interfaces[n_intface].IntegrationPhiPhiIN(dof, doff, unit)[0],
                                   1.e+03)) {
                     error_found = true;
 
@@ -370,11 +379,11 @@ int main() {
                 }
             }
 
-            interfaces[n_intface].ComputeUgpEX(mod_vals, gp_vals);
+            gp_vals = interfaces[n_intface].ComputeUgpEX(mod_vals);
 
             for (uint doff = 0; doff < 66; doff++) {
-                if (!almost_equal(interfaces[n_intface].IntegrationPhiEX(doff, gp_vals),
-                                  interfaces[n_intface].IntegrationPhiPhiEX(dof, doff, unit),
+                if (!almost_equal(interfaces[n_intface].IntegrationPhiEX(doff, gp_vals)[0],
+                                  interfaces[n_intface].IntegrationPhiPhiEX(dof, doff, unit)[0],
                                   1.e+03)) {
                     error_found = true;
 

@@ -34,7 +34,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         elt.ComputeNodalDUgp(bathymetry, internal.dbath_at_gp);
 
         for (uint gp = 0; gp < ngp; gp++) {
-            internal.aux_at_gp[gp][SWE::Auxiliaries::bath] = bath_at_gp[gp];
+            internal.aux_at_gp(SWE::Auxiliaries::bath, gp) = bath_at_gp[gp];
         }
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
@@ -99,8 +99,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         for (uint gp = 0; gp < ngp; gp++) {
             gp_ex = ngp - gp - 1;
 
-            boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath]    = bath_at_gp[gp];
-            boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::bath] = bath_at_gp[gp];
+            boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp)    = bath_at_gp[gp];
+            boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex) = bath_at_gp[gp];
         }
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
@@ -153,7 +153,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
         bound.ComputeNodalUgp(bathymetry, bath_at_gp);
 
         for (uint gp = 0; gp < ngp; gp++) {
-            boundary.aux_at_gp[gp][SWE::Auxiliaries::bath] = bath_at_gp[gp];
+            boundary.aux_at_gp(SWE::Auxiliaries::bath, gp) = bath_at_gp[gp];
         }
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
@@ -383,7 +383,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
         dbound.ComputeNodalUgp(bathymetry, bath_at_gp);
 
         for (uint gp = 0; gp < ngp; gp++) {
-            boundary.aux_at_gp[gp][SWE::Auxiliaries::bath] = bath_at_gp[gp];
+            boundary.aux_at_gp(SWE::Auxiliaries::bath, gp) = bath_at_gp[gp];
         }
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {

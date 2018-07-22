@@ -10,11 +10,11 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    dbound.ComputeUgp(state.q, boundary.q_at_gp);
+    boundary.q_at_gp = dbound.ComputeUgp(state.q);
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        boundary.aux_at_gp[gp][SWE::Auxiliaries::h] =
-            boundary.q_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+        boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
+            boundary.q_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
     }
 
     /* Compute fluxes at boundary state */
@@ -26,19 +26,19 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
         nx = dbound.surface_normal[gp][GlobalCoord::x];
         ny = dbound.surface_normal[gp][GlobalCoord::y];
 
-        u = boundary.q_at_gp[gp][SWE::Variables::qx] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
-        v = boundary.q_at_gp[gp][SWE::Variables::qy] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
+        u = boundary.q_at_gp(SWE::Variables::qx, gp) / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
+        v = boundary.q_at_gp(SWE::Variables::qy, gp) / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
 
-        uuh = u * boundary.q_at_gp[gp][SWE::Variables::qx];
-        vvh = v * boundary.q_at_gp[gp][SWE::Variables::qy];
-        uvh = u * boundary.q_at_gp[gp][SWE::Variables::qy];
-        pe  = Global::g * (0.5 * std::pow(boundary.q_at_gp[gp][SWE::Variables::ze], 2) +
-                          boundary.q_at_gp[gp][SWE::Variables::ze] * boundary.aux_at_gp[gp][SWE::Auxiliaries::bath]);
+        uuh = u * boundary.q_at_gp(SWE::Variables::qx, gp);
+        vvh = v * boundary.q_at_gp(SWE::Variables::qy, gp);
+        uvh = u * boundary.q_at_gp(SWE::Variables::qy, gp);
+        pe  = Global::g * (0.5 * std::pow(boundary.q_at_gp(SWE::Variables::ze, gp), 2) +
+                          boundary.q_at_gp(SWE::Variables::ze, gp) * boundary.aux_at_gp(SWE::Auxiliaries::bath, gp));
 
-        boundary.Fn_at_gp[gp][SWE::Variables::ze] =
-            boundary.q_at_gp[gp][SWE::Variables::qx] * nx + boundary.q_at_gp[gp][SWE::Variables::qy] * ny;
-        boundary.Fn_at_gp[gp][SWE::Variables::qx] = (uuh + pe) * nx + uvh * ny;
-        boundary.Fn_at_gp[gp][SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
+        boundary.Fn_at_gp(SWE::Variables::ze, gp) =
+            boundary.q_at_gp(SWE::Variables::qx, gp) * nx + boundary.q_at_gp(SWE::Variables::qy, gp) * ny;
+        boundary.Fn_at_gp(SWE::Variables::qx, gp) = (uuh + pe) * nx + uvh * ny;
+        boundary.Fn_at_gp(SWE::Variables::qy, gp) = uvh * nx + (vvh + pe) * ny;
     }
 
     dbound.boundary_condition.exchanger.SetEX(boundary.q_at_gp, boundary.Fn_at_gp);
@@ -53,7 +53,7 @@ void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, Distri
 
     // now compute contributions to the righthand side
     for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
-        state.rhs[dof] -= dbound.IntegrationPhi(dof, boundary.F_hat_at_gp);
+        column(state.rhs, dof) -= dbound.IntegrationPhi(dof, boundary.F_hat_at_gp);
     }
 }
 }

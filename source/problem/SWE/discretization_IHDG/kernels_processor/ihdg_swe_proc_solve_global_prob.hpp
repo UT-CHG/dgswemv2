@@ -79,9 +79,9 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         auto rhs_local = subvector(simulation->rhs_local, elt_ID * 9, 9);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q[dof][SWE::Variables::ze] += rhs_local[3 * dof];
-            state.q[dof][SWE::Variables::qx] += rhs_local[3 * dof + 1];
-            state.q[dof][SWE::Variables::qy] += rhs_local[3 * dof + 2];
+            state.q(SWE::Variables::ze, dof) += rhs_local[3 * dof];
+            state.q(SWE::Variables::qx, dof) += rhs_local[3 * dof + 1];
+            state.q(SWE::Variables::qy, dof) += rhs_local[3 * dof + 2];
         }
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
@@ -97,9 +97,9 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global[3 * dof + 2];
         }
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
@@ -115,9 +115,9 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global[3 * dof + 2];
         }
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {

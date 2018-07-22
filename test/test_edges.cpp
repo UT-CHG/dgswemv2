@@ -51,12 +51,12 @@ int main() {
 
     Integration::GaussLegendre_1D integration;
 
-    std::vector<double> u(11);                           // ndof for p = 10
-    std::vector<double> u_gp(integration.GetNumGP(21));  // ngp for 2*p+1
+    DynMatrix<double> u(1, 11);                           // ndof for p = 10
+    DynMatrix<double> u_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
 
-    std::vector<double> u_proj{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
-    std::vector<double> u_proj_res(11);
-    std::vector<double> u_proj_gp(integration.GetNumGP(21));  // ngp for 2*p+1
+    DynMatrix<double> u_proj{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0}};
+    DynMatrix<double> u_proj_res(1, 11);
+    DynMatrix<double> u_proj_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
 
     // generate edge boundaries
     std::vector<BoundaryType> boundaries;
@@ -72,11 +72,11 @@ int main() {
     }
 
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
-        edge_boundaries[n_bound].ComputeUgp(u_proj, u_proj_gp);
-        edge_boundaries[n_bound].L2Projection(u_proj_gp, u_proj_res);
+        u_proj_gp  = edge_boundaries[n_bound].ComputeUgp(u_proj);
+        u_proj_res = edge_boundaries[n_bound].L2Projection(u_proj_gp);
 
         for (uint dof = 0; dof < 11; dof++) {
-            if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
+            if (!almost_equal(u_proj(0, dof), u_proj_res(0, dof))) {
                 error_found = true;
 
                 std::cout << "Error found edge bound L2Projection" << std::endl;
@@ -85,14 +85,14 @@ int main() {
     }
 
     for (uint dof = 0; dof < 11; dof++) {
-        std::fill(u.begin(), u.end(), 0.0);
-        u[dof] = 1.0;
+        std::fill(row(u, 0).begin(), row(u, 0).end(), 0.0);
+        row(u, 0)[dof] = 1.0;
 
         for (uint n_bound = 0; n_bound < 3; n_bound++) {
             // just checking orthogonality of Legendre 1D poly
-            edge_boundaries[n_bound].ComputeUgp(u, u_gp);
+            u_gp = edge_boundaries[n_bound].ComputeUgp(u);
 
-            double inner_product = edge_boundaries[n_bound].IntegrationLambda(dof, u_gp);
+            double inner_product = edge_boundaries[n_bound].IntegrationLambda(dof, u_gp)[0];
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
@@ -100,9 +100,9 @@ int main() {
                 std::cout << "Error found edge bound int lambda" << std::endl;
             }
 
-            std::fill(u_gp.begin(), u_gp.end(), 1.0);
+            std::fill(row(u_gp, 0).begin(), row(u_gp, 0).end(), 1.0);
 
-            inner_product = edge_boundaries[n_bound].IntegrationLambdaLambda(dof, dof, u_gp);
+            inner_product = edge_boundaries[n_bound].IntegrationLambdaLambda(dof, dof, u_gp)[0];
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
@@ -126,11 +126,11 @@ int main() {
     }
 
     for (uint n_int = 0; n_int < 3; n_int++) {
-        edge_interfaces[n_int].ComputeUgp(u_proj, u_proj_gp);
-        edge_interfaces[n_int].L2Projection(u_proj_gp, u_proj_res);
+        u_proj_gp  = edge_interfaces[n_int].ComputeUgp(u_proj);
+        u_proj_res = edge_interfaces[n_int].L2Projection(u_proj_gp);
 
         for (uint dof = 0; dof < 11; dof++) {
-            if (!almost_equal(u_proj[dof], u_proj_res[dof])) {
+            if (!almost_equal(u_proj(0, dof), u_proj_res(0, dof))) {
                 error_found = true;
 
                 std::cout << "Error found edge int L2Projection" << std::endl;
@@ -139,14 +139,14 @@ int main() {
     }
 
     for (uint dof = 0; dof < 11; dof++) {
-        std::fill(u.begin(), u.end(), 0.0);
-        u[dof] = 1.0;
+        std::fill(row(u, 0).begin(), row(u, 0).end(), 0.0);
+        row(u, 0)[dof] = 1.0;
 
         for (uint n_int = 0; n_int < 3; n_int++) {
             // just checking orthogonality of Legendre 1D poly
-            edge_interfaces[n_int].ComputeUgp(u, u_gp);
+            u_gp = edge_interfaces[n_int].ComputeUgp(u);
 
-            double inner_product = edge_interfaces[n_int].IntegrationLambda(dof, u_gp);
+            double inner_product = edge_interfaces[n_int].IntegrationLambda(dof, u_gp)[0];
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
@@ -154,9 +154,9 @@ int main() {
                 std::cout << "Error found edge int int lambda" << std::endl;
             }
 
-            std::fill(u_gp.begin(), u_gp.end(), 1.0);
+            std::fill(row(u_gp, 0).begin(), row(u_gp, 0).end(), 1.0);
 
-            inner_product = edge_interfaces[n_int].IntegrationLambdaLambda(dof, dof, u_gp);
+            inner_product = edge_interfaces[n_int].IntegrationLambdaLambda(dof, dof, u_gp)[0];
 
             if (!almost_equal(inner_product, 1.0 / (2 * dof + 1))) {
                 error_found = true;
@@ -166,25 +166,25 @@ int main() {
         }
     }
 
-    std::vector<double> u_phi(66);                           // ndof for p = 10
-    std::vector<double> u_phi_gp(integration.GetNumGP(21));  // ngp for 2*p+1
-    std::vector<double> unit(integration.GetNumGP(21), 1.0);
+    DynMatrix<double> u_phi(1, 66);                           // ndof for p = 10
+    DynMatrix<double> u_phi_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
+    DynMatrix<double> unit(1, integration.GetNumGP(21), 1.0);
 
     for (uint n_bound = 0; n_bound < 1; n_bound++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(u_phi.begin(), u_phi.end(), 0.0);
-            u_phi[dof] = 1.0;
+            std::fill(row(u_phi, 0).begin(), row(u_phi, 0).end(), 0.0);
+            row(u_phi, 0)[dof] = 1.0;
 
-            edge_boundaries[n_bound].boundary.ComputeUgp(u_phi, u_phi_gp);
+            u_phi_gp = edge_boundaries[n_bound].boundary.ComputeUgp(u_phi);
 
             for (uint doff = 0; doff < 11; doff++) {
-                if (!almost_equal(edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit),
-                                  edge_boundaries[n_bound].IntegrationLambda(doff, u_phi_gp),
+                if (!almost_equal(edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit)[0],
+                                  edge_boundaries[n_bound].IntegrationLambda(doff, u_phi_gp)[0],
                                   1.e+03)) {
                     error_found = true;
 
-                    std::cout << edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit) << ' '
-                              << edge_boundaries[n_bound].IntegrationLambda(doff, u_phi_gp) << std::endl;
+                    std::cout << edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit)[0] << ' '
+                              << edge_boundaries[n_bound].IntegrationLambda(doff, u_phi_gp)[0] << std::endl;
 
                     std::cerr << "Error found in boundary edge in IntegrationPhiLambda" << std::endl;
                 }
@@ -194,14 +194,14 @@ int main() {
 
     for (uint n_int = 0; n_int < 3; n_int++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(u_phi.begin(), u_phi.end(), 0.0);
-            u_phi[dof] = 1.0;
+            std::fill(row(u_phi, 0).begin(), row(u_phi, 0).end(), 0.0);
+            row(u_phi, 0)[dof] = 1.0;
 
-            edge_interfaces[n_int].interface.ComputeUgpIN(u_phi, u_phi_gp);
+            u_phi_gp = edge_interfaces[n_int].interface.ComputeUgpIN(u_phi);
 
             for (uint doff = 0; doff < 11; doff++) {
-                if (!almost_equal(edge_interfaces[n_int].IntegrationPhiLambdaIN(dof, doff, unit),
-                                  edge_interfaces[n_int].IntegrationLambda(doff, u_phi_gp),
+                if (!almost_equal(edge_interfaces[n_int].IntegrationPhiLambdaIN(dof, doff, unit)[0],
+                                  edge_interfaces[n_int].IntegrationLambda(doff, u_phi_gp)[0],
                                   1.e+03)) {
                     error_found = true;
 
@@ -210,8 +210,8 @@ int main() {
             }
 
             for (uint doff = 0; doff < 11; doff++) {
-                if (!almost_equal(std::abs(edge_interfaces[n_int].IntegrationPhiLambdaIN(dof, doff, unit)),
-                                  std::abs(edge_interfaces[n_int].IntegrationPhiLambdaEX(dof, doff, unit)),
+                if (!almost_equal(std::abs(edge_interfaces[n_int].IntegrationPhiLambdaIN(dof, doff, unit)[0]),
+                                  std::abs(edge_interfaces[n_int].IntegrationPhiLambdaEX(dof, doff, unit)[0]),
                                   1.e+03)) {
                     error_found = true;
 

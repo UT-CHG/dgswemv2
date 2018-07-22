@@ -35,7 +35,7 @@ class Element {
     StatVector<DynMatrix<double>, dimension> int_dphi_fact;
     StatVector<DynMatrix<double>, dimension> int_phi_dphi_fact;
 
-    std::pair<bool, DynMatrix<double>> m_inv;
+    DynMatrix<double> m_inv;
 
   public:
     Element() = default;
@@ -58,65 +58,61 @@ class Element {
     void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
                                  pre_specialized_interfaces);
 
-    template <typename F, typename T>
-    void L2Projection(const F& f, std::vector<T>& projection);
-    template <typename T>
-    void L2Projection(const std::vector<T>& nodal_values, std::vector<T>& projection);
+    template <typename F>
+    decltype(auto) L2ProjectionF(const F& f);
+    template <typename InputArrayType>
+    decltype(auto) L2ProjectionNode(const InputArrayType& nodal_values);
 
     template <typename T>
     void ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin);
     template <typename T>
     void ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u);
 
-    template <typename F, typename T>
-    void ComputeFgp(const F& f, std::vector<T>& f_gp);
-    template <typename T>
-    void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
-    template <typename T>
-    void ComputeDUgp(const uint dir, const std::vector<T>& u, std::vector<T>& du_gp);
-    template <typename T>
-    void ComputeDUgp(const std::vector<T>& u, std::vector<StatVector<T, dimension>>& du_gp);
+    template <typename F>
+    decltype(auto) ComputeFgp(const F& f);
+    template <typename InputArrayType>
+    decltype(auto) ComputeUgp(const InputArrayType& u);
+    template <typename InputArrayType>
+    decltype(auto) ComputeDUgp(const uint dir, const InputArrayType& u);
 
-    template <typename T>
-    void ComputeLinearUgp(const std::vector<T>& u_lin, std::vector<T>& u_lin_gp);
-    template <typename T>
-    void ComputeLinearDUgp(const uint dir, const std::vector<T>& u_lin, std::vector<T>& du_lin_gp);
-    template <typename T>
-    void ComputeLinearUbaryctr(const std::vector<T>& u_lin, T& u_lin_baryctr);
-    template <typename T>
-    void ComputeLinearUmidpts(const std::vector<T>& u_lin, std::vector<T>& u_lin_midpts);
-    template <typename T>
-    void ComputeLinearUvrtx(const std::vector<T>& u_lin, std::vector<T>& u_lin_vrtx);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUgp(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearDUgp(const uint dir, const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 
-    template <typename T>
-    void ComputeNodalUgp(const std::vector<T>& u_nodal, std::vector<T>& u_nodal_gp);
-    template <typename T>
-    void ComputeNodalDUgp(const uint dir, const std::vector<T>& u_nodal, std::vector<T>& du_nodal_gp);
-    template <typename T>
-    void ComputeNodalDUgp(const std::vector<T>& u_nodal, std::vector<StatVector<T, dimension>>& du_nodal_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeNodalUgp(const InputArrayType& u_nodal);
+    template <typename InputArrayType>
+    decltype(auto) ComputeNodalDUgp(const uint dir, const InputArrayType& u_nodal);
 
-    template <typename T>
-    T Integration(const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhi(const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiPhi(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationDPhi(const uint dir, const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiDPhi(const uint dof_i, const uint dir_j, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) Integration(const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhi(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiPhi(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationDPhi(const uint dir, const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiDPhi(const uint dof_i, const uint dir_j, const uint dof_j, const InputArrayType& u_gp);
 
-    template <typename T>
-    void ApplyMinv(const std::vector<T>& rhs, std::vector<T>& solution);
+    template <typename InputArrayType>
+    decltype(auto) ApplyMinv(const InputArrayType& rhs);
 
     void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
-    template <typename T>
-    void WriteCellDataVTK(const std::vector<T>& u, std::vector<T>& cell_data);
-    template <typename T>
-    void WritePointDataVTK(const std::vector<T>& u, std::vector<T>& point_data);
+    template <typename InputArrayType, typename OutputArrayType>
+    void WriteCellDataVTK(const InputArrayType& u, std::vector<OutputArrayType>& cell_data);
+    template <typename InputArrayType, typename OutputArrayType>
+    void WritePointDataVTK(const InputArrayType& u, std::vector<OutputArrayType>& point_data);
 
-    template <typename F, typename T>
-    T ComputeResidualL2(const F& f, const std::vector<T>& u);
+    template <typename F, typename InputArrayType>
+    double ComputeResidualL2(const F& f, const InputArrayType& u);
 
   public:
     using ElementMasterType = MasterType;
@@ -176,9 +172,9 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
                 for (uint dof = 0; dof < this->master->nvrtx; dof++) {
                     double dchi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        dchi += this->master->dchi_gp[z](gp, dof) * J_inv[0](z, dir);
+                        dchi += this->master->dchi_gp[z](dof, gp) * J_inv[0](z, dir);
                     }
-                    this->dchi_gp[dir](gp, dof) = dchi;
+                    this->dchi_gp[dir](dof, gp) = dchi;
                 }
             }
         }
@@ -189,9 +185,9 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
                 for (uint dof = 0; dof < this->master->ndof; dof++) {
                     double dphi = 0.0;
                     for (uint z = 0; z < dimension; z++) {
-                        dphi += this->master->dphi_gp[z](gp, dof) * J_inv[0](z, dir);
+                        dphi += this->master->dphi_gp[z](dof, gp) * J_inv[0](z, dir);
                     }
-                    this->dphi_gp[dir](gp, dof) = dphi;
+                    this->dphi_gp[dir](dof, gp) = dphi;
                 }
             }
         }
@@ -201,13 +197,13 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
 
         this->int_phi_fact = this->master->int_phi_fact * std::abs(det_J[0]);
 
-        this->int_phi_phi_fact.resize(std::pow(this->master->ndof, 2), this->master->ngp);
+        this->int_phi_phi_fact.resize(this->master->ngp, std::pow(this->master->ndof, 2));
         for (uint dof_i = 0; dof_i < this->master->ndof; dof_i++) {
             for (uint dof_j = 0; dof_j < this->master->ndof; dof_j++) {
                 uint lookup = this->master->ndof * dof_i + dof_j;
                 for (uint gp = 0; gp < this->master->ngp; gp++) {
-                    this->int_phi_phi_fact(lookup, gp) =
-                        this->master->phi_gp(gp, dof_i) * this->int_phi_fact(dof_j, gp);
+                    this->int_phi_phi_fact(gp, lookup) =
+                        this->master->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
                 }
             }
         }
@@ -218,30 +214,29 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
                 for (uint gp = 0; gp < this->master->ngp; gp++) {
                     double int_dphi = 0;
                     for (uint z = 0; z < dimension; z++) {
-                        int_dphi += this->master->int_dphi_fact[z](dof, gp) * J_inv[0](z, dir);
+                        int_dphi += this->master->int_dphi_fact[z](gp, dof) * J_inv[0](z, dir);
                     }
                     int_dphi *= std::abs(det_J[0]);
-                    this->int_dphi_fact[dir](dof, gp) = int_dphi;
+                    this->int_dphi_fact[dir](gp, dof) = int_dphi;
                 }
             }
         }
 
         for (uint dir = 0; dir < dimension; dir++) {
-            this->int_phi_dphi_fact[dir].resize(std::pow(this->master->ndof, 2), this->master->ngp);
+            this->int_phi_dphi_fact[dir].resize(this->master->ngp, std::pow(this->master->ndof, 2));
             for (uint dof_i = 0; dof_i < this->master->ndof; dof_i++) {
                 for (uint dof_j = 0; dof_j < this->master->ndof; dof_j++) {
                     uint lookup = this->master->ndof * dof_i + dof_j;
                     for (uint gp = 0; gp < this->master->ngp; gp++) {
-                        this->int_phi_dphi_fact[dir](lookup, gp) =
-                            this->master->phi_gp(gp, dof_i) * this->int_dphi_fact[dir](dof_j, gp);
+                        this->int_phi_dphi_fact[dir](gp, lookup) =
+                            this->master->phi_gp(dof_i, gp) * this->int_dphi_fact[dir](gp, dof_j);
                     }
                 }
             }
         }
 
         // MASS MATRIX
-        this->m_inv = this->master->m_inv;
-        this->m_inv.second /= std::abs(det_J[0]);
+        this->m_inv = this->master->m_inv / std::abs(det_J[0]);
     } else {
         // Placeholder for nonconstant Jacobian
     }
@@ -279,36 +274,18 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename F, typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const F& f, std::vector<T>& projection) {
-    std::vector<T> rhs;
-
-    std::vector<T> f_vals(this->gp_global_coordinates.size());
-
-    this->ComputeFgp(f, f_vals);
-
-    for (uint dof = 0; dof < this->master->ndof; dof++) {
-        rhs.push_back(this->IntegrationPhi(dof, f_vals));
-    }
-
-    this->ApplyMinv(rhs, projection);
+template <typename F>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
+    // rhs(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof)
+    return this->ApplyMinv(this->ComputeFgp(f) * this->int_phi_fact);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const std::vector<T>& nodal_values,
-                                                                              std::vector<T>& projection) {
-    std::vector<T> rhs;
-
-    std::vector<T> interpolation(this->data.get_ngp_internal());
-
-    this->ComputeNodalUgp(nodal_values, interpolation);
-
-    for (uint dof = 0; dof < this->master->ndof; dof++) {
-        rhs.push_back(this->IntegrationPhi(dof, interpolation));
-    }
-
-    this->ApplyMinv(rhs, projection);
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionNode(
+    const InputArrayType& nodal_values) {
+    // rhs(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof)
+    return this->ApplyMinv(nodal_values * this->shape.psi_gp * this->int_phi_fact);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -334,247 +311,144 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearTo
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename F, typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f, std::vector<T>& f_gp) {
-    for (uint gp = 0; gp < f_gp.size(); gp++) {
-        f_gp[gp] = f(this->gp_global_coordinates[gp]);
-    }
-}
+template <typename F>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
+    uint nvar = f(*(this->gp_global_coordinates.begin())).size();
+    uint ngp  = this->gp_global_coordinates.size();
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(const std::vector<T>& u,
-                                                                            std::vector<T>& u_gp) {
-    assert(this->master);
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
+    DynMatrix<double> f_vals(nvar, ngp);
 
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->master->phi_gp(gp, dof);
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const uint dir,
-                                                                             const std::vector<T>& u,
-                                                                             std::vector<T>& du_gp) {
-    std::fill(du_gp.begin(), du_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < du_gp.size(); gp++) {
-            du_gp[gp] += u[dof] * this->dphi_gp[dir](gp, dof);
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(
-    const std::vector<T>& u,
-    std::vector<StatVector<T, dimension>>& du_gp) {
-    std::fill(du_gp.begin(), du_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < du_gp.size(); gp++) {
-            for (uint dir = 0; dir < dimension; dir++) {
-                du_gp[gp][dir] += u[dof] * this->dphi_gp[dir](gp, dof);
-            }
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(const std::vector<T>& u_lin,
-                                                                                  std::vector<T>& u_lin_gp) {
-    std::fill(u_lin_gp.begin(), u_lin_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_lin.size(); dof++) {
-        for (uint gp = 0; gp < u_lin_gp.size(); gp++) {
-            u_lin_gp[gp] += u_lin[dof] * this->master->chi_gp(gp, dof);
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(const uint dir,
-                                                                                   const std::vector<T>& u_lin,
-                                                                                   std::vector<T>& du_lin_gp) {
-    std::fill(du_lin_gp.begin(), du_lin_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_lin.size(); dof++) {
-        for (uint gp = 0; gp < du_lin_gp.size(); gp++) {
-            du_lin_gp[gp] += u_lin[dof] * this->dchi_gp[dir](gp, dof);
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUbaryctr(const std::vector<T>& u_lin,
-                                                                                       T& u_lin_baryctr) {
-    this->master->ComputeLinearUbaryctr(u_lin, u_lin_baryctr);
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(const std::vector<T>& u_lin,
-                                                                                      std::vector<T>& u_lin_midpts) {
-    this->master->ComputeLinearUmidpts(u_lin, u_lin_midpts);
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUvrtx(const std::vector<T>& u_lin,
-                                                                                    std::vector<T>& u_lin_vrtx) {
-    this->master->ComputeLinearUvrtx(u_lin, u_lin_vrtx);
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalUgp(const std::vector<T>& u_nodal,
-                                                                                 std::vector<T>& u_nodal_gp) {
-    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
-            u_nodal_gp[gp] += u_nodal[dof] * this->shape.psi_gp(gp, dof);
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(const uint dir,
-                                                                                  const std::vector<T>& u_nodal,
-                                                                                  std::vector<T>& du_nodal_gp) {
-    std::fill(du_nodal_gp.begin(), du_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_nodal.size(); dof++) {
-        for (uint gp = 0; gp < du_nodal_gp.size(); gp++) {
-            du_nodal_gp[gp] += u_nodal[dof] * this->shape.dpsi_gp[dir](gp, dof);
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(
-    const std::vector<T>& u_nodal,
-    std::vector<StatVector<T, dimension>>& du_nodal_gp) {
-    // *** //
-    std::fill(du_nodal_gp.begin(), du_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_nodal.size(); dof++) {
-        for (uint gp = 0; gp < du_nodal_gp.size(); gp++) {
-            for (uint dir = 0; dir < dimension; dir++) {
-                du_nodal_gp[gp][dir] += u_nodal[dof] * this->shape.dpsi_gp[dir](gp, dof);
-            }
-        }
-    }
-}
-
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline T Element<dimension, MasterType, ShapeType, DataType>::Integration(const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact[gp];
+    for (uint gp = 0; gp < this->gp_global_coordinates.size(); gp++) {
+        column(f_vals, gp) = f(this->gp_global_coordinates[gp]);
     }
 
-    return integral;
+    return f_vals;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
-                                                                             const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_fact(dof, gp);
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(const InputArrayType& u) {
+    // u_gp(q, gp) = u(q, dof) * phi_gp(dof, gp)
+    return u * this->master->phi_gp;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiPhi(const uint dof_i,
-                                                                                const uint dof_j,
-                                                                                const std::vector<T>& u_gp) {
-    T integral;
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const uint dir,
+                                                                                       const InputArrayType& u) {
+    // du_gp(q, gp) = u(q, dof) * dphi_gp[dir](dof, gp)
+    return u * this->dphi_gp[dir];
+}
 
-    integral = 0.0;
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(
+    const InputArrayType& u_lin) {
+    // u_lin_gp(q, gp) = u_lin(q, dof) * chi_gp(dof, gp)
+    return u_lin * this->master->chi_gp;
+}
 
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(
+    const uint dir,
+    const InputArrayType& u_lin) {
+    // du_lin_gp(q, gp) = du(q, dof) * chi_gp[dir](dof, gp)
+    return u_lin * this->dchi_gp[dir];
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUbaryctr(
+    const InputArrayType& u_lin) {
+    return this->master->ComputeLinearUbaryctr(u_lin);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(
+    const InputArrayType& u_lin) {
+    return this->master->ComputeLinearUmidpts(u_lin);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUvrtx(
+    const InputArrayType& u_lin) {
+    return this->master->ComputeLinearUvrtx(u_lin);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalUgp(
+    const InputArrayType& u_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_nodal * this->shape.psi_gp;
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(
+    const uint dir,
+    const InputArrayType& u_nodal) {
+    // du_nodal_gp(q, gp) = u_nodal(q, dof) * dpsi_gp[dir](dof, gp)
+    return u_nodal * this->shape.dpsi_gp[dir];
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integration(const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * this->int_fact[gp]
+    return u_gp * this->int_fact;
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
+                                                                                          const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * this->int_phi_fact(gp, dof)
+    return u_gp * column(this->int_phi_fact, dof);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiPhi(
+    const uint dof_i,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * this->int_phi_phi_fact(gp, lookup)
     uint lookup = this->master->ndof * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_phi_fact(lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_phi_fact, lookup);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
-                                                                              const uint dof,
-                                                                              const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_dphi_fact[dir](dof, gp);
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
+                                                                                           const uint dof,
+                                                                                           const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * this->int_dphi_fact[dir](gp. dof)
+    return u_gp * column(this->int_dphi_fact[dir], dof);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline T Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiDPhi(const uint dof_i,
-                                                                                 const uint dir_j,
-                                                                                 const uint dof_j,
-                                                                                 const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiDPhi(
+    const uint dof_i,
+    const uint dir_j,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] = u_gp(q, gp) * this->int_phi_dphi_fact[dir_j](lookup, gp)
     uint lookup = this->master->ndof * dof_i + dof_j;
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_dphi_fact[dir_j](lookup, gp);
-    }
-
-    return integral;
+    return u_gp * column(this->int_phi_dphi_fact[dir_j], lookup);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(const std::vector<T>& rhs,
-                                                                           std::vector<T>& solution) {
-    if (this->m_inv.first) {  // diagonal
-        for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = this->m_inv.second(i, i) * rhs[i];
-        }
-    } else if (!(this->m_inv.first)) {  // not diagonal
-        for (uint i = 0; i < rhs.size(); i++) {
-            solution[i] = 0.0;
-            for (uint j = 0; j < rhs.size(); j++) {
-                solution[i] += this->m_inv.second(i, j) * rhs[j];
-            }
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(const InputArrayType& rhs) {
+    // solution(q, dof) = rhs(q, dof) * this->m_inv(dof, dof)
+    return rhs * this->m_inv;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -584,85 +458,71 @@ void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vec
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(const std::vector<T>& u,
-                                                                                  std::vector<T>& cell_data) {
-    T temp;
+template <typename InputArrayType, typename OutputArrayType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(
+    const InputArrayType& u,
+    std::vector<OutputArrayType>& cell_data) {
+    // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
+    OutputArrayType temp;
 
-    for (uint cell = 0; cell < N_DIV * N_DIV; cell++) {
-        temp = 0.0;
+    for (uint cell = 0; cell < columns(this->master->phi_postprocessor_cell); ++cell) {
+        temp = u * column(this->master->phi_postprocessor_cell, cell);
 
-        for (uint dof = 0; dof < u.size(); dof++) {
-            temp += u[dof] * this->master->phi_postprocessor_cell(cell, dof);
-        }
-
-        cell_data.push_back(temp);
+        cell_data.emplace_back(std::move(temp));
     }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename T>
-inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(const std::vector<T>& u,
-                                                                                   std::vector<T>& point_data) {
-    T temp;
+template <typename InputArrayType, typename OutputArrayType>
+inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(
+    const InputArrayType& u,
+    std::vector<OutputArrayType>& point_data) {
+    // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)
+    OutputArrayType temp;
 
-    for (uint pt = 0; pt < (N_DIV + 1) * (N_DIV + 2) / 2; pt++) {
-        temp = 0.0;
+    for (uint pt = 0; pt < columns(this->master->phi_postprocessor_point); ++pt) {
+        temp = u * column(this->master->phi_postprocessor_point, pt);
 
-        for (uint dof = 0; dof < u.size(); dof++) {
-            temp += u[dof] * this->master->phi_postprocessor_point(pt, dof);
-        }
-
-        point_data.push_back(temp);
+        point_data.emplace_back(std::move(temp));
     }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-template <typename F, typename T>
-T Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f, const std::vector<T>& u) {
-    std::pair<DynVector<double>, DynVector<Point<2>>> rule = this->master->integration.GetRule(20);
+template <typename F, typename InputArrayType>
+double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
     // At this point we use maximum possible p for Dunavant integration
+    std::pair<DynVector<double>, DynVector<Point<2>>> rule = this->master->integration.GetRule(20);
 
-    DynMatrix<double> Phi = this->master->basis.GetPhi(this->master->p, rule.second);
+    // get u_gp
+    DynMatrix<double> phi_gp = this->master->basis.GetPhi(this->master->p, rule.second);
+    DynMatrix<double> u_gp   = u * phi_gp;
 
-    std::vector<T> u_gp(rule.first.size());
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
+    // get true_gp
+    DynVector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
 
-    for (uint dof = 0; dof < this->data.get_ndof(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += Phi(gp, dof) * u[dof];
-        }
+    uint nvar = f(*(gp_global.begin())).size();
+    uint ngp  = gp_global.size();
+
+    DynMatrix<double> true_gp(nvar, ngp);
+
+    for (uint gp = 0; gp < ngp; gp++) {
+        column(true_gp, gp) = f(gp_global[gp]);
     }
 
-    DynVector<Point<2>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
+    // find square difference betwee u_gp and true_gp
+    DynMatrix<double> sq_diff;
+    sq_diff = blaze::pow(true_gp - u_gp, 2);
 
-    DynVector<T> f_gp(rule.first.size());
+    DynVector<double> L2;
 
-    for (uint gp = 0; gp < f_gp.size(); gp++) {
-        f_gp[gp] = f(gp_global[gp]);
-    }
-
-    DynVector<T> sq_diff(rule.first.size());
-
-    for (uint gp = 0; gp < sq_diff.size(); gp++) {
-        sq_diff[gp] = (f_gp[gp] - u_gp[gp]) * (f_gp[gp] - u_gp[gp]);
-    }
-
-    T L2;
-
-    L2 = 0;
-
+    // integrate over element
     if (const_J) {
-        for (uint gp = 0; gp < sq_diff.size(); gp++) {
-            L2 += sq_diff[gp] * rule.first[gp];
-        }
-
-        L2 *= std::abs(this->shape.GetJdet(rule.second)[0]);
+        L2 = sq_diff * rule.first * std::abs(this->shape.GetJdet(rule.second)[0]);
     } else {
         // Placeholder for nonconstant Jacobian
     }
 
-    return L2;
+    return L2[0];
 }
 }
 

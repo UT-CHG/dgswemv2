@@ -34,14 +34,14 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    StatVector<double, SWE::n_variables> q_ex;
-    StatVector<double, SWE::n_variables> Fn_ex;
+    DynVector<double> q_ex(SWE::n_variables);
+    DynVector<double> Fn_ex(SWE::n_variables);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
 
-        edge_internal.rhs_global_kernel_at_gp[gp] = boundary.Fn_at_gp[gp];
-        edge_internal.rhs_global_kernel_at_gp[gp] += Fn_ex;
+        column(edge_internal.rhs_global_kernel_at_gp, gp) = column(boundary.Fn_at_gp, gp);
+        column(edge_internal.rhs_global_kernel_at_gp, gp) += Fn_ex;
     }
 
     // Add tau terms

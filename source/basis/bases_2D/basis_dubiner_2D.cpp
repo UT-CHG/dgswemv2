@@ -5,7 +5,7 @@ DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const DynVector<Point<2>>& po
     uint ndof = (p + 1) * (p + 2) / 2;
     uint npt  = points.size();
 
-    DynMatrix<double> phi(npt, ndof);
+    DynMatrix<double> phi(ndof, npt);
 
     DynVector<double> n1(npt);
     DynVector<double> n2(npt);
@@ -22,7 +22,7 @@ DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const DynVector<Point<2>>& po
         uint p = dof - lower_tri_num;
         uint q = tri_num_indx - p;
 
-        column(phi, dof) = this->ComputePhi(p, q, n1, n2);
+        row(phi, dof) = transpose(this->ComputePhi(p, q, n1, n2));
     }
 
     return phi;
@@ -34,8 +34,8 @@ StatVector<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const DynVect
 
     StatVector<DynMatrix<double>, 2> dphi;
 
-    DynMatrix<double> dphi_dz1(npt, ndof);
-    DynMatrix<double> dphi_dz2(npt, ndof);
+    DynMatrix<double> dphi_dz1(ndof, npt);
+    DynMatrix<double> dphi_dz2(ndof, npt);
 
     DynVector<double> n1(npt);
     DynVector<double> n2(npt);
@@ -52,8 +52,8 @@ StatVector<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const DynVect
         uint p = dof - lower_tri_num;
         uint q = tri_num_indx - p;
 
-        column(dphi_dz1, dof) = this->ComputeDPhiDZ1(p, q, n1, n2);
-        column(dphi_dz2, dof) = this->ComputeDPhiDZ2(p, q, n1, n2);
+        row(dphi_dz1, dof) = transpose(this->ComputeDPhiDZ1(p, q, n1, n2));
+        row(dphi_dz2, dof) = transpose(this->ComputeDPhiDZ2(p, q, n1, n2));
     }
 
     dphi[LocalCoordTri::z1] = dphi_dz1;
@@ -62,10 +62,10 @@ StatVector<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const DynVect
     return dphi;
 }
 
-std::pair<bool, DynMatrix<double>> Dubiner_2D::GetMinv(const uint p) {
+DynMatrix<double> Dubiner_2D::GetMinv(const uint p) {
     uint ndof = (p + 1) * (p + 2) / 2;
 
-    std::pair<bool, DynMatrix<double>> m_inv(true, DynMatrix<double>(ndof, ndof, 0.0));  // diagonal
+    DynMatrix<double> m_inv(ndof, ndof, 0.0);
 
     for (uint dof = 0; dof < ndof; dof++) {
         uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
@@ -74,7 +74,7 @@ std::pair<bool, DynMatrix<double>> Dubiner_2D::GetMinv(const uint p) {
         uint p = dof - lower_tri_num;
         uint q = tri_num_indx - p;
 
-        m_inv.second(dof, dof) = ((2 * p + 1) * (p + q + 1) / 2.0);
+        m_inv(dof, dof) = ((2 * p + 1) * (p + q + 1) / 2.0);
     }
 
     return m_inv;

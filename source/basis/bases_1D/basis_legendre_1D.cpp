@@ -5,7 +5,7 @@ DynMatrix<double> Legendre_1D::GetPhi(const uint p, const DynVector<Point<1>>& p
     uint ndof = p + 1;
     uint npt  = points.size();
 
-    DynMatrix<double> phi(npt, ndof);
+    DynMatrix<double> phi(ndof, npt);
 
     DynVector<double> l1(npt);
 
@@ -14,7 +14,7 @@ DynMatrix<double> Legendre_1D::GetPhi(const uint p, const DynVector<Point<1>>& p
     }
 
     for (uint dof = 0; dof < ndof; dof++) {
-        column(phi, dof) = jacobi_polynomial(dof, 0, 0, l1);
+        row(phi, dof) = transpose(jacobi_polynomial(dof, 0, 0, l1));
     }
 
     return phi;
@@ -26,7 +26,7 @@ StatVector<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const DynVec
 
     StatVector<DynMatrix<double>, 1> dphi;
 
-    DynMatrix<double> dphi_dl1(npt, ndof);
+    DynMatrix<double> dphi_dl1(ndof, npt);
 
     DynVector<double> l1(npt);
 
@@ -35,7 +35,7 @@ StatVector<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const DynVec
     }
 
     for (uint dof = 0; dof < ndof; dof++) {
-        column(dphi_dl1, dof) = jacobi_polynomial_derivative(dof, 0, 0, l1);
+        row(dphi_dl1, dof) = transpose(jacobi_polynomial_derivative(dof, 0, 0, l1));
     }
 
     dphi[LocalCoordLin::l1] = dphi_dl1;
@@ -43,13 +43,13 @@ StatVector<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const DynVec
     return dphi;
 }
 
-std::pair<bool, DynMatrix<double>> Legendre_1D::GetMinv(const uint p) {
+DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
     uint ndof = p + 1;
 
-    std::pair<bool, DynMatrix<double>> m_inv(true, DynMatrix<double>(ndof, ndof, 0.0));  // diagonal
+    DynMatrix<double> m_inv(ndof, ndof, 0.0);
 
     for (uint dof = 0; dof < ndof; dof++) {
-        m_inv.second(dof, dof) = (2 * dof + 1) / 2.0;
+        m_inv(dof, dof) = (2 * dof + 1) / 2.0;
     }
 
     return m_inv;

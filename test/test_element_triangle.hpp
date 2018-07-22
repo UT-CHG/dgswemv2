@@ -59,29 +59,26 @@ const std::vector<double> IntegrationDPhiDY_true = {
     2.272727272727273e-02, 1.1080228133985e-01,    4.242424242424243e-02, 1.378321850860735e-01, 6.818181818181821e-02,
     1.8880147989604e-01};
 
-bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
+bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     // Check integrations
     bool error_found{false};
 
-    if (!almost_equal(IntegrationPhi_true[0], triangle.Integration(f_vals), 1.e+04)) {
+    if (!almost_equal(IntegrationPhi_true[0], triangle.Integration(f_vals)[0], 1.e+04)) {
         error_found = true;
         std::cerr << "Error found in Triangle element in Integration" << std::endl;
     }
 
     for (uint dof = 0; dof < 66; dof++) {
-        if (!almost_equal(IntegrationPhi_true[dof], triangle.IntegrationPhi(dof, f_vals), 1.e+04)) {
+        if (!almost_equal(IntegrationPhi_true[dof], triangle.IntegrationPhi(dof, f_vals)[0], 1.e+04)) {
             error_found = true;
             std::cerr << "Error found in Triangle element in IntegrationPhi" << std::endl;
         }
     }
 
     for (uint dof = 0; dof < 66; dof++) {
-        if (!almost_equal(IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals), 1.e+04)) {
+        if (!almost_equal(
+                IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals)[0], 1.e+04)) {
             error_found = true;
-
-            std::cout << IntegrationDPhiDX_true[dof] << ' ' << triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals)
-                      << std::endl;
-
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
                          "in x direction"
                       << std::endl;
@@ -89,7 +86,8 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
     // Add 7 more modes
     for (uint dof = 0; dof < 66; dof++) {
-        if (!almost_equal(IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals), 1.e+04)) {
+        if (!almost_equal(
+                IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals)[0], 1.e+04)) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in IntegrationDPhi "
@@ -100,16 +98,20 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
 
     // Check linears through integration
     // u(x,y) = 3 + 2*x - 2*sqrt(3)*y plane
-    std::vector<double> u{2, 4, 0};
-    std::vector<double> u_gp(triangle.data.get_ngp_internal());
-    std::vector<double> du_dx_gp(triangle.data.get_ngp_internal());
-    std::vector<double> du_dy_gp(triangle.data.get_ngp_internal());
+    DynMatrix<double> u(1, 3);
+    u(0, 0) = 2.0;
+    u(0, 1) = 4.0;
+    u(0, 2) = 0.0;
 
-    triangle.ComputeLinearUgp(u, u_gp);
-    triangle.ComputeLinearDUgp(0, u, du_dx_gp);
-    triangle.ComputeLinearDUgp(1, u, du_dy_gp);
+    DynMatrix<double> u_gp(1, triangle.data.get_ngp_internal());
+    DynMatrix<double> du_dx_gp(1, triangle.data.get_ngp_internal());
+    DynMatrix<double> du_dy_gp(1, triangle.data.get_ngp_internal());
 
-    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp), 1.e+04)) {
+    u_gp     = triangle.ComputeLinearUgp(u);
+    du_dx_gp = triangle.ComputeLinearDUgp(0, u);
+    du_dy_gp = triangle.ComputeLinearDUgp(1, u);
+
+    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp)[0], 1.e+04)) {
         error_found = true;
 
         std::cout << triangle.Integration(u_gp);
@@ -117,7 +119,7 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
         std::cerr << "Error found in Triangle element in ComputeLinearUgp" << std::endl;
     }
 
-    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp), 1.e+04)) {
+    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp)[0], 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
@@ -125,7 +127,7 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
                   << std::endl;
     }
 
-    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
+    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp)[0], 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeLinearDUgp "
@@ -134,17 +136,17 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
 
     // Check nodals through the same integration
-    triangle.ComputeNodalUgp(u, u_gp);
-    triangle.ComputeNodalDUgp(0, u, du_dx_gp);
-    triangle.ComputeNodalDUgp(1, u, du_dy_gp);
+    u_gp     = triangle.ComputeNodalUgp(u);
+    du_dx_gp = triangle.ComputeNodalDUgp(0, u);
+    du_dy_gp = triangle.ComputeNodalDUgp(1, u);
 
-    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp), 1.e+04)) {
+    if (!almost_equal(0.866025403784442, triangle.Integration(u_gp)[0], 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeNodalUgp" << std::endl;
     }
 
-    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp), 1.e+04)) {
+    if (!almost_equal(std::sqrt(3.0) / 2.0, triangle.Integration(du_dx_gp)[0], 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeNodalDUgp "
@@ -152,7 +154,7 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
                   << std::endl;
     }
 
-    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp), 1.e+04)) {
+    if (!almost_equal(-3.0 / 2.0, triangle.Integration(du_dy_gp)[0], 1.e+04)) {
         error_found = true;
 
         std::cerr << "Error found in Triangle element in ComputeNodalDUgp "
@@ -161,26 +163,26 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
 
     // Check ComputeUgp and ApplyMinv
-    std::vector<double> mod_vals(triangle.data.get_ndof());
-    std::vector<double> gp_vals(triangle.data.get_ngp_internal());
-    std::vector<double> solution_vals(triangle.data.get_ndof());
+    DynMatrix<double> mod_vals(1, triangle.data.get_ndof());
+    DynMatrix<double> gp_vals(1, triangle.data.get_ngp_internal());
+    DynMatrix<double> solution_vals(1, triangle.data.get_ndof());
 
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-        mod_vals[dof] = 1.0;
+        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        row(mod_vals, 0)[dof] = 1.0;
 
-        triangle.ComputeUgp(mod_vals, gp_vals);
-        triangle.ApplyMinv(mod_vals, solution_vals);
+        gp_vals       = triangle.ComputeUgp(mod_vals);
+        solution_vals = triangle.ApplyMinv(mod_vals);
 
         for (uint doff = 0; doff < 66; doff++) {
             if (dof == doff) {
-                if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)), solution_vals[dof], 1.e+03)) {
+                if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)[0]), solution_vals(0, dof), 1.e+03)) {
                     error_found = true;
 
                     std::cerr << "Error found in Triangle element in ApplyMinv" << std::endl;
                 }
             } else {
-                if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals), 0.0)) {
+                if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals)[0], 0.0)) {
                     error_found = true;
 
                     std::cerr << "Error found in Triangle element in ComputeUgp" << std::endl;
@@ -190,17 +192,17 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
 
     // Check ComputeDUgp
-    std::vector<double> gp_dvals(triangle.data.get_ngp_internal());
-    std::fill(gp_vals.begin(), gp_vals.end(), 1.0);
+    DynMatrix<double> gp_dvals(1, triangle.data.get_ngp_internal());
+    std::fill(row(gp_vals, 0).begin(), row(gp_vals, 0).end(), 1.0);
 
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-        mod_vals[dof] = 1.0;
+        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        row(mod_vals, 0)[dof] = 1.0;
 
-        triangle.ComputeDUgp(GlobalCoord::x, mod_vals, gp_dvals);
+        gp_dvals = triangle.ComputeDUgp(GlobalCoord::x, mod_vals);
 
-        if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals),
-                          triangle.IntegrationDPhi(GlobalCoord::x, dof, gp_vals))) {
+        if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals)[0],
+                          triangle.IntegrationDPhi(GlobalCoord::x, dof, gp_vals)[0])) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in x "
@@ -208,10 +210,10 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
                       << std::endl;
         }
 
-        triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
+        gp_dvals = triangle.ComputeDUgp(GlobalCoord::y, mod_vals);
 
-        if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals),
-                          triangle.IntegrationDPhi(GlobalCoord::y, dof, gp_vals))) {
+        if (!almost_equal(triangle.IntegrationPhi(0, gp_dvals)[0],
+                          triangle.IntegrationDPhi(GlobalCoord::y, dof, gp_vals)[0])) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in ComputeDUgp in y "
@@ -221,14 +223,22 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
 
     // Check L2 projection
-    std::vector<double> nodal_vals{1.0, 2.0, 3.0};
-    std::vector<double> modal_vals_true{2.0, 0.5, 0.5};
-    std::vector<double> modal_vals_computed(triangle.data.get_ndof());
+    DynMatrix<double> nodal_vals(1, 3);
+    nodal_vals(0, 0) = 1.0;
+    nodal_vals(0, 1) = 2.0;
+    nodal_vals(0, 2) = 3.0;
 
-    triangle.L2Projection(nodal_vals, modal_vals_computed);
+    DynMatrix<double> modal_vals_true(1, 3);
+    modal_vals_true(0, 0) = 2.0;
+    modal_vals_true(0, 1) = 0.5;
+    modal_vals_true(0, 2) = 0.5;
+
+    DynMatrix<double> modal_vals_computed(1, triangle.data.get_ndof());
+
+    modal_vals_computed = triangle.L2ProjectionNode(nodal_vals);
 
     for (uint i = 0; i < 3; i++) {
-        if (!almost_equal(modal_vals_computed[i], modal_vals_true[i])) {
+        if (!almost_equal(modal_vals_computed(0, i), modal_vals_true(0, i))) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in L2 projection" << std::endl;
@@ -236,7 +246,7 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
 
     for (uint i = 3; i < 66; i++) {
-        if (!almost_equal(modal_vals_computed[i], 0.0, 1.e+04)) {
+        if (!almost_equal(modal_vals_computed(0, i), 0.0, 1.e+04)) {
             error_found = true;
 
             std::cerr << "Error found in Triangle element in L2 projection" << std::endl;
@@ -244,39 +254,37 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
     }
 
     // Check integrations PhiPhi PhiDPhi
-    std::vector<double> unit_gp(triangle.data.get_ngp_internal(), 1.0);
+    DynMatrix<double> unit_gp(1, triangle.data.get_ngp_internal(), 1.0);
 
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(mod_vals.begin(), mod_vals.end(), 0.0);
-        mod_vals[dof] = 1.0;
+        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        row(mod_vals, 0)[dof] = 1.0;
 
-        triangle.ComputeUgp(mod_vals, gp_vals);
+        gp_vals = triangle.ComputeUgp(mod_vals);
 
         for (uint doff = 0; doff < 66; doff++) {
-            if (!almost_equal(
-                    triangle.IntegrationPhi(doff, gp_vals), triangle.IntegrationPhiPhi(dof, doff, unit_gp), 1.e+03)) {
+            if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals)[0],
+                              triangle.IntegrationPhiPhi(dof, doff, unit_gp)[0],
+                              1.e+03)) {
                 error_found = true;
-
-                std::cout << triangle.IntegrationPhi(doff, gp_vals) << ' '
-                          << triangle.IntegrationPhiPhi(dof, doff, unit_gp) << std::endl;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiPhi" << std::endl;
             }
         }
 
-        triangle.ComputeDUgp(GlobalCoord::x, mod_vals, gp_dvals);
+        gp_dvals = triangle.ComputeDUgp(GlobalCoord::x, mod_vals);
 
         for (uint doff = 0; doff < 66; doff++) {
-            if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::x, doff, gp_vals),
-                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp),
+            if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::x, doff, gp_vals)[0],
+                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp)[0],
                               1.e+03)) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
             }
 
-            if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals),
-                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::x, dof, unit_gp),
+            if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals)[0],
+                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::x, dof, unit_gp)[0],
                               1.e+05)) {
                 error_found = true;
 
@@ -284,19 +292,19 @@ bool check_for_error(ElementType& triangle, std::vector<double>& f_vals) {
             }
         }
 
-        triangle.ComputeDUgp(GlobalCoord::y, mod_vals, gp_dvals);
+        gp_dvals = triangle.ComputeDUgp(GlobalCoord::y, mod_vals);
 
         for (uint doff = 0; doff < 66; doff++) {
-            if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::y, doff, gp_vals),
-                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::y, doff, unit_gp),
+            if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::y, doff, gp_vals)[0],
+                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::y, doff, unit_gp)[0],
                               1.e+03)) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
             }
 
-            if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals),
-                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::y, dof, unit_gp),
+            if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals)[0],
+                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::y, dof, unit_gp)[0],
                               1.e+05)) {
                 error_found = true;
 

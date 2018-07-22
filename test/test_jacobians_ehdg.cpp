@@ -80,9 +80,9 @@ int main(int argc, char* argv[]) {
         auto& state      = elt.data.state[stage];
 
         for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
-            state.q[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
     });
 
@@ -98,17 +98,17 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q_hat
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
-            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
 
         // get current rhs and Jacobian
-        edge_int.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+        edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
         for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-            edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-                edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
+            edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+                edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
         }
 
         edge_int.interface.specialization.ComputeGlobalKernels(edge_int);
@@ -141,18 +141,18 @@ int main(int argc, char* argv[]) {
         delta_q_hat *= 1.0e-8;  // make it small
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += delta_q_hat[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += delta_q_hat[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += delta_q_hat[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += delta_q_hat[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += delta_q_hat[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += delta_q_hat[3 * dof + 2];
         }
         // randomly assign delta_q_hat and increment
 
         // find next rhs and substract to find diff
-        edge_int.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+        edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
         for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-            edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-                edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
+            edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+                edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
         }
 
         edge_int.interface.specialization.ComputeGlobalKernels(edge_int);
@@ -199,17 +199,17 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q_hat
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
-            edge_state.q_hat[dof][SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            edge_state.q_hat[dof][SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
         }
 
         // get current rhs and Jacobian
-        edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+        edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-            edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-                edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+            edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+                edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
         }
 
         edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
@@ -242,18 +242,18 @@ int main(int argc, char* argv[]) {
         delta_q_hat *= 1.0e-8;  // make it small
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += delta_q_hat[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += delta_q_hat[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += delta_q_hat[3 * dof + 2];
+            edge_state.q_hat(SWE::Variables::ze, dof) += delta_q_hat[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += delta_q_hat[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += delta_q_hat[3 * dof + 2];
         }
         // randomly assign delta_q_hat and increment
 
         // find next rhs and substract to find diff
-        edge_bound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+        edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-            edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-                edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
+            edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+                edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
         }
 
         edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
