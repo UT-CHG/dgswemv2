@@ -5,6 +5,7 @@
 ###############################################################################
 
 polynomial_order: 1
+
 mesh:
   format: Meta
   file_name: ../../../examples/files_for_manufactured_solution/rectangular_mesh.meta
