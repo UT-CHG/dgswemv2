@@ -15,13 +15,13 @@ struct Boundary {
           dF_hat_dq_hat_at_gp(SWE::n_variables * SWE::n_variables, ngp),
           delta_global_kernel_at_gp(SWE::n_variables * SWE::n_variables, ngp) {}
 
-    DynMatrix<double> q_at_gp;
-    DynMatrix<double> aux_at_gp;
+    HybMatrix<double, SWE::n_variables> q_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
 
-    DynMatrix<double> F_hat_at_gp;
-    DynMatrix<double> dF_hat_dq_at_gp;
-    DynMatrix<double> dF_hat_dq_hat_at_gp;
-    DynMatrix<double> delta_global_kernel_at_gp;
+    HybMatrix<double, SWE::n_variables> F_hat_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_hat_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_global_kernel_at_gp;
 
     DynMatrix<double> delta_global;
     DynMatrix<double> delta_hat_local;

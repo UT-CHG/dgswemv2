@@ -6,11 +6,11 @@
 namespace SWE {
 namespace IHDG {
 void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
-    std::vector<DynVector<double>> q_point_data;
-    std::vector<DynVector<double>> q_cell_data;
+    std::vector<StatVector<double, SWE::n_variables>> q_point_data;
+    std::vector<StatVector<double, SWE::n_variables>> q_cell_data;
 
-    std::vector<DynVector<double>> aux_point_data;
-    std::vector<DynVector<double>> aux_cell_data;
+    std::vector<StatVector<double, 1>> aux_point_data;
+    std::vector<StatVector<double, 1>> aux_cell_data;
 
     mesh.CallForEachElement([&q_point_data, &q_cell_data, &aux_point_data, &aux_cell_data](auto& elt) {
         elt.WritePointDataVTK(elt.data.state[0].q, q_point_data);

@@ -18,10 +18,8 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
 
     edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
-    for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
-            edge_internal.q_hat_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
-    }
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
     // Add tau * del_q terms to F_hat
     add_F_hat_tau_terms_intface_LF(edge_int);

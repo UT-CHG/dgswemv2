@@ -16,7 +16,6 @@ void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bou
         row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute fluxes at boundary state */
-
     auto nx = row(bound.surface_normal, GlobalCoord::x);
     auto ny = row(bound.surface_normal, GlobalCoord::y);
 

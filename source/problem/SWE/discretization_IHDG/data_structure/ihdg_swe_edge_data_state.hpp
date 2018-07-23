@@ -7,10 +7,9 @@ namespace SWE {
 namespace IHDG {
 struct EdgeState {
     EdgeState() = default;
-    EdgeState(const uint ndof) : q_hat(SWE::n_variables, ndof), q_hat_prev(SWE::n_variables, ndof) {}
+    EdgeState(const uint ndof) : q_hat(SWE::n_variables, ndof) {}
 
-    DynMatrix<double> q_hat;
-    DynMatrix<double> q_hat_prev;
+    HybMatrix<double, SWE::n_variables> q_hat;
 };
 }
 }

@@ -34,7 +34,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
             problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Default) {
             uint nnode = elt.GetShape().nodal_coordinates.size();
 
-            DynMatrix<double> u_node(SWE::n_variables, nnode);
+            HybMatrix<double, SWE::n_variables> u_node(SWE::n_variables, nnode);
 
             for (uint node_id = 0; node_id < nnode; ++node_id) {
                 u_node(SWE::Variables::ze, node_id) = problem_specific_input.initial_conditions.ze_initial;

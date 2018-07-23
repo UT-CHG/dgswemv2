@@ -26,7 +26,7 @@ int main() {
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
-    MasterType master(10);
+    MasterType master(1);
 
     ElementType triangle(0,
                          master,

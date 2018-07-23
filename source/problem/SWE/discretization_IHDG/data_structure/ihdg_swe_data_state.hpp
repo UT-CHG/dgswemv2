@@ -9,8 +9,8 @@ struct State {
     State() = default;
     State(const uint ndof) : q(SWE::n_variables, ndof), aux(1, ndof /* only bath */) {}
 
-    DynMatrix<double> q;
-    DynMatrix<double> aux;
+    HybMatrix<double, SWE::n_variables> q;
+    HybMatrix<double, 1> aux;
 };
 }
 }
