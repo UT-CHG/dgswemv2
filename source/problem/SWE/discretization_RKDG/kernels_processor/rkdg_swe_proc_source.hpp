@@ -20,7 +20,7 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         // compute contribution of hydrostatic pressure
         row(internal.source_at_gp, SWE::Variables::qx) =
             Global::g * cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp),
-                                             cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::y),
+                                             cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::x),
                                                                   row(internal.q_at_gp, SWE::Variables::ze)));
         row(internal.source_at_gp, SWE::Variables::qy) =
             Global::g *

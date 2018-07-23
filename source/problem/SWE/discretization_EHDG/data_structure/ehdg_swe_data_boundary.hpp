@@ -13,11 +13,11 @@ struct Boundary {
           Fn_at_gp(SWE::n_variables, ngp),
           F_hat_at_gp(SWE::n_variables, ngp) {}
 
-    DynMatrix<double> q_at_gp;
-    DynMatrix<double> aux_at_gp;
+    HybMatrix<double, SWE::n_variables> q_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
 
-    DynMatrix<double> Fn_at_gp;
-    DynMatrix<double> F_hat_at_gp;
+    HybMatrix<double, SWE::n_variables> Fn_at_gp;
+    HybMatrix<double, SWE::n_variables> F_hat_at_gp;
 };
 }
 }

@@ -14,12 +14,12 @@ struct EdgeInternal {
           delta_hat_global_kernel_at_gp(SWE::n_variables * SWE::n_variables, ngp),
           rhs_global_kernel_at_gp(SWE::n_variables, ngp) {}
 
-    DynMatrix<double> q_hat_at_gp;
-    DynMatrix<double> aux_hat_at_gp;
-    DynMatrix<double> q_init_at_gp;
+    HybMatrix<double, SWE::n_variables> q_hat_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_hat_at_gp;
+    HybMatrix<double, SWE::n_variables> q_init_at_gp;
 
-    DynMatrix<double> delta_hat_global_kernel_at_gp;
-    DynMatrix<double> rhs_global_kernel_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_hat_global_kernel_at_gp;
+    HybMatrix<double, SWE::n_variables> rhs_global_kernel_at_gp;
 
     DynMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;

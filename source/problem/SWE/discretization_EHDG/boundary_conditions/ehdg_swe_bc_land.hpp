@@ -28,7 +28,7 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
     double qn;
     double nx, ny;
 
-    DynVector<double> I_vector = IdentityVector<double>(SWE::n_variables);
+    StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);

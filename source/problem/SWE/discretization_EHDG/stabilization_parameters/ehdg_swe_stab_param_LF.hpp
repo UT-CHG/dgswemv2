@@ -17,10 +17,10 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     double tau;
     double sgn;
 
-    DynVector<double> del_q(SWE::n_variables);
-    DynVector<double> dtau_dq_hat(SWE::n_variables);
+    StatVector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> dtau_dq_hat;
 
-    DynVector<double> I_vector = IdentityVector<double>(SWE::n_variables);
+    StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
@@ -86,17 +86,12 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
     double tau;
     double sgn;
 
-    DynVector<double> del_q(SWE::n_variables);
-    DynVector<double> dtau_dq_hat(SWE::n_variables);
+    StatVector<double, SWE::n_variables> del_q;
+    StatVector<double, SWE::n_variables> dtau_dq_hat;
 
-    DynVector<double> q_ex(SWE::n_variables);
-    DynVector<double> Fn_ex(SWE::n_variables);
-
-    DynVector<double> I_vector = IdentityVector<double>(SWE::n_variables);
+    StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
-
         u_hat =
             edge_internal.q_hat_at_gp(SWE::Variables::qx, gp) / edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
         v_hat =
@@ -123,7 +118,8 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
         tau = std::abs(un_hat) + std::sqrt(Global::g * edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp));
 
-        del_q = column(boundary.q_at_gp, gp) + q_ex - 2.0 * column(edge_internal.q_hat_at_gp, gp);
+        del_q = column(boundary.q_at_gp, gp) + column(edge_dbound.boundary.boundary_condition.q_ex, gp) -
+                2.0 * column(edge_internal.q_hat_at_gp, gp);
 
         /* delta kernels */
 

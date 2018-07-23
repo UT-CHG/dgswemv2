@@ -13,11 +13,11 @@ struct State {
           rhs(SWE::n_variables, ndof),
           solution(SWE::n_variables, ndof) {}
 
-    DynMatrix<double> q;
-    DynMatrix<double> aux;
+    HybMatrix<double, SWE::n_variables> q;
+    HybMatrix<double, 1> aux;
 
-    DynMatrix<double> rhs;
-    DynMatrix<double> solution;
+    HybMatrix<double, SWE::n_variables> rhs;
+    HybMatrix<double, SWE::n_variables> solution;
 };
 }
 }

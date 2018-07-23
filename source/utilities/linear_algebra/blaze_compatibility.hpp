@@ -112,6 +112,17 @@ uint columns(const MatrixType& matrix) {
 }
 
 template <typename MatrixType>
+MatrixType reverse_columns(const MatrixType& matrix) {
+    MatrixType rev_matrix(rows(matrix), columns(matrix));
+
+    for (uint col = 0; col < columns(matrix); ++col) {
+        column(rev_matrix, col) = column(matrix, columns(matrix) - col - 1);
+    }
+
+    return rev_matrix;
+}
+
+template <typename MatrixType>
 decltype(auto) submatrix(MatrixType& matrix, uint start_row, uint start_col, uint size_row, uint size_col) {
     return blaze::submatrix(matrix, start_row, start_col, size_row, size_col);
 }
