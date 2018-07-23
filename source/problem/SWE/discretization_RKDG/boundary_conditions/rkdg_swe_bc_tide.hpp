@@ -10,15 +10,18 @@ namespace RKDG {
 namespace BC {
 class Tide {
   private:
+    DynMatrix<double> q_ex;
+
+  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
 
-    DynMatrix<double> amplitude;
-    DynMatrix<double> phase;
+    std::vector<DynRowVector<double>> amplitude;
+    std::vector<DynRowVector<double>> phase;
 
-    DynMatrix<double> amplitude_gp;
-    DynMatrix<double> phase_gp;
+    std::vector<DynRowVector<double>> amplitude_gp;
+    std::vector<DynRowVector<double>> phase_gp;
 
   public:
     Tide() = default;
@@ -28,16 +31,10 @@ class Tide {
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const std::vector<StatVector<double, SWE::n_dimensions>>& surface_normal,
+                     const DynMatrix<double>& surface_normal,
                      const DynMatrix<double>& q_in,
                      const DynMatrix<double>& aux_in,
                      DynMatrix<double>& F_hat);
-
-    void GetEX(const RKStepper& stepper,
-               const uint gp,
-               const StatVector<double, SWE::n_dimensions>& surface_normal,
-               const DynVector<double>& q_in,
-               DynVector<double>& q_ex);
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {
@@ -48,64 +45,59 @@ Tide::Tide(const std::vector<TideInput>& tide_input) {
     uint n_contituents = this->frequency.size();
     uint n_nodes       = tide_input.size();
 
-    this->amplitude.resize(n_contituents, n_nodes);
-    this->phase.resize(n_contituents, n_nodes);
+    this->amplitude.resize(n_contituents);
+    this->phase.resize(n_contituents);
 
     for (uint con = 0; con < n_contituents; con++) {
+        this->amplitude[con].resize(n_nodes);
+        this->phase[con].resize(n_nodes);
+
         for (uint node = 0; node < n_nodes; node++) {
-            this->amplitude(con, node) = tide_input[node].amplitude[con];
-            this->phase(con, node)     = tide_input[node].phase[con];
+            this->amplitude[con][node] = tide_input[node].amplitude[con];
+            this->phase[con][node]     = tide_input[node].phase[con];
         }
     }
 }
 
 template <typename BoundaryType>
 void Tide::Initialize(BoundaryType& bound) {
+    uint ngp           = bound.data.get_ngp_boundary(bound.bound_id);
     uint n_contituents = this->frequency.size();
 
+    this->q_ex.resize(SWE::n_variables, ngp);
+
+    this->amplitude_gp.resize(n_contituents);
+    this->phase_gp.resize(n_contituents);
+
     for (uint con = 0; con < n_contituents; con++) {
-        this->amplitude_gp = bound.ComputeBoundaryNodalUgp(this->amplitude);
-        this->phase_gp     = bound.ComputeBoundaryNodalUgp(this->phase);
+        this->amplitude_gp[con] = bound.ComputeBoundaryNodalUgp(this->amplitude[con]);
+        this->phase_gp[con]     = bound.ComputeBoundaryNodalUgp(this->phase[con]);
     }
 }
 
 void Tide::ComputeFlux(const RKStepper& stepper,
-                       const std::vector<StatVector<double, SWE::n_dimensions>>& surface_normal,
+                       const DynMatrix<double>& surface_normal,
                        const DynMatrix<double>& q_in,
                        const DynMatrix<double>& aux_in,
                        DynMatrix<double>& F_hat) {
-    // *** //
-    DynVector<double> q_ex(SWE::n_variables);
-    for (uint gp = 0; gp < columns(q_in); ++gp) {
-        this->GetEX(stepper, gp, surface_normal[gp], column(q_in, gp), q_ex);
-
-        column(F_hat, gp) = LLF_flux(Global::g, column(q_in, gp), q_ex, column(aux_in, gp), surface_normal[gp]);
-    }
-}
-
-void Tide::GetEX(const RKStepper& stepper,
-                 const uint gp,
-                 const StatVector<double, SWE::n_dimensions>& surface_normal,
-                 const DynVector<double>& q_in,
-                 DynVector<double>& q_ex) {
-    double ze = 0;
-
-    double frequency;
-    double forcing_fact;
-    double eq_argument;
+    std::fill(row(this->q_ex, SWE::Variables::ze).begin(), row(this->q_ex, SWE::Variables::ze).end(), 0.0);
 
     for (uint con = 0; con < this->frequency.size(); con++) {
-        frequency    = this->frequency[con];
-        forcing_fact = this->forcing_fact[con];
-        eq_argument  = this->equilib_arg[con];
-
-        ze += stepper.GetRamp() * forcing_fact * this->amplitude_gp(con, gp) *
-              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp(con, gp));
+        for (uint gp = 0; gp < columns(q_in); ++gp) {
+            row(this->q_ex, SWE::Variables::ze)[gp] += stepper.GetRamp() * this->forcing_fact[con] *
+                                                       this->amplitude_gp[con][gp] *
+                                                       cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() +
+                                                           this->equilib_arg[con] - this->phase_gp[con][gp]);
+        }
     }
 
-    q_ex[SWE::Variables::ze] = ze;
-    q_ex[SWE::Variables::qx] = q_in[SWE::Variables::qx];
-    q_ex[SWE::Variables::qy] = q_in[SWE::Variables::qy];
+    row(this->q_ex, SWE::Variables::qx) = row(q_in, SWE::Variables::qx);
+    row(this->q_ex, SWE::Variables::qy) = row(q_in, SWE::Variables::qy);
+
+    for (uint gp = 0; gp < columns(q_in); ++gp) {
+        column(F_hat, gp) = LLF_flux(
+            Global::g, column(q_in, gp), column(this->q_ex, gp), column(aux_in, gp), column(surface_normal, gp));
+    }
 }
 }
 }

@@ -35,7 +35,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                                                        column(boundary_in.q_at_gp, gp),
                                                        column(boundary_ex.q_at_gp, gp_ex),
                                                        column(boundary_in.aux_at_gp, gp),
-                                                       intface.surface_normal_in[gp]);
+                                                       column(intface.surface_normal_in, gp));
 
         column(boundary_ex.F_hat_at_gp, gp_ex) = -column(boundary_in.F_hat_at_gp, gp);
     }
@@ -71,7 +71,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                                                                   column(boundary_ex.q_at_gp, gp_ex),
                                                                   column(boundary_in.q_at_gp, gp),
                                                                   column(boundary_ex.aux_at_gp, gp_ex),
-                                                                  intface.surface_normal_ex[gp_ex]);
+                                                                  column(intface.surface_normal_ex, gp_ex));
             }
 
             net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
@@ -101,7 +101,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                                                                column(boundary_in.q_at_gp, gp),
                                                                column(boundary_ex.q_at_gp, gp_ex),
                                                                column(boundary_in.aux_at_gp, gp),
-                                                               intface.surface_normal_in[gp]);
+                                                               column(intface.surface_normal_in, gp));
             }
 
             net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];

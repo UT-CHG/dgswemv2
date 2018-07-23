@@ -11,8 +11,8 @@ mesh:
 
 timestepping:
   start_time: 25-11-1987 00:00
-  end_time: 25-11-1987 12:00               
-  dt: 5                          
+  end_time: 25-11-1987 01:00               
+  dt: 10                        
   order: 1
   nstages: 1
 

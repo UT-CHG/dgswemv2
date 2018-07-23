@@ -10,6 +10,9 @@ namespace SWE {
 namespace RKDG {
 namespace DBC {
 class Distributed {
+  private:
+    DynMatrix<double> q_ex;
+
   public:
     DBDataExchanger exchanger;
 
@@ -18,7 +21,7 @@ class Distributed {
     Distributed(const DBDataExchanger& exchanger);
 
     template <typename DistributedBoundaryType>
-    void Initialize(DistributedBoundaryType& dbound) {} /*nothing to initialize*/
+    void Initialize(DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
     void ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound);
@@ -27,19 +30,27 @@ class Distributed {
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
 
 template <typename DistributedBoundaryType>
+void Distributed::Initialize(DistributedBoundaryType& dbound) {
+    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    this->q_ex.resize(SWE::n_variables, ngp);
+}
+
+template <typename DistributedBoundaryType>
 void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     bool wet_in = dbound.data.wet_dry_state.wet;
     bool wet_ex;
+
     this->exchanger.GetWetDryEX(wet_ex);
+    this->exchanger.GetEX(q_ex);
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    DynVector<double> q_ex(SWE::n_variables);
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        this->exchanger.GetEX(gp, q_ex);
-
-        column(boundary.F_hat_at_gp, gp) = LLF_flux(
-            Global::g, column(boundary.q_at_gp, gp), q_ex, column(boundary.aux_at_gp, gp), dbound.surface_normal[gp]);
+        column(boundary.F_hat_at_gp, gp) = LLF_flux(Global::g,
+                                                    column(boundary.q_at_gp, gp),
+                                                    column(this->q_ex, gp),
+                                                    column(boundary.aux_at_gp, gp),
+                                                    column(dbound.surface_normal, gp));
     }
 
     // compute net volume flux out of IN/EX elements
@@ -67,10 +78,11 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
             net_volume_flux_in = 0;
         } else if (!wet_in) {  // water flowing to dry IN element
             for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-                this->exchanger.GetEX(gp, q_ex);
-
-                column(boundary.F_hat_at_gp, gp) = LLF_flux(
-                    0.0, column(boundary.q_at_gp, gp), q_ex, column(boundary.aux_at_gp, gp), dbound.surface_normal[gp]);
+                column(boundary.F_hat_at_gp, gp) = LLF_flux(0.0,
+                                                            column(boundary.q_at_gp, gp),
+                                                            column(this->q_ex, gp),
+                                                            column(boundary.aux_at_gp, gp),
+                                                            column(dbound.surface_normal, gp));
             }
 
             net_volume_flux_in = dbound.Integration(boundary.F_hat_at_gp)[SWE::Variables::ze];

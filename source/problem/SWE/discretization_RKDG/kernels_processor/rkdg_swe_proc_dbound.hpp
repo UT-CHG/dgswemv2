@@ -35,9 +35,7 @@ void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedB
         dbound.boundary_condition.ComputeFlux(stepper, dbound);
 
         // now compute contributions to the righthand side
-        for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
-            column(state.rhs, dof) -= dbound.IntegrationPhi(dof, boundary.F_hat_at_gp);
-        }
+        state.rhs -= dbound.IntegrationPhi(boundary.F_hat_at_gp);
     }
 }
 }

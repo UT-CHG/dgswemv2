@@ -12,6 +12,9 @@ class Levee {
   private:
     double H_tolerance = 0.01;
 
+    DynMatrix<double> q_in_ex;
+    DynMatrix<double> q_ex_ex;
+
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
     DynRowVector<double> C_supercritical;
@@ -34,9 +37,9 @@ class Levee {
 Levee::Levee(const std::vector<LeveeInput>& levee_input) {
     uint n_nodes = levee_input.size();
 
-    H_barrier.resize(n_nodes);
-    C_subcritical.resize(n_nodes);
-    C_supercritical.resize(n_nodes);
+    this->H_barrier.resize(n_nodes);
+    this->C_subcritical.resize(n_nodes);
+    this->C_supercritical.resize(n_nodes);
 
     for (uint node = 0; node < n_nodes; node++) {
         this->H_barrier[node]       = levee_input[node].H_barrier;
@@ -47,6 +50,11 @@ Levee::Levee(const std::vector<LeveeInput>& levee_input) {
 
 template <typename InterfaceType>
 void Levee::Initialize(InterfaceType& intface) {
+    uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+
+    this->q_in_ex.resize(SWE::n_variables, ngp);
+    this->q_ex_ex.resize(SWE::n_variables, ngp);
+
     this->H_bar_gp       = intface.ComputeBoundaryNodalUgpIN(this->H_barrier);
     this->C_subcrit_gp   = intface.ComputeBoundaryNodalUgpIN(this->C_subcritical);
     this->C_supercrit_gp = intface.ComputeBoundaryNodalUgpIN(this->C_supercritical);
@@ -65,8 +73,6 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
     double gravity_in, gravity_ex;
-    DynVector<double> q_in_ex(SWE::n_variables);
-    DynVector<double> q_ex_ex(SWE::n_variables);
 
     uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
     uint gp_ex;
@@ -86,15 +92,17 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
             // reflective boundary in
-            land_boundary.GetEX(stepper, intface.surface_normal_in[gp], column(boundary_in.q_at_gp, gp), q_in_ex);
+            column(this->q_in_ex, gp) =
+                land_boundary.GetEX(stepper, column(intface.surface_normal_in, gp), column(boundary_in.q_at_gp, gp));
 
             // reflective boundary ex
-            land_boundary.GetEX(stepper, intface.surface_normal_ex[gp_ex], column(boundary_ex.q_at_gp, gp_ex), q_ex_ex);
+            column(this->q_ex_ex, gp) = land_boundary.GetEX(
+                stepper, column(intface.surface_normal_ex, gp_ex), column(boundary_ex.q_at_gp, gp_ex));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 
-            n_x = intface.surface_normal_in[gp][GlobalCoord::x];
-            n_y = intface.surface_normal_in[gp][GlobalCoord::y];
+            n_x = intface.surface_normal_in(GlobalCoord::x, gp);
+            n_y = intface.surface_normal_in(GlobalCoord::y, gp);
             t_x = -n_y;
             t_y = n_x;
 
@@ -108,13 +116,13 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 qt_in = 0.0;
             }
 
-            q_in_ex[SWE::Variables::ze] = boundary_in.q_at_gp(SWE::Variables::ze, gp);
-            q_in_ex[SWE::Variables::qx] = qn_in * n_x + qt_in * t_x;
-            q_in_ex[SWE::Variables::qy] = qn_in * n_y + qt_in * t_y;
+            this->q_in_ex(SWE::Variables::ze, gp) = boundary_in.q_at_gp(SWE::Variables::ze, gp);
+            this->q_in_ex(SWE::Variables::qx, gp) = qn_in * n_x + qt_in * t_x;
+            this->q_in_ex(SWE::Variables::qy, gp) = qn_in * n_y + qt_in * t_y;
 
-            q_ex_ex[SWE::Variables::ze] = boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex);
-            q_ex_ex[SWE::Variables::qx] = q_in_ex[SWE::Variables::qx];
-            q_ex_ex[SWE::Variables::qy] = q_in_ex[SWE::Variables::qy];
+            this->q_ex_ex(SWE::Variables::ze, gp) = boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex);
+            this->q_ex_ex(SWE::Variables::qx, gp) = this->q_in_ex(SWE::Variables::qx, gp);
+            this->q_ex_ex(SWE::Variables::qy, gp) = this->q_in_ex(SWE::Variables::qy, gp);
 
             if (!wet_ex) {
                 gravity_ex = 0.0;
@@ -122,8 +130,8 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         } else if (h_above_levee_in < h_above_levee_ex) {  // overtopping from ex to in
             double n_x, n_y, t_x, t_y, qn_ex, qt_ex;
 
-            n_x = intface.surface_normal_ex[gp_ex][GlobalCoord::x];
-            n_y = intface.surface_normal_ex[gp_ex][GlobalCoord::y];
+            n_x = intface.surface_normal_ex(GlobalCoord::x, gp_ex);
+            n_y = intface.surface_normal_ex(GlobalCoord::y, gp_ex);
             t_x = -n_y;
             t_y = n_x;
 
@@ -137,13 +145,13 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 qt_ex = 0.0;
             }
 
-            q_ex_ex[SWE::Variables::ze] = boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex);
-            q_ex_ex[SWE::Variables::qx] = qn_ex * n_x + qt_ex * t_x;
-            q_ex_ex[SWE::Variables::qy] = qn_ex * n_y + qt_ex * t_y;
+            this->q_ex_ex(SWE::Variables::ze, gp) = boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex);
+            this->q_ex_ex(SWE::Variables::qx, gp) = qn_ex * n_x + qt_ex * t_x;
+            this->q_ex_ex(SWE::Variables::qy, gp) = qn_ex * n_y + qt_ex * t_y;
 
-            q_in_ex[SWE::Variables::ze] = boundary_in.q_at_gp(SWE::Variables::ze, gp);
-            q_in_ex[SWE::Variables::qx] = q_ex_ex[SWE::Variables::qx];
-            q_in_ex[SWE::Variables::qy] = q_ex_ex[SWE::Variables::qy];
+            this->q_in_ex(SWE::Variables::ze, gp) = boundary_in.q_at_gp(SWE::Variables::ze, gp);
+            this->q_in_ex(SWE::Variables::qx, gp) = this->q_ex_ex(SWE::Variables::qx, gp);
+            this->q_in_ex(SWE::Variables::qy, gp) = this->q_ex_ex(SWE::Variables::qy, gp);
 
             if (!wet_in) {
                 gravity_in = 0.0;
@@ -152,15 +160,15 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
         column(boundary_in.F_hat_at_gp, gp) = LLF_flux(gravity_in,
                                                        column(boundary_in.q_at_gp, gp),
-                                                       q_in_ex,
+                                                       column(q_in_ex, gp),
                                                        column(boundary_in.aux_at_gp, gp),
-                                                       intface.surface_normal_in[gp]);
+                                                       column(intface.surface_normal_in, gp));
 
         column(boundary_ex.F_hat_at_gp, gp_ex) = LLF_flux(gravity_ex,
                                                           column(boundary_ex.q_at_gp, gp_ex),
-                                                          q_ex_ex,
+                                                          column(q_ex_ex, gp_ex),
                                                           column(boundary_ex.aux_at_gp, gp_ex),
-                                                          intface.surface_normal_ex[gp_ex]);
+                                                          column(intface.surface_normal_ex, gp_ex));
     }
 }
 }

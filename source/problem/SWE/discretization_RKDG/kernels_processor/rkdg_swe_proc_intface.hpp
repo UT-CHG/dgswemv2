@@ -25,13 +25,9 @@ void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface)
         intface.specialization.ComputeFlux(stepper, intface);
 
         // now compute contributions to the righthand side
-        for (uint dof = 0; dof < intface.data_in.get_ndof(); ++dof) {
-            column(state_in.rhs, dof) -= intface.IntegrationPhiIN(dof, boundary_in.F_hat_at_gp);
-        }
+        state_in.rhs -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp);
 
-        for (uint dof = 0; dof < intface.data_ex.get_ndof(); ++dof) {
-            column(state_ex.rhs, dof) -= intface.IntegrationPhiEX(dof, boundary_ex.F_hat_at_gp);
-        }
+        state_ex.rhs -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp);
     }
 }
 }

@@ -23,8 +23,8 @@ void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& boun
     double uuh, vvh, uvh, pe;
 
     for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
-        nx = bound.surface_normal[gp][GlobalCoord::x];
-        ny = bound.surface_normal[gp][GlobalCoord::y];
+        nx = bound.surface_normal(GlobalCoord::x, gp);
+        ny = bound.surface_normal(GlobalCoord::y, gp);
 
         u = boundary.q_at_gp(SWE::Variables::qx, gp) / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
         v = boundary.q_at_gp(SWE::Variables::qy, gp) / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);

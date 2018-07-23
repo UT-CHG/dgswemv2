@@ -2,6 +2,7 @@
 #define RKDG_SWE_LLF_FLUX_HPP
 
 #include "problem/SWE/swe_definitions.hpp"
+#include "problem/SWE/problem_function_files/swe_compute_F.hpp"
 
 namespace SWE {
 namespace RKDG {
@@ -10,7 +11,7 @@ inline decltype(auto) LLF_flux(const double gravity,
                                const DynVector<double>& q_in,
                                const DynVector<double>& q_ex,
                                const DynVector<double>& aux,
-                               const StatVector<double, SWE::n_dimensions>& surface_normal) {
+                               const DynVector<double>& surface_normal) {
     double bath = aux[SWE::Auxiliaries::bath];
     double sp   = aux[SWE::Auxiliaries::sp];
 

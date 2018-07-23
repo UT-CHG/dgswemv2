@@ -20,6 +20,8 @@ template <typename T>
 using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
 template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
+template <typename T, uint m>
+using HybMatrix = blaze::HybridMatrix<T, m, 128>;
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;
@@ -40,20 +42,45 @@ DynVector<T> IdentityVector(uint size) {
     return I_vector;
 }
 
-/* Vector/Matrix (aka Tensor) Operations */
-template <typename TensorType>
-decltype(auto) transpose(const TensorType& tensor) {
-    return blaze::trans(tensor);
+/* Vector/Matrix (aka Array) Operations */
+template <typename ArrayType>
+decltype(auto) transpose(const ArrayType& array) {
+    return blaze::trans(array);
 }
 
-template <typename TensorType>
-double norm(TensorType& tensor) {
-    return blaze::norm(tensor);
+template <typename ArrayType>
+double norm(const ArrayType& array) {
+    return blaze::norm(array);
 }
 
-template <typename TensorType>
-double sqr_norm(TensorType& tensor) {
-    return blaze::sqrNorm(tensor);
+template <typename ArrayType>
+double sqr_norm(const ArrayType& array) {
+    return blaze::sqrNorm(array);
+}
+
+template <typename ArrayType>
+decltype(auto) pow(const ArrayType& array, double exp) {
+    return blaze::pow(array, exp);
+}
+
+template <typename ArrayType>
+decltype(auto) abs(const ArrayType& array) {
+    return blaze::abs(array);
+}
+
+template <typename LeftArrayType, typename RightArrayType>
+decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
+    return array_left * array_right;
+}
+
+template <typename LeftArrayType, typename RightArrayType>
+decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
+    return array_left / array_right;
+}
+
+template <typename LeftArrayType, typename RightArrayType>
+decltype(auto) cwise_max(const LeftArrayType& array_left, const RightArrayType& array_right) {
+    return blaze::map(array_left, array_right, [](double left, double right) { return std::max(left, right); });
 }
 
 /* Vector Operations */

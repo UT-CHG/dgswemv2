@@ -25,8 +25,8 @@ inline void add_F_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
         v_hat =
             edge_internal.q_hat_at_gp(SWE::Variables::qy, gp) / edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
 
-        nx = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
-        ny = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
+        nx = edge_int.interface.surface_normal_in(GlobalCoord::x, gp);
+        ny = edge_int.interface.surface_normal_in(GlobalCoord::y, gp);
 
         un_hat = u_hat * nx + v_hat * ny;
 
@@ -55,8 +55,8 @@ inline void add_F_hat_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
         v_hat =
             edge_internal.q_hat_at_gp(SWE::Variables::qy, gp) / edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
 
-        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
+        nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
+        ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
 
         un_hat = u_hat * nx + v_hat * ny;
 
@@ -94,8 +94,8 @@ inline void add_dF_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
         v_hat =
             edge_internal.q_hat_at_gp(SWE::Variables::qy, gp) / edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
 
-        nx = edge_int.interface.surface_normal_in[gp][GlobalCoord::x];
-        ny = edge_int.interface.surface_normal_in[gp][GlobalCoord::y];
+        nx = edge_int.interface.surface_normal_in(GlobalCoord::x, gp);
+        ny = edge_int.interface.surface_normal_in(GlobalCoord::y, gp);
 
         un_hat = u_hat * nx + v_hat * ny;
 
@@ -165,8 +165,8 @@ inline void add_dF_hat_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
         v_hat =
             edge_internal.q_hat_at_gp(SWE::Variables::qy, gp) / edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
 
-        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
+        nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
+        ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
 
         un_hat = u_hat * nx + v_hat * ny;
 

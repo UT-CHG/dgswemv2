@@ -40,8 +40,8 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
 
         /* IN State */
 
-        nx_in = intface.surface_normal_in[gp][GlobalCoord::x];
-        ny_in = intface.surface_normal_in[gp][GlobalCoord::y];
+        nx_in = intface.surface_normal_in(GlobalCoord::x, gp);
+        ny_in = intface.surface_normal_in(GlobalCoord::y, gp);
 
         u_in = boundary_in.q_at_gp(SWE::Variables::qx, gp) / boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp);
         v_in = boundary_in.q_at_gp(SWE::Variables::qy, gp) / boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp);
@@ -60,8 +60,8 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
 
         /* EX State */
 
-        nx_ex = intface.surface_normal_ex[gp_ex][GlobalCoord::x];
-        ny_ex = intface.surface_normal_ex[gp_ex][GlobalCoord::y];
+        nx_ex = intface.surface_normal_ex(GlobalCoord::x, gp_ex);
+        ny_ex = intface.surface_normal_ex(GlobalCoord::y, gp_ex);
 
         u_ex = boundary_ex.q_at_gp(SWE::Variables::qx, gp_ex) / boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex);
         v_ex = boundary_ex.q_at_gp(SWE::Variables::qy, gp_ex) / boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex);

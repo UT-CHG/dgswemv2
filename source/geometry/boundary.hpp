@@ -11,7 +11,7 @@ class Boundary {
 
     uint bound_id;
 
-    std::vector<StatVector<double, dimension + 1>> surface_normal;
+    DynMatrix<double> surface_normal;
 
   private:
     Master::Master<dimension + 1>& master;
@@ -47,6 +47,8 @@ class Boundary {
     decltype(auto) Integration(const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationPhi(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhi(const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationPhiPhi(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
 
@@ -109,8 +111,13 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
             }
         }
 
-        this->surface_normal = std::vector<StatVector<double, dimension + 1>>(
-            ngp, *this->shape.GetSurfaceNormal(this->bound_id, z_master).begin());
+        StatVector<double, dimension + 1> normal = this->shape.GetSurfaceNormal(this->bound_id, z_master)[0];
+
+        this->surface_normal.resize(dimension + 1, ngp);
+
+        for (uint gp = 0; gp < ngp; ++gp) {
+            column(this->surface_normal, gp) = normal;
+        }
     }
 
     this->data.set_ngp_boundary(this->bound_id, ngp);
@@ -155,6 +162,14 @@ inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonTyp
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_fact(gp, dof)
     return u_gp * column(this->int_phi_fact, dof);
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(
+    const InputArrayType& u_gp) {
+    // integral(q, dof) =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * this->int_phi_fact;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>

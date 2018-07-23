@@ -54,7 +54,7 @@ class DBDataExchanger {
     void GetPreprocEX(double& x_at_baryctr_ex, double& y_at_baryctr_ex);
 
     void GetWetDryEX(bool& wet_ex);
-    void GetEX(const uint gp, DynVector<double>& q_ex);
+    void GetEX(DynMatrix<double>& q_ex);
 
     void GetPostprocWetDryEX(bool& wet_ex);
     void GetPostprocEX(StatVector<double, SWE::n_variables>& q_at_baryctr_ex);
@@ -111,9 +111,11 @@ void DBDataExchanger::GetWetDryEX(bool& wet_ex) {
     wet_ex = (bool)this->receive_buffer[this->index.wet_dry];
 }
 
-void DBDataExchanger::GetEX(const uint gp, DynVector<double>& q_ex) {
-    for (uint var = 0; var < SWE::n_variables; var++) {
-        q_ex[SWE::n_variables - var - 1] = this->receive_buffer[this->index.q_ex - SWE::n_variables * gp - var];
+void DBDataExchanger::GetEX(DynMatrix<double>& q_ex) {
+    for (uint gp = 0; gp < columns(q_ex); gp++) {
+        for (uint var = 0; var < SWE::n_variables; var++) {
+            q_ex(SWE::n_variables - var - 1, gp) = this->receive_buffer[this->index.q_ex - SWE::n_variables * gp - var];
+        }
     }
 }
 

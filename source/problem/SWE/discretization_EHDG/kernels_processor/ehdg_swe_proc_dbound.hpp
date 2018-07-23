@@ -23,8 +23,8 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     double uuh, vvh, uvh, pe;
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        nx = dbound.surface_normal[gp][GlobalCoord::x];
-        ny = dbound.surface_normal[gp][GlobalCoord::y];
+        nx = dbound.surface_normal(GlobalCoord::x, gp);
+        ny = dbound.surface_normal(GlobalCoord::y, gp);
 
         u = boundary.q_at_gp(SWE::Variables::qx, gp) / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
         v = boundary.q_at_gp(SWE::Variables::qy, gp) / boundary.aux_at_gp(SWE::Auxiliaries::h, gp);

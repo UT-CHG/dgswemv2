@@ -96,9 +96,13 @@ class Element {
     template <typename InputArrayType>
     decltype(auto) IntegrationPhi(const uint dof, const InputArrayType& u_gp);
     template <typename InputArrayType>
+    decltype(auto) IntegrationPhi(const InputArrayType& u_gp);
+    template <typename InputArrayType>
     decltype(auto) IntegrationPhiPhi(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationDPhi(const uint dir, const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationDPhi(const uint dir, const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationPhiDPhi(const uint dof_i, const uint dir_j, const uint dof_j, const InputArrayType& u_gp);
 
@@ -415,6 +419,13 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integ
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const InputArrayType& u_gp) {
+    // integral(q, dof) = u_gp(q, gp) * this->int_phi_fact(gp, dof)
+    return u_gp * this->int_phi_fact;
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiPhi(
     const uint dof_i,
     const uint dof_j,
@@ -432,6 +443,14 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integ
                                                                                            const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * this->int_dphi_fact[dir](gp. dof)
     return u_gp * column(this->int_dphi_fact[dir], dof);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
+                                                                                           const InputArrayType& u_gp) {
+    // integral(q, dof) =  u_gp(q, gp) * this->int_dphi_fact[dir](gp. dof)
+    return u_gp * this->int_dphi_fact[dir];
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>

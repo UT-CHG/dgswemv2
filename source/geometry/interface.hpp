@@ -13,8 +13,8 @@ class Interface {
     uint bound_id_in;
     uint bound_id_ex;
 
-    std::vector<StatVector<double, dimension + 1>> surface_normal_in;
-    std::vector<StatVector<double, dimension + 1>> surface_normal_ex;
+    DynMatrix<double> surface_normal_in;
+    DynMatrix<double> surface_normal_ex;
 
   private:
     Master::Master<dimension + 1>& master_in;
@@ -76,6 +76,10 @@ class Interface {
     decltype(auto) IntegrationPhiIN(const uint dof, const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationPhiEX(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiIN(const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiEX(const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationPhiPhiIN(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
     template <typename InputArrayType>
@@ -183,11 +187,15 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
             }
         }
 
-        this->surface_normal_in = std::vector<StatVector<double, dimension + 1>>(
-            ngp, *this->shape_in.GetSurfaceNormal(this->bound_id_in, z_master_in).begin());
+        StatVector<double, dimension + 1> normal = this->shape_in.GetSurfaceNormal(this->bound_id_in, z_master_in)[0];
 
-        this->surface_normal_ex = std::vector<StatVector<double, dimension + 1>>(
-            ngp, *this->shape_ex.GetSurfaceNormal(this->bound_id_ex, z_master_ex).begin());
+        this->surface_normal_in.resize(dimension + 1, ngp);
+        this->surface_normal_ex.resize(dimension + 1, ngp);
+
+        for (uint gp = 0; gp < ngp; ++gp) {
+            column(this->surface_normal_in, gp) = normal;
+            column(this->surface_normal_ex, gp) = -normal;
+        }
     }
 
     this->data_in.set_ngp_boundary(this->bound_id_in, ngp);
@@ -233,6 +241,14 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_fact(gp, dof)
     return u_gp * column(this->int_phi_fact_in, dof);
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiIN(
+    const InputArrayType& u_gp) {
+    // integral(q, dof) =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * this->int_phi_fact_in;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
@@ -286,6 +302,14 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_fact(gp, dof)
     return u_gp * column(this->int_phi_fact_ex, dof);
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename InputArrayType>
+inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::IntegrationPhiEX(
+    const InputArrayType& u_gp) {
+    // integral(q, dof) =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * this->int_phi_fact_ex;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>

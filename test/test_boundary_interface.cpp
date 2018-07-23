@@ -101,8 +101,8 @@ int main() {
             F_vals_bound(GlobalCoord::y, gp) = std::pow(y(0, gp), 2);
 
             Fn_vals_bound(n_bound, gp) =
-                F_vals_bound(GlobalCoord::x, gp) * boundaries[n_bound].surface_normal[gp][GlobalCoord::x] +
-                F_vals_bound(GlobalCoord::y, gp) * boundaries[n_bound].surface_normal[gp][GlobalCoord::y];
+                F_vals_bound(GlobalCoord::x, gp) * boundaries[n_bound].surface_normal(GlobalCoord::x, gp) +
+                F_vals_bound(GlobalCoord::y, gp) * boundaries[n_bound].surface_normal(GlobalCoord::y, gp);
         }
     }
 
