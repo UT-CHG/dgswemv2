@@ -2,16 +2,15 @@
 #define RKDG_SWE_LLF_FLUX_HPP
 
 #include "problem/SWE/swe_definitions.hpp"
-#include "problem/SWE/problem_function_files/swe_compute_F.hpp"
 
 namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
 inline decltype(auto) LLF_flux(const double gravity,
-                               const DynVector<double>& q_in,
-                               const DynVector<double>& q_ex,
-                               const DynVector<double>& aux,
-                               const DynVector<double>& surface_normal) {
+                               const StatVector<double, SWE::n_variables>& q_in,
+                               const StatVector<double, SWE::n_variables>& q_ex,
+                               const StatVector<double, SWE::n_auxiliaries>& aux,
+                               const StatVector<double, SWE::n_dimensions>& surface_normal) {
     double bath = aux[SWE::Auxiliaries::bath];
     double sp   = aux[SWE::Auxiliaries::sp];
 
@@ -32,8 +31,8 @@ inline decltype(auto) LLF_flux(const double gravity,
     double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(gravity * h_in * sp_correction),
                                      std::abs(un_ex) + std::sqrt(gravity * h_ex * sp_correction));
 
-    DynVector<double> Fn_in(SWE::n_variables);
-    DynVector<double> Fn_ex(SWE::n_variables);
+    StatVector<double, SWE::n_variables> Fn_in;
+    StatVector<double, SWE::n_variables> Fn_ex;
 
     double nx = surface_normal[GlobalCoord::x];
     double ny = surface_normal[GlobalCoord::y];
@@ -58,7 +57,7 @@ inline decltype(auto) LLF_flux(const double gravity,
     Fn_ex[SWE::Variables::qx] = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
     Fn_ex[SWE::Variables::qy] = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
 
-    DynVector<double> F_hat = 0.5 * (Fn_in + Fn_ex + max_eigenvalue * (q_in - q_ex));
+    StatVector<double, SWE::n_variables> F_hat = 0.5 * (Fn_in + Fn_ex + max_eigenvalue * (q_in - q_ex));
 
     return F_hat;
 }

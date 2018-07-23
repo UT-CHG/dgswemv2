@@ -10,7 +10,7 @@ namespace RKDG {
 namespace BC {
 class Flow {
   private:
-    DynMatrix<double> q_ex;
+    HybMatrix<double, SWE::n_variables> q_ex;
     DynRowVector<double> qn;
 
   private:
@@ -32,10 +32,10 @@ class Flow {
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const DynMatrix<double>& surface_normal,
-                     const DynMatrix<double>& q_in,
-                     const DynMatrix<double>& aux_in,
-                     DynMatrix<double>& F_hat);
+                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const HybMatrix<double, SWE::n_variables>& q_in,
+                     const HybMatrix<double, SWE::n_variables>& aux_in,
+                     HybMatrix<double, SWE::n_variables>& F_hat);
 };
 
 Flow::Flow(const std::vector<FlowInput>& flow_input) {
@@ -78,10 +78,11 @@ void Flow::Initialize(BoundaryType& bound) {
 }
 
 void Flow::ComputeFlux(const RKStepper& stepper,
-                       const DynMatrix<double>& surface_normal,
-                       const DynMatrix<double>& q_in,
-                       const DynMatrix<double>& aux_in,
-                       DynMatrix<double>& F_hat) {
+                       const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                       const HybMatrix<double, SWE::n_variables>& q_in,
+                       const HybMatrix<double, SWE::n_variables>& aux_in,
+                       HybMatrix<double, SWE::n_variables>& F_hat) {
+    // *** //
     std::fill(this->qn.begin(), this->qn.end(), 0.0);
 
     for (uint con = 0; con < this->frequency.size(); con++) {

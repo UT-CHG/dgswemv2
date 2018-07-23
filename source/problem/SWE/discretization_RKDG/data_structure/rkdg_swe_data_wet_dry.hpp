@@ -19,13 +19,12 @@ struct WetDry {
 
     double bath_min;
 
-    DynMatrix<double> q_lin;
+    HybMatrix<double, SWE::n_variables> q_lin;
+    HybMatrix<double, SWE::n_variables> q_at_vrtx;
 
-    DynMatrix<double> q_at_vrtx;
-
-    DynVector<double> bath_at_vrtx;
-    DynVector<double> h_at_vrtx;
-    DynVector<double> h_at_vrtx_temp;
+    std::vector<double> bath_at_vrtx;
+    std::vector<double> h_at_vrtx;
+    std::vector<double> h_at_vrtx_temp;
 
 #ifdef HAS_HPX
     template <typename Archive>

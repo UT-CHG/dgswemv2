@@ -18,17 +18,17 @@ struct Internal {
           dp_atm_at_gp(SWE::n_dimensions, ngp),
           dtide_pot_at_gp(SWE::n_dimensions, ngp) {}
 
-    DynMatrix<double> q_at_gp;
-    DynMatrix<double> aux_at_gp;
+    HybMatrix<double, SWE::n_variables> q_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
 
-    DynMatrix<double> Fx_at_gp;
-    DynMatrix<double> Fy_at_gp;
+    HybMatrix<double, SWE::n_variables> Fx_at_gp;
+    HybMatrix<double, SWE::n_variables> Fy_at_gp;
 
-    DynMatrix<double> source_at_gp;
-    DynMatrix<double> dbath_at_gp;
-    DynMatrix<double> tau_s_at_gp;
-    DynMatrix<double> dp_atm_at_gp;
-    DynMatrix<double> dtide_pot_at_gp;
+    HybMatrix<double, SWE::n_variables> source_at_gp;
+    HybMatrix<double, SWE::n_dimensions> dbath_at_gp;
+    HybMatrix<double, SWE::n_dimensions> tau_s_at_gp;
+    HybMatrix<double, SWE::n_dimensions> dp_atm_at_gp;
+    HybMatrix<double, SWE::n_dimensions> dtide_pot_at_gp;
 
 #ifdef HAS_HPX
     template <typename Archive>

@@ -10,7 +10,7 @@ namespace RKDG {
 namespace BC {
 class Tide {
   private:
-    DynMatrix<double> q_ex;
+    HybMatrix<double, SWE::n_variables> q_ex;
 
   private:
     std::vector<double> frequency;
@@ -31,10 +31,10 @@ class Tide {
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const DynMatrix<double>& surface_normal,
-                     const DynMatrix<double>& q_in,
-                     const DynMatrix<double>& aux_in,
-                     DynMatrix<double>& F_hat);
+                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const HybMatrix<double, SWE::n_variables>& q_in,
+                     const HybMatrix<double, SWE::n_variables>& aux_in,
+                     HybMatrix<double, SWE::n_variables>& F_hat);
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {
@@ -76,10 +76,11 @@ void Tide::Initialize(BoundaryType& bound) {
 }
 
 void Tide::ComputeFlux(const RKStepper& stepper,
-                       const DynMatrix<double>& surface_normal,
-                       const DynMatrix<double>& q_in,
-                       const DynMatrix<double>& aux_in,
-                       DynMatrix<double>& F_hat) {
+                       const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                       const HybMatrix<double, SWE::n_variables>& q_in,
+                       const HybMatrix<double, SWE::n_variables>& aux_in,
+                       HybMatrix<double, SWE::n_variables>& F_hat) {
+    // *** //
     std::fill(row(this->q_ex, SWE::Variables::ze).begin(), row(this->q_ex, SWE::Variables::ze).end(), 0.0);
 
     for (uint con = 0; con < this->frequency.size(); con++) {

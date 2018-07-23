@@ -11,7 +11,7 @@ class Boundary {
 
     uint bound_id;
 
-    DynMatrix<double> surface_normal;
+    HybMatrix<double, dimension + 1> surface_normal;
 
   private:
     Master::Master<dimension + 1>& master;

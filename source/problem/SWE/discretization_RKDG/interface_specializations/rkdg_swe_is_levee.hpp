@@ -12,8 +12,8 @@ class Levee {
   private:
     double H_tolerance = 0.01;
 
-    DynMatrix<double> q_in_ex;
-    DynMatrix<double> q_ex_ex;
+    HybMatrix<double, SWE::n_variables> q_in_ex;
+    HybMatrix<double, SWE::n_variables> q_ex_ex;
 
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;

@@ -21,7 +21,7 @@ using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
 template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
 template <typename T, uint m>
-using HybMatrix = blaze::HybridMatrix<T, m, 128>;
+using HybMatrix = blaze::HybridMatrix<T, m, 16>;
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;

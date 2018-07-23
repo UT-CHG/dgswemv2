@@ -13,8 +13,8 @@ class Interface {
     uint bound_id_in;
     uint bound_id_ex;
 
-    DynMatrix<double> surface_normal_in;
-    DynMatrix<double> surface_normal_ex;
+    HybMatrix<double, dimension + 1> surface_normal_in;
+    HybMatrix<double, dimension + 1> surface_normal_ex;
 
   private:
     Master::Master<dimension + 1>& master_in;

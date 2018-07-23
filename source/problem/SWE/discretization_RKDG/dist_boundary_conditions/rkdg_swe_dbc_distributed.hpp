@@ -11,7 +11,7 @@ namespace RKDG {
 namespace DBC {
 class Distributed {
   private:
-    DynMatrix<double> q_ex;
+    HybMatrix<double, SWE::n_variables> q_ex;
 
   public:
     DBDataExchanger exchanger;

@@ -6,8 +6,8 @@
 namespace SWE {
 namespace RKDG {
 void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
-    std::vector<std::pair<uint, DynMatrix<double>>> modal_q;
-    std::vector<std::pair<uint, DynMatrix<double>>> modal_aux;
+    std::vector<std::pair<uint, HybMatrix<double, SWE::n_variables>>> modal_q;
+    std::vector<std::pair<uint, HybMatrix<double, 1>>> modal_aux;
 
     mesh.CallForEachElement([&modal_q, &modal_aux](auto& elt) {
         modal_q.push_back(std::make_pair(elt.GetID(), elt.data.state[0].q));

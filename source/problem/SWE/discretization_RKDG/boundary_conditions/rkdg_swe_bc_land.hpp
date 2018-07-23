@@ -10,21 +10,21 @@ namespace RKDG {
 namespace BC {
 class Land {
   private:
-    DynMatrix<double> q_ex;
+    HybMatrix<double, SWE::n_variables> q_ex;
 
   public:
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const DynMatrix<double>& surface_normal,
-                     const DynMatrix<double>& q_in,
-                     const DynMatrix<double>& aux_in,
-                     DynMatrix<double>& F_hat);
+                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const HybMatrix<double, SWE::n_variables>& q_in,
+                     const HybMatrix<double, SWE::n_variables>& aux_in,
+                     HybMatrix<double, SWE::n_variables>& F_hat);
 
-    DynVector<double> GetEX(const RKStepper& stepper,
-                            const DynVector<double>& surface_normal,
-                            const DynVector<double>& q_in);
+    StatVector<double, SWE::n_variables> GetEX(const RKStepper& stepper,
+                                               const StatVector<double, SWE::n_dimensions>& surface_normal,
+                                               const StatVector<double, SWE::n_variables>& q_in);
 };
 
 template <typename BoundaryType>
@@ -34,10 +34,10 @@ void Land::Initialize(BoundaryType& bound) {
 }
 
 void Land::ComputeFlux(const RKStepper& stepper,
-                       const DynMatrix<double>& surface_normal,
-                       const DynMatrix<double>& q_in,
-                       const DynMatrix<double>& aux_in,
-                       DynMatrix<double>& F_hat) {
+                       const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                       const HybMatrix<double, SWE::n_variables>& q_in,
+                       const HybMatrix<double, SWE::n_variables>& aux_in,
+                       HybMatrix<double, SWE::n_variables>& F_hat) {
     // *** //
     auto n_x = row(surface_normal, GlobalCoord::x);
     auto n_y = row(surface_normal, GlobalCoord::y);
@@ -59,10 +59,10 @@ void Land::ComputeFlux(const RKStepper& stepper,
     }
 }
 
-DynVector<double> Land::GetEX(const RKStepper& stepper,
-                              const DynVector<double>& surface_normal,
-                              const DynVector<double>& q_in) {
-    DynVector<double> q_ex(SWE::n_variables);
+StatVector<double, SWE::n_variables> Land::GetEX(const RKStepper& stepper,
+                                                 const StatVector<double, SWE::n_dimensions>& surface_normal,
+                                                 const StatVector<double, SWE::n_variables>& q_in) {
+    StatVector<double, SWE::n_variables> q_ex;
 
     double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
 

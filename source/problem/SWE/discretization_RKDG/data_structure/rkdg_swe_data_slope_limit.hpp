@@ -32,14 +32,14 @@ struct SlopeLimit {
     std::vector<double> alpha_2;
     std::vector<double> r_sq;
 
-    DynMatrix<double> q_lin;
+    HybMatrix<double, SWE::n_variables> q_lin;
 
     StatVector<double, SWE::n_variables> q_at_baryctr;
-    DynMatrix<double> q_at_vrtx;
-    DynMatrix<double> q_at_midpts;
+    HybMatrix<double, SWE::n_variables> q_at_vrtx;
+    HybMatrix<double, SWE::n_variables> q_at_midpts;
 
     double bath_at_baryctr;
-    DynVector<double> bath_at_vrtx;
+    DynRowVector<double> bath_at_vrtx;
     DynRowVector<double> bath_at_midpts;
 
     std::vector<bool> wet_neigh;
