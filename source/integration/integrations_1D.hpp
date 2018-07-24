@@ -11,7 +11,7 @@ namespace Integration {
  */
 class GaussLegendre_1D : Integration<1> {
   public:
-    std::pair<std::vector<double>, std::vector<Point<1>>> GetRule(const uint p);
+    std::pair<DynVector<double>, std::vector<Point<1>>> GetRule(const uint p);
 
     uint GetNumGP(const uint p);
 

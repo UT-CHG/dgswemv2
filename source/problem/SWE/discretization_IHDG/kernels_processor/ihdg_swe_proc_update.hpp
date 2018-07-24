@@ -20,8 +20,10 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
 
     auto& state = elt.data.state[stage + 1];
 
-    for (auto& u_mode : state.q) {
-        if (std::isnan(u_mode[SWE::Variables::ze])) {
+    uint ndof = elt.data.get_ndof();
+
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.q(SWE::Variables::ze, dof))) {
             std::cerr << "Error: found isnan ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -29,8 +31,8 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& u_mode : state.q) {
-        if (std::isnan(u_mode[SWE::Variables::qx])) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.q(SWE::Variables::qx, dof))) {
             std::cerr << "Error: found isnan qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -38,36 +40,9 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& u_mode : state.q) {
-        if (std::isnan(u_mode[SWE::Variables::qy])) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.q(SWE::Variables::qx, dof))) {
             std::cerr << "Error: found isnan qy at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-
-            return true;
-        }
-    }
-
-    for (auto& rhs_mode : state.rhs) {
-        if (std::isnan(rhs_mode[SWE::Variables::ze])) {
-            std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-
-            return true;
-        }
-    }
-
-    for (auto& rhs_mode : state.rhs) {
-        if (std::isnan(rhs_mode[SWE::Variables::qx])) {
-            std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-
-            return true;
-        }
-    }
-
-    for (auto& rhs_mode : state.rhs) {
-        if (std::isnan(rhs_mode[SWE::Variables::qy])) {
-            std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
             return true;

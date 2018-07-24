@@ -5,6 +5,11 @@ namespace SWE {
 namespace IHDG {
 template <typename SimulationType>
 bool Problem::solve_global_problem(SimulationType* simulation) {
+    set_constant(simulation->delta_local_inv, 0.0);
+    set_constant(simulation->rhs_local, 0.0);
+    set_constant(simulation->delta_hat_global, 0.0);
+    set_constant(simulation->rhs_global, 0.0);
+
     simulation->mesh.CallForEachElement([simulation](auto& elt) {
         auto& internal = elt.data.internal;
 
@@ -53,7 +58,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         submatrix(simulation->delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
     });
 
-    simulation->global = 0.0;
+    set_constant(simulation->global, 0.0);
 
     simulation->global = simulation->delta_hat_global -
                          simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
@@ -66,81 +71,53 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->rhs_local =
         simulation->delta_local_inv * (simulation->rhs_local - simulation->delta_hat_local * simulation->rhs_global);
 
-    double q_norm     = 0;
-    double q_hat_norm = 0;
-
-    simulation->mesh.CallForEachElement([simulation, &q_norm](auto& elt) {
+    simulation->mesh.CallForEachElement([simulation](auto& elt) {
         const uint stage = simulation->stepper.GetStage();
 
-        auto& state    = elt.data.state[stage + 1];
-        auto& internal = elt.data.internal;
+        auto& state = elt.data.state[stage + 1];
 
         uint elt_ID = elt.GetID();
 
         auto rhs_local = subvector(simulation->rhs_local, elt_ID * 9, 9);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q[dof][SWE::Variables::ze] += rhs_local[3 * dof];
-            state.q[dof][SWE::Variables::qx] += rhs_local[3 * dof + 1];
-            state.q[dof][SWE::Variables::qy] += rhs_local[3 * dof + 2];
-        }
-
-        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            q_norm += sqr_norm(state.q[dof]);
+            state.q(SWE::Variables::ze, dof) += rhs_local[3 * dof];
+            state.q(SWE::Variables::qx, dof) += rhs_local[3 * dof + 1];
+            state.q(SWE::Variables::qy, dof) += rhs_local[3 * dof + 2];
         }
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation, &q_hat_norm](auto& edge_int) {
-        auto& edge_state    = edge_int.edge_data.edge_state;
-        auto& edge_internal = edge_int.edge_data.edge_internal;
-
-        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-        auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
-
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
+        auto& edge_state = edge_int.edge_data.edge_state;
 
         uint edg_ID = edge_int.GetID();
 
         auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global[3 * dof + 2];
-        }
-
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global[3 * dof + 2];
         }
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation, &q_hat_norm](auto& edge_bound) {
-        auto& edge_state    = edge_bound.edge_data.edge_state;
-        auto& edge_internal = edge_bound.edge_data.edge_internal;
+    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
+        auto& edge_state = edge_bound.edge_data.edge_state;
 
-        auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-        uint elt_ID = boundary.elt_ID;
         uint edg_ID = edge_bound.GetID();
 
         auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat[dof][SWE::Variables::ze] += rhs_global[3 * dof];
-            edge_state.q_hat[dof][SWE::Variables::qx] += rhs_global[3 * dof + 1];
-            edge_state.q_hat[dof][SWE::Variables::qy] += rhs_global[3 * dof + 2];
-        }
-
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
+            edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
+            edge_state.q_hat(SWE::Variables::qx, dof) += rhs_global[3 * dof + 1];
+            edge_state.q_hat(SWE::Variables::qy, dof) += rhs_global[3 * dof + 2];
         }
     });
 
     double delta_norm = std::hypot(norm(simulation->rhs_local), norm(simulation->rhs_global));
-    double norm       = std::sqrt(q_norm + q_hat_norm);
 
-    if (delta_norm / norm < 1e-6) {
+    if (delta_norm < 1e-6) {
         return true;
     }
 

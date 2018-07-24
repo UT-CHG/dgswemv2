@@ -15,15 +15,13 @@ void Problem::boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
         auto& state    = bound.data.state[stage];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        bound.ComputeUgp(state.q, boundary.q_at_gp);
+        boundary.q_at_gp = bound.ComputeUgp(state.q);
 
         bound.boundary_condition.ComputeFlux(
             stepper, bound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);
 
         // now compute contributions to the righthand side
-        for (uint dof = 0; dof < bound.data.get_ndof(); ++dof) {
-            state.rhs[dof] -= bound.IntegrationPhi(dof, boundary.F_hat_at_gp);
-        }
+        state.rhs -= bound.IntegrationPhi(boundary.F_hat_at_gp);
     }
 }
 }

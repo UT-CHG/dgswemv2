@@ -10,36 +10,30 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    dbound.ComputeUgp(state.q, boundary.q_at_gp);
+    boundary.q_at_gp = dbound.ComputeUgp(state.q);
 
-    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        boundary.aux_at_gp[gp][SWE::Auxiliaries::h] =
-            boundary.q_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
-    }
+    row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
+        row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute fluxes at boundary state */
-    double nx, ny;
-    double u, v;
-    double uuh, vvh, uvh, pe;
+    auto nx = row(dbound.surface_normal, GlobalCoord::x);
+    auto ny = row(dbound.surface_normal, GlobalCoord::y);
 
-    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        nx = dbound.surface_normal[gp][GlobalCoord::x];
-        ny = dbound.surface_normal[gp][GlobalCoord::y];
+    auto u = cwise_division(row(boundary.q_at_gp, SWE::Variables::qx), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
+    auto v = cwise_division(row(boundary.q_at_gp, SWE::Variables::qy), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
 
-        u = boundary.q_at_gp[gp][SWE::Variables::qx] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
-        v = boundary.q_at_gp[gp][SWE::Variables::qy] / boundary.aux_at_gp[gp][SWE::Auxiliaries::h];
+    auto uuh = cwise_multiplication(u, row(boundary.q_at_gp, SWE::Variables::qx));
+    auto vvh = cwise_multiplication(v, row(boundary.q_at_gp, SWE::Variables::qy));
+    auto uvh = cwise_multiplication(u, row(boundary.q_at_gp, SWE::Variables::qy));
+    auto pe  = Global::g * (0.5 * cwise_multiplication(row(boundary.q_at_gp, SWE::Variables::ze),
+                                                      row(boundary.q_at_gp, SWE::Variables::ze)) +
+                           cwise_multiplication(row(boundary.q_at_gp, SWE::Variables::ze),
+                                                row(boundary.aux_at_gp, SWE::Auxiliaries::bath)));
 
-        uuh = u * boundary.q_at_gp[gp][SWE::Variables::qx];
-        vvh = v * boundary.q_at_gp[gp][SWE::Variables::qy];
-        uvh = u * boundary.q_at_gp[gp][SWE::Variables::qy];
-        pe  = Global::g * (0.5 * std::pow(boundary.q_at_gp[gp][SWE::Variables::ze], 2) +
-                          boundary.q_at_gp[gp][SWE::Variables::ze] * boundary.aux_at_gp[gp][SWE::Auxiliaries::bath]);
-
-        boundary.Fn_at_gp[gp][SWE::Variables::ze] =
-            boundary.q_at_gp[gp][SWE::Variables::qx] * nx + boundary.q_at_gp[gp][SWE::Variables::qy] * ny;
-        boundary.Fn_at_gp[gp][SWE::Variables::qx] = (uuh + pe) * nx + uvh * ny;
-        boundary.Fn_at_gp[gp][SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
-    }
+    row(boundary.Fn_at_gp, SWE::Variables::ze) = cwise_multiplication(row(boundary.q_at_gp, SWE::Variables::qx), nx) +
+                                                 cwise_multiplication(row(boundary.q_at_gp, SWE::Variables::qy), ny);
+    row(boundary.Fn_at_gp, SWE::Variables::qx) = cwise_multiplication(uuh + pe, nx) + cwise_multiplication(uvh, ny);
+    row(boundary.Fn_at_gp, SWE::Variables::qy) = cwise_multiplication(uvh, nx) + cwise_multiplication(vvh + pe, ny);
 
     dbound.boundary_condition.exchanger.SetEX(boundary.q_at_gp, boundary.Fn_at_gp);
 }
@@ -52,9 +46,7 @@ void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, Distri
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
     // now compute contributions to the righthand side
-    for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
-        state.rhs[dof] -= dbound.IntegrationPhi(dof, boundary.F_hat_at_gp);
-    }
+    state.rhs -= dbound.IntegrationPhi(boundary.F_hat_at_gp);
 }
 }
 }

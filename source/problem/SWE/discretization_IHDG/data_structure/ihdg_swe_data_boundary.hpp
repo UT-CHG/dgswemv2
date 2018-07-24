@@ -8,20 +8,20 @@ namespace IHDG {
 struct Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
-        : q_at_gp(ngp),
-          aux_at_gp(ngp),
-          F_hat_at_gp(ngp),
-          dF_hat_dq_at_gp(ngp),
-          dF_hat_dq_hat_at_gp(ngp),
-          delta_global_kernel_at_gp(ngp) {}
+        : q_at_gp(SWE::n_variables, ngp),
+          aux_at_gp(SWE::n_auxiliaries, ngp),
+          F_hat_at_gp(SWE::n_variables, ngp),
+          dF_hat_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp),
+          dF_hat_dq_hat_at_gp(SWE::n_variables * SWE::n_variables, ngp),
+          delta_global_kernel_at_gp(SWE::n_variables * SWE::n_variables, ngp) {}
 
-    std::vector<StatVector<double, SWE::n_variables>> q_at_gp;
-    std::vector<StatVector<double, SWE::n_auxiliaries>> aux_at_gp;
+    HybMatrix<double, SWE::n_variables> q_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
 
-    std::vector<StatVector<double, SWE::n_variables>> F_hat_at_gp;
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_at_gp;
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dF_hat_dq_hat_at_gp;
-    std::vector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> delta_global_kernel_at_gp;
+    HybMatrix<double, SWE::n_variables> F_hat_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_hat_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_global_kernel_at_gp;
 
     DynMatrix<double> delta_global;
     DynMatrix<double> delta_hat_local;

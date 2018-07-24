@@ -7,6 +7,7 @@
 #include <blaze/math/Subvector.h>
 #include <blaze/math/Submatrix.h>
 #include <blaze/math/Column.h>
+#include <blaze/math/Row.h>
 
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;
@@ -16,7 +17,11 @@ using StatMatrix = blaze::StaticMatrix<T, m, n>;
 template <typename T>
 using DynVector = blaze::DynamicVector<T>;
 template <typename T>
+using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
+template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
+template <typename T, uint m>
+using HybMatrix = blaze::HybridMatrix<T, m, 16>;
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;
@@ -26,15 +31,56 @@ using SparseMatrix = blaze::CompressedMatrix<T>;
 template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
-/* Vector/Matrix (aka Tensor) Operations */
-template <typename TensorType>
-double norm(TensorType& tensor) {
-    return blaze::norm(tensor);
+template <typename T>
+DynVector<T> IdentityVector(uint size) {
+    DynVector<double> I_vector(size * size, 0.0);
+
+    for (uint i = 0; i < size; i++) {
+        I_vector[i * size + i] = 1.0;
+    }
+
+    return I_vector;
 }
 
-template <typename TensorType>
-double sqr_norm(TensorType& tensor) {
-    return blaze::sqrNorm(tensor);
+/* Vector/Matrix (aka Array) Operations */
+template <typename ArrayType>
+decltype(auto) transpose(const ArrayType& array) {
+    return blaze::trans(array);
+}
+
+template <typename ArrayType>
+double norm(const ArrayType& array) {
+    return blaze::norm(array);
+}
+
+template <typename ArrayType>
+double sqr_norm(const ArrayType& array) {
+    return blaze::sqrNorm(array);
+}
+
+template <typename ArrayType>
+decltype(auto) pow(const ArrayType& array, double exp) {
+    return blaze::pow(array, exp);
+}
+
+template <typename ArrayType>
+decltype(auto) abs(const ArrayType& array) {
+    return blaze::abs(array);
+}
+
+template <typename LeftArrayType, typename RightArrayType>
+decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
+    return array_left * array_right;
+}
+
+template <typename LeftArrayType, typename RightArrayType>
+decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
+    return array_left / array_right;
+}
+
+template <typename LeftArrayType, typename RightArrayType>
+decltype(auto) cwise_max(const LeftArrayType& array_left, const RightArrayType& array_right) {
+    return blaze::map(array_left, array_right, [](double left, double right) { return std::max(left, right); });
 }
 
 /* Vector Operations */
@@ -43,15 +89,62 @@ decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
     return blaze::subvector(vector, start_row, size_row);
 }
 
+template <typename T, uint m, uint n, uint mn>
+StatMatrix<T, m, n> reshape(const StatVector<T, mn>& vector) {
+    static_assert(m * n == mn, "reshape static_assert fail!");
+    return StatMatrix<T, m, n>(m, n, vector.data());
+}
+
+template <typename T, uint n>
+DynMatrix<T> reshape_jacobian_vector(const DynVector<T>& vector) {
+    return DynMatrix<T>(n, n, vector.data());
+}
+
 /* Matrix Operations */
+template <typename MatrixType>
+uint rows(const MatrixType& matrix) {
+    return blaze::rows(matrix);
+}
+
+template <typename MatrixType>
+uint columns(const MatrixType& matrix) {
+    return blaze::columns(matrix);
+}
+
+template <typename MatrixType>
+MatrixType reverse_columns(const MatrixType& matrix) {
+    MatrixType rev_matrix(rows(matrix), columns(matrix));
+
+    for (uint col = 0; col < columns(matrix); ++col) {
+        column(rev_matrix, col) = column(matrix, columns(matrix) - col - 1);
+    }
+
+    return rev_matrix;
+}
+
 template <typename MatrixType>
 decltype(auto) submatrix(MatrixType& matrix, uint start_row, uint start_col, uint size_row, uint size_col) {
     return blaze::submatrix(matrix, start_row, start_col, size_row, size_col);
 }
 
+template <typename MatrixType>
+decltype(auto) row(MatrixType& matrix, uint row) {
+    return blaze::row(matrix, row);
+}
+
+template <typename MatrixType>
+decltype(auto) column(MatrixType& matrix, uint col) {
+    return blaze::column(matrix, col);
+}
+
 template <typename MatrixType, uint col>
 decltype(auto) column(MatrixType& matrix) {
     return blaze::column<col>(matrix);
+}
+
+template <typename MatrixType>
+double determinant(MatrixType& matrix) {
+    return blaze::det(matrix);
 }
 
 template <typename MatrixType>

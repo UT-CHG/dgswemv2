@@ -15,9 +15,6 @@ class Internal {
 
     template <typename EdgeInterfaceType>
     void ComputeGlobalKernels(EdgeInterfaceType& edge_int);
-
-    template <typename EdgeInterfaceType>
-    void ComputeNumericalFlux(EdgeInterfaceType& edge_int);
 };
 
 template <typename EdgeInterfaceType>
@@ -31,20 +28,15 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        boundary_in.delta_global_kernel_at_gp[gp]    = boundary_in.dF_hat_dq_at_gp[gp];
-        boundary_ex.delta_global_kernel_at_gp[gp_ex] = boundary_ex.dF_hat_dq_at_gp[gp_ex];
+        column(boundary_in.delta_global_kernel_at_gp, gp)    = column(boundary_in.dF_hat_dq_at_gp, gp);
+        column(boundary_ex.delta_global_kernel_at_gp, gp_ex) = column(boundary_ex.dF_hat_dq_at_gp, gp_ex);
 
-        edge_internal.delta_hat_global_kernel_at_gp[gp] = boundary_in.dF_hat_dq_hat_at_gp[gp];
-        edge_internal.delta_hat_global_kernel_at_gp[gp] += boundary_ex.dF_hat_dq_hat_at_gp[gp_ex];
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = column(boundary_in.dF_hat_dq_hat_at_gp, gp);
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) += column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex);
 
-        edge_internal.rhs_global_kernel_at_gp[gp] = boundary_in.F_hat_at_gp[gp];
-        edge_internal.rhs_global_kernel_at_gp[gp] += boundary_ex.F_hat_at_gp[gp_ex];
+        column(edge_internal.rhs_global_kernel_at_gp, gp) = column(boundary_in.F_hat_at_gp, gp);
+        column(edge_internal.rhs_global_kernel_at_gp, gp) += column(boundary_ex.F_hat_at_gp, gp_ex);
     }
-}
-
-template <typename EdgeInterfaceType>
-void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
-    add_F_hat_tau_terms_intface_LF(edge_int);
 }
 }
 }

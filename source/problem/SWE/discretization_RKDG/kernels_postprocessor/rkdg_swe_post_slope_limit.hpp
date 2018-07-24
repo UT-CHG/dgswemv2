@@ -15,9 +15,9 @@ void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, El
 
         auto& state = elt.data.state[stage + 1];
 
-        elt.ProjectBasisToLinear(state.q, sl_state.q_lin);
-        elt.ComputeLinearUbaryctr(sl_state.q_lin, sl_state.q_at_baryctr);
-        elt.ComputeLinearUmidpts(sl_state.q_lin, sl_state.q_at_midpts);
+        sl_state.q_lin        = elt.ProjectBasisToLinear(state.q);
+        sl_state.q_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.q_lin);
+        sl_state.q_at_midpts  = elt.ComputeLinearUmidpts(sl_state.q_lin);
     }
 }
 
@@ -115,11 +115,11 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
 
             sl_state.L = inverse(sl_state.R);
 
-            sl_state.w_midpt_char = sl_state.L * sl_state.q_at_midpts[bound];
+            sl_state.w_midpt_char = sl_state.L * column(sl_state.q_at_midpts, bound);
 
-            column<0>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr;
-            column<1>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
-            column<2>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
+            column(sl_state.w_baryctr_char, 0) = sl_state.L * sl_state.q_at_baryctr;
+            column(sl_state.w_baryctr_char, 1) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
+            column(sl_state.w_baryctr_char, 2) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
 
             double w_tilda;
             double w_delta;
@@ -171,23 +171,29 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
             }
         }
 
-        StatMatrix<double, SWE::n_variables, SWE::n_variables> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+        StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
+
+        set_constant(T, 1.0);
+
+        T(0, 0) = -1.0;
+        T(1, 1) = -1.0;
+        T(2, 2) = -1.0;
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            sl_state.q_at_vrtx[vrtx] = sl_state.q_at_baryctr;
+            column(sl_state.q_at_vrtx, vrtx) = sl_state.q_at_baryctr;
 
             for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
-                sl_state.q_at_vrtx[vrtx][SWE::Variables::ze] += T(vrtx, bound) * sl_state.delta(0, bound);
-                sl_state.q_at_vrtx[vrtx][SWE::Variables::qx] += T(vrtx, bound) * sl_state.delta(1, bound);
-                sl_state.q_at_vrtx[vrtx][SWE::Variables::qy] += T(vrtx, bound) * sl_state.delta(2, bound);
+                sl_state.q_at_vrtx(SWE::Variables::ze, vrtx) += T(vrtx, bound) * sl_state.delta(0, bound);
+                sl_state.q_at_vrtx(SWE::Variables::qx, vrtx) += T(vrtx, bound) * sl_state.delta(1, bound);
+                sl_state.q_at_vrtx(SWE::Variables::qy, vrtx) += T(vrtx, bound) * sl_state.delta(2, bound);
             }
         }
 
         bool limit = false;
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
-            double del_q_norm = norm(sl_state.q_at_vrtx[vrtx] - sl_state.q_lin[vrtx]);
-            double q_norm     = norm(sl_state.q_lin[vrtx]);
+            double del_q_norm = norm(column(sl_state.q_at_vrtx, vrtx) - column(sl_state.q_lin, vrtx));
+            double q_norm     = norm(column(sl_state.q_lin, vrtx));
 
             if (del_q_norm / q_norm > 1.0e-6) {
                 limit = true;
@@ -195,7 +201,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         }
 
         if (limit) {
-            elt.ProjectLinearToBasis(sl_state.q_at_vrtx, state.q);
+            state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), sl_state.q_at_vrtx);
         }
     }
 }

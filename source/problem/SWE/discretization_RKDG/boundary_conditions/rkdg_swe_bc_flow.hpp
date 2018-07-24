@@ -10,15 +10,19 @@ namespace RKDG {
 namespace BC {
 class Flow {
   private:
+    HybMatrix<double, SWE::n_variables> q_ex;
+    DynRowVector<double> qn;
+
+  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
 
-    Array2D<double> amplitude;
-    Array2D<double> phase;
+    std::vector<DynRowVector<double>> amplitude;
+    std::vector<DynRowVector<double>> phase;
 
-    Array2D<double> amplitude_gp;
-    Array2D<double> phase_gp;
+    std::vector<DynRowVector<double>> amplitude_gp;
+    std::vector<DynRowVector<double>> phase_gp;
 
   public:
     Flow() = default;
@@ -28,16 +32,10 @@ class Flow {
     void Initialize(BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const Array2D<double>& surface_normal,
-                     const std::vector<StatVector<double, SWE::n_variables>>& q_in,
-                     const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
-                     std::vector<StatVector<double, SWE::n_variables>>& F_hat);
-
-    void GetEX(const RKStepper& stepper,
-               const uint gp,
-               const std::vector<double>& surface_normal,
-               const StatVector<double, SWE::n_variables>& q_in,
-               StatVector<double, SWE::n_variables>& q_ex);
+                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const HybMatrix<double, SWE::n_variables>& q_in,
+                     const HybMatrix<double, SWE::n_variables>& aux_in,
+                     HybMatrix<double, SWE::n_variables>& F_hat);
 };
 
 Flow::Flow(const std::vector<FlowInput>& flow_input) {
@@ -64,64 +62,48 @@ Flow::Flow(const std::vector<FlowInput>& flow_input) {
 
 template <typename BoundaryType>
 void Flow::Initialize(BoundaryType& bound) {
+    uint ngp           = bound.data.get_ngp_boundary(bound.bound_id);
     uint n_contituents = this->frequency.size();
+
+    this->q_ex.resize(SWE::n_variables, ngp);
+    this->qn.resize(ngp);
 
     this->amplitude_gp.resize(n_contituents);
     this->phase_gp.resize(n_contituents);
 
     for (uint con = 0; con < n_contituents; con++) {
-        this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-        this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-
-        bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
-        bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+        this->amplitude_gp[con] = bound.ComputeBoundaryNodalUgp(this->amplitude[con]);
+        this->phase_gp[con]     = bound.ComputeBoundaryNodalUgp(this->phase[con]);
     }
 }
 
 void Flow::ComputeFlux(const RKStepper& stepper,
-                       const Array2D<double>& surface_normal,
-                       const std::vector<StatVector<double, SWE::n_variables>>& q_in,
-                       const std::vector<StatVector<double, SWE::n_auxiliaries>>& aux_in,
-                       std::vector<StatVector<double, SWE::n_variables>>& F_hat) {
-    StatVector<double, SWE::n_variables> q_ex;
-    for (uint gp = 0; gp < q_in.size(); ++gp) {
-        this->GetEX(stepper, gp, surface_normal[gp], q_in[gp], q_ex);
-
-        LLF_flux(Global::g, q_in[gp], q_ex, aux_in[gp], surface_normal[gp], F_hat[gp]);
-    }
-}
-
-void Flow::GetEX(const RKStepper& stepper,
-                 const uint gp,
-                 const std::vector<double>& surface_normal,
-                 const StatVector<double, SWE::n_variables>& q_in,
-                 StatVector<double, SWE::n_variables>& q_ex) {
-    double qn = 0;
-    double qt = 0;
-
-    double frequency;
-    double forcing_fact;
-    double eq_argument;
+                       const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                       const HybMatrix<double, SWE::n_variables>& q_in,
+                       const HybMatrix<double, SWE::n_variables>& aux_in,
+                       HybMatrix<double, SWE::n_variables>& F_hat) {
+    // *** //
+    set_constant(this->qn, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); con++) {
-        frequency    = this->frequency[con];
-        forcing_fact = this->forcing_fact[con];
-        eq_argument  = this->equilib_arg[con];
-
-        qn += stepper.GetRamp() * forcing_fact * this->amplitude_gp[con][gp] *
-              cos(frequency * stepper.GetTimeAtCurrentStage() + eq_argument - this->phase_gp[con][gp]);
+        for (uint gp = 0; gp < columns(q_in); ++gp) {
+            this->qn[gp] += stepper.GetRamp() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
+                            cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() + this->equilib_arg[con] -
+                                this->phase_gp[con][gp]);
+        }
     }
 
-    double n_x, n_y, t_x, t_y;
+    auto n_x = row(surface_normal, GlobalCoord::x);
+    auto n_y = row(surface_normal, GlobalCoord::y);
 
-    n_x = surface_normal[GlobalCoord::x];
-    n_y = surface_normal[GlobalCoord::y];
-    t_x = -n_y;
-    t_y = n_x;
+    row(this->q_ex, SWE::Variables::ze) = row(q_in, SWE::Variables::ze);
+    row(this->q_ex, SWE::Variables::qx) = cwise_multiplication(qn, n_x);
+    row(this->q_ex, SWE::Variables::qy) = cwise_multiplication(qn, n_y);
 
-    q_ex[SWE::Variables::ze] = q_in[SWE::Variables::ze];
-    q_ex[SWE::Variables::qx] = qn * n_x + qt * t_x;
-    q_ex[SWE::Variables::qy] = qn * n_y + qt * t_y;
+    for (uint gp = 0; gp < columns(q_in); ++gp) {
+        column(F_hat, gp) = LLF_flux(
+            Global::g, column(q_in, gp), column(this->q_ex, gp), column(aux_in, gp), column(surface_normal, gp));
+    }
 }
 }
 }

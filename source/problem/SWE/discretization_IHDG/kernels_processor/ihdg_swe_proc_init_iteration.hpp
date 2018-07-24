@@ -14,7 +14,7 @@ void Problem::initialize_iteration(SimulationType* simulation) {
 
         state.q = state_prev.q;
 
-        elt.ComputeUgp(state_prev.q, internal.q_prev_at_gp);
+        internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
     });
 
     simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
@@ -29,18 +29,19 @@ void Problem::initialize_iteration(SimulationType* simulation) {
         auto& state_ex    = edge_int.interface.data_ex.state[stage + 1];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        edge_int.interface.ComputeUgpIN(state_in.q, boundary_in.q_at_gp);
-        edge_int.interface.ComputeUgpEX(state_ex.q, boundary_ex.q_at_gp);
+        boundary_in.q_at_gp = edge_int.interface.ComputeUgpIN(state_in.q);
+        boundary_ex.q_at_gp = edge_int.interface.ComputeUgpEX(state_ex.q);
 
         /* Take average of in/ex state as initial trace state */
         uint gp_ex;
         for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
             gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-            edge_internal.q_init_at_gp[gp] = (boundary_in.q_at_gp[gp] + boundary_ex.q_at_gp[gp_ex]) / 2.0;
+            column(edge_internal.q_init_at_gp, gp) =
+                (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
         }
 
-        edge_int.L2Projection(edge_internal.q_init_at_gp, edge_state.q_hat);
+        edge_state.q_hat = edge_int.L2Projection(edge_internal.q_init_at_gp);
     });
 
     simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
@@ -52,12 +53,12 @@ void Problem::initialize_iteration(SimulationType* simulation) {
         auto& state    = edge_bound.boundary.data.state[stage + 1];
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        edge_bound.boundary.ComputeUgp(state.q, boundary.q_at_gp);
+        boundary.q_at_gp = edge_bound.boundary.ComputeUgp(state.q);
 
         /* Take in state as initial edge state */
         edge_internal.q_init_at_gp = boundary.q_at_gp;
 
-        edge_bound.L2Projection(edge_internal.q_init_at_gp, edge_state.q_hat);
+        edge_state.q_hat = edge_bound.L2Projection(edge_internal.q_init_at_gp);
     });
 }
 }

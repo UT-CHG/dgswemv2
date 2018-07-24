@@ -10,17 +10,12 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    /* Take average of in/ex state as initial trace state */
-    StatVector<double, SWE::n_variables> q_ex;
-    StatVector<double, SWE::n_variables> Fn_ex;
+    edge_dbound.boundary.boundary_condition.exchanger.GetEX(edge_dbound.boundary.boundary_condition.q_ex,
+                                                            edge_dbound.boundary.boundary_condition.Fn_ex);
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
+    edge_internal.q_init_at_gp = (boundary.q_at_gp + edge_dbound.boundary.boundary_condition.q_ex) / 2.0;
 
-        edge_internal.q_init_at_gp[gp] = (boundary.q_at_gp[gp] + q_ex) / 2.0;
-    }
-
-    edge_dbound.L2Projection(edge_internal.q_init_at_gp, edge_state.q_hat);
+    edge_state.q_hat = edge_dbound.L2Projection(edge_internal.q_init_at_gp);
 
     /* Newton-Raphson iterator */
 
@@ -34,28 +29,19 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
             break;
         }
 
-        double q_hat_norm     = 0;
-        double delta_hat_norm = norm(edge_internal.rhs_global);
+        double delta_hat_norm = norm(edge_internal.rhs_global) / edge_internal.rhs_global.size();
 
-        for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-            q_hat_norm += sqr_norm(edge_state.q_hat[dof]);
-        }
-
-        q_hat_norm = std::sqrt(q_hat_norm);
-
-        if (delta_hat_norm / q_hat_norm < 1.0e-6) {
+        if (delta_hat_norm < 1.0e-8) {
             break;
         }
     }
 
     /* Compute Numerical Flux */
 
-    edge_dbound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
-    }
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
 }
@@ -67,12 +53,10 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    edge_dbound.ComputeUgp(edge_state.q_hat, edge_internal.q_hat_at_gp);
+    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_internal.aux_hat_at_gp[gp][SWE::Auxiliaries::h] =
-            edge_internal.q_hat_at_gp[gp][SWE::Variables::ze] + boundary.aux_at_gp[gp][SWE::Auxiliaries::bath];
-    }
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Assemble global kernels */
 
@@ -87,7 +71,8 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                edge_dbound.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp);
+                reshape_jacobian_vector<double, SWE::n_variables>(
+                    edge_dbound.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp));
         }
 
         subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
@@ -100,12 +85,10 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     /* Increment q */
 
-    edge_state.q_hat_prev = edge_state.q_hat;
-
     for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-        edge_state.q_hat[dof][SWE::Variables::ze] += edge_internal.rhs_global[3 * dof];
-        edge_state.q_hat[dof][SWE::Variables::qx] += edge_internal.rhs_global[3 * dof + 1];
-        edge_state.q_hat[dof][SWE::Variables::qy] += edge_internal.rhs_global[3 * dof + 2];
+        edge_state.q_hat(SWE::Variables::ze, dof) += edge_internal.rhs_global[3 * dof];
+        edge_state.q_hat(SWE::Variables::qx, dof) += edge_internal.rhs_global[3 * dof + 1];
+        edge_state.q_hat(SWE::Variables::qy, dof) += edge_internal.rhs_global[3 * dof + 2];
     }
 }
 }

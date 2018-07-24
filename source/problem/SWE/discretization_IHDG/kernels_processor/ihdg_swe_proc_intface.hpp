@@ -13,105 +13,109 @@ void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& in
     auto& state_ex    = intface.data_ex.state[stage + 1];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-    intface.ComputeUgpIN(state_in.q, boundary_in.q_at_gp);
-    intface.ComputeUgpEX(state_ex.q, boundary_ex.q_at_gp);
+    boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
+    boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
-    uint gp_ex = 0;
-    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
-        gp_ex = intface.data_in.get_ngp_boundary(intface.bound_id_in) - gp - 1;
+    row(boundary_in.aux_at_gp, SWE::Auxiliaries::h) =
+        row(boundary_in.q_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
-        boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h] =
-            boundary_in.q_at_gp[gp][SWE::Variables::ze] + boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath];
-        boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h] =
-            boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] + boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::bath];
-    }
+    row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h) =
+        row(boundary_ex.q_at_gp, SWE::Variables::ze) + row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute fluxes at boundary states */
-    double nx_in, ny_in;
-    double u_in, v_in;
-    double uuh_in, vvh_in, uvh_in, pe_in;
+    /* IN State */
+    auto nx_in = row(intface.surface_normal_in, GlobalCoord::x);
+    auto ny_in = row(intface.surface_normal_in, GlobalCoord::y);
 
-    double nx_ex, ny_ex;
-    double u_ex, v_ex;
-    double uuh_ex, vvh_ex, uvh_ex, pe_ex;
+    auto u_in =
+        cwise_division(row(boundary_in.q_at_gp, SWE::Variables::qx), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
+    auto v_in =
+        cwise_division(row(boundary_in.q_at_gp, SWE::Variables::qy), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
 
-    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
-        gp_ex = intface.data_in.get_ngp_boundary(intface.bound_id_in) - gp - 1;
+    auto uuh_in = cwise_multiplication(u_in, row(boundary_in.q_at_gp, SWE::Variables::qx));
+    auto vvh_in = cwise_multiplication(v_in, row(boundary_in.q_at_gp, SWE::Variables::qy));
+    auto uvh_in = cwise_multiplication(u_in, row(boundary_in.q_at_gp, SWE::Variables::qy));
+    auto pe_in  = Global::g * (0.5 * cwise_multiplication(row(boundary_in.q_at_gp, SWE::Variables::ze),
+                                                         row(boundary_in.q_at_gp, SWE::Variables::ze)) +
+                              cwise_multiplication(row(boundary_in.q_at_gp, SWE::Variables::ze),
+                                                   row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
 
-        /* IN State */
+    // Fn terms
+    row(boundary_in.F_hat_at_gp, SWE::Variables::ze) =
+        cwise_multiplication(row(boundary_in.q_at_gp, SWE::Variables::qx), nx_in) +
+        cwise_multiplication(row(boundary_in.q_at_gp, SWE::Variables::qy), ny_in);
+    row(boundary_in.F_hat_at_gp, SWE::Variables::qx) =
+        cwise_multiplication(uuh_in + pe_in, nx_in) + cwise_multiplication(uvh_in, ny_in);
+    row(boundary_in.F_hat_at_gp, SWE::Variables::qy) =
+        cwise_multiplication(uvh_in, nx_in) + cwise_multiplication(vvh_in + pe_in, ny_in);
 
-        nx_in = intface.surface_normal_in[gp][GlobalCoord::x];
-        ny_in = intface.surface_normal_in[gp][GlobalCoord::y];
+    // dFn/dq terms
+    set_constant(row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::ze_ze), 0.0);
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::ze_qx) = nx_in;
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::ze_qy) = ny_in;
 
-        u_in = boundary_in.q_at_gp[gp][SWE::Variables::qx] / boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h];
-        v_in = boundary_in.q_at_gp[gp][SWE::Variables::qy] / boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h];
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::qx_ze) =
+        cwise_multiplication(
+            -cwise_multiplication(u_in, u_in) + Global::g * row(boundary_in.aux_at_gp, SWE::Auxiliaries::h), nx_in) -
+        cwise_multiplication(cwise_multiplication(u_in, v_in), ny_in);
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::qx_qx) =
+        2.0 * cwise_multiplication(u_in, nx_in) + cwise_multiplication(v_in, ny_in);
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::qx_qy) = cwise_multiplication(u_in, ny_in);
 
-        uuh_in = u_in * boundary_in.q_at_gp[gp][SWE::Variables::qx];
-        vvh_in = v_in * boundary_in.q_at_gp[gp][SWE::Variables::qy];
-        uvh_in = u_in * boundary_in.q_at_gp[gp][SWE::Variables::qy];
-        pe_in  = Global::g *
-                (0.5 * std::pow(boundary_in.q_at_gp[gp][SWE::Variables::ze], 2) +
-                 boundary_in.q_at_gp[gp][SWE::Variables::ze] * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::bath]);
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::qy_ze) =
+        -cwise_multiplication(cwise_multiplication(u_in, v_in), nx_in) +
+        cwise_multiplication(
+            -cwise_multiplication(v_in, v_in) + Global::g * row(boundary_in.aux_at_gp, SWE::Auxiliaries::h), ny_in);
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::qy_qx) = cwise_multiplication(v_in, nx_in);
+    row(boundary_in.dF_hat_dq_at_gp, JacobianVariables::qy_qy) =
+        cwise_multiplication(u_in, nx_in) + 2.0 * cwise_multiplication(v_in, ny_in);
 
-        // Fn terms
-        boundary_in.F_hat_at_gp[gp][SWE::Variables::ze] =
-            boundary_in.q_at_gp[gp][SWE::Variables::qx] * nx_in + boundary_in.q_at_gp[gp][SWE::Variables::qy] * ny_in;
-        boundary_in.F_hat_at_gp[gp][SWE::Variables::qx] = (uuh_in + pe_in) * nx_in + uvh_in * ny_in;
-        boundary_in.F_hat_at_gp[gp][SWE::Variables::qy] = uvh_in * nx_in + (vvh_in + pe_in) * ny_in;
+    /* EX State */
+    auto nx_ex = row(intface.surface_normal_ex, GlobalCoord::x);
+    auto ny_ex = row(intface.surface_normal_ex, GlobalCoord::y);
 
-        // dFn/dq terms
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qx) = nx_in;
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = ny_in;
+    auto u_ex =
+        cwise_division(row(boundary_ex.q_at_gp, SWE::Variables::qx), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
+    auto v_ex =
+        cwise_division(row(boundary_ex.q_at_gp, SWE::Variables::qy), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
 
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) =
-            (-u_in * u_in + Global::g * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h]) * nx_in - u_in * v_in * ny_in;
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = 2 * u_in * nx_in + v_in * ny_in;
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = u_in * ny_in;
+    auto uuh_ex = cwise_multiplication(u_ex, row(boundary_ex.q_at_gp, SWE::Variables::qx));
+    auto vvh_ex = cwise_multiplication(v_ex, row(boundary_ex.q_at_gp, SWE::Variables::qy));
+    auto uvh_ex = cwise_multiplication(u_ex, row(boundary_ex.q_at_gp, SWE::Variables::qy));
+    auto pe_ex  = Global::g * (0.5 * cwise_multiplication(row(boundary_ex.q_at_gp, SWE::Variables::ze),
+                                                         row(boundary_ex.q_at_gp, SWE::Variables::ze)) +
+                              cwise_multiplication(row(boundary_ex.q_at_gp, SWE::Variables::ze),
+                                                   row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath)));
 
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::ze) =
-            -u_in * v_in * nx_in + (-v_in * v_in + Global::g * boundary_in.aux_at_gp[gp][SWE::Auxiliaries::h]) * ny_in;
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qx) = v_in * nx_in;
-        boundary_in.dF_hat_dq_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = u_in * nx_in + 2 * v_in * ny_in;
+    // Fn terms
+    row(boundary_ex.F_hat_at_gp, SWE::Variables::ze) =
+        cwise_multiplication(row(boundary_ex.q_at_gp, SWE::Variables::qx), nx_ex) +
+        cwise_multiplication(row(boundary_ex.q_at_gp, SWE::Variables::qy), ny_ex);
+    row(boundary_ex.F_hat_at_gp, SWE::Variables::qx) =
+        cwise_multiplication(uuh_ex + pe_ex, nx_ex) + cwise_multiplication(uvh_ex, ny_ex);
+    row(boundary_ex.F_hat_at_gp, SWE::Variables::qy) =
+        cwise_multiplication(uvh_ex, nx_ex) + cwise_multiplication(vvh_ex + pe_ex, ny_ex);
 
-        /* EX State */
+    // dFn/dq terms
+    set_constant(row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::ze_ze), 0.0);
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::ze_qx) = nx_ex;
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::ze_qy) = ny_ex;
 
-        nx_ex = intface.surface_normal_ex[gp_ex][GlobalCoord::x];
-        ny_ex = intface.surface_normal_ex[gp_ex][GlobalCoord::y];
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::qx_ze) =
+        cwise_multiplication(
+            -cwise_multiplication(u_ex, u_ex) + Global::g * row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h), nx_ex) -
+        cwise_multiplication(cwise_multiplication(u_ex, v_ex), ny_ex);
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::qx_qx) =
+        2.0 * cwise_multiplication(u_ex, nx_ex) + cwise_multiplication(v_ex, ny_ex);
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::qx_qy) = cwise_multiplication(u_ex, ny_ex);
 
-        u_ex = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx] / boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h];
-        v_ex = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy] / boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h];
-
-        uuh_ex = u_ex * boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx];
-        vvh_ex = v_ex * boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy];
-        uvh_ex = u_ex * boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy];
-        pe_ex  = Global::g *
-                (0.5 * std::pow(boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze], 2) +
-                 boundary_ex.q_at_gp[gp_ex][SWE::Variables::ze] * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::bath]);
-
-        // Fn terms
-        boundary_ex.F_hat_at_gp[gp_ex][SWE::Variables::ze] = boundary_ex.q_at_gp[gp_ex][SWE::Variables::qx] * nx_ex +
-                                                             boundary_ex.q_at_gp[gp_ex][SWE::Variables::qy] * ny_ex;
-        boundary_ex.F_hat_at_gp[gp_ex][SWE::Variables::qx] = (uuh_ex + pe_ex) * nx_ex + uvh_ex * ny_ex;
-        boundary_ex.F_hat_at_gp[gp_ex][SWE::Variables::qy] = uvh_ex * nx_ex + (vvh_ex + pe_ex) * ny_ex;
-
-        // dFn/dq terms
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::ze) = 0.0;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::qx) = nx_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::ze, SWE::Variables::qy) = ny_ex;
-
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::ze) =
-            (-u_ex * u_ex + Global::g * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h]) * nx_ex -
-            u_ex * v_ex * ny_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::qx) = 2 * u_ex * nx_ex + v_ex * ny_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qx, SWE::Variables::qy) = u_ex * ny_ex;
-
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qy, SWE::Variables::ze) =
-            -u_ex * v_ex * nx_ex +
-            (-v_ex * v_ex + Global::g * boundary_ex.aux_at_gp[gp_ex][SWE::Auxiliaries::h]) * ny_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qy, SWE::Variables::qx) = v_ex * nx_ex;
-        boundary_ex.dF_hat_dq_at_gp[gp_ex](SWE::Variables::qy, SWE::Variables::qy) = u_ex * nx_ex + 2 * v_ex * ny_ex;
-    }
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::qy_ze) =
+        -cwise_multiplication(cwise_multiplication(u_ex, v_ex), nx_ex) +
+        cwise_multiplication(
+            -cwise_multiplication(v_ex, v_ex) + Global::g * row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h), ny_ex);
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::qy_qx) = cwise_multiplication(v_ex, nx_ex);
+    row(boundary_ex.dF_hat_dq_at_gp, JacobianVariables::qy_qy) =
+        cwise_multiplication(u_ex, nx_ex) + 2.0 * cwise_multiplication(v_ex, ny_ex);
 }
 }
 }

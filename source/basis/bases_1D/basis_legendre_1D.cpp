@@ -1,63 +1,71 @@
 #include "../bases_1D.hpp"
 
 namespace Basis {
-Array2D<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>& points) {
-    uint n_pts = points.size();
+DynMatrix<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>& points) {
+    uint ndof = p + 1;
+    uint npt  = points.size();
 
-    Array2D<double> phi(p + 1);
+    DynMatrix<double> phi(ndof, npt);
 
-    std::vector<double> l1(n_pts);
+    std::vector<double> l1(npt);
 
-    for (uint pt = 0; pt < n_pts; pt++) {
+    for (uint pt = 0; pt < npt; pt++) {
         l1[pt] = points[pt][LocalCoordLin::l1];
     }
 
-    for (uint dof = 0; dof < phi.size(); dof++) {
-        phi[dof] = jacobi_polynomial(dof, 0, 0, l1);
+    for (uint dof = 0; dof < ndof; dof++) {
+        row(phi, dof) = transpose(jacobi_polynomial(dof, 0, 0, l1));
     }
 
     return phi;
 }
 
-Array3D<double> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
-    uint n_pts = points.size();
+std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
+    uint ndof = p + 1;
+    uint npt  = points.size();
 
-    Array3D<double> dphi(p + 1);
+    std::array<DynMatrix<double>, 1> dphi;
 
-    std::vector<double> l1(n_pts);
+    DynMatrix<double> dphi_dl1(ndof, npt);
 
-    for (uint pt = 0; pt < n_pts; pt++) {
+    std::vector<double> l1(npt);
+
+    for (uint pt = 0; pt < npt; pt++) {
         l1[pt] = points[pt][LocalCoordLin::l1];
     }
 
-    for (uint dof = 0; dof < dphi.size(); dof++) {
-        dphi[dof].push_back(jacobi_polynomial_derivative(dof, 0, 0, l1));
+    for (uint dof = 0; dof < ndof; dof++) {
+        row(dphi_dl1, dof) = transpose(jacobi_polynomial_derivative(dof, 0, 0, l1));
     }
+
+    dphi[LocalCoordLin::l1] = dphi_dl1;
 
     return dphi;
 }
 
-std::pair<bool, Array2D<double>> Legendre_1D::GetMinv(const uint p) {
-    std::pair<bool, Array2D<double>> m_inv(true, Array2D<double>(1));  // diagonal
+DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
+    uint ndof = p + 1;
 
-    m_inv.second[0].resize(p + 1);
+    DynMatrix<double> m_inv(ndof, ndof);
 
-    for (uint dof = 0; dof < m_inv.second[0].size(); dof++) {
-        m_inv.second[0][dof] = (2 * dof + 1) / 2.0;
+    set_constant(m_inv, 0.0);
+
+    for (uint dof = 0; dof < ndof; dof++) {
+        m_inv(dof, dof) = (2 * dof + 1) / 2.0;
     }
 
     return m_inv;
 }
 
-template <typename T>
-void Legendre_1D::ProjectBasisToLinear(const std::vector<T>& u, std::vector<T>& u_lin) {
-    u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
-    u_lin[1] = 0.5 * u[0] + 0.5 * u[1];
+template <typename InputArrayType>
+inline decltype(auto) Legendre_1D::ProjectBasisToLinear(const InputArrayType& u) {
+    /*u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
+    u_lin[1] = 0.5 * u[0] + 0.5 * u[1];*/
 }
 
-template <typename T>
-void Legendre_1D::ProjectLinearToBasis(const std::vector<T>& u_lin, std::vector<T>& u) {
-    u[0] = u_lin[0] + u_lin[1];
-    u[1] = -u_lin[0] + u_lin[1];
+template <typename InputArrayType>
+inline decltype(auto) Legendre_1D::ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin) {
+    /*u[0] = u_lin[0] + u_lin[1];
+    u[1] = -u_lin[0] + u_lin[1];*/
 }
 }

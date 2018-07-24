@@ -12,10 +12,10 @@ mesh:
   coordinate_system: cartesian
 timestepping:
   start_time: 25-11-1987 00:00
-  end_time: 25-11-1987 12:00
+  end_time: 25-11-1987 00:01
   dt: 1
-  order: 2
-  nstages: 2
+  order: 1
+  nstages: 1
 problem:
   name: swe
   gravity: 9.81

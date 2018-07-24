@@ -11,7 +11,7 @@ class Boundary {
 
     uint bound_id;
 
-    Array2D<double> surface_normal;
+    HybMatrix<double, dimension + 1> surface_normal;
 
   private:
     Master::Master<dimension + 1>& master;
@@ -19,13 +19,13 @@ class Boundary {
 
     std::vector<uint> node_ID;
 
-    Array2D<double> psi_gp;
-    Array2D<double> psi_bound_gp;
-    Array2D<double> phi_gp;
+    DynMatrix<double> psi_gp;
+    DynMatrix<double> psi_bound_gp;
+    DynMatrix<double> phi_gp;
 
-    std::vector<double> int_fact;
-    Array2D<double> int_phi_fact;
-    Array3D<double> int_phi_phi_fact;
+    DynVector<double> int_fact;
+    DynMatrix<double> int_phi_fact;
+    DynMatrix<double> int_phi_phi_fact;
 
   public:
     Boundary(RawBoundary<dimension, DataType>&& raw_boundary, ConditonType&& boundary_condition = ConditonType());
@@ -35,18 +35,22 @@ class Boundary {
 
     std::vector<uint>& GetNodeID() { return this->node_ID; }
 
-    template <typename T>
-    void ComputeUgp(const std::vector<T>& u, std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeUgp(const InputArrayType& u);
 
-    void ComputeNodalUgp(const std::vector<double>& u_nodal, std::vector<double>& u_nodal_gp);
-    void ComputeBoundaryNodalUgp(const std::vector<double>& u_bound_nodal, std::vector<double>& u_bound_nodal_gp);
+    template <typename InputArrayType>
+    decltype(auto) ComputeNodalUgp(const InputArrayType& u_nodal);
+    template <typename InputArrayType>
+    decltype(auto) ComputeBoundaryNodalUgp(const InputArrayType& u_bound_nodal);
 
-    template <typename T>
-    T Integration(const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhi(const uint dof, const std::vector<T>& u_gp);
-    template <typename T>
-    T IntegrationPhiPhi(const uint dof_i, const uint dof_j, const std::vector<T>& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) Integration(const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhi(const uint dof, const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhi(const InputArrayType& u_gp);
+    template <typename InputArrayType>
+    decltype(auto) IntegrationPhiPhi(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
 
   public:
     using BoundaryIntegrationType = IntegrationType;
@@ -68,8 +72,10 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     // *** //
     IntegrationType integration;
 
-    std::pair<std::vector<double>, std::vector<Point<dimension>>> integration_rule =
+    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p + 1);
+
+    uint ngp = integration_rule.first.size();
 
     std::vector<Point<dimension + 1>> z_master =
         this->master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
@@ -83,120 +89,99 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     // Compute factors to expand modal values
     this->phi_gp = raw_boundary.basis.GetPhi(raw_boundary.p, z_master);
 
-    std::vector<double> surface_J = this->shape.GetSurfaceJ(this->bound_id, z_master);
+    DynVector<double> surface_J = this->shape.GetSurfaceJ(this->bound_id, z_master);
 
     if (surface_J.size() == 1) {  // constant Jacobian
-        this->int_fact = integration_rule.first;
-        for (uint gp = 0; gp < this->int_fact.size(); gp++) {
-            this->int_fact[gp] *= surface_J[0];
-        }
+        this->int_fact = integration_rule.first * surface_J[0];
 
-        this->int_phi_fact = this->phi_gp;
-        for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
-            for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
-                this->int_phi_fact[dof][gp] *= integration_rule.first[gp] * surface_J[0];
+        this->int_phi_fact = transpose(this->phi_gp);
+        for (uint dof = 0; dof < this->master.ndof; dof++) {
+            for (uint gp = 0; gp < ngp; gp++) {
+                this->int_phi_fact(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
-        this->int_phi_phi_fact.resize(this->phi_gp.size());
-        for (uint dof_i = 0; dof_i < this->phi_gp.size(); dof_i++) {
-            this->int_phi_phi_fact[dof_i] = this->int_phi_fact;
-            for (uint dof_j = 0; dof_j < this->phi_gp.size(); dof_j++) {
-                for (uint gp = 0; gp < this->int_phi_phi_fact[dof_i][dof_j].size(); gp++) {
-                    this->int_phi_phi_fact[dof_i][dof_j][gp] *= this->phi_gp[dof_i][gp];
+        this->int_phi_phi_fact.resize(ngp, std::pow(this->master.ndof, 2));
+        for (uint dof_i = 0; dof_i < this->master.ndof; dof_i++) {
+            for (uint dof_j = 0; dof_j < this->master.ndof; dof_j++) {
+                uint lookup = this->master.ndof * dof_i + dof_j;
+                for (uint gp = 0; gp < ngp; gp++) {
+                    this->int_phi_phi_fact(gp, lookup) = this->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
                 }
             }
         }
 
-        this->surface_normal = Array2D<double>(integration_rule.first.size(),
-                                               *this->shape.GetSurfaceNormal(this->bound_id, z_master).begin());
-    }
+        StatVector<double, dimension + 1> normal = this->shape.GetSurfaceNormal(this->bound_id, z_master)[0];
 
-    this->data.set_ngp_boundary(this->bound_id, integration_rule.first.size());
-}
+        this->surface_normal.resize(dimension + 1, ngp);
 
-template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-template <typename T>
-inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeUgp(const std::vector<T>& u,
-                                                                                     std::vector<T>& u_gp) {
-    std::fill(u_gp.begin(), u_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u.size(); dof++) {
-        for (uint gp = 0; gp < u_gp.size(); gp++) {
-            u_gp[gp] += u[dof] * this->phi_gp[dof][gp];
+        for (uint gp = 0; gp < ngp; ++gp) {
+            column(this->surface_normal, gp) = normal;
         }
     }
+
+    this->data.set_ngp_boundary(this->bound_id, ngp);
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeNodalUgp(
-    const std::vector<double>& u_nodal,
-    std::vector<double>& u_nodal_gp) {
-    std::fill(u_nodal_gp.begin(), u_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_nodal_gp.size(); gp++) {
-            u_nodal_gp[gp] += u_nodal[dof] * this->psi_gp[dof][gp];
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeUgp(
+    const InputArrayType& u) {
+    // u_gp(q, gp) = u(q, dof) * phi_gp(dof, gp)
+    return u * this->phi_gp;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-inline void Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeBoundaryNodalUgp(
-    const std::vector<double>& u_bound_nodal,
-    std::vector<double>& u_bound_nodal_gp) {
-    std::fill(u_bound_nodal_gp.begin(), u_bound_nodal_gp.end(), 0.0);
-
-    for (uint dof = 0; dof < u_bound_nodal.size(); dof++) {
-        for (uint gp = 0; gp < u_bound_nodal_gp.size(); gp++) {
-            u_bound_nodal_gp[gp] += u_bound_nodal[dof] * this->psi_bound_gp[dof][gp];
-        }
-    }
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeNodalUgp(
+    const InputArrayType& u_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_nodal * this->psi_gp;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-template <typename T>
-inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::Integration(const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_fact[gp];
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeBoundaryNodalUgp(
+    const InputArrayType& u_bound_nodal) {
+    // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
+    return u_bound_nodal * this->psi_bound_gp;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-template <typename T>
-inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(const uint dof,
-                                                                                      const std::vector<T>& u_gp) {
-    T integral;
-
-    integral = 0.0;
-
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_fact[dof][gp];
-    }
-
-    return integral;
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::Integration(
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_fact[gp]
+    return u_gp * this->int_fact;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
-template <typename T>
-inline T Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhiPhi(const uint dof_i,
-                                                                                         const uint dof_j,
-                                                                                         const std::vector<T>& u_gp) {
-    T integral;
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(
+    const uint dof,
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * column(this->int_phi_fact, dof);
+}
 
-    integral = 0.0;
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhi(
+    const InputArrayType& u_gp) {
+    // integral(q, dof) =  u_gp(q, gp) * int_phi_fact(gp, dof)
+    return u_gp * this->int_phi_fact;
+}
 
-    for (uint gp = 0; gp < u_gp.size(); gp++) {
-        integral += u_gp[gp] * this->int_phi_phi_fact[dof_i][dof_j][gp];
-    }
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+template <typename InputArrayType>
+inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonType>::IntegrationPhiPhi(
+    const uint dof_i,
+    const uint dof_j,
+    const InputArrayType& u_gp) {
+    // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
+    uint lookup = this->master.ndof * dof_i + dof_j;
 
-    return integral;
+    return u_gp * column(this->int_phi_phi_fact, lookup);
 }
 }
 

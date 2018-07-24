@@ -14,9 +14,6 @@ class Land {
 
     template <typename EdgeBoundaryType>
     void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
-
-    template <typename EdgeBoundaryType>
-    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 };
 
 template <typename EdgeBoundaryType>
@@ -28,35 +25,28 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
     double qn;
     double nx, ny;
 
+    StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
+
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        nx = edge_bound.boundary.surface_normal[gp][GlobalCoord::x];
-        ny = edge_bound.boundary.surface_normal[gp][GlobalCoord::y];
+        nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
+        ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
 
-        qn = boundary.q_at_gp[gp][SWE::Variables::qx] * nx + boundary.q_at_gp[gp][SWE::Variables::qy] * ny;
+        qn = boundary.q_at_gp(SWE::Variables::qx, gp) * nx + boundary.q_at_gp(SWE::Variables::qy, gp) * ny;
 
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::ze) = -1.0;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::qx) = 0.0;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::ze, SWE::Variables::qy) = 0.0;
+        column(boundary.delta_global_kernel_at_gp, gp) = -I_vector;
 
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::ze) = 0.0;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::qx) = -1.0 + nx * nx;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qx, SWE::Variables::qy) = nx * ny;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qx_qx, gp) += nx * nx;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qx_qy, gp) += nx * ny;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qy_qx, gp) += nx * ny;
+        boundary.delta_global_kernel_at_gp(JacobianVariables::qy_qy, gp) += ny * ny;
 
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::ze) = 0.0;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::qx) = nx * ny;
-        boundary.delta_global_kernel_at_gp[gp](SWE::Variables::qy, SWE::Variables::qy) = -1.0 + ny * ny;
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = I_vector;
 
-        edge_internal.delta_hat_global_kernel_at_gp[gp] = IdentityMatrix<double>(SWE::n_variables);
-
-        edge_internal.rhs_global_kernel_at_gp[gp] = edge_internal.q_hat_at_gp[gp] - boundary.q_at_gp[gp];
-        edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qx] += qn * nx;
-        edge_internal.rhs_global_kernel_at_gp[gp][SWE::Variables::qy] += qn * ny;
+        column(edge_internal.rhs_global_kernel_at_gp, gp) =
+            column(edge_internal.q_hat_at_gp, gp) - column(boundary.q_at_gp, gp);
+        edge_internal.rhs_global_kernel_at_gp(SWE::Variables::qx, gp) += qn * nx;
+        edge_internal.rhs_global_kernel_at_gp(SWE::Variables::qy, gp) += qn * ny;
     }
-}
-
-template <typename EdgeBoundaryType>
-void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
-    add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 }
 }

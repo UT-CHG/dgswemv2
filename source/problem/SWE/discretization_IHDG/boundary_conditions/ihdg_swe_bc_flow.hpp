@@ -66,8 +66,8 @@ void Flow::Initialize(BoundaryType& bound) {
         this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
         this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
 
-        bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
-        bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+        // bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
+        // bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
     }
 }
 }

@@ -12,12 +12,15 @@ class Distributed {
   public:
     DBDataExchanger exchanger;
 
+    HybMatrix<double, SWE::n_variables> q_ex;
+    HybMatrix<double, SWE::n_variables> Fn_ex;
+
   public:
     Distributed() = default;
     Distributed(const DBDataExchanger& exchanger);
 
     template <typename DistributedBoundaryType>
-    void Initialize(DistributedBoundaryType& dbound) {} /*nothing to initialize*/
+    void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
     void ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
@@ -28,6 +31,13 @@ class Distributed {
 
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
 
+template <typename DistributedBoundaryType>
+void Distributed::Initialize(DistributedBoundaryType& dbound) {
+    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    this->q_ex.resize(SWE::n_variables, ngp);
+    this->Fn_ex.resize(SWE::n_variables, ngp);
+}
+
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
@@ -37,12 +47,7 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
     StatVector<double, SWE::n_variables> q_ex;
     StatVector<double, SWE::n_variables> Fn_ex;
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_dbound.boundary.boundary_condition.exchanger.GetEX(gp, q_ex, Fn_ex);
-
-        edge_internal.rhs_global_kernel_at_gp[gp] = boundary.Fn_at_gp[gp];
-        edge_internal.rhs_global_kernel_at_gp[gp] += Fn_ex;
-    }
+    edge_internal.rhs_global_kernel_at_gp = boundary.Fn_at_gp + this->Fn_ex;
 
     // Add tau terms
     add_kernel_tau_terms_dbound_LF(edge_dbound);
