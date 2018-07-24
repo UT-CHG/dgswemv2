@@ -42,8 +42,8 @@ $DGSWEMV2_ROOT_/build/examples/rkdg_swe_manufactured_solution/RKDG_MANUFACTURED_
 
 echo "Running HPX Test case..."
 rm -f hpx.out
-$DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 2 1
-$DGSWEMV2_ROOT_/build/examples/rkdg_swe_manufactured_solution/RKDG_MANUFACTURED_SOLUTION_HPX dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
+$DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 3 1
+$DGSWEMV2_ROOT_/build/examples/rkdg_swe_manufactured_solution/RKDG_MANUFACTURED_SOLUTION_HPX dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
 
 echo "Running MPI Test case..."
 rm rectangular_mesh_*

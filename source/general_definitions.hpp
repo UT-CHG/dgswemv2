@@ -37,7 +37,7 @@ using uint = unsigned int;
 
 /* This will have to go into linear_algebra.hpp */
 
-#include "utilities/linear_algebra/blaze_compatibility.hpp"
+#include "utilities/linear_algebra/use_blaze.hpp"
 //#include "utilities/linear_algebra/use_eigen.hpp"
 
 template <uint dimension>
