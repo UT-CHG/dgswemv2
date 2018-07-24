@@ -80,7 +80,15 @@ decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
 
 template <typename T, uint n>
 DynMatrix<T> reshape_jacobian_vector(const DynVector<T>& vector) {
-    return DynMatrix<T>(n, n)();
+    DynMatrix<T> ret(n, n);
+
+    for (uint i = 0; i < n; ++i) {
+        for (uint j = 0; j < n; ++j) {
+            ret(i, j) = vector[i * n + j];
+        }
+    }
+
+    return ret;
 }
 
 /* Matrix Operations */

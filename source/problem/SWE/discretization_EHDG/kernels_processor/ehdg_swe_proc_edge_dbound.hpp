@@ -85,8 +85,6 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     /* Increment q */
 
-    edge_state.q_hat_prev = edge_state.q_hat;
-
     for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
         edge_state.q_hat(SWE::Variables::ze, dof) += edge_internal.rhs_global[3 * dof];
         edge_state.q_hat(SWE::Variables::qx, dof) += edge_internal.rhs_global[3 * dof + 1];

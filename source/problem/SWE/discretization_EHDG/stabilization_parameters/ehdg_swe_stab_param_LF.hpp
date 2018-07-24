@@ -57,14 +57,11 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
 
         /* delta kernels */
 
-        subvector(
-            column(edge_internal.delta_hat_global_kernel_at_gp, gp), SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::ze_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::ze];
-        subvector(
-            column(edge_internal.delta_hat_global_kernel_at_gp, gp), SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qx_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::qx];
-        subvector(
-            column(edge_internal.delta_hat_global_kernel_at_gp, gp), SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qy_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::qy];
 
         column(edge_internal.delta_hat_global_kernel_at_gp, gp) += -2 * tau * I_vector;
@@ -123,14 +120,11 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
         /* delta kernels */
 
-        subvector(
-            column(edge_internal.delta_hat_global_kernel_at_gp, gp), SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::ze_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::ze];
-        subvector(
-            column(edge_internal.delta_hat_global_kernel_at_gp, gp), SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qx_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::qx];
-        subvector(
-            column(edge_internal.delta_hat_global_kernel_at_gp, gp), SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qy_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::qy];
 
         column(edge_internal.delta_hat_global_kernel_at_gp, gp) += -2 * tau * I_vector;

@@ -14,7 +14,7 @@ void Problem::update_kernel(const RKStepper& stepper, ElementType& elt) {
 
     curr_state.solution = elt.ApplyMinv(curr_state.rhs);
 
-    next_state.q = 0.0;
+    set_constant(next_state.q, 0.0);
 
     for (uint s = 0; s <= stage; ++s) {
         next_state.q += stepper.ark[stage][s] * state[s].q + dt * stepper.brk[stage][s] * state[s].solution;
@@ -35,8 +35,10 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
 
     auto& state = elt.data.state[stage + 1];
 
-    for (auto& u_mode : row(state.q, SWE::Variables::ze)) {
-        if (std::isnan(u_mode)) {
+    uint ndof = elt.data.get_ndof();
+
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.rhs(SWE::Variables::ze, dof))) {
             std::cerr << "Error: found isnan ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -44,8 +46,8 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& u_mode : row(state.q, SWE::Variables::qx)) {
-        if (std::isnan(u_mode)) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.q(SWE::Variables::qx, dof))) {
             std::cerr << "Error: found isnan qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -53,8 +55,8 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& u_mode : row(state.q, SWE::Variables::qy)) {
-        if (std::isnan(u_mode)) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.q(SWE::Variables::qx, dof))) {
             std::cerr << "Error: found isnan qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -62,8 +64,8 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& rhs_mode : row(state.rhs, SWE::Variables::ze)) {
-        if (std::isnan(rhs_mode)) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.rhs(SWE::Variables::ze, dof))) {
             std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -71,8 +73,8 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& rhs_mode : row(state.rhs, SWE::Variables::qx)) {
-        if (std::isnan(rhs_mode)) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.rhs(SWE::Variables::qx, dof))) {
             std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -80,8 +82,8 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (auto& rhs_mode : row(state.rhs, SWE::Variables::qy)) {
-        if (std::isnan(rhs_mode)) {
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.rhs(SWE::Variables::qy, dof))) {
             std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 

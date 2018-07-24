@@ -21,7 +21,8 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     auto uuh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qx));
     auto vvh = cwise_multiplication(v, row(internal.q_at_gp, SWE::Variables::qy));
     auto uvh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * pow(row(internal.q_at_gp, SWE::Variables::ze), 2.0) +
+    auto pe  = Global::g * (0.5 * cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
+                                                      row(internal.q_at_gp, SWE::Variables::ze)) +
                            cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
                                                 row(internal.aux_at_gp, SWE::Auxiliaries::bath)));
 

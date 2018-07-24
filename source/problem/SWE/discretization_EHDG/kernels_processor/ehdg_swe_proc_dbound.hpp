@@ -25,7 +25,8 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     auto uuh = cwise_multiplication(u, row(boundary.q_at_gp, SWE::Variables::qx));
     auto vvh = cwise_multiplication(v, row(boundary.q_at_gp, SWE::Variables::qy));
     auto uvh = cwise_multiplication(u, row(boundary.q_at_gp, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * pow(row(boundary.q_at_gp, SWE::Variables::ze), 2.0) +
+    auto pe  = Global::g * (0.5 * cwise_multiplication(row(boundary.q_at_gp, SWE::Variables::ze),
+                                                      row(boundary.q_at_gp, SWE::Variables::ze)) +
                            cwise_multiplication(row(boundary.q_at_gp, SWE::Variables::ze),
                                                 row(boundary.aux_at_gp, SWE::Auxiliaries::bath)));
 

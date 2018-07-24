@@ -36,7 +36,8 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
     auto uuh_in = cwise_multiplication(u_in, row(boundary_in.q_at_gp, SWE::Variables::qx));
     auto vvh_in = cwise_multiplication(v_in, row(boundary_in.q_at_gp, SWE::Variables::qy));
     auto uvh_in = cwise_multiplication(u_in, row(boundary_in.q_at_gp, SWE::Variables::qy));
-    auto pe_in  = Global::g * (0.5 * pow(row(boundary_in.q_at_gp, SWE::Variables::ze), 2.0) +
+    auto pe_in  = Global::g * (0.5 * cwise_multiplication(row(boundary_in.q_at_gp, SWE::Variables::ze),
+                                                         row(boundary_in.q_at_gp, SWE::Variables::ze)) +
                               cwise_multiplication(row(boundary_in.q_at_gp, SWE::Variables::ze),
                                                    row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
 
@@ -60,7 +61,8 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
     auto uuh_ex = cwise_multiplication(u_ex, row(boundary_ex.q_at_gp, SWE::Variables::qx));
     auto vvh_ex = cwise_multiplication(v_ex, row(boundary_ex.q_at_gp, SWE::Variables::qy));
     auto uvh_ex = cwise_multiplication(u_ex, row(boundary_ex.q_at_gp, SWE::Variables::qy));
-    auto pe_ex  = Global::g * (0.5 * pow(row(boundary_ex.q_at_gp, SWE::Variables::ze), 2.0) +
+    auto pe_ex  = Global::g * (0.5 * cwise_multiplication(row(boundary_ex.q_at_gp, SWE::Variables::ze),
+                                                         row(boundary_ex.q_at_gp, SWE::Variables::ze)) +
                               cwise_multiplication(row(boundary_ex.q_at_gp, SWE::Variables::ze),
                                                    row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath)));
 
