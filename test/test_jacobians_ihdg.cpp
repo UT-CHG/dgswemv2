@@ -295,7 +295,7 @@ int main(int argc, char* argv[]) {
         }
 
         // difference estimate zero out for future
-        delta_local_diff_est[elt.GetID()] = 0.0;
+        set_constant(delta_local_diff_est[elt.GetID()], 0.0);
 
         // store rhs_local for future comparison
         rhs_local_prev[elt.GetID()] = elt.data.internal.rhs_local;

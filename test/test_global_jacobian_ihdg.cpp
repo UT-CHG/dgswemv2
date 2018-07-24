@@ -80,14 +80,14 @@ int main(int argc, char* argv[]) {
     delta_hat_global.resize(dof_global, dof_global);
     rhs_global.resize(dof_global);
 
-    delta_local     = 0.0;
-    delta_local_inv = 0.0;
-    delta_hat_local = 0.0;
-    rhs_local       = 0.0;
+    set_constant(delta_local, 0.0);
+    set_constant(delta_local_inv, 0.0);
+    set_constant(delta_hat_local, 0.0);
+    set_constant(rhs_local, 0.0);
 
-    delta_global     = 0.0;
-    delta_hat_global = 0.0;
-    rhs_global       = 0.0;
+    set_constant(delta_global, 0.0);
+    set_constant(delta_hat_global, 0.0);
+    set_constant(rhs_global, 0.0);
 
     mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;

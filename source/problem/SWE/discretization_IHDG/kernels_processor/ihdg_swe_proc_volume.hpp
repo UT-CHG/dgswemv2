@@ -21,7 +21,8 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     auto uuh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qx));
     auto vvh = cwise_multiplication(v, row(internal.q_at_gp, SWE::Variables::qy));
     auto uvh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * pow(row(internal.q_at_gp, SWE::Variables::ze), 2.0) +
+    auto pe  = Global::g * (0.5 * cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
+                                                      row(internal.q_at_gp, SWE::Variables::ze)) +
                            cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
                                                 row(internal.aux_at_gp, SWE::Auxiliaries::bath)));
 
@@ -38,31 +39,31 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     internal.del_q_DT_at_gp = (internal.q_at_gp - internal.q_prev_at_gp) / stepper.GetDT();
 
     // dFx/dq terms
-    row(internal.dFx_dq_at_gp, JacobianVariables::ze_ze) = 0.0;
-    row(internal.dFx_dq_at_gp, JacobianVariables::ze_qx) = 1.0;
-    row(internal.dFx_dq_at_gp, JacobianVariables::ze_qy) = 0.0;
+    set_constant(row(internal.dFx_dq_at_gp, JacobianVariables::ze_ze), 0.0);
+    set_constant(row(internal.dFx_dq_at_gp, JacobianVariables::ze_qx), 1.0);
+    set_constant(row(internal.dFx_dq_at_gp, JacobianVariables::ze_qy), 0.0);
 
     row(internal.dFx_dq_at_gp, JacobianVariables::qx_ze) =
-        -pow(u, 2.0) + Global::g * row(internal.aux_at_gp, SWE::Auxiliaries::h);
+        -cwise_multiplication(u, u) + Global::g * row(internal.aux_at_gp, SWE::Auxiliaries::h);
     row(internal.dFx_dq_at_gp, JacobianVariables::qx_qx) = 2.0 * u;
-    row(internal.dFx_dq_at_gp, JacobianVariables::qx_qy) = 0.0;
+    set_constant(row(internal.dFx_dq_at_gp, JacobianVariables::qx_qy), 0.0);
 
     row(internal.dFx_dq_at_gp, JacobianVariables::qy_ze) = -cwise_multiplication(u, v);
     row(internal.dFx_dq_at_gp, JacobianVariables::qy_qx) = v;
     row(internal.dFx_dq_at_gp, JacobianVariables::qy_qy) = u;
 
     // dFy/dq terms
-    row(internal.dFy_dq_at_gp, JacobianVariables::ze_ze) = 0.0;
-    row(internal.dFy_dq_at_gp, JacobianVariables::ze_qx) = 0.0;
-    row(internal.dFy_dq_at_gp, JacobianVariables::ze_qy) = 1.0;
+    set_constant(row(internal.dFy_dq_at_gp, JacobianVariables::ze_ze), 0.0);
+    set_constant(row(internal.dFy_dq_at_gp, JacobianVariables::ze_qx), 0.0);
+    set_constant(row(internal.dFy_dq_at_gp, JacobianVariables::ze_qy), 1.0);
 
     row(internal.dFy_dq_at_gp, JacobianVariables::qx_ze) = -cwise_multiplication(u, v);
     row(internal.dFy_dq_at_gp, JacobianVariables::qx_qx) = v;
     row(internal.dFy_dq_at_gp, JacobianVariables::qx_qy) = u;
 
     row(internal.dFy_dq_at_gp, JacobianVariables::qy_ze) =
-        -pow(v, 2.0) + Global::g * row(internal.aux_at_gp, SWE::Auxiliaries::h);
-    row(internal.dFy_dq_at_gp, JacobianVariables::qy_qx) = 0.0;
+        -cwise_multiplication(v, v) + Global::g * row(internal.aux_at_gp, SWE::Auxiliaries::h);
+    set_constant(row(internal.dFy_dq_at_gp, JacobianVariables::qy_qx), 0.0);
     row(internal.dFy_dq_at_gp, JacobianVariables::qy_qy) = 2.0 * v;
 
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {

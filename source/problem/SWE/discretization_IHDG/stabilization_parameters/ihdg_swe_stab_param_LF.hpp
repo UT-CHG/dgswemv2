@@ -123,20 +123,20 @@ inline void add_dF_hat_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
         column(boundary_ex.dF_hat_dq_at_gp, gp_ex) += tau * I_vector;
 
         // dF_hat_dq_hat tau terms
-        subvector(column(boundary_in.dF_hat_dq_hat_at_gp, gp), SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+        submatrix(boundary_in.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::ze_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q_in[SWE::Variables::ze];
-        subvector(column(boundary_in.dF_hat_dq_hat_at_gp, gp), SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+        submatrix(boundary_in.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::qx_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q_in[SWE::Variables::qx];
-        subvector(column(boundary_in.dF_hat_dq_hat_at_gp, gp), SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+        submatrix(boundary_in.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::qy_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q_in[SWE::Variables::qy];
 
         column(boundary_in.dF_hat_dq_hat_at_gp, gp) += -tau * I_vector;
 
-        subvector(column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex), SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+        submatrix(boundary_ex.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::ze_ze, gp_ex, SWE::n_variables, 1) =
             dtau_dq_hat * del_q_ex[SWE::Variables::ze];
-        subvector(column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex), SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+        submatrix(boundary_ex.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::qx_ze, gp_ex, SWE::n_variables, 1) =
             dtau_dq_hat * del_q_ex[SWE::Variables::qx];
-        subvector(column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex), SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+        submatrix(boundary_ex.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::qy_ze, gp_ex, SWE::n_variables, 1) =
             dtau_dq_hat * del_q_ex[SWE::Variables::qy];
 
         column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex) += -tau * I_vector;
@@ -192,11 +192,11 @@ inline void add_dF_hat_tau_terms_bound_LF(EdgeBoundaryType& edge_bound) {
         column(boundary.dF_hat_dq_at_gp, gp) += tau * I_vector;
 
         // dF_hat_dq_hat tau terms
-        subvector(column(boundary.dF_hat_dq_hat_at_gp, gp), SWE::JacobianVariables::ze_ze, SWE::n_variables) =
+        submatrix(boundary.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::ze_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::ze];
-        subvector(column(boundary.dF_hat_dq_hat_at_gp, gp), SWE::JacobianVariables::qx_ze, SWE::n_variables) =
+        submatrix(boundary.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::qx_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::qx];
-        subvector(column(boundary.dF_hat_dq_hat_at_gp, gp), SWE::JacobianVariables::qy_ze, SWE::n_variables) =
+        submatrix(boundary.dF_hat_dq_hat_at_gp, SWE::JacobianVariables::qy_ze, gp, SWE::n_variables, 1) =
             dtau_dq_hat * del_q[SWE::Variables::qy];
 
         column(boundary.dF_hat_dq_hat_at_gp, gp) += -tau * I_vector;

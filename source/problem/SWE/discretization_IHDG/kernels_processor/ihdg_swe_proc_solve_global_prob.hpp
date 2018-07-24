@@ -5,6 +5,11 @@ namespace SWE {
 namespace IHDG {
 template <typename SimulationType>
 bool Problem::solve_global_problem(SimulationType* simulation) {
+    set_constant(simulation->delta_local_inv, 0.0);
+    set_constant(simulation->rhs_local, 0.0);
+    set_constant(simulation->delta_hat_global, 0.0);
+    set_constant(simulation->rhs_global, 0.0);
+
     simulation->mesh.CallForEachElement([simulation](auto& elt) {
         auto& internal = elt.data.internal;
 
@@ -53,7 +58,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         submatrix(simulation->delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
     });
 
-    simulation->global = 0.0;
+    set_constant(simulation->global, 0.0);
 
     simulation->global = simulation->delta_hat_global -
                          simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
