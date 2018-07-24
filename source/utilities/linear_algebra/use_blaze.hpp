@@ -49,6 +49,11 @@ void set_constant(ArrayType& array, double value) {
 }
 
 template <typename ArrayType>
+void set_constant(ArrayType&& array, double value) {
+    array = value;
+}
+
+template <typename ArrayType>
 decltype(auto) transpose(const ArrayType& array) {
     return blaze::trans(array);
 }

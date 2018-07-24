@@ -50,7 +50,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     if (net_volume_flux_in > 0) {
         if (!wet_in) {  // water flowing from dry IN element
             // Zero flux on IN element side
-            boundary_in.F_hat_at_gp = 0.0;
+            set_constant(boundary_in.F_hat_at_gp, 0.0);
 
             // Reflective Boundary on EX element side
             BC::Land land_boundary;
@@ -80,7 +80,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     } else if (net_volume_flux_in < 0) {
         if (!wet_ex) {  // water flowing from dry EX element
             // Zero flux on EX element side
-            boundary_ex.F_hat_at_gp = 0.0;
+            set_constant(boundary_ex.F_hat_at_gp, 0.0);
 
             // Reflective Boundary on IN element side
             BC::Land land_boundary;

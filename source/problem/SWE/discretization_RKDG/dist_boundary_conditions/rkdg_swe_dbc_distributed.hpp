@@ -61,7 +61,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
     if (net_volume_flux_in > 0) {
         if (!wet_in) {  // water flowing from dry IN element
             // Zero flux on IN element side
-            boundary.F_hat_at_gp = 0.0;
+            set_constant(boundary.F_hat_at_gp, 0.0);
 
             net_volume_flux_in = 0;
         } else if (!wet_ex) {  // water flowing to dry EX element

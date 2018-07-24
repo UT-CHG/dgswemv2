@@ -117,9 +117,9 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
 
             sl_state.w_midpt_char = sl_state.L * column(sl_state.q_at_midpts, bound);
 
-            column<0>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr;
-            column<1>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
-            column<2>(sl_state.w_baryctr_char) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
+            column(sl_state.w_baryctr_char, 0) = sl_state.L * sl_state.q_at_baryctr;
+            column(sl_state.w_baryctr_char, 1) = sl_state.L * sl_state.q_at_baryctr_neigh[element_1];
+            column(sl_state.w_baryctr_char, 2) = sl_state.L * sl_state.q_at_baryctr_neigh[element_2];
 
             double w_tilda;
             double w_delta;
@@ -171,7 +171,13 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
             }
         }
 
-        StatMatrix<double, SWE::n_variables, SWE::n_variables> T{{-1.0, 1.0, 1.0}, {1.0, -1.0, 1.0}, {1.0, 1.0, -1.0}};
+        StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
+
+        set_constant(T, 1.0);
+
+        T(0, 0) = -1.0;
+        T(1, 1) = -1.0;
+        T(2, 2) = -1.0;
 
         for (uint vrtx = 0; vrtx < 3; vrtx++) {
             column(sl_state.q_at_vrtx, vrtx) = sl_state.q_at_baryctr;

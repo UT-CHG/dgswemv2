@@ -271,7 +271,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
 
             state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
 
-            state.rhs = 0.0;
+            set_constant(state.rhs, 0.0);
         }
     });
 

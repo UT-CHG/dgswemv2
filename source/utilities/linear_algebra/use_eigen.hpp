@@ -48,12 +48,17 @@ void set_constant(ArrayType& array, double value) {
 }
 
 template <typename ArrayType>
+void set_constant(ArrayType&& array, double value) {
+    array = ArrayType::Constant(array.rows(), array.cols(), value);
+}
+
+template <typename ArrayType>
 decltype(auto) transpose(const ArrayType& array) {
     return array.transpose();
 }
 
 template <typename ArrayType>
-double norm(ArrayType& array) {
+double norm(const ArrayType& array) {
     return array.norm();
 }
 
