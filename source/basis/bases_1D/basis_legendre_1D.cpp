@@ -46,7 +46,9 @@ std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::v
 DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
     uint ndof = p + 1;
 
-    DynMatrix<double> m_inv(ndof, ndof, 0.0);
+    DynMatrix<double> m_inv(ndof, ndof);
+
+    set_constant(m_inv, 0.0);
 
     for (uint dof = 0; dof < ndof; dof++) {
         m_inv(dof, dof) = (2 * dof + 1) / 2.0;

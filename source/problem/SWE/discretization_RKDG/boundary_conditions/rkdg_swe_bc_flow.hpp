@@ -83,7 +83,7 @@ void Flow::ComputeFlux(const RKStepper& stepper,
                        const HybMatrix<double, SWE::n_variables>& aux_in,
                        HybMatrix<double, SWE::n_variables>& F_hat) {
     // *** //
-    std::fill(this->qn.begin(), this->qn.end(), 0.0);
+    set_constant(this->qn, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); con++) {
         for (uint gp = 0; gp < columns(q_in); ++gp) {

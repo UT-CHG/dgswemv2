@@ -109,12 +109,20 @@ int main() {
     double divergence;
 
     for (uint dof = 0; dof < 66; dof++) {
-        divergence = triangle.IntegrationPhi(dof, row(divF_vals_int, 0)) +
-                     triangle.IntegrationDPhi(GlobalCoord::x, dof, row(F_vals_int, GlobalCoord::x)) +
-                     triangle.IntegrationDPhi(GlobalCoord::y, dof, row(F_vals_int, GlobalCoord::y)) -
-                     boundaries[0].IntegrationPhi(dof, row(Fn_vals_bound, 0)) -
-                     boundaries[1].IntegrationPhi(dof, row(Fn_vals_bound, 1)) -
-                     boundaries[2].IntegrationPhi(dof, row(Fn_vals_bound, 2));
+        auto div = (triangle.IntegrationPhi(dof, row(divF_vals_int, 0)) +
+                    triangle.IntegrationDPhi(GlobalCoord::x, dof, row(F_vals_int, GlobalCoord::x)) +
+                    triangle.IntegrationDPhi(GlobalCoord::y, dof, row(F_vals_int, GlobalCoord::y)) -
+                    boundaries[0].IntegrationPhi(dof, row(Fn_vals_bound, 0)) -
+                    boundaries[1].IntegrationPhi(dof, row(Fn_vals_bound, 1)) -
+                    boundaries[2].IntegrationPhi(dof, row(Fn_vals_bound, 2)));
+
+#ifdef USE_BLAZE
+        divergence = div;
+#endif
+
+#ifdef USE_EIGEN
+        divergence = div[0];
+#endif
 
         if (!almost_equal(divergence, 0.0, 1.e+03)) {
             error_found = true;
@@ -125,11 +133,12 @@ int main() {
 
     DynMatrix<double> mod_vals(1, triangle.data.get_ndof());
     DynMatrix<double> gp_vals(1, triangle.data.get_ngp_boundary(0));
-    DynMatrix<double> unit(1, triangle.data.get_ngp_boundary(0), 1.0);
+    DynMatrix<double> unit(1, triangle.data.get_ngp_boundary(0));
+    set_constant(unit, 1.0);
 
     // Check ComputeUgp
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         for (uint n_bound = 0; n_bound < 3; n_bound++) {
@@ -206,7 +215,7 @@ int main() {
     // Check integrations PhiPhi
     for (uint n_bound = 0; n_bound < 3; n_bound++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+            set_constant(mod_vals, 0.0);
             row(mod_vals, 0)[dof] = 1.0;
 
             gp_vals = boundaries[n_bound].ComputeUgp(mod_vals);
@@ -232,7 +241,7 @@ int main() {
 
     // Check IntegrationPhiIN/EX
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         for (uint n_intface = 0; n_intface < 3; n_intface++) {
@@ -254,7 +263,7 @@ int main() {
 
     // Check ComputeUgpIN/EX
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         for (uint n_intface = 0; n_intface < 3; n_intface++) {
@@ -364,7 +373,7 @@ int main() {
     // Check integrations PhiPhi
     for (uint n_intface = 0; n_intface < 3; n_intface++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+            set_constant(mod_vals, 0.0);
             row(mod_vals, 0)[dof] = 1.0;
 
             gp_vals = interfaces[n_intface].ComputeUgpIN(mod_vals);

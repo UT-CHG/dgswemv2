@@ -54,7 +54,20 @@ int main() {
     DynMatrix<double> u(1, 11);                           // ndof for p = 10
     DynMatrix<double> u_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
 
-    DynMatrix<double> u_proj{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0}};
+    DynMatrix<double> u_proj(1, 11);
+
+    u_proj(0, 0)  = 1.0;
+    u_proj(0, 1)  = 2.0;
+    u_proj(0, 2)  = 3.0;
+    u_proj(0, 3)  = 4.0;
+    u_proj(0, 4)  = 5.0;
+    u_proj(0, 5)  = 6.0;
+    u_proj(0, 6)  = 7.0;
+    u_proj(0, 7)  = 8.0;
+    u_proj(0, 8)  = 9.0;
+    u_proj(0, 9)  = 10.0;
+    u_proj(0, 10) = 11.0;
+
     DynMatrix<double> u_proj_res(1, 11);
     DynMatrix<double> u_proj_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
 
@@ -85,7 +98,7 @@ int main() {
     }
 
     for (uint dof = 0; dof < 11; dof++) {
-        std::fill(row(u, 0).begin(), row(u, 0).end(), 0.0);
+        set_constant(u, 0.0);
         row(u, 0)[dof] = 1.0;
 
         for (uint n_bound = 0; n_bound < 3; n_bound++) {
@@ -100,7 +113,8 @@ int main() {
                 std::cout << "Error found edge bound int lambda" << std::endl;
             }
 
-            std::fill(row(u_gp, 0).begin(), row(u_gp, 0).end(), 1.0);
+            set_constant(u_gp, 1.0);
+            ;
 
             inner_product = edge_boundaries[n_bound].IntegrationLambdaLambda(dof, dof, u_gp)[0];
 
@@ -139,7 +153,7 @@ int main() {
     }
 
     for (uint dof = 0; dof < 11; dof++) {
-        std::fill(row(u, 0).begin(), row(u, 0).end(), 0.0);
+        set_constant(u, 0.0);
         row(u, 0)[dof] = 1.0;
 
         for (uint n_int = 0; n_int < 3; n_int++) {
@@ -154,7 +168,8 @@ int main() {
                 std::cout << "Error found edge int int lambda" << std::endl;
             }
 
-            std::fill(row(u_gp, 0).begin(), row(u_gp, 0).end(), 1.0);
+            set_constant(u_gp, 1.0);
+            ;
 
             inner_product = edge_interfaces[n_int].IntegrationLambdaLambda(dof, dof, u_gp)[0];
 
@@ -168,11 +183,12 @@ int main() {
 
     DynMatrix<double> u_phi(1, 66);                           // ndof for p = 10
     DynMatrix<double> u_phi_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
-    DynMatrix<double> unit(1, integration.GetNumGP(21), 1.0);
+    DynMatrix<double> unit(1, integration.GetNumGP(21));
+    set_constant(unit, 1.0);
 
     for (uint n_bound = 0; n_bound < 1; n_bound++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(row(u_phi, 0).begin(), row(u_phi, 0).end(), 0.0);
+            set_constant(u_phi, 0.0);
             row(u_phi, 0)[dof] = 1.0;
 
             u_phi_gp = edge_boundaries[n_bound].boundary.ComputeUgp(u_phi);
@@ -194,7 +210,7 @@ int main() {
 
     for (uint n_int = 0; n_int < 3; n_int++) {
         for (uint dof = 0; dof < 66; dof++) {
-            std::fill(row(u_phi, 0).begin(), row(u_phi, 0).end(), 0.0);
+            set_constant(u_phi, 0.0);
             row(u_phi, 0)[dof] = 1.0;
 
             u_phi_gp = edge_interfaces[n_int].interface.ComputeUgpIN(u_phi);

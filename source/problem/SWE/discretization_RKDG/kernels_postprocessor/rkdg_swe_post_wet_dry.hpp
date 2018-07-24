@@ -134,7 +134,7 @@ void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) 
 
         state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
 
-        state.rhs = 0.0;
+        set_constant(state.rhs, 0.0);
     } else if (set_wet_element) {
         wd_state.wet = true;
     }

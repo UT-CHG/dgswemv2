@@ -65,7 +65,9 @@ std::array<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const std::ve
 DynMatrix<double> Dubiner_2D::GetMinv(const uint p) {
     uint ndof = (p + 1) * (p + 2) / 2;
 
-    DynMatrix<double> m_inv(ndof, ndof, 0.0);
+    DynMatrix<double> m_inv(ndof, ndof);
+
+    set_constant(m_inv, 0.0);
 
     for (uint dof = 0; dof < ndof; dof++) {
         uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);

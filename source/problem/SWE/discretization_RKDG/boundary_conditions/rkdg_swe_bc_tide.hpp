@@ -81,7 +81,7 @@ void Tide::ComputeFlux(const RKStepper& stepper,
                        const HybMatrix<double, SWE::n_variables>& aux_in,
                        HybMatrix<double, SWE::n_variables>& F_hat) {
     // *** //
-    std::fill(row(this->q_ex, SWE::Variables::ze).begin(), row(this->q_ex, SWE::Variables::ze).end(), 0.0);
+    set_constant(this->q_ex, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); con++) {
         for (uint gp = 0; gp < columns(q_in); ++gp) {

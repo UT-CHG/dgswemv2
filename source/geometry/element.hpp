@@ -532,8 +532,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
     }
 
     // find square difference betwee u_gp and true_gp
-    DynMatrix<double> sq_diff;
-    sq_diff = blaze::pow(true_gp - u_gp, 2);
+    DynMatrix<double> sq_diff = cwise_multiplication(true_gp - u_gp, true_gp - u_gp);
 
     DynVector<double> L2;
 

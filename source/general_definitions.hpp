@@ -36,9 +36,16 @@ using uchar = unsigned char;
 using uint = unsigned int;
 
 /* This will have to go into linear_algebra.hpp */
+//#define USE_EIGEN
+#define USE_BLAZE
 
+#ifdef USE_BLAZE 
 #include "utilities/linear_algebra/use_blaze.hpp"
-//#include "utilities/linear_algebra/use_eigen.hpp"
+#endif
+
+#ifdef USE_EIGEN 
+#include "utilities/linear_algebra/use_eigen.hpp"
+#endif
 
 template <uint dimension>
 using Point = std::array<double, dimension>;

@@ -168,7 +168,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     DynMatrix<double> solution_vals(1, triangle.data.get_ndof());
 
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         gp_vals       = triangle.ComputeUgp(mod_vals);
@@ -193,10 +193,10 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
     // Check ComputeDUgp
     DynMatrix<double> gp_dvals(1, triangle.data.get_ngp_internal());
-    std::fill(row(gp_vals, 0).begin(), row(gp_vals, 0).end(), 1.0);
+    set_constant(gp_vals, 1.0);
 
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         gp_dvals = triangle.ComputeDUgp(GlobalCoord::x, mod_vals);
@@ -254,10 +254,11 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     }
 
     // Check integrations PhiPhi PhiDPhi
-    DynMatrix<double> unit_gp(1, triangle.data.get_ngp_internal(), 1.0);
+    DynMatrix<double> unit_gp(1, triangle.data.get_ngp_internal());
+    set_constant(unit_gp, 1.0);
 
     for (uint dof = 0; dof < 66; dof++) {
-        std::fill(row(mod_vals, 0).begin(), row(mod_vals, 0).end(), 0.0);
+        set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         gp_vals = triangle.ComputeUgp(mod_vals);
