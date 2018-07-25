@@ -28,8 +28,6 @@ class Simulation {
     SparseMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
 
-    SparseMatrix<double> global;
-
   public:
     Simulation() = default;
     Simulation(const std::string& input_string);

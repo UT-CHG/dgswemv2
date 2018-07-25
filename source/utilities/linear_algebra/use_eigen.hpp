@@ -21,8 +21,6 @@ template <typename T, uint m>
 using HybMatrix = Eigen::Matrix<T, m, Eigen::Dynamic>;
 
 template <typename T>
-using SparseVector = Eigen::SparseVector<T>;
-template <typename T>
 using SparseMatrix = Eigen::SparseMatrix<T>;
 
 template <typename T>
@@ -32,7 +30,7 @@ decltype(auto) IdentityMatrix(uint size) {
 
 template <typename T>
 DynVector<T> IdentityVector(uint size) {
-    DynVector<double> I_vector = DynVector<double>::Zero(size * size);
+    DynVector<T> I_vector = DynVector<T>::Zero(size * size);
 
     for (uint i = 0; i < size; i++) {
         I_vector[i * size + i] = 1.0;
@@ -42,10 +40,12 @@ DynVector<T> IdentityVector(uint size) {
 }
 
 template <typename T>
-struct SparseMatrixData {
+struct SparseMatrixMeta {
     std::vector<Eigen::Triplet<T>> data;
 
     void add_triplet(uint row, uint col, T value) { this->data.emplace_back(Eigen::Triplet<T>(row, col, value)); }
+
+    void get_sparse_matrix(SparseMatrix<T>& sparse_matrix) { sparse_matrix.setFromTriplets(data.begin(), data.end()); }
 };
 
 /* Vector/Matrix (aka Tensor) Operations */

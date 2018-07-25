@@ -5,10 +5,10 @@ namespace SWE {
 namespace IHDG {
 template <typename SimulationType>
 bool Problem::solve_global_problem(SimulationType* simulation) {
-    SparseMatrixData<double> sparse_delta_local_inv;
-    SparseMatrixData<double> sparse_delta_hat_local;
-    SparseMatrixData<double> sparse_delta_global;
-    SparseMatrixData<double> sparse_delta_hat_global;
+    SparseMatrixMeta<double> sparse_delta_local_inv;
+    SparseMatrixMeta<double> sparse_delta_hat_local;
+    SparseMatrixMeta<double> sparse_delta_global;
+    SparseMatrixMeta<double> sparse_delta_hat_global;
 
     simulation->mesh.CallForEachElement([simulation, &sparse_delta_local_inv](auto& elt) {
         auto& internal = elt.data.internal;
@@ -115,18 +115,15 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
             }
         });
 
-    simulation->delta_local_inv.setFromTriplets(sparse_delta_local_inv.data.begin(), sparse_delta_local_inv.data.end());
-    simulation->delta_hat_local.setFromTriplets(sparse_delta_hat_local.data.begin(), sparse_delta_hat_local.data.end());
+    sparse_delta_local_inv.get_sparse_matrix(simulation->delta_local_inv);
+    sparse_delta_hat_local.get_sparse_matrix(simulation->delta_hat_local);
+    sparse_delta_global.get_sparse_matrix(simulation->delta_global);
+    sparse_delta_hat_global.get_sparse_matrix(simulation->delta_hat_global);
 
-    simulation->delta_global.setFromTriplets(sparse_delta_global.data.begin(), sparse_delta_global.data.end());
-    simulation->delta_hat_global.setFromTriplets(sparse_delta_hat_global.data.begin(),
-                                                 sparse_delta_hat_global.data.end());
+    simulation->delta_hat_global -=
+        simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
 
-    simulation->delta_hat_global = simulation->delta_hat_global -
-                                   simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
-
-    simulation->rhs_global =
-        simulation->rhs_global - simulation->delta_global * simulation->delta_local_inv * simulation->rhs_local;
+    simulation->rhs_global -= simulation->delta_global * simulation->delta_local_inv * simulation->rhs_local;
 
     solve_sle(simulation->delta_hat_global, simulation->rhs_global);
 

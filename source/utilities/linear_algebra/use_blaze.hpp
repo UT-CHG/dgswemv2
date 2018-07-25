@@ -33,7 +33,7 @@ using IdentityMatrix = blaze::IdentityMatrix<T>;
 
 template <typename T>
 DynVector<T> IdentityVector(uint size) {
-    DynVector<double> I_vector(size * size, 0.0);
+    DynVector<T> I_vector(size * size, 0.0);
 
     for (uint i = 0; i < size; i++) {
         I_vector[i * size + i] = 1.0;
@@ -41,6 +41,40 @@ DynVector<T> IdentityVector(uint size) {
 
     return I_vector;
 }
+
+template <typename T>
+struct SparseMatrixMeta {
+    std::map<uint, std::map<uint, T>> data;
+
+    void add_triplet(uint row, uint col, T value) { this->data[row][col] = value; }
+
+    void get_sparse_matrix(SparseMatrix<T>& sparse_matrix) {
+        /*for (auto& row : this->data) {
+            for (auto& col : row.second) {
+                sparse_matrix(row.first, col.first) = col.second;
+            }
+        }*/
+
+        uint nel = 0;
+
+        for (auto& row : data) {
+            nel += row.second.size();
+        }
+
+        sparse_matrix.reserve(nel);
+
+        for (uint row = 0; row < blaze::rows(sparse_matrix); ++row) {
+            if (data.find(row) != data.end()) {
+                for (auto& col : data.at(row)) {
+                    sparse_matrix.append(row, col.first, col.second);
+                }
+                sparse_matrix.finalize(row);
+            } else {
+                sparse_matrix.finalize(row);
+            }
+        }
+    }
+};
 
 /* Vector/Matrix (aka Array) Operations */
 template <typename ArrayType>
@@ -131,10 +165,11 @@ void solve_sle(MatrixType& A, VectorType& b) {
 template <typename VectorType, typename T>
 void solve_sle(SparseMatrix<T>& A_sparse, VectorType& b) {
     // Avoid using this function, use a library with sparse solvers, e.g. Eigen
-    uint rows = A_sparse.rows();
-    uint cols = A_sparse.columns();
+    // Transforming sparse to dense  causes ill conditioned problems
+    // Solutions genereted here can be rubbish
+    static_assert(false, "No sparse solver in Blaze! Consult use_blaze.hpp!\n");
 
-    DynMatrix<double> A_dense(rows, cols, 0.0);
+    DynMatrix<double> A_dense;
 
     A_dense = A_sparse;
 

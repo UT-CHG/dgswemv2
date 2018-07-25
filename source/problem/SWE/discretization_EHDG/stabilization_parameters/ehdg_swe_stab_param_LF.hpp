@@ -20,6 +20,7 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     StatVector<double, SWE::n_variables> del_q;
     StatVector<double, SWE::n_variables> dtau_dq_hat;
 
+    StatVector<double, SWE::n_variables * SWE::n_variables> dtau_delq;
     StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     uint gp_ex;
@@ -56,16 +57,11 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
                 2.0 * column(edge_internal.q_hat_at_gp, gp);
 
         /* delta kernels */
+        subvector(dtau_delq, SWE::JacobianVariables::ze_ze, SWE::n_variables) = dtau_dq_hat * del_q[SWE::Variables::ze];
+        subvector(dtau_delq, SWE::JacobianVariables::qx_ze, SWE::n_variables) = dtau_dq_hat * del_q[SWE::Variables::qx];
+        subvector(dtau_delq, SWE::JacobianVariables::qy_ze, SWE::n_variables) = dtau_dq_hat * del_q[SWE::Variables::qy];
 
-        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::ze_ze, gp, SWE::n_variables, 1) =
-            dtau_dq_hat * del_q[SWE::Variables::ze];
-        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qx_ze, gp, SWE::n_variables, 1) =
-            dtau_dq_hat * del_q[SWE::Variables::qx];
-        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qy_ze, gp, SWE::n_variables, 1) =
-            dtau_dq_hat * del_q[SWE::Variables::qy];
-
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) += -2 * tau * I_vector;
-
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = dtau_delq - 2.0 * tau * I_vector;
         /* RHS kernels */
 
         column(edge_internal.rhs_global_kernel_at_gp, gp) += tau * del_q;
@@ -86,6 +82,7 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
     StatVector<double, SWE::n_variables> del_q;
     StatVector<double, SWE::n_variables> dtau_dq_hat;
 
+    StatVector<double, SWE::n_variables * SWE::n_variables> dtau_delq;
     StatVector<double, SWE::n_variables* SWE::n_variables> I_vector = IdentityVector<double>(SWE::n_variables);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
@@ -120,14 +117,11 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
 
         /* delta kernels */
 
-        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::ze_ze, gp, SWE::n_variables, 1) =
-            dtau_dq_hat * del_q[SWE::Variables::ze];
-        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qx_ze, gp, SWE::n_variables, 1) =
-            dtau_dq_hat * del_q[SWE::Variables::qx];
-        submatrix(edge_internal.delta_hat_global_kernel_at_gp, SWE::JacobianVariables::qy_ze, gp, SWE::n_variables, 1) =
-            dtau_dq_hat * del_q[SWE::Variables::qy];
+        subvector(dtau_delq, SWE::JacobianVariables::ze_ze, SWE::n_variables) = dtau_dq_hat * del_q[SWE::Variables::ze];
+        subvector(dtau_delq, SWE::JacobianVariables::qx_ze, SWE::n_variables) = dtau_dq_hat * del_q[SWE::Variables::qx];
+        subvector(dtau_delq, SWE::JacobianVariables::qy_ze, SWE::n_variables) = dtau_dq_hat * del_q[SWE::Variables::qy];
 
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) += -2 * tau * I_vector;
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = dtau_delq - 2.0 * tau * I_vector;
 
         /* RHS kernels */
 
