@@ -87,8 +87,6 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
     simulation->delta_global.resize(global_dof_offset, local_dof_offset);
     simulation->delta_hat_global.resize(global_dof_offset, global_dof_offset);
     simulation->rhs_global.resize(global_dof_offset);
-
-    simulation->global.resize(global_dof_offset, global_dof_offset);
 }
 }
 }

@@ -45,7 +45,7 @@ struct Internal {
     DynMatrix<double> delta_local;
     DynVector<double> rhs_local;
 
-    uint local_dof_offset;
+    uint local_dof_offset = 0;
 };
 }
 }

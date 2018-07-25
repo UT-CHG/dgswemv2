@@ -16,12 +16,12 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         uint ndof         = elt.data.get_ndof();
         uint local_offset = internal.local_dof_offset;
 
-        subvector(simulation->rhs_local, local_offset, ndof  * SWE::n_variables) = internal.rhs_local;
+        subvector(simulation->rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
 
         internal.delta_local_inv = inverse(internal.delta_local);
 
-        for (uint i = 0; i < ndof  * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof  * SWE::n_variables; ++j) {
+        for (uint i = 0; i < ndof * SWE::n_variables; ++i) {
+            for (uint j = 0; j < ndof * SWE::n_variables; ++j) {
                 sparse_delta_local_inv.add_triplet(local_offset + i, local_offset + j, internal.delta_local_inv(i, j));
             }
         }
@@ -122,13 +122,13 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->delta_hat_global.setFromTriplets(sparse_delta_hat_global.data.begin(),
                                                  sparse_delta_hat_global.data.end());
 
-    simulation->global = simulation->delta_hat_global -
-                         simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
+    simulation->delta_hat_global = simulation->delta_hat_global -
+                                   simulation->delta_global * simulation->delta_local_inv * simulation->delta_hat_local;
 
     simulation->rhs_global =
         simulation->rhs_global - simulation->delta_global * simulation->delta_local_inv * simulation->rhs_local;
 
-    solve_sle(simulation->global, simulation->rhs_global);
+    solve_sle(simulation->delta_hat_global, simulation->rhs_global);
 
     simulation->rhs_local =
         simulation->delta_local_inv * (simulation->rhs_local - simulation->delta_hat_local * simulation->rhs_global);
@@ -138,9 +138,10 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
 
         auto& state = elt.data.state[stage + 1];
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto rhs_local = subvector(simulation->rhs_local, elt_ID * 9, 9);
+        auto rhs_local = subvector(simulation->rhs_local, local_offset, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += rhs_local[3 * dof];
@@ -152,9 +153,10 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
-        uint edg_ID = edge_int.GetID();
+        uint ndof = edge_int.edge_data.get_ndof();
+        uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
+        auto rhs_global = subvector(simulation->rhs_global, global_offset, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
@@ -166,9 +168,10 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
-        uint edg_ID = edge_bound.GetID();
+        uint ndof = edge_bound.edge_data.get_ndof();
+        uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global = subvector(simulation->rhs_global, edg_ID * 6, 6);
+        auto rhs_global = subvector(simulation->rhs_global, global_offset, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
@@ -177,9 +180,9 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
         }
     });
 
-    double delta_norm = std::hypot(norm(simulation->rhs_local), norm(simulation->rhs_global));
+    double delta_norm = norm(simulation->rhs_global) / simulation->rhs_global.size();
 
-    if (delta_norm < 1e-6) {
+    if (delta_norm < 1e-8) {
         return true;
     }
 
