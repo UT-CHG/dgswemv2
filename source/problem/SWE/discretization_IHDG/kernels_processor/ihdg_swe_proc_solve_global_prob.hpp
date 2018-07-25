@@ -153,7 +153,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
-        uint ndof = edge_int.edge_data.get_ndof();
+        uint ndof          = edge_int.edge_data.get_ndof();
         uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
         auto rhs_global = subvector(simulation->rhs_global, global_offset, ndof * SWE::n_variables);
@@ -168,7 +168,7 @@ bool Problem::solve_global_problem(SimulationType* simulation) {
     simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
-        uint ndof = edge_bound.edge_data.get_ndof();
+        uint ndof          = edge_bound.edge_data.get_ndof();
         uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
         auto rhs_global = subvector(simulation->rhs_global, global_offset, ndof * SWE::n_variables);

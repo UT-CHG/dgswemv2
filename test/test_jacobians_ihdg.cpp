@@ -58,12 +58,18 @@ int main(int argc, char* argv[]) {
 
     mesh.CallForEachElement([](auto& elt) { elt.data.resize(2); });
 
-    mesh.CallForEachElement([](auto& elt) {
+    uint local_dof_offset  = 0;
+    uint global_dof_offset = 0;
+
+    mesh.CallForEachElement([&](auto& elt) {
         auto& internal = elt.data.internal;
 
-        // Set IDs for global matrix construction
+        // Set offsets for global matrix construction
+        internal.local_dof_offset = local_dof_offset;
+        local_dof_offset += elt.data.get_ndof() * SWE::n_variables;
+
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            elt.data.boundary[bound_id].elt_ID = elt.GetID();
+            elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
         }
 
         // Initialize delta_local and rhs_local containers
@@ -71,15 +77,18 @@ int main(int argc, char* argv[]) {
         internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof());
     });
 
-    mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
+    mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        // Set IDs for global matrix construction
-        boundary_in.edg_ID = edge_int.GetID();
-        boundary_ex.edg_ID = edge_int.GetID();
+        // Set offsets for global matrix construction
+        edge_internal.global_dof_offset = global_dof_offset;
+        global_dof_offset += edge_int.edge_data.get_ndof() * SWE::n_variables;
+
+        boundary_in.global_dof_offset = global_dof_offset;
+        boundary_ex.global_dof_offset = global_dof_offset;
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
@@ -99,13 +108,16 @@ int main(int argc, char* argv[]) {
                                         SWE::n_variables * edge_int.interface.data_ex.get_ndof());
     });
 
-    mesh_skeleton.CallForEachEdgeBoundary([](auto& edge_bound) {
+    mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        // Set IDs for global matrix construction
-        boundary.edg_ID = edge_bound.GetID();
+        // Set offsets for global matrix construction
+        edge_internal.global_dof_offset = global_dof_offset;
+        global_dof_offset += edge_bound.edge_data.get_ndof() * SWE::n_variables;
+
+        boundary.global_dof_offset = global_dof_offset;
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
@@ -227,8 +239,10 @@ int main(int argc, char* argv[]) {
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
         // difference estimate
-        delta_global_diff_est[edge_int.GetID()] = boundary_in.delta_global * delta_q_store[boundary_in.elt_ID];
-        delta_global_diff_est[edge_int.GetID()] += boundary_ex.delta_global * delta_q_store[boundary_ex.elt_ID];
+        delta_global_diff_est[edge_int.GetID()] =
+            boundary_in.delta_global * delta_q_store[boundary_in.local_dof_offset / 9];
+        delta_global_diff_est[edge_int.GetID()] +=
+            boundary_ex.delta_global * delta_q_store[boundary_ex.local_dof_offset / 9];
 
         // store rhs_global for future comparison
         rhs_global_prev[edge_int.GetID()] = edge_internal.rhs_global;
@@ -240,7 +254,8 @@ int main(int argc, char* argv[]) {
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
         // difference estimate
-        delta_global_diff_est[edge_bound.GetID()] = boundary.delta_global * delta_q_store[boundary.elt_ID];
+        delta_global_diff_est[edge_bound.GetID()] =
+            boundary.delta_global * delta_q_store[boundary.local_dof_offset / 9];
 
         // store rhs_global for future comparison
         rhs_global_prev[edge_bound.GetID()] = edge_internal.rhs_global;
@@ -361,8 +376,8 @@ int main(int argc, char* argv[]) {
 
         delta_global_diff_est[edge_int.GetID()] = edge_internal.delta_hat_global * delta_q_hat;
 
-        delta_local_diff_est[boundary_in.elt_ID] += boundary_in.delta_hat_local * delta_q_hat;
-        delta_local_diff_est[boundary_ex.elt_ID] += boundary_ex.delta_hat_local * delta_q_hat;
+        delta_local_diff_est[boundary_in.local_dof_offset / 9] += boundary_in.delta_hat_local * delta_q_hat;
+        delta_local_diff_est[boundary_ex.local_dof_offset / 9] += boundary_ex.delta_hat_local * delta_q_hat;
     });
 
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
@@ -423,7 +438,8 @@ int main(int argc, char* argv[]) {
 
         delta_global_diff_est[edge_bound.GetID()] = edge_internal.delta_hat_global * delta_q_hat;
 
-        delta_local_diff_est[boundary.elt_ID] += boundary.delta_hat_local * delta_q_hat;
+        // TEMP FIX HERE! boundary.local_dof_offset / 9
+        delta_local_diff_est[boundary.local_dof_offset / 9] += boundary.delta_hat_local * delta_q_hat;
     });
 
     // do one pass to compute next rhs

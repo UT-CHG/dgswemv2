@@ -67,34 +67,18 @@ int main(int argc, char* argv[]) {
     DynMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
 
-    uint dof_local = mesh.GetNumberElements() * 9;  // hardcode for p=1
-    uint dof_global =
-        mesh_skeleton.GetNumberEdgeInterfaces() * 6 + mesh_skeleton.GetNumberEdgeBoundaries() * 6;  // hardcode for p=1
+    uint local_dof_offset  = 0;
+    uint global_dof_offset = 0;
 
-    delta_local.resize(dof_local, dof_local);
-    delta_local_inv.resize(dof_local, dof_local);
-    delta_hat_local.resize(dof_local, dof_global);
-    rhs_local.resize(dof_local);
-
-    delta_global.resize(dof_global, dof_local);
-    delta_hat_global.resize(dof_global, dof_global);
-    rhs_global.resize(dof_global);
-
-    set_constant(delta_local, 0.0);
-    set_constant(delta_local_inv, 0.0);
-    set_constant(delta_hat_local, 0.0);
-    set_constant(rhs_local, 0.0);
-
-    set_constant(delta_global, 0.0);
-    set_constant(delta_hat_global, 0.0);
-    set_constant(rhs_global, 0.0);
-
-    mesh.CallForEachElement([](auto& elt) {
+    mesh.CallForEachElement([&local_dof_offset](auto& elt) {
         auto& internal = elt.data.internal;
 
-        // Set IDs for global matrix construction
+        // Set offsets for global matrix construction
+        internal.local_dof_offset = local_dof_offset;
+        local_dof_offset += elt.data.get_ndof() * SWE::n_variables;
+
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            elt.data.boundary[bound_id].elt_ID = elt.GetID();
+            elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
         }
 
         // Initialize delta_local and rhs_local containers
@@ -102,15 +86,18 @@ int main(int argc, char* argv[]) {
         internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof());
     });
 
-    mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
+    mesh_skeleton.CallForEachEdgeInterface([&global_dof_offset](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        // Set IDs for global matrix construction
-        boundary_in.edg_ID = edge_int.GetID();
-        boundary_ex.edg_ID = edge_int.GetID();
+        // Set offsets for global matrix construction
+        edge_internal.global_dof_offset = global_dof_offset;
+        global_dof_offset += edge_int.edge_data.get_ndof() * SWE::n_variables;
+
+        boundary_in.global_dof_offset = global_dof_offset;
+        boundary_ex.global_dof_offset = global_dof_offset;
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
@@ -130,13 +117,16 @@ int main(int argc, char* argv[]) {
                                         SWE::n_variables * edge_int.interface.data_ex.get_ndof());
     });
 
-    mesh_skeleton.CallForEachEdgeBoundary([](auto& edge_bound) {
+    mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        // Set IDs for global matrix construction
-        boundary.edg_ID = edge_bound.GetID();
+        // Set offsets for global matrix construction
+        edge_internal.global_dof_offset = global_dof_offset;
+        global_dof_offset += edge_bound.edge_data.get_ndof() * SWE::n_variables;
+
+        boundary.global_dof_offset = global_dof_offset;
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
@@ -151,6 +141,27 @@ int main(int argc, char* argv[]) {
         boundary.delta_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
+
+    uint dof_local  = local_dof_offset;
+    uint dof_global = global_dof_offset;
+
+    delta_local.resize(local_dof_offset, local_dof_offset);
+    delta_local_inv.resize(local_dof_offset, local_dof_offset);
+    delta_hat_local.resize(local_dof_offset, global_dof_offset);
+    rhs_local.resize(local_dof_offset);
+
+    delta_global.resize(global_dof_offset, local_dof_offset);
+    delta_hat_global.resize(global_dof_offset, global_dof_offset);
+    rhs_global.resize(global_dof_offset);
+
+    set_constant(delta_local, 0.0);
+    set_constant(delta_local_inv, 0.0);
+    set_constant(delta_hat_local, 0.0);
+    set_constant(rhs_local, 0.0);
+
+    set_constant(delta_global, 0.0);
+    set_constant(delta_hat_global, 0.0);
+    set_constant(rhs_global, 0.0);
 
     mesh.CallForEachElement([&](auto& elt) {
         // randomly assign q
@@ -210,17 +221,14 @@ int main(int argc, char* argv[]) {
     mesh.CallForEachElement([&](auto& elt) {
         auto& internal = elt.data.internal;
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = internal.local_dof_offset;
 
-        submatrix(delta_local, elt_ID * 9, elt_ID * 9, 9, 9)     = internal.delta_local;
-        submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
-        subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
-
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            uint edg_ID = elt.data.boundary[bound_id].edg_ID;
-
-            submatrix(delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) = elt.data.boundary[bound_id].delta_hat_local;
-        }
+        submatrix(delta_local, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            internal.delta_local;
+        submatrix(delta_local_inv, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            inverse(internal.delta_local);
+        subvector(rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
     });
 
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
@@ -229,16 +237,45 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
+        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
 
-        uint edg_ID = edge_int.GetID();
+        uint local_offset_in = boundary_in.local_dof_offset;
+        uint local_offset_ex = boundary_ex.local_dof_offset;
+        uint global_offset   = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
 
-        submatrix(delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
-        submatrix(delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(delta_hat_local,
+                  local_offset_in,
+                  global_offset,
+                  ndof_local_in * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_in.delta_hat_local;
+
+        submatrix(delta_hat_local,
+                  local_offset_ex,
+                  global_offset,
+                  ndof_local_ex * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_ex.delta_hat_local;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_in,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_in * SWE::n_variables) = boundary_in.delta_global;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_ex,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_ex * SWE::n_variables) = boundary_ex.delta_global;
     });
 
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
@@ -246,13 +283,29 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint elt_ID = boundary.elt_ID;
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_local  = edge_bound.boundary.data.get_ndof();
+        uint ndof_global = edge_bound.edge_data.get_ndof();
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        uint local_offset  = boundary.local_dof_offset;
+        uint global_offset = edge_internal.global_dof_offset;
 
-        submatrix(delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
+
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(
+            delta_global, global_offset, local_offset, ndof_global * SWE::n_variables, ndof_local * SWE::n_variables) =
+            boundary.delta_global;
+
+        submatrix(delta_hat_local,
+                  local_offset,
+                  global_offset,
+                  ndof_local * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary.delta_hat_local;
     });
 
     // delat q and q_hats to be assigned randomly
@@ -300,9 +353,10 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
-        uint edg_ID = edge_int.GetID();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
+        uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+        auto rhs_global_ref = subvector(delta_q_hat, global_offset, ndof_global * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
@@ -314,9 +368,10 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_global   = edge_bound.edge_data.get_ndof();
+        uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+        auto rhs_global_ref = subvector(delta_q_hat, global_offset, ndof_global * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
@@ -349,17 +404,14 @@ int main(int argc, char* argv[]) {
     mesh.CallForEachElement([&](auto& elt) {
         auto& internal = elt.data.internal;
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = internal.local_dof_offset;
 
-        submatrix(delta_local, elt_ID * 9, elt_ID * 9, 9, 9)     = internal.delta_local;
-        submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
-        subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
-
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            uint edg_ID = elt.data.boundary[bound_id].edg_ID;
-
-            submatrix(delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) = elt.data.boundary[bound_id].delta_hat_local;
-        }
+        submatrix(delta_local, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            internal.delta_local;
+        submatrix(delta_local_inv, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            inverse(internal.delta_local);
+        subvector(rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
     });
 
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
@@ -368,16 +420,45 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
+        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
 
-        uint edg_ID = edge_int.GetID();
+        uint local_offset_in = boundary_in.local_dof_offset;
+        uint local_offset_ex = boundary_ex.local_dof_offset;
+        uint global_offset   = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
 
-        submatrix(delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
-        submatrix(delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(delta_hat_local,
+                  local_offset_in,
+                  global_offset,
+                  ndof_local_in * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_in.delta_hat_local;
+
+        submatrix(delta_hat_local,
+                  local_offset_ex,
+                  global_offset,
+                  ndof_local_ex * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_ex.delta_hat_local;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_in,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_in * SWE::n_variables) = boundary_in.delta_global;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_ex,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_ex * SWE::n_variables) = boundary_ex.delta_global;
     });
 
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
@@ -385,13 +466,29 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint elt_ID = boundary.elt_ID;
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_local  = edge_bound.boundary.data.get_ndof();
+        uint ndof_global = edge_bound.edge_data.get_ndof();
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        uint local_offset  = boundary.local_dof_offset;
+        uint global_offset = edge_internal.global_dof_offset;
 
-        submatrix(delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
+
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(
+            delta_global, global_offset, local_offset, ndof_global * SWE::n_variables, ndof_local * SWE::n_variables) =
+            boundary.delta_global;
+
+        submatrix(delta_hat_local,
+                  local_offset,
+                  global_offset,
+                  ndof_local * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary.delta_hat_local;
     });
 
     // get true diff
@@ -425,9 +522,10 @@ int main(int argc, char* argv[]) {
 
         auto& state = elt.data.state[stage + 1];
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
+        auto rhs_local_ref = subvector(delta_q, local_offset, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += rhs_local_ref[3 * dof];
@@ -460,17 +558,14 @@ int main(int argc, char* argv[]) {
     mesh.CallForEachElement([&](auto& elt) {
         auto& internal = elt.data.internal;
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = internal.local_dof_offset;
 
-        submatrix(delta_local, elt_ID * 9, elt_ID * 9, 9, 9)     = internal.delta_local;
-        submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
-        subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
-
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            uint edg_ID = elt.data.boundary[bound_id].edg_ID;
-
-            submatrix(delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) = elt.data.boundary[bound_id].delta_hat_local;
-        }
+        submatrix(delta_local, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            internal.delta_local;
+        submatrix(delta_local_inv, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            inverse(internal.delta_local);
+        subvector(rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
     });
 
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
@@ -479,16 +574,45 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
+        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
 
-        uint edg_ID = edge_int.GetID();
+        uint local_offset_in = boundary_in.local_dof_offset;
+        uint local_offset_ex = boundary_ex.local_dof_offset;
+        uint global_offset   = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
 
-        submatrix(delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
-        submatrix(delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(delta_hat_local,
+                  local_offset_in,
+                  global_offset,
+                  ndof_local_in * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_in.delta_hat_local;
+
+        submatrix(delta_hat_local,
+                  local_offset_ex,
+                  global_offset,
+                  ndof_local_ex * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_ex.delta_hat_local;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_in,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_in * SWE::n_variables) = boundary_in.delta_global;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_ex,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_ex * SWE::n_variables) = boundary_ex.delta_global;
     });
 
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
@@ -496,13 +620,29 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint elt_ID = boundary.elt_ID;
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_local  = edge_bound.boundary.data.get_ndof();
+        uint ndof_global = edge_bound.edge_data.get_ndof();
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        uint local_offset  = boundary.local_dof_offset;
+        uint global_offset = edge_internal.global_dof_offset;
 
-        submatrix(delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
+
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(
+            delta_global, global_offset, local_offset, ndof_global * SWE::n_variables, ndof_local * SWE::n_variables) =
+            boundary.delta_global;
+
+        submatrix(delta_hat_local,
+                  local_offset,
+                  global_offset,
+                  ndof_local * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary.delta_hat_local;
     });
 
     // get true diff
@@ -568,9 +708,10 @@ int main(int argc, char* argv[]) {
 
         auto& state = elt.data.state[stage + 1];
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
+        auto rhs_local_ref = subvector(delta_q, local_offset, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += rhs_local_ref[3 * dof];
@@ -582,9 +723,10 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
-        uint edg_ID = edge_int.GetID();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
+        uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+        auto rhs_global_ref = subvector(delta_q_hat, global_offset, ndof_global * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
@@ -596,9 +738,10 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_global   = edge_bound.edge_data.get_ndof();
+        uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+        auto rhs_global_ref = subvector(delta_q_hat, global_offset, ndof_global * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
@@ -631,17 +774,14 @@ int main(int argc, char* argv[]) {
     mesh.CallForEachElement([&](auto& elt) {
         auto& internal = elt.data.internal;
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = internal.local_dof_offset;
 
-        submatrix(delta_local, elt_ID * 9, elt_ID * 9, 9, 9)     = internal.delta_local;
-        submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
-        subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
-
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            uint edg_ID = elt.data.boundary[bound_id].edg_ID;
-
-            submatrix(delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) = elt.data.boundary[bound_id].delta_hat_local;
-        }
+        submatrix(delta_local, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            internal.delta_local;
+        submatrix(delta_local_inv, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            inverse(internal.delta_local);
+        subvector(rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
     });
 
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
@@ -650,16 +790,45 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
+        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
 
-        uint edg_ID = edge_int.GetID();
+        uint local_offset_in = boundary_in.local_dof_offset;
+        uint local_offset_ex = boundary_ex.local_dof_offset;
+        uint global_offset   = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
 
-        submatrix(delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
-        submatrix(delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(delta_hat_local,
+                  local_offset_in,
+                  global_offset,
+                  ndof_local_in * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_in.delta_hat_local;
+
+        submatrix(delta_hat_local,
+                  local_offset_ex,
+                  global_offset,
+                  ndof_local_ex * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_ex.delta_hat_local;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_in,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_in * SWE::n_variables) = boundary_in.delta_global;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_ex,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_ex * SWE::n_variables) = boundary_ex.delta_global;
     });
 
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
@@ -667,13 +836,29 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint elt_ID = boundary.elt_ID;
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_local  = edge_bound.boundary.data.get_ndof();
+        uint ndof_global = edge_bound.edge_data.get_ndof();
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        uint local_offset  = boundary.local_dof_offset;
+        uint global_offset = edge_internal.global_dof_offset;
 
-        submatrix(delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
+
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(
+            delta_global, global_offset, local_offset, ndof_global * SWE::n_variables, ndof_local * SWE::n_variables) =
+            boundary.delta_global;
+
+        submatrix(delta_hat_local,
+                  local_offset,
+                  global_offset,
+                  ndof_local * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary.delta_hat_local;
     });
 
     subvector(rhs, 0, dof_local)          = rhs_local;
@@ -708,9 +893,10 @@ int main(int argc, char* argv[]) {
 
         auto& state = elt.data.state[stage + 1];
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto rhs_local_ref = subvector(delta_q, elt_ID * 9, 9);
+        auto rhs_local_ref = subvector(delta_q, local_offset, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += rhs_local_ref[3 * dof];
@@ -722,9 +908,10 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
-        uint edg_ID = edge_int.GetID();
+        uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+        uint ndof_global    = edge_int.edge_data.get_ndof();
+        auto rhs_global_ref = subvector(delta_q_hat, global_offset, ndof_global * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
@@ -736,9 +923,10 @@ int main(int argc, char* argv[]) {
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_global   = edge_bound.edge_data.get_ndof();
+        uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global_ref = subvector(delta_q_hat, edg_ID * 6, 6);
+        auto rhs_global_ref = subvector(delta_q_hat, global_offset, ndof_global * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global_ref[3 * dof];
@@ -771,16 +959,14 @@ int main(int argc, char* argv[]) {
     mesh.CallForEachElement([&](auto& elt) {
         auto& internal = elt.data.internal;
 
-        uint elt_ID = elt.GetID();
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = internal.local_dof_offset;
 
-        submatrix(delta_local_inv, elt_ID * 9, elt_ID * 9, 9, 9) = inverse(internal.delta_local);
-        subvector(rhs_local, elt_ID * 9, 9)                      = internal.rhs_local;
-
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            uint edg_ID = elt.data.boundary[bound_id].edg_ID;
-
-            submatrix(delta_hat_local, elt_ID * 9, edg_ID * 6, 9, 6) = elt.data.boundary[bound_id].delta_hat_local;
-        }
+        submatrix(delta_local, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            internal.delta_local;
+        submatrix(delta_local_inv, local_offset, local_offset, ndof * SWE::n_variables, ndof * SWE::n_variables) =
+            inverse(internal.delta_local);
+        subvector(rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
     });
 
     mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
@@ -789,16 +975,45 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint elt_in_ID = boundary_in.elt_ID;
-        uint elt_ex_ID = boundary_ex.elt_ID;
+        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
+        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
+        uint ndof_global   = edge_int.edge_data.get_ndof();
 
-        uint edg_ID = edge_int.GetID();
+        uint local_offset_in = boundary_in.local_dof_offset;
+        uint local_offset_ex = boundary_ex.local_dof_offset;
+        uint global_offset   = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
 
-        submatrix(delta_global, edg_ID * 6, elt_in_ID * 9, 6, 9) = boundary_in.delta_global;
-        submatrix(delta_global, edg_ID * 6, elt_ex_ID * 9, 6, 9) = boundary_ex.delta_global;
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(delta_hat_local,
+                  local_offset_in,
+                  global_offset,
+                  ndof_local_in * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_in.delta_hat_local;
+
+        submatrix(delta_hat_local,
+                  local_offset_ex,
+                  global_offset,
+                  ndof_local_ex * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary_ex.delta_hat_local;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_in,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_in * SWE::n_variables) = boundary_in.delta_global;
+
+        submatrix(delta_global,
+                  global_offset,
+                  local_offset_ex,
+                  ndof_global * SWE::n_variables,
+                  ndof_local_ex * SWE::n_variables) = boundary_ex.delta_global;
     });
 
     mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
@@ -806,13 +1021,29 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint elt_ID = boundary.elt_ID;
-        uint edg_ID = edge_bound.GetID();
+        uint ndof_local  = edge_bound.boundary.data.get_ndof();
+        uint ndof_global = edge_bound.edge_data.get_ndof();
 
-        submatrix(delta_hat_global, edg_ID * 6, edg_ID * 6, 6, 6) = edge_internal.delta_hat_global;
-        subvector(rhs_global, edg_ID * 6, 6)                      = edge_internal.rhs_global;
+        uint local_offset  = boundary.local_dof_offset;
+        uint global_offset = edge_internal.global_dof_offset;
 
-        submatrix(delta_global, edg_ID * 6, elt_ID * 9, 6, 9) = boundary.delta_global;
+        submatrix(delta_hat_global,
+                  global_offset,
+                  global_offset,
+                  ndof_global * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = edge_internal.delta_hat_global;
+
+        subvector(rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+
+        submatrix(
+            delta_global, global_offset, local_offset, ndof_global * SWE::n_variables, ndof_local * SWE::n_variables) =
+            boundary.delta_global;
+
+        submatrix(delta_hat_local,
+                  local_offset,
+                  global_offset,
+                  ndof_local * SWE::n_variables,
+                  ndof_global * SWE::n_variables) = boundary.delta_hat_local;
     });
 
     rhs_global_prev -= rhs_global;
