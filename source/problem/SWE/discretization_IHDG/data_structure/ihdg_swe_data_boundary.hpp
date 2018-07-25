@@ -26,8 +26,8 @@ struct Boundary {
     DynMatrix<double> delta_global;
     DynMatrix<double> delta_hat_local;
 
-    uint elt_ID;
-    uint edg_ID;
+    uint local_dof_offset;
+    uint global_dof_offset;
 };
 }
 }

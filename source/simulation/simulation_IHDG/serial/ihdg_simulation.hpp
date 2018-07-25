@@ -20,15 +20,15 @@ class Simulation {
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
-    DynMatrix<double> delta_local_inv;
-    DynMatrix<double> delta_hat_local;
+    SparseMatrix<double> delta_local_inv;
+    SparseMatrix<double> delta_hat_local;
     DynVector<double> rhs_local;
 
-    DynMatrix<double> delta_global;
-    DynMatrix<double> delta_hat_global;
+    SparseMatrix<double> delta_global;
+    SparseMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
 
-    DynMatrix<double> global;
+    SparseMatrix<double> global;
 
   public:
     Simulation() = default;

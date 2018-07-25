@@ -41,6 +41,13 @@ DynVector<T> IdentityVector(uint size) {
     return I_vector;
 }
 
+template <typename T>
+struct SparseMatrixData {
+    std::vector<Eigen::Triplet<T>> data;
+
+    void add_triplet(uint row, uint col, T value) { this->data.emplace_back(Eigen::Triplet<T>(row, col, value)); }
+};
+
 /* Vector/Matrix (aka Tensor) Operations */
 template <typename ArrayType>
 void set_constant(ArrayType& array, double value) {
@@ -134,6 +141,14 @@ void solve_sle(MatrixType& A, VectorType& b) {
 }
 
 template <typename VectorType, typename T>
-void solve_sle(SparseMatrix<T>& A_sparse, VectorType& b) {}
+void solve_sle(SparseMatrix<T>& A_sparse, VectorType& b) {
+    Eigen::SparseLU<SparseMatrix<T>> solver;
+
+    solver.analyzePattern(A_sparse);
+
+    solver.factorize(A_sparse);
+
+    b = solver.solve(b);
+}
 
 #endif

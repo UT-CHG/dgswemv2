@@ -23,6 +23,8 @@ struct EdgeInternal {
 
     DynMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
+
+    uint global_dof_offset;
 };
 }
 }

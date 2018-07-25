@@ -5,26 +5,18 @@ namespace SWE {
 namespace IHDG {
 template <typename SimulationType>
 void Problem::initialize_global_problem(SimulationType* simulation) {
-    uint dof_local  = simulation->mesh.GetNumberElements() * 9;  // hardcode for p=1
-    uint dof_global = simulation->mesh_skeleton.GetNumberEdgeInterfaces() * 6 +
-                      simulation->mesh_skeleton.GetNumberEdgeBoundaries() * 6;  // hardcode for p=1
+    uint local_dof_offset  = 0;
+    uint global_dof_offset = 0;
 
-    simulation->delta_local_inv.resize(dof_local, dof_local);
-    simulation->delta_hat_local.resize(dof_local, dof_global);
-    simulation->rhs_local.resize(dof_local);
-
-    simulation->delta_global.resize(dof_global, dof_local);
-    simulation->delta_hat_global.resize(dof_global, dof_global);
-    simulation->rhs_global.resize(dof_global);
-
-    simulation->global.resize(dof_global, dof_global);
-
-    simulation->mesh.CallForEachElement([](auto& elt) {
+    simulation->mesh.CallForEachElement([&local_dof_offset](auto& elt) {
         auto& internal = elt.data.internal;
 
-        // Set IDs for global matrix construction
+        // Set offsets for global matrix construction
+        internal.local_dof_offset = local_dof_offset;
+        local_dof_offset += elt.data.get_ndof() * SWE::n_variables;
+
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-            elt.data.boundary[bound_id].elt_ID = elt.GetID();
+            elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
         }
 
         // Initialize delta_local and rhs_local containers
@@ -32,15 +24,18 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
         internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof());
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
+    simulation->mesh_skeleton.CallForEachEdgeInterface([&global_dof_offset](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        // Set IDs for global matrix construction
-        boundary_in.edg_ID = edge_int.GetID();
-        boundary_ex.edg_ID = edge_int.GetID();
+        // Set offsets for global matrix construction
+        edge_internal.global_dof_offset = global_dof_offset;
+        global_dof_offset += edge_int.edge_data.get_ndof() * SWE::n_variables;
+
+        boundary_in.global_dof_offset = global_dof_offset;
+        boundary_ex.global_dof_offset = global_dof_offset;
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
@@ -60,13 +55,16 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
                                         SWE::n_variables * edge_int.interface.data_ex.get_ndof());
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeBoundary([](auto& edge_bound) {
+    simulation->mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        // Set IDs for global matrix construction
-        boundary.edg_ID = edge_bound.GetID();
+        // Set offsets for global matrix construction
+        edge_internal.global_dof_offset = global_dof_offset;
+        global_dof_offset += edge_bound.edge_data.get_ndof() * SWE::n_variables;
+
+        boundary.global_dof_offset = global_dof_offset;
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
@@ -81,6 +79,16 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
         boundary.delta_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
+
+    simulation->delta_local_inv.resize(local_dof_offset, local_dof_offset);
+    simulation->delta_hat_local.resize(local_dof_offset, global_dof_offset);
+    simulation->rhs_local.resize(local_dof_offset);
+
+    simulation->delta_global.resize(global_dof_offset, local_dof_offset);
+    simulation->delta_hat_global.resize(global_dof_offset, global_dof_offset);
+    simulation->rhs_global.resize(global_dof_offset);
+
+    simulation->global.resize(global_dof_offset, global_dof_offset);
 }
 }
 }

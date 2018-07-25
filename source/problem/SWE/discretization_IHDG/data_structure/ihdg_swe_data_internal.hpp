@@ -41,8 +41,11 @@ struct Internal {
     HybMatrix<double, SWE::n_variables * SWE::n_variables> dFx_dq_at_gp;
     HybMatrix<double, SWE::n_variables * SWE::n_variables> dFy_dq_at_gp;
 
+    DynMatrix<double> delta_local_inv;
     DynMatrix<double> delta_local;
     DynVector<double> rhs_local;
+
+    uint local_dof_offset;
 };
 }
 }
