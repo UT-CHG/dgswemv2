@@ -180,6 +180,7 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
     CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
                  -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
                  -DHPX_WITH_PARCELPORT_MPI=true \
+                 -DHPX_WITH_DYNAMIC_HPX_MAIN=OFF \
                  -DHPX_WITH_MALLOC=$MALLOC \
                  -DHPX_WITH_THREAD_IDLE_RATES=${IDLE_RATES} \
                  -DHPX_WITH_CXX14=On \
