@@ -43,8 +43,7 @@ int hpx_main(int argc, char* argv[]) {
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
         hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx::components::simple_component<HPXSimulation<SWE::EHDG::Problem>>>(locality,
-                                                                                                  input_string);
+            hpx::new_<hpx::components::simple_component<HPXSimulation<SWE::EHDG::Problem>>>(locality, input_string);
 
         simulation_clients.emplace_back(std::move(simulation_id));
     }
