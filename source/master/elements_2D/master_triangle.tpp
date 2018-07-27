@@ -11,9 +11,27 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     this->ndof = (p + 1) * (p + 2) / 2;
     this->ngp  = this->integration_rule.first.size();
 
-    this->chi_gp.resize(3, this->ngp);
-    this->dchi_gp[LocalCoordTri::z1].resize(3, this->ngp);
-    this->dchi_gp[LocalCoordTri::z2].resize(3, this->ngp);
+    this->chi_baryctr.resize(this->nvrtx);
+
+    this->chi_baryctr[0] = 1.0 / 3.0;
+    this->chi_baryctr[1] = 1.0 / 3.0;
+    this->chi_baryctr[2] = 1.0 / 3.0;
+
+    this->chi_midpts.resize(this->nvrtx, this->nbound);
+
+    this->chi_midpts(0, 0) = 0.0;
+    this->chi_midpts(0, 1) = 1.0 / 2.0;
+    this->chi_midpts(0, 2) = 1.0 / 2.0;
+    this->chi_midpts(1, 0) = 1.0 / 2.0;
+    this->chi_midpts(1, 1) = 0.0;
+    this->chi_midpts(1, 2) = 1.0 / 2.0;
+    this->chi_midpts(2, 0) = 1.0 / 2.0;
+    this->chi_midpts(2, 1) = 1.0 / 2.0;
+    this->chi_midpts(2, 2) = 0.0;
+
+    this->chi_gp.resize(this->nvrtx, this->ngp);
+    this->dchi_gp[LocalCoordTri::z1].resize(this->nvrtx, this->ngp);
+    this->dchi_gp[LocalCoordTri::z2].resize(this->nvrtx, this->ngp);
 
     for (uint gp = 0; gp < this->ngp; gp++) {
         this->chi_gp(0, gp) = -(this->integration_rule.second[gp][LocalCoordTri::z1] +
@@ -98,29 +116,13 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
 inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const InputArrayType& u_lin) {
-    StatVector<double, 3> baryctr;
-    baryctr[0] = 1.0 / 3.0;
-    baryctr[1] = 1.0 / 3.0;
-    baryctr[2] = 1.0 / 3.0;
-
-    return u_lin * baryctr;
+    return u_lin * this->chi_baryctr;
 }
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
 inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const InputArrayType& u_lin) {
-    StatMatrix<double, 3, 3> midpt;
-    midpt(0, 0) = 0.0;
-    midpt(0, 1) = 1.0 / 2.0;
-    midpt(0, 2) = 1.0 / 2.0;
-    midpt(1, 0) = 1.0 / 2.0;
-    midpt(1, 1) = 0.0;
-    midpt(1, 2) = 1.0 / 2.0;
-    midpt(2, 0) = 1.0 / 2.0;
-    midpt(2, 1) = 1.0 / 2.0;
-    midpt(2, 2) = 0.0;
-
-    return u_lin * midpt;
+    return u_lin * this->chi_midpts;
 }
 
 template <typename BasisType, typename IntegrationType>

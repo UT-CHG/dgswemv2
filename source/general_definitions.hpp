@@ -153,6 +153,9 @@ class Master {
 
     std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule;
 
+    DynVector<double> chi_baryctr;
+    DynMatrix<double> chi_midpts;
+
     DynMatrix<double> chi_gp;
     DynMatrix<double> phi_gp;
 

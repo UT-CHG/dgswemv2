@@ -6,13 +6,13 @@
 
 mesh:
   format: Adcirc
-  file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/examples/files_for_manufactured_solution/rectangular_mesh_8.14
+  file_name: /Users/kazbek/Desktop/UT-CHG/dgswemv2/examples/files_for_manufactured_solution/rectangular_mesh.14
   coordinate_system: cartesian
 
 timestepping:
   start_time: 25-11-1987 00:00
-  end_time: 25-11-1987 12:00               
-  dt: 360                       
+  end_time: 25-11-1987 00:01               
+  dt: 1                       
   order: 1
   nstages: 1
 
@@ -26,11 +26,15 @@ problem:
   initial_conditions:
     type: Function
   function_source: Enable  
+  slope_limiting:
+    type: Cockburn-Shu
+    M: 1.0e-8
+    nu: 1.5
 
 output:
   path: /Users/kazbek/Desktop/UT-CHG/dgswemv2/build/examples/output/
   vtu:
-    frequency: 360.0
+    frequency: 1.0
   logfile:
     name: log
     verbose: false
