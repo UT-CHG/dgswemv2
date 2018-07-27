@@ -14,7 +14,7 @@
 
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_kernels_processor.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_postprocessor/rkdg_swe_kernels_postprocessor.hpp"
 
 #include "simulation/simulation_RKDG/hpx/rkdg_simulation_hpx.hpp"
