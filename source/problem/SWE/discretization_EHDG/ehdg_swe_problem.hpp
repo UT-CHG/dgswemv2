@@ -99,7 +99,7 @@ struct Problem {
 
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
-    static void initialize_global_problem(HDGDiscretization<Problem>* simulation);
+    static void initialize_global_problem(HDGDiscretization<Problem>* discretization);
 
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);

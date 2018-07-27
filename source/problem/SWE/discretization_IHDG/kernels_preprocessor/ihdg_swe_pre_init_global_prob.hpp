@@ -3,12 +3,11 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename SimulationType>
-void Problem::initialize_global_problem(SimulationType* simulation) {
+void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretization) {
     uint local_dof_offset  = 0;
     uint global_dof_offset = 0;
 
-    simulation->mesh.CallForEachElement([&local_dof_offset](auto& elt) {
+    discretization->mesh.CallForEachElement([&local_dof_offset](auto& elt) {
         auto& internal = elt.data.internal;
 
         // Set offsets for global matrix construction
@@ -24,7 +23,7 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
         internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof());
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeInterface([&global_dof_offset](auto& edge_int) {
+    discretization->mesh_skeleton.CallForEachEdgeInterface([&global_dof_offset](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
@@ -55,7 +54,7 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
                                         SWE::n_variables * edge_int.interface.data_ex.get_ndof());
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
+    discretization->mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
@@ -80,13 +79,13 @@ void Problem::initialize_global_problem(SimulationType* simulation) {
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
 
-    simulation->delta_local_inv.resize(local_dof_offset, local_dof_offset);
-    simulation->delta_hat_local.resize(local_dof_offset, global_dof_offset);
-    simulation->rhs_local.resize(local_dof_offset);
+    discretization->delta_local_inv.resize(local_dof_offset, local_dof_offset);
+    discretization->delta_hat_local.resize(local_dof_offset, global_dof_offset);
+    discretization->rhs_local.resize(local_dof_offset);
 
-    simulation->delta_global.resize(global_dof_offset, local_dof_offset);
-    simulation->delta_hat_global.resize(global_dof_offset, global_dof_offset);
-    simulation->rhs_global.resize(global_dof_offset);
+    discretization->delta_global.resize(global_dof_offset, local_dof_offset);
+    discretization->delta_hat_global.resize(global_dof_offset, global_dof_offset);
+    discretization->rhs_global.resize(global_dof_offset);
 }
 }
 }

@@ -3,10 +3,9 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename SimulationType>
-void Problem::initialize_iteration(SimulationType* simulation) {
-    simulation->mesh.CallForEachElement([simulation](auto& elt) {
-        const uint stage = simulation->stepper.GetStage();
+void Problem::initialize_iteration(const RKStepper& stepper, HDGDiscretization<Problem>& discretization) {
+    discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
+        const uint stage = stepper.GetStage();
 
         auto& state      = elt.data.state[stage + 1];
         auto& state_prev = elt.data.state[stage];
@@ -17,8 +16,8 @@ void Problem::initialize_iteration(SimulationType* simulation) {
         internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeInterface([simulation](auto& edge_int) {
-        const uint stage = simulation->stepper.GetStage();
+    discretization.mesh_skeleton.CallForEachEdgeInterface([&stepper, &discretization](auto& edge_int) {
+        const uint stage = stepper.GetStage();
 
         auto& edge_state    = edge_int.edge_data.edge_state;
         auto& edge_internal = edge_int.edge_data.edge_internal;
@@ -44,8 +43,8 @@ void Problem::initialize_iteration(SimulationType* simulation) {
         edge_state.q_hat = edge_int.L2Projection(edge_internal.q_init_at_gp);
     });
 
-    simulation->mesh_skeleton.CallForEachEdgeBoundary([simulation](auto& edge_bound) {
-        const uint stage = simulation->stepper.GetStage();
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper, &discretization](auto& edge_bound) {
+        const uint stage = stepper.GetStage();
 
         auto& edge_state    = edge_bound.edge_data.edge_state;
         auto& edge_internal = edge_bound.edge_data.edge_internal;

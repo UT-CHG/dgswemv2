@@ -88,9 +88,6 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     }
 
     this->discretization.initialize(input, this->communicator, this->writer);
-
-    ProblemType::initialize_data_parallel_pre_send_kernel(
-        this->discretization.mesh, input.mesh_input.mesh_data, input.problem_input);
 }
 
 template <typename ProblemType>

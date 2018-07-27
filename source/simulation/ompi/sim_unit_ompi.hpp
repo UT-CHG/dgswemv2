@@ -52,9 +52,6 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
 
     this->discretization.initialize(input, this->communicator, this->writer);
 
-    ProblemType::initialize_data_parallel_pre_send_kernel(
-        this->discretization.mesh, input.mesh_input.mesh_data, input.problem_input);
-
     this->communicator.InitializeCommunication();
 
     this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());

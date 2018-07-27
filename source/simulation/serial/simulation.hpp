@@ -52,8 +52,6 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
     }
 
     this->discretization.initialize(input, this->writer);
-
-    ProblemType::initialize_data_kernel(this->discretization.mesh, input.mesh_input.mesh_data, input.problem_input);
 }
 
 template <typename ProblemType>
