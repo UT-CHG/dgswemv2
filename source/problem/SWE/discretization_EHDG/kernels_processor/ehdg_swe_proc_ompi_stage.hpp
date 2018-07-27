@@ -1,12 +1,12 @@
-#ifndef RKDG_SWE_PROC_OMPI_STAGE_HPP
-#define RKDG_SWE_PROC_OMPI_STAGE_HPP
+#ifndef EHDG_SWE_PROC_OMPI_STAGE_HPP
+#define EHDG_SWE_PROC_OMPI_STAGE_HPP
 
 #include "general_definitions.hpp"
 
-#include "rkdg_swe_kernels_processor.hpp"
+#include "ehdg_swe_kernels_processor.hpp"
 
 namespace SWE {
-namespace RKDG {
+namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
     uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
@@ -30,7 +30,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         sim_units[su_id]->communicator.ReceiveAll(sim_units[su_id]->stepper.GetTimestamp());
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
+        sim_units[su_id]->mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
             Problem::distributed_boundary_send_kernel(sim_units[su_id]->stepper, dbound);
         });
 
@@ -47,19 +47,19 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                 sim_units[su_id]->writer.GetLogFile() << "Parsing input" << std::endl;
             }
 
-            sim_units[su_id]->parser.ParseInput(sim_units[su_id]->stepper, sim_units[su_id]->discretization.mesh);
+            sim_units[su_id]->parser.ParseInput(sim_units[su_id]->stepper, sim_units[su_id]->mesh);
         }
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement(
+        sim_units[su_id]->mesh.CallForEachElement(
             [&sim_units, su_id](auto& elt) { Problem::volume_kernel(sim_units[su_id]->stepper, elt); });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement(
+        sim_units[su_id]->mesh.CallForEachElement(
             [&sim_units, su_id](auto& elt) { Problem::source_kernel(sim_units[su_id]->stepper, elt); });
 
-        sim_units[su_id]->discretization.mesh.CallForEachInterface(
+        sim_units[su_id]->mesh.CallForEachInterface(
             [&sim_units, su_id](auto& intface) { Problem::interface_kernel(sim_units[su_id]->stepper, intface); });
 
-        sim_units[su_id]->discretization.mesh.CallForEachBoundary(
+        sim_units[su_id]->mesh.CallForEachBoundary(
             [&sim_units, su_id](auto& bound) { Problem::boundary_kernel(sim_units[su_id]->stepper, bound); });
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
@@ -80,14 +80,14 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             sim_units[su_id]->writer.GetLogFile() << "Starting work after receive" << std::endl;
         }
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
+        sim_units[su_id]->mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
             Problem::distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement(
+        sim_units[su_id]->mesh.CallForEachElement(
             [&sim_units, su_id](auto& elt) { Problem::update_kernel(sim_units[su_id]->stepper, elt); });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+        sim_units[su_id]->mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             bool nan_found = Problem::scrutinize_solution_kernel(sim_units[su_id]->stepper, elt);
 
             if (nan_found)
@@ -112,15 +112,15 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         if (SWE::PostProcessing::slope_limiting) {
             if (SWE::PostProcessing::wetting_drying) {
-                sim_units[su_id]->discretization.mesh.CallForEachElement(
+                sim_units[su_id]->mesh.CallForEachElement(
                     [&sim_units, su_id](auto& elt) { Problem::wetting_drying_kernel(sim_units[su_id]->stepper, elt); });
             }
 
-            sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            sim_units[su_id]->mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
                 Problem::slope_limiting_prepare_element_kernel(sim_units[su_id]->stepper, elt);
             });
 
-            sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
+            sim_units[su_id]->mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
                 Problem::slope_limiting_distributed_boundary_send_kernel(sim_units[su_id]->stepper, dbound);
             });
         }
@@ -134,11 +134,11 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
 
         if (SWE::PostProcessing::slope_limiting) {
-            sim_units[su_id]->discretization.mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
+            sim_units[su_id]->mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
                 Problem::slope_limiting_prepare_interface_kernel(sim_units[su_id]->stepper, intface);
             });
 
-            sim_units[su_id]->discretization.mesh.CallForEachBoundary([&sim_units, su_id](auto& bound) {
+            sim_units[su_id]->mesh.CallForEachBoundary([&sim_units, su_id](auto& bound) {
                 Problem::slope_limiting_prepare_boundary_kernel(sim_units[su_id]->stepper, bound);
             });
         }
@@ -161,16 +161,16 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
 
         if (SWE::PostProcessing::slope_limiting) {
-            sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
+            sim_units[su_id]->mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
                 Problem::slope_limiting_prepare_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
             });
 
-            sim_units[su_id]->discretization.mesh.CallForEachElement(
+            sim_units[su_id]->mesh.CallForEachElement(
                 [&sim_units, su_id](auto& elt) { Problem::slope_limiting_kernel(sim_units[su_id]->stepper, elt); });
         }
 
         if (SWE::PostProcessing::wetting_drying) {
-            sim_units[su_id]->discretization.mesh.CallForEachElement(
+            sim_units[su_id]->mesh.CallForEachElement(
                 [&sim_units, su_id](auto& elt) { Problem::wetting_drying_kernel(sim_units[su_id]->stepper, elt); });
         }
 

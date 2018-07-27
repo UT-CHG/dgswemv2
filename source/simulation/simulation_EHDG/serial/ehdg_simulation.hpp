@@ -2,8 +2,6 @@
 #define EHDG_SIMULATION_HPP
 
 #include "preprocessor/input_parameters.hpp"
-#include "preprocessor/initialize_mesh.hpp"
-#include "preprocessor/initialize_mesh_skeleton.hpp"
 #include "simulation/writer.hpp"
 
 namespace EHDG {

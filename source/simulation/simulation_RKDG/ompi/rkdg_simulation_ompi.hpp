@@ -70,7 +70,7 @@ void OMPISimulation<ProblemType>::Run() {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
             this->sim_units[su_id]->communicator.WaitAllPreprocReceives(this->sim_units[su_id]->stepper.GetTimestamp());
 
-            ProblemType::initialize_data_parallel_post_receive_kernel(this->sim_units[su_id]->mesh);
+            ProblemType::initialize_data_parallel_post_receive_kernel(this->sim_units[su_id]->discretization.mesh);
         }
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
@@ -86,12 +86,13 @@ void OMPISimulation<ProblemType>::Run() {
 
             if (this->sim_units[su_id]->writer.WritingOutput()) {
                 this->sim_units[su_id]->writer.WriteFirstStep(this->sim_units[su_id]->stepper,
-                                                              this->sim_units[su_id]->mesh);
+                                                              this->sim_units[su_id]->discretization.mesh);
             }
 
             uint n_stages = this->sim_units[su_id]->stepper.GetNumStages();
 
-            this->sim_units[su_id]->mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
+            this->sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
         }
 
         for (uint step = 1; step <= this->n_steps; step++) {
@@ -100,13 +101,13 @@ void OMPISimulation<ProblemType>::Run() {
             }
 
             for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-                this->sim_units[su_id]->mesh.CallForEachElement([this, su_id](auto& elt) {
+                this->sim_units[su_id]->discretization.mesh.CallForEachElement([this, su_id](auto& elt) {
                     ProblemType::swap_states_kernel(this->sim_units[su_id]->stepper, elt);
                 });
 
                 if (this->sim_units[su_id]->writer.WritingOutput()) {
                     this->sim_units[su_id]->writer.WriteOutput(this->sim_units[su_id]->stepper,
-                                                               this->sim_units[su_id]->mesh);
+                                                               this->sim_units[su_id]->discretization.mesh);
                 }
             }
         }
@@ -123,7 +124,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     double residual_l2{0};
 
     for (auto& sim_unit : this->sim_units) {
-        sim_unit->mesh.CallForEachElement([&sim_unit, &residual_l2](auto& elt) {
+        sim_unit->discretization.mesh.CallForEachElement([&sim_unit, &residual_l2](auto& elt) {
             residual_l2 += ProblemType::compute_residual_L2_kernel(sim_unit->stepper, elt);
         });
     }

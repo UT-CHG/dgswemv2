@@ -14,7 +14,8 @@
 template <typename ProblemType>
 struct HPXSimulationUnit
     : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
-    typename ProblemType::ProblemMeshType mesh;
+    // *** //
+    typename ProblemType::ProblemDiscretizationType discretization;
 
     HPXCommunicator communicator;
     RKStepper stepper;
@@ -61,16 +62,19 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
                                                   const uint submesh_id) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string, locality_id, submesh_id);
 
+    ProblemType::initialize_problem_parameters(input.problem_input);
+
     input.read_mesh();                         // read mesh meta data
     input.read_bcis();                         // read bc data
     input.read_dbmd(locality_id, submesh_id);  // read distributed boundary meta data
 
-    this->mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+    ProblemType::preprocess_mesh_data(input);
 
-    this->communicator = HPXCommunicator(input.mesh_input.dbmd_data);
-    this->stepper      = RKStepper(input.stepper_input);
-    this->writer       = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
-    this->parser       = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
+    this->discretization.mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
+    this->communicator        = HPXCommunicator(input.mesh_input.dbmd_data);
+    this->stepper             = RKStepper(input.stepper_input);
+    this->writer              = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
+    this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     this->problem_input = input.problem_input;
     this->submesh_model = RKDG::LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
@@ -84,13 +88,10 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
                                   << std::endl;
     }
 
-    ProblemType::initialize_problem_parameters(this->problem_input);
+    this->discretization.initialize(input, this->communicator, this->writer);
 
-    ProblemType::preprocess_mesh_data(input);
-
-    initialize_mesh<ProblemType, HPXCommunicator>(this->mesh, input, this->communicator, this->writer);
-
-    ProblemType::initialize_data_parallel_pre_send_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
+    ProblemType::initialize_data_parallel_pre_send_kernel(
+        this->discretization.mesh, input.mesh_input.mesh_data, input.problem_input);
 }
 
 template <typename ProblemType>
@@ -100,7 +101,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::FinishPreprocessor() {
     this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 
     return receive_future.then(
-        [this](auto&&) { ProblemType::initialize_data_parallel_post_receive_kernel(this->mesh); });
+        [this](auto&&) { ProblemType::initialize_data_parallel_post_receive_kernel(this->discretization.mesh); });
 }
 
 template <typename ProblemType>
@@ -110,12 +111,12 @@ void HPXSimulationUnit<ProblemType>::Launch() {
     }
 
     if (this->writer.WritingOutput()) {
-        this->writer.WriteFirstStep(this->stepper, this->mesh);
+        this->writer.WriteFirstStep(this->stepper, this->discretization.mesh);
     }
 
     uint n_stages = this->stepper.GetNumStages();
 
-    this->mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
+    this->discretization.mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 }
 
 template <typename ProblemType>
@@ -125,10 +126,11 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::SwapStates() {
-    this->mesh.CallForEachElement([this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
+    this->discretization.mesh.CallForEachElement(
+        [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
 
     if (this->writer.WritingOutput()) {
-        this->writer.WriteOutput(this->stepper, this->mesh);
+        this->writer.WriteOutput(this->stepper, this->discretization.mesh);
     }
 }
 
@@ -136,7 +138,7 @@ template <typename ProblemType>
 double HPXSimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
-    this->mesh.CallForEachElement([this, &residual_L2](auto& elt) {
+    this->discretization.mesh.CallForEachElement([this, &residual_L2](auto& elt) {
         residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
     });
 
@@ -152,13 +154,13 @@ void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
         this->writer.GetLogFile() << "Departing from locality " << hpx::get_locality_id() << std::endl;
     }
 
-    ar& stepper& writer& mesh& problem_input& parser& communicator& submesh_model;
+    ar& stepper& writer& discretization.mesh& problem_input& parser& communicator& submesh_model;
 }
 
 template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
-    ar& stepper& writer& mesh& problem_input& parser& communicator& submesh_model;
+    ar& stepper& writer& discretization.mesh& problem_input& parser& communicator& submesh_model;
 
     this->writer.StartLog();
 
@@ -169,22 +171,23 @@ void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
 
 template <typename ProblemType>
 void HPXSimulationUnit<ProblemType>::on_migrated() {
-    this->mesh.SetMasters();
+    this->discretization.mesh.SetMasters();
 
-    this->mesh.CallForEachElement([this](auto& elt) {
+    this->discretization.mesh.CallForEachElement([this](auto& elt) {
         using MasterType = typename std::remove_reference<decltype(elt)>::type::ElementMasterType;
 
-        using MasterElementTypes = typename decltype(this->mesh)::MasterElementTypes;
+        using MasterElementTypes = typename decltype(this->discretization.mesh)::MasterElementTypes;
 
         MasterType& master_elt =
-            std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->mesh.GetMasters());
+            std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->discretization.mesh.GetMasters());
 
         elt.SetMaster(master_elt);
 
         elt.Initialize();
     });
 
-    initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(mesh, problem_input, communicator, writer);
+    initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(
+        discretization.mesh, problem_input, communicator, writer);
 }
 
 template <typename ProblemType>

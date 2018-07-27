@@ -1,12 +1,12 @@
-#ifndef RKDG_SWE_PROC_HPX_STAGE_HPP
-#define RKDG_SWE_PROC_HPX_STAGE_HPP
+#ifndef EHDG_SWE_PROC_HPX_STAGE_HPP
+#define EHDG_SWE_PROC_HPX_STAGE_HPP
 
 #include "general_definitions.hpp"
 
-#include "rkdg_swe_kernels_processor.hpp"
+#include "ehdg_swe_kernels_processor.hpp"
 
 namespace SWE {
-namespace RKDG {
+namespace EHDG {
 template <typename HPXSimUnitType>
 decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
     hpx::future<void> ready_future = hpx::make_ready_future();
@@ -21,7 +21,7 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
 
         hpx::future<void> receive_future = sim_unit->communicator.ReceiveAll(sim_unit->stepper.GetTimestamp());
 
-        sim_unit->discretization.mesh.CallForEachDistributedBoundary(
+        sim_unit->mesh.CallForEachDistributedBoundary(
             [sim_unit](auto& dbound) { Problem::distributed_boundary_send_kernel(sim_unit->stepper, dbound); });
 
         sim_unit->communicator.SendAll(sim_unit->stepper.GetTimestamp());
@@ -35,19 +35,17 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
                 sim_unit->writer.GetLogFile() << "Parsing input" << std::endl;
             }
 
-            sim_unit->parser.ParseInput(sim_unit->stepper, sim_unit->discretization.mesh);
+            sim_unit->parser.ParseInput(sim_unit->stepper, sim_unit->mesh);
         }
 
-        sim_unit->discretization.mesh.CallForEachElement(
-            [sim_unit](auto& elt) { Problem::volume_kernel(sim_unit->stepper, elt); });
+        sim_unit->mesh.CallForEachElement([sim_unit](auto& elt) { Problem::volume_kernel(sim_unit->stepper, elt); });
 
-        sim_unit->discretization.mesh.CallForEachElement(
-            [sim_unit](auto& elt) { Problem::source_kernel(sim_unit->stepper, elt); });
+        sim_unit->mesh.CallForEachElement([sim_unit](auto& elt) { Problem::source_kernel(sim_unit->stepper, elt); });
 
-        sim_unit->discretization.mesh.CallForEachInterface(
+        sim_unit->mesh.CallForEachInterface(
             [sim_unit](auto& intface) { Problem::interface_kernel(sim_unit->stepper, intface); });
 
-        sim_unit->discretization.mesh.CallForEachBoundary(
+        sim_unit->mesh.CallForEachBoundary(
             [sim_unit](auto& bound) { Problem::boundary_kernel(sim_unit->stepper, bound); });
 
         if (sim_unit->writer.WritingVerboseLog()) {
@@ -63,13 +61,13 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
                 sim_unit->writer.GetLogFile() << "Starting work after receive" << std::endl;
             }
 
-            sim_unit->discretization.mesh.CallForEachDistributedBoundary(
+            sim_unit->mesh.CallForEachDistributedBoundary(
                 [sim_unit](auto& dbound) { Problem::distributed_boundary_kernel(sim_unit->stepper, dbound); });
 
-            sim_unit->discretization.mesh.CallForEachElement(
+            sim_unit->mesh.CallForEachElement(
                 [sim_unit](auto& elt) { Problem::update_kernel(sim_unit->stepper, elt); });
 
-            sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
+            sim_unit->mesh.CallForEachElement([sim_unit](auto& elt) {
                 bool nan_found = Problem::scrutinize_solution_kernel(sim_unit->stepper, elt);
 
                 if (nan_found)
@@ -91,14 +89,14 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
 
         if (SWE::PostProcessing::slope_limiting) {
             if (SWE::PostProcessing::wetting_drying) {
-                sim_unit->discretization.mesh.CallForEachElement(
+                sim_unit->mesh.CallForEachElement(
                     [sim_unit](auto& elt) { Problem::wetting_drying_kernel(sim_unit->stepper, elt); });
             }
 
-            sim_unit->discretization.mesh.CallForEachElement(
+            sim_unit->mesh.CallForEachElement(
                 [sim_unit](auto& elt) { Problem::slope_limiting_prepare_element_kernel(sim_unit->stepper, elt); });
 
-            sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
+            sim_unit->mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
                 Problem::slope_limiting_distributed_boundary_send_kernel(sim_unit->stepper, dbound);
             });
         }
@@ -110,11 +108,11 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
         }
 
         if (SWE::PostProcessing::slope_limiting) {
-            sim_unit->discretization.mesh.CallForEachInterface([sim_unit](auto& intface) {
+            sim_unit->mesh.CallForEachInterface([sim_unit](auto& intface) {
                 Problem::slope_limiting_prepare_interface_kernel(sim_unit->stepper, intface);
             });
 
-            sim_unit->discretization.mesh.CallForEachBoundary(
+            sim_unit->mesh.CallForEachBoundary(
                 [sim_unit](auto& bound) { Problem::slope_limiting_prepare_boundary_kernel(sim_unit->stepper, bound); });
         }
 
@@ -131,16 +129,16 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
             }
 
             if (SWE::PostProcessing::slope_limiting) {
-                sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
+                sim_unit->mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
                     Problem::slope_limiting_prepare_distributed_boundary_kernel(sim_unit->stepper, dbound);
                 });
 
-                sim_unit->discretization.mesh.CallForEachElement(
+                sim_unit->mesh.CallForEachElement(
                     [sim_unit](auto& elt) { Problem::slope_limiting_kernel(sim_unit->stepper, elt); });
             }
 
             if (SWE::PostProcessing::wetting_drying) {
-                sim_unit->discretization.mesh.CallForEachElement(
+                sim_unit->mesh.CallForEachElement(
                     [sim_unit](auto& elt) { Problem::wetting_drying_kernel(sim_unit->stepper, elt); });
             }
 

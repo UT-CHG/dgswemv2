@@ -3,8 +3,7 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename SimulationType>
-void Problem::initialize_global_problem(SimulationType* simulation) {
+void Problem::initialize_global_problem(HDGDiscretization<Problem>* simulation) {
     simulation->mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
