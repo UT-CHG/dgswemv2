@@ -1,17 +1,15 @@
-#ifndef RKDG_SIMULATION_OMPI_HPP
-#define RKDG_SIMULATION_OMPI_HPP
+#ifndef SIMULATION_OMPI_HPP
+#define SIMULATION_OMPI_HPP
 
 #include "general_definitions.hpp"
 
 #include "preprocessor/input_parameters.hpp"
-#include "preprocessor/initialize_mesh.hpp"
 #include "communication/ompi_communicator.hpp"
 #include "utilities/file_exists.hpp"
 
-#include "rkdg_sim_unit_ompi.hpp"
+#include "sim_unit_ompi.hpp"
 #include "simulation/writer.hpp"
 
-namespace RKDG {
 template <typename ProblemType>
 class OMPISimulation {
   private:
@@ -134,7 +132,6 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     if (locality_id == 0) {
         std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
-}
 }
 
 #endif

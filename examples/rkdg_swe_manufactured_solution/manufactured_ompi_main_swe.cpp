@@ -13,7 +13,7 @@
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_ompi_stage.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_postprocessor/rkdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_RKDG/ompi/rkdg_simulation_ompi.hpp"
+#include "simulation/ompi/simulation_ompi.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
         std::string input_string = std::string(argv[1]);
 
-        RKDG::OMPISimulation<SWE::RKDG::Problem> simulation(input_string);
+        OMPISimulation<SWE::RKDG::Problem> simulation(input_string);
 
         simulation.Run();
 

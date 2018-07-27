@@ -1,15 +1,14 @@
-#ifndef RKDG_SIM_UNIT_HPX_HPP
-#define RKDG_SIM_UNIT_HPX_HPP
+#ifndef SIM_UNIT_HPX_HPP
+#define SIM_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
 
 #include "preprocessor/input_parameters.hpp"
-#include "preprocessor/initialize_mesh.hpp"
 #include "communication/hpx_communicator.hpp"
 
 #include "simulation/writer.hpp"
-#include "simulation/simulation_RKDG/load_balancer/base_model.hpp"
-#include "simulation/simulation_RKDG/load_balancer/abstract_load_balancer_factory.hpp"
+//#include "simulation/simulation_RKDG/load_balancer/base_model.hpp"
+//#include "simulation/simulation_RKDG/load_balancer/abstract_load_balancer_factory.hpp"
 
 template <typename ProblemType>
 struct HPXSimulationUnit
@@ -23,7 +22,7 @@ struct HPXSimulationUnit
     typename ProblemType::ProblemParserType parser;
 
     typename ProblemType::ProblemInputType problem_input;
-    std::unique_ptr<RKDG::LoadBalancer::SubmeshModel> submesh_model = nullptr;
+    // std::unique_ptr<RKDG::LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
     HPXSimulationUnit() = default;
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
@@ -46,14 +45,14 @@ struct HPXSimulationUnit
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 
-    template <typename Archive>
+    /*template <typename Archive>
     void save(Archive& ar, unsigned) const;
 
     template <typename Archive>
     void load(Archive& ar, unsigned);
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
-    void on_migrated();  // Do not rename this is overload member of the base class
+    void on_migrated();  // Do not rename this is overload member of the base class*/
 };
 
 template <typename ProblemType>
@@ -77,8 +76,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     this->problem_input = input.problem_input;
-    this->submesh_model = RKDG::LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
-        locality_id, submesh_id, input.load_balancer_input);
+    /*this->submesh_model = RKDG::LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
+        locality_id, submesh_id, input.load_balancer_input);*/
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
@@ -147,7 +146,7 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
     return residual_L2;
 }
 
-template <typename ProblemType>
+/*template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
     if (this->writer.WritingVerboseLog()) {
@@ -188,7 +187,7 @@ void HPXSimulationUnit<ProblemType>::on_migrated() {
 
     initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(
         discretization.mesh, problem_input, communicator, writer);
-}
+}*/
 
 template <typename ProblemType>
 class HPXSimulationUnitClient

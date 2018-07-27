@@ -28,7 +28,7 @@
 
 #ifdef HAS_HPX
 #include "utilities/blaze_serialization.hpp"
-#include "simulation/simulation_RKDG/load_balancer/serialization_headers.hpp"
+#include "simulation/hpx/load_balancer/serialization_headers.hpp"
 #endif
 
 using uchar = unsigned char;

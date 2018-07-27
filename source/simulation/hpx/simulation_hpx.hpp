@@ -1,20 +1,18 @@
-#ifndef RKDG_SIMULATION_HPX_HPP
-#define RKDG_SIMULATION_HPX_HPP
+#ifndef SIMULATION_HPX_HPP
+#define SIMULATION_HPX_HPP
 
 #include "general_definitions.hpp"
 
 #include "preprocessor/input_parameters.hpp"
-#include "preprocessor/initialize_mesh.hpp"
 #include "communication/hpx_communicator.hpp"
 #include "utilities/file_exists.hpp"
 
 #include <hpx/util/unwrapped.hpp>
 
-#include "rkdg_sim_unit_hpx.hpp"
+#include "sim_unit_hpx.hpp"
 #include "simulation/writer.hpp"
-#include "simulation/simulation_RKDG/load_balancer/load_balancer_headers.hpp"
+//#include "simulation/simulation_RKDG/load_balancer/load_balancer_headers.hpp"
 
-namespace RKDG {
 template <typename ClientType>
 hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
     std::vector<hpx::future<double>> res_futures;
@@ -65,8 +63,8 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
     this->n_stages = input.stepper_input.nstages;
 
-    hpx::future<void> lb_future =
-        LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
+    // hpx::future<void> lb_future =
+    //    LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
 
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
@@ -74,21 +72,21 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
-    std::vector<hpx::future<void>> registration_futures;
+    // std::vector<hpx::future<void>> registration_futures;
 
     uint submesh_id = 0;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
         this->simulation_unit_clients.emplace_back(hpx::new_<ClientType>(here, input_string, locality_id, submesh_id));
 
-        registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-            std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
+        // registration_futures.push_back(this->simulation_unit_clients.back().register_as(
+        //    std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
 
         ++submesh_id;
     }
 
-    hpx::when_all(registration_futures).get();
+    // hpx::when_all(registration_futures).get();
 
-    lb_future.get();
+    // lb_future.get();
 }
 
 template <typename ProblemType>
@@ -123,7 +121,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     return hpx::when_all(simulation_futures).then([](auto&&) {
-        LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
+        // LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
     });
 }
 
@@ -151,17 +149,16 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
         return hpx::async<ActionType>(this->get_id());
     }
 };
-}
 
-#define RKDG_REGISTER_HPX_COMPONENTS(ProblemType)                                                                 \
+#define REGISTER_HPX_COMPONENTS(ProblemType)                                                                      \
     using hpx_simulation_unit_               = HPXSimulationUnit<ProblemType>;                                    \
     using hpx_simulation_unit_swe_component_ = hpx::components::simple_component<HPXSimulationUnit<ProblemType>>; \
     HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_);                         \
                                                                                                                   \
-    using hpx_simulation_swe_           = RKDG::HPXSimulation<ProblemType>;                                       \
-    using hpx_simulation_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulation<ProblemType>>;    \
+    using hpx_simulation_swe_           = HPXSimulation<ProblemType>;                                             \
+    using hpx_simulation_swe_component_ = hpx::components::simple_component<HPXSimulation<ProblemType>>;          \
     HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);                                   \
                                                                                                                   \
-    DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
+    // DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
 /**/
 #endif

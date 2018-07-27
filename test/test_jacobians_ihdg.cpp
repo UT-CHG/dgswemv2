@@ -11,7 +11,9 @@
 #include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_kernels_processor.hpp"
 #include "problem/SWE/discretization_IHDG/kernels_postprocessor/ihdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_IHDG/serial/ihdg_simulation.hpp"
+#include "preprocessor/initialize_mesh.hpp"
+#include "preprocessor/initialize_mesh_skeleton.hpp"
+#include "simulation/serial/simulation.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
 #include "utilities/almost_equal.hpp"

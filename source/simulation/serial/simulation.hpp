@@ -1,9 +1,9 @@
-#ifndef RKDG_SIMULATION_HPP
-#define RKDG_SIMULATION_HPP
+#ifndef SIMULATION_HPP
+#define SIMULATION_HPP
 
 #include "preprocessor/input_parameters.hpp"
 #include "simulation/writer.hpp"
-namespace RKDG {
+
 template <typename ProblemType>
 class Simulation {
   private:
@@ -97,7 +97,6 @@ void Simulation<ProblemType>::ComputeL2Residual() {
     });
 
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
-}
 }
 
 #endif

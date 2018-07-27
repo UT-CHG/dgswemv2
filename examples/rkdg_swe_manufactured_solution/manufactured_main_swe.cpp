@@ -10,7 +10,7 @@
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_serial_stage.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_postprocessor/rkdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_RKDG/serial/rkdg_simulation.hpp"
+#include "simulation/serial/simulation.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        RKDG::Simulation<SWE::RKDG::Problem> simulation(input_string);
+        Simulation<SWE::RKDG::Problem> simulation(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation.Run();

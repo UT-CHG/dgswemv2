@@ -17,10 +17,10 @@
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_postprocessor/rkdg_swe_kernels_postprocessor.hpp"
 
-#include "simulation/simulation_RKDG/hpx/rkdg_simulation_hpx.hpp"
+#include "simulation/hpx/simulation_hpx.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
 
-RKDG_REGISTER_HPX_COMPONENTS(SWE::RKDG::Problem);
+REGISTER_HPX_COMPONENTS(SWE::RKDG::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -37,12 +37,12 @@ int hpx_main(int argc, char* argv[]) {
 
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
-    std::vector<RKDG::HPXSimulationClient<SWE::RKDG::Problem>> simulation_clients;
+    std::vector<HPXSimulationClient<SWE::RKDG::Problem>> simulation_clients;
     simulation_clients.reserve(localities.size());
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
-        simulation_clients.emplace_back(hpx::new_<RKDG::HPXSimulation<SWE::RKDG::Problem>>(locality, input_string));
+        simulation_clients.emplace_back(hpx::new_<HPXSimulation<SWE::RKDG::Problem>>(locality, input_string));
     }
 
     std::vector<hpx::future<void>> run_futures;
