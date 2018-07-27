@@ -64,33 +64,6 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
         }
     }
 
-    for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.rhs(SWE::Variables::ze, dof))) {
-            std::cerr << "Error: found isnan rhs_ze at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-
-            return true;
-        }
-    }
-
-    for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.rhs(SWE::Variables::qx, dof))) {
-            std::cerr << "Error: found isnan rhs_qx at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-
-            return true;
-        }
-    }
-
-    for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.rhs(SWE::Variables::qy, dof))) {
-            std::cerr << "Error: found isnan rhs_qy at Element " << elt.GetID();
-            std::cerr << "       At stage: " << stage << "\n";
-
-            return true;
-        }
-    }
-
     return false;
 }
 }

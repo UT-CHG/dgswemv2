@@ -6,6 +6,8 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
 
+#define EIGEN_DONT_PARALLELIZE
+
 template <typename T, uint m>
 using StatVector = Eigen::Matrix<T, m, 1>;
 template <typename T, uint m, uint n>

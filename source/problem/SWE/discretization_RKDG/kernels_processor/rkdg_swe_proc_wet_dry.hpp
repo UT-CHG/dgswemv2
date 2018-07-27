@@ -1,5 +1,5 @@
-#ifndef RKDG_SWE_POST_WET_DRY_HPP
-#define RKDG_SWE_POST_WET_DRY_HPP
+#ifndef RKDG_SWE_PROC_WET_DRY_HPP
+#define RKDG_SWE_PROC_WET_DRY_HPP
 
 namespace SWE {
 namespace RKDG {

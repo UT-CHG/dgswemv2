@@ -11,7 +11,7 @@
 namespace SWE {
 class Parser {
   private:
-    bool parsing_input;
+    bool parsing_input = false;
 
     uint meteo_parse_frequency;
     std::string meteo_data_file;

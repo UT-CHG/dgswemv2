@@ -18,7 +18,7 @@ class OMPISimulation {
     uint n_steps;
     uint n_stages;
 
-    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> simulation_units;
+    std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> sim_units;
 
   public:
     OMPISimulation() = default;
@@ -47,7 +47,7 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
     uint submesh_id = 0;
 
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
-        this->simulation_units.emplace_back(new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
+        this->sim_units.emplace_back(new OMPISimulationUnit<ProblemType>(input_string, locality_id, submesh_id));
 
         ++submesh_id;
     }
@@ -62,60 +62,52 @@ void OMPISimulation<ProblemType>::Run() {
         n_threads = (uint)omp_get_num_threads();
         thread_id = (uint)omp_get_thread_num();
 
-        sim_per_thread = (this->simulation_units.size() + n_threads - 1) / n_threads;
+        sim_per_thread = (this->sim_units.size() + n_threads - 1) / n_threads;
 
         begin_sim_id = sim_per_thread * thread_id;
-        end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->simulation_units.size());
+        end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->PostReceivePreprocStage();
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            this->sim_units[su_id]->communicator.WaitAllPreprocReceives(this->sim_units[su_id]->stepper.GetTimestamp());
+
+            ProblemType::initialize_data_parallel_post_receive_kernel(this->sim_units[su_id]->mesh);
         }
 
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->WaitAllPreprocSends();
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            this->sim_units[su_id]->communicator.WaitAllPreprocSends(this->sim_units[su_id]->stepper.GetTimestamp());
         }
 
-        for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-            this->simulation_units[sim_unit_id]->Launch();
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            if (this->sim_units[su_id]->writer.WritingLog()) {
+                this->sim_units[su_id]->writer.GetLogFile() << std::endl
+                                                            << "Launching Simulation!" << std::endl
+                                                            << std::endl;
+            }
+
+            if (this->sim_units[su_id]->writer.WritingOutput()) {
+                this->sim_units[su_id]->writer.WriteFirstStep(this->sim_units[su_id]->stepper,
+                                                              this->sim_units[su_id]->mesh);
+            }
+
+            uint n_stages = this->sim_units[su_id]->stepper.GetNumStages();
+
+            this->sim_units[su_id]->mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
         }
 
         for (uint step = 1; step <= this->n_steps; step++) {
             for (uint stage = 0; stage < this->n_stages; stage++) {
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->ExchangeData();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PreReceiveStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PostReceiveStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->WaitAllSends();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->ExchangePostprocData();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PreReceivePostprocStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->PostReceivePostprocStage();
-                }
-
-                for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                    this->simulation_units[sim_unit_id]->WaitAllPostprocSends();
-                }
+                ProblemType::ompi_stage_kernel(this->sim_units);
             }
 
-            for (uint sim_unit_id = begin_sim_id; sim_unit_id < end_sim_id; sim_unit_id++) {
-                this->simulation_units[sim_unit_id]->SwapStates();
+            for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+                this->sim_units[su_id]->mesh.CallForEachElement([this, su_id](auto& elt) {
+                    ProblemType::swap_states_kernel(this->sim_units[su_id]->stepper, elt);
+                });
+
+                if (this->sim_units[su_id]->writer.WritingOutput()) {
+                    this->sim_units[su_id]->writer.WriteOutput(this->sim_units[su_id]->stepper,
+                                                               this->sim_units[su_id]->mesh);
+                }
             }
         }
     }  // close omp parallel region
@@ -129,8 +121,11 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     double global_l2{0};
 
     double residual_l2{0};
-    for (auto& sim_unit : this->simulation_units) {
-        residual_l2 += sim_unit->ResidualL2();
+
+    for (auto& sim_unit : this->sim_units) {
+        sim_unit->mesh.CallForEachElement([&sim_unit, &residual_l2](auto& elt) {
+            residual_l2 += ProblemType::compute_residual_L2_kernel(sim_unit->stepper, elt);
+        });
     }
 
     MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

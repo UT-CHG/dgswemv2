@@ -27,7 +27,7 @@ problem:
 output:
   path: ../output/
   vtu:
-    frequency: 360
+    frequency: 1
   logfile:
     name: log
-    verbose: false
+    verbose: true

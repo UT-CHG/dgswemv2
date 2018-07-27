@@ -3,6 +3,7 @@
 
 #include "simulation/stepper/rk_stepper.hpp"
 #include "simulation/writer.hpp"
+#include "simulation/discretization.hpp"
 
 #include "problem/SWE/swe_definitions.hpp"
 #include "boundary_conditions/rkdg_swe_boundary_conditions.hpp"
@@ -28,6 +29,8 @@ struct Problem {
                                                std::tuple<IS::Internal, IS::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
+
+    using ProblemDiscretizationType = DGDiscretization<Problem>;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
@@ -75,6 +78,14 @@ struct Problem {
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
     // processor kernels
+    static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
+    template <typename HPXSimUnitType>
+    static decltype(auto) hpx_stage_kernel(HPXSimUnitType* sim_unit);
+
     template <typename ElementType>
     static void volume_kernel(const RKStepper& stepper, ElementType& elt);
 

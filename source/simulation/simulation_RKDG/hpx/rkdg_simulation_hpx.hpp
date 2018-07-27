@@ -105,10 +105,19 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
+        for (uint stage = 0; stage < this->n_stages; stage++) {
+            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+                simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
+                    f.get();  // check for exceptions
+                    return this->simulation_unit_clients[sim_id].Stage();
+                });
+            }
+        }
+
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
             simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
                 f.get();  // check for exceptions
-                return this->simulation_unit_clients[sim_id].Step();
+                return this->simulation_unit_clients[sim_id].SwapStates();
             });
         }
     }
@@ -144,16 +153,15 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
 };
 }
 
-#define RKDG_REGISTER_HPX_COMPONENTS(ProblemType)                                                              \
-    using hpx_simulation_unit_ = RKDG::HPXSimulationUnit<ProblemType>;                                         \
-    using hpx_simulation_unit_swe_component_ =                                                                 \
-        hpx::components::simple_component<RKDG::HPXSimulationUnit<ProblemType>>;                               \
-    HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_);                      \
-                                                                                                               \
-    using hpx_simulation_swe_           = RKDG::HPXSimulation<ProblemType>;                                    \
-    using hpx_simulation_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulation<ProblemType>>; \
-    HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);                                \
-                                                                                                               \
+#define RKDG_REGISTER_HPX_COMPONENTS(ProblemType)                                                                 \
+    using hpx_simulation_unit_               = HPXSimulationUnit<ProblemType>;                                    \
+    using hpx_simulation_unit_swe_component_ = hpx::components::simple_component<HPXSimulationUnit<ProblemType>>; \
+    HPX_REGISTER_COMPONENT(hpx_simulation_unit_swe_component_, hpx_simulation_unit_swe_);                         \
+                                                                                                                  \
+    using hpx_simulation_swe_           = RKDG::HPXSimulation<ProblemType>;                                       \
+    using hpx_simulation_swe_component_ = hpx::components::simple_component<RKDG::HPXSimulation<ProblemType>>;    \
+    HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);                                   \
+                                                                                                                  \
     DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
 /**/
 #endif

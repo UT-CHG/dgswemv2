@@ -1,5 +1,5 @@
-#ifndef RKDG_SWE_POST_SLOPE_LIMIT_HPP
-#define RKDG_SWE_POST_SLOPE_LIMIT_HPP
+#ifndef RKDG_SWE_PROC_SLOPE_LIMIT_HPP
+#define RKDG_SWE_PROC_SLOPE_LIMIT_HPP
 
 #include "utilities/almost_equal.hpp"
 
