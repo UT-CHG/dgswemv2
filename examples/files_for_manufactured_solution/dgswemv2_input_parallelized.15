@@ -24,10 +24,3 @@ problem:
   initial_conditions:
     type: Function
   function_source: Enable
-output:
-  path: ../output/
-  vtu:
-    frequency: 1
-  logfile:
-    name: log
-    verbose: true
