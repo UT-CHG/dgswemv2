@@ -4,7 +4,6 @@
 #include "abstract_load_balancer_factory.hpp"
 #include "random.hpp"
 
-namespace RKDG {
 namespace LoadBalancer {
 template <typename ProblemType>
 hpx::future<void> AbstractFactory::initialize_locality_and_world_models(const uint locality_id,
@@ -26,7 +25,7 @@ std::unique_ptr<SubmeshModel> AbstractFactory::create_submesh_model(uint localit
             return Random<ProblemType>::create_submesh_model(
                 locality_id, submesh_id, load_balancer_input.rebalance_frequency);
         } else {
-            std::string err_msg{"Error: Unknown RKDG load balancer of type: " + load_balancer_input.name};
+            std::string err_msg{"Error: Unknown load balancer of type: " + load_balancer_input.name};
             throw std::logic_error(err_msg);
         }
     } else {
@@ -34,5 +33,5 @@ std::unique_ptr<SubmeshModel> AbstractFactory::create_submesh_model(uint localit
     }
 }
 }
-}
+
 #endif

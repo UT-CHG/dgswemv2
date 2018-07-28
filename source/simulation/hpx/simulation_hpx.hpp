@@ -11,7 +11,7 @@
 
 #include "sim_unit_hpx.hpp"
 #include "simulation/writer.hpp"
-//#include "simulation/simulation_RKDG/load_balancer/load_balancer_headers.hpp"
+#include "simulation/hpx/load_balancer/load_balancer_headers.hpp"
 
 template <typename ClientType>
 hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
@@ -63,8 +63,8 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
     this->n_stages = input.stepper_input.nstages;
 
-    // hpx::future<void> lb_future =
-    //    LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
+    hpx::future<void> lb_future =
+        LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
 
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
@@ -72,21 +72,21 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
-    // std::vector<hpx::future<void>> registration_futures;
+    std::vector<hpx::future<void>> registration_futures;
 
     uint submesh_id = 0;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
         this->simulation_unit_clients.emplace_back(hpx::new_<ClientType>(here, input_string, locality_id, submesh_id));
 
-        // registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-        //    std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
+        registration_futures.push_back(this->simulation_unit_clients.back().register_as(
+            std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
 
         ++submesh_id;
     }
 
-    // hpx::when_all(registration_futures).get();
+    hpx::when_all(registration_futures).get();
 
-    // lb_future.get();
+    lb_future.get();
 }
 
 template <typename ProblemType>
@@ -121,7 +121,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     return hpx::when_all(simulation_futures).then([](auto&&) {
-        // LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
+        LoadBalancer::AbstractFactory::reset_locality_and_world_models<ProblemType>();
     });
 }
 
@@ -159,6 +159,6 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient<Pro
     using hpx_simulation_swe_component_ = hpx::components::simple_component<HPXSimulation<ProblemType>>;          \
     HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);                                   \
                                                                                                                   \
-    // DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
-/**/
+    DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
+// *** //
 #endif

@@ -1,7 +1,6 @@
 #ifndef LOAD_BALANCER_BASE_MODEL_HPP
 #define LOAD_BALANCER_BASE_MODEL_HPP
 
-namespace RKDG {
 namespace LoadBalancer {
 class SubmeshModel {
   public:
@@ -27,5 +26,5 @@ class SubmeshModel {
     uint locality_id, submesh_id;
 };
 }
-}
+
 #endif

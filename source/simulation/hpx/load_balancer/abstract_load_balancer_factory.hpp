@@ -2,7 +2,6 @@
 #define ABSTRACT_LOAD_BALANCER_FACTORY_HPP
 
 #include "base_model.hpp"
-namespace RKDG {
 namespace LoadBalancer {
 class AbstractFactory {
   public:
@@ -19,5 +18,5 @@ class AbstractFactory {
                                                               const LoadBalancerInput& load_balancer_input);
 };
 }
-}
+
 #endif
