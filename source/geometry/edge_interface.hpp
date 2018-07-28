@@ -126,9 +126,10 @@ template <uint dimension, typename BasisType, typename EdgeDataType, typename In
 template <typename InputArrayType>
 inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(
     const InputArrayType& u_gp) {
-    // *** //
-    return this->ApplyMinv(u_gp * this->int_lambda_fact);
-}
+    // projection(q, dof) = gp_values(q, gp) * int_lambda_fact(gp, dof) * m_inv(dof, dof)
+    DynMatrix<double> projection = u_gp * this->int_lambda_fact * this->m_inv;
+
+    return projection;}
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
 template <typename InputArrayType>

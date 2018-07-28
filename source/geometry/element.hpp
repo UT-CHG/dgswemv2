@@ -280,16 +280,20 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
-    // rhs(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof)
-    return this->ApplyMinv(this->ComputeFgp(f) * this->int_phi_fact);
+    // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
+    DynMatrix<double> projection = this->ComputeFgp(f) * this->int_phi_fact * this->m_inv;
+
+    return projection;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
-    // rhs(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof)
-    return this->ApplyMinv(nodal_values * this->shape.psi_gp * this->int_phi_fact);
+    // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
+    DynMatrix<double> projection = nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
+
+    return projection;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -320,12 +324,12 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
-    uint nvar = f(*(this->gp_global_coordinates.begin())).size();
+    uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
     DynMatrix<double> f_vals(nvar, ngp);
 
-    for (uint gp = 0; gp < this->gp_global_coordinates.size(); gp++) {
+    for (uint gp = 0; gp < this->gp_global_coordinates.size(); ++gp) {
         column(f_vals, gp) = f(this->gp_global_coordinates[gp]);
     }
 
