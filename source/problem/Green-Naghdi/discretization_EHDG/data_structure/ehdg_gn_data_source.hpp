@@ -1,0 +1,29 @@
+#ifndef EHDG_GN_DATA_SOURCE_HPP
+#define EHDG_GN_DATA_SOURCE_HPP
+
+#include "general_definitions.hpp"
+
+namespace GN {
+namespace EHDG {
+struct Source {
+    Source() = default;
+    Source(const uint nnode)
+        : parsed_meteo_data(nnode), tau_s(nnode), p_atm(nnode), tide_pot(nnode), manning_n(nnode) {}
+
+    double coriolis_f = 0.0;
+
+    bool manning          = false;
+    double g_manning_n_sq = 0.0;
+
+    std::vector<std::vector<double>*> parsed_meteo_data;
+
+    std::vector<StatVector<double, GN::n_dimensions>> tau_s;
+    std::vector<double> p_atm;
+
+    std::vector<double> tide_pot;
+    std::vector<double> manning_n;
+};
+}
+}
+
+#endif

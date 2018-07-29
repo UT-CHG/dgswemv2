@@ -1,8 +1,8 @@
-#ifndef IHDG_SWE_PRE_CREATE_INTFACE_HPP
-#define IHDG_SWE_PRE_CREATE_INTFACE_HPP
+#ifndef EHDG_GN_PRE_CREATE_INTFACE_HPP
+#define EHDG_GN_PRE_CREATE_INTFACE_HPP
 
-namespace SWE {
-namespace IHDG {
+namespace GN {
+namespace EHDG {
 template <typename RawBoundaryType>
 void Problem::create_interfaces_kernel(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
@@ -13,7 +13,7 @@ void Problem::create_interfaces_kernel(
     using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal>;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
-        if (it->first == SWE::BoundaryTypes::internal) {
+        if (it->first == GN::BoundaryTypes::internal) {
             using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
 
             uint n_intface_old_internal = mesh.GetNumberInterfaces();

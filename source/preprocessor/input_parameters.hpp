@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
+#include "problem/Green-Naghdi/problem_input/gn_inputs.hpp"
 
 struct YamlNodeWrapper {
     YAML::Node node;
@@ -400,6 +401,18 @@ inline SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_
         return SWE::Inputs(swe_node);
     } else {
         std::string err_msg("Error: Shallow water type must specify a SWE yaml-node\n");
+        throw std::logic_error(err_msg);
+    }
+}
+
+template <>
+inline GN::Inputs InputParameters<typename GN::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
+    YAML::Node gn_node = input_file["problem"];
+
+    if (gn_node["name"].as<std::string>() == "green-naghdi") {
+        return GN::Inputs(gn_node);
+    } else {
+        std::string err_msg("Error: Green-Naghdi type must specify a GN yaml-node\n");
         throw std::logic_error(err_msg);
     }
 }

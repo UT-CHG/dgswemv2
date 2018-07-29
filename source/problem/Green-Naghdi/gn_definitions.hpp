@@ -1,15 +1,15 @@
-#ifndef SWE_DEFINITIONS_HPP
-#define SWE_DEFINITIONS_HPP
+#ifndef GN_DEFINITIONS_HPP
+#define GN_DEFINITIONS_HPP
 
 #include "utilities/ignore.hpp"
 
-namespace SWE {
+namespace GN {
 namespace Global {
 static double g         = 9.81;
 static double rho_air   = 1.225;
 static double rho_water = 1000.0;
-
-const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water);
+static double R_earth   = 6378200.0;
+const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water, R_earth);
 }
 
 namespace SourceTerms {
@@ -25,27 +25,29 @@ const bool ignored_vars =
     Utilities::ignore(function_source, bottom_friction, meteo_forcing, tide_potential, coriolis, Cf);
 }
 
-namespace PostProcessing {
-static bool wetting_drying = false;
-static bool slope_limiting = false;
-
-static double h_o           = 0.1;
-static double h_o_threshold = 1.0e5 * std::numeric_limits<double>::epsilon();
-
-// Cockburn-Shu SL parameters
-static double M  = 1.0e-8;
-static double nu = 1.5;
-
-const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
-}
-
 constexpr uint n_dimensions  = 2;
 constexpr uint n_variables   = 3;
-constexpr uint n_auxiliaries = 3;
+constexpr uint n_auxiliaries = 15;
 
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
 
-enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
+enum Auxiliaries : uint {
+    bath = 0,
+    h    = 1,
+    sp   = 2,
+    ux   = 3,
+    uy   = 4,
+    uxx  = 5,
+    uxy  = 6,
+    uyx  = 7,
+    uyy  = 8,
+    vx   = 9,
+    vy   = 10,
+    vxx  = 11,
+    vxy  = 12,
+    vyx  = 13,
+    vyy  = 14
+};
 
 enum JacobianVariables : uint {
     ze_ze = 0,
@@ -59,7 +61,8 @@ enum JacobianVariables : uint {
     qy_qy = 8
 };
 
-enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
+/* These must shadow SWE bc types */
+enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL };
 
 enum class SphericalProjectionType { None, Enable };
 
@@ -74,10 +77,6 @@ enum class MeteoForcingType { None, Enable };
 enum class TidePotentialType { None, Test };  // not yet implemented
 
 enum class CoriolisType { None, Enable };
-
-enum class WettingDryingType { None, Enable };
-
-enum class SlopeLimitingType { None, CockburnShu };
 }
 
 #endif

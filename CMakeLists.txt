@@ -11,6 +11,8 @@ option(RKDG_SWE "Build RKDG SWE simulations" ON)
 option(EHDG_SWE "Build EHDG SWE simulations" OFF)
 option(IHDG_SWE "Build EHDG SWE simulations" OFF)
 
+option(EHDG_GN "Build EHDG GN simulations" OFF)
+
 enable_testing()
 
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
@@ -63,6 +65,7 @@ if(USE_HPX)
 endif()
 
 list (APPEND SOURCES
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
@@ -78,9 +81,13 @@ list (APPEND SOURCES
 )
 
 list(APPEND SWE_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_parser/swe_parser.cpp
+)
+
+list(APPEND GN_SOURCES
+  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_parser/gn_parser.cpp
 )
 
 include_directories(source)
@@ -107,5 +114,12 @@ if(IHDG_SWE)
   add_subdirectory(source/problem/SWE/discretization_IHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ihdg_swe_manufactured_solution)
+  endif()
+endif()
+
+if(EHDG_GN)
+#add_subdirectory(source/problem/SWE/discretization_EHDG)
+  if(BUILD_EXAMPLES)
+    add_subdirectory(examples/ehdg_gn_manufactured_solution)
   endif()
 endif()

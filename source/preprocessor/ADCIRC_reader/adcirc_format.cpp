@@ -100,14 +100,6 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                     ifs >> this->BARINCFSP[bdry][n];
                     ifs.ignore(1000, '\n');
                 }
-            } else if (this->IBTYPE[bdry] % 10 == 9) {  // periodic bc
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
-                this->IBCONN[bdry] = std::vector<uint>(n_nodes_bdry);
-                for (uint n = 0; n < n_nodes_bdry; ++n) {
-                    ifs >> this->NBVV[bdry][n];
-                    ifs >> this->IBCONN[bdry][n];
-                    ifs.ignore(1000, '\n');
-                }
             } else {
                 throw std::logic_error("Fatal Error: undefined boundary type in ADCIRC mesh: " +
                                        std::to_string(this->IBTYPE[bdry]) + "!\n");
@@ -189,8 +181,6 @@ void AdcircFormat::write_to(const char* out_name) const {
             } else if (this->IBTYPE[n] % 10 == 4) {  // internal barrier
                 file << this->NBVV[n][i] << ' ' << this->IBCONN.at(n)[i] << ' ' << this->BARINTH.at(n)[i] << ' '
                      << this->BARINCFSB.at(n)[i] << ' ' << this->BARINCFSP.at(n)[i] << '\n';
-            } else if (this->IBTYPE[n] % 10 == 9) {  // internal barrier
-                file << this->NBVV[n][i] << ' ' << this->IBCONN.at(n)[i] << '\n';
             }
         }
     }
@@ -225,11 +215,6 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair) ||
                 has_edge(this->IBCONN.at(segment_id).cbegin(), this->IBCONN.at(segment_id).cend(), node_pair)) {
                 return SWE::BoundaryTypes::levee;
-            }
-        } else if (this->IBTYPE[segment_id] % 10 == 9) {
-            if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair) ||
-                has_edge(this->IBCONN.at(segment_id).cbegin(), this->IBCONN.at(segment_id).cend(), node_pair)) {
-                return SWE::BoundaryTypes::periodic;
             }
         }
     }
