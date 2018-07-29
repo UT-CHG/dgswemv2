@@ -81,6 +81,7 @@ jobs:
       - attach_workspace:
           at: /usr/dgswemv2
       - run:
+          no_output_timeout: 60m
           name: Parallel Weirs
           command: |
             /usr/dgswemv2/scripts/correctness/test_parallel_weirs.sh
