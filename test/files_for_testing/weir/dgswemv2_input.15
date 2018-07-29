@@ -11,7 +11,7 @@ mesh:
 
 timestepping:
   start_time: 25-11-1987 12:00              #dd-mm-yyyy hh:mm
-  end_time: 25-11-1987 12:30                #dd-mm-yyyy hh:mm
+  end_time: 25-11-1987 14:00                #dd-mm-yyyy hh:mm
   dt: 3                           #in seconds
   order: 2
   nstages: 2
