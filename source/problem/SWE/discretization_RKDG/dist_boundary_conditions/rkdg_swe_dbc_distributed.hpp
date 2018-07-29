@@ -71,6 +71,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
         if (!wet_ex) {  // water flowing from dry EX element
             // Reflective Boundary on IN element side
             BC::Land land_boundary;
+            land_boundary.Initialize(dbound.data.get_ngp_boundary(dbound.bound_id));
 
             land_boundary.ComputeFlux(
                 stepper, dbound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);

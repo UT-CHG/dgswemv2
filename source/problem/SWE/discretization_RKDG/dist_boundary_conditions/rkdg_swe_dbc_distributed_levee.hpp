@@ -75,6 +75,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
     BC::Land land_boundary;
+    land_boundary.Initialize(dbound.data.get_ngp_boundary(dbound.bound_id));
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;

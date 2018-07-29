@@ -192,9 +192,12 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->surface_normal_in.resize(dimension + 1, ngp);
         this->surface_normal_ex.resize(dimension + 1, ngp);
 
+        uint gp_ex;
         for (uint gp = 0; gp < ngp; ++gp) {
-            column(this->surface_normal_in, gp) = normal;
-            column(this->surface_normal_ex, gp) = -normal;
+            gp_ex = ngp - gp - 1;
+
+            column(this->surface_normal_in, gp)    = normal;
+            column(this->surface_normal_ex, gp_ex) = -normal;
         }
     }
 

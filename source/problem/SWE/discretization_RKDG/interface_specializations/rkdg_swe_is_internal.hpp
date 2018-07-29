@@ -54,6 +54,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             // Reflective Boundary on EX element side
             BC::Land land_boundary;
+            land_boundary.Initialize(intface.data_ex.get_ngp_boundary(intface.bound_id_ex));
 
             land_boundary.ComputeFlux(stepper,
                                       intface.surface_normal_ex,
@@ -84,6 +85,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             // Reflective Boundary on IN element side
             BC::Land land_boundary;
+            land_boundary.Initialize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
 
             land_boundary.ComputeFlux(stepper,
                                       intface.surface_normal_in,

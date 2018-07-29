@@ -22,7 +22,7 @@ struct HPXSimulationUnit
     typename ProblemType::ProblemParserType parser;
 
     typename ProblemType::ProblemInputType problem_input;
-    //std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
+    // std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
     HPXSimulationUnit() = default;
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
@@ -76,7 +76,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     this->problem_input = input.problem_input;
-    //this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
+    // this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
     //    locality_id, submesh_id, input.load_balancer_input);
 
     if (this->writer.WritingLog()) {

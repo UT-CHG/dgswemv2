@@ -7,7 +7,6 @@
 
 #include <cstdlib>
 
-
 namespace LoadBalancer {
 namespace detail_random {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,12 +82,12 @@ struct Random {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define DGSWEMV2_REGISTER_RANDOM_LOAD_BALANCER(ProblemType)                                                      \
-    using rndm_lb_world_client_ = LoadBalancer::Random<ProblemType>::WorldModelClient;                           \
-    template <>                                                                                                  \
-    rndm_lb_world_client_ LoadBalancer::Random<ProblemType>::world_model_client = rndm_lb_world_client_();       \
-    using rndm_lb_world_model_           = LoadBalancer::Random<ProblemType>::WorldModel;                        \
-    using rndm_lb_world_model_component_ = hpx::components::simple_component<rndm_lb_world_model_>;              \
+#define DGSWEMV2_REGISTER_RANDOM_LOAD_BALANCER(ProblemType)                                                \
+    using rndm_lb_world_client_ = LoadBalancer::Random<ProblemType>::WorldModelClient;                     \
+    template <>                                                                                            \
+    rndm_lb_world_client_ LoadBalancer::Random<ProblemType>::world_model_client = rndm_lb_world_client_(); \
+    using rndm_lb_world_model_           = LoadBalancer::Random<ProblemType>::WorldModel;                  \
+    using rndm_lb_world_model_component_ = hpx::components::simple_component<rndm_lb_world_model_>;        \
     HPX_REGISTER_COMPONENT(rndm_lb_world_model_component_, rndm_lb_world_model_);
 /**/
 namespace LoadBalancer {

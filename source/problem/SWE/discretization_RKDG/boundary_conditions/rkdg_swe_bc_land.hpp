@@ -16,6 +16,8 @@ class Land {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
+    void Initialize(uint ngp);
+
     void ComputeFlux(const RKStepper& stepper,
                      const HybMatrix<double, SWE::n_dimensions>& surface_normal,
                      const HybMatrix<double, SWE::n_variables>& q_in,
@@ -30,6 +32,10 @@ class Land {
 template <typename BoundaryType>
 void Land::Initialize(BoundaryType& bound) {
     uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
+    this->q_ex.resize(SWE::n_variables, ngp);
+}
+
+void Land::Initialize(uint ngp) {
     this->q_ex.resize(SWE::n_variables, ngp);
 }
 

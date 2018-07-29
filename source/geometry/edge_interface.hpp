@@ -129,7 +129,8 @@ inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, Interfac
     // projection(q, dof) = gp_values(q, gp) * int_lambda_fact(gp, dof) * m_inv(dof, dof)
     DynMatrix<double> projection = u_gp * this->int_lambda_fact * this->m_inv;
 
-    return projection;}
+    return projection;
+}
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
 template <typename InputArrayType>
