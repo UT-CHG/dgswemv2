@@ -7,6 +7,7 @@
 #include "ehdg_gn_data_internal.hpp"
 #include "ehdg_gn_data_boundary.hpp"
 #include "ehdg_gn_data_source.hpp"
+#include "ehdg_gn_data_disp_corr.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -16,6 +17,8 @@ struct Data {
     std::vector<Boundary> boundary;
 
     Source source;
+
+    DispersiveCorrection disp_corr;
 
     void initialize() {
         this->state = std::vector<State>{State(this->ndof)};
@@ -27,6 +30,8 @@ struct Data {
         }
 
         this->source = Source(this->nnode);
+
+        this->disp_corr = DispersiveCorrection(this->ndof, this->ngp_internal, this->ngp_boundary);
     }
 
     void resize(const uint nstate) {

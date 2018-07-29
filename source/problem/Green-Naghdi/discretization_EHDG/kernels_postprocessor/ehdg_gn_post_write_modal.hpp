@@ -11,7 +11,7 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
 
     mesh.CallForEachElement([&modal_q, &modal_aux](auto& elt) {
         modal_q.push_back(std::make_pair(elt.GetID(), elt.data.state[0].q));
-        modal_aux.push_back(std::make_pair(elt.GetID(), row(elt.data.state[0].aux, GN::Auxiliaries::bath)));
+        modal_aux.push_back(std::make_pair(elt.GetID(), elt.data.state[0].aux));
     });
 
     std::ofstream file;

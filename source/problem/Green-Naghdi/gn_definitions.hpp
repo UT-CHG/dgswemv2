@@ -31,22 +31,24 @@ constexpr uint n_auxiliaries = 15;
 
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
 
-enum Auxiliaries : uint {
-    bath = 0,
-    h    = 1,
-    sp   = 2,
-    ux   = 3,
-    uy   = 4,
-    uxx  = 5,
-    uxy  = 6,
-    uyx  = 7,
-    uyy  = 8,
-    vx   = 9,
-    vy   = 10,
-    vxx  = 11,
-    vxy  = 12,
-    vyx  = 13,
-    vyy  = 14
+enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
+
+constexpr uint n_du_terms  = 4;
+constexpr uint n_ddu_terms = 8;
+
+enum Derivative : uint {
+    ux  = 0,
+    uy  = 1,
+    uxx = 2,
+    uxy = 3,
+    uyx = 4,
+    uyy = 5,
+    vx  = 6,
+    vy  = 7,
+    vxx = 8,
+    vxy = 9,
+    vyx = 10,
+    vyy = 11
 };
 
 enum JacobianVariables : uint {

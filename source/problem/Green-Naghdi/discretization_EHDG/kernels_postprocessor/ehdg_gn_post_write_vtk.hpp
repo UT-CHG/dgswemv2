@@ -16,8 +16,8 @@ void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
         elt.WritePointDataVTK(elt.data.state[0].q, q_point_data);
         elt.WriteCellDataVTK(elt.data.state[0].q, q_cell_data);
 
-        elt.WritePointDataVTK(row(elt.data.state[0].aux, GN::Auxiliaries::bath), aux_point_data);
-        elt.WriteCellDataVTK(row(elt.data.state[0].aux, GN::Auxiliaries::bath), aux_cell_data);
+        elt.WritePointDataVTK(elt.data.state[0].aux, aux_point_data);
+        elt.WriteCellDataVTK(elt.data.state[0].aux, aux_cell_data);
     });
 
     std::vector<uint> elt_id_data;
