@@ -187,7 +187,7 @@ struct Inputs {
             & bottom_friction
             & meteo_forcing
             & tide_potential
-            & coriolis
+            & coriolis;
         // clang-format on
     }
 #endif
