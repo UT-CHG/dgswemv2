@@ -104,57 +104,61 @@ struct Problem {
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
-    template <typename OMPISimUnitType>
-    static void ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void serial_dispersive_correction_kernel(const RKStepper& stepper,
+                                                    ProblemDiscretizationType& discretization);
 
-    template <typename HPXSimUnitType>
-    static decltype(auto) hpx_stage_kernel(HPXSimUnitType* sim_unit);
+    static void serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    /* SWE part */
+
+    // processor kernels
+    static void serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     /* global step */
 
     template <typename InterfaceType>
-    static void global_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+    static void global_swe_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
 
     template <typename EdgeInterfaceType>
-    static void global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+    static void global_swe_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeInterfaceType>
-    static void global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+    static void global_swe_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int);
 
     template <typename BoundaryType>
-    static void global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+    static void global_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename EdgeBoundaryType>
-    static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    static void global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeBoundaryType>
-    static void global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    static void global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename DistributedBoundaryType>
-    static void global_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void global_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    static void global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    static void global_swe_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     template <typename EdgeDistributedType>
-    static void global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    static void global_swe_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     /* local step */
 
     template <typename ElementType>
-    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_swe_source_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename InterfaceType>
-    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+    static void local_swe_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
 
     template <typename BoundaryType>
-    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+    static void local_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void local_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
     /* local step */
 

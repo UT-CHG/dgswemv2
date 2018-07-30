@@ -42,7 +42,7 @@ void Problem::write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_point\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto it = q_point_data.begin(); it != q_point_data.end(); it++)
-        raw_data_file << (*it)[SWE::Variables::qx] << ' ';
+        raw_data_file << (*it)[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_point\" format=\"ascii\">\n\t\t\t\t\t";

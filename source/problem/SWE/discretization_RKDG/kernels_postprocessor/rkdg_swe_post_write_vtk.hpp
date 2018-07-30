@@ -82,7 +82,7 @@ void Problem::write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
     raw_data_file << "SCALARS qy_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_point_data.begin(); it != q_point_data.end(); it++)
-        raw_data_file << (*it)[SWE::Variables::qx] << std::endl;
+        raw_data_file << (*it)[SWE::Variables::qy] << std::endl;
 
     raw_data_file << "SCALARS bath_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;

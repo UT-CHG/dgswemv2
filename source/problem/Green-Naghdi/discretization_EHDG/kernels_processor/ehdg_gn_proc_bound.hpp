@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename BoundaryType>
-void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::global_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];
@@ -37,7 +37,7 @@ void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bou
 }
 
 template <typename BoundaryType>
-void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::local_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];

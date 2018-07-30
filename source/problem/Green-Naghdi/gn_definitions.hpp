@@ -27,29 +27,11 @@ const bool ignored_vars =
 
 constexpr uint n_dimensions  = 2;
 constexpr uint n_variables   = 3;
-constexpr uint n_auxiliaries = 15;
+constexpr uint n_auxiliaries = 2;
 
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
 
-enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
-
-constexpr uint n_du_terms  = 4;
-constexpr uint n_ddu_terms = 8;
-
-enum Derivative : uint {
-    ux  = 0,
-    uy  = 1,
-    uxx = 2,
-    uxy = 3,
-    uyx = 4,
-    uyy = 5,
-    vx  = 6,
-    vy  = 7,
-    vxx = 8,
-    vxy = 9,
-    vyx = 10,
-    vyy = 11
-};
+enum Auxiliaries : uint { bath = 0, h = 1 };
 
 enum JacobianVariables : uint {
     ze_ze = 0,
@@ -61,6 +43,27 @@ enum JacobianVariables : uint {
     qy_ze = 6,
     qy_qx = 7,
     qy_qy = 8
+};
+
+constexpr uint n_du_terms  = 4;
+constexpr uint n_ddu_terms = 8;
+
+enum FirstDerivatives : uint {
+    ux  = 0,
+    uy  = 1,
+    vx  = 2,
+    vy  = 3
+};
+
+enum SecondDerivatives : uint {
+    uxx = 0,
+    uxy = 1,
+    uyx = 2,
+    uyy = 3,
+    vxx = 4,
+    vxy = 5,
+    vyx = 6,
+    vyy = 7
 };
 
 /* These must shadow SWE bc types */

@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename EdgeDistributedType>
-void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void Problem::global_swe_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
@@ -23,7 +23,7 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
     while (true) {
         iter++;
 
-        Problem::global_edge_distributed_iteration(stepper, edge_dbound);
+        Problem::global_swe_edge_distributed_iteration(stepper, edge_dbound);
 
         if (iter == 100) {
             break;
@@ -47,7 +47,7 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
 }
 
 template <typename EdgeDistributedType>
-void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void Problem::global_swe_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 

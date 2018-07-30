@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename DistributedBoundaryType>
-void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::global_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];
@@ -39,7 +39,7 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
 }
 
 template <typename DistributedBoundaryType>
-void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::local_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];

@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename EdgeBoundaryType>
-void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+void Problem::global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
@@ -21,7 +21,7 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
     while (true) {
         iter++;
 
-        Problem::global_edge_boundary_iteration(stepper, edge_bound);
+        Problem::global_swe_edge_boundary_iteration(stepper, edge_bound);
 
         if (iter == 100) {
             break;
@@ -45,7 +45,7 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
 }
 
 template <typename EdgeBoundaryType>
-void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+void Problem::global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
