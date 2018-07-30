@@ -104,10 +104,15 @@ struct Problem {
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
+    /* Dispersive correction part */
+
     static void serial_dispersive_correction_kernel(const RKStepper& stepper,
                                                     ProblemDiscretizationType& discretization);
 
-    static void serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void serial_velocity_derivatives_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    static void serial_bathymetry_derivatives_kernel(const RKStepper& stepper,
+                                                     ProblemDiscretizationType& discretization);
 
     /* SWE part */
 

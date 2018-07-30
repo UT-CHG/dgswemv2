@@ -16,7 +16,9 @@ struct Internal {
           dbath_at_gp(GN::n_dimensions, ngp),
           tau_s_at_gp(GN::n_dimensions, ngp),
           dp_atm_at_gp(GN::n_dimensions, ngp),
-          dtide_pot_at_gp(GN::n_dimensions, ngp) {}
+          dtide_pot_at_gp(GN::n_dimensions, ngp),
+          u_at_gp(GN::n_dimensions, ngp),
+          du_at_gp(GN::n_du_terms, ngp) {}
 
     HybMatrix<double, GN::n_variables> q_at_gp;
     HybMatrix<double, GN::n_auxiliaries> aux_at_gp;
@@ -29,6 +31,9 @@ struct Internal {
     HybMatrix<double, GN::n_dimensions> tau_s_at_gp;
     HybMatrix<double, GN::n_dimensions> dp_atm_at_gp;
     HybMatrix<double, GN::n_dimensions> dtide_pot_at_gp;
+
+    HybMatrix<double, GN::n_dimensions> u_at_gp;
+    HybMatrix<double, GN::n_du_terms> du_at_gp;
 };
 }
 }

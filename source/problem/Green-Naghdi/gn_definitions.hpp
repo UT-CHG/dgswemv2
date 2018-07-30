@@ -48,23 +48,9 @@ enum JacobianVariables : uint {
 constexpr uint n_du_terms  = 4;
 constexpr uint n_ddu_terms = 8;
 
-enum FirstDerivatives : uint {
-    ux  = 0,
-    uy  = 1,
-    vx  = 2,
-    vy  = 3
-};
+enum FirstDerivatives : uint { ux = 0, uy = 1, vx = 2, vy = 3 };
 
-enum SecondDerivatives : uint {
-    uxx = 0,
-    uxy = 1,
-    uyx = 2,
-    uyy = 3,
-    vxx = 4,
-    vxy = 5,
-    vyx = 6,
-    vyy = 7
-};
+enum SecondDerivatives : uint { uxx = 0, uxy = 1, uyx = 2, uyy = 3, vxx = 4, vxy = 5, vyx = 6, vyy = 7 };
 
 /* These must shadow SWE bc types */
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL };
