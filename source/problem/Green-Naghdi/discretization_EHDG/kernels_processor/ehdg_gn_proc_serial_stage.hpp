@@ -56,6 +56,8 @@ void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, Prob
 
     // Compute dbath, ddbath, dddbath (if bath is not a variable then this goes into data initialization)
     Problem::serial_bathymetry_derivatives_kernel(stepper, discretization);
+
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_volume_kernel(stepper, elt); });
 }
 }
 }

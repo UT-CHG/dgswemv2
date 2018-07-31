@@ -114,7 +114,7 @@ decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
 }
 
 template <typename T, uint n>
-DynMatrix<T> reshape_jacobian_vector(const DynVector<T>& vector) {
+DynMatrix<T> reshape(const DynVector<T>& vector) {
     return DynMatrix<T>(n, n, vector.data());
 }
 

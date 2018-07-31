@@ -114,6 +114,9 @@ struct Problem {
     static void serial_bathymetry_derivatives_kernel(const RKStepper& stepper,
                                                      ProblemDiscretizationType& discretization);
 
+    template <typename ElementType>
+    static void local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt);
+
     /* SWE part */
 
     // processor kernels

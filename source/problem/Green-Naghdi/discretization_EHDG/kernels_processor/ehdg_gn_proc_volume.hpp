@@ -37,6 +37,54 @@ void Problem::local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt
     state.rhs =
         elt.IntegrationDPhi(GlobalCoord::x, internal.Fx_at_gp) + elt.IntegrationDPhi(GlobalCoord::y, internal.Fy_at_gp);
 }
+
+template <typename ElementType>
+void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
+    const uint stage = stepper.GetStage();
+
+    auto& state    = elt.data.state[stage];
+    auto& internal = elt.data.internal;
+
+    row(internal.q_at_gp, GN::Variables::ze) = elt.ComputeUgp(row(state.q, GN::Variables::ze));
+
+    row(internal.aux_at_gp, GN::Auxiliaries::h) =
+        row(internal.q_at_gp, GN::Variables::ze) + row(internal.aux_at_gp, GN::Auxiliaries::bath);
+
+    // set kernels up
+    for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+        column(internal.w1_w1_kernel_at_gp, gp) = IdentityVector<double>(SWE::n_dimensions);
+    }
+
+    set_constant(internal.w1_w2_kernel_at_gp, NDParameters::alpha / 3.0);
+
+    row(internal.w2_w1_kernel_at_gp, GlobalCoord::x) = power(row(internal.aux_at_gp, GN::Auxiliaries::h), -1.0);
+    row(internal.w2_w1_kernel_at_gp, GlobalCoord::y) = power(row(internal.aux_at_gp, GN::Auxiliaries::h), -1.0);
+
+    internal.w2_w2_kernel_at_gp = power(row(internal.aux_at_gp, GN::Auxiliaries::h), -3.0);
+
+    for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < elt.data.get_ndof(); dof_j++) {
+            submatrix(internal.w1_w1,
+                      GN::n_dimensions * dof_i,
+                      GN::n_dimensions * dof_j,
+                      GN::n_dimensions,
+                      GN::n_dimensions) =
+                reshape<double, GN::n_dimensions>(elt.IntegrationPhiPhi(dof_i, dof_j, internal.w1_w1_kernel_at_gp));
+
+            internal.w1_w2(GN::n_dimensions * dof_i + GlobalCoord::x, dof_j) =
+                elt.IntegrationPhiDPhi(dof_i, GlobalCoord::x, dof_j, row(internal.w1_w2_kernel_at_gp, GlobalCoord::x));
+            internal.w1_w2(GN::n_dimensions * dof_i + GlobalCoord::y, dof_j) =
+                elt.IntegrationPhiDPhi(dof_i, GlobalCoord::y, dof_j, row(internal.w1_w2_kernel_at_gp, GlobalCoord::y));
+
+            internal.w2_w1(dof_i, GN::n_dimensions * dof_j + GlobalCoord::x) =
+                elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, row(internal.w2_w1_kernel_at_gp, GlobalCoord::x));
+            internal.w2_w1(dof_i, GN::n_dimensions * dof_j + GlobalCoord::y) =
+                elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, row(internal.w2_w1_kernel_at_gp, GlobalCoord::y));
+
+            internal.w2_w2(dof_i, dof_j) = elt.IntegrationPhiPhi(dof_i, dof_j, internal.w2_w2_kernel_at_gp);
+        }
+    }
+}
 }
 }
 

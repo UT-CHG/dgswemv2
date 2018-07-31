@@ -35,7 +35,7 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) +=
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.interface.IntegrationPhiPhiIN(dof_i, dof_j, boundary_in.dF_hat_dq_at_gp));
         }
 
@@ -50,7 +50,7 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) +=
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.interface.IntegrationPhiPhiEX(dof_i, dof_j, boundary_ex.dF_hat_dq_at_gp));
         }
 
@@ -65,7 +65,7 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.IntegrationPhiLambdaIN(dof_i, dof_j, boundary_in.dF_hat_dq_hat_at_gp));
         }
     }
@@ -77,7 +77,7 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.IntegrationPhiLambdaEX(dof_i, dof_j, boundary_ex.dF_hat_dq_hat_at_gp));
         }
     }
@@ -99,7 +99,7 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.IntegrationPhiLambdaIN(dof_j, dof_i, boundary_in.delta_global_kernel_at_gp));
         }
     }
@@ -111,7 +111,7 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.IntegrationPhiLambdaEX(dof_j, dof_i, boundary_ex.delta_global_kernel_at_gp));
         }
     }
@@ -123,7 +123,7 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp));
         }
 

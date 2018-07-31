@@ -71,6 +71,11 @@ double norm(const ArrayType& array) {
     return array.norm();
 }
 
+template <typename ArrayType>
+decltype(auto) power(const ArrayType& array, double exp) {
+    return array.array().pow(exp);
+}
+
 template <typename LeftArrayType, typename RightArrayType>
 decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
     return array_left.cwiseProduct(array_right);
@@ -88,7 +93,7 @@ decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
 }
 
 template <typename T, uint n>
-DynMatrix<T> reshape_jacobian_vector(const DynVector<T>& vector) {
+DynMatrix<T> reshape(const DynVector<T>& vector) {
     DynMatrix<T> ret(n, n);
 
     for (uint i = 0; i < n; ++i) {

@@ -4,6 +4,11 @@
 #include "utilities/ignore.hpp"
 
 namespace GN {
+namespace NDParameters {
+static double alpha     = 1.0;
+const bool ignored_vars = Utilities::ignore(alpha);
+}
+
 namespace Global {
 static double g         = 9.81;
 static double rho_air   = 1.225;

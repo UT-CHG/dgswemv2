@@ -76,7 +76,7 @@ void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInte
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
-                reshape_jacobian_vector<double, SWE::n_variables>(
+                reshape<double, SWE::n_variables>(
                     edge_int.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.delta_hat_global_kernel_at_gp));
         }
 

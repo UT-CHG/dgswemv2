@@ -4,6 +4,16 @@
 namespace GN {
 namespace EHDG {
 void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretization) {
+    discretization->mesh.CallForEachElement([](auto& elt) {
+        auto& internal = elt.data.internal;
+
+        // Initialize w1_w1 ... w2_w2 containers
+        internal.w1_w1.resize(GN::n_dimensions * elt.data.get_ndof(), GN::n_dimensions * elt.data.get_ndof());
+        internal.w1_w2.resize(GN::n_dimensions * elt.data.get_ndof(), elt.data.get_ndof());
+        internal.w2_w1.resize(elt.data.get_ndof(), GN::n_dimensions * elt.data.get_ndof());
+        internal.w2_w2.resize(elt.data.get_ndof(), elt.data.get_ndof());
+    });
+
     discretization->mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
