@@ -97,6 +97,11 @@ double norm(const ArrayType& array) {
     return blaze::norm(array);
 }
 
+template <typename ArrayType>
+decltype(auto) power(const ArrayType& array, double exp) {
+    return blaze::pow(array, exp);
+}
+
 template <typename LeftArrayType, typename RightArrayType>
 decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
     return array_left * array_right;

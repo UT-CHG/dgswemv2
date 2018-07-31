@@ -127,7 +127,7 @@ template <typename InputArrayType>
 inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(
     const InputArrayType& u_gp) {
     // projection(q, dof) = gp_values(q, gp) * int_lambda_fact(gp, dof) * m_inv(dof, dof)
-    DynMatrix<double> projection = u_gp * this->int_lambda_fact * this->m_inv;
+    InputArrayType projection = u_gp * this->int_lambda_fact * this->m_inv;
 
     return projection;
 }

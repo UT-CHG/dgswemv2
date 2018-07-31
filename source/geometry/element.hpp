@@ -291,7 +291,7 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
     // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    DynMatrix<double> projection = nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
+    InputArrayType projection = nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
 
     return projection;
 }
