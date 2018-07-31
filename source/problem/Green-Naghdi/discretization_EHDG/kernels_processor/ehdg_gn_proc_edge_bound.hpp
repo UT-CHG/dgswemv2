@@ -89,6 +89,11 @@ void Problem::global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeB
         edge_state.q_hat(GN::Variables::qy, dof) += edge_internal.rhs_global[3 * dof + 2];
     }
 }
+
+template <typename EdgeBoundaryType>
+void Problem::dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+
+}
 }
 }
 

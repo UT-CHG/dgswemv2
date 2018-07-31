@@ -7,9 +7,12 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
     discretization->mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
 
-        // Initialize w1_w1 ... w2_w2 containers
+        // Initialize w1 containers
         internal.w1_w1.resize(GN::n_dimensions * elt.data.get_ndof(), GN::n_dimensions * elt.data.get_ndof());
         internal.w1_w2.resize(GN::n_dimensions * elt.data.get_ndof(), elt.data.get_ndof());
+        internal.w1_rhs.resize(GN::n_dimensions * elt.data.get_ndof());
+
+        // Initialize w2 containers
         internal.w2_w1.resize(elt.data.get_ndof(), GN::n_dimensions * elt.data.get_ndof());
         internal.w2_w2.resize(elt.data.get_ndof(), elt.data.get_ndof());
     });

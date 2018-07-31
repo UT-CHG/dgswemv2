@@ -39,16 +39,11 @@ void Problem::local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt
 }
 
 template <typename ElementType>
-void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
-    const uint stage = stepper.GetStage();
-
-    auto& state    = elt.data.state[stage];
+void Problem::dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
 
-    row(internal.q_at_gp, GN::Variables::ze) = elt.ComputeUgp(row(state.q, GN::Variables::ze));
-
-    row(internal.aux_at_gp, GN::Auxiliaries::h) =
-        row(internal.q_at_gp, GN::Variables::ze) + row(internal.aux_at_gp, GN::Auxiliaries::bath);
+    // at this point h_at_gp
+    // has been calculated in derivatives kernel
 
     // set kernels up
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {

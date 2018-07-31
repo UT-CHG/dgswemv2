@@ -115,7 +115,16 @@ struct Problem {
                                                      ProblemDiscretizationType& discretization);
 
     template <typename ElementType>
-    static void local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt);
+    static void dc_volume_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename ElementType>
+    static void dc_source_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename EdgeInterfaceType>
+    static void dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename EdgeBoundaryType>
+    static void dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     /* SWE part */
 

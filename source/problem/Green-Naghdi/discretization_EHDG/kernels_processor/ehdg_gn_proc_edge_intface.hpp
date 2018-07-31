@@ -96,6 +96,11 @@ void Problem::global_swe_edge_interface_iteration(const RKStepper& stepper, Edge
         edge_state.q_hat(GN::Variables::qy, dof) += edge_internal.rhs_global[3 * dof + 2];
     }
 }
+
+template <typename EdgeInterfaceType>
+void Problem::dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+
+}
 }
 }
 
