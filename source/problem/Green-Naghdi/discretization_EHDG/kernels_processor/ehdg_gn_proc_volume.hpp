@@ -47,7 +47,7 @@ void Problem::dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
 
     // set kernels up
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-        column(internal.w1_w1_kernel_at_gp, gp) = IdentityVector<double>(SWE::n_dimensions);
+        column(internal.w1_w1_kernel_at_gp, gp) = IdentityVector<double>(GN::n_dimensions);
     }
 
     set_constant(internal.w1_w2_kernel_at_gp, NDParameters::alpha / 3.0);

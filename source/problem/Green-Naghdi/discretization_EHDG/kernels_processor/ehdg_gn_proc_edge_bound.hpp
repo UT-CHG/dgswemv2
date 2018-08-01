@@ -92,7 +92,59 @@ void Problem::global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeB
 
 template <typename EdgeBoundaryType>
 void Problem::dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
 
+    auto& internal = edge_bound.boundary.data.internal;
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    // at this point h_hat_at_gp
+    // has been computed in swe edge_boundary kernel
+
+    double tau = -20.0;  // hardcode the tau value here
+
+    // set kernels up
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        column(boundary.w1_w1_kernel_at_gp, gp) =
+            NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
+
+        column(boundary.w1_w1_hat_kernel_at_gp, gp) =
+            NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
+    }
+
+    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = cwise_division(
+        row(edge_bound.boundary.surface_normal, GlobalCoord::x), row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = cwise_division(
+        row(edge_bound.boundary.surface_normal, GlobalCoord::y), row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+
+    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
+            submatrix(internal.w1_w1,
+                      GN::n_dimensions * dof_i,
+                      GN::n_dimensions * dof_j,
+                      GN::n_dimensions,
+                      GN::n_dimensions) -=
+                reshape<double, GN::n_dimensions>(
+                    edge_bound.boundary.IntegrationPhiPhi(dof_i, dof_j, boundary.w1_w1_kernel_at_gp));
+        }
+    }
+
+    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); dof_j++) {
+            submatrix(boundary.w1_w1_hat,
+                      GN::n_dimensions * dof_i,
+                      GN::n_dimensions * dof_j,
+                      GN::n_dimensions,
+                      GN::n_dimensions) =
+                reshape<double, GN::n_dimensions>(
+                    edge_bound.IntegrationPhiLambda(dof_i, dof_j, boundary.w1_w1_hat_kernel_at_gp));
+
+            boundary.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::x) =
+                edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x));
+
+            boundary.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::y) =
+                edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y));
+        }
+    }
 }
 }
 }

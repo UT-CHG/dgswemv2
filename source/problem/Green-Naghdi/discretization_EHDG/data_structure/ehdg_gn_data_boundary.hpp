@@ -14,6 +14,7 @@ struct Boundary {
           F_hat_at_gp(GN::n_variables, ngp),
           u_hat_at_gp(GN::n_dimensions, ngp),
           du_hat_at_gp(GN::n_du_terms, ngp),
+          w1_w1_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp),
           w1_w1_hat_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp),
           w2_w1_hat_kernel_at_gp(GN::n_dimensions, ngp) {}
 
@@ -25,6 +26,8 @@ struct Boundary {
 
     HybMatrix<double, GN::n_dimensions> u_hat_at_gp;
     HybMatrix<double, GN::n_du_terms> du_hat_at_gp;
+
+    HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_w1_kernel_at_gp;
 
     HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_w1_hat_kernel_at_gp;
     HybMatrix<double, GN::n_dimensions> w2_w1_hat_kernel_at_gp;
