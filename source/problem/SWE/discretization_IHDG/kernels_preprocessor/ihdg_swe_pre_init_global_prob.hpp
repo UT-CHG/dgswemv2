@@ -12,7 +12,7 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
 
         // Set offsets for global matrix construction
         internal.local_dof_offset = local_dof_offset;
-        local_dof_offset += elt.data.get_ndof() * SWE::n_variables;
+        local_dof_offset += elt.data.get_ndof();
 
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
             elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
@@ -31,7 +31,7 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
 
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
-        global_dof_offset += edge_int.edge_data.get_ndof() * SWE::n_variables;
+        global_dof_offset += edge_int.edge_data.get_ndof();
 
         boundary_in.global_dof_offset = global_dof_offset;
         boundary_ex.global_dof_offset = global_dof_offset;
@@ -61,7 +61,7 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
 
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
-        global_dof_offset += edge_bound.edge_data.get_ndof() * SWE::n_variables;
+        global_dof_offset += edge_bound.edge_data.get_ndof();
 
         boundary.global_dof_offset = global_dof_offset;
 
@@ -79,13 +79,13 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
 
-    discretization->delta_local_inv.resize(local_dof_offset, local_dof_offset);
-    discretization->delta_hat_local.resize(local_dof_offset, global_dof_offset);
-    discretization->rhs_local.resize(local_dof_offset);
+    discretization->delta_local_inv.resize(local_dof_offset * SWE::n_variables, local_dof_offset * SWE::n_variables);
+    discretization->delta_hat_local.resize(local_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
+    discretization->rhs_local.resize(local_dof_offset * SWE::n_variables);
 
-    discretization->delta_global.resize(global_dof_offset, local_dof_offset);
-    discretization->delta_hat_global.resize(global_dof_offset, global_dof_offset);
-    discretization->rhs_global.resize(global_dof_offset);
+    discretization->delta_global.resize(global_dof_offset * SWE::n_variables, local_dof_offset * SWE::n_variables);
+    discretization->delta_hat_global.resize(global_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
+    discretization->rhs_global.resize(global_dof_offset * SWE::n_variables);
 }
 }
 }

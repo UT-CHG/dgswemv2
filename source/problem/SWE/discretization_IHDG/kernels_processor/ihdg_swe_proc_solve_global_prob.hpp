@@ -15,69 +15,78 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint ndof         = elt.data.get_ndof();
         uint local_offset = internal.local_dof_offset;
 
-        subvector(discretization.rhs_local, local_offset, ndof * SWE::n_variables) = internal.rhs_local;
+        subvector(discretization.rhs_local, local_offset * SWE::n_variables, ndof * SWE::n_variables) =
+            internal.rhs_local;
 
         internal.delta_local_inv = inverse(internal.delta_local);
 
         for (uint i = 0; i < ndof * SWE::n_variables; ++i) {
             for (uint j = 0; j < ndof * SWE::n_variables; ++j) {
-                sparse_delta_local_inv.add_triplet(local_offset + i, local_offset + j, internal.delta_local_inv(i, j));
+                sparse_delta_local_inv.add_triplet(local_offset * SWE::n_variables + i,
+                                                   local_offset * SWE::n_variables + j,
+                                                   internal.delta_local_inv(i, j));
             }
         }
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeInterface([&discretization,
-                                                           &sparse_delta_hat_local,
-                                                           &sparse_delta_global,
-                                                           &sparse_delta_hat_global](auto& edge_int) {
-        auto& edge_internal = edge_int.edge_data.edge_internal;
+    discretization.mesh_skeleton.CallForEachEdgeInterface(
+        [&discretization, &sparse_delta_hat_local, &sparse_delta_global, &sparse_delta_hat_global](auto& edge_int) {
+            auto& edge_internal = edge_int.edge_data.edge_internal;
 
-        auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-        auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+            auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+            auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
-        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
-        uint ndof_global   = edge_int.edge_data.get_ndof();
+            uint ndof_local_in = edge_int.interface.data_in.get_ndof();
+            uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
+            uint ndof_global   = edge_int.edge_data.get_ndof();
 
-        uint local_offset_in = boundary_in.local_dof_offset;
-        uint local_offset_ex = boundary_ex.local_dof_offset;
-        uint global_offset   = edge_internal.global_dof_offset;
+            uint local_offset_in = boundary_in.local_dof_offset;
+            uint local_offset_ex = boundary_ex.local_dof_offset;
+            uint global_offset   = edge_internal.global_dof_offset;
 
-        subvector(discretization.rhs_global, global_offset, ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof_global * SWE::n_variables) =
+                edge_internal.rhs_global;
 
-        for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
-                sparse_delta_hat_global.add_triplet(
-                    global_offset + i, global_offset + j, edge_internal.delta_hat_global(i, j));
+            for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
+                for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+                    sparse_delta_hat_global.add_triplet(global_offset * SWE::n_variables + i,
+                                                        global_offset * SWE::n_variables + j,
+                                                        edge_internal.delta_hat_global(i, j));
+                }
             }
-        }
 
-        for (uint i = 0; i < ndof_local_in * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
-                sparse_delta_hat_local.add_triplet(
-                    local_offset_in + i, global_offset + j, boundary_in.delta_hat_local(i, j));
+            for (uint i = 0; i < ndof_local_in * SWE::n_variables; ++i) {
+                for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+                    sparse_delta_hat_local.add_triplet(local_offset_in * SWE::n_variables + i,
+                                                       global_offset * SWE::n_variables + j,
+                                                       boundary_in.delta_hat_local(i, j));
+                }
             }
-        }
 
-        for (uint i = 0; i < ndof_local_ex * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
-                sparse_delta_hat_local.add_triplet(
-                    local_offset_ex + i, global_offset + j, boundary_ex.delta_hat_local(i, j));
+            for (uint i = 0; i < ndof_local_ex * SWE::n_variables; ++i) {
+                for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+                    sparse_delta_hat_local.add_triplet(local_offset_ex * SWE::n_variables + i,
+                                                       global_offset * SWE::n_variables + j,
+                                                       boundary_ex.delta_hat_local(i, j));
+                }
             }
-        }
 
-        for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_local_in * SWE::n_variables; ++j) {
-                sparse_delta_global.add_triplet(global_offset + i, local_offset_in + j, boundary_in.delta_global(i, j));
+            for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
+                for (uint j = 0; j < ndof_local_in * SWE::n_variables; ++j) {
+                    sparse_delta_global.add_triplet(global_offset * SWE::n_variables + i,
+                                                    local_offset_in * SWE::n_variables + j,
+                                                    boundary_in.delta_global(i, j));
+                }
             }
-        }
 
-        for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_local_ex * SWE::n_variables; ++j) {
-                sparse_delta_global.add_triplet(global_offset + i, local_offset_ex + j, boundary_ex.delta_global(i, j));
+            for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
+                for (uint j = 0; j < ndof_local_ex * SWE::n_variables; ++j) {
+                    sparse_delta_global.add_triplet(global_offset * SWE::n_variables + i,
+                                                    local_offset_ex * SWE::n_variables + j,
+                                                    boundary_ex.delta_global(i, j));
+                }
             }
-        }
-    });
+        });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary(
         [&discretization, &sparse_delta_hat_local, &sparse_delta_global, &sparse_delta_hat_global](auto& edge_bound) {
@@ -91,26 +100,30 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
             uint local_offset  = boundary.local_dof_offset;
             uint global_offset = edge_internal.global_dof_offset;
 
-            subvector(discretization.rhs_global, global_offset, ndof_global * SWE::n_variables) =
+            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof_global * SWE::n_variables) =
                 edge_internal.rhs_global;
 
             for (uint i = 0; i < ndof_local * SWE::n_variables; ++i) {
                 for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
-                    sparse_delta_hat_local.add_triplet(
-                        local_offset + i, global_offset + j, boundary.delta_hat_local(i, j));
+                    sparse_delta_hat_local.add_triplet(local_offset * SWE::n_variables + i,
+                                                       global_offset * SWE::n_variables + j,
+                                                       boundary.delta_hat_local(i, j));
                 }
             }
 
             for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
                 for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
-                    sparse_delta_hat_global.add_triplet(
-                        global_offset + i, global_offset + j, edge_internal.delta_hat_global(i, j));
+                    sparse_delta_hat_global.add_triplet(global_offset * SWE::n_variables + i,
+                                                        global_offset * SWE::n_variables + j,
+                                                        edge_internal.delta_hat_global(i, j));
                 }
             }
 
             for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
                 for (uint j = 0; j < ndof_local * SWE::n_variables; ++j) {
-                    sparse_delta_global.add_triplet(global_offset + i, local_offset + j, boundary.delta_global(i, j));
+                    sparse_delta_global.add_triplet(global_offset * SWE::n_variables + i,
+                                                    local_offset * SWE::n_variables + j,
+                                                    boundary.delta_global(i, j));
                 }
             }
         });
@@ -139,7 +152,7 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint ndof         = elt.data.get_ndof();
         uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto rhs_local = subvector(discretization.rhs_local, local_offset, ndof * SWE::n_variables);
+        auto rhs_local = subvector(discretization.rhs_local, local_offset * SWE::n_variables, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += rhs_local[3 * dof];
@@ -154,7 +167,8 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint ndof          = edge_int.edge_data.get_ndof();
         uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global = subvector(discretization.rhs_global, global_offset, ndof * SWE::n_variables);
+        auto rhs_global =
+            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
@@ -169,7 +183,8 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint ndof          = edge_bound.edge_data.get_ndof();
         uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
-        auto rhs_global = subvector(discretization.rhs_global, global_offset, ndof * SWE::n_variables);
+        auto rhs_global =
+            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
