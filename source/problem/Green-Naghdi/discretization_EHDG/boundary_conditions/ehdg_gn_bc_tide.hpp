@@ -26,11 +26,16 @@ class Tide {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    /* something to be implemented in future */
 
     template <typename EdgeBoundaryType>
-    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+
+    template <typename EdgeBoundaryType>
+    void ComputeNumericalFluxSWE(EdgeBoundaryType& edge_bound) {}
+
+    template <typename EdgeBoundaryType>
+    void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {

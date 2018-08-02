@@ -104,7 +104,7 @@ void Problem::local_swe_source_kernel(const RKStepper& stepper, ElementType& elt
 }
 
 template <typename ElementType>
-void Problem::dc_source_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];

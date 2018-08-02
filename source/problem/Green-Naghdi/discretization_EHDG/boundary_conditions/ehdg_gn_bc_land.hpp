@@ -13,14 +13,17 @@ class Land {
     void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
 
     template <typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    void ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeBoundaryType>
-    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
+    void ComputeNumericalFluxSWE(EdgeBoundaryType& edge_bound);
+
+    template <typename EdgeBoundaryType>
+    void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 };
 
 template <typename EdgeBoundaryType>
-void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+void Land::ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
@@ -28,15 +31,13 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
     double qn;
     double nx, ny;
 
-    StatVector<double, GN::n_variables* GN::n_variables> I_vector = IdentityVector<double>(GN::n_variables);
-
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
         ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
 
         qn = boundary.q_at_gp(GN::Variables::qx, gp) * nx + boundary.q_at_gp(GN::Variables::qy, gp) * ny;
 
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = I_vector;
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = IdentityVector<double>(GN::n_variables);
 
         column(edge_internal.rhs_global_kernel_at_gp, gp) =
             column(edge_internal.q_hat_at_gp, gp) - column(boundary.q_at_gp, gp);
@@ -46,12 +47,33 @@ void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge
 }
 
 template <typename EdgeBoundaryType>
-void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
+void Land::ComputeNumericalFluxSWE(EdgeBoundaryType& edge_bound) {
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
     add_F_hat_tau_terms_bound_LF(edge_bound);
+}
+
+template <typename EdgeBoundaryType>
+void Land::ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    double nx, ny;
+
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
+        ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
+
+        column(edge_internal.w1_hat_w1_hat_kernel_at_gp, gp) = -IdentityVector<double>(GN::n_dimensions);
+
+        column(boundary.w1_hat_w1_kernel_at_gp, gp) = IdentityVector<double>(GN::n_dimensions);
+
+        boundary.w1_hat_w1_kernel_at_gp(GlobalCoord::x, GlobalCoord::x) -= nx * nx;
+        boundary.w1_hat_w1_kernel_at_gp(GlobalCoord::y, GlobalCoord::y) -= ny * ny;
+    }
 }
 }
 }

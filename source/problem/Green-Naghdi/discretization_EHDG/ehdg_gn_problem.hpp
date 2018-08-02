@@ -114,17 +114,27 @@ struct Problem {
     static void serial_bathymetry_derivatives_kernel(const RKStepper& stepper,
                                                      ProblemDiscretizationType& discretization);
 
-    template <typename ElementType>
-    static void dc_volume_kernel(const RKStepper& stepper, ElementType& elt);
+    /* local step */
 
     template <typename ElementType>
-    static void dc_source_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename ElementType>
+    static void local_dc_source_kernel(const RKStepper& stepper, ElementType& elt);
 
     template <typename EdgeInterfaceType>
-    static void dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+    static void local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeBoundaryType>
-    static void dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    static void local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    /* global step */
+
+    template <typename EdgeInterfaceType>
+    static void global_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename EdgeBoundaryType>
+    static void global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     /* SWE part */
 

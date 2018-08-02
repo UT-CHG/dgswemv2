@@ -39,7 +39,7 @@ void Problem::local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt
 }
 
 template <typename ElementType>
-void Problem::dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
 
     // at this point h_at_gp

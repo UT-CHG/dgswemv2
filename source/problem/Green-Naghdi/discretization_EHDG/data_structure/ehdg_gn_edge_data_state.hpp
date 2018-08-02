@@ -9,6 +9,8 @@ struct EdgeState {
     EdgeState() = default;
     EdgeState(const uint ndof) : q_hat(GN::n_variables, ndof) {}
 
+    /* swe containers */
+
     HybMatrix<double, GN::n_variables> q_hat;
 };
 }

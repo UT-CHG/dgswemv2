@@ -57,15 +57,21 @@ void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, Prob
     // Compute dbath, ddbath, dddbath (if bath is not a variable then this goes into data initialization)
     Problem::serial_bathymetry_derivatives_kernel(stepper, discretization);
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::dc_volume_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_volume_kernel(stepper, elt); });
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::dc_source_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_source_kernel(stepper, elt); });
 
     discretization.mesh_skeleton.CallForEachEdgeInterface(
-        [&stepper](auto& edge_int) { Problem::dc_edge_interface_kernel(stepper, edge_int); });
+        [&stepper](auto& edge_int) { Problem::local_dc_edge_interface_kernel(stepper, edge_int); });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary(
-        [&stepper](auto& edge_bound) { Problem::dc_edge_boundary_kernel(stepper, edge_bound); });
+        [&stepper](auto& edge_bound) { Problem::local_dc_edge_boundary_kernel(stepper, edge_bound); });
+
+    discretization.mesh_skeleton.CallForEachEdgeInterface(
+        [&stepper](auto& edge_int) { Problem::global_dc_edge_interface_kernel(stepper, edge_int); });
+
+    discretization.mesh_skeleton.CallForEachEdgeBoundary(
+        [&stepper](auto& edge_bound) { Problem::global_dc_edge_boundary_kernel(stepper, edge_bound); });
 }
 }
 }

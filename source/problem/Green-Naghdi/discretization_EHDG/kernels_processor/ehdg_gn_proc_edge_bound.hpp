@@ -41,7 +41,7 @@ void Problem::global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoun
     row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, GN::Variables::ze) + row(boundary.aux_at_gp, GN::Auxiliaries::bath);
 
-    edge_bound.boundary.boundary_condition.ComputeNumericalFlux(edge_bound);
+    edge_bound.boundary.boundary_condition.ComputeNumericalFluxSWE(edge_bound);
 }
 
 template <typename EdgeBoundaryType>
@@ -58,7 +58,7 @@ void Problem::global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeB
 
     /* Assemble global kernels */
 
-    edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
+    edge_bound.boundary.boundary_condition.ComputeGlobalKernelsSWE(stepper, edge_bound);
 
     /* Assemble global system */
 
@@ -91,7 +91,7 @@ void Problem::global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeB
 }
 
 template <typename EdgeBoundaryType>
-void Problem::dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& internal = edge_bound.boundary.data.internal;
@@ -143,6 +143,39 @@ void Problem::dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType
 
             boundary.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::y) =
                 edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y));
+        }
+    }
+}
+
+template <typename EdgeBoundaryType>
+void Problem::global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    edge_bound.boundary.boundary_condition.ComputeGlobalKernelsDC(stepper, edge_bound);
+
+    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); dof_j++) {
+            submatrix(edge_internal.w1_hat_w1_hat,
+                      GN::n_dimensions * dof_i,
+                      GN::n_dimensions * dof_j,
+                      GN::n_dimensions,
+                      GN::n_dimensions) =
+                reshape<double, GN::n_dimensions>(
+                    edge_bound.IntegrationLambdaLambda(dof_j, dof_i, edge_internal.w1_hat_w1_hat_kernel_at_gp));
+        }
+    }
+
+    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
+        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
+            submatrix(boundary.w1_hat_w1,
+                      GN::n_dimensions * dof_i,
+                      GN::n_dimensions * dof_j,
+                      GN::n_dimensions,
+                      GN::n_dimensions) =
+                reshape<double, GN::n_dimensions>(
+                    edge_bound.IntegrationPhiLambda(dof_j, dof_i, boundary.w1_hat_w1_kernel_at_gp));
         }
     }
 }

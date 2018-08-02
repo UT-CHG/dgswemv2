@@ -39,6 +39,22 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
                                      GN::n_dimensions * edge_int.edge_data.get_ndof());
         boundary_ex.w2_w1_hat.resize(edge_int.interface.data_ex.get_ndof(),
                                      GN::n_dimensions * edge_int.edge_data.get_ndof());
+
+        // Initialize w1_hat containers
+        edge_internal.w1_hat_w1_hat.resize(GN::n_dimensions * edge_int.edge_data.get_ndof(),
+                                           GN::n_dimensions * edge_int.edge_data.get_ndof());
+
+        boundary_in.w1_hat_w1.resize(GN::n_dimensions * edge_int.edge_data.get_ndof(),
+                                     GN::n_dimensions * edge_int.interface.data_in.get_ndof());
+
+        boundary_in.w1_hat_w2.resize(GN::n_dimensions * edge_int.edge_data.get_ndof(),
+                                     edge_int.interface.data_in.get_ndof());
+
+        boundary_ex.w1_hat_w1.resize(GN::n_dimensions * edge_int.edge_data.get_ndof(),
+                                     GN::n_dimensions * edge_int.interface.data_ex.get_ndof());
+
+        boundary_ex.w1_hat_w2.resize(GN::n_dimensions * edge_int.edge_data.get_ndof(),
+                                     edge_int.interface.data_ex.get_ndof());
     });
 
     discretization->mesh_skeleton.CallForEachEdgeBoundary([](auto& edge_bound) {
@@ -56,6 +72,13 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
                                   GN::n_dimensions * edge_bound.edge_data.get_ndof());
         boundary.w2_w1_hat.resize(edge_bound.boundary.data.get_ndof(),
                                   GN::n_dimensions * edge_bound.edge_data.get_ndof());
+
+        // Initialize w1_hat containers
+        edge_internal.w1_hat_w1_hat.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
+                                           GN::n_dimensions * edge_bound.edge_data.get_ndof());
+
+        boundary.w1_hat_w1.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
+                                  GN::n_dimensions * edge_bound.boundary.data.get_ndof());
     });
 
     discretization->mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {

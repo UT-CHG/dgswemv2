@@ -14,14 +14,17 @@ class Internal {
     void Initialize(InterfaceType& intface) {} /*nothing to initialize*/
 
     template <typename EdgeInterfaceType>
-    void ComputeGlobalKernels(EdgeInterfaceType& edge_int);
+    void ComputeGlobalKernelsSWE(EdgeInterfaceType& edge_int);
 
     template <typename EdgeInterfaceType>
-    void ComputeNumericalFlux(EdgeInterfaceType& edge_int);
+    void ComputeNumericalFluxSWE(EdgeInterfaceType& edge_int);
+
+    template <typename EdgeInterfaceType>
+    void ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int);
 };
 
 template <typename EdgeInterfaceType>
-void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
+void Internal::ComputeGlobalKernelsSWE(EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
@@ -40,7 +43,7 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
 }
 
 template <typename EdgeInterfaceType>
-void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
+void Internal::ComputeNumericalFluxSWE(EdgeInterfaceType& edge_int) {
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
@@ -49,6 +52,29 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
 
     // Add tau terms
     add_F_hat_tau_terms_intface_LF(edge_int);
+}
+
+template <typename EdgeInterfaceType>
+void Internal::ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int) {
+    auto& edge_internal = edge_int.edge_data.edge_internal;
+
+    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+
+    double tau = -20.0;
+
+    uint gp_ex;
+    for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+        gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+        column(edge_internal.w1_hat_w1_hat_kernel_at_gp, gp) = 2.0 * tau * IdentityVector<double>(GN::n_dimensions);
+
+        column(boundary_in.w1_hat_w1_kernel_at_gp, gp)    = tau * IdentityVector<double>(GN::n_dimensions);
+        column(boundary_ex.w1_hat_w1_kernel_at_gp, gp_ex) = tau * IdentityVector<double>(GN::n_dimensions);
+    }
+
+    boundary_in.w1_hat_w2_kernel_at_gp = edge_int.interface.surface_normal_in;
+    boundary_ex.w1_hat_w2_kernel_at_gp = edge_int.interface.surface_normal_ex;
 }
 }
 }

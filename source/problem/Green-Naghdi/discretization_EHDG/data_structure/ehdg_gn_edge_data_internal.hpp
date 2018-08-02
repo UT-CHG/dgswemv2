@@ -12,7 +12,10 @@ struct EdgeInternal {
           aux_hat_at_gp(GN::n_auxiliaries, ngp),
           q_init_at_gp(GN::n_variables, ngp),
           delta_hat_global_kernel_at_gp(GN::n_variables * GN::n_variables, ngp),
-          rhs_global_kernel_at_gp(GN::n_variables, ngp) {}
+          rhs_global_kernel_at_gp(GN::n_variables, ngp),
+          w1_hat_w1_hat_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp) {}
+
+    /* swe containers */
 
     HybMatrix<double, GN::n_variables> q_hat_at_gp;
     HybMatrix<double, GN::n_auxiliaries> aux_hat_at_gp;
@@ -23,6 +26,12 @@ struct EdgeInternal {
 
     DynMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
+
+    /* dc containers */
+
+    HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_hat_w1_hat_kernel_at_gp;
+
+    DynMatrix<double> w1_hat_w1_hat;
 };
 }
 }

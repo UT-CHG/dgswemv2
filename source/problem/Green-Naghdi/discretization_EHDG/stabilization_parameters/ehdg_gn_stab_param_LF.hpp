@@ -21,7 +21,6 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
     StatVector<double, GN::n_variables> dtau_dq_hat;
 
     StatVector<double, GN::n_variables * GN::n_variables> dtau_delq;
-    StatVector<double, GN::n_variables* GN::n_variables> I_vector = IdentityVector<double>(GN::n_variables);
 
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
@@ -59,7 +58,8 @@ inline void add_kernel_tau_terms_intface_LF(EdgeInterfaceType& edge_int) {
         subvector(dtau_delq, GN::JacobianVariables::qx_ze, GN::n_variables) = dtau_dq_hat * del_q[GN::Variables::qx];
         subvector(dtau_delq, GN::JacobianVariables::qy_ze, GN::n_variables) = dtau_dq_hat * del_q[GN::Variables::qy];
 
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = dtau_delq - 2.0 * tau * I_vector;
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) =
+            dtau_delq - 2.0 * tau * IdentityVector<double>(GN::n_variables);
         /* RHS kernels */
 
         column(edge_internal.rhs_global_kernel_at_gp, gp) += tau * del_q;
@@ -81,7 +81,6 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
     StatVector<double, GN::n_variables> dtau_dq_hat;
 
     StatVector<double, GN::n_variables * GN::n_variables> dtau_delq;
-    StatVector<double, GN::n_variables* GN::n_variables> I_vector = IdentityVector<double>(GN::n_variables);
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         u_hat = edge_internal.q_hat_at_gp(GN::Variables::qx, gp) / edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
@@ -117,7 +116,8 @@ inline void add_kernel_tau_terms_dbound_LF(EdgeDistributedType& edge_dbound) {
         subvector(dtau_delq, GN::JacobianVariables::qx_ze, GN::n_variables) = dtau_dq_hat * del_q[GN::Variables::qx];
         subvector(dtau_delq, GN::JacobianVariables::qy_ze, GN::n_variables) = dtau_dq_hat * del_q[GN::Variables::qy];
 
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = dtau_delq - 2.0 * tau * I_vector;
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) =
+            dtau_delq - 2.0 * tau * IdentityVector<double>(GN::n_variables);
 
         /* RHS kernels */
 

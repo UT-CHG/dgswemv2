@@ -26,6 +26,8 @@ struct Internal {
           w2_w1_kernel_at_gp(GN::n_dimensions, ngp),
           w2_w2_kernel_at_gp(ngp) {}
 
+    /* swe containers */
+
     HybMatrix<double, GN::n_variables> q_at_gp;
     HybMatrix<double, GN::n_auxiliaries> aux_at_gp;
 
@@ -37,6 +39,8 @@ struct Internal {
     HybMatrix<double, GN::n_dimensions> tau_s_at_gp;
     HybMatrix<double, GN::n_dimensions> dp_atm_at_gp;
     HybMatrix<double, GN::n_dimensions> dtide_pot_at_gp;
+
+    /* dispersive correction containers */
 
     HybMatrix<double, GN::n_dimensions> u_at_gp;
     HybMatrix<double, GN::n_du_terms> du_at_gp;
