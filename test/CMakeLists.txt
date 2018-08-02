@@ -518,4 +518,19 @@ if(USE_HPX)
     test_serialize_chrono_exe
   )
 
+  add_executable(
+    test_blaze_serialization_exe
+    test_blaze_serialization.cpp
+  )
+
+  set_target_properties(test_blaze_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_blaze_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_blaze_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_blaze_serialization
+    test_blaze_serialization_exe
+  )
+
 endif()
