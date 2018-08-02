@@ -1,13 +1,15 @@
 #ifndef USE_BLAZE_HPP
 #define USE_BLAZE_HPP
 
-#include "general_definitions.hpp"
-
 #include <blaze/Math.h>
 #include <blaze/math/Subvector.h>
 #include <blaze/math/Submatrix.h>
 #include <blaze/math/Column.h>
 #include <blaze/math/Row.h>
+
+#ifdef HAS_HPX
+#include "serialization/blaze_vector.hpp"
+#endif
 
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;
