@@ -105,15 +105,15 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     // set kernels up
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         column(boundary.w1_w1_kernel_at_gp, gp) =
-            NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
+            -NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
 
         column(boundary.w1_w1_hat_kernel_at_gp, gp) =
             NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
     }
 
-    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = cwise_division(
+    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -cwise_division(
         row(edge_bound.boundary.surface_normal, GlobalCoord::x), row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
-    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = cwise_division(
+    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = -cwise_division(
         row(edge_bound.boundary.surface_normal, GlobalCoord::y), row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
 
     for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
@@ -122,7 +122,7 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
                       GN::n_dimensions,
-                      GN::n_dimensions) -=
+                      GN::n_dimensions) +=
                 reshape<double, GN::n_dimensions>(
                     edge_bound.boundary.IntegrationPhiPhi(dof_i, dof_j, boundary.w1_w1_kernel_at_gp));
         }
@@ -163,7 +163,7 @@ void Problem::global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBound
                       GN::n_dimensions,
                       GN::n_dimensions) =
                 reshape<double, GN::n_dimensions>(
-                    edge_bound.IntegrationLambdaLambda(dof_j, dof_i, edge_internal.w1_hat_w1_hat_kernel_at_gp));
+                    edge_bound.IntegrationLambdaLambda(dof_i, dof_j, edge_internal.w1_hat_w1_hat_kernel_at_gp));
         }
     }
 

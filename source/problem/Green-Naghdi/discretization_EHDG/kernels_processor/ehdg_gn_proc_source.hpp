@@ -141,15 +141,11 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto c1 = cwise_multiplication(vx, uy) + cwise_multiplication(ux, ux) + cwise_multiplication(ux, vy) +
               cwise_multiplication(vy, vy);
 
-    auto c2 = -cwise_multiplication(vy, uxx) - cwise_multiplication(ux, vyx) + cwise_multiplication(uy, vxx) +
-              cwise_multiplication(vx, uyx) + 2.0 * cwise_multiplication(ux, uxx) +
-              2.0 * cwise_multiplication(vy, uxx) + 2.0 * cwise_multiplication(ux, vyx) +
-              2.0 * cwise_multiplication(vy, vyx);
+    auto c2 = cwise_multiplication(uy, vxx) + cwise_multiplication(vx, uyx) + 2.0 * cwise_multiplication(ux, uxx) +
+              cwise_multiplication(vy, uxx) + cwise_multiplication(ux, vyx) + 2.0 * cwise_multiplication(vy, vyx);
 
-    auto c3 = -cwise_multiplication(vy, uxy) - cwise_multiplication(ux, vyy) + cwise_multiplication(uy, vxy) +
-              cwise_multiplication(vx, uyy) + 2.0 * cwise_multiplication(ux, uxy) +
-              2.0 * cwise_multiplication(vy, uxy) + 2.0 * cwise_multiplication(ux, vyy) +
-              2.0 * cwise_multiplication(vy, vyy);
+    auto c3 = cwise_multiplication(uy, vxy) + cwise_multiplication(vx, uyy) + 2.0 * cwise_multiplication(ux, uxy) +
+              cwise_multiplication(vy, uxy) + cwise_multiplication(ux, vyy) + 2.0 * cwise_multiplication(vy, vyy);
 
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::x) =
         2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dx) + 2.0 / 3.0 * cwise_multiplication(h3, c2) +

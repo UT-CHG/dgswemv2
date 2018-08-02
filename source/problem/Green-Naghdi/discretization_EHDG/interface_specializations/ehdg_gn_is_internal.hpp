@@ -67,7 +67,7 @@ void Internal::ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int) {
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        column(edge_internal.w1_hat_w1_hat_kernel_at_gp, gp) = 2.0 * tau * IdentityVector<double>(GN::n_dimensions);
+        column(edge_internal.w1_hat_w1_hat_kernel_at_gp, gp) = -2.0 * tau * IdentityVector<double>(GN::n_dimensions);
 
         column(boundary_in.w1_hat_w1_kernel_at_gp, gp)    = tau * IdentityVector<double>(GN::n_dimensions);
         column(boundary_ex.w1_hat_w1_kernel_at_gp, gp_ex) = tau * IdentityVector<double>(GN::n_dimensions);

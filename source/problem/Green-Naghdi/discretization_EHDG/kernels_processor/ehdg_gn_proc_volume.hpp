@@ -50,7 +50,7 @@ void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt)
         column(internal.w1_w1_kernel_at_gp, gp) = IdentityVector<double>(GN::n_dimensions);
     }
 
-    set_constant(internal.w1_w2_kernel_at_gp, NDParameters::alpha / 3.0);
+    set_constant(internal.w1_w2_kernel_at_gp, -NDParameters::alpha / 3.0);
 
     row(internal.w2_w1_kernel_at_gp, GlobalCoord::x) = power(row(internal.aux_at_gp, GN::Auxiliaries::h), -1.0);
     row(internal.w2_w1_kernel_at_gp, GlobalCoord::y) = power(row(internal.aux_at_gp, GN::Auxiliaries::h), -1.0);
