@@ -169,8 +169,8 @@ void solve_sle(MatrixType& A, VectorType& b) {
     blaze::gesv(A, b, ipiv);
 }
 
-template <typename VectorType, typename T>
-void solve_sle(SparseMatrix<T>& A_sparse, VectorType& b) {
+template <typename ArrayType, typename T>
+void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Avoid using this function, use a library with sparse solvers, e.g. Eigen
     // Transforming sparse to dense  causes ill conditioned problems
     // Solutions genereted here can be rubbish
@@ -180,9 +180,9 @@ void solve_sle(SparseMatrix<T>& A_sparse, VectorType& b) {
 
     A_dense = A_sparse;
 
-    int ipiv[b.size()];
+    int ipiv[blaze::columns(A_dense)];
 
-    blaze::gesv(A_dense, b, ipiv);
+    blaze::gesv(A_dense, B, ipiv);
 }
 
 #endif

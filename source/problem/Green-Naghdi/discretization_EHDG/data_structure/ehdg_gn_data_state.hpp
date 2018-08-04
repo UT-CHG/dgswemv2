@@ -12,6 +12,7 @@ struct State {
           aux(1, ndof /* only bath */),
           rhs(GN::n_variables, ndof),
           solution(GN::n_variables, ndof),
+          w1(GN::n_dimensions, ndof),
           du(GN::n_du_terms, ndof),
           ddu(GN::n_ddu_terms, ndof) {}
 
@@ -25,6 +26,7 @@ struct State {
 
     /* dispersive correction containers */
 
+    HybMatrix<double, GN::n_dimensions> w1;
     HybMatrix<double, GN::n_du_terms> du;
     HybMatrix<double, GN::n_ddu_terms> ddu;
 };

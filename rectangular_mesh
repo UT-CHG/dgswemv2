@@ -1,12 +1,12 @@
-x1: 0.0 
-x2: 90000.0
+x1: -10.0 
+x2: 10.0
 
 y1: 0.0
-y2: 6000.0
+y2: 0.2
 
-num_x_subdivisions: 90
-num_y_subdivisions: 6
+num_x_subdivisions: 200
+num_y_subdivisions: 2
 
 pattern: 0
 
-boundary_type: [0, 1, 0, 0]
+boundary_type: [0, 0, 0, 0]

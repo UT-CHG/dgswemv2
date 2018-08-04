@@ -32,6 +32,9 @@ struct EdgeInternal {
     HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_hat_w1_hat_kernel_at_gp;
 
     DynMatrix<double> w1_hat_w1_hat;
+    /* rhs_w1_hat = 0 */
+
+    uint global_dof_offset = 0;
 };
 }
 }

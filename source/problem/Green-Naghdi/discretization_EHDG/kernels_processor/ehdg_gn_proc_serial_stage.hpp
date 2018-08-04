@@ -4,13 +4,35 @@
 #include "general_definitions.hpp"
 
 #include "ehdg_gn_kernels_processor.hpp"
-#include "ehdg_gn_proc_derivatives.hpp"
+
 namespace GN {
 namespace EHDG {
 void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+    if(stepper.GetTimeAtCurrentStage() == 3.0) abort();
+
     Problem::serial_swe_stage_kernel(stepper, discretization);
 
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        const uint stage = stepper.GetStage();
+
+        auto& curr_state = elt.data.state[stage];
+        auto& next_state = elt.data.state[stage + 1];
+
+        curr_state.q = next_state.q;
+    });
+
     Problem::serial_dispersive_correction_kernel(stepper, discretization);
+
+    Problem::serial_swe_stage_kernel(stepper, discretization);
+
+    /*discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::update_kernel(stepper, elt); });
+
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        bool nan_found = Problem::scrutinize_solution_kernel(stepper, elt);
+
+        if (nan_found)
+            abort();
+    });*/
 }
 
 void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
@@ -40,13 +62,15 @@ void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretiz
         [&stepper](auto& bound) { Problem::local_swe_boundary_kernel(stepper, bound); });
     /* Local Step */
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::update_kernel(stepper, elt); });
-
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        bool nan_found = Problem::scrutinize_solution_kernel(stepper, elt);
+        const uint stage = stepper.GetStage();
 
-        if (nan_found)
-            abort();
+        auto& curr_state = elt.data.state[stage];
+        auto& next_state = elt.data.state[stage + 1];
+
+        curr_state.solution = elt.ApplyMinv(curr_state.rhs);
+
+        next_state.q = curr_state.q + stepper.GetDT() / 2.0 * curr_state.solution;
     });
 }
 
@@ -72,6 +96,37 @@ void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, Prob
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary(
         [&stepper](auto& edge_bound) { Problem::global_dc_edge_boundary_kernel(stepper, edge_bound); });
+
+    Problem::solve_global_dc_problem(stepper, discretization);
+
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        const uint stage = stepper.GetStage();
+
+        auto& state    = elt.data.state[stage];
+        auto& internal = elt.data.internal;
+
+        auto h = row(internal.aux_at_gp, GN::Auxiliaries::h);
+
+        auto dze_dx = elt.ComputeDUgp(GlobalCoord::x, row(state.q, GN::Variables::ze));
+        auto dze_dy = elt.ComputeDUgp(GlobalCoord::y, row(state.q, GN::Variables::ze));
+
+        row(internal.source_at_gp, GN::Variables::qx) =
+            Global::g / NDParameters::alpha * cwise_multiplication(dze_dx, h);
+        row(internal.source_at_gp, GN::Variables::qy) =
+            Global::g / NDParameters::alpha * cwise_multiplication(dze_dy, h);
+
+        row(internal.source_at_gp, GN::Variables::qx) -= elt.ComputeUgp(row(state.w1, GlobalCoord::x));
+        row(internal.source_at_gp, GN::Variables::qy) -= elt.ComputeUgp(row(state.w1, GlobalCoord::y));
+
+        row(state.rhs, GN::Variables::qx) = elt.IntegrationPhi(row(internal.source_at_gp, GN::Variables::qx));
+        row(state.rhs, GN::Variables::qy) = elt.IntegrationPhi(row(internal.source_at_gp, GN::Variables::qy));
+
+        row(state.solution, GN::Variables::qx) = elt.ApplyMinv(row(state.rhs, GN::Variables::qx));
+        row(state.solution, GN::Variables::qy) = elt.ApplyMinv(row(state.rhs, GN::Variables::qy));
+
+        row(state.q, GN::Variables::qx) += stepper.GetDT() * row(state.solution, GN::Variables::qx);
+        row(state.q, GN::Variables::qy) += stepper.GetDT() * row(state.solution, GN::Variables::qy);
+    });
 }
 }
 }

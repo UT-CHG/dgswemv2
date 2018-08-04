@@ -136,6 +136,8 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
+    static void solve_global_dc_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
+
     /* SWE part */
 
     // processor kernels

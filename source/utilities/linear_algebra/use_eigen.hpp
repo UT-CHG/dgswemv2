@@ -147,15 +147,15 @@ void solve_sle(MatrixType& A, VectorType& b) {
     b = A.fullPivLu().solve(b);
 }
 
-template <typename VectorType, typename T>
-void solve_sle(SparseMatrix<T>& A_sparse, VectorType& b) {
+template <typename ArrayType, typename T>
+void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     Eigen::SparseLU<SparseMatrix<T>> solver;
 
     solver.analyzePattern(A_sparse);
 
     solver.factorize(A_sparse);
 
-    b = solver.solve(b);
+    B = solver.solve(B);
 }
 
 #endif
