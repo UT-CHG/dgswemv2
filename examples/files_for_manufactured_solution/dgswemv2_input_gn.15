@@ -12,11 +12,11 @@ mesh:
 timestepping:
   start_time: 25-11-1987 00:00
   end_time: 25-11-1987 00:01             
-  dt: 0.0001                     
+  dt: 0.0005                     
   order: 1
   nstages: 1
 
-polynomial_order: 1
+polynomial_order: 3
 
 problem:
   name: green-naghdi
@@ -30,4 +30,4 @@ problem:
 output:
   path: ../output/
   vtu:
-    frequency: 0.001
+    frequency: 0.005

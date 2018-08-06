@@ -164,10 +164,10 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
                 reshape<double, GN::n_dimensions>(
                     edge_int.IntegrationPhiLambdaIN(dof_i, dof_j, boundary_in.w1_w1_hat_kernel_at_gp));
 
-            boundary_in.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::x) =
+            boundary_in.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::x) =
                 edge_int.IntegrationPhiLambdaIN(dof_i, dof_j, row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::x));
 
-            boundary_in.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::y) =
+            boundary_in.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::y) =
                 edge_int.IntegrationPhiLambdaIN(dof_i, dof_j, row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::y));
         }
     }
@@ -194,10 +194,10 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
                 reshape<double, GN::n_dimensions>(
                     edge_int.IntegrationPhiLambdaEX(dof_i, dof_j, boundary_ex.w1_w1_hat_kernel_at_gp));
 
-            boundary_ex.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::x) =
+            boundary_ex.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::x) =
                 edge_int.IntegrationPhiLambdaEX(dof_i, dof_j, row(boundary_ex.w2_w1_hat_kernel_at_gp, GlobalCoord::x));
 
-            boundary_ex.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::y) =
+            boundary_ex.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::y) =
                 edge_int.IntegrationPhiLambdaEX(dof_i, dof_j, row(boundary_ex.w2_w1_hat_kernel_at_gp, GlobalCoord::y));
         }
     }

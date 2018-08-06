@@ -138,10 +138,10 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
                 reshape<double, GN::n_dimensions>(
                     edge_bound.IntegrationPhiLambda(dof_i, dof_j, boundary.w1_w1_hat_kernel_at_gp));
 
-            boundary.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::x) =
+            boundary.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::x) =
                 edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x));
 
-            boundary.w2_w1_hat(dof_i, dof_j * GN::n_dimensions + GlobalCoord::y) =
+            boundary.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::y) =
                 edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y));
         }
     }

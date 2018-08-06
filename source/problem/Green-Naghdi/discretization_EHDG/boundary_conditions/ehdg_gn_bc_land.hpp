@@ -71,8 +71,10 @@ void Land::ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& ed
 
         column(boundary.w1_hat_w1_kernel_at_gp, gp) = IdentityVector<double>(GN::n_dimensions);
 
-        boundary.w1_hat_w1_kernel_at_gp(GlobalCoord::x, GlobalCoord::x) -= nx * nx;
-        boundary.w1_hat_w1_kernel_at_gp(GlobalCoord::y, GlobalCoord::y) -= ny * ny;
+        boundary.w1_hat_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::x, gp) -= nx * nx;
+        boundary.w1_hat_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::y, gp) -= nx * ny;
+        boundary.w1_hat_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::x, gp) -= nx * ny;
+        boundary.w1_hat_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp) -= ny * ny;
     }
 }
 }

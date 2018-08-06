@@ -8,8 +8,6 @@
 namespace GN {
 namespace EHDG {
 void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
-    if(stepper.GetTimeAtCurrentStage() == 3.0) abort();
-
     Problem::serial_swe_stage_kernel(stepper, discretization);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {

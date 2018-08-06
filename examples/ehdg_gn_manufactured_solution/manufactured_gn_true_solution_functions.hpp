@@ -7,7 +7,7 @@ namespace GN {
 inline double true_ze(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
-    constexpr double ao = 0.025;
+    constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
     constexpr double xo = -4.0;
 
@@ -20,7 +20,7 @@ inline double true_ze(const double t, const Point<2>& pt) {
 inline double true_qx(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
-    constexpr double ao = 0.025;
+    constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
     constexpr double xo = -4.0;
 
@@ -33,7 +33,7 @@ inline double true_qx(const double t, const Point<2>& pt) {
 inline double true_qy(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
-    constexpr double ao = 0.025;
+    constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
     constexpr double xo = -4.0;
 
@@ -48,7 +48,7 @@ inline double true_qy(const double t, const Point<2>& pt) {
 inline StatVector<double, GN::n_variables> true_u(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
-    constexpr double ao = 0.025;
+    constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
     constexpr double xo = -4.0;
 
