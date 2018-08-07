@@ -110,7 +110,7 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
     // at this point h_hat_at_gp
     // has been computed in swe edge_boundary kernel
 
-    double tau = -20.0;  // hardcode the tau value here
+    double tau = -2000.0;  // hardcode the tau value here
 
     // set kernels up
     uint gp_ex;
@@ -142,8 +142,8 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
         -cwise_division(row(edge_int.interface.surface_normal_ex, GlobalCoord::y),
                         row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
 
-    for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); ++dof_j) {
             submatrix(internal_in.w1_w1,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
@@ -154,8 +154,8 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); ++dof_j) {
             submatrix(boundary_in.w1_w1_hat,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
@@ -172,8 +172,8 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); ++dof_j) {
             submatrix(internal_ex.w1_w1,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
@@ -184,8 +184,8 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); ++dof_j) {
             submatrix(boundary_ex.w1_w1_hat,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
@@ -212,8 +212,8 @@ void Problem::global_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInte
 
     edge_int.interface.specialization.ComputeGlobalKernelsDC(edge_int);
 
-    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.edge_data.get_ndof(); ++dof_j) {
             submatrix(edge_internal.w1_hat_w1_hat,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
@@ -224,8 +224,8 @@ void Problem::global_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInte
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); ++dof_j) {
             submatrix(boundary_in.w1_hat_w1,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,
@@ -242,8 +242,8 @@ void Problem::global_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInte
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_int.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_int.interface.data_ex.get_ndof(); ++dof_j) {
             submatrix(boundary_ex.w1_hat_w1,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,

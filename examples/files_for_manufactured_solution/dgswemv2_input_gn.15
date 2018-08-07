@@ -16,7 +16,7 @@ timestepping:
   order: 1
   nstages: 1
 
-polynomial_order: 3
+polynomial_order: 1
 
 problem:
   name: green-naghdi

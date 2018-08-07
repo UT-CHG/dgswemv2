@@ -22,11 +22,8 @@ void Problem::serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscret
         row(internal.u_at_gp, GlobalCoord::y) =
             cwise_division(row(internal.q_at_gp, GN::Variables::qy), row(internal.aux_at_gp, GN::Auxiliaries::h));
 
-
-        row(state.dze, GlobalCoord::x) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.q_at_gp, GN::Variables::ze));
-        row(state.dze, GlobalCoord::y) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.q_at_gp, GN::Variables::ze));
+        row(state.dze, GlobalCoord::x) = -elt.IntegrationDPhi(GlobalCoord::x, row(internal.q_at_gp, GN::Variables::ze));
+        row(state.dze, GlobalCoord::y) = -elt.IntegrationDPhi(GlobalCoord::y, row(internal.q_at_gp, GN::Variables::ze));
 
         row(state.du, GN::FirstDerivatives::ux) =
             -elt.IntegrationDPhi(GlobalCoord::x, row(internal.u_at_gp, GlobalCoord::x));
@@ -155,7 +152,7 @@ void Problem::serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscret
         auto& state = elt.data.state[stage];
 
         state.dze = elt.ApplyMinv(state.dze);
-        state.du = elt.ApplyMinv(state.du);
+        state.du  = elt.ApplyMinv(state.du);
     });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {

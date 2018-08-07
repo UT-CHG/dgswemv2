@@ -57,8 +57,8 @@ void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt)
 
     internal.w2_w2_kernel_at_gp = power(row(internal.aux_at_gp, GN::Auxiliaries::h), -3.0);
 
-    for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < elt.data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < elt.data.get_ndof(); ++dof_j) {
             submatrix(internal.w1_w1,
                       GN::n_dimensions * dof_i,
                       GN::n_dimensions * dof_j,

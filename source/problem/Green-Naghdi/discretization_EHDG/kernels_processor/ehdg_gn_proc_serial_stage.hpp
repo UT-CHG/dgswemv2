@@ -23,14 +23,12 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
 
     Problem::serial_swe_stage_kernel(stepper, discretization);
 
-    /*discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::update_kernel(stepper, elt); });
-
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = Problem::scrutinize_solution_kernel(stepper, elt);
 
         if (nan_found)
             abort();
-    });*/
+    });
 }
 
 void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
@@ -105,8 +103,8 @@ void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, Prob
 
         auto h = row(internal.aux_at_gp, GN::Auxiliaries::h);
 
-        auto dze_dx = elt.ComputeDUgp(GlobalCoord::x, row(state.q, GN::Variables::ze));
-        auto dze_dy = elt.ComputeDUgp(GlobalCoord::y, row(state.q, GN::Variables::ze));
+        auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
+        auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
 
         row(internal.source_at_gp, GN::Variables::qx) =
             Global::g / NDParameters::alpha * cwise_multiplication(dze_dx, h);
