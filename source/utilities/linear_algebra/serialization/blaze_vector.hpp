@@ -44,7 +44,7 @@ namespace hpx {
 namespace serialization {
 namespace detail {
 template <typename VT>
-void serialize_blaze_header(output_archive& ar, const VT& vec) {
+void serialize_blaze_vector_header(output_archive& ar, const VT& vec) {
     using ET = blaze::ElementType_t<VT>;
 
     ar << uint8_t(1U);
@@ -76,7 +76,7 @@ void serialize_blaze_vector(output_archive& ar, const blaze::SparseVector<VT, TF
 
 template <typename VT, bool TF>
 void serialize(output_archive& ar, const blaze::Vector<VT, TF>& vec, unsigned) {
-    detail::serialize_blaze_header(ar, ~vec);
+    detail::serialize_blaze_vector_header(ar, ~vec);
     detail::serialize_blaze_vector(ar, ~vec);
 }
 
