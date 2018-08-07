@@ -9,7 +9,7 @@ inline double true_ze(const double t, const Point<2>& pt) {
 
     constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
-    constexpr double xo = -4.0;
+    constexpr double xo = -5.0;
 
     constexpr double co = std::sqrt(g * (Ho + ao));
     constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));
@@ -22,7 +22,7 @@ inline double true_qx(const double t, const Point<2>& pt) {
 
     constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
-    constexpr double xo = -4.0;
+    constexpr double xo = -5.0;
 
     constexpr double co = std::sqrt(g * (Ho + ao));
     constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));
@@ -35,7 +35,7 @@ inline double true_qy(const double t, const Point<2>& pt) {
 
     constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
-    constexpr double xo = -4.0;
+    constexpr double xo = -5.0;
 
     constexpr double co = std::sqrt(g * (Ho + ao));
     constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));
@@ -50,7 +50,7 @@ inline StatVector<double, GN::n_variables> true_u(const double t, const Point<2>
 
     constexpr double ao = 0.05;
     constexpr double Ho = 0.5;
-    constexpr double xo = -4.0;
+    constexpr double xo = -5.0;
 
     constexpr double co = std::sqrt(g * (Ho + ao));
     constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));

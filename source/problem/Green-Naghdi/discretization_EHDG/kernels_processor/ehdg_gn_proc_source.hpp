@@ -118,8 +118,8 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto h2 = cwise_multiplication(h, h);
     auto h3 = cwise_multiplication(h2, h);
 
-    auto dze_dx = elt.ComputeDUgp(GlobalCoord::x, row(state.q, GN::Variables::ze));
-    auto dze_dy = elt.ComputeDUgp(GlobalCoord::y, row(state.q, GN::Variables::ze));
+    auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
+    auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
 
     auto dh_dx = dze_dx + row(internal.dbath_at_gp, GlobalCoord::x);
     auto dh_dy = dze_dy + row(internal.dbath_at_gp, GlobalCoord::y);

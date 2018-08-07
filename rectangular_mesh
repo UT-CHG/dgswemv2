@@ -1,11 +1,11 @@
-x1: -10.0 
-x2: 10.0
+x1: -20.0 
+x2: 20.0
 
 y1: 0.0
 y2: 0.2
 
 num_x_subdivisions: 200
-num_y_subdivisions: 2
+num_y_subdivisions: 1
 
 pattern: 0
 

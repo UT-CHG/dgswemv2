@@ -5,7 +5,7 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::serial_velocity_derivatives_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
 
@@ -21,6 +21,12 @@ void Problem::serial_velocity_derivatives_kernel(const RKStepper& stepper, Probl
             cwise_division(row(internal.q_at_gp, GN::Variables::qx), row(internal.aux_at_gp, GN::Auxiliaries::h));
         row(internal.u_at_gp, GlobalCoord::y) =
             cwise_division(row(internal.q_at_gp, GN::Variables::qy), row(internal.aux_at_gp, GN::Auxiliaries::h));
+
+
+        row(state.dze, GlobalCoord::x) =
+            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.q_at_gp, GN::Variables::ze));
+        row(state.dze, GlobalCoord::y) =
+            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.q_at_gp, GN::Variables::ze));
 
         row(state.du, GN::FirstDerivatives::ux) =
             -elt.IntegrationDPhi(GlobalCoord::x, row(internal.u_at_gp, GlobalCoord::x));
@@ -67,18 +73,26 @@ void Problem::serial_velocity_derivatives_kernel(const RKStepper& stepper, Probl
         for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
+            boundary_in.q_at_gp(GN::Variables::ze, gp) =
+                (boundary_in.q_at_gp(GN::Variables::ze, gp) + boundary_ex.q_at_gp(GN::Variables::ze, gp_ex)) / 2.0;
+
             boundary_in.u_hat_at_gp(GlobalCoord::x, gp) =
                 (boundary_in.u_hat_at_gp(GlobalCoord::x, gp) + boundary_ex.u_hat_at_gp(GlobalCoord::x, gp_ex)) / 2.0;
-
             boundary_in.u_hat_at_gp(GlobalCoord::y, gp) =
                 (boundary_in.u_hat_at_gp(GlobalCoord::y, gp) + boundary_ex.u_hat_at_gp(GlobalCoord::y, gp_ex)) / 2.0;
 
-            boundary_ex.u_hat_at_gp(GlobalCoord::x, gp_ex) = boundary_in.u_hat_at_gp(GlobalCoord::x, gp);
+            boundary_ex.q_at_gp(GN::Variables::ze, gp_ex) = boundary_in.q_at_gp(GN::Variables::ze, gp);
 
+            boundary_ex.u_hat_at_gp(GlobalCoord::x, gp_ex) = boundary_in.u_hat_at_gp(GlobalCoord::x, gp);
             boundary_ex.u_hat_at_gp(GlobalCoord::y, gp_ex) = boundary_in.u_hat_at_gp(GlobalCoord::y, gp);
         }
 
         /* IN State */
+        row(state_in.dze, GlobalCoord::x) += intface.IntegrationPhiIN(cwise_multiplication(
+            row(boundary_in.q_at_gp, GN::Variables::ze), row(intface.surface_normal_in, GlobalCoord::x)));
+        row(state_in.dze, GlobalCoord::y) += intface.IntegrationPhiIN(cwise_multiplication(
+            row(boundary_in.q_at_gp, GN::Variables::ze), row(intface.surface_normal_in, GlobalCoord::y)));
+
         row(state_in.du, GN::FirstDerivatives::ux) += intface.IntegrationPhiIN(cwise_multiplication(
             row(boundary_in.u_hat_at_gp, GlobalCoord::x), row(intface.surface_normal_in, GlobalCoord::x)));
         row(state_in.du, GN::FirstDerivatives::uy) += intface.IntegrationPhiIN(cwise_multiplication(
@@ -89,6 +103,11 @@ void Problem::serial_velocity_derivatives_kernel(const RKStepper& stepper, Probl
             row(boundary_in.u_hat_at_gp, GlobalCoord::y), row(intface.surface_normal_in, GlobalCoord::y)));
 
         /* EX State */
+        row(state_ex.dze, GlobalCoord::x) += intface.IntegrationPhiEX(cwise_multiplication(
+            row(boundary_ex.q_at_gp, GN::Variables::ze), row(intface.surface_normal_ex, GlobalCoord::x)));
+        row(state_ex.dze, GlobalCoord::y) += intface.IntegrationPhiEX(cwise_multiplication(
+            row(boundary_ex.q_at_gp, GN::Variables::ze), row(intface.surface_normal_ex, GlobalCoord::y)));
+
         row(state_ex.du, GN::FirstDerivatives::ux) += intface.IntegrationPhiEX(cwise_multiplication(
             row(boundary_ex.u_hat_at_gp, GlobalCoord::x), row(intface.surface_normal_ex, GlobalCoord::x)));
         row(state_ex.du, GN::FirstDerivatives::uy) += intface.IntegrationPhiEX(cwise_multiplication(
@@ -115,6 +134,11 @@ void Problem::serial_velocity_derivatives_kernel(const RKStepper& stepper, Probl
         row(boundary.u_hat_at_gp, GlobalCoord::y) =
             cwise_division(row(boundary.q_at_gp, GN::Variables::qy), row(boundary.aux_at_gp, GN::Auxiliaries::h));
 
+        row(state.dze, GlobalCoord::x) += bound.IntegrationPhi(
+            cwise_multiplication(row(boundary.q_at_gp, GN::Variables::ze), row(bound.surface_normal, GlobalCoord::x)));
+        row(state.dze, GlobalCoord::y) += bound.IntegrationPhi(
+            cwise_multiplication(row(boundary.q_at_gp, GN::Variables::ze), row(bound.surface_normal, GlobalCoord::y)));
+
         row(state.du, GN::FirstDerivatives::ux) += bound.IntegrationPhi(
             cwise_multiplication(row(boundary.u_hat_at_gp, GlobalCoord::x), row(bound.surface_normal, GlobalCoord::x)));
         row(state.du, GN::FirstDerivatives::uy) += bound.IntegrationPhi(
@@ -130,6 +154,7 @@ void Problem::serial_velocity_derivatives_kernel(const RKStepper& stepper, Probl
 
         auto& state = elt.data.state[stage];
 
+        state.dze = elt.ApplyMinv(state.dze);
         state.du = elt.ApplyMinv(state.du);
     });
 

@@ -110,7 +110,7 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
     // at this point h_hat_at_gp
     // has been computed in swe edge_boundary kernel
 
-    double tau = 20.0;  // hardcode the tau value here
+    double tau = -20.0;  // hardcode the tau value here
 
     // set kernels up
     uint gp_ex;

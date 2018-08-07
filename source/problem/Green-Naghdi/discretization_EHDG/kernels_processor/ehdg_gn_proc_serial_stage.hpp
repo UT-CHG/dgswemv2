@@ -74,7 +74,7 @@ void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretiz
 
 void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     // Compute du, ddu
-    Problem::serial_velocity_derivatives_kernel(stepper, discretization);
+    Problem::serial_derivatives_kernel(stepper, discretization);
 
     // Compute dbath, ddbath, dddbath (if bath is not a variable then this goes into data initialization)
     Problem::serial_bathymetry_derivatives_kernel(stepper, discretization);
