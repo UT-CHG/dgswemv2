@@ -1,9 +1,9 @@
 #include "general_definitions.hpp"
 #include "problem/Green-Naghdi/gn_definitions.hpp"
 
-#include "manufactured_gn_initial_condition_functions.hpp"
-#include "manufactured_gn_source_functions.hpp"
-#include "manufactured_gn_true_solution_functions.hpp"
+#include "analytical_gn_initial_condition_functions.hpp"
+#include "analytical_gn_source_functions.hpp"
+#include "analytical_gn_true_solution_functions.hpp"
 
 #include "problem/Green-Naghdi/discretization_EHDG/ehdg_gn_problem.hpp"
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_kernels_preprocessor.hpp"

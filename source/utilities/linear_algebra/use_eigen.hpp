@@ -142,9 +142,9 @@ decltype(auto) inverse(MatrixType& matrix) {
 }
 
 /* Solving Linear System */
-template <typename MatrixType, typename VectorType>
-void solve_sle(MatrixType& A, VectorType& b) {
-    b = A.fullPivLu().solve(b);
+template <typename MatrixType, typename ArrayType>
+void solve_sle(MatrixType& A, ArrayType& B) {
+    B = A.fullPivLu().solve(B);
 }
 
 template <typename ArrayType, typename T>

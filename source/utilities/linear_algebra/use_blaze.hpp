@@ -162,11 +162,11 @@ decltype(auto) inverse(MatrixType& matrix) {
 }
 
 /* Solving Linear System */
-template <typename MatrixType, typename VectorType>
-void solve_sle(MatrixType& A, VectorType& b) {
-    int ipiv[b.size()];
+template <typename MatrixType, typename ArrayType>
+void solve_sle(MatrixType& A, ArrayType& B) {
+    int ipiv[blaze::columns(A)];
 
-    blaze::gesv(A, b, ipiv);
+    blaze::gesv(A, B, ipiv);
 }
 
 template <typename ArrayType, typename T>
@@ -174,7 +174,7 @@ void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Avoid using this function, use a library with sparse solvers, e.g. Eigen
     // Transforming sparse to dense  causes ill conditioned problems
     // Solutions genereted here can be rubbish
-    // static_assert(false, "No sparse solver in Blaze! Consult use_blaze.hpp!\n");
+    assert(false, "No sparse solver in Blaze! Consult use_blaze.hpp!\n");
 
     DynMatrix<double> A_dense;
 
