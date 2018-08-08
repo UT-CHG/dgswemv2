@@ -31,14 +31,13 @@ bool test_serialize_matrix(Matrix& i_mat) {
     Matrix o_mat;
     i_archive >> o_mat;
 
-    bool error_found = ( i_mat.rows() != o_mat.rows() ) ||
-        (i_mat.columns() != o_mat.columns() );
+    bool error_found = (i_mat.rows() != o_mat.rows()) || (i_mat.columns() != o_mat.columns());
 
-    if ( !blaze::IsDenseMatrix_v<Matrix> ) {
-        error_found |= ( i_mat.nonZeros() != o_mat.nonZeros() );
+    if (!blaze::IsDenseMatrix_v<Matrix>) {
+        error_found |= (i_mat.nonZeros() != o_mat.nonZeros());
     }
 
-    error_found |= !Utilities::almost_equal(0.,blaze::norm(i_mat - o_mat));
+    error_found |= !Utilities::almost_equal(0., blaze::norm(i_mat - o_mat));
 
     return error_found;
 }
@@ -57,23 +56,22 @@ int main() {
         error_found |= test_serialize_vector(c);
     }
 
-    { // serialize matrix
+    {  // serialize matrix
 
-        StatMatrix<double,3,4> a{{1,2,3,4},{5,6,8},{9,10,11}};
+        StatMatrix<double, 3, 4> a{{1, 2, 3, 4}, {5, 6, 8}, {9, 10, 11}};
         error_found |= test_serialize_matrix(a);
 
-        DynMatrix<double> b{{1,2,3,4},{},{1,2},{1,2,3,5}};
+        DynMatrix<double> b{{1, 2, 3, 4}, {}, {1, 2}, {1, 2, 3, 5}};
         error_found |= test_serialize_matrix(b);
 
-        HybMatrix <double,3> c{{1,2,3},{4,5,6},{7,8,9}};
+        HybMatrix<double, 3> c{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
         error_found |= test_serialize_matrix(c);
 
-        SparseMatrix<double> d{{1,2,3,4},{},{1,0,2},{1,2,3,5}};
+        SparseMatrix<double> d{{1, 2, 3, 4}, {}, {1, 0, 2}, {1, 2, 3, 5}};
         error_found |= test_serialize_matrix(d);
 
         IdentityMatrix<double> e(3UL);
         error_found |= test_serialize_matrix(e);
-
     }
     return error_found;
 }
