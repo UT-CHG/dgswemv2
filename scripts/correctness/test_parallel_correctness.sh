@@ -33,7 +33,7 @@ cp -r $DGSWEMV2_ROOT_/examples/rkdg_swe_manufactured_solution/input_files/* dgsw
 
 cd dgswemv2_test
 #Halve the manufactured solution run time to shorten circleci test time
-sed -i 's/  end_time: 25-11-1987 01:00                /  end_time: 25-11-1987 00:30/g' dgswemv2_input.15
+sed -i 's/  end_time: 25-11-1987 01:00:00                /  end_time: 25-11-1987 00:30:00/g' dgswemv2_input.15
 $DGSWEMV2_ROOT_/build/mesh_generators/rectangular_mesh_generator mesh_generator_input.yml
 
 echo "Running Serial Test case..."
