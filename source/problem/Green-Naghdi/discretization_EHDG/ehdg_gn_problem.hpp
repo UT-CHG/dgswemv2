@@ -6,11 +6,15 @@
 #include "simulation/discretization.hpp"
 
 #include "problem/Green-Naghdi/gn_definitions.hpp"
+
 #include "boundary_conditions/ehdg_gn_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ehdg_gn_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ehdg_gn_interface_specializations.hpp"
+
 #include "data_structure/ehdg_gn_data.hpp"
 #include "data_structure/ehdg_gn_edge_data.hpp"
+#include "data_structure/ehdg_gn_global_data.hpp"
+
 #include "problem/Green-Naghdi/problem_input/gn_inputs.hpp"
 #include "problem/Green-Naghdi/problem_parser/gn_parser.hpp"
 
@@ -28,6 +32,8 @@ struct Problem {
     using ProblemDataType = Data;
 
     using ProblemEdgeDataType = EdgeData;
+
+    using ProblemGlobalDataType = GlobalData;
 
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<IS::Internal>,

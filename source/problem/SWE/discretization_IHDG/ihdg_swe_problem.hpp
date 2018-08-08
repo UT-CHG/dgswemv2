@@ -6,11 +6,15 @@
 #include "simulation/discretization.hpp"
 
 #include "problem/SWE/swe_definitions.hpp"
+
 #include "boundary_conditions/ihdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ihdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ihdg_swe_interface_specializations.hpp"
+
 #include "data_structure/ihdg_swe_data.hpp"
 #include "data_structure/ihdg_swe_edge_data.hpp"
+#include "data_structure/ihdg_swe_global_data.hpp"
+
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
 
@@ -28,6 +32,8 @@ struct Problem {
     using ProblemDataType = Data;
 
     using ProblemEdgeDataType = EdgeData;
+
+    using ProblemGlobalDataType = GlobalData;
 
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<IS::Internal>,

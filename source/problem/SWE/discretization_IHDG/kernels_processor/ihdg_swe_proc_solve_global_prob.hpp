@@ -15,7 +15,7 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint ndof         = elt.data.get_ndof();
         uint local_offset = internal.local_dof_offset;
 
-        subvector(discretization.rhs_local, local_offset * SWE::n_variables, ndof * SWE::n_variables) =
+        subvector(discretization.global_data.rhs_local, local_offset * SWE::n_variables, ndof * SWE::n_variables) =
             internal.rhs_local;
 
         internal.delta_local_inv = inverse(internal.delta_local);
@@ -44,8 +44,9 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
             uint local_offset_ex = boundary_ex.local_dof_offset;
             uint global_offset   = edge_internal.global_dof_offset;
 
-            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof_global * SWE::n_variables) =
-                edge_internal.rhs_global;
+            subvector(discretization.global_data.rhs_global,
+                      global_offset * SWE::n_variables,
+                      ndof_global * SWE::n_variables) = edge_internal.rhs_global;
 
             for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
                 for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
@@ -100,8 +101,9 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
             uint local_offset  = boundary.local_dof_offset;
             uint global_offset = edge_internal.global_dof_offset;
 
-            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof_global * SWE::n_variables) =
-                edge_internal.rhs_global;
+            subvector(discretization.global_data.rhs_global,
+                      global_offset * SWE::n_variables,
+                      ndof_global * SWE::n_variables) = edge_internal.rhs_global;
 
             for (uint i = 0; i < ndof_local * SWE::n_variables; ++i) {
                 for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
@@ -128,21 +130,25 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
             }
         });
 
-    sparse_delta_local_inv.get_sparse_matrix(discretization.delta_local_inv);
-    sparse_delta_hat_local.get_sparse_matrix(discretization.delta_hat_local);
-    sparse_delta_global.get_sparse_matrix(discretization.delta_global);
-    sparse_delta_hat_global.get_sparse_matrix(discretization.delta_hat_global);
+    sparse_delta_local_inv.get_sparse_matrix(discretization.global_data.delta_local_inv);
+    sparse_delta_hat_local.get_sparse_matrix(discretization.global_data.delta_hat_local);
+    sparse_delta_global.get_sparse_matrix(discretization.global_data.delta_global);
+    sparse_delta_hat_global.get_sparse_matrix(discretization.global_data.delta_hat_global);
 
-    discretization.delta_hat_global -=
-        discretization.delta_global * discretization.delta_local_inv * discretization.delta_hat_local;
+    discretization.global_data.delta_hat_global -= discretization.global_data.delta_global *
+                                                   discretization.global_data.delta_local_inv *
+                                                   discretization.global_data.delta_hat_local;
 
-    discretization.rhs_global -=
-        discretization.delta_global * discretization.delta_local_inv * discretization.rhs_local;
+    discretization.global_data.rhs_global -= discretization.global_data.delta_global *
+                                             discretization.global_data.delta_local_inv *
+                                             discretization.global_data.rhs_local;
 
-    solve_sle(discretization.delta_hat_global, discretization.rhs_global);
+    solve_sle(discretization.global_data.delta_hat_global, discretization.global_data.rhs_global);
 
-    discretization.rhs_local = discretization.delta_local_inv *
-                               (discretization.rhs_local - discretization.delta_hat_local * discretization.rhs_global);
+    discretization.global_data.rhs_local =
+        discretization.global_data.delta_local_inv *
+        (discretization.global_data.rhs_local -
+         discretization.global_data.delta_hat_local * discretization.global_data.rhs_global);
 
     discretization.mesh.CallForEachElement([&discretization, &stepper](auto& elt) {
         const uint stage = stepper.GetStage();
@@ -152,7 +158,8 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint ndof         = elt.data.get_ndof();
         uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto rhs_local = subvector(discretization.rhs_local, local_offset * SWE::n_variables, ndof * SWE::n_variables);
+        auto rhs_local =
+            subvector(discretization.global_data.rhs_local, local_offset * SWE::n_variables, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += rhs_local[3 * dof];
@@ -168,7 +175,7 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint global_offset = edge_int.edge_data.edge_internal.global_dof_offset;
 
         auto rhs_global =
-            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof * SWE::n_variables);
+            subvector(discretization.global_data.rhs_global, global_offset * SWE::n_variables, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
@@ -184,7 +191,7 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         uint global_offset = edge_bound.edge_data.edge_internal.global_dof_offset;
 
         auto rhs_global =
-            subvector(discretization.rhs_global, global_offset * SWE::n_variables, ndof * SWE::n_variables);
+            subvector(discretization.global_data.rhs_global, global_offset * SWE::n_variables, ndof * SWE::n_variables);
 
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += rhs_global[3 * dof];
@@ -193,7 +200,7 @@ bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<P
         }
     });
 
-    double delta_norm = norm(discretization.rhs_global) / discretization.rhs_global.size();
+    double delta_norm = norm(discretization.global_data.rhs_global) / discretization.global_data.rhs_global.size();
 
     if (delta_norm < 1e-8) {
         return true;

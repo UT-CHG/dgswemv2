@@ -151,8 +151,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             this->stepper_input.T_start = {0};
             this->stepper_input.T_end   = {0};
 
-            strptime(start_time.c_str(), "%d-%m-%Y %H:%M", &this->stepper_input.T_start);
-            strptime(end_time.c_str(), "%d-%m-%Y %H:%M", &this->stepper_input.T_end);
+            strptime(start_time.c_str(), "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_start);
+            strptime(end_time.c_str(), "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_end);
 
             this->stepper_input.run_time =
                 difftime(timegm(&this->stepper_input.T_end), timegm(&this->stepper_input.T_start));
@@ -314,11 +314,11 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
     output << YAML::Value << mesh;
 
     // Assemble timestepping information
-    char start_time_str[18];
-    char end_time_str[18];
+    char start_time_str[21];
+    char end_time_str[21];
 
-    strftime(start_time_str, 18, "%d-%m-%Y %H:%M", &this->stepper_input.T_start);
-    strftime(end_time_str, 18, "%d-%m-%Y %H:%M", &this->stepper_input.T_end);
+    strftime(start_time_str, 21, "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_start);
+    strftime(end_time_str, 21, "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_end);
 
     YAML::Node timestepping;
     timestepping["start_time"] = std::string(start_time_str);

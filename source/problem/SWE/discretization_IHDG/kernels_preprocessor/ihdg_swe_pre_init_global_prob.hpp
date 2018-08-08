@@ -79,13 +79,17 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>* discretizati
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
 
-    discretization->delta_local_inv.resize(local_dof_offset * SWE::n_variables, local_dof_offset * SWE::n_variables);
-    discretization->delta_hat_local.resize(local_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
-    discretization->rhs_local.resize(local_dof_offset * SWE::n_variables);
+    discretization->global_data.delta_local_inv.resize(local_dof_offset * SWE::n_variables,
+                                                       local_dof_offset * SWE::n_variables);
+    discretization->global_data.delta_hat_local.resize(local_dof_offset * SWE::n_variables,
+                                                       global_dof_offset * SWE::n_variables);
+    discretization->global_data.rhs_local.resize(local_dof_offset * SWE::n_variables);
 
-    discretization->delta_global.resize(global_dof_offset * SWE::n_variables, local_dof_offset * SWE::n_variables);
-    discretization->delta_hat_global.resize(global_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
-    discretization->rhs_global.resize(global_dof_offset * SWE::n_variables);
+    discretization->global_data.delta_global.resize(global_dof_offset * SWE::n_variables,
+                                                    local_dof_offset * SWE::n_variables);
+    discretization->global_data.delta_hat_global.resize(global_dof_offset * SWE::n_variables,
+                                                        global_dof_offset * SWE::n_variables);
+    discretization->global_data.rhs_global.resize(global_dof_offset * SWE::n_variables);
 }
 }
 }

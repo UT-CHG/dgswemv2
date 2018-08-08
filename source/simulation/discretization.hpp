@@ -32,29 +32,7 @@ struct HDGDiscretization {
     typename ProblemType::ProblemMeshType mesh;
     typename ProblemType::ProblemMeshSkeletonType mesh_skeleton;
 
-    /* have to template on global data structure class */
-    SparseMatrix<double> delta_local_inv;
-    SparseMatrix<double> delta_hat_local;
-    DynVector<double> rhs_local;
-
-    SparseMatrix<double> delta_global;
-    SparseMatrix<double> delta_hat_global;
-    DynVector<double> rhs_global;
-
-    SparseMatrix<double> w1_w1;
-    SparseMatrix<double> w1_w2;
-    SparseMatrix<double> w1_w1_hat;
-    DynVector<double> w1_rhs;
-
-    SparseMatrix<double> w2_w1;
-    SparseMatrix<double> w2_w2_inv;
-    SparseMatrix<double> w2_w1_hat;
-
-    SparseMatrix<double> w1_hat_w1;
-    SparseMatrix<double> w1_hat_w2;
-    SparseMatrix<double> w1_hat_w1_hat;
-    DynVector<double> w1_hat_rhs;
-    /* have to template on global data structure class */
+    typename ProblemType::ProblemGlobalDataType global_data;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input, Writer<ProblemType>& writer) {
         std::tuple<> empty_comm;

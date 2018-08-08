@@ -14,42 +14,40 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, HDGDiscretizatio
     SparseMatrixMeta<double> sparse_w1_hat_w2;
     SparseMatrixMeta<double> sparse_w1_hat_w1_hat;
 
-    discretization.mesh.CallForEachElement(
-        [&discretization, &sparse_w2_w1, &sparse_w2_w2_inv](auto& elt) {
-            auto& internal = elt.data.internal;
+    discretization.mesh.CallForEachElement([&discretization, &sparse_w2_w1, &sparse_w2_w2_inv](auto& elt) {
+        auto& internal = elt.data.internal;
 
-            uint ndof         = elt.data.get_ndof();
-            uint local_offset = internal.local_dof_offset;
+        uint ndof         = elt.data.get_ndof();
+        uint local_offset = internal.local_dof_offset;
 
-            internal.w2_w2_inv = inverse(internal.w2_w2);
+        internal.w2_w2_inv = inverse(internal.w2_w2);
 
-            internal.w1_w1 -= internal.w1_w2 * internal.w2_w2_inv * internal.w2_w1;
+        internal.w1_w1 -= internal.w1_w2 * internal.w2_w2_inv * internal.w2_w1;
 
-            for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
-                elt.data.boundary[bound_id].w1_w1_hat -=
-                    internal.w1_w2 * internal.w2_w2_inv * elt.data.boundary[bound_id].w2_w1_hat;
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
+            elt.data.boundary[bound_id].w1_w1_hat -=
+                internal.w1_w2 * internal.w2_w2_inv * elt.data.boundary[bound_id].w2_w1_hat;
 
-                solve_sle(internal.w1_w1, elt.data.boundary[bound_id].w1_w1_hat);
+            solve_sle(internal.w1_w1, elt.data.boundary[bound_id].w1_w1_hat);
+        }
+
+        solve_sle(internal.w1_w1, internal.w1_rhs);
+
+        subvector(discretization.global_data.w1_rhs, local_offset * GN::n_dimensions, ndof * GN::n_dimensions) =
+            internal.w1_rhs;
+
+        for (uint i = 0; i < ndof; ++i) {
+            for (uint j = 0; j < ndof * GN::n_dimensions; ++j) {
+                sparse_w2_w1.add_triplet(local_offset + i, local_offset * GN::n_dimensions + j, internal.w2_w1(i, j));
             }
+        }
 
-            solve_sle(internal.w1_w1, internal.w1_rhs);
-
-            subvector(discretization.w1_rhs, local_offset * GN::n_dimensions, ndof * GN::n_dimensions) =
-                internal.w1_rhs;
-
-            for (uint i = 0; i < ndof; ++i) {
-                for (uint j = 0; j < ndof * GN::n_dimensions; ++j) {
-                    sparse_w2_w1.add_triplet(
-                        local_offset + i, local_offset * GN::n_dimensions + j, internal.w2_w1(i, j));
-                }
+        for (uint i = 0; i < ndof; ++i) {
+            for (uint j = 0; j < ndof; ++j) {
+                sparse_w2_w2_inv.add_triplet(local_offset + i, local_offset + j, internal.w2_w2_inv(i, j));
             }
-
-            for (uint i = 0; i < ndof; ++i) {
-                for (uint j = 0; j < ndof; ++j) {
-                    sparse_w2_w2_inv.add_triplet(local_offset + i, local_offset + j, internal.w2_w2_inv(i, j));
-                }
-            }
-        });
+        }
+    });
 
     discretization.mesh_skeleton.CallForEachEdgeInterface([&discretization,
                                                            &sparse_w1_w1_hat,
@@ -170,25 +168,29 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, HDGDiscretizatio
         }
     });
 
-    sparse_w1_w1_hat.get_sparse_matrix(discretization.w1_w1_hat);
+    sparse_w1_w1_hat.get_sparse_matrix(discretization.global_data.w1_w1_hat);
 
-    sparse_w2_w1.get_sparse_matrix(discretization.w2_w1);
-    sparse_w2_w2_inv.get_sparse_matrix(discretization.w2_w2_inv);
-    sparse_w2_w1_hat.get_sparse_matrix(discretization.w2_w1_hat);
+    sparse_w2_w1.get_sparse_matrix(discretization.global_data.w2_w1);
+    sparse_w2_w2_inv.get_sparse_matrix(discretization.global_data.w2_w2_inv);
+    sparse_w2_w1_hat.get_sparse_matrix(discretization.global_data.w2_w1_hat);
 
-    sparse_w1_hat_w1.get_sparse_matrix(discretization.w1_hat_w1);
-    sparse_w1_hat_w2.get_sparse_matrix(discretization.w1_hat_w2);
-    sparse_w1_hat_w1_hat.get_sparse_matrix(discretization.w1_hat_w1_hat);
+    sparse_w1_hat_w1.get_sparse_matrix(discretization.global_data.w1_hat_w1);
+    sparse_w1_hat_w2.get_sparse_matrix(discretization.global_data.w1_hat_w2);
+    sparse_w1_hat_w1_hat.get_sparse_matrix(discretization.global_data.w1_hat_w1_hat);
 
-    discretization.w1_hat_w1 -= discretization.w1_hat_w2 * discretization.w2_w2_inv * discretization.w2_w1;
-    discretization.w1_hat_w1_hat -= discretization.w1_hat_w2 * discretization.w2_w2_inv * discretization.w2_w1_hat;
+    discretization.global_data.w1_hat_w1 -=
+        discretization.global_data.w1_hat_w2 * discretization.global_data.w2_w2_inv * discretization.global_data.w2_w1;
+    discretization.global_data.w1_hat_w1_hat -= discretization.global_data.w1_hat_w2 *
+                                                discretization.global_data.w2_w2_inv *
+                                                discretization.global_data.w2_w1_hat;
 
-    discretization.w1_hat_w1_hat -= discretization.w1_hat_w1 * discretization.w1_w1_hat;
-    discretization.w1_hat_rhs = -discretization.w1_hat_w1 * discretization.w1_rhs;
+    discretization.global_data.w1_hat_w1_hat -=
+        discretization.global_data.w1_hat_w1 * discretization.global_data.w1_w1_hat;
+    discretization.global_data.w1_hat_rhs = -discretization.global_data.w1_hat_w1 * discretization.global_data.w1_rhs;
 
-    solve_sle(discretization.w1_hat_w1_hat, discretization.w1_hat_rhs);
+    solve_sle(discretization.global_data.w1_hat_w1_hat, discretization.global_data.w1_hat_rhs);
 
-    discretization.w1_rhs -= discretization.w1_w1_hat * discretization.w1_hat_rhs;
+    discretization.global_data.w1_rhs -= discretization.global_data.w1_w1_hat * discretization.global_data.w1_hat_rhs;
 
     discretization.mesh.CallForEachElement([&discretization, &stepper](auto& elt) {
         const uint stage = stepper.GetStage();
@@ -198,7 +200,8 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, HDGDiscretizatio
         uint ndof         = elt.data.get_ndof();
         uint local_offset = elt.data.internal.local_dof_offset;
 
-        auto w1_rhs = subvector(discretization.w1_rhs, local_offset * GN::n_dimensions, ndof * GN::n_dimensions);
+        auto w1_rhs =
+            subvector(discretization.global_data.w1_rhs, local_offset * GN::n_dimensions, ndof * GN::n_dimensions);
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.w1(GlobalCoord::x, dof) = w1_rhs[2 * dof];

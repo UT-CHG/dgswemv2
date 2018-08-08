@@ -10,8 +10,8 @@ mesh:
   coordinate_system: cartesian
 
 timestepping:
-  start_time: 25-11-1987 00:00                
-  end_time: 25-11-1987 01:00                
+  start_time: 25-11-1987 00:00:00                
+  end_time: 25-11-1987 01:00:00                
   dt: 1                           #in seconds
   order: 2
   nstages: 2
