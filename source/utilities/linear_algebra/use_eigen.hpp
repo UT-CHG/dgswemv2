@@ -93,16 +93,13 @@ decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
 }
 
 template <typename T, uint n>
-DynMatrix<T> reshape(const DynVector<T>& vector) {
-    DynMatrix<T> ret(n, n);
+decltype(auto) reshape(DynVector<T>& vector) {
+    return Eigen::Map<StatMatrix<T, n, n>>(vector.data(), n, n);
+}
 
-    for (uint i = 0; i < n; ++i) {
-        for (uint j = 0; j < n; ++j) {
-            ret(i, j) = vector[i * n + j];
-        }
-    }
-
-    return ret;
+template <typename T, uint n>
+decltype(auto) reshape(DynVector<T>&& vector) {
+    return Eigen::Map<StatMatrix<T, n, n>>(vector.data(), n, n);
 }
 
 /* Matrix Operations */

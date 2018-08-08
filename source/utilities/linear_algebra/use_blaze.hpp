@@ -106,12 +106,12 @@ decltype(auto) power(const ArrayType& array, double exp) {
 
 template <typename LeftArrayType, typename RightArrayType>
 decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return array_left * array_right;
+    return blaze::map(array_left, array_right, [](double l, double r) { return r * l; });
 }
 
 template <typename LeftArrayType, typename RightArrayType>
 decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return array_left / array_right;
+    return blaze::map(array_left, array_right, [](double l, double r) { return r / l; });
 }
 
 /* Vector Operations */
@@ -172,8 +172,8 @@ void solve_sle(MatrixType& A, ArrayType& B) {
 template <typename ArrayType, typename T>
 void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Avoid using this function, use a library with sparse solvers, e.g. Eigen
-    // Transforming sparse to dense  causes ill conditioned problems
-    // Solutions genereted here can be rubbish
+    // Transforming sparse to dense causes ill conditioned problems
+    // Solutions generated here can be rubbish
     printf("No sparse solver in Blaze! Consult use_blaze.hpp!\n");
 
     assert(false);

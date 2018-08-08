@@ -1,6 +1,11 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
+  test_linear_algebra_exe
+  test_linear_algebra.cpp
+)
+
+add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
   ${SOURCES}
