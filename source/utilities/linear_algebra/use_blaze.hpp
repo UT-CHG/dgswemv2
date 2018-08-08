@@ -9,6 +9,7 @@
 
 #ifdef HAS_HPX
 #include "serialization/blaze_vector.hpp"
+#include "serialization/blaze_matrix.hpp"
 #endif
 
 template <typename T, uint m>
