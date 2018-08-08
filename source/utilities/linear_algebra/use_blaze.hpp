@@ -174,7 +174,9 @@ void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Avoid using this function, use a library with sparse solvers, e.g. Eigen
     // Transforming sparse to dense  causes ill conditioned problems
     // Solutions genereted here can be rubbish
-    assert(false, "No sparse solver in Blaze! Consult use_blaze.hpp!\n");
+    printf("No sparse solver in Blaze! Consult use_blaze.hpp!\n");
+
+    assert(false);
 
     DynMatrix<double> A_dense;
 
