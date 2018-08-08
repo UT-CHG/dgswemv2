@@ -116,10 +116,10 @@ struct blaze_matrix_serializer_helper {
    uint64_t columns_;      //!< The number of columns of the matrix.
    uint64_t number_;       //!< The total number of elements contained in the matrix.
 
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
+   template <typename Archive>
+   void serialize(Archive& ar, unsigned) {
         ar & version_ & type_ & elementType_ & elementSize_ & rows_ & columns_ & number_;
-    }
+   }
 
     template <typename MT>
     bool check_header(const MT& mat) {
@@ -148,16 +148,16 @@ struct blaze_matrix_serializer_helper {
     }
 
 
-    template< typename MT, bool SO >
-    blaze::DisableIf_t< blaze::IsResizable_v<MT> > prepare_matrix( blaze::DenseMatrix<MT,SO>& mat ) {
-        reset( ~mat );
-    }
+   template< typename MT, bool SO >
+   blaze::DisableIf_t< blaze::IsResizable_v<MT> > prepare_matrix( blaze::DenseMatrix<MT,SO>& mat ) {
+       reset( ~mat );
+   }
 
-    template< typename MT, bool SO >
-    blaze::DisableIf_t< blaze::IsResizable_v<MT> > prepare_matrix( blaze::SparseMatrix<MT,SO>& mat ) {
-        (~mat).reserve( number_ );
-        reset( ~mat );
-    }
+   template< typename MT, bool SO >
+   blaze::DisableIf_t< blaze::IsResizable_v<MT> > prepare_matrix( blaze::SparseMatrix<MT,SO>& mat ) {
+       (~mat).reserve( number_ );
+       reset( ~mat );
+   }
 
     template< typename MT >
     blaze::EnableIf_t< blaze::IsResizable_v<MT> > prepare_matrix( MT& mat ) {
@@ -165,6 +165,12 @@ struct blaze_matrix_serializer_helper {
         mat.reserve( number_ );
         reset( mat );
     }
+
+  template<typename Type, size_t M, size_t N, bool SO>
+  void prepare_matrix(blaze::HybridMatrix<Type, M, N, SO>& mat ) {
+        mat.resize ( rows_, columns_, false );
+        reset( mat );
+  }
 
     template<typename MT >
     void deserializeMatrix(input_archive& ar, MT& mat ) {
@@ -377,7 +383,7 @@ void serialize(input_archive& ar, blaze::Matrix<MT,SO>& mat, unsigned)
     ms.deserializeMatrix( ar, ~mat );
 }
 
-/*
+
 template <typename Type, bool SO>
 void serialize(output_archive& ar, const blaze::IdentityMatrix<Type,SO>& id, unsigned) {
     ar << id.capacity();
@@ -387,9 +393,8 @@ template <typename Type, bool SO>
 void serialize(input_archive& ar, blaze::IdentityMatrix<Type,SO>& id, unsigned) {
     size_t n;
     ar >> n;
-    (~id).reset();
     (~id) = blaze::IdentityMatrix<Type,SO>(n);
-    }*/
+}
 }
 }
 #endif

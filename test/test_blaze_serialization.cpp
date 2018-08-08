@@ -65,14 +65,14 @@ int main() {
         DynMatrix<double> b{{1,2,3,4},{},{1,2},{1,2,3,5}};
         error_found |= test_serialize_matrix(b);
 
-        //HybMatrix <double,3> c{{1,2,3},{4,5,6},{7,8,9}};
-        //error_found |= test_serialize_matrix(c);
+        HybMatrix <double,3> c{{1,2,3},{4,5,6},{7,8,9}};
+        error_found |= test_serialize_matrix(c);
 
         SparseMatrix<double> d{{1,2,3,4},{},{1,0,2},{1,2,3,5}};
         error_found |= test_serialize_matrix(d);
 
-        //IdentityMatrix<double> e(3UL);
-        //error_found |= test_serialize_matrix(e);
+        IdentityMatrix<double> e(3UL);
+        error_found |= test_serialize_matrix(e);
 
     }
     return error_found;
