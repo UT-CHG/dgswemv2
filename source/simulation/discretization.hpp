@@ -12,8 +12,6 @@ struct DGDiscretization {
         std::tuple<> empty_comm;
 
         initialize_mesh<ProblemType>(this->mesh, input, empty_comm, writer);
-
-        ProblemType::initialize_data_kernel(this->mesh, input.mesh_input.mesh_data, input.problem_input);
     }
 
     template <typename CommunicatorType>
@@ -21,9 +19,6 @@ struct DGDiscretization {
                     CommunicatorType& communicator,
                     Writer<ProblemType>& writer) {
         initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
-
-        ProblemType::initialize_data_parallel_pre_send_kernel(
-            this->mesh, input.mesh_input.mesh_data, input.problem_input);
     }
 };
 

@@ -65,15 +65,7 @@ void OMPISimulation<ProblemType>::Run() {
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-            this->sim_units[su_id]->communicator.WaitAllPreprocReceives(this->sim_units[su_id]->stepper.GetTimestamp());
-
-            ProblemType::initialize_data_parallel_post_receive_kernel(this->sim_units[su_id]->discretization.mesh);
-        }
-
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-            this->sim_units[su_id]->communicator.WaitAllPreprocSends(this->sim_units[su_id]->stepper.GetTimestamp());
-        }
+        ProblemType::ompi_preprocessor_kernel(this->sim_units);
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
             if (this->sim_units[su_id]->writer.WritingLog()) {

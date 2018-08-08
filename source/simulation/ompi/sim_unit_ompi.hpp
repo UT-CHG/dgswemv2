@@ -18,6 +18,8 @@ struct OMPISimulationUnit {
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
+    typename ProblemType::ProblemInputType problem_input;
+
     OMPISimulationUnit() = default;
     OMPISimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
 };
@@ -42,6 +44,8 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
     this->writer              = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
+    this->problem_input = input.problem_input;
+
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
 
@@ -53,10 +57,6 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
     this->discretization.initialize(input, this->communicator, this->writer);
 
     this->communicator.InitializeCommunication();
-
-    this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
-
-    this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
 }
 
 #endif

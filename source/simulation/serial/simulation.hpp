@@ -16,6 +16,8 @@ class Simulation {
     Writer<ProblemType> writer;
     typename ProblemType::ProblemParserType parser;
 
+    typename ProblemType::ProblemInputType problem_input;
+
   public:
     Simulation() = default;
     Simulation(const std::string& input_string);
@@ -43,6 +45,8 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
     this->writer              = Writer<ProblemType>(input.writer_input);
     this->parser              = typename ProblemType::ProblemParserType(input);
 
+    this->problem_input = input.problem_input;
+
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
 
@@ -56,6 +60,8 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
+    ProblemType::serial_preprocessor_kernel(this->discretization, this->problem_input);
+
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }

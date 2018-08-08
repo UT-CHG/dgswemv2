@@ -94,7 +94,7 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     std::vector<hpx::future<void>> simulation_futures;
 
     for (auto& sim_unit_client : this->simulation_unit_clients) {
-        simulation_futures.push_back(sim_unit_client.FinishPreprocessor());
+        simulation_futures.push_back(sim_unit_client.Preprocessor());
     }
 
     for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {

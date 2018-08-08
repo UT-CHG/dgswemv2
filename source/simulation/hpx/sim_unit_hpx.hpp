@@ -22,6 +22,7 @@ struct HPXSimulationUnit
     typename ProblemType::ProblemParserType parser;
 
     typename ProblemType::ProblemInputType problem_input;
+
     std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
     HPXSimulationUnit() = default;
@@ -30,8 +31,8 @@ struct HPXSimulationUnit
 
     HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs) = default;
 
-    hpx::future<void> FinishPreprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, FinishPreprocessor, FinishPreprocessorAction);
+    hpx::future<void> Preprocessor();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
 
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
@@ -76,6 +77,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     this->problem_input = input.problem_input;
+
     this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
         locality_id, submesh_id, input.load_balancer_input);
 
@@ -91,13 +93,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 }
 
 template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::FinishPreprocessor() {
-    hpx::future<void> receive_future = this->communicator.ReceivePreprocAll(this->stepper.GetTimestamp());
-
-    this->communicator.SendPreprocAll(this->stepper.GetTimestamp());
-
-    return receive_future.then(
-        [this](auto&&) { ProblemType::initialize_data_parallel_post_receive_kernel(this->discretization.mesh); });
+hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
+    return ProblemType::hpx_preprocessor_kernel(this);
 }
 
 template <typename ProblemType>
@@ -199,8 +196,8 @@ class HPXSimulationUnitClient
 
     static constexpr const char* GetBasename() { return "Simulation_Unit_Client_"; }
 
-    hpx::future<void> FinishPreprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::FinishPreprocessorAction;
+    hpx::future<void> Preprocessor() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::PreprocessorAction;
         return hpx::async<ActionType>(this->get_id());
     }
 
