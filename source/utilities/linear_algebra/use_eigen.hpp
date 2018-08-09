@@ -1,12 +1,14 @@
 #ifndef USE_EIGEN_HPP
 #define USE_EIGEN_HPP
 
-#include "general_definitions.hpp"
-
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
 
 #define EIGEN_DONT_PARALLELIZE
+
+#ifdef HAS_HPX
+#include "serialization/eigen_matrix.hpp"
+#endif
 
 template <typename T, uint m>
 using StatVector = Eigen::Matrix<T, m, 1>;
