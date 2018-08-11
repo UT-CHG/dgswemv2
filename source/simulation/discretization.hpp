@@ -34,8 +34,6 @@ struct HDGDiscretization {
 
         initialize_mesh<ProblemType>(this->mesh, input, empty_comm, writer);
         initialize_mesh_skeleton<ProblemType>(this->mesh, this->mesh_skeleton, writer);
-
-        ProblemType::initialize_global_problem(this);
     }
 
     template <typename CommunicatorType>
@@ -44,8 +42,6 @@ struct HDGDiscretization {
                     Writer<ProblemType>& writer) {
         initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
         initialize_mesh_skeleton<ProblemType>(this->mesh, this->mesh_skeleton, writer);
-
-        ProblemType::initialize_global_problem(this);
     }
 };
 

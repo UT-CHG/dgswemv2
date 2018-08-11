@@ -95,17 +95,17 @@ struct Problem {
                                                 ProblemMeshSkeletonType& mesh_skeleton,
                                                 Writer<Problem>& writer);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input);
+    static void serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
+                                           const ProblemInputType& problem_specific_input);
+
+    static void initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const MeshMetaData& mesh_data,
                                                          const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
-    static void initialize_global_problem(HDGDiscretization<Problem>* discretization);
+    static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
 
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);

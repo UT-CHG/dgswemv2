@@ -39,6 +39,10 @@ void Problem::ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitTy
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        Problem::initialize_global_problem(sim_units[su_id]->discretization);
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(SWE::CommTypes::preprocessor,
                                                     sim_units[su_id]->stepper.GetTimestamp());
     }
