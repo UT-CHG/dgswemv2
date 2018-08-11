@@ -35,8 +35,14 @@ template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     auto& wd_state_in = dbound.data.wet_dry_state;
 
-    bool wet_ex;
-    dbound.boundary_condition.exchanger.GetWetDryEX(wet_ex);
+    // Get message from exterior state
+    std::vector<double> message;
+
+    message.resize(1);  // just wet/dry state info
+
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+
+    bool wet_ex = (bool)message[0];
 
     if (wd_state_in.wet || wet_ex) {
         const uint stage = stepper.GetStage();

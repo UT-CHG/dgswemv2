@@ -77,16 +77,18 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
 template <typename DistributedBoundaryType>
 void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper& stepper,
                                                                  DistributedBoundaryType& dbound) {
-    auto& wd_state = dbound.data.wet_dry_state;
     auto& sl_state = dbound.data.slope_limit_state;
 
-    bool wet_ex;
-    dbound.boundary_condition.exchanger.GetPostprocWetDryEX(wet_ex);
+    std::vector<double> message;
 
-    sl_state.wet_neigh[dbound.bound_id] = wet_ex;
+    message.resize(1 + SWE::n_variables);
 
-    if (wd_state.wet && wet_ex) {
-        dbound.boundary_condition.exchanger.GetPostprocEX(sl_state.q_at_baryctr_neigh[dbound.bound_id]);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::postprocessor, message);
+
+    sl_state.wet_neigh[dbound.bound_id] = message[0];
+
+    for (uint var = 0; var < SWE::n_variables; ++var) {
+        sl_state.q_at_baryctr_neigh[dbound.bound_id][var] = message[1 + var];
     }
 }
 

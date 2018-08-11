@@ -66,11 +66,22 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound) {
-    bool wet_in = dbound.data.wet_dry_state.wet;
-    bool wet_ex;
+    std::vector<double> message;
 
-    this->exchanger.GetWetDryEX(wet_ex);
-    this->exchanger.GetEX(q_ex);
+    message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
+
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+
+    uint gp_ex;
+    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+        gp_ex = dbound.data.get_ngp_boundary(dbound.bound_id) - gp - 1;
+
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            this->q_ex(var, gp_ex) = message[1 + SWE::n_variables * gp + var];
+        }
+    }
+
+    bool wet_in = dbound.data.wet_dry_state.wet;
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 

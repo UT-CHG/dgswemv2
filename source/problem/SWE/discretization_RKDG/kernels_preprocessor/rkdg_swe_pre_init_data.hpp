@@ -413,8 +413,15 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
 
-        dbound.boundary_condition.exchanger.GetPreprocEX(sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::x],
-                                                         sl_state.baryctr_coord_neigh[dbound.bound_id][GlobalCoord::y]);
+        std::vector<double> message;
+
+        message.resize(SWE::n_dimensions);
+
+        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::preprocessor, message);
+
+        for (uint dim = 0; dim < SWE::n_dimensions; ++dim) {
+            sl_state.baryctr_coord_neigh[dbound.bound_id][dim] = message[dim];
+        }
     });
 
     mesh.CallForEachElement([](auto& elt) {
