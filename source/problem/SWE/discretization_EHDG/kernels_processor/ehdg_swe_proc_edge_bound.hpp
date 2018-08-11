@@ -10,11 +10,6 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    /* Take in state as initial edge state */
-    edge_internal.q_init_at_gp = boundary.q_at_gp;
-
-    edge_state.q_hat = edge_bound.L2Projection(edge_internal.q_init_at_gp);
-
     /* Newton-Raphson iterator */
 
     uint iter = 0;

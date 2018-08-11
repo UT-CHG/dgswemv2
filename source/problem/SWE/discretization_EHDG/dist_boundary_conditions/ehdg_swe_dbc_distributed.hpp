@@ -44,8 +44,23 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    StatVector<double, SWE::n_variables> q_ex;
-    StatVector<double, SWE::n_variables> Fn_ex;
+    std::vector<double> message;
+
+    uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
+
+    message.resize(2 * SWE::n_variables * ngp);
+
+    edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+
+    uint gp_ex;
+    for (uint gp = 0; gp < ngp; ++gp) {
+        gp_ex = ngp - gp - 1;
+
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            this->q_ex(var, gp_ex)  = message[SWE::n_variables * gp + var];
+            this->Fn_ex(var, gp_ex) = message[SWE::n_variables * ngp + SWE::n_variables * gp + var];
+        }
+    }
 
     edge_internal.rhs_global_kernel_at_gp = boundary.Fn_at_gp + this->Fn_ex;
 

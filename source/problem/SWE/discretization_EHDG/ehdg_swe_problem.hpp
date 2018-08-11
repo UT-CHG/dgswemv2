@@ -95,12 +95,18 @@ struct Problem {
                                                 ProblemMeshSkeletonType& mesh_skeleton,
                                                 Writer<Problem>& writer);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input);
+    static void serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
+                                           const ProblemInputType& problem_specific_input);
+
+    template <typename OMPISimUnitType>
+    static void ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
+    template <typename HPXSimUnitType>
+    static decltype(auto) hpx_preprocessor_kernel(HPXSimUnitType* sim_unit);
+
+    static void initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const MeshMetaData& mesh_data,
                                                          const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);

@@ -10,13 +10,6 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    edge_dbound.boundary.boundary_condition.exchanger.GetEX(edge_dbound.boundary.boundary_condition.q_ex,
-                                                            edge_dbound.boundary.boundary_condition.Fn_ex);
-
-    edge_internal.q_init_at_gp = (boundary.q_at_gp + edge_dbound.boundary.boundary_condition.q_ex) / 2.0;
-
-    edge_state.q_hat = edge_dbound.L2Projection(edge_internal.q_init_at_gp);
-
     /* Newton-Raphson iterator */
 
     uint iter = 0;

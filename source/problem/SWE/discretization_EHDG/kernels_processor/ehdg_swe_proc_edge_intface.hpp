@@ -9,18 +9,6 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
-
-    /* Take average of in/ex state as initial trace state */
-    uint gp_ex;
-    for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
-
-        column(edge_internal.q_init_at_gp, gp) =
-            (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
-    }
-
-    edge_state.q_hat = edge_int.L2Projection(edge_internal.q_init_at_gp);
 
     /* Newton-Raphson iterator */
 

@@ -35,7 +35,25 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     row(boundary.Fn_at_gp, SWE::Variables::qx) = cwise_multiplication(uuh + pe, nx) + cwise_multiplication(uvh, ny);
     row(boundary.Fn_at_gp, SWE::Variables::qy) = cwise_multiplication(uvh, nx) + cwise_multiplication(vvh + pe, ny);
 
-    dbound.boundary_condition.exchanger.SetEX(boundary.q_at_gp, boundary.Fn_at_gp);
+    // Construct message to exterior state
+    std::vector<double> message;
+
+    message.reserve(2 * SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
+
+    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            message.push_back(boundary.q_at_gp(var, gp));
+        }
+    }
+
+    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            message.push_back(boundary.Fn_at_gp(var, gp));
+        }
+    }
+
+    // Set message to send buffer
+    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::processor, message);
 }
 
 template <typename DistributedBoundaryType>
