@@ -14,9 +14,21 @@ void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, Distrib
 
     boundary.q_at_gp = dbound.ComputeUgp(state.q);
 
-    dbound.boundary_condition.exchanger.SetEX(boundary.q_at_gp);
+    // Construct message to exterior state
+    std::vector<double> message;
 
-    dbound.boundary_condition.exchanger.SetWetDryEX(dbound.data.wet_dry_state.wet);
+    message.reserve(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
+
+    message.push_back(dbound.data.wet_dry_state.wet);
+
+    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            message.push_back(boundary.q_at_gp(var, gp));
+        }
+    }
+
+    // Set message to send buffer
+    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::processor, message);
 }
 
 template <typename DistributedBoundaryType>

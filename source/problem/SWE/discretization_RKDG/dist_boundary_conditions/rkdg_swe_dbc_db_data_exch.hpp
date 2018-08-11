@@ -22,6 +22,11 @@ struct DBIndex {
 
 class DBDataExchanger {
   private:
+    std::vector<uint> offset;
+
+    std::vector<std::vector<double>>& send_buffer_;
+    std::vector<std::vector<double>>& receive_buffer_;
+
     DBIndex index;
 
     std::vector<double>& send_preproc_buffer;
@@ -35,13 +40,19 @@ class DBDataExchanger {
 
   public:
     DBDataExchanger() = default;
-    DBDataExchanger(const DBIndex& index,
+    DBDataExchanger(const std::vector<uint>& offset,
+                    std::vector<std::vector<double>>& send_buffer_,
+                    std::vector<std::vector<double>>& receive_buffer_,
+                    const DBIndex& index,
                     std::vector<double>& send_preproc_buffer,
                     std::vector<double>& receive_preproc_buffer,
                     std::vector<double>& send_buffer,
                     std::vector<double>& receive_buffer,
                     std::vector<double>& send_postproc_buffer,
                     std::vector<double>& receive_postproc_buffer);
+
+    void SetToSendBuffer(const uint comm_type, const std::vector<double>& buffer);
+    void GetFromReceiveBuffer(const uint comm_type, const std::vector<double>& buffer);
 
     void SetPreprocEX(const double x_at_baryctr_in, const double y_at_baryctr_in);
 
@@ -60,20 +71,32 @@ class DBDataExchanger {
     void GetPostprocEX(StatVector<double, SWE::n_variables>& q_at_baryctr_ex);
 };
 
-DBDataExchanger::DBDataExchanger(const DBIndex& index,
+DBDataExchanger::DBDataExchanger(const std::vector<uint>& offset,
+                                 std::vector<std::vector<double>>& send_buffer_,
+                                 std::vector<std::vector<double>>& receive_buffer_,
+                                 const DBIndex& index,
                                  std::vector<double>& send_preproc_buffer,
                                  std::vector<double>& receive_preproc_buffer,
                                  std::vector<double>& send_buffer,
                                  std::vector<double>& receive_buffer,
                                  std::vector<double>& send_postproc_buffer,
                                  std::vector<double>& receive_postproc_buffer)
-    : index(index),
+    : offset(offset),
+      send_buffer_(send_buffer_),
+      receive_buffer_(receive_buffer_),
+      index(index),
       send_preproc_buffer(send_preproc_buffer),
       receive_preproc_buffer(receive_preproc_buffer),
       send_buffer(send_buffer),
       receive_buffer(receive_buffer),
       send_postproc_buffer(send_postproc_buffer),
       receive_postproc_buffer(receive_postproc_buffer) {}
+
+void DBDataExchanger::SetToSendBuffer(const uint comm_type, const std::vector<double>& buffer) {
+    std::copy(buffer.begin(), buffer.end(), this->send_buffer_[comm_type].begin() + this->offset[comm_type]);
+}
+
+void DBDataExchanger::GetFromReceiveBuffer(const uint comm_type, const std::vector<double>& buffer) {}
 
 void DBDataExchanger::SetPreprocEX(const double x_at_baryctr_in, const double y_at_baryctr_in) {
     this->send_preproc_buffer[this->index.x_at_baryctr] = x_at_baryctr_in;

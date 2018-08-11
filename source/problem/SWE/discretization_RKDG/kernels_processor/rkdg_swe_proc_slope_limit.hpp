@@ -55,13 +55,23 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
                                                               DistributedBoundaryType& dbound) {
     auto& wd_state = dbound.data.wet_dry_state;
 
-    dbound.boundary_condition.exchanger.SetPostprocWetDryEX(wd_state.wet);
+    // Construct message to exterior state
+    std::vector<double> message;
+
+    message.reserve(1 + SWE::n_variables);
+
+    message.push_back(wd_state.wet);
 
     if (wd_state.wet) {
         auto& sl_state = dbound.data.slope_limit_state;
 
-        dbound.boundary_condition.exchanger.SetPostprocEX(sl_state.q_at_baryctr);
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            message.push_back(sl_state.q_at_baryctr[var]);
+        }
     }
+
+    // Set message to send buffer
+    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::postprocessor, message);
 }
 
 template <typename DistributedBoundaryType>

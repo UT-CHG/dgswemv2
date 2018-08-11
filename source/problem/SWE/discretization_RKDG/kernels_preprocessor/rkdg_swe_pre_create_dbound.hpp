@@ -80,6 +80,12 @@ void Problem::create_distributed_boundaries_kernel(
                 throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
+            std::vector<uint> offset(SWE::n_communications);
+
+            offset[SWE::CommTypes::preprocessor]  = begin_index_preproc;
+            offset[SWE::CommTypes::processor]     = begin_index;
+            offset[SWE::CommTypes::postprocessor] = begin_index_postproc;
+
             DBC::DBIndex index;
 
             index.x_at_baryctr = begin_index_preproc;
@@ -107,7 +113,10 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(DBC::DBDataExchanger(index,
+                    DBC::Distributed(DBC::DBDataExchanger(offset,
+                                                          rank_boundary.send_buffer,
+                                                          rank_boundary.receive_buffer,
+                                                          index,
                                                           send_preproc_buffer,
                                                           receive_preproc_buffer,
                                                           send_buffer,
@@ -148,7 +157,10 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributedLevee>(
                     std::move(raw_boundary),
-                    DBC::DistributedLevee(DBC::DBDataExchanger(index,
+                    DBC::DistributedLevee(DBC::DBDataExchanger(offset,
+                                                               rank_boundary.send_buffer,
+                                                               rank_boundary.receive_buffer,
+                                                               index,
                                                                send_preproc_buffer,
                                                                receive_preproc_buffer,
                                                                send_buffer,

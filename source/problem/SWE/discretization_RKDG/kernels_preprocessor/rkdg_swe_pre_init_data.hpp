@@ -395,8 +395,17 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
 
-        dbound.boundary_condition.exchanger.SetPreprocEX(sl_state.baryctr_coord[GlobalCoord::x],
-                                                         sl_state.baryctr_coord[GlobalCoord::y]);
+        // Construct message to exterior state
+        std::vector<double> message;
+
+        message.reserve(SWE::n_dimensions);
+
+        for (uint dim = 0; dim < SWE::n_dimensions; ++dim) {
+            message.push_back(sl_state.baryctr_coord[dim]);
+        }
+
+        // Set message to send buffer
+        dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::preprocessor, message);
     });
 }
 
