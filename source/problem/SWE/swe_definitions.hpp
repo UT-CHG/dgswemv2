@@ -61,6 +61,10 @@ enum JacobianVariables : uint {
 
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
 
+constexpr uint n_communications = 3;
+
+enum CommTypes : uchar { preprocessor = 0, processor = 1, postprocessor = 2 };
+
 enum class SphericalProjectionType { None, Enable };
 
 enum class InitialConditionsType { Default, Constant, Function };

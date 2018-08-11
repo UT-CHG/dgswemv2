@@ -19,12 +19,13 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
             sim_unit->writer.GetLogFile() << "Exchanging data" << std::endl;
         }
 
-        hpx::future<void> receive_future = sim_unit->communicator.ReceiveAll(sim_unit->stepper.GetTimestamp());
+        hpx::future<void> receive_future =
+            sim_unit->communicator.ReceiveAll(SWE::CommTypes::processor, sim_unit->stepper.GetTimestamp());
 
         sim_unit->discretization.mesh.CallForEachDistributedBoundary(
             [sim_unit](auto& dbound) { Problem::distributed_boundary_send_kernel(sim_unit->stepper, dbound); });
 
-        sim_unit->communicator.SendAll(sim_unit->stepper.GetTimestamp());
+        sim_unit->communicator.SendAll(SWE::CommTypes::processor, sim_unit->stepper.GetTimestamp());
 
         if (sim_unit->writer.WritingVerboseLog()) {
             sim_unit->writer.GetLogFile() << "Starting work before receive" << std::endl;
@@ -87,7 +88,8 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
             sim_unit->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
         }
 
-        hpx::future<void> receive_future = sim_unit->communicator.ReceivePostprocAll(sim_unit->stepper.GetTimestamp());
+        hpx::future<void> receive_future =
+            sim_unit->communicator.ReceiveAll(SWE::CommTypes::postprocessor, sim_unit->stepper.GetTimestamp());
 
         if (SWE::PostProcessing::slope_limiting) {
             if (SWE::PostProcessing::wetting_drying) {
@@ -103,7 +105,7 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
             });
         }
 
-        sim_unit->communicator.SendPostprocAll(sim_unit->stepper.GetTimestamp());
+        sim_unit->communicator.SendAll(SWE::CommTypes::postprocessor, sim_unit->stepper.GetTimestamp());
 
         if (sim_unit->writer.WritingVerboseLog()) {
             sim_unit->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;

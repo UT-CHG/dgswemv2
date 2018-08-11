@@ -23,21 +23,24 @@ void Problem::ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitTy
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.ReceivePreprocAll(sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(SWE::CommTypes::preprocessor,
+                                                  sim_units[su_id]->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.SendPreprocAll(sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(SWE::CommTypes::preprocessor, sim_units[su_id]->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllPreprocReceives(sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllReceives(SWE::CommTypes::preprocessor,
+                                                       sim_units[su_id]->stepper.GetTimestamp());
 
         Problem::initialize_data_parallel_post_receive_kernel(sim_units[su_id]->discretization.mesh);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllPreprocSends(sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(SWE::CommTypes::preprocessor,
+                                                    sim_units[su_id]->stepper.GetTimestamp());
     }
 }
 }

@@ -28,60 +28,20 @@ HPXCommunicator::HPXCommunicator(const DistributedBoundaryMetaData& db_data) {
     }
 }
 
-void HPXCommunicator::SendPreprocAll(const uint timestamp) {
+void HPXCommunicator::SendAll(const uint comm_type, const uint timestamp) {
     for (auto& rank_boundary : this->rank_boundaries) {
-        rank_boundary.outgoing.set(rank_boundary.send_preproc_buffer, 3 * timestamp);
+        rank_boundary.outgoing.set(rank_boundary.send_buffer[comm_type], timestamp);
     }
 }
 
-hpx::future<void> HPXCommunicator::ReceivePreprocAll(const uint timestamp) {
+hpx::future<void> HPXCommunicator::ReceiveAll(const uint comm_type, const uint timestamp) {
     std::vector<hpx::future<void>> receive_futures;
     receive_futures.reserve(this->rank_boundaries.size());
 
     for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(
-            rank_boundary.incoming.get(3 * timestamp).then([&rank_boundary](hpx::future<array_double> msg_future) {
-                rank_boundary.receive_preproc_buffer = msg_future.get();
-            }));
-    }
-
-    return hpx::when_all(receive_futures);
-}
-
-void HPXCommunicator::SendAll(const uint timestamp) {
-    for (auto& rank_boundary : this->rank_boundaries) {
-        rank_boundary.outgoing.set(rank_boundary.send_buffer, 3 * timestamp + 1);
-    }
-}
-
-hpx::future<void> HPXCommunicator::ReceiveAll(const uint timestamp) {
-    std::vector<hpx::future<void>> receive_futures;
-    receive_futures.reserve(this->rank_boundaries.size());
-
-    for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(
-            rank_boundary.incoming.get(3 * timestamp + 1).then([&rank_boundary](hpx::future<array_double> msg_future) {
-                rank_boundary.receive_buffer = msg_future.get();
-            }));
-    }
-
-    return hpx::when_all(receive_futures);
-}
-
-void HPXCommunicator::SendPostprocAll(const uint timestamp) {
-    for (auto& rank_boundary : this->rank_boundaries) {
-        rank_boundary.outgoing.set(rank_boundary.send_postproc_buffer, 3 * timestamp + 2);
-    }
-}
-
-hpx::future<void> HPXCommunicator::ReceivePostprocAll(const uint timestamp) {
-    std::vector<hpx::future<void>> receive_futures;
-    receive_futures.reserve(this->rank_boundaries.size());
-
-    for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(
-            rank_boundary.incoming.get(3 * timestamp + 2).then([&rank_boundary](hpx::future<array_double> msg_future) {
-                rank_boundary.receive_postproc_buffer = msg_future.get();
+        receive_futures.push_back(rank_boundary.incoming.get(timestamp).then(
+            [&rank_boundary, comm_type](hpx::future<array_double> msg_future) {
+                rank_boundary.receive_buffer[comm_type] = msg_future.get();
             }));
     }
 
