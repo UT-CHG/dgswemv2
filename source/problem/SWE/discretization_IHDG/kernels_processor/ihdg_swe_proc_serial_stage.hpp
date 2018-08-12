@@ -8,7 +8,17 @@
 namespace SWE {
 namespace IHDG {
 void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
-    Problem::initialize_iteration(stepper, discretization);
+    discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
+        const uint stage = stepper.GetStage();
+
+        auto& state      = elt.data.state[stage + 1];
+        auto& state_prev = elt.data.state[stage];
+        auto& internal   = elt.data.internal;
+
+        state.q = state_prev.q;
+
+        internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
+    });
 
     uint iter = 0;
     while (true) {

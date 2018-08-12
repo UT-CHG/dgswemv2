@@ -52,12 +52,6 @@ struct SparseMatrixMeta {
     void add_triplet(uint row, uint col, T value) { this->data[row][col] = value; }
 
     void get_sparse_matrix(SparseMatrix<T>& sparse_matrix) {
-        /*for (auto& row : this->data) {
-            for (auto& col : row.second) {
-                sparse_matrix(row.first, col.first) = col.second;
-            }
-        }*/
-
         uint nel = 0;
 
         for (auto& row : data) {

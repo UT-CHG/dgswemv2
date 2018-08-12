@@ -24,10 +24,28 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
     });
 
     discretization.mesh_skeleton.CallForEachEdgeInterface([&global_dof_offset](auto& edge_int) {
+        auto& edge_state    = edge_int.edge_data.edge_state;
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
+        auto& state_in    = edge_int.interface.data_in.state[0];
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+
+        auto& state_ex    = edge_int.interface.data_ex.state[0];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+
+        boundary_in.q_at_gp = edge_int.interface.ComputeUgpIN(state_in.q);
+        boundary_ex.q_at_gp = edge_int.interface.ComputeUgpEX(state_ex.q);
+
+        /* Take average of in/ex state as initial trace state */
+        uint gp_ex;
+        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+            gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+            column(edge_internal.q_init_at_gp, gp) =
+                (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
+        }
+
+        edge_state.q_hat = edge_int.L2Projection(edge_internal.q_init_at_gp);
 
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
@@ -55,9 +73,18 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
     });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
+        auto& edge_state    = edge_bound.edge_data.edge_state;
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
+        auto& state    = edge_bound.boundary.data.state[0];
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        boundary.q_at_gp = edge_bound.boundary.ComputeUgp(state.q);
+
+        /* Take in state as initial edge state */
+        edge_internal.q_init_at_gp = boundary.q_at_gp;
+
+        edge_state.q_hat = edge_bound.L2Projection(edge_internal.q_init_at_gp);
 
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
@@ -80,15 +107,15 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
     });
 
     discretization.global_data.delta_local_inv.resize(local_dof_offset * SWE::n_variables,
-                                                       local_dof_offset * SWE::n_variables);
+                                                      local_dof_offset * SWE::n_variables);
     discretization.global_data.delta_hat_local.resize(local_dof_offset * SWE::n_variables,
-                                                       global_dof_offset * SWE::n_variables);
+                                                      global_dof_offset * SWE::n_variables);
     discretization.global_data.rhs_local.resize(local_dof_offset * SWE::n_variables);
 
     discretization.global_data.delta_global.resize(global_dof_offset * SWE::n_variables,
-                                                    local_dof_offset * SWE::n_variables);
+                                                   local_dof_offset * SWE::n_variables);
     discretization.global_data.delta_hat_global.resize(global_dof_offset * SWE::n_variables,
-                                                        global_dof_offset * SWE::n_variables);
+                                                       global_dof_offset * SWE::n_variables);
     discretization.global_data.rhs_global.resize(global_dof_offset * SWE::n_variables);
 }
 }

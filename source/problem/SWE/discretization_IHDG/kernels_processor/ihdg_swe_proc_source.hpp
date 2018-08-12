@@ -12,6 +12,8 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
 
     // note we assume that the values at gauss points have already been computed
     // compute contribution of hydrostatic pressure
+    set_constant(row(internal.source_at_gp, SWE::Variables::ze), 0.0);
+
     row(internal.source_at_gp, SWE::Variables::qx) =
         Global::g *
         cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));

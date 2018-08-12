@@ -150,8 +150,6 @@ struct Problem {
 
     /* solving global system */
 
-    static void initialize_iteration(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
-
     static bool solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
 
     /* solving global system */
