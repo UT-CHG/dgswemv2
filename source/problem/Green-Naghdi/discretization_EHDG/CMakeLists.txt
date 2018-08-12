@@ -2,7 +2,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
   EHDG_GN_SERIAL
-  ${PROJECT_SOURCE_DIR}/source/problem/GN/discretization_EHDG/main_files/ehdg_main_gn.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/discretization_EHDG/main_files/ehdg_main_gn.cpp
   ${SOURCES}
   ${GN_SOURCES}
 )
@@ -12,7 +12,7 @@ target_link_libraries(EHDG_GN_SERIAL ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${L
 
 install(TARGETS EHDG_GN_SERIAL DESTINATION bin)
 
-if(USE_OMPI)
+#[[if(USE_OMPI)
   add_executable(
     EHDG_GN_OMPI
     ${PROJECT_SOURCE_DIR}/source/problem/GN/discretization_EHDG/main_files/ehdg_ompi_main_gn.cpp
@@ -47,4 +47,4 @@ if(USE_HPX)
   target_link_libraries(EHDG_GN_HPX ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   install(TARGETS EHDG_GN_HPX DESTINATION bin)
-endif()
+endif()]]

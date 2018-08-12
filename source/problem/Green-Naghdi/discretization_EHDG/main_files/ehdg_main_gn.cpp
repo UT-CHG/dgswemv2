@@ -1,14 +1,16 @@
 #include "general_definitions.hpp"
-#include "problem/GN/gn_definitions.hpp"
+#include "problem/Green-Naghdi/gn_definitions.hpp"
 
-#include "problem/GN/problem_function_files/gn_initial_condition_functions.hpp"
-#include "problem/GN/problem_function_files/gn_source_functions.hpp"
-#include "problem/GN/problem_function_files/gn_true_solution_functions.hpp"
+#include "problem/Green-Naghdi/problem_function_files/gn_initial_condition_functions.hpp"
+#include "problem/Green-Naghdi/problem_function_files/gn_source_functions.hpp"
+#include "problem/Green-Naghdi/problem_function_files/gn_true_solution_functions.hpp"
 
-#include "problem/GN/discretization_EHDG/ehdg_gn_problem.hpp"
-#include "problem/GN/discretization_EHDG/kernels_preprocessor/ehdg_gn_kernels_preprocessor.hpp"
-#include "problem/GN/discretization_EHDG/kernels_processor/ehdg_gn_proc_serial_stage.hpp"
-#include "problem/GN/discretization_EHDG/kernels_postprocessor/ehdg_gn_kernels_postprocessor.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/ehdg_gn_problem.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_kernels_preprocessor.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_postprocessor/ehdg_gn_kernels_postprocessor.hpp"
+
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_pre_serial.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_processor/ehdg_gn_proc_serial_stage.hpp"
 
 #include "simulation/serial/simulation.hpp"
 #include "simulation/stepper/rk_stepper.hpp"

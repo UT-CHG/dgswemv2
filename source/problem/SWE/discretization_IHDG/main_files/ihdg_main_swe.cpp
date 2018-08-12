@@ -7,8 +7,10 @@
 
 #include "problem/SWE/discretization_IHDG/ihdg_swe_problem.hpp"
 #include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_kernels_preprocessor.hpp"
-#include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_proc_serial_stage.hpp"
 #include "problem/SWE/discretization_IHDG/kernels_postprocessor/ihdg_swe_kernels_postprocessor.hpp"
+
+#include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_pre_serial.hpp"
+#include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_proc_serial_stage.hpp"
 
 #include "simulation/serial/simulation.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
