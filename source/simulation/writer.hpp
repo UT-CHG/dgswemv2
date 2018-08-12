@@ -137,7 +137,6 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
         std::ofstream raw_data_file(this->vtk_file_name_raw);
 
         ProblemType::write_VTK_data_kernel(mesh, raw_data_file);
-        std::cout << "here!\n";
 
         raw_data_file.close();
 
