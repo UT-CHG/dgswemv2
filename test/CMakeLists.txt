@@ -1,6 +1,6 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
-#[[add_executable(
+add_executable(
   test_linear_algebra_exe
   test_linear_algebra.cpp
 )
@@ -48,7 +48,7 @@ target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS
 add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
-)]]
+)
 
 add_executable(
   test_tuple_helpers_exe

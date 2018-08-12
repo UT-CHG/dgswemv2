@@ -21,6 +21,8 @@
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
+    bool any_error = false;
+
     std::string input_string = "../../test/files_for_testing/jacobians/input.15";
 
     InputParameters<typename SWE::IHDG::Problem::ProblemInputType> input(input_string);
@@ -56,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::IHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::IHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::IHDG::Problem::initialize_data_kernel(mesh, input.mesh_input.mesh_data, input.problem_input);
+    SWE::IHDG::Problem::initialize_data_kernel(mesh, input.problem_input);
 
     mesh.CallForEachElement([](auto& elt) { elt.data.resize(2); });
 
@@ -294,6 +296,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error del_local in ze" << std::endl;
                 std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof] << ' '
                           << rhs_local_prev[elt.GetID()][3 * dof] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(
@@ -301,6 +305,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error del_local in qx" << std::endl;
                 std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 1] << ' '
                           << rhs_local_prev[elt.GetID()][3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(
@@ -308,6 +314,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error del_local in qy" << std::endl;
                 std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 2] << ' '
                           << rhs_local_prev[elt.GetID()][3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
 
@@ -336,6 +344,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge int del_global in ze" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof] << ' '
                           << rhs_global_prev[edge_int.GetID()][3 * dof] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 1],
@@ -344,6 +354,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge int del_global in qx" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 1] << ' '
                           << rhs_global_prev[edge_int.GetID()][3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 2],
@@ -352,6 +364,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge int del_global in qy" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 2] << ' '
                           << rhs_global_prev[edge_int.GetID()][3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
 
@@ -399,6 +413,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge bound del_global in ze" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof] << ' '
                           << rhs_global_prev[edge_bound.GetID()][3 * dof] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 1],
@@ -407,6 +423,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge bound del_global in qx" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 1] << ' '
                           << rhs_global_prev[edge_bound.GetID()][3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 2],
@@ -415,6 +433,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge bound del_global in qy" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 2] << ' '
                           << rhs_global_prev[edge_bound.GetID()][3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
 
@@ -475,6 +495,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error del_hat_local in ze" << std::endl;
                 std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof] << ' '
                           << rhs_local_prev[elt.GetID()][3 * dof] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(
@@ -482,6 +504,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error del_hat_local in qx" << std::endl;
                 std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 1] << ' '
                           << rhs_local_prev[elt.GetID()][3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(
@@ -489,6 +513,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error del_hat_local in qy" << std::endl;
                 std::cout << std::setprecision(15) << delta_local_diff_est[elt.GetID()][3 * dof + 2] << ' '
                           << rhs_local_prev[elt.GetID()][3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
     });
@@ -507,6 +533,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge int del_hat_global in ze" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof] << ' '
                           << rhs_global_prev[edge_int.GetID()][3 * dof] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 1],
@@ -515,6 +543,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge int del_hat_global in qx" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 1] << ' '
                           << rhs_global_prev[edge_int.GetID()][3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof + 2],
@@ -523,6 +553,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge int del_hat_global in qy" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_int.GetID()][3 * dof + 2] << ' '
                           << rhs_global_prev[edge_int.GetID()][3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
     });
@@ -541,6 +573,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge bound del_hat_global in ze" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof] << ' '
                           << rhs_global_prev[edge_bound.GetID()][3 * dof] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 1],
@@ -549,6 +583,8 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge bound del_hat_global in qx" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 1] << ' '
                           << rhs_global_prev[edge_bound.GetID()][3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof + 2],
@@ -557,7 +593,15 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error edge bound del_hat_global in qy" << std::endl;
                 std::cout << std::setprecision(15) << delta_global_diff_est[edge_bound.GetID()][3 * dof + 2] << ' '
                           << rhs_global_prev[edge_bound.GetID()][3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
     });
+
+    if (any_error) {
+        return 1;
+    }
+
+    return 0;
 }

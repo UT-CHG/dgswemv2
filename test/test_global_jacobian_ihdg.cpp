@@ -21,6 +21,8 @@
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
+    bool any_error = false;
+
     std::string input_string = "../../test/files_for_testing/jacobians/input.15";
 
     InputParameters<typename SWE::IHDG::Problem::ProblemInputType> input(input_string);
@@ -56,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::IHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::IHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::IHDG::Problem::initialize_data_kernel(mesh, input.mesh_input.mesh_data, input.problem_input);
+    SWE::IHDG::Problem::initialize_data_kernel(mesh, input.problem_input);
 
     mesh.CallForEachElement([](auto& elt) { elt.data.resize(2); });
 
@@ -502,6 +504,8 @@ int main(int argc, char* argv[]) {
             std::cerr << "error del hat local" << std::endl;
             std::cout << std::setprecision(15) << delta_hat_local_diff_est[dof] << ' ' << rhs_local_prev[dof]
                       << std::endl;
+
+            any_error = true;
         }
     }
 
@@ -510,6 +514,8 @@ int main(int argc, char* argv[]) {
             std::cerr << "error del hat global" << std::endl;
             std::cout << std::setprecision(15) << delta_hat_global_diff_est[dof] << ' ' << rhs_global_prev[dof]
                       << std::endl;
+
+            any_error = true;
         }
     }
 
@@ -655,6 +661,8 @@ int main(int argc, char* argv[]) {
         if (!Utilities::almost_equal(delta_local_diff_est[dof], rhs_local_prev[dof], 1.0e12)) {
             std::cerr << "error del local" << std::endl;
             std::cout << std::setprecision(15) << delta_local_diff_est[dof] << ' ' << rhs_local_prev[dof] << std::endl;
+
+            any_error = true;
         }
     }
 
@@ -663,6 +671,8 @@ int main(int argc, char* argv[]) {
             std::cerr << "error del global" << std::endl;
             std::cout << std::setprecision(15) << delta_global_diff_est[dof] << ' ' << rhs_global_prev[dof]
                       << std::endl;
+
+            any_error = true;
         }
     }
 
@@ -873,6 +883,8 @@ int main(int argc, char* argv[]) {
         if (!Utilities::almost_equal(diff_est[dof], rhs_prev[dof], 1.0e12)) {
             std::cerr << "error del compound" << std::endl;
             std::cout << std::setprecision(15) << diff_est[dof] << ' ' << rhs_prev[dof] << std::endl;
+
+            any_error = true;
         }
     }
 
@@ -1055,6 +1067,14 @@ int main(int argc, char* argv[]) {
             std::cerr << "error back substitute del global" << std::endl;
             std::cout << std::setprecision(15) << delta_global_diff_est[dof] << ' ' << rhs_global_prev[dof]
                       << std::endl;
+
+            any_error = true;
         }
     }
+
+    if (any_error) {
+        return 1;
+    }
+
+    return 0;
 }

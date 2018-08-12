@@ -21,6 +21,8 @@
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
+    bool any_error = false;
+
     std::string input_string = "../../test/files_for_testing/jacobians/input.15";
 
     InputParameters<typename SWE::EHDG::Problem::ProblemInputType> input(input_string);
@@ -56,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::EHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::EHDG::Problem::initialize_data_kernel(mesh, input.mesh_input.mesh_data, input.problem_input);
+    SWE::EHDG::Problem::initialize_data_kernel(mesh, input.problem_input);
 
     mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
@@ -177,18 +179,24 @@ int main(int argc, char* argv[]) {
                 std::cerr << "error in ze" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof] << ' ' << edge_internal.rhs_global[3 * dof]
                           << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(diff_est[3 * dof + 1], edge_internal.rhs_global[3 * dof + 1], 1.0e12)) {
                 std::cerr << "error in qx" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof + 1] << ' '
                           << edge_internal.rhs_global[3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
             if (!Utilities::almost_equal(diff_est[3 * dof + 2], edge_internal.rhs_global[3 * dof + 2], 1.0e12)) {
                 std::cerr << "error in qy" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof + 2] << ' '
                           << edge_internal.rhs_global[3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
     });
@@ -274,23 +282,35 @@ int main(int argc, char* argv[]) {
 
         // compare
         for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
-            if (!Utilities::almost_equal(diff_est[3 * dof], edge_internal.rhs_global[3 * dof], 1.0e10)) {
+            if (!Utilities::almost_equal(diff_est[3 * dof], edge_internal.rhs_global[3 * dof], 1.0e12)) {
                 std::cerr << "error in ze" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof] << ' ' << edge_internal.rhs_global[3 * dof]
                           << std::endl;
+
+                any_error = true;
             }
 
-            if (!Utilities::almost_equal(diff_est[3 * dof + 1], edge_internal.rhs_global[3 * dof + 1], 1.0e10)) {
+            if (!Utilities::almost_equal(diff_est[3 * dof + 1], edge_internal.rhs_global[3 * dof + 1], 1.0e12)) {
                 std::cerr << "error in qx" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof + 1] << ' '
                           << edge_internal.rhs_global[3 * dof + 1] << std::endl;
+
+                any_error = true;
             }
 
-            if (!Utilities::almost_equal(diff_est[3 * dof + 2], edge_internal.rhs_global[3 * dof + 2], 1.0e10)) {
+            if (!Utilities::almost_equal(diff_est[3 * dof + 2], edge_internal.rhs_global[3 * dof + 2], 1.0e12)) {
                 std::cerr << "error in qy" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof + 2] << ' '
                           << edge_internal.rhs_global[3 * dof + 2] << std::endl;
+
+                any_error = true;
             }
         }
     });
+
+    if (any_error) {
+        return 1;
+    }
+
+    return 0;
 }
