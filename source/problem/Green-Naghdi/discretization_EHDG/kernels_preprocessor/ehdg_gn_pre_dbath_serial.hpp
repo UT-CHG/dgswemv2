@@ -34,14 +34,10 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
             boundary_ex.bath_hat_at_gp[gp_ex] = boundary_in.bath_hat_at_gp[gp];
         }
 
-        /* IN State */
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
             row(state_in.dbath, dir) += intface.IntegrationPhiIN(
                 cwise_multiplication(boundary_in.bath_hat_at_gp, row(intface.surface_normal_in, dir)));
-        }
 
-        /* EX State */
-        for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
             row(state_ex.dbath, dir) += intface.IntegrationPhiEX(
                 cwise_multiplication(boundary_ex.bath_hat_at_gp, row(intface.surface_normal_ex, dir)));
         }
@@ -102,17 +98,11 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
             }
         }
 
-        /* IN State */
         for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state_in.ddbath, GN::n_dimensions * dbath + dir) += intface.IntegrationPhiIN(
                     cwise_multiplication(row(boundary_in.dbath_hat_at_gp, dbath), row(intface.surface_normal_in, dir)));
-            }
-        }
 
-        /* EX State */
-        for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
-            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state_ex.ddbath, GN::n_dimensions * dbath + dir) += intface.IntegrationPhiEX(
                     cwise_multiplication(row(boundary_ex.dbath_hat_at_gp, dbath), row(intface.surface_normal_ex, dir)));
             }
@@ -149,7 +139,7 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state.ddbath, GN::n_dimensions * ddbath + dir) =
+                row(state.dddbath, GN::n_dimensions * ddbath + dir) =
                     -elt.IntegrationDPhi(dir, row(internal.dbath_at_gp, ddbath));
             }
         }
@@ -198,14 +188,14 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state.dddbath, GN::n_dimensions * ddbath + dir) += bound.IntegrationPhi(cwise_multiplication(
-                    row(boundary.ddbath_hat_at_gp, ddbath), row(bound.surface_normal, dir)));
+                row(state.dddbath, GN::n_dimensions * ddbath + dir) += bound.IntegrationPhi(
+                    cwise_multiplication(row(boundary.ddbath_hat_at_gp, ddbath), row(bound.surface_normal, dir)));
             }
         }
     });
 
     discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state = elt.data.state[0];
+        auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
         state.dddbath = elt.ApplyMinv(state.dddbath);
