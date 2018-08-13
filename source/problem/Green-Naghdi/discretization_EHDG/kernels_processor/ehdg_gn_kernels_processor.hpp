@@ -10,7 +10,6 @@
 #include "ehdg_gn_proc_edge_bound.hpp"
 #include "ehdg_gn_proc_edge_dbound.hpp"
 #include "ehdg_gn_proc_update.hpp"
-#include "ehdg_gn_proc_derivatives.hpp"
 #include "ehdg_gn_proc_solve_global_prob.hpp"
 
 #endif

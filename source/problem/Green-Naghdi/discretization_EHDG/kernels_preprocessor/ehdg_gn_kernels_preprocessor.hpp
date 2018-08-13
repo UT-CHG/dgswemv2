@@ -9,7 +9,5 @@
 #include "ehdg_gn_pre_create_edge_intface.hpp"
 #include "ehdg_gn_pre_create_edge_bound.hpp"
 #include "ehdg_gn_pre_create_edge_dbound.hpp"
-#include "ehdg_gn_pre_init_data.hpp"
-#include "ehdg_gn_pre_init_global_prob.hpp"
 
 #endif

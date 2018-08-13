@@ -4,6 +4,7 @@
 #include "general_definitions.hpp"
 
 #include "ehdg_gn_kernels_processor.hpp"
+#include "ehdg_gn_proc_derivatives_serial.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -73,9 +74,6 @@ void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretiz
 void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     // Compute du, ddu
     Problem::serial_derivatives_kernel(stepper, discretization);
-
-    // Compute dbath, ddbath, dddbath (if bath is not a variable then this goes into data initialization)
-    Problem::serial_bathymetry_derivatives_kernel(stepper, discretization);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_volume_kernel(stepper, elt); });
 

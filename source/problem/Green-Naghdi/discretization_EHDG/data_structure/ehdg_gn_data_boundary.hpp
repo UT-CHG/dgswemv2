@@ -12,6 +12,11 @@ struct Boundary {
           aux_at_gp(GN::n_auxiliaries, ngp),
           Fn_at_gp(GN::n_variables, ngp),
           F_hat_at_gp(GN::n_variables, ngp),
+          dbath_at_gp(GN::n_dimensions, ngp),
+          ze_hat_at_gp(ngp),
+          bath_hat_at_gp(ngp),
+          dbath_hat_at_gp(GN::n_dimensions, ngp),
+          ddbath_hat_at_gp(GN::n_ddbath_terms, ngp),
           u_hat_at_gp(GN::n_dimensions, ngp),
           du_hat_at_gp(GN::n_du_terms, ngp),
           w1_w1_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp),
@@ -29,6 +34,14 @@ struct Boundary {
     HybMatrix<double, GN::n_variables> F_hat_at_gp;
 
     /* dispersive correction containers */
+
+    HybMatrix<double, GN::n_dimensions> dbath_at_gp;
+
+    DynRowVector<double> ze_hat_at_gp;
+
+    DynRowVector<double> bath_hat_at_gp;
+    HybMatrix<double, GN::n_dimensions> dbath_hat_at_gp;
+    HybMatrix<double, GN::n_ddbath_terms> ddbath_hat_at_gp;
 
     HybMatrix<double, GN::n_dimensions> u_hat_at_gp;
     HybMatrix<double, GN::n_du_terms> du_hat_at_gp;

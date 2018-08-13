@@ -25,8 +25,6 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         row(state.aux, GN::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
 
         row(internal.aux_at_gp, GN::Auxiliaries::bath) = elt.ComputeNodalUgp(bathymetry);
-        row(internal.dbath_at_gp, GlobalCoord::x)      = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
-        row(internal.dbath_at_gp, GlobalCoord::y)      = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
 
         if (problem_specific_input.initial_conditions.type == GN::InitialConditionsType::Constant ||
             problem_specific_input.initial_conditions.type == GN::InitialConditionsType::Default) {

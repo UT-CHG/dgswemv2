@@ -124,19 +124,19 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto dh_dx = dze_dx + row(internal.dbath_at_gp, GlobalCoord::x);
     auto dh_dy = dze_dy + row(internal.dbath_at_gp, GlobalCoord::y);
 
-    auto ux = row(internal.du_at_gp, GN::FirstDerivatives::ux);
-    auto uy = row(internal.du_at_gp, GN::FirstDerivatives::uy);
-    auto vx = row(internal.du_at_gp, GN::FirstDerivatives::vx);
-    auto vy = row(internal.du_at_gp, GN::FirstDerivatives::vy);
+    auto ux = row(internal.du_at_gp, GN::DU::ux);
+    auto uy = row(internal.du_at_gp, GN::DU::uy);
+    auto vx = row(internal.du_at_gp, GN::DU::vx);
+    auto vy = row(internal.du_at_gp, GN::DU::vy);
 
-    auto uxx = row(internal.ddu_at_gp, GN::SecondDerivatives::uxx);
-    auto uxy = row(internal.ddu_at_gp, GN::SecondDerivatives::uxy);
-    auto uyx = row(internal.ddu_at_gp, GN::SecondDerivatives::uyx);
-    auto uyy = row(internal.ddu_at_gp, GN::SecondDerivatives::uyy);
-    auto vxx = row(internal.ddu_at_gp, GN::SecondDerivatives::vxx);
-    auto vxy = row(internal.ddu_at_gp, GN::SecondDerivatives::vxy);
-    auto vyx = row(internal.ddu_at_gp, GN::SecondDerivatives::vyx);
-    auto vyy = row(internal.ddu_at_gp, GN::SecondDerivatives::vyy);
+    auto uxx = row(internal.ddu_at_gp, GN::DDU::uxx);
+    auto uxy = row(internal.ddu_at_gp, GN::DDU::uxy);
+    auto uyx = row(internal.ddu_at_gp, GN::DDU::uyx);
+    auto uyy = row(internal.ddu_at_gp, GN::DDU::uyy);
+    auto vxx = row(internal.ddu_at_gp, GN::DDU::vxx);
+    auto vxy = row(internal.ddu_at_gp, GN::DDU::vxy);
+    auto vyx = row(internal.ddu_at_gp, GN::DDU::vyx);
+    auto vyy = row(internal.ddu_at_gp, GN::DDU::vyy);
 
     auto c1 = cwise_multiplication(vx, uy) + cwise_multiplication(ux, ux) + cwise_multiplication(ux, vy) +
               cwise_multiplication(vy, vy);
