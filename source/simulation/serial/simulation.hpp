@@ -72,8 +72,6 @@ void Simulation<ProblemType>::Run() {
         this->writer.WriteFirstStep(this->stepper, this->discretization.mesh);
     }
 
-    abort();
-
     for (uint step = 1; step <= this->n_steps; ++step) {
         for (uint stage = 0; stage < this->n_stages; ++stage) {
             if (this->parser.ParsingInput()) {

@@ -10,10 +10,9 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
-        row(state.dbath, GlobalCoord::x) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.aux_at_gp, GN::Auxiliaries::bath));
-        row(state.dbath, GlobalCoord::y) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.aux_at_gp, GN::Auxiliaries::bath));
+        for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+            row(state.dbath, dir) = -elt.IntegrationDPhi(dir, row(internal.aux_at_gp, GN::Auxiliaries::bath));
+        }
     });
 
     discretization.mesh.CallForEachInterface([](auto& intface) {
@@ -36,16 +35,16 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         }
 
         /* IN State */
-        row(state_in.dbath, GlobalCoord::x) += intface.IntegrationPhiIN(
-            cwise_multiplication(boundary_in.bath_hat_at_gp, row(intface.surface_normal_in, GlobalCoord::x)));
-        row(state_in.dbath, GlobalCoord::y) += intface.IntegrationPhiIN(
-            cwise_multiplication(boundary_in.bath_hat_at_gp, row(intface.surface_normal_in, GlobalCoord::y)));
+        for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+            row(state_in.dbath, dir) += intface.IntegrationPhiIN(
+                cwise_multiplication(boundary_in.bath_hat_at_gp, row(intface.surface_normal_in, dir)));
+        }
 
         /* EX State */
-        row(state_ex.dbath, GlobalCoord::x) += intface.IntegrationPhiEX(
-            cwise_multiplication(boundary_ex.bath_hat_at_gp, row(intface.surface_normal_ex, GlobalCoord::x)));
-        row(state_ex.dbath, GlobalCoord::y) += intface.IntegrationPhiEX(
-            cwise_multiplication(boundary_ex.bath_hat_at_gp, row(intface.surface_normal_ex, GlobalCoord::y)));
+        for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+            row(state_ex.dbath, dir) += intface.IntegrationPhiEX(
+                cwise_multiplication(boundary_ex.bath_hat_at_gp, row(intface.surface_normal_ex, dir)));
+        }
     });
 
     discretization.mesh.CallForEachBoundary([](auto& bound) {
@@ -54,10 +53,10 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
         boundary.bath_hat_at_gp = row(boundary.aux_at_gp, GN::Auxiliaries::bath);
 
-        row(state.dbath, GlobalCoord::x) += bound.IntegrationPhi(
-            cwise_multiplication(boundary.bath_hat_at_gp, row(bound.surface_normal, GlobalCoord::x)));
-        row(state.dbath, GlobalCoord::y) += bound.IntegrationPhi(
-            cwise_multiplication(boundary.bath_hat_at_gp, row(bound.surface_normal, GlobalCoord::y)));
+        for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+            row(state.dbath, dir) +=
+                bound.IntegrationPhi(cwise_multiplication(boundary.bath_hat_at_gp, row(bound.surface_normal, dir)));
+        }
     });
 
     discretization.mesh.CallForEachElement([](auto& elt) {
@@ -72,14 +71,12 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
         internal.dbath_at_gp = elt.ComputeUgp(state.dbath);
 
-        row(state.ddbath, GN::DDBath::bxx) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.dbath_at_gp, GlobalCoord::x));
-        row(state.ddbath, GN::DDBath::bxy) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.dbath_at_gp, GlobalCoord::x));
-        row(state.ddbath, GN::DDBath::byx) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.dbath_at_gp, GlobalCoord::y));
-        row(state.ddbath, GN::DDBath::byy) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.dbath_at_gp, GlobalCoord::y));
+        for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state.ddbath, GN::n_dimensions * dbath + dir) =
+                    -elt.IntegrationDPhi(dir, row(internal.dbath_at_gp, dbath));
+            }
+        }
     });
 
     discretization.mesh.CallForEachInterface([](auto& intface) {
@@ -97,34 +94,29 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
-            boundary_in.dbath_hat_at_gp(GlobalCoord::x, gp) =
-                (boundary_in.dbath_at_gp(GlobalCoord::x, gp) + boundary_ex.dbath_at_gp(GlobalCoord::x, gp_ex)) / 2.0;
-            boundary_in.dbath_hat_at_gp(GlobalCoord::y, gp) =
-                (boundary_in.dbath_at_gp(GlobalCoord::y, gp) + boundary_ex.dbath_at_gp(GlobalCoord::y, gp_ex)) / 2.0;
+            for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
+                boundary_in.dbath_hat_at_gp(dbath, gp) =
+                    (boundary_in.dbath_at_gp(dbath, gp) + boundary_ex.dbath_at_gp(dbath, gp_ex)) / 2.0;
 
-            boundary_ex.dbath_hat_at_gp(GlobalCoord::x, gp_ex) = boundary_in.dbath_hat_at_gp(GlobalCoord::x, gp);
-            boundary_ex.dbath_hat_at_gp(GlobalCoord::y, gp_ex) = boundary_in.dbath_hat_at_gp(GlobalCoord::y, gp);
+                boundary_ex.dbath_hat_at_gp(dbath, gp_ex) = boundary_in.dbath_hat_at_gp(dbath, gp);
+            }
         }
 
         /* IN State */
-        row(state_in.ddbath, GN::DDBath::bxx) += intface.IntegrationPhiIN(cwise_multiplication(
-            row(boundary_in.dbath_hat_at_gp, GlobalCoord::x), row(intface.surface_normal_in, GlobalCoord::x)));
-        row(state_in.ddbath, GN::DDBath::bxy) += intface.IntegrationPhiIN(cwise_multiplication(
-            row(boundary_in.dbath_hat_at_gp, GlobalCoord::x), row(intface.surface_normal_in, GlobalCoord::y)));
-        row(state_in.ddbath, GN::DDBath::byx) += intface.IntegrationPhiIN(cwise_multiplication(
-            row(boundary_in.dbath_hat_at_gp, GlobalCoord::y), row(intface.surface_normal_in, GlobalCoord::x)));
-        row(state_in.ddbath, GN::DDBath::byy) += intface.IntegrationPhiIN(cwise_multiplication(
-            row(boundary_in.dbath_hat_at_gp, GlobalCoord::y), row(intface.surface_normal_in, GlobalCoord::y)));
+        for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state_in.ddbath, GN::n_dimensions * dbath + dir) += intface.IntegrationPhiIN(
+                    cwise_multiplication(row(boundary_in.dbath_hat_at_gp, dbath), row(intface.surface_normal_in, dir)));
+            }
+        }
 
         /* EX State */
-        row(state_ex.ddbath, GN::DDBath::bxx) += intface.IntegrationPhiEX(cwise_multiplication(
-            row(boundary_ex.dbath_hat_at_gp, GlobalCoord::x), row(intface.surface_normal_ex, GlobalCoord::x)));
-        row(state_ex.ddbath, GN::DDBath::bxy) += intface.IntegrationPhiEX(cwise_multiplication(
-            row(boundary_ex.dbath_hat_at_gp, GlobalCoord::x), row(intface.surface_normal_ex, GlobalCoord::y)));
-        row(state_ex.ddbath, GN::DDBath::byx) += intface.IntegrationPhiEX(cwise_multiplication(
-            row(boundary_ex.dbath_hat_at_gp, GlobalCoord::y), row(intface.surface_normal_ex, GlobalCoord::x)));
-        row(state_ex.ddbath, GN::DDBath::byy) += intface.IntegrationPhiEX(cwise_multiplication(
-            row(boundary_ex.dbath_hat_at_gp, GlobalCoord::y), row(intface.surface_normal_ex, GlobalCoord::y)));
+        for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state_ex.ddbath, GN::n_dimensions * dbath + dir) += intface.IntegrationPhiEX(
+                    cwise_multiplication(row(boundary_ex.dbath_hat_at_gp, dbath), row(intface.surface_normal_ex, dir)));
+            }
+        }
     });
 
     discretization.mesh.CallForEachBoundary([](auto& bound) {
@@ -135,14 +127,12 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
         boundary.dbath_hat_at_gp = boundary.dbath_at_gp;
 
-        row(state.ddbath, GN::DDBath::bxx) += bound.IntegrationPhi(
-            cwise_multiplication(row(boundary.dbath_at_gp, GlobalCoord::x), row(bound.surface_normal, GlobalCoord::x)));
-        row(state.ddbath, GN::DDBath::bxy) += bound.IntegrationPhi(
-            cwise_multiplication(row(boundary.dbath_at_gp, GlobalCoord::x), row(bound.surface_normal, GlobalCoord::y)));
-        row(state.ddbath, GN::DDBath::byx) += bound.IntegrationPhi(
-            cwise_multiplication(row(boundary.dbath_at_gp, GlobalCoord::y), row(bound.surface_normal, GlobalCoord::x)));
-        row(state.ddbath, GN::DDBath::byy) += bound.IntegrationPhi(
-            cwise_multiplication(row(boundary.dbath_at_gp, GlobalCoord::y), row(bound.surface_normal, GlobalCoord::y)));
+        for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state.ddbath, GN::n_dimensions * dbath + dir) += bound.IntegrationPhi(
+                    cwise_multiplication(row(boundary.dbath_hat_at_gp, dbath), row(bound.surface_normal, dir)));
+            }
+        }
     });
 
     discretization.mesh.CallForEachElement([](auto& elt) {
@@ -151,155 +141,77 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         state.ddbath = elt.ApplyMinv(state.ddbath);
     });
 
-    /*discretization.mesh.CallForEachElement([](auto& elt) {
-
-
+    discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
-        internal.du_at_gp = elt.ComputeUgp(state.du);
+        internal.ddbath_at_gp = elt.ComputeUgp(state.ddbath);
 
-        row(state.ddu, GN::DDU::uxx) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.du_at_gp, GN::DU::ux));
-        row(state.ddu, GN::DDU::uxy) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.du_at_gp, GN::DU::ux));
-        row(state.ddu, GN::DDU::uyx) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.du_at_gp, GN::DU::uy));
-        row(state.ddu, GN::DDU::uyy) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.du_at_gp, GN::DU::uy));
-
-        row(state.ddu, GN::DDU::vxx) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.du_at_gp, GN::DU::vx));
-        row(state.ddu, GN::DDU::vxy) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.du_at_gp, GN::DU::vx));
-        row(state.ddu, GN::DDU::vyx) =
-            -elt.IntegrationDPhi(GlobalCoord::x, row(internal.du_at_gp, GN::DU::vy));
-        row(state.ddu, GN::DDU::vyy) =
-            -elt.IntegrationDPhi(GlobalCoord::y, row(internal.du_at_gp, GN::DU::vy));
+        for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state.ddbath, GN::n_dimensions * ddbath + dir) =
+                    -elt.IntegrationDPhi(dir, row(internal.dbath_at_gp, ddbath));
+            }
+        }
     });
 
     discretization.mesh.CallForEachInterface([](auto& intface) {
-
-
         auto& state_in    = intface.data_in.state[0];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
 
         auto& state_ex    = intface.data_ex.state[0];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        boundary_in.du_hat_at_gp = intface.ComputeUgpIN(state_in.du);
-        boundary_ex.du_hat_at_gp = intface.ComputeUgpEX(state_ex.du);
+        boundary_in.ddbath_hat_at_gp = intface.ComputeUgpIN(state_in.ddbath);
+        boundary_ex.ddbath_hat_at_gp = intface.ComputeUgpEX(state_ex.ddbath);
 
         uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
         uint gp_ex;
         for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
-            boundary_in.du_hat_at_gp(GN::DU::ux, gp) =
-                (boundary_in.du_hat_at_gp(GN::DU::ux, gp) +
-                 boundary_ex.du_hat_at_gp(GN::DU::ux, gp_ex)) /
-                2.0;
+            for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
+                boundary_in.ddbath_hat_at_gp(ddbath, gp) =
+                    (boundary_in.ddbath_hat_at_gp(ddbath, gp) + boundary_ex.ddbath_hat_at_gp(ddbath, gp_ex)) / 2.0;
 
-            boundary_in.du_hat_at_gp(GN::DU::uy, gp) =
-                (boundary_in.du_hat_at_gp(GN::DU::uy, gp) +
-                 boundary_ex.du_hat_at_gp(GN::DU::uy, gp_ex)) /
-                2.0;
+                boundary_ex.ddbath_hat_at_gp(ddbath, gp_ex) = boundary_in.ddbath_hat_at_gp(ddbath, gp);
+            }
+        }
 
-            boundary_in.du_hat_at_gp(GN::DU::vx, gp) =
-                (boundary_in.du_hat_at_gp(GN::DU::vx, gp) +
-                 boundary_ex.du_hat_at_gp(GN::DU::vx, gp_ex)) /
-                2.0;
+        /* IN State */
+        for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state_in.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiIN(cwise_multiplication(
+                    row(boundary_in.ddbath_hat_at_gp, ddbath), row(intface.surface_normal_in, dir)));
 
-            boundary_in.du_hat_at_gp(GN::DU::vy, gp) =
-                (boundary_in.du_hat_at_gp(GN::DU::vy, gp) +
-                 boundary_ex.du_hat_at_gp(GN::DU::vy, gp_ex)) /
-                2.0;
+                row(state_ex.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiEX(cwise_multiplication(
+                    row(boundary_ex.ddbath_hat_at_gp, ddbath), row(intface.surface_normal_ex, dir)));
+            }
+        }
+    });
 
-            boundary_ex.du_hat_at_gp(GN::DU::ux, gp_ex) =
-                boundary_in.du_hat_at_gp(GN::DU::ux, gp);
+    discretization.mesh.CallForEachBoundary([](auto& bound) {
+        auto& state    = bound.data.state[0];
+        auto& boundary = bound.data.boundary[bound.bound_id];
 
-            boundary_ex.du_hat_at_gp(GN::DU::uy, gp_ex) =
-                boundary_in.du_hat_at_gp(GN::DU::uy, gp);
+        boundary.ddbath_hat_at_gp = bound.ComputeUgp(state.ddbath);
 
-            boundary_ex.du_hat_at_gp(GN::DU::vx, gp_ex) =
-                boundary_in.du_hat_at_gp(GN::DU::vx, gp);
+        for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
+            for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
+                row(state.dddbath, GN::n_dimensions * ddbath + dir) += bound.IntegrationPhi(cwise_multiplication(
+                    row(boundary.ddbath_hat_at_gp, ddbath), row(bound.surface_normal, dir)));
+            }
+        }
+    });
 
-            boundary_ex.du_hat_at_gp(GN::DU::vy, gp_ex) =
-                boundary_in.du_hat_at_gp(GN::DU::vy, gp);
-        }*/
+    discretization.mesh.CallForEachElement([](auto& elt) {
+        auto& state = elt.data.state[0];
+        auto& internal = elt.data.internal;
 
-    /* IN State */
-    /*row(state_in.ddu, GN::DDU::uxx) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::ux), row(intface.surface_normal_in, GlobalCoord::x)));
-    row(state_in.ddu, GN::DDU::uxy) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::ux), row(intface.surface_normal_in, GlobalCoord::y)));
-    row(state_in.ddu, GN::DDU::uyx) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::uy), row(intface.surface_normal_in, GlobalCoord::x)));
-    row(state_in.ddu, GN::DDU::uyy) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::uy), row(intface.surface_normal_in, GlobalCoord::y)));
+        state.dddbath = elt.ApplyMinv(state.dddbath);
 
-    row(state_in.ddu, GN::DDU::vxx) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::vx), row(intface.surface_normal_in, GlobalCoord::x)));
-    row(state_in.ddu, GN::DDU::vxy) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::vx), row(intface.surface_normal_in, GlobalCoord::y)));
-    row(state_in.ddu, GN::DDU::vyx) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::vy), row(intface.surface_normal_in, GlobalCoord::x)));
-    row(state_in.ddu, GN::DDU::vyy) += intface.IntegrationPhiIN(cwise_multiplication(
-        row(boundary_in.du_hat_at_gp, GN::DU::vy), row(intface.surface_normal_in, GlobalCoord::y)));*/
-    /* EX State */
-    /*row(state_ex.ddu, GN::DDU::uxx) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::ux), row(intface.surface_normal_ex, GlobalCoord::x)));
-    row(state_ex.ddu, GN::DDU::uxy) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::ux), row(intface.surface_normal_ex, GlobalCoord::y)));
-    row(state_ex.ddu, GN::DDU::uyx) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::uy), row(intface.surface_normal_ex, GlobalCoord::x)));
-    row(state_ex.ddu, GN::DDU::uyy) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::uy), row(intface.surface_normal_ex, GlobalCoord::y)));
-
-    row(state_ex.ddu, GN::DDU::vxx) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::vx), row(intface.surface_normal_ex, GlobalCoord::x)));
-    row(state_ex.ddu, GN::DDU::vxy) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::vx), row(intface.surface_normal_ex, GlobalCoord::y)));
-    row(state_ex.ddu, GN::DDU::vyx) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::vy), row(intface.surface_normal_ex, GlobalCoord::x)));
-    row(state_ex.ddu, GN::DDU::vyy) += intface.IntegrationPhiEX(cwise_multiplication(
-        row(boundary_ex.du_hat_at_gp, GN::DU::vy), row(intface.surface_normal_ex, GlobalCoord::y)));
-});
-
-discretization.mesh.CallForEachBoundary([](auto& bound) {
-
-
-    auto& state    = bound.data.state[0];
-    auto& boundary = bound.data.boundary[bound.bound_id];
-
-    boundary.du_hat_at_gp = bound.ComputeUgp(state.du);
-
-    row(state.ddu, GN::DDU::uxx) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::ux), row(bound.surface_normal, GlobalCoord::x)));
-    row(state.ddu, GN::DDU::uxy) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::ux), row(bound.surface_normal, GlobalCoord::y)));
-    row(state.ddu, GN::DDU::uyx) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::uy), row(bound.surface_normal, GlobalCoord::x)));
-    row(state.ddu, GN::DDU::uyy) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::uy), row(bound.surface_normal, GlobalCoord::y)));
-
-    row(state.ddu, GN::DDU::vxx) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::vx), row(bound.surface_normal, GlobalCoord::x)));
-    row(state.ddu, GN::DDU::vxy) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::vx), row(bound.surface_normal, GlobalCoord::y)));
-    row(state.ddu, GN::DDU::vyx) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::vy), row(bound.surface_normal, GlobalCoord::x)));
-    row(state.ddu, GN::DDU::vyy) += bound.IntegrationPhi(cwise_multiplication(
-        row(boundary.du_hat_at_gp, GN::DU::vy), row(bound.surface_normal, GlobalCoord::y)));
-});
-
-discretization.mesh.CallForEachElement([](auto& elt) {
-
-
-    auto& state = elt.data.state[0];
-
-    state.ddu = elt.ApplyMinv(state.ddu);
-});*/
+        internal.dddbath_at_gp = elt.ComputeUgp(state.dddbath);
+    });
 }
 }
 }
