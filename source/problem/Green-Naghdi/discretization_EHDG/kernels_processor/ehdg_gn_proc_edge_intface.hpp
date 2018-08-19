@@ -107,25 +107,73 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-    // at this point h_hat_at_gp
-    // has been computed in swe edge_boundary kernel
+    // at this point h_at_gp
+    // has been calculated in derivatives kernel
 
-    double tau = -2000.0;  // hardcode the tau value here
-
-    // set kernels up
+    // set h_hat, dbath_hat as average of states
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+        edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp) =
+            (boundary_in.aux_at_gp(GN::Auxiliaries::h, gp) + boundary_ex.aux_at_gp(GN::Auxiliaries::h, gp_ex)) / 2.0;
+
+        edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp) =
+            (boundary_in.dbath_at_gp(GlobalCoord::x, gp) + boundary_ex.dbath_at_gp(GlobalCoord::x, gp_ex)) / 2.0;
+        edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp) =
+            (boundary_in.dbath_at_gp(GlobalCoord::y, gp) + boundary_ex.dbath_at_gp(GlobalCoord::y, gp_ex)) / 2.0;
+    }
+
+    double tau = -20;  // hardcode the tau value here
+
+    // set kernels up
+    double h_hat_in, h_hat_ex;
+    double bx_in, by_in, bx_ex, by_ex;
+    double nx_in, ny_in, nx_ex, ny_ex;
+
+    for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+        gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+        h_hat_in = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
+        h_hat_ex = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp_ex);
+
+        bx_in = edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp);
+        by_in = edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp);
+        nx_in = edge_int.interface.surface_normal_in(GlobalCoord::x, gp);
+        ny_in = edge_int.interface.surface_normal_in(GlobalCoord::y, gp);
+
+        bx_ex = edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
+        by_ex = edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
+        nx_ex = edge_int.interface.surface_normal_ex(GlobalCoord::x, gp_ex);
+        ny_ex = edge_int.interface.surface_normal_ex(GlobalCoord::y, gp_ex);
 
         column(boundary_in.w1_w1_kernel_at_gp, gp) =
             -NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
         column(boundary_in.w1_w1_hat_kernel_at_gp, gp) =
             NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
 
+        boundary_in.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::x, gp) +=
+            NDParameters::alpha / 2.0 * h_hat_in * bx_in * nx_in;
+        boundary_in.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::y, gp) +=
+            NDParameters::alpha / 2.0 * h_hat_in * by_in * nx_in;
+        boundary_in.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::x, gp) +=
+            NDParameters::alpha / 2.0 * h_hat_in * bx_in * ny_in;
+        boundary_in.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp) +=
+            NDParameters::alpha / 2.0 * h_hat_in * by_in * ny_in;
+
         column(boundary_ex.w1_w1_kernel_at_gp, gp_ex) =
             -NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
         column(boundary_ex.w1_w1_hat_kernel_at_gp, gp_ex) =
             NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
+
+        boundary_ex.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::x, gp_ex) +=
+            NDParameters::alpha / 2.0 * h_hat_ex * bx_ex * nx_ex;
+        boundary_ex.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::y, gp_ex) +=
+            NDParameters::alpha / 2.0 * h_hat_ex * by_ex * nx_ex;
+        boundary_ex.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::x, gp_ex) +=
+            NDParameters::alpha / 2.0 * h_hat_ex * bx_ex * ny_ex;
+        boundary_ex.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp_ex) +=
+            NDParameters::alpha / 2.0 * h_hat_ex * by_ex * ny_ex;
     }
 
     row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::x) =

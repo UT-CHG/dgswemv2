@@ -4,47 +4,6 @@
 #include "utilities/ignore.hpp"
 
 namespace GN {
-inline double true_ze(const double t, const Point<2>& pt) {
-    constexpr double g = 9.81;
-
-    constexpr double ao = 0.05;
-    constexpr double Ho = 0.5;
-    constexpr double xo = -5.0;
-
-    constexpr double co = std::sqrt(g * (Ho + ao));
-    constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));
-
-    return ao * std::pow(1.0 / std::cosh(w * (pt[GlobalCoord::x] - xo - co * t)), 2);
-}
-
-inline double true_qx(const double t, const Point<2>& pt) {
-    constexpr double g = 9.81;
-
-    constexpr double ao = 0.05;
-    constexpr double Ho = 0.5;
-    constexpr double xo = -5.0;
-
-    constexpr double co = std::sqrt(g * (Ho + ao));
-    constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));
-
-    return co * ao * std::pow(1.0 / std::cosh(w * (pt[GlobalCoord::x] - xo - co * t)), 2);
-}
-
-inline double true_qy(const double t, const Point<2>& pt) {
-    constexpr double g = 9.81;
-
-    constexpr double ao = 0.05;
-    constexpr double Ho = 0.5;
-    constexpr double xo = -5.0;
-
-    constexpr double co = std::sqrt(g * (Ho + ao));
-    constexpr double w  = std::sqrt(3.0 * ao) / (2.0 * Ho * std::sqrt(Ho + ao));
-
-    Utilities::ignore(g, ao, Ho, xo, co, w);
-
-    return 0.0;
-}
-
 inline StatVector<double, GN::n_variables> true_u(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 

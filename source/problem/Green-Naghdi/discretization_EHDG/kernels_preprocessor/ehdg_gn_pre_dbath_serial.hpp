@@ -140,7 +140,7 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state.dddbath, GN::n_dimensions * ddbath + dir) =
-                    -elt.IntegrationDPhi(dir, row(internal.dbath_at_gp, ddbath));
+                    -elt.IntegrationDPhi(dir, row(internal.ddbath_at_gp, ddbath));
             }
         }
     });
@@ -168,7 +168,6 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
             }
         }
 
-        /* IN State */
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state_in.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiIN(cwise_multiplication(

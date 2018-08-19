@@ -110,19 +110,21 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto& state    = elt.data.state[stage];
     auto& internal = elt.data.internal;
 
-    // at this point h_at_gp, u_at_gp and du_at_gp
+    // at this point h_at_gp, u_at_gp, du_at_gp and ddu_at_gp
     // have been calculated in derivatives kernel
-    internal.ddu_at_gp = elt.ComputeUgp(state.ddu);
 
     auto h  = row(internal.aux_at_gp, GN::Auxiliaries::h);
     auto h2 = cwise_multiplication(h, h);
     auto h3 = cwise_multiplication(h2, h);
 
+    auto dbath_dx = row(internal.dbath_at_gp, GlobalCoord::x);
+    auto dbath_dy = row(internal.dbath_at_gp, GlobalCoord::y);
+
     auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
     auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
 
-    auto dh_dx = dze_dx + row(internal.dbath_at_gp, GlobalCoord::x);
-    auto dh_dy = dze_dy + row(internal.dbath_at_gp, GlobalCoord::y);
+    auto dh_dx = dze_dx + dbath_dx;
+    auto dh_dy = dze_dy + dbath_dy;
 
     auto ux = row(internal.du_at_gp, GN::DU::ux);
     auto uy = row(internal.du_at_gp, GN::DU::uy);
@@ -149,10 +151,12 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
 
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::x) =
         2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dx) + 2.0 / 3.0 * cwise_multiplication(h3, c2) +
+        cwise_multiplication(cwise_multiplication(h2, c1), dbath_dx) +
         Global::g / NDParameters::alpha * cwise_multiplication(dze_dx, h);
 
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::y) =
         2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dy) + 2.0 / 3.0 * cwise_multiplication(h3, c3) +
+        cwise_multiplication(cwise_multiplication(h2, c1), dbath_dy) +
         Global::g / NDParameters::alpha * cwise_multiplication(dze_dy, h);
 
     for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {

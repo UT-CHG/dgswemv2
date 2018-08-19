@@ -208,9 +208,12 @@ void Problem::serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscret
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
 
-        auto& state = elt.data.state[stage];
+        auto& state    = elt.data.state[stage];
+        auto& internal = elt.data.internal;
 
         state.ddu = elt.ApplyMinv(state.ddu);
+
+        internal.ddu_at_gp = elt.ComputeUgp(state.ddu);
     });
 }
 }

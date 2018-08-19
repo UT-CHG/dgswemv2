@@ -97,18 +97,44 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     auto& internal = edge_bound.boundary.data.internal;
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    // at this point h_hat_at_gp
-    // has been computed in swe edge_boundary kernel
+    // at this point h_at_gp
+    // has been calculated in derivatives kernel
 
-    double tau = -2000.0;  // hardcode the tau value here
+    // set h_hat, dbath_hat as internal state
+    row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h) = row(boundary.aux_at_gp, GN::Auxiliaries::h);
+
+    edge_internal.dbath_hat_at_gp = boundary.dbath_at_gp;
+
+    double tau = -20;  // hardcode the tau value here
 
     // set kernels up
+    double h_hat;
+    double bx, by;
+    double nx, ny;
+
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        h_hat = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
+
+        bx = edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp);
+        by = edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp);
+
+        nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
+        ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
+
         column(boundary.w1_w1_kernel_at_gp, gp) =
             -NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
 
         column(boundary.w1_w1_hat_kernel_at_gp, gp) =
             NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
+
+        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::x, gp) +=
+            NDParameters::alpha / 2.0 * h_hat * bx * nx;
+        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::y, gp) +=
+            NDParameters::alpha / 2.0 * h_hat * by * nx;
+        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::x, gp) +=
+            NDParameters::alpha / 2.0 * h_hat * bx * ny;
+        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp) +=
+            NDParameters::alpha / 2.0 * h_hat * by * ny;
     }
 
     row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -cwise_division(
