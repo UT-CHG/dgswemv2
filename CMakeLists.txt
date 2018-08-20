@@ -12,6 +12,7 @@ option(EHDG_SWE "Build EHDG SWE simulations" OFF)
 option(IHDG_SWE "Build EHDG SWE simulations" OFF)
 
 option(EHDG_GN "Build EHDG GN simulations" OFF)
+option(IHDG_GN "Build IHDG GN simulations" OFF)
 
 enable_testing()
 
@@ -118,8 +119,15 @@ if(IHDG_SWE)
 endif()
 
 if(EHDG_GN)
-add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
+  add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_gn_analytical_solution)
+  endif()
+endif()
+
+if(IHDG_GN)
+  add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
+  if(BUILD_EXAMPLES)
+    add_subdirectory(examples/ihdg_gn_analytical_solution)
   endif()
 endif()
