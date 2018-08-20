@@ -110,7 +110,7 @@ struct Problem {
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
-    /* local step */
+    /* local step begin */
 
     template <typename ElementType>
     static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
@@ -136,9 +136,9 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void local_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
-    /* local step */
+    /* local step end */
 
-    /* global step */
+    /* global step begin */
 
     template <typename EdgeInterfaceType>
     static void global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
@@ -146,13 +146,9 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    /* global step */
-
-    /* solving global system */
-
     static bool solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
 
-    /* solving global system */
+    /* global step end */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

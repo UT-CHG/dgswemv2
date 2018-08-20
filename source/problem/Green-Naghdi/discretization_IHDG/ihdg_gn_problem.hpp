@@ -145,39 +145,9 @@ struct Problem {
 
     /* SWE part */
 
-    // processor kernels
     static void serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
-    /* global step */
-
-    template <typename InterfaceType>
-    static void global_swe_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
-
-    template <typename EdgeInterfaceType>
-    static void global_swe_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
-
-    template <typename EdgeInterfaceType>
-    static void global_swe_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int);
-
-    template <typename BoundaryType>
-    static void global_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
-
-    template <typename EdgeBoundaryType>
-    static void global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
-
-    template <typename EdgeBoundaryType>
-    static void global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
-
-    template <typename DistributedBoundaryType>
-    static void global_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
-
-    template <typename EdgeDistributedType>
-    static void global_swe_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
-
-    template <typename EdgeDistributedType>
-    static void global_swe_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
-
-    /* local step */
+    /* local step end */
 
     template <typename ElementType>
     static void local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt);
@@ -194,7 +164,28 @@ struct Problem {
     template <typename DistributedBoundaryType>
     static void local_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
-    /* local step */
+    template <typename EdgeInterfaceType>
+    static void local_swe_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename EdgeBoundaryType>
+    static void local_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename EdgeDistributedType>
+    static void local_swe_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+
+    /* local step end */
+
+    /* global step begin */
+
+    template <typename EdgeInterfaceType>
+    static void global_swe_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename EdgeBoundaryType>
+    static void global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    static bool solve_global_swe_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
+
+    /* global step end */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

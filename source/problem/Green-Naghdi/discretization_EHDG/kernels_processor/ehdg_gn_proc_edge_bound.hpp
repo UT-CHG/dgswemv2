@@ -103,8 +103,6 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     // set h_hat, dbath_hat as internal state
     row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h) = row(boundary.aux_at_gp, GN::Auxiliaries::h);
 
-    edge_internal.dbath_hat_at_gp = boundary.dbath_at_gp;
-
     double tau = -20;  // hardcode the tau value here
 
     // set kernels up
@@ -115,8 +113,8 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         h_hat = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
 
-        bx = edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp);
-        by = edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp);
+        bx = boundary.dbath_hat_at_gp(GlobalCoord::x, gp);
+        by = boundary.dbath_hat_at_gp(GlobalCoord::y, gp);
 
         nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
         ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);

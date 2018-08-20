@@ -1,10 +1,10 @@
-x1: -20.0 
-x2: 20.0
+x1: 0.0 
+x2: 40.0
 
 y1: 0.0
-y2: 0.2
+y2: 0.25
 
-num_x_subdivisions: 200
+num_x_subdivisions: 160
 num_y_subdivisions: 1
 
 pattern: 0

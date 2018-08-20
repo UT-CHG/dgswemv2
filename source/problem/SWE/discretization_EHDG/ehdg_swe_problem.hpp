@@ -122,7 +122,26 @@ struct Problem {
     template <typename HPXSimUnitType>
     static decltype(auto) hpx_stage_kernel(HPXSimUnitType* sim_unit);
 
-    /* global step */
+    /* local step begin */
+
+    template <typename ElementType>
+    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename ElementType>
+    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename InterfaceType>
+    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+
+    template <typename BoundaryType>
+    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+
+    template <typename DistributedBoundaryType>
+    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+
+    /* local step end */
+
+    /* global step begin */
 
     template <typename InterfaceType>
     static void global_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
@@ -151,24 +170,7 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
-    /* local step */
-
-    template <typename ElementType>
-    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
-
-    template <typename InterfaceType>
-    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
-
-    template <typename BoundaryType>
-    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
-
-    template <typename DistributedBoundaryType>
-    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
-
-    /* local step */
+    /* global step end */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

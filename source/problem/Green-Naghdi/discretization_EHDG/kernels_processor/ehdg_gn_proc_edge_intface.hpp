@@ -117,11 +117,6 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
 
         edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp) =
             (boundary_in.aux_at_gp(GN::Auxiliaries::h, gp) + boundary_ex.aux_at_gp(GN::Auxiliaries::h, gp_ex)) / 2.0;
-
-        edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp) =
-            (boundary_in.dbath_at_gp(GlobalCoord::x, gp) + boundary_ex.dbath_at_gp(GlobalCoord::x, gp_ex)) / 2.0;
-        edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp) =
-            (boundary_in.dbath_at_gp(GlobalCoord::y, gp) + boundary_ex.dbath_at_gp(GlobalCoord::y, gp_ex)) / 2.0;
     }
 
     double tau = -20;  // hardcode the tau value here
@@ -137,13 +132,13 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
         h_hat_in = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
         h_hat_ex = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp_ex);
 
-        bx_in = edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp);
-        by_in = edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp);
+        bx_in = boundary_in.dbath_hat_at_gp(GlobalCoord::x, gp);
+        by_in = boundary_in.dbath_hat_at_gp(GlobalCoord::y, gp);
         nx_in = edge_int.interface.surface_normal_in(GlobalCoord::x, gp);
         ny_in = edge_int.interface.surface_normal_in(GlobalCoord::y, gp);
 
-        bx_ex = edge_internal.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
-        by_ex = edge_internal.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
+        bx_ex = boundary_ex.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
+        by_ex = boundary_ex.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
         nx_ex = edge_int.interface.surface_normal_ex(GlobalCoord::x, gp_ex);
         ny_ex = edge_int.interface.surface_normal_ex(GlobalCoord::y, gp_ex);
 

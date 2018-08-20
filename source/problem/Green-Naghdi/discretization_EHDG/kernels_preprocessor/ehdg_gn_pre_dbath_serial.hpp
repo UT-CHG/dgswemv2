@@ -82,8 +82,8 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         auto& state_ex    = intface.data_ex.state[0];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        boundary_in.dbath_at_gp = intface.ComputeUgpIN(state_in.dbath);
-        boundary_ex.dbath_at_gp = intface.ComputeUgpEX(state_ex.dbath);
+        boundary_in.dbath_hat_at_gp = intface.ComputeUgpIN(state_in.dbath);
+        boundary_ex.dbath_hat_at_gp = intface.ComputeUgpEX(state_ex.dbath);
 
         uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
         uint gp_ex;
@@ -92,7 +92,7 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
             for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
                 boundary_in.dbath_hat_at_gp(dbath, gp) =
-                    (boundary_in.dbath_at_gp(dbath, gp) + boundary_ex.dbath_at_gp(dbath, gp_ex)) / 2.0;
+                    (boundary_in.dbath_hat_at_gp(dbath, gp) + boundary_ex.dbath_hat_at_gp(dbath, gp_ex)) / 2.0;
 
                 boundary_ex.dbath_hat_at_gp(dbath, gp_ex) = boundary_in.dbath_hat_at_gp(dbath, gp);
             }
@@ -113,9 +113,7 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         auto& state    = bound.data.state[0];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        boundary.dbath_at_gp = bound.ComputeUgp(state.dbath);
-
-        boundary.dbath_hat_at_gp = boundary.dbath_at_gp;
+        boundary.dbath_hat_at_gp = bound.ComputeUgp(state.dbath);
 
         for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {

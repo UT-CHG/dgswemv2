@@ -145,10 +145,28 @@ struct Problem {
 
     /* SWE part */
 
-    // processor kernels
     static void serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
-    /* global step */
+    /* local step begin */
+
+    template <typename ElementType>
+    static void local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename ElementType>
+    static void local_swe_source_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename InterfaceType>
+    static void local_swe_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+
+    template <typename BoundaryType>
+    static void local_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+
+    template <typename DistributedBoundaryType>
+    static void local_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+
+    /* local step end */
+
+    /* global step begin */
 
     template <typename InterfaceType>
     static void global_swe_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
@@ -177,24 +195,7 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_swe_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
-    /* local step */
-
-    template <typename ElementType>
-    static void local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void local_swe_source_kernel(const RKStepper& stepper, ElementType& elt);
-
-    template <typename InterfaceType>
-    static void local_swe_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
-
-    template <typename BoundaryType>
-    static void local_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
-
-    template <typename DistributedBoundaryType>
-    static void local_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
-
-    /* local step */
+    /* global step end */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);
