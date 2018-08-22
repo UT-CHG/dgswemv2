@@ -117,14 +117,17 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto h2 = cwise_multiplication(h, h);
     auto h3 = cwise_multiplication(h2, h);
 
-    auto dbath_dx = row(internal.dbath_at_gp, GlobalCoord::x);
-    auto dbath_dy = row(internal.dbath_at_gp, GlobalCoord::y);
+    auto bx = row(internal.dbath_at_gp, GlobalCoord::x);
+    auto by = row(internal.dbath_at_gp, GlobalCoord::y);
 
-    auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
-    auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
+    auto zex = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
+    auto zey = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
 
-    auto dh_dx = dze_dx + dbath_dx;
-    auto dh_dy = dze_dy + dbath_dy;
+    auto hx = zex + bx;
+    auto hy = zey + by;
+
+    auto u = row(internal.u_at_gp, GlobalCoord::x);
+    auto v = row(internal.u_at_gp, GlobalCoord::y);
 
     auto ux = row(internal.du_at_gp, GN::DU::ux);
     auto uy = row(internal.du_at_gp, GN::DU::uy);
@@ -140,6 +143,20 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto vyx = row(internal.ddu_at_gp, GN::DDU::vyx);
     auto vyy = row(internal.ddu_at_gp, GN::DDU::vyy);
 
+    auto bxx = row(internal.ddbath_at_gp, GN::DDBath::bxx);
+    auto bxy = row(internal.ddbath_at_gp, GN::DDBath::bxy);
+    auto byx = row(internal.ddbath_at_gp, GN::DDBath::byx);
+    auto byy = row(internal.ddbath_at_gp, GN::DDBath::byy);
+
+    auto bxxx = row(internal.dddbath_at_gp, GN::DDDBath::bxxx);
+    auto bxxy = row(internal.dddbath_at_gp, GN::DDDBath::bxxy);
+    auto bxyx = row(internal.dddbath_at_gp, GN::DDDBath::bxyx);
+    auto bxyy = row(internal.dddbath_at_gp, GN::DDDBath::bxyy);
+    auto byxx = row(internal.dddbath_at_gp, GN::DDDBath::byxx);
+    auto byxy = row(internal.dddbath_at_gp, GN::DDDBath::byxy);
+    auto byyx = row(internal.dddbath_at_gp, GN::DDDBath::byyx);
+    auto byyy = row(internal.dddbath_at_gp, GN::DDDBath::byyy);
+
     auto c1 = cwise_multiplication(vx, uy) + cwise_multiplication(ux, ux) + cwise_multiplication(ux, vy) +
               cwise_multiplication(vy, vy);
 
@@ -149,15 +166,43 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto c3 = cwise_multiplication(uy, vxy) + cwise_multiplication(vx, uyy) + 2.0 * cwise_multiplication(ux, uxy) +
               cwise_multiplication(vy, uxy) + cwise_multiplication(ux, vyy) + 2.0 * cwise_multiplication(vy, vyy);
 
+    auto c4 =
+        cwise_multiplication(cwise_multiplication(u, u), bxx) + cwise_multiplication(cwise_multiplication(u, v), bxy) +
+        cwise_multiplication(cwise_multiplication(u, v), byx) + cwise_multiplication(cwise_multiplication(v, v), byy);
+
+    auto c5 = 2.0 * cwise_multiplication(cwise_multiplication(u, ux), bxx) +
+              cwise_multiplication(cwise_multiplication(u, u), bxxx) +
+              cwise_multiplication(cwise_multiplication(ux, v), bxy) +
+              cwise_multiplication(cwise_multiplication(u, vx), bxy) +
+              cwise_multiplication(cwise_multiplication(u, v), bxyx) +
+              cwise_multiplication(cwise_multiplication(ux, v), byx) +
+              cwise_multiplication(cwise_multiplication(u, vx), byx) +
+              cwise_multiplication(cwise_multiplication(u, v), byxx) +
+              2.0 * cwise_multiplication(cwise_multiplication(v, vx), byy) +
+              cwise_multiplication(cwise_multiplication(v, v), byyx);
+
+    auto c6 = 2.0 * cwise_multiplication(cwise_multiplication(u, uy), bxx) +
+              cwise_multiplication(cwise_multiplication(u, u), bxxy) +
+              cwise_multiplication(cwise_multiplication(uy, v), bxy) +
+              cwise_multiplication(cwise_multiplication(u, vy), bxy) +
+              cwise_multiplication(cwise_multiplication(u, v), bxyy) +
+              cwise_multiplication(cwise_multiplication(uy, v), byx) +
+              cwise_multiplication(cwise_multiplication(u, vy), byx) +
+              cwise_multiplication(cwise_multiplication(u, v), byxy) +
+              2.0 * cwise_multiplication(cwise_multiplication(v, vy), byy) +
+              cwise_multiplication(cwise_multiplication(v, v), byyy);
+
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::x) =
-        2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dx) + 2.0 / 3.0 * cwise_multiplication(h3, c2) +
-        cwise_multiplication(cwise_multiplication(h2, c1), dbath_dx) +
-        Global::g / NDParameters::alpha * cwise_multiplication(dze_dx, h);
+        2.0 * cwise_multiplication(cwise_multiplication(h2, c1), hx) + 2.0 / 3.0 * cwise_multiplication(h3, c2) +
+        cwise_multiplication(cwise_multiplication(h, c4), hx) + 1.0 / 2.0 * cwise_multiplication(h2, c5) +
+        cwise_multiplication(cwise_multiplication(h2, c1), bx) + cwise_multiplication(cwise_multiplication(h, c4), bx) +
+        Global::g / NDParameters::alpha * cwise_multiplication(zex, h);
 
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::y) =
-        2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dy) + 2.0 / 3.0 * cwise_multiplication(h3, c3) +
-        cwise_multiplication(cwise_multiplication(h2, c1), dbath_dy) +
-        Global::g / NDParameters::alpha * cwise_multiplication(dze_dy, h);
+        2.0 * cwise_multiplication(cwise_multiplication(h2, c1), hy) + 2.0 / 3.0 * cwise_multiplication(h3, c3) +
+        cwise_multiplication(cwise_multiplication(h, c4), hy) + 1.0 / 2.0 * cwise_multiplication(h2, c6) +
+        cwise_multiplication(cwise_multiplication(h2, c1), by) + cwise_multiplication(cwise_multiplication(h, c4), by) +
+        Global::g / NDParameters::alpha * cwise_multiplication(zey, h);
 
     for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
         subvector(internal.w1_rhs, GN::n_dimensions * dof, GN::n_dimensions) =
