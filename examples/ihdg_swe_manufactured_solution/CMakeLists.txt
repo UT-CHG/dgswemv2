@@ -10,7 +10,7 @@ add_executable(
 target_include_directories(IHDG_MANUFACTURED_SOLUTION_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
 target_link_libraries(IHDG_MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
-#[[if(USE_OMPI)
+if(USE_OMPI)
   add_executable(
     IHDG_MANUFACTURED_SOLUTION_OMPI
     ${PROJECT_SOURCE_DIR}/examples/ihdg_swe_manufactured_solution/manufactured_ompi_main_swe.cpp
@@ -27,7 +27,7 @@ target_link_libraries(IHDG_MANUFACTURED_SOLUTION_SERIAL ${YAML_CPP_LIBRARIES} ${
   install(TARGETS IHDG_MANUFACTURED_SOLUTION_OMPI DESTINATION bin)
 endif()
 
-if(USE_HPX)
+#[[if(USE_HPX)
   add_executable(
     IHDG_MANUFACTURED_SOLUTION_HPX
     ${PROJECT_SOURCE_DIR}/examples/ihdg_swe_manufactured_solution/manufactured_hpx_main_swe.cpp

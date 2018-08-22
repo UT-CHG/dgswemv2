@@ -98,6 +98,9 @@ struct Problem {
     static void serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
                                            const ProblemInputType& problem_specific_input);
 
+    template <typename OMPISimUnitType>
+    static void ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
     static void initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
@@ -109,6 +112,9 @@ struct Problem {
 
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* local step begin */
 

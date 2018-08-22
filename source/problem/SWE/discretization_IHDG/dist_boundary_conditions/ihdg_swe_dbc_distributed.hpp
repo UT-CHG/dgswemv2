@@ -3,7 +3,7 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
-#include "ihdg_swe_dbc_db_data_exch.hpp"
+#include "communication/db_data_exchanger.hpp"
 
 namespace SWE {
 namespace IHDG {

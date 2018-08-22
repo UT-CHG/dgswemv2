@@ -1,13 +1,9 @@
-#ifndef RKDG_SWE_DBC_DB_DATA_EXCH_HPP
-#define RKDG_SWE_DBC_DB_DATA_EXCH_HPP
+#ifndef DB_DATA_EXCH_HPP
+#define DB_DATA_EXCH_HPP
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
 
-namespace SWE {
-namespace RKDG {
-namespace DBC {
 class DBDataExchanger {
   private:
     std::vector<uint> offset;
@@ -38,9 +34,6 @@ void DBDataExchanger::GetFromReceiveBuffer(const uint comm_type, std::vector<dou
     std::copy(this->receive_buffer[comm_type].begin() + this->offset[comm_type],
               this->receive_buffer[comm_type].begin() + this->offset[comm_type] + message.size(),
               message.begin());
-}
-}
-}
 }
 
 #endif

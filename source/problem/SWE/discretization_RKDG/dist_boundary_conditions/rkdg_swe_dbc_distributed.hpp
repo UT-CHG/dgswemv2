@@ -3,8 +3,8 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
+#include "communication/db_data_exchanger.hpp"
 #include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
-#include "rkdg_swe_dbc_db_data_exch.hpp"
 
 namespace SWE {
 namespace RKDG {
