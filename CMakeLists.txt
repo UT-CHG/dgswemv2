@@ -126,8 +126,8 @@ if(EHDG_GN)
 endif()
 
 if(IHDG_GN)
-  add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
+  #[[add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ihdg_gn_analytical_solution)
-  endif()
+  endif()]]
 endif()
