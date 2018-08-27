@@ -23,7 +23,7 @@ struct HPXSimulationUnit
 
     typename ProblemType::ProblemInputType problem_input;
 
-    std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
+    // std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
     HPXSimulationUnit() = default;
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
@@ -46,14 +46,14 @@ struct HPXSimulationUnit
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 
-    template <typename Archive>
+    /*template <typename Archive>
     void save(Archive& ar, unsigned) const;
 
     template <typename Archive>
     void load(Archive& ar, unsigned);
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
-    void on_migrated();  // Do not rename this is overload member of the base class
+    void on_migrated();  // Do not rename this is overload member of the base class*/
 };
 
 template <typename ProblemType>
@@ -78,8 +78,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
     this->problem_input = input.problem_input;
 
-    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
-        locality_id, submesh_id, input.load_balancer_input);
+    // this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
+    //    locality_id, submesh_id, input.load_balancer_input);
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
@@ -140,7 +140,7 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
     return residual_L2;
 }
 
-template <typename ProblemType>
+/*template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
     if (this->writer.WritingVerboseLog()) {
@@ -181,7 +181,7 @@ void HPXSimulationUnit<ProblemType>::on_migrated() {
 
     initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(
         discretization.mesh, problem_input, communicator, writer);
-}
+}*/
 
 template <typename ProblemType>
 class HPXSimulationUnitClient

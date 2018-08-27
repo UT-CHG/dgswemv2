@@ -104,12 +104,9 @@ struct Problem {
     template <typename HPXSimUnitType>
     static decltype(auto) hpx_preprocessor_kernel(HPXSimUnitType* sim_unit);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    static void initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const ProblemInputType& problem_specific_input);
-
-    static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
+    static void initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
 

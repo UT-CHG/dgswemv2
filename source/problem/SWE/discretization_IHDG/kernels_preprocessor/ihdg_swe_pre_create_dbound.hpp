@@ -53,7 +53,7 @@ void Problem::create_distributed_boundaries_kernel(
             offset[SWE::CommTypes::postprocessor] = begin_index[SWE::CommTypes::postprocessor];
 
             begin_index[SWE::CommTypes::preprocessor] += 1;
-            begin_index[SWE::CommTypes::processor] += 0; // there's no proc comm
+            begin_index[SWE::CommTypes::processor] += 0;      // there's no proc comm
             begin_index[SWE::CommTypes::postprocessor] += 0;  // there's no postproc comm
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
@@ -65,8 +65,7 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(
-                        DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
+                    DBC::Distributed(DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
 
                 n_distributed++;
 

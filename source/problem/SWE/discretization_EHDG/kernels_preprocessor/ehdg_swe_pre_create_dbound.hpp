@@ -77,8 +77,7 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(
-                        DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
+                    DBC::Distributed(DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
 
                 n_distributed++;
 

@@ -101,12 +101,9 @@ struct Problem {
     template <typename OMPISimUnitType>
     static void ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    static void initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const ProblemInputType& problem_specific_input);
-
-    static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
+    static void initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
 
