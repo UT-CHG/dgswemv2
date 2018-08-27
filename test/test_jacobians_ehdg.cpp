@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::EHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::EHDG::Problem::initialize_data_kernel(mesh, input.problem_input);
+    SWE::EHDG::Problem::initialize_data_serial_kernel(mesh, input.problem_input);
 
     mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
