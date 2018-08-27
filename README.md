@@ -99,12 +99,14 @@ Note that by default `RKDG_SWE` is set to `On` and associated targets will be bu
 
 ## License
 
-DGSWEM V2 is licensed under the MIT license. The following files have been taken from other repositories. Their licenses are inlined within the files:
+DGSWEM V2 is licensed under the MIT license. The following files have been copied (and potentially modified) from other repositories. Their licenses are inlined within the files:
 
  - `cmake/modules/FindMETIS.cmake`
  - `documentation/doxygen-bootstrapped/customdoxygen.css`
  - `documentation/doxygen-bootstrapped/doxy-boot.js`
  - `documentation/doxygen-bootstrapped/footer.html`
  - `documentation/doxygen-bootstrapped/header.html`
+ - `source/utilities/linear_algebra/serialization/blaze_vector.hpp`
+ - `source/utilities/linear_algebra/serialization/blaze_matrix.hpp`
 
 N.B. The files in `documentation/doxygen-boostrapped` are taken from `feature/support-doxygen-1.1.12+` branch of the [Velron/doxygen-bootstrapped](https://github.com/Velron/doxygen-bootstrapped) repository. The copy of the Apache-2.0 licesnse can be found in `documentation/doxygen-bootstrapped/APACHE_2.0_LICENSE` of this repository or in the original repository.

@@ -538,4 +538,19 @@ if(USE_HPX)
     test_blaze_serialization_exe
   )
 
+  add_executable(
+    test_eigen_serialization_exe
+    test_eigen_serialization.cpp
+  )
+
+  set_target_properties(test_eigen_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_eigen_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_eigen_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_eigen_serialization
+    test_eigen_serialization_exe
+  )
+
 endif()

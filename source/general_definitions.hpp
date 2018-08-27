@@ -27,7 +27,6 @@
 #include "edge_types.hpp"
 
 #ifdef HAS_HPX
-#include "utilities/blaze_serialization.hpp"
 #include "simulation/hpx/load_balancer/serialization_headers.hpp"
 #endif
 
