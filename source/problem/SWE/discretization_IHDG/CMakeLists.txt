@@ -54,6 +54,8 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )
 
+  set_target_properties(RKDG_SWE_HPX PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
   hpx_setup_target(
     IHDG_SWE_HPX
     COMPONENT_DEPENDENCIES iostreams
