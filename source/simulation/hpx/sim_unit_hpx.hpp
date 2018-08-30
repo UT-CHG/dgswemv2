@@ -114,6 +114,10 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
+    if (this->parser.ParsingInput()) {
+        this->parser.ParseInput(this->stepper, this->discretization.mesh);
+    }
+
     return ProblemType::hpx_stage_kernel(this);
 }
 

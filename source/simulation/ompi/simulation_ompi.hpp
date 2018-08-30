@@ -87,6 +87,13 @@ void OMPISimulation<ProblemType>::Run() {
 
         for (uint step = 1; step <= this->n_steps; step++) {
             for (uint stage = 0; stage < this->n_stages; stage++) {
+                for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+                    if (this->sim_units[su_id]->parser.ParsingInput()) {
+                        this->sim_units[su_id]->parser.ParseInput(this->sim_units[su_id]->stepper,
+                                                                  this->sim_units[su_id]->discretization.mesh);
+                    }
+                }
+
                 ProblemType::ompi_stage_kernel(this->sim_units);
             }
 

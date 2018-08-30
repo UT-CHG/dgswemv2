@@ -36,10 +36,11 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
 
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
-        global_dof_offset += edge_int.edge_data.get_ndof();
 
         boundary_in.global_dof_offset = global_dof_offset;
         boundary_ex.global_dof_offset = global_dof_offset;
+
+        global_dof_offset += edge_int.edge_data.get_ndof();
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(GN::n_variables * edge_int.edge_data.get_ndof(),
@@ -82,9 +83,10 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
 
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
-        global_dof_offset += edge_bound.edge_data.get_ndof();
 
         boundary.global_dof_offset = global_dof_offset;
+
+        global_dof_offset += edge_bound.edge_data.get_ndof();
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(GN::n_variables * edge_bound.edge_data.get_ndof(),

@@ -28,14 +28,6 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
         sim_unit->writer.GetLogFile() << "Starting work before receive" << std::endl;
     }
 
-    if (sim_unit->parser.ParsingInput()) {
-        if (sim_unit->writer.WritingVerboseLog()) {
-            sim_unit->writer.GetLogFile() << "Parsing input" << std::endl;
-        }
-
-        sim_unit->parser.ParseInput(sim_unit->stepper, sim_unit->discretization.mesh);
-    }
-
     /* Global Pre Receive Step */
     sim_unit->discretization.mesh.CallForEachInterface(
         [sim_unit](auto& intface) { Problem::global_interface_kernel(sim_unit->stepper, intface); });

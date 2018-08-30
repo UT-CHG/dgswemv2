@@ -42,14 +42,6 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             sim_units[su_id]->writer.GetLogFile() << "Starting work before receive" << std::endl;
         }
 
-        if (sim_units[su_id]->parser.ParsingInput()) {
-            if (sim_units[su_id]->writer.WritingVerboseLog()) {
-                sim_units[su_id]->writer.GetLogFile() << "Parsing input" << std::endl;
-            }
-
-            sim_units[su_id]->parser.ParseInput(sim_units[su_id]->stepper, sim_units[su_id]->discretization.mesh);
-        }
-
         sim_units[su_id]->discretization.mesh.CallForEachElement(
             [&sim_units, su_id](auto& elt) { Problem::volume_kernel(sim_units[su_id]->stepper, elt); });
 

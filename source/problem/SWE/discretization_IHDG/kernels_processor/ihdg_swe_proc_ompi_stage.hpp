@@ -9,7 +9,7 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
 void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    /*uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
+    uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
 
     n_threads = (uint)omp_get_num_threads();
     thread_id = (uint)omp_get_thread_num();
@@ -20,121 +20,91 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        if (sim_units[su_id]->writer.WritingVerboseLog()) {
-            sim_units[su_id]->writer.GetLogFile()
-                << "Current (time, stage): (" << sim_units[su_id]->stepper.GetTimeAtCurrentStage() << ','
-                << sim_units[su_id]->stepper.GetStage() << ')' << std::endl;
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            const uint stage = sim_units[su_id]->stepper.GetStage();
 
-            sim_units[su_id]->writer.GetLogFile() << "Exchanging data" << std::endl;
+            auto& state      = elt.data.state[stage + 1];
+            auto& state_prev = elt.data.state[stage];
+            auto& internal   = elt.data.internal;
+
+            state.q = state_prev.q;
+
+            internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
+        });
+    }
+
+    uint iter = 0;
+    while (true) {
+        iter++;
+
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            /* Local Step */
+            sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [&sim_units, su_id](auto& elt) { Problem::local_volume_kernel(sim_units[su_id]->stepper, elt); });
+
+            sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [&sim_units, su_id](auto& elt) { Problem::local_source_kernel(sim_units[su_id]->stepper, elt); });
+
+            sim_units[su_id]->discretization.mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
+                Problem::local_interface_kernel(sim_units[su_id]->stepper, intface);
+            });
+
+            sim_units[su_id]->discretization.mesh.CallForEachBoundary(
+                [&sim_units, su_id](auto& bound) { Problem::local_boundary_kernel(sim_units[su_id]->stepper, bound); });
+
+            sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
+                Problem::local_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
+            });
+
+            sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
+                [&sim_units, su_id](auto& edge_int) {
+                    Problem::local_edge_interface_kernel(sim_units[su_id]->stepper, edge_int);
+                });
+
+            sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary(
+                [&sim_units, su_id](auto& edge_bound) {
+                    Problem::local_edge_boundary_kernel(sim_units[su_id]->stepper, edge_bound);
+                });
+
+            sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
+                [&sim_units, su_id](auto& edge_dbound) {
+                    Problem::local_edge_distributed_kernel(sim_units[su_id]->stepper, edge_dbound);
+                });
+            /* Local Step */
+
+            /* Global Step */
+            sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
+                [&sim_units, su_id](auto& edge_int) {
+                    Problem::global_edge_interface_kernel(sim_units[su_id]->stepper, edge_int);
+                });
+
+            sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary(
+                [&sim_units, su_id](auto& edge_bound) {
+                    Problem::global_edge_boundary_kernel(sim_units[su_id]->stepper, edge_bound);
+                });
+
+            sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
+                [&sim_units, su_id](auto& edge_dbound) {
+                    Problem::global_edge_distributed_kernel(sim_units[su_id]->stepper, edge_dbound);
+                });
+            /* Global Step */
         }
 
-        sim_units[su_id]->communicator.ReceiveAll(SWE::CommTypes::processor, sim_units[su_id]->stepper.GetTimestamp());
-
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
-            Problem::global_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
-        });
-
-        sim_units[su_id]->communicator.SendAll(SWE::CommTypes::processor, sim_units[su_id]->stepper.GetTimestamp());
+        if (iter == 10) {
+            break;
+        }
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        if (sim_units[su_id]->writer.WritingVerboseLog()) {
-            sim_units[su_id]->writer.GetLogFile() << "Starting work before receive" << std::endl;
-        }
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            bool nan_found = Problem::scrutinize_solution_kernel(sim_units[su_id]->stepper, elt);
 
-        if (sim_units[su_id]->parser.ParsingInput()) {
-            if (sim_units[su_id]->writer.WritingVerboseLog()) {
-                sim_units[su_id]->writer.GetLogFile() << "Parsing input" << std::endl;
-            }
-
-            sim_units[su_id]->parser.ParseInput(sim_units[su_id]->stepper, sim_units[su_id]->discretization.mesh);
-        }
-
-        /* Global Pre Receive Step */
-    /*sim_units[su_id]->discretization.mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
-        Problem::global_interface_kernel(sim_units[su_id]->stepper, intface);
-    });
-
-    sim_units[su_id]->discretization.mesh.CallForEachBoundary(
-        [&sim_units, su_id](auto& bound) { Problem::global_boundary_kernel(sim_units[su_id]->stepper, bound); });
-
-    sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&sim_units, su_id](auto& edge_int) {
-        Problem::global_edge_interface_kernel(sim_units[su_id]->stepper, edge_int);
-    });
-
-    sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary([&sim_units, su_id](auto& edge_bound) {
-        Problem::global_edge_boundary_kernel(sim_units[su_id]->stepper, edge_bound);
-    });
-    /* Global Pre Receive Step */
-
-    /* Local Pre Receive Step */
-    /*sim_units[su_id]->discretization.mesh.CallForEachElement(
-        [&sim_units, su_id](auto& elt) { Problem::local_volume_kernel(sim_units[su_id]->stepper, elt); });
-
-    sim_units[su_id]->discretization.mesh.CallForEachElement(
-        [&sim_units, su_id](auto& elt) { Problem::local_source_kernel(sim_units[su_id]->stepper, elt); });
-
-    sim_units[su_id]->discretization.mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
-        Problem::local_interface_kernel(sim_units[su_id]->stepper, intface);
-    });
-
-    sim_units[su_id]->discretization.mesh.CallForEachBoundary(
-        [&sim_units, su_id](auto& bound) { Problem::local_boundary_kernel(sim_units[su_id]->stepper, bound); });
-    /* Local Pre Receive Step */
-
-    /*if (sim_units[su_id]->writer.WritingVerboseLog()) {
-        sim_units[su_id]->writer.GetLogFile() << "Finished work before receive" << std::endl;
-    }
-}
-
-for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-    if (sim_units[su_id]->writer.WritingVerboseLog()) {
-        sim_units[su_id]->writer.GetLogFile()
-            << "Starting to wait on receive with timestamp: " << sim_units[su_id]->stepper.GetTimestamp()
-            << std::endl;
-    }
-
-    sim_units[su_id]->communicator.WaitAllReceives(SWE::CommTypes::processor,
-                                                   sim_units[su_id]->stepper.GetTimestamp());
-
-    if (sim_units[su_id]->writer.WritingVerboseLog()) {
-        sim_units[su_id]->writer.GetLogFile() << "Starting work after receive" << std::endl;
-    }
-
-    /* Global Post Receive Step */
-    /*sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
-        [&sim_units, su_id](auto& edge_dbound) {
-            Problem::global_edge_distributed_kernel(sim_units[su_id]->stepper, edge_dbound);
+            if (nan_found)
+                MPI_Abort(MPI_COMM_WORLD, 0);
         });
-    /* Global Post Receive Step */
 
-    /* Local Post Receive Step */
-    /*sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
-        Problem::local_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
-    });
-
-    sim_units[su_id]->discretization.mesh.CallForEachElement(
-        [&sim_units, su_id](auto& elt) { Problem::update_kernel(sim_units[su_id]->stepper, elt); });
-
-    sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-        bool nan_found = Problem::scrutinize_solution_kernel(sim_units[su_id]->stepper, elt);
-
-        if (nan_found)
-            MPI_Abort(MPI_COMM_WORLD, 0);
-    });
-    /* Local Post Receive Step */
-
-    /*++(sim_units[su_id]->stepper);
-
-    if (sim_units[su_id]->writer.WritingVerboseLog()) {
-        sim_units[su_id]->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
+        ++(sim_units[su_id]->stepper);
     }
-}
-
-for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-    sim_units[su_id]->communicator.WaitAllSends(SWE::CommTypes::processor,
-                                                sim_units[su_id]->stepper.GetTimestamp());
-}*/
 }
 }
 }

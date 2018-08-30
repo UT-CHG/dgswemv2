@@ -1,7 +1,6 @@
 #ifndef IHDG_SWE_PROC_EDGE_BOUND_HPP
 #define IHDG_SWE_PROC_EDGE_BOUND_HPP
 
-#include <eigen3/Eigen/Dense>
 #include "problem/SWE/discretization_IHDG/stabilization_parameters/ihdg_swe_stabilization_params.hpp"
 
 namespace SWE {
