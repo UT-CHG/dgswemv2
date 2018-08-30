@@ -37,6 +37,8 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
   )
 
+  set_target_properties(EHDG_MANUFACTURED_SOLUTION_HPX PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
   hpx_setup_target(
     EHDG_MANUFACTURED_SOLUTION_HPX
     COMPONENT_DEPENDENCIES iostreams
