@@ -127,8 +127,7 @@ WorldModel<ProblemType>::WorldModel(const std::string& input_string) {
 
 template <typename ProblemType>
 void WorldModel<ProblemType>::MigrateOneSubmesh() {
-    if (false) {
-        //    if ( !this->tried_moving_one_tile ) {
+    if (!this->tried_moving_one_tile) {
         const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
         client_locality_id_pair& curr_target =
@@ -138,6 +137,8 @@ void WorldModel<ProblemType>::MigrateOneSubmesh() {
         curr_target.first           = hpx::components::migrate(curr_target.first, localities[target_locality]);
         curr_target.second          = target_locality;
         this->tried_moving_one_tile = true;
+
+        std::cout << "Moving submesh" << std::endl;
     }
 }
 

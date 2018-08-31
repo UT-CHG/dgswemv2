@@ -19,10 +19,9 @@ struct Boundary {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        /*ar  & q_at_gp
-            & bath_at_gp
-            & h_at_gp
-            & F_hat_at_gp;*/
+        ar  & q_at_gp
+            & aux_at_gp
+            & F_hat_at_gp;
         // clang-format on
     }
 #endif

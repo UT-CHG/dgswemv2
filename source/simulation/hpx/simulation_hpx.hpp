@@ -63,8 +63,8 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
     this->n_stages = input.stepper_input.nstages;
 
-    // hpx::future<void> lb_future =
-    //    LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
+    hpx::future<void> lb_future =
+        LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);
 
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
@@ -72,21 +72,21 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
     std::string submesh_file_postfix = input.mesh_input.mesh_file_name.substr(
         input.mesh_input.mesh_file_name.find_last_of('.'), input.mesh_input.mesh_file_name.size());
 
-    // std::vector<hpx::future<void>> registration_futures;
+    std::vector<hpx::future<void>> registration_futures;
 
     uint submesh_id = 0;
     while (Utilities::file_exists(submesh_file_prefix + std::to_string(submesh_id) + submesh_file_postfix)) {
         this->simulation_unit_clients.emplace_back(hpx::new_<ClientType>(here, input_string, locality_id, submesh_id));
 
-        // registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-        //    std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
+        registration_futures.push_back(this->simulation_unit_clients.back().register_as(
+            std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
 
         ++submesh_id;
     }
 
-    // hpx::when_all(registration_futures).get();
+    hpx::when_all(registration_futures).get();
 
-    // lb_future.get();
+    lb_future.get();
 }
 
 template <typename ProblemType>
@@ -103,19 +103,10 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint stage = 0; stage < this->n_stages; stage++) {
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
-                    f.get();  // check for exceptions
-                    return this->simulation_unit_clients[sim_id].Stage();
-                });
-            }
-        }
-
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
             simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
                 f.get();  // check for exceptions
-                return this->simulation_unit_clients[sim_id].SwapStates();
+                return this->simulation_unit_clients[sim_id].Step();
             });
         }
     }

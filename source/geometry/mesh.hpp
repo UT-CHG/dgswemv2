@@ -86,9 +86,8 @@ class Mesh<std::tuple<Elements...>,
         // clang-format off
         ar  & mesh_name
             & p;
-
-        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
         // clang-format on
+        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
     }
 #endif
 };

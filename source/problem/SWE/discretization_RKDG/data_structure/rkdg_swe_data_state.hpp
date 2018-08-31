@@ -23,10 +23,10 @@ struct State {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        /*ar  & q
-            & bath
+        ar  & q
+            & aux
             & rhs
-            & solution;*/
+            & solution;
         // clang-format on
     }
 #endif

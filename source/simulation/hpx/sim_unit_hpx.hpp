@@ -23,7 +23,7 @@ struct HPXSimulationUnit
 
     typename ProblemType::ProblemInputType problem_input;
 
-    // std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
+    std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
     HPXSimulationUnit() = default;
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
@@ -37,23 +37,23 @@ struct HPXSimulationUnit
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
 
-    hpx::future<void> Stage();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
-
-    void SwapStates();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, SwapStates, SwapStatesAction);
+    hpx::future<void> Step();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
 
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 
-    /*template <typename Archive>
+    template <typename Archive>
     void save(Archive& ar, unsigned) const;
 
     template <typename Archive>
     void load(Archive& ar, unsigned);
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
-    void on_migrated();  // Do not rename this is overload member of the base class*/
+    void on_migrated();  // Do not rename this is overload member of the base class
+
+  private:
+    void SwapStates();
 };
 
 template <typename ProblemType>
@@ -78,8 +78,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
     this->problem_input = input.problem_input;
 
-    // this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
-    //    locality_id, submesh_id, input.load_balancer_input);
+    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
+        locality_id, submesh_id, input.load_balancer_input);
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
@@ -113,12 +113,27 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
-    if (this->parser.ParsingInput()) {
-        this->parser.ParseInput(this->stepper, this->discretization.mesh);
+
+hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
+    hpx::future<void> step_future = hpx::make_ready_future();
+
+    for (uint stage = 0; stage < this->stepper.GetNumStages(); stage++) {
+        step_future = step_future.then([this](auto&& f) {
+            f.get();
+            if (this->parser.ParsingInput()) {
+                this->parser.ParseInput(this->stepper, this->discretization.mesh);
+            }
+            return ProblemType::hpx_stage_kernel(this);
+        });
     }
 
-    return ProblemType::hpx_stage_kernel(this);
+    return step_future.then([this](auto&& f) {
+        f.get();
+        if (this->submesh_model) {
+            this->submesh_model->InStep(0, 0);
+        }
+        this->SwapStates();
+    });
 }
 
 template <typename ProblemType>
@@ -144,20 +159,20 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
     return residual_L2;
 }
 
-/*template <typename ProblemType>
+template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
     if (this->writer.WritingVerboseLog()) {
         this->writer.GetLogFile() << "Departing from locality " << hpx::get_locality_id() << std::endl;
     }
 
-    ar& stepper& writer& discretization.mesh& problem_input& parser& communicator& submesh_model;
+    ar& stepper& writer& discretization& problem_input& parser& communicator& submesh_model;
 }
 
 template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
-    ar& stepper& writer& discretization.mesh& problem_input& parser& communicator& submesh_model;
+    ar& stepper& writer& discretization& problem_input& parser& communicator& submesh_model;
 
     this->writer.StartLog();
 
@@ -185,7 +200,7 @@ void HPXSimulationUnit<ProblemType>::on_migrated() {
 
     initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(
         discretization.mesh, problem_input, communicator, writer);
-}*/
+}
 
 template <typename ProblemType>
 class HPXSimulationUnitClient
@@ -210,13 +225,8 @@ class HPXSimulationUnitClient
         return hpx::async<ActionType>(this->get_id());
     }
 
-    hpx::future<void> Stage() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> SwapStates() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::SwapStatesAction;
+    hpx::future<void> Step() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::StepAction;
         return hpx::async<ActionType>(this->get_id());
     }
 

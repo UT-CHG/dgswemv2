@@ -58,7 +58,7 @@ struct SlopeLimit {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        /*ar  & surface_normal
+        ar  & surface_normal
             & baryctr_coord
             & midpts_coord
             & baryctr_coord_neigh
@@ -74,12 +74,12 @@ struct SlopeLimit {
             & bath_at_midpts
             & wet_neigh
             & q_at_baryctr_neigh
+            & L
+            & R
             & w_midpt_char
             & w_baryctr_char
             & delta_char
-            & delta
-            & L
-            & R;*/
+            & delta;
         // clang-format on
     }
 #endif
