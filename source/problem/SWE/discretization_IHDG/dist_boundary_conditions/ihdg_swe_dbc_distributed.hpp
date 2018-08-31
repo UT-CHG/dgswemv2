@@ -26,7 +26,15 @@ class Distributed {
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
 
 template <typename EdgeDistributedType>
-void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {}
+void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+    auto& edge_internal = edge_dbound.edge_data.edge_internal;
+
+    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+
+    boundary.delta_global_kernel_at_gp          = boundary.dF_hat_dq_at_gp;
+    edge_internal.delta_hat_global_kernel_at_gp = boundary.dF_hat_dq_hat_at_gp;
+    edge_internal.rhs_global_kernel_at_gp       = boundary.F_hat_at_gp;
+}
 }
 }
 }

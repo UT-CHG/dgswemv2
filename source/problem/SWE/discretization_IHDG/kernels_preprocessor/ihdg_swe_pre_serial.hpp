@@ -9,7 +9,7 @@ void Problem::serial_preprocessor_kernel(ProblemDiscretizationType& discretizati
                                          const ProblemInputType& problem_specific_input) {
     Problem::initialize_data_serial_kernel(discretization.mesh, problem_specific_input);
 
-    Problem::initialize_global_problem(discretization);
+    Problem::initialize_global_problem_serial_kernel(discretization);
 }
 }
 }

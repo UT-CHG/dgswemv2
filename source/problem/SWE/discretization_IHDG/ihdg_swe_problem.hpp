@@ -105,7 +105,21 @@ struct Problem {
 
     static void initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
+    static void initialize_global_problem_serial_kernel(HDGDiscretization<Problem>& discretization);
+
+    template <typename Communicator>
+    static void initialize_global_problem_parallel_pre_send_kernel(HDGDiscretization<Problem>& discretization,
+                                                                   Communicator& communicator,
+                                                                   uint& local_dof_offset,
+                                                                   uint& global_dof_offset);
+
+    static void initialize_global_problem_parallel_finalize_pre_send_kernel(HDGDiscretization<Problem>& discretization,
+                                                                            uint local_dof_offset,
+                                                                            uint global_dof_offset);
+
+    template <typename Communicator>
+    static void initialize_global_problem_parallel_post_receive_kernel(HDGDiscretization<Problem>& discretization,
+                                                                       Communicator& communicator);
 
     // processor kernels
     static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
@@ -148,6 +162,9 @@ struct Problem {
 
     template <typename EdgeBoundaryType>
     static void global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename EdgeDistributedType>
+    static void global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_bound);
 
     static bool solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
 
