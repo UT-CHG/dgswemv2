@@ -1,7 +1,9 @@
 #ifndef ALMOST_EQUAL_HPP
 #define ALMOST_EQUAL_HPP
 
-#include "general_definitions.hpp"
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
 namespace Utilities {
 /**

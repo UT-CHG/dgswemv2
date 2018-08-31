@@ -52,9 +52,12 @@ class Triangle : public Master<2> {
      */
     std::vector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id, const std::vector<Point<1>>& z_boundary);
 
-    void ComputeLinearUbaryctr(const std::vector<double>& u_lin, double& u_lin_baryctr);
-    void ComputeLinearUmidpts(const std::vector<double>& u_lin, std::vector<double>& u_lin_midpts);
-    void ComputeLinearUvrtx(const std::vector<double>& u_lin, std::vector<double>& u_lin_vrtx);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 
   private:
     std::vector<Point<2>> VTKPostCell();

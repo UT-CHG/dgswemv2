@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
+#include "problem/Green-Naghdi/problem_input/gn_inputs.hpp"
 
 struct YamlNodeWrapper {
     YAML::Node node;
@@ -150,8 +151,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             this->stepper_input.T_start = {0};
             this->stepper_input.T_end   = {0};
 
-            strptime(start_time.c_str(), "%d-%m-%Y %H:%M", &this->stepper_input.T_start);
-            strptime(end_time.c_str(), "%d-%m-%Y %H:%M", &this->stepper_input.T_end);
+            strptime(start_time.c_str(), "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_start);
+            strptime(end_time.c_str(), "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_end);
 
             this->stepper_input.run_time =
                 difftime(timegm(&this->stepper_input.T_end), timegm(&this->stepper_input.T_start));
@@ -313,11 +314,11 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
     output << YAML::Value << mesh;
 
     // Assemble timestepping information
-    char start_time_str[18];
-    char end_time_str[18];
+    char start_time_str[21];
+    char end_time_str[21];
 
-    strftime(start_time_str, 18, "%d-%m-%Y %H:%M", &this->stepper_input.T_start);
-    strftime(end_time_str, 18, "%d-%m-%Y %H:%M", &this->stepper_input.T_end);
+    strftime(start_time_str, 21, "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_start);
+    strftime(end_time_str, 21, "%d-%m-%Y %H:%M:%S", &this->stepper_input.T_end);
 
     YAML::Node timestepping;
     timestepping["start_time"] = std::string(start_time_str);
@@ -400,6 +401,18 @@ inline SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_
         return SWE::Inputs(swe_node);
     } else {
         std::string err_msg("Error: Shallow water type must specify a SWE yaml-node\n");
+        throw std::logic_error(err_msg);
+    }
+}
+
+template <>
+inline GN::Inputs InputParameters<typename GN::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
+    YAML::Node gn_node = input_file["problem"];
+
+    if (gn_node["name"].as<std::string>() == "green-naghdi") {
+        return GN::Inputs(gn_node);
+    } else {
+        std::string err_msg("Error: Green-Naghdi type must specify a GN yaml-node\n");
         throw std::logic_error(err_msg);
     }
 }

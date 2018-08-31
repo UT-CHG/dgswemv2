@@ -6,7 +6,6 @@
 #include "rkdg_swe_data_state.hpp"
 #include "rkdg_swe_data_internal.hpp"
 #include "rkdg_swe_data_boundary.hpp"
-#include "rkdg_swe_data_spherical.hpp"
 #include "rkdg_swe_data_source.hpp"
 #include "rkdg_swe_data_wet_dry.hpp"
 #include "rkdg_swe_data_slope_limit.hpp"
@@ -18,7 +17,6 @@ struct Data {
     Internal internal;
     std::vector<Boundary> boundary;
 
-    Spherical spherical_projection;
     Source source;
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
@@ -32,13 +30,11 @@ struct Data {
             this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
         }
 
-        this->spherical_projection = Spherical(this->nnode, this->nbound, this->ngp_internal, this->ngp_boundary);
-
         this->source = Source(this->nnode);
 
         this->wet_dry_state = WetDry(this->nvrtx);
 
-        this->slope_limit_state = SlopeLimit(this->nbound);
+        this->slope_limit_state = SlopeLimit(this->nvrtx, this->nbound);
     }
 
     void resize(const uint nstate) {
@@ -82,7 +78,6 @@ struct Data {
         ar  & state
             & internal
             & boundary
-            & spherical_projection
             & source
             & wet_dry_state
             & slope_limit_state

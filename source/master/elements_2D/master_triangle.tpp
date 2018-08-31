@@ -8,17 +8,47 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
 
     this->integration_rule = this->integration.GetRule(2 * this->p);
 
-    this->chi_gp = Array2D<double>(3, std::vector<double>(this->integration_rule.first.size()));
+    this->ndof = (p + 1) * (p + 2) / 2;
+    this->ngp  = this->integration_rule.first.size();
 
-    for (uint gp = 0; gp < this->integration_rule.first.size(); gp++) {
-        this->chi_gp[0][gp] = -(this->integration_rule.second[gp][LocalCoordTri::z1] +
+    this->chi_baryctr.resize(this->nvrtx);
+
+    this->chi_baryctr[0] = 1.0 / 3.0;
+    this->chi_baryctr[1] = 1.0 / 3.0;
+    this->chi_baryctr[2] = 1.0 / 3.0;
+
+    this->chi_midpts.resize(this->nvrtx, this->nbound);
+
+    this->chi_midpts(0, 0) = 0.0;
+    this->chi_midpts(0, 1) = 1.0 / 2.0;
+    this->chi_midpts(0, 2) = 1.0 / 2.0;
+    this->chi_midpts(1, 0) = 1.0 / 2.0;
+    this->chi_midpts(1, 1) = 0.0;
+    this->chi_midpts(1, 2) = 1.0 / 2.0;
+    this->chi_midpts(2, 0) = 1.0 / 2.0;
+    this->chi_midpts(2, 1) = 1.0 / 2.0;
+    this->chi_midpts(2, 2) = 0.0;
+
+    this->chi_gp.resize(this->nvrtx, this->ngp);
+    this->dchi_gp[LocalCoordTri::z1].resize(this->nvrtx, this->ngp);
+    this->dchi_gp[LocalCoordTri::z2].resize(this->nvrtx, this->ngp);
+
+    for (uint gp = 0; gp < this->ngp; gp++) {
+        this->chi_gp(0, gp) = -(this->integration_rule.second[gp][LocalCoordTri::z1] +
                                 this->integration_rule.second[gp][LocalCoordTri::z2]) /
                               2.0;
-        this->chi_gp[1][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z1]) / 2.0;
-        this->chi_gp[2][gp] = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
-    }
+        this->chi_gp(1, gp) = (1 + this->integration_rule.second[gp][LocalCoordTri::z1]) / 2.0;
+        this->chi_gp(2, gp) = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
 
-    this->dchi_gp = Array2D<double>{{-0.5, -0.5}, {0.5, 0.0}, {0.0, 0.5}};
+        this->dchi_gp[LocalCoordTri::z1](0, gp) = -0.5;
+        this->dchi_gp[LocalCoordTri::z2](0, gp) = -0.5;
+
+        this->dchi_gp[LocalCoordTri::z1](1, gp) = 0.5;
+        this->dchi_gp[LocalCoordTri::z2](1, gp) = 0.0;
+
+        this->dchi_gp[LocalCoordTri::z1](2, gp) = 0.0;
+        this->dchi_gp[LocalCoordTri::z2](2, gp) = 0.5;
+    }
 
     this->phi_gp  = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
@@ -29,18 +59,18 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     std::vector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
     this->phi_postprocessor_point               = this->basis.GetPhi(this->p, z_postprocessor_point);
 
-    this->int_phi_fact = this->phi_gp;
-    for (uint dof = 0; dof < this->int_phi_fact.size(); dof++) {
-        for (uint gp = 0; gp < this->int_phi_fact[dof].size(); gp++) {
-            this->int_phi_fact[dof][gp] *= this->integration_rule.first[gp];
+    this->int_phi_fact = transpose(this->phi_gp);
+    for (uint dof = 0; dof < this->ndof; dof++) {
+        for (uint gp = 0; gp < this->ngp; gp++) {
+            this->int_phi_fact(gp, dof) *= this->integration_rule.first[gp];
         }
     }
 
-    this->int_dphi_fact = this->dphi_gp;
-    for (uint dof = 0; dof < this->int_dphi_fact.size(); dof++) {
-        for (uint dir = 0; dir < this->int_dphi_fact[dof].size(); dir++) {
-            for (uint gp = 0; gp < this->int_dphi_fact[dof][dir].size(); gp++) {
-                this->int_dphi_fact[dof][dir][gp] *= this->integration_rule.first[gp];
+    for (uint dir = 0; dir < 2; dir++) {
+        this->int_dphi_fact[dir] = transpose(this->dphi_gp[dir]);
+        for (uint dof = 0; dof < this->ndof; dof++) {
+            for (uint gp = 0; gp < this->ngp; gp++) {
+                this->int_dphi_fact[dir](gp, dof) *= this->integration_rule.first[gp];
             }
         }
     }
@@ -53,28 +83,30 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
     const uint bound_id,
     const std::vector<Point<1>>& z_boundary) {
     // *** //
-    std::vector<Point<2>> z_master(z_boundary.size());
+    uint ngp = z_boundary.size();
+
+    std::vector<Point<2>> z_master(ngp);
 
     if (bound_id == 0) {
-        for (uint gp = 0; gp < z_master.size(); gp++) {
+        for (uint gp = 0; gp < ngp; gp++) {
             assert(std::abs(z_boundary[gp][LocalCoordTri::z1]) < 1 + 100 * std::numeric_limits<double>::epsilon());
 
             z_master[gp][LocalCoordTri::z1] = -z_boundary[gp][LocalCoordTri::z1];
             z_master[gp][LocalCoordTri::z2] = z_boundary[gp][LocalCoordTri::z1];
         }
     } else if (bound_id == 1) {
-        for (uint gp = 0; gp < z_master.size(); gp++) {
+        for (uint gp = 0; gp < ngp; gp++) {
             assert(std::abs(z_boundary[gp][LocalCoordTri::z1]) < 1 + 100 * std::numeric_limits<double>::epsilon());
 
-            z_master[gp][LocalCoordTri::z1] = -1;
+            z_master[gp][LocalCoordTri::z1] = -1.0;
             z_master[gp][LocalCoordTri::z2] = -z_boundary[gp][LocalCoordTri::z1];
         }
     } else if (bound_id == 2) {
-        for (uint gp = 0; gp < z_master.size(); gp++) {
+        for (uint gp = 0; gp < ngp; gp++) {
             assert(std::abs(z_boundary[gp][LocalCoordTri::z1]) < 1 + 100 * std::numeric_limits<double>::epsilon());
 
             z_master[gp][LocalCoordTri::z1] = z_boundary[gp][LocalCoordTri::z1];
-            z_master[gp][LocalCoordTri::z2] = -1;
+            z_master[gp][LocalCoordTri::z2] = -1.0;
         }
     }
 
@@ -82,23 +114,21 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 }
 
 template <typename BasisType, typename IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const std::vector<double>& u_lin,
-                                                                        double& u_lin_baryctr) {
-    u_lin_baryctr = (u_lin[0] + u_lin[1] + u_lin[2]) / 3.0;
+template <typename InputArrayType>
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const InputArrayType& u_lin) {
+    return u_lin * this->chi_baryctr;
 }
 
 template <typename BasisType, typename IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const std::vector<double>& u_lin,
-                                                                       std::vector<double>& u_lin_midpts) {
-    u_lin_midpts[0] = (u_lin[1] + u_lin[2]) / 2.0;
-    u_lin_midpts[1] = (u_lin[2] + u_lin[0]) / 2.0;
-    u_lin_midpts[2] = (u_lin[0] + u_lin[1]) / 2.0;
+template <typename InputArrayType>
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const InputArrayType& u_lin) {
+    return u_lin * this->chi_midpts;
 }
 
 template <typename BasisType, typename IntegrationType>
-inline void Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const std::vector<double>& u_lin,
-                                                                     std::vector<double>& u_lin_vrtx) {
-    u_lin_vrtx = u_lin;
+template <typename InputArrayType>
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const InputArrayType& u_lin) {
+    return u_lin;
 }
 
 template <typename BasisType, typename IntegrationType>

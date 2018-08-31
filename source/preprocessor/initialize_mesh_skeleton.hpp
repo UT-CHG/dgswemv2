@@ -12,6 +12,18 @@ void initialize_mesh_skeleton(typename ProblemType::ProblemMeshType& mesh,
     ProblemType::create_edge_boundaries_kernel(mesh, mesh_skeleton, writer);
     ProblemType::create_edge_interfaces_kernel(mesh, mesh_skeleton, writer);
     ProblemType::create_edge_distributeds_kernel(mesh, mesh_skeleton, writer);
+
+    uint ID = 0;
+
+    mesh_skeleton.CallForEachEdgeInterface([&ID](auto& edge_int) {
+        edge_int.SetID(ID);
+        ID++;
+    });
+
+    mesh_skeleton.CallForEachEdgeBoundary([&ID](auto& edge_bound) {
+        edge_bound.SetID(ID);
+        ID++;
+    });
 }
 
 #endif

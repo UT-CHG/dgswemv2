@@ -39,16 +39,31 @@ static double nu = 1.5;
 const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
+constexpr uint n_dimensions  = 2;
+constexpr uint n_variables   = 3;
+constexpr uint n_auxiliaries = 3;
+
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
 
-enum BoundaryTypes : uchar {
-    land     = 0,
-    tide     = 1,
-    flow     = 2,
-    internal = INTERNAL,
-    levee    = INTERNAL + 1,
-    periodic = INTERNAL + 2
+enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
+
+enum JacobianVariables : uint {
+    ze_ze = 0,
+    ze_qx = 1,
+    ze_qy = 2,
+    qx_ze = 3,
+    qx_qx = 4,
+    qx_qy = 5,
+    qy_ze = 6,
+    qy_qx = 7,
+    qy_qy = 8
 };
+
+enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
+
+constexpr uint n_communications = 3;
+
+enum CommTypes : uchar { preprocessor = 0, processor = 1, postprocessor = 2 };
 
 enum class SphericalProjectionType { None, Enable };
 

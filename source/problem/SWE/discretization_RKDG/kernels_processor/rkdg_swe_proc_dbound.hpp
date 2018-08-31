@@ -12,21 +12,37 @@ void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, Distrib
     auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    dbound.ComputeUgp(state.ze, boundary.ze_at_gp);
-    dbound.ComputeUgp(state.qx, boundary.qx_at_gp);
-    dbound.ComputeUgp(state.qy, boundary.qy_at_gp);
+    boundary.q_at_gp = dbound.ComputeUgp(state.q);
 
-    dbound.boundary_condition.exchanger.SetEX(boundary.ze_at_gp, boundary.qx_at_gp, boundary.qy_at_gp);
+    // Construct message to exterior state
+    std::vector<double> message;
 
-    dbound.boundary_condition.exchanger.SetWetDryEX(dbound.data.wet_dry_state.wet);
+    message.reserve(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
+
+    message.push_back(dbound.data.wet_dry_state.wet);
+
+    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            message.push_back(boundary.q_at_gp(var, gp));
+        }
+    }
+
+    // Set message to send buffer
+    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::processor, message);
 }
 
 template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
     auto& wd_state_in = dbound.data.wet_dry_state;
 
-    bool wet_ex;
-    dbound.boundary_condition.exchanger.GetWetDryEX(wet_ex);
+    // Get message from exterior state
+    std::vector<double> message;
+
+    message.resize(1);  // just wet/dry state info
+
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+
+    bool wet_ex = (bool)message[0];
 
     if (wd_state_in.wet || wet_ex) {
         const uint stage = stepper.GetStage();
@@ -37,11 +53,7 @@ void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedB
         dbound.boundary_condition.ComputeFlux(stepper, dbound);
 
         // now compute contributions to the righthand side
-        for (uint dof = 0; dof < dbound.data.get_ndof(); ++dof) {
-            state.rhs_ze[dof] -= dbound.IntegrationPhi(dof, boundary.ze_numerical_flux_at_gp);
-            state.rhs_qx[dof] -= dbound.IntegrationPhi(dof, boundary.qx_numerical_flux_at_gp);
-            state.rhs_qy[dof] -= dbound.IntegrationPhi(dof, boundary.qy_numerical_flux_at_gp);
-        }
+        state.rhs -= dbound.IntegrationPhi(boundary.F_hat_at_gp);
     }
 }
 }

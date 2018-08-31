@@ -14,15 +14,15 @@ class StraightTriangle : public Shape<2> {
     Point<2> GetBarycentricCoordinates();
     std::vector<Point<2>> GetMidpointCoordinates();
 
-    std::vector<double> GetJdet(const std::vector<Point<2>>& points);
-    Array3D<double> GetJinv(const std::vector<Point<2>>& points);
-    std::vector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points);
-    Array2D<double> GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points);
+    DynVector<double> GetJdet(const std::vector<Point<2>>& points);
+    DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points);
+    std::vector<StatMatrix<double, 2, 2>> GetJinv(const std::vector<Point<2>>& points);
+    std::vector<StatVector<double, 2>> GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points);
 
-    Array2D<double> GetPsi(const std::vector<Point<2>>& points);
-    Array3D<double> GetDPsi(const std::vector<Point<2>>& points);
+    DynMatrix<double> GetPsi(const std::vector<Point<2>>& points);
+    std::array<DynMatrix<double>, 2> GetDPsi(const std::vector<Point<2>>& points);
 
-    Array2D<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points);
+    DynMatrix<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points);
 
     std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points);
 

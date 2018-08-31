@@ -5,7 +5,7 @@
 #include "problem/SWE/swe_definitions.hpp"
 #include <yaml-cpp/yaml.h>
 
-#include "utilities//file_exists.hpp"
+#include "utilities/file_exists.hpp"
 
 namespace SWE {
 // Problem specific preprocessing information containers

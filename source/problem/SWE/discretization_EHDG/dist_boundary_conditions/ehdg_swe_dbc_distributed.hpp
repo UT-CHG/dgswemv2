@@ -3,7 +3,7 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
-#include "ehdg_swe_dbc_db_data_exch.hpp"
+#include "communication/db_data_exchanger.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -12,12 +12,15 @@ class Distributed {
   public:
     DBDataExchanger exchanger;
 
+    HybMatrix<double, SWE::n_variables> q_ex;
+    HybMatrix<double, SWE::n_variables> Fn_ex;
+
   public:
     Distributed() = default;
     Distributed(const DBDataExchanger& exchanger);
 
     template <typename DistributedBoundaryType>
-    void Initialize(DistributedBoundaryType& dbound) {} /*nothing to initialize*/
+    void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
     void ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
@@ -28,29 +31,38 @@ class Distributed {
 
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
 
+template <typename DistributedBoundaryType>
+void Distributed::Initialize(DistributedBoundaryType& dbound) {
+    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    this->q_ex.resize(SWE::n_variables, ngp);
+    this->Fn_ex.resize(SWE::n_variables, ngp);
+}
+
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
-    auto& edge_global = edge_dbound.edge_data.edge_global;
+    auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    double ze_ex, qx_ex, qy_ex;
-    double ze_flux_dot_n_ex, qx_flux_dot_n_ex, qy_flux_dot_n_ex;
+    std::vector<double> message;
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        edge_dbound.boundary.boundary_condition.exchanger.GetEX(
-            gp, ze_ex, qx_ex, qy_ex, ze_flux_dot_n_ex, qx_flux_dot_n_ex, qy_flux_dot_n_ex);
+    uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
 
-        // Add F_in * n_in terms
-        edge_global.ze_rhs_kernel_at_gp[gp] = -boundary.ze_flux_dot_n_at_gp[gp];
-        edge_global.qx_rhs_kernel_at_gp[gp] = -boundary.qx_flux_dot_n_at_gp[gp];
-        edge_global.qy_rhs_kernel_at_gp[gp] = -boundary.qy_flux_dot_n_at_gp[gp];
+    message.resize(2 * SWE::n_variables * ngp);
 
-        // Add F_ex * n_ex terms
-        edge_global.ze_rhs_kernel_at_gp[gp] += -ze_flux_dot_n_ex;
-        edge_global.qx_rhs_kernel_at_gp[gp] += -qx_flux_dot_n_ex;
-        edge_global.qy_rhs_kernel_at_gp[gp] += -qy_flux_dot_n_ex;
+    edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+
+    uint gp_ex;
+    for (uint gp = 0; gp < ngp; ++gp) {
+        gp_ex = ngp - gp - 1;
+
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            this->q_ex(var, gp_ex)  = message[SWE::n_variables * gp + var];
+            this->Fn_ex(var, gp_ex) = message[SWE::n_variables * ngp + SWE::n_variables * gp + var];
+        }
     }
+
+    edge_internal.rhs_global_kernel_at_gp = boundary.Fn_at_gp + this->Fn_ex;
 
     // Add tau terms
     add_kernel_tau_terms_dbound_LF(edge_dbound);
@@ -60,14 +72,10 @@ template <typename EdgeDistributedType>
 void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        boundary.ze_numerical_flux_at_gp[gp] = boundary.ze_flux_dot_n_at_gp[gp];
-        boundary.qx_numerical_flux_at_gp[gp] = boundary.qx_flux_dot_n_at_gp[gp];
-        boundary.qy_numerical_flux_at_gp[gp] = boundary.qy_flux_dot_n_at_gp[gp];
-    }
+    boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
     // Add tau terms
-    add_flux_tau_terms_bound_LF(edge_dbound);
+    add_F_hat_tau_terms_bound_LF(edge_dbound);
 }
 }
 }

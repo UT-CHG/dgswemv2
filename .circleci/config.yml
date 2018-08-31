@@ -42,7 +42,7 @@ jobs:
                 -DBUILD_RKDG_SWE=On \
                 -DBUILD_EHDG_SWE=On \
                 /usr/dgswemv2
-            make -j2
+            make
       - persist_to_workspace:
           root: /usr/dgswemv2
           paths:
@@ -81,6 +81,7 @@ jobs:
       - attach_workspace:
           at: /usr/dgswemv2
       - run:
+          no_output_timeout: 60m
           name: Parallel Weirs
           command: |
             /usr/dgswemv2/scripts/correctness/test_parallel_weirs.sh

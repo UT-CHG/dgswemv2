@@ -31,32 +31,20 @@ void Problem::create_distributed_boundaries_kernel(
     for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
-        std::vector<double>& send_preproc_buffer_reference    = rank_boundary.send_preproc_buffer;
-        std::vector<double>& receive_preproc_buffer_reference = rank_boundary.receive_preproc_buffer;
-
-        std::vector<double>& send_buffer_reference    = rank_boundary.send_buffer;
-        std::vector<double>& receive_buffer_reference = rank_boundary.receive_buffer;
-
-        std::vector<double>& send_postproc_buffer_reference    = rank_boundary.send_postproc_buffer;
-        std::vector<double>& receive_postproc_buffer_reference = rank_boundary.receive_postproc_buffer;
-
         uint element_id_in, bound_id_in, p, ngp;
         // uint element_id_ex, bound_id_ex;
 
-        uint begin_index_preproc  = 0;
-        uint begin_index          = 0;
-        uint begin_index_postproc = 0;
+        std::vector<uint> begin_index(SWE::n_communications, 0);
 
         // check if the data in rank_boundary_data matches communicator rank boundary
         const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
 
         for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
-            element_id_in = rb_meta_data.elements_in.at(dboundary_id);
-            bound_id_in   = rb_meta_data.bound_ids_in.at(dboundary_id);
-            p             = rb_meta_data.p.at(dboundary_id);
-
-            // element_id_ex = rb_meta_data.elements_ex.at(dboundary_id);
-            // bound_id_ex   = rb_meta_data.bound_ids_ex.at(dboundary_id);
+            element_id_in = rb_meta_data.elements_in[dboundary_id];
+            // element_id_ex = rb_meta_data.elements_ex[dboundary_id];
+            bound_id_in = rb_meta_data.bound_ids_in[dboundary_id];
+            // bound_id_ex   = rb_meta_data.bound_ids_ex[dboundary_id];
+            p = rb_meta_data.p[dboundary_id];
 
             std::pair<uint, uint> dbound_key = std::pair<uint, uint>{element_id_in, bound_id_in};
 
@@ -78,32 +66,15 @@ void Problem::create_distributed_boundaries_kernel(
                 throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
-            DBC::DBIndex index;
+            std::vector<uint> offset(SWE::n_communications);
 
-            index.x_at_baryctr = begin_index_preproc;
-            index.y_at_baryctr = begin_index_preproc + 1;
+            offset[SWE::CommTypes::preprocessor]  = begin_index[SWE::CommTypes::preprocessor];
+            offset[SWE::CommTypes::processor]     = begin_index[SWE::CommTypes::processor];
+            offset[SWE::CommTypes::postprocessor] = begin_index[SWE::CommTypes::postprocessor];
 
-            begin_index_preproc += 2;
-
-            index.wet_dry = begin_index;
-
-            index.ze_in = begin_index + 1;
-            index.qx_in = begin_index + ngp + 1;
-            index.qy_in = begin_index + 2 * ngp + 1;
-
-            index.ze_ex = begin_index + ngp;
-            index.qx_ex = begin_index + 2 * ngp;
-            index.qy_ex = begin_index + 3 * ngp;
-
-            begin_index += 3 * ngp + 1;
-
-            index.wet_dry_postproc = begin_index_postproc;
-
-            index.ze_at_baryctr = begin_index_postproc + 1;
-            index.qx_at_baryctr = begin_index_postproc + 2;
-            index.qy_at_baryctr = begin_index_postproc + 3;
-
-            begin_index_postproc += 4;
+            begin_index[SWE::CommTypes::preprocessor] += 2;
+            begin_index[SWE::CommTypes::processor] += SWE::n_variables * ngp + 1;
+            begin_index[SWE::CommTypes::postprocessor] += SWE::n_variables + 1;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
@@ -114,13 +85,7 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(DBC::DBDataExchanger(index,
-                                                          send_preproc_buffer_reference,
-                                                          receive_preproc_buffer_reference,
-                                                          send_buffer_reference,
-                                                          receive_buffer_reference,
-                                                          send_postproc_buffer_reference,
-                                                          receive_postproc_buffer_reference)));
+                    DBC::Distributed(DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
 
                 n_distributed++;
 
@@ -155,14 +120,8 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributedLevee>(
                     std::move(raw_boundary),
-                    DBC::DistributedLevee(DBC::DBDataExchanger(index,
-                                                               send_preproc_buffer_reference,
-                                                               receive_preproc_buffer_reference,
-                                                               send_buffer_reference,
-                                                               receive_buffer_reference,
-                                                               send_postproc_buffer_reference,
-                                                               receive_postproc_buffer_reference),
-                                          levee));
+                    DBC::DistributedLevee(
+                        DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer), levee));
 
                 n_distr_levee++;
 
@@ -170,14 +129,13 @@ void Problem::create_distributed_boundaries_kernel(
             }
         }
 
-        send_preproc_buffer_reference.resize(begin_index_preproc);
-        receive_preproc_buffer_reference.resize(begin_index_preproc);
+        rank_boundary.send_buffer.resize(SWE::n_communications);
+        rank_boundary.receive_buffer.resize(SWE::n_communications);
 
-        send_buffer_reference.resize(begin_index);
-        receive_buffer_reference.resize(begin_index);
-
-        send_postproc_buffer_reference.resize(begin_index_postproc);
-        receive_postproc_buffer_reference.resize(begin_index_postproc);
+        for (uint comm = 0; comm < SWE::n_communications; ++comm) {
+            rank_boundary.send_buffer[comm].resize(begin_index[comm]);
+            rank_boundary.receive_buffer[comm].resize(begin_index[comm]);
+        }
     }
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) { dbound.boundary_condition.Initialize(dbound); });

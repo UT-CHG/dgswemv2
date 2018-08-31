@@ -3,6 +3,7 @@
 
 #include "simulation/stepper/rk_stepper.hpp"
 #include "simulation/writer.hpp"
+#include "simulation/discretization.hpp"
 
 #include "problem/SWE/swe_definitions.hpp"
 #include "boundary_conditions/rkdg_swe_boundary_conditions.hpp"
@@ -28,6 +29,8 @@ struct Problem {
                                                std::tuple<IS::Internal, IS::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
+
+    using ProblemDiscretizationType = DGDiscretization<Problem>;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
@@ -64,17 +67,31 @@ struct Problem {
         Communicator& communicator,
         Writer<Problem>& writer);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input);
+    static void serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
+                                           const ProblemInputType& problem_specific_input);
+
+    template <typename OMPISimUnitType>
+    static void ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
+    template <typename HPXSimUnitType>
+    static decltype(auto) hpx_preprocessor_kernel(HPXSimUnitType* sim_unit);
+
+    static void initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const MeshMetaData& mesh_data,
                                                          const ProblemInputType& problem_specific_input);
 
     static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
 
     // processor kernels
+    static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
+    template <typename HPXSimUnitType>
+    static decltype(auto) hpx_stage_kernel(HPXSimUnitType* sim_unit);
+
     template <typename ElementType>
     static void volume_kernel(const RKStepper& stepper, ElementType& elt);
 
@@ -102,15 +119,6 @@ struct Problem {
     template <typename ElementType>
     static void swap_states_kernel(const RKStepper& stepper, ElementType& elt);
 
-    // postprocessor kernels
-    static void postprocessor_serial_kernel(const RKStepper& stepper, ProblemMeshType& mesh);
-
-    static void postprocessor_parallel_pre_send_kernel(const RKStepper& stepper, ProblemMeshType& mesh);
-
-    static void postprocessor_parallel_pre_receive_kernel(const RKStepper& stepper, ProblemMeshType& mesh);
-
-    static void postprocessor_parallel_post_receive_kernel(const RKStepper& stepper, ProblemMeshType& mesh);
-
     template <typename ElementType>
     static void wetting_drying_kernel(const RKStepper& stepper, ElementType& elt);
 
@@ -134,7 +142,7 @@ struct Problem {
     template <typename ElementType>
     static void slope_limiting_kernel(const RKStepper& stepper, ElementType& elt);
 
-    // writing output kernels
+    // postprocessor kernels
     static void write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
     static void write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);

@@ -3,13 +3,18 @@
 
 #include "simulation/stepper/rk_stepper.hpp"
 #include "simulation/writer.hpp"
+#include "simulation/discretization.hpp"
 
 #include "problem/SWE/swe_definitions.hpp"
+
 #include "boundary_conditions/ehdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ehdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ehdg_swe_interface_specializations.hpp"
+
 #include "data_structure/ehdg_swe_data.hpp"
 #include "data_structure/ehdg_swe_edge_data.hpp"
+#include "data_structure/ehdg_swe_global_data.hpp"
+
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
 
@@ -28,6 +33,8 @@ struct Problem {
 
     using ProblemEdgeDataType = EdgeData;
 
+    using ProblemGlobalDataType = GlobalData;
+
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<IS::Internal>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
@@ -38,6 +45,8 @@ struct Problem {
                                    Geometry::InterfaceTypeTuple<Data, IS::Internal>,
                                    Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
                                    Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
+
+    using ProblemDiscretizationType = HDGDiscretization<Problem>;
 
     // preprocessor kernels
     static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
@@ -86,19 +95,50 @@ struct Problem {
                                                 ProblemMeshSkeletonType& mesh_skeleton,
                                                 Writer<Problem>& writer);
 
-    static void initialize_data_kernel(ProblemMeshType& mesh,
-                                       const MeshMetaData& mesh_data,
-                                       const ProblemInputType& problem_specific_input);
+    static void serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
+                                           const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                         const MeshMetaData& mesh_data,
-                                                         const ProblemInputType& problem_specific_input);
+    template <typename OMPISimUnitType>
+    static void ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
-    static void initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh);
+    template <typename HPXSimUnitType>
+    static decltype(auto) hpx_preprocessor_kernel(HPXSimUnitType* sim_unit);
+
+    static void initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+
+    static void initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+
+    static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
 
     // processor kernels
+    static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
-    /* global step */
+    template <typename OMPISimUnitType>
+    static void ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
+    template <typename HPXSimUnitType>
+    static decltype(auto) hpx_stage_kernel(HPXSimUnitType* sim_unit);
+
+    /* local step begin */
+
+    template <typename ElementType>
+    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename ElementType>
+    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
+
+    template <typename InterfaceType>
+    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+
+    template <typename BoundaryType>
+    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+
+    template <typename DistributedBoundaryType>
+    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+
+    /* local step end */
+
+    /* global step begin */
 
     template <typename InterfaceType>
     static void global_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
@@ -127,24 +167,7 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
-    /* local step */
-
-    template <typename ElementType>
-    static void local_volume_kernel(const RKStepper& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void local_source_kernel(const RKStepper& stepper, ElementType& elt);
-
-    template <typename InterfaceType>
-    static void local_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
-
-    template <typename BoundaryType>
-    static void local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
-
-    template <typename DistributedBoundaryType>
-    static void local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
-
-    /* local step */
+    /* global step end */
 
     template <typename ElementType>
     static void update_kernel(const RKStepper& stepper, ElementType& elt);

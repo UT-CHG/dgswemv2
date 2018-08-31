@@ -19,28 +19,15 @@ void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface)
         auto& state_ex    = intface.data_ex.state[stage];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        intface.ComputeUgpIN(state_in.ze, boundary_in.ze_at_gp);
-        intface.ComputeUgpIN(state_in.qx, boundary_in.qx_at_gp);
-        intface.ComputeUgpIN(state_in.qy, boundary_in.qy_at_gp);
-
-        intface.ComputeUgpEX(state_ex.ze, boundary_ex.ze_at_gp);
-        intface.ComputeUgpEX(state_ex.qx, boundary_ex.qx_at_gp);
-        intface.ComputeUgpEX(state_ex.qy, boundary_ex.qy_at_gp);
+        boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
+        boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
         intface.specialization.ComputeFlux(stepper, intface);
 
         // now compute contributions to the righthand side
-        for (uint dof = 0; dof < intface.data_in.get_ndof(); ++dof) {
-            state_in.rhs_ze[dof] -= intface.IntegrationPhiIN(dof, boundary_in.ze_numerical_flux_at_gp);
-            state_in.rhs_qx[dof] -= intface.IntegrationPhiIN(dof, boundary_in.qx_numerical_flux_at_gp);
-            state_in.rhs_qy[dof] -= intface.IntegrationPhiIN(dof, boundary_in.qy_numerical_flux_at_gp);
-        }
+        state_in.rhs -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp);
 
-        for (uint dof = 0; dof < intface.data_ex.get_ndof(); ++dof) {
-            state_ex.rhs_ze[dof] -= intface.IntegrationPhiEX(dof, boundary_ex.ze_numerical_flux_at_gp);
-            state_ex.rhs_qx[dof] -= intface.IntegrationPhiEX(dof, boundary_ex.qx_numerical_flux_at_gp);
-            state_ex.rhs_qy[dof] -= intface.IntegrationPhiEX(dof, boundary_ex.qy_numerical_flux_at_gp);
-        }
+        state_ex.rhs -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp);
     }
 }
 }

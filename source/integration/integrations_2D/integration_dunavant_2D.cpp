@@ -1,7 +1,7 @@
 #include "../integrations_2D.hpp"
 
 namespace Integration {
-std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
+std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
     if (p < 0 || p > 20) {
         printf("\n");
         printf("DUNAVANT 2D - Fatal error!\n");
@@ -9,55 +9,66 @@ std::pair<std::vector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const
         exit(1);
     }
 
-    std::vector<uint> permutation                            = this->PermutationData(p);
-    std::pair<std::vector<double>, std::vector<Point<3>>> gp = this->GPData(p);
+    std::vector<uint> permutation                                 = this->PermutationData(p);
+    std::pair<std::vector<double>, std::vector<Point<3>>> gp_data = this->GPData(p);
 
-    if (permutation.size() != gp.first.size()) {
+    if (permutation.size() != gp_data.first.size()) {
         printf("\n");
         printf("DUNAVANT 2D - Fatal error!\n");
         printf("Permutation size != GP size\n");
         exit(1);
     }
 
-    uint number_gp = 0;
+    uint ngp = 0;
     for (uint i = 0; i < permutation.size(); i++)
-        number_gp += permutation[i];
+        ngp += permutation[i];
 
-    std::pair<std::vector<double>, std::vector<Point<2>>> rule;
-    rule.first.reserve(number_gp);
-    rule.second.reserve(number_gp);
+    std::pair<DynVector<double>, std::vector<Point<2>>> rule;
+    rule.first.resize(ngp);
+    rule.second.resize(ngp);
 
-    for (uint i = 0; i < gp.first.size(); i++) {
+    uint gp = 0;
+    for (uint i = 0; i < gp_data.first.size(); i++) {
         if (permutation[i] == 1) {
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][0] - 1, 2 * gp.second[i][1] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][0] - 1, 2 * gp_data.second[i][1] - 1};
+            gp++;
         } else if (permutation[i] == 3) {
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][0] - 1, 2 * gp.second[i][1] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][0] - 1, 2 * gp_data.second[i][1] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][1] - 1, 2 * gp.second[i][2] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][1] - 1, 2 * gp_data.second[i][2] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][2] - 1, 2 * gp.second[i][0] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][2] - 1, 2 * gp_data.second[i][0] - 1};
+            gp++;
         } else if (permutation[i] == 6) {
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][0] - 1, 2 * gp.second[i][1] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][0] - 1, 2 * gp_data.second[i][1] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][1] - 1, 2 * gp.second[i][2] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][1] - 1, 2 * gp_data.second[i][2] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][2] - 1, 2 * gp.second[i][0] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][2] - 1, 2 * gp_data.second[i][0] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][1] - 1, 2 * gp.second[i][0] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][1] - 1, 2 * gp_data.second[i][0] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][2] - 1, 2 * gp.second[i][1] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][2] - 1, 2 * gp_data.second[i][1] - 1};
+            gp++;
 
-            rule.first.push_back(2 * gp.first[i]);
-            rule.second.push_back({2 * gp.second[i][0] - 1, 2 * gp.second[i][2] - 1});
+            rule.first[gp]  = 2 * gp_data.first[i];
+            rule.second[gp] = {2 * gp_data.second[i][0] - 1, 2 * gp_data.second[i][2] - 1};
+            gp++;
         }
     }
 

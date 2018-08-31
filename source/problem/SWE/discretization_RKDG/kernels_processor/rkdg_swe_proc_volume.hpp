@@ -12,53 +12,38 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
 
         auto& state    = elt.data.state[stage];
         auto& internal = elt.data.internal;
-        auto& sp_at_gp = elt.data.spherical_projection.sp_at_gp_internal;
 
-        elt.ComputeUgp(state.ze, internal.ze_at_gp);
-        elt.ComputeUgp(state.qx, internal.qx_at_gp);
-        elt.ComputeUgp(state.qy, internal.qy_at_gp);
+        internal.q_at_gp = elt.ComputeUgp(state.q);
 
-        double u_at_gp = 0.0;
-        double v_at_gp = 0.0;
+        row(internal.aux_at_gp, SWE::Auxiliaries::h) =
+            row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
 
-        double uuh_at_gp = 0.0;
-        double vvh_at_gp = 0.0;
-        double uvh_at_gp = 0.0;
-        double pe_at_gp  = 0.0;
+        auto u =
+            cwise_division(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+        auto v =
+            cwise_division(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
 
-        // assemble flux
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            internal.h_at_gp[gp] = internal.ze_at_gp[gp] + internal.bath_at_gp[gp];
+        auto uuh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qx));
+        auto vvh = cwise_multiplication(v, row(internal.q_at_gp, SWE::Variables::qy));
+        auto uvh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qy));
+        auto pe  = Global::g * (0.5 * cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
+                                                          row(internal.q_at_gp, SWE::Variables::ze)) +
+                               cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
+                                                    row(internal.aux_at_gp, SWE::Auxiliaries::bath)));
 
-            u_at_gp = internal.qx_at_gp[gp] / internal.h_at_gp[gp];
-            v_at_gp = internal.qy_at_gp[gp] / internal.h_at_gp[gp];
+        row(internal.Fx_at_gp, SWE::Variables::ze) = cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp),
+                                                                          row(internal.q_at_gp, SWE::Variables::qx));
+        row(internal.Fx_at_gp, SWE::Variables::qx) =
+            cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp), uuh + pe);
+        row(internal.Fx_at_gp, SWE::Variables::qy) =
+            cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp), uvh);
 
-            uuh_at_gp = u_at_gp * internal.qx_at_gp[gp];
-            vvh_at_gp = v_at_gp * internal.qy_at_gp[gp];
-            uvh_at_gp = u_at_gp * internal.qy_at_gp[gp];
-            pe_at_gp  = Global::g *
-                       (0.5 * std::pow(internal.ze_at_gp[gp], 2) + internal.ze_at_gp[gp] * internal.bath_at_gp[gp]);
+        row(internal.Fy_at_gp, SWE::Variables::ze) = row(internal.q_at_gp, SWE::Variables::qy);
+        row(internal.Fy_at_gp, SWE::Variables::qx) = uvh;
+        row(internal.Fy_at_gp, SWE::Variables::qy) = vvh + pe;
 
-            internal.ze_flux_at_gp[GlobalCoord::x][gp] = sp_at_gp[gp] * internal.qx_at_gp[gp];
-            internal.ze_flux_at_gp[GlobalCoord::y][gp] = internal.qy_at_gp[gp];
-
-            internal.qx_flux_at_gp[GlobalCoord::x][gp] = sp_at_gp[gp] * (uuh_at_gp + pe_at_gp);
-            internal.qx_flux_at_gp[GlobalCoord::y][gp] = uvh_at_gp;
-
-            internal.qy_flux_at_gp[GlobalCoord::x][gp] = sp_at_gp[gp] * uvh_at_gp;
-            internal.qy_flux_at_gp[GlobalCoord::y][gp] = vvh_at_gp + pe_at_gp;
-        }
-
-        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.rhs_ze[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.ze_flux_at_gp[GlobalCoord::x]) +
-                                elt.IntegrationDPhi(GlobalCoord::y, dof, internal.ze_flux_at_gp[GlobalCoord::y]);
-
-            state.rhs_qx[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.qx_flux_at_gp[GlobalCoord::x]) +
-                                elt.IntegrationDPhi(GlobalCoord::y, dof, internal.qx_flux_at_gp[GlobalCoord::y]);
-
-            state.rhs_qy[dof] = elt.IntegrationDPhi(GlobalCoord::x, dof, internal.qy_flux_at_gp[GlobalCoord::x]) +
-                                elt.IntegrationDPhi(GlobalCoord::y, dof, internal.qy_flux_at_gp[GlobalCoord::y]);
-        }
+        state.rhs = elt.IntegrationDPhi(GlobalCoord::x, internal.Fx_at_gp) +
+                    elt.IntegrationDPhi(GlobalCoord::y, internal.Fy_at_gp);
     }
 }
 }

@@ -1,6 +1,56 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
 add_executable(
+  test_linear_algebra_exe
+  test_linear_algebra.cpp
+)
+
+add_executable(
+  test_jacobians_ehdg_exe
+  test_jacobians_ehdg.cpp
+  ${SOURCES}
+  ${SWE_SOURCES}
+)
+
+target_include_directories(test_jacobians_ehdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_test(
+  Unit_test_jacobians_ehdg
+  test_jacobians_ehdg_exe
+)
+
+add_executable(
+  test_jacobians_ihdg_exe
+  test_jacobians_ihdg.cpp
+  ${SOURCES}
+  ${SWE_SOURCES}
+)
+
+target_include_directories(test_jacobians_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(test_jacobians_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_test(
+  Unit_test_jacobians_ihdg
+  test_jacobians_ihdg_exe
+)
+
+add_executable(
+  test_global_jacobian_ihdg_exe
+  test_global_jacobian_ihdg.cpp
+  ${SOURCES}
+  ${SWE_SOURCES}
+)
+
+target_include_directories(test_global_jacobian_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
+add_test(
+  Unit_test_global_jacobian_ihdg
+  test_global_jacobian_ihdg_exe
+)
+
+add_executable(
   test_tuple_helpers_exe
   test_tuple_helpers.cpp
 )
@@ -26,6 +76,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
+
+target_link_libraries(test_adcirc_format_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_adcirc_format
@@ -86,6 +138,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_link_libraries(test_shape_straight_triangle_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_shape_straight_triangle
   test_shape_straight_triangle_exe
@@ -100,6 +154,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
+
+target_link_libraries(test_element_triangle_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_element_triangle
@@ -116,12 +172,14 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_link_libraries(test_boundary_interface_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_boundary_interface
   test_boundary_interface_exe
 )
 
-#[[add_executable(
+add_executable(
   test_edges_exe
   test_edges.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -132,10 +190,12 @@ add_test(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_link_libraries(test_edges_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_edges
   test_edges_exe
-)]]
+)
 
 add_executable(
   test_rk_stepper_exe
@@ -169,6 +229,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
+target_link_libraries(test_wetting_drying_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 add_test(
   Unit_wetting_drying
   test_wetting_drying_exe
@@ -181,6 +243,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 )
+
+target_link_libraries(test_mesh_metadata_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_mesh_metadata
@@ -213,7 +277,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
-target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
+target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_input_parameters
@@ -334,7 +398,7 @@ add_executable(
 )
 
 target_include_directories(test_partition_exe PRIVATE ${METIS_INCLUDE_DIRS})
-target_link_libraries(test_partition_exe ${METIS_LIBRARIES})
+target_link_libraries(test_partition_exe ${METIS_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 add_test(
   Unit_partition
@@ -353,7 +417,7 @@ add_test(
 )
 
 if(USE_HPX)
-  add_executable(
+  #[[add_executable(
     test_rkdg_swe_serialization_exe
     test_rkdg_swe_serialization.cpp
   )
@@ -366,7 +430,7 @@ if(USE_HPX)
   add_test(
     Unit_rkdg_swe_serialization
     test_rkdg_swe_serialization_exe
-  )
+  )]]
 
   add_executable(
     test_shape_serialization_exe
@@ -377,7 +441,7 @@ if(USE_HPX)
   set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
   target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES})
+  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   add_test(
     Unit_shape_serialization
@@ -397,14 +461,14 @@ if(USE_HPX)
   set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
   target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES})
+  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   add_test(
     Unit_element_serialization
     test_element_serialization_exe
   )
 
-  add_executable(
+  #[[add_executable(
     test_mesh_serialization_exe
     test_mesh_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
@@ -420,14 +484,13 @@ if(USE_HPX)
   set_target_properties(test_mesh_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
 
   target_include_directories(test_mesh_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
-
+  target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
   add_test(
     Unit_mesh_serialization
     test_mesh_serialization_exe
     ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
-  )
+  )]]
 
   add_executable(
     test_rk_stepper_serialization_exe
@@ -458,6 +521,36 @@ if(USE_HPX)
   add_test(
     Unit_serialize_chrono
     test_serialize_chrono_exe
+  )
+
+  add_executable(
+    test_blaze_serialization_exe
+    test_blaze_serialization.cpp
+  )
+
+  set_target_properties(test_blaze_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_blaze_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_blaze_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_blaze_serialization
+    test_blaze_serialization_exe
+  )
+
+  add_executable(
+    test_eigen_serialization_exe
+    test_eigen_serialization.cpp
+  )
+
+  set_target_properties(test_eigen_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+
+  target_include_directories(test_eigen_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_eigen_serialization_exe ${HPX_LIBRARIES})
+
+  add_test(
+    Unit_eigen_serialization
+    test_eigen_serialization_exe
   )
 
 endif()

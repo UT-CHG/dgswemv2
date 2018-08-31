@@ -11,7 +11,7 @@
 namespace SWE {
 class Parser {
   private:
-    bool parsing_input;
+    bool parsing_input = false;
 
     uint meteo_parse_frequency;
     std::string meteo_data_file;
@@ -73,8 +73,8 @@ void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
 
         mesh.CallForEachElement([this](auto& elt) {
             for (uint node = 0; node < elt.data.get_nnode(); node++) {
-                elt.data.source.tau_s[GlobalCoord::x][node] = elt.data.source.parsed_meteo_data[node]->at(0);
-                elt.data.source.tau_s[GlobalCoord::y][node] = elt.data.source.parsed_meteo_data[node]->at(1);
+                elt.data.source.tau_s[node][GlobalCoord::x] = elt.data.source.parsed_meteo_data[node]->at(0);
+                elt.data.source.tau_s[node][GlobalCoord::y] = elt.data.source.parsed_meteo_data[node]->at(1);
                 elt.data.source.p_atm[node]                 = elt.data.source.parsed_meteo_data[node]->at(2);
             }
         });

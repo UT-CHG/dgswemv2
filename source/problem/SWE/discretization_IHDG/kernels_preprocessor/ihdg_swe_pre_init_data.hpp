@@ -1,88 +1,92 @@
 #ifndef IHDG_SWE_PRE_INIT_DATA_HPP
 #define IHDG_SWE_PRE_INIT_DATA_HPP
 
-#include "utilities//file_exists.hpp"
+#include "utilities/file_exists.hpp"
 
 namespace SWE {
 namespace IHDG {
-void Problem::initialize_data_kernel(ProblemMeshType& mesh,
-                                     const MeshMetaData& mesh_data,
-                                     const ProblemInputType& problem_specific_input) {
-    mesh.CallForEachElement([](auto& elt) { elt.data.initialize(); });
-
-    std::unordered_map<uint, std::vector<double>> bathymetry;
-
-    mesh.CallForEachElement([&bathymetry](auto& elt) {
-        uint id = elt.GetID();
+void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    mesh.CallForEachElement([&problem_specific_input](auto& elt) {
+        elt.data.initialize();
 
         auto& shape = elt.GetShape();
-
-        std::vector<double> bathymetry_temp(elt.data.get_nnode());
-
-        for (uint node_id = 0; node_id < elt.data.get_nnode(); node_id++) {
-            bathymetry_temp[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
-        }
-
-        bathymetry.insert({id, bathymetry_temp});
-    });
-
-    mesh.CallForEachElement([&bathymetry, &problem_specific_input](auto& elt) {
-        uint id = elt.GetID();
 
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
-        if (!bathymetry.count(id)) {
-            throw std::logic_error("Fatal Error: could not find bathymetry for element with id: " + std::to_string(id) +
-                                   "!\n");
+        uint nnode = elt.data.get_nnode();
+
+        DynRowVector<double> bathymetry(nnode);
+
+        for (uint node_id = 0; node_id < nnode; ++node_id) {
+            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        elt.L2Projection(bathymetry[id], state.bath);
+        row(state.aux, SWE::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
 
-        elt.ComputeUgp(state.bath, internal.bath_at_gp);
+        row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeNodalUgp(bathymetry);
+        row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
+        row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
 
-        elt.ComputeDUgp(GlobalCoord::x, state.bath, internal.bath_deriv_wrt_x_at_gp);
-        elt.ComputeDUgp(GlobalCoord::y, state.bath, internal.bath_deriv_wrt_y_at_gp);
+        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant ||
+            problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Default) {
+            uint nnode = elt.GetShape().nodal_coordinates.size();
 
-        if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant) {
-            uint n_node = elt.GetShape().nodal_coordinates.size();
+            HybMatrix<double, SWE::n_variables> u_node(SWE::n_variables, nnode);
 
-            std::vector<double> ze_node(n_node, problem_specific_input.initial_conditions.ze_initial);
-            elt.L2Projection(ze_node, state.ze);
+            for (uint node_id = 0; node_id < nnode; ++node_id) {
+                u_node(SWE::Variables::ze, node_id) = problem_specific_input.initial_conditions.ze_initial;
+                u_node(SWE::Variables::qx, node_id) = problem_specific_input.initial_conditions.qx_initial;
+                u_node(SWE::Variables::qy, node_id) = problem_specific_input.initial_conditions.qy_initial;
+            }
 
-            std::vector<double> qx_node(n_node, problem_specific_input.initial_conditions.qx_initial);
-            elt.L2Projection(qx_node, state.qx);
-
-            std::vector<double> qy_node(n_node, problem_specific_input.initial_conditions.qy_initial);
-            elt.L2Projection(qy_node, state.qy);
+            state.q = elt.L2ProjectionNode(u_node);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
-            auto ze_init = [](Point<2>& pt) { return SWE::ic_ze(0, pt); };
-            elt.L2Projection(ze_init, state.ze);
+            auto u_init = [](Point<2>& pt) { return SWE::ic_u(0, pt); };
 
-            auto qx_init = [](Point<2>& pt) { return SWE::ic_qx(0, pt); };
-            elt.L2Projection(qx_init, state.qx);
-
-            auto qy_init = [](Point<2>& pt) { return SWE::ic_qy(0, pt); };
-            elt.L2Projection(qy_init, state.qy);
+            state.q = elt.L2ProjectionF(u_init);
         }
     });
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
-        auto& state_in = intface.data_in.state[0];
-        auto& state_ex = intface.data_ex.state[0];
+        auto& shape_in = intface.GetShapeIN();
 
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        intface.ComputeUgpIN(state_in.bath, boundary_in.bath_at_gp);
-        intface.ComputeUgpEX(state_ex.bath, boundary_ex.bath_at_gp);
+        uint nnode = intface.data_in.get_nnode();
+        uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+
+        DynRowVector<double> bathymetry(nnode);
+
+        for (uint node_id = 0; node_id < nnode; ++node_id) {
+            bathymetry[node_id] = shape_in.nodal_coordinates[node_id][GlobalCoord::z];
+        }
+
+        row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
+
+        uint gp_ex;
+        for (uint gp = 0; gp < ngp; gp++) {
+            gp_ex = ngp - gp - 1;
+
+            boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex) = boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
+        }
     });
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
-        auto& state    = bound.data.state[0];
+        auto& shape = bound.GetShape();
+
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        bound.ComputeUgp(state.bath, boundary.bath_at_gp);
+        uint nnode = bound.data.get_nnode();
+
+        DynRowVector<double> bathymetry(nnode);
+
+        for (uint node_id = 0; node_id < nnode; ++node_id) {
+            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
+        }
+
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = bound.ComputeNodalUgp(bathymetry);
     });
 
     // SOURCE TERMS INITIALIZE
@@ -144,20 +148,25 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh,
     }
 }
 
-void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                       const MeshMetaData& mesh_data,
-                                                       const ProblemInputType& problem_specific_input) {
-    initialize_data_kernel(mesh, mesh_data, problem_specific_input);
+void Problem::initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    initialize_data_serial_kernel(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
-        auto& state    = dbound.data.state[0];
+        auto& shape = dbound.GetShape();
+
         auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-        dbound.ComputeUgp(state.bath, boundary.bath_at_gp);
+        uint nnode = dbound.data.get_nnode();
+
+        DynRowVector<double> bathymetry(nnode);
+
+        for (uint node_id = 0; node_id < nnode; ++node_id) {
+            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
+        }
+
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeNodalUgp(bathymetry);
     });
 }
-
-void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh) {}
 }
 }
 

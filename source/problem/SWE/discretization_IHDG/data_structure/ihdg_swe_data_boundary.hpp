@@ -8,31 +8,26 @@ namespace IHDG {
 struct Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
-        : ze_at_gp(ngp),
-          qx_at_gp(ngp),
-          qy_at_gp(ngp),
-          bath_at_gp(ngp),
-          h_at_gp(ngp),
-          ze_flux_dot_n_at_gp(ngp),
-          qx_flux_dot_n_at_gp(ngp),
-          qy_flux_dot_n_at_gp(ngp),
-          ze_numerical_flux_at_gp(ngp),
-          qx_numerical_flux_at_gp(ngp),
-          qy_numerical_flux_at_gp(ngp) {}
+        : q_at_gp(SWE::n_variables, ngp),
+          aux_at_gp(SWE::n_auxiliaries, ngp),
+          F_hat_at_gp(SWE::n_variables, ngp),
+          dF_hat_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp),
+          dF_hat_dq_hat_at_gp(SWE::n_variables * SWE::n_variables, ngp),
+          delta_global_kernel_at_gp(SWE::n_variables * SWE::n_variables, ngp) {}
 
-    std::vector<double> ze_at_gp;
-    std::vector<double> qx_at_gp;
-    std::vector<double> qy_at_gp;
-    std::vector<double> bath_at_gp;
-    std::vector<double> h_at_gp;
+    HybMatrix<double, SWE::n_variables> q_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
 
-    std::vector<double> ze_flux_dot_n_at_gp;
-    std::vector<double> qx_flux_dot_n_at_gp;
-    std::vector<double> qy_flux_dot_n_at_gp;
+    HybMatrix<double, SWE::n_variables> F_hat_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_hat_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_global_kernel_at_gp;
 
-    std::vector<double> ze_numerical_flux_at_gp;
-    std::vector<double> qx_numerical_flux_at_gp;
-    std::vector<double> qy_numerical_flux_at_gp;
+    DynMatrix<double> delta_global;
+    DynMatrix<double> delta_hat_local;
+
+    uint local_dof_offset  = 0;
+    uint global_dof_offset = 0;
 };
 }
 }

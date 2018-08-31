@@ -11,6 +11,9 @@ option(RKDG_SWE "Build RKDG SWE simulations" ON)
 option(EHDG_SWE "Build EHDG SWE simulations" OFF)
 option(IHDG_SWE "Build EHDG SWE simulations" OFF)
 
+option(EHDG_GN "Build EHDG GN simulations" OFF)
+option(IHDG_GN "Build IHDG GN simulations" OFF)
+
 enable_testing()
 
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
@@ -29,6 +32,15 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
+if(COMPILER_WARNINGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif()
+
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+if(SET_VERBOSE)
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+endif()
+
 get_filename_component (default_prefix "../install" ABSOLUTE)
 set (CMAKE_INSTALL_PREFIX ${default_prefix} CACHE STRING
       "Choose the installation directory; by default it installs in install."
@@ -39,26 +51,45 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+find_package(Eigen3 REQUIRED)
+find_package(blaze REQUIRED)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
 if(USE_OMPI)
   find_package(OpenMP REQUIRED)
   find_package(MPI REQUIRED)
-
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
 if(USE_HPX)
   find_package(HPX REQUIRED)
 endif()
 
-if(COMPILER_WARNINGS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
+list (APPEND SOURCES
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
+  ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-if(SET_VERBOSE)
-  set(CMAKE_VERBOSE_MAKEFILE ON)
-endif()
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp
+  ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
+  ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
+)
+
+list(APPEND SWE_SOURCES
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_parser/swe_parser.cpp
+)
+
+list(APPEND GN_SOURCES
+  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_parser/gn_parser.cpp
+)
 
 include_directories(source)
 
@@ -74,19 +105,29 @@ if(RKDG_SWE)
 endif()
 
 if(EHDG_SWE)
-  find_package(Eigen3 REQUIRED)
-
   add_subdirectory(source/problem/SWE/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_swe_manufactured_solution)
   endif()
 endif()
 
-if(EHDG_SWE)
-  find_package(Eigen3 REQUIRED)
-
+if(IHDG_SWE)
   add_subdirectory(source/problem/SWE/discretization_IHDG)
-  #if(BUILD_EXAMPLES)
-  #  add_subdirectory(examples/ehdg_swe_manufactured_solution)
-  #endif()
+  if(BUILD_EXAMPLES)
+    add_subdirectory(examples/ihdg_swe_manufactured_solution)
+  endif()
+endif()
+
+if(EHDG_GN)
+  add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
+  if(BUILD_EXAMPLES)
+    add_subdirectory(examples/ehdg_gn_analytical_solution)
+  endif()
+endif()
+
+if(IHDG_GN)
+  #[[add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
+  if(BUILD_EXAMPLES)
+    add_subdirectory(examples/ihdg_gn_analytical_solution)
+  endif()]]
 endif()

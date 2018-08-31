@@ -8,34 +8,20 @@ namespace RKDG {
 struct Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
-        : ze_at_gp(ngp),
-          qx_at_gp(ngp),
-          qy_at_gp(ngp),
-          bath_at_gp(ngp),
-          ze_numerical_flux_at_gp(ngp),
-          qx_numerical_flux_at_gp(ngp),
-          qy_numerical_flux_at_gp(ngp) {}
+        : q_at_gp(SWE::n_variables, ngp), aux_at_gp(SWE::n_auxiliaries, ngp), F_hat_at_gp(SWE::n_variables, ngp) {}
 
-    std::vector<double> ze_at_gp;
-    std::vector<double> qx_at_gp;
-    std::vector<double> qy_at_gp;
-    std::vector<double> bath_at_gp;
+    HybMatrix<double, SWE::n_variables> q_at_gp;
+    HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
 
-    std::vector<double> ze_numerical_flux_at_gp;
-    std::vector<double> qx_numerical_flux_at_gp;
-    std::vector<double> qy_numerical_flux_at_gp;
+    HybMatrix<double, SWE::n_variables> F_hat_at_gp;
 
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & ze_at_gp
-            & qx_at_gp
-            & qy_at_gp
-            & bath_at_gp
-            & ze_numerical_flux_at_gp
-            & qx_numerical_flux_at_gp
-            & qy_numerical_flux_at_gp;
+        ar  & q_at_gp
+            & aux_at_gp
+            & F_hat_at_gp;
         // clang-format on
     }
 #endif

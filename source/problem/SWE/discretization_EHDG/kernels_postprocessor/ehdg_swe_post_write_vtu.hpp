@@ -6,22 +6,18 @@
 namespace SWE {
 namespace EHDG {
 void Problem::write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
-    Array2D<double> cell_data;
-    Array2D<double> point_data;
+    std::vector<StatVector<double, SWE::n_variables>> q_point_data;
+    std::vector<StatVector<double, SWE::n_variables>> q_cell_data;
 
-    cell_data.resize(4);
-    point_data.resize(4);
+    std::vector<StatVector<double, 1>> aux_point_data;
+    std::vector<StatVector<double, 1>> aux_cell_data;
 
-    mesh.CallForEachElement([&cell_data, &point_data](auto& elt) {
-        elt.WriteCellDataVTK(elt.data.state[0].ze, cell_data[0]);
-        elt.WriteCellDataVTK(elt.data.state[0].qx, cell_data[1]);
-        elt.WriteCellDataVTK(elt.data.state[0].qy, cell_data[2]);
-        elt.WriteCellDataVTK(elt.data.state[0].bath, cell_data[3]);
+    mesh.CallForEachElement([&q_point_data, &q_cell_data, &aux_point_data, &aux_cell_data](auto& elt) {
+        elt.WritePointDataVTK(elt.data.state[0].q, q_point_data);
+        elt.WriteCellDataVTK(elt.data.state[0].q, q_cell_data);
 
-        elt.WritePointDataVTK(elt.data.state[0].ze, point_data[0]);
-        elt.WritePointDataVTK(elt.data.state[0].qx, point_data[1]);
-        elt.WritePointDataVTK(elt.data.state[0].qy, point_data[2]);
-        elt.WritePointDataVTK(elt.data.state[0].bath, point_data[3]);
+        elt.WritePointDataVTK(elt.data.state[0].aux, aux_point_data);
+        elt.WriteCellDataVTK(elt.data.state[0].aux, aux_cell_data);
     });
 
     std::vector<uint> elt_id_data;
@@ -35,23 +31,23 @@ void Problem::write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
     raw_data_file << "\t\t\t<PointData>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"ze_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = point_data[0].begin(); it != point_data[0].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = q_point_data.begin(); it != q_point_data.end(); it++)
+        raw_data_file << (*it)[SWE::Variables::ze] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qx_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = point_data[1].begin(); it != point_data[1].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = q_point_data.begin(); it != q_point_data.end(); it++)
+        raw_data_file << (*it)[SWE::Variables::qx] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = point_data[2].begin(); it != point_data[2].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = q_point_data.begin(); it != q_point_data.end(); it++)
+        raw_data_file << (*it)[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = point_data[3].begin(); it != point_data[3].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = aux_point_data.begin(); it != aux_point_data.end(); it++)
+        raw_data_file << (*it)[SWE::Auxiliaries::bath] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t</PointData>\n";
@@ -59,23 +55,23 @@ void Problem::write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_da
     raw_data_file << "\t\t\t<CellData>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"ze_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = cell_data[0].begin(); it != cell_data[0].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = q_cell_data.begin(); it != q_cell_data.end(); it++)
+        raw_data_file << (*it)[SWE::Variables::ze] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qx_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = cell_data[1].begin(); it != cell_data[1].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = q_cell_data.begin(); it != q_cell_data.end(); it++)
+        raw_data_file << (*it)[SWE::Variables::qx] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = cell_data[2].begin(); it != cell_data[2].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = q_cell_data.begin(); it != q_cell_data.end(); it++)
+        raw_data_file << (*it)[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = cell_data[3].begin(); it != cell_data[3].end(); it++)
-        raw_data_file << *it << ' ';
+    for (auto it = aux_cell_data.begin(); it != aux_cell_data.end(); it++)
+        raw_data_file << (*it)[SWE::Auxiliaries::bath] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"UInt32\" Name=\"ID\" format=\"ascii\">\n\t\t\t\t\t";

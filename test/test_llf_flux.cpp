@@ -13,32 +13,35 @@ bool test_configuration(const int configuration,
                         const double qy_ex,
                         const double bath,
                         const double sp,
-                        std::vector<double>& normal,
+                        const StatVector<double, 2>& normal,
                         const double true_ze_flux,
                         const double true_qx_flux,
                         const double true_qy_flux) {
     bool error_found = false;
 
-    double ze_flux, qx_flux, qy_flux;
+    StatVector<double, 3> q_in{ze_in, qx_in, qy_in};
+    StatVector<double, 3> q_ex{ze_ex, qx_ex, qy_ex};
+    StatVector<double, 3> aux_in{bath, ze_in + bath, sp};
 
-    SWE::RKDG::LLF_flux(
-        SWE::Global::g, ze_in, ze_ex, qx_in, qx_ex, qy_in, qy_ex, bath, sp, normal, ze_flux, qx_flux, qy_flux);
+    StatVector<double, 3> F_hat;
 
-    if (!Utilities::almost_equal(ze_flux, true_ze_flux)) {
+    F_hat = SWE::RKDG::LLF_flux(SWE::Global::g, q_in, q_ex, aux_in, normal);
+
+    if (!Utilities::almost_equal(F_hat[0], true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";
-        std::cerr << "Got: " << ze_flux << " Should be:  " << true_ze_flux << "\n";
+        std::cerr << "Got: " << F_hat[0] << " Should be:  " << true_ze_flux << "\n";
         error_found = true;
     }
 
-    if (!Utilities::almost_equal(qx_flux, true_qx_flux)) {
+    if (!Utilities::almost_equal(F_hat[1], true_qx_flux)) {
         std::cerr << "Error in configuration " << configuration << " in x-momentum flux\n";
-        std::cerr << "Got: " << qx_flux << " Should be:  " << true_qx_flux << "\n";
+        std::cerr << "Got: " << F_hat[1] << " Should be:  " << true_qx_flux << "\n";
         error_found = true;
     }
 
-    if (!Utilities::almost_equal(qy_flux, true_qy_flux)) {
+    if (!Utilities::almost_equal(F_hat[2], true_qy_flux)) {
         std::cerr << "Error in configuration 1 in y-momentum flux\n";
-        std::cerr << "Got: " << qy_flux << " Should be:  " << true_qy_flux << "\n";
+        std::cerr << "Got: " << F_hat[2] << " Should be:  " << true_qy_flux << "\n";
         error_found = true;
     }
 
@@ -64,7 +67,7 @@ int main() {
         double qy_in = 0.1;
         double qy_ex = -0.2;
 
-        std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
+        StatVector<double, 2> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
         double sp   = 1;
@@ -94,7 +97,7 @@ int main() {
         double qy_in = 0;
         double qy_ex = 0;
 
-        std::vector<double> normal{1. / std::sqrt(2.), -1. / std::sqrt(2.)};
+        StatVector<double, 2> normal{1. / std::sqrt(2.), -1. / std::sqrt(2.)};
 
         double bath = 0;
         double sp   = 1;
@@ -124,7 +127,7 @@ int main() {
         double qy_in = 7.1;
         double qy_ex = 6.2;
 
-        std::vector<double> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
+        StatVector<double, 2> normal{1. / std::sqrt(2.), 1. / std::sqrt(2.)};
 
         double bath = 0;
         double sp   = 1;

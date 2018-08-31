@@ -6,12 +6,12 @@
 namespace SWE {
 namespace IHDG {
 void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
-    std::vector<std::pair<uint, Array2D<double>>> modal_data;
+    std::vector<std::pair<uint, HybMatrix<double, SWE::n_variables>>> modal_q;
+    std::vector<std::pair<uint, HybMatrix<double, 1>>> modal_aux;
 
-    mesh.CallForEachElement([&modal_data](auto& elt) {
-        modal_data.push_back(std::make_pair(
-            elt.GetID(),
-            Array2D<double>{elt.data.state[0].ze, elt.data.state[0].qx, elt.data.state[0].qy, elt.data.state[0].bath}));
+    mesh.CallForEachElement([&modal_q, &modal_aux](auto& elt) {
+        modal_q.push_back(std::make_pair(elt.GetID(), elt.data.state[0].q));
+        modal_aux.push_back(std::make_pair(elt.GetID(), elt.data.state[0].aux));
     });
 
     std::ofstream file;
@@ -24,9 +24,11 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-        for (auto itt = (*it).second[0].begin(); itt != (*it).second[0].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
+    for (auto it = modal_q.begin(); it != modal_q.end(); it++) {
+        uint ndof = columns((*it).second);
+
+        for (uint dof = 0; dof < ndof; ++dof) {
+            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Variables::ze, dof) << std::endl;
         }
     }
 
@@ -40,9 +42,11 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-        for (auto itt = (*it).second[1].begin(); itt != (*it).second[1].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
+    for (auto it = modal_q.begin(); it != modal_q.end(); it++) {
+        uint ndof = columns((*it).second);
+
+        for (uint dof = 0; dof < ndof; ++dof) {
+            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Variables::qx, dof) << std::endl;
         }
     }
 
@@ -56,9 +60,11 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-        for (auto itt = (*it).second[2].begin(); itt != (*it).second[2].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
+    for (auto it = modal_q.begin(); it != modal_q.end(); it++) {
+        uint ndof = columns((*it).second);
+
+        for (uint dof = 0; dof < ndof; ++dof) {
+            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Variables::qy, dof) << std::endl;
         }
     }
 
@@ -72,9 +78,11 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_data.begin(); it != modal_data.end(); it++) {
-        for (auto itt = (*it).second[3].begin(); itt != (*it).second[3].end(); itt++) {
-            file << (*it).first << ' ' << std::scientific << (*itt) << std::endl;
+    for (auto it = modal_aux.begin(); it != modal_aux.end(); it++) {
+        uint ndof = columns((*it).second);
+
+        for (uint dof = 0; dof < ndof; ++dof) {
+            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Auxiliaries::bath, dof) << std::endl;
         }
     }
 

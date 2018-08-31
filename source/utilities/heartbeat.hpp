@@ -34,6 +34,7 @@ class HeartBeat {
 #endif
 };
 
+// Note that by default a duration of double is interpreted as seconds
 HeartBeat::HeartBeat(const std::chrono::duration<double>& period_)
     : period(std::chrono::duration_cast<clock_t::duration>(period_)),
       t_next((clock_t::now().time_since_epoch() / period + 2) * period) {}

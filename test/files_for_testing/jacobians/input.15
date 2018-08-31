@@ -1,0 +1,33 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Adcirc
+  file_name: ../../test/files_for_testing/jacobians/mesh.14
+  coordinate_system: cartesian
+
+timestepping:
+  start_time: 01-01-2018 00:00:00
+  end_time: 01-01-2018 00:00:00              
+  dt: 1                           
+  order: 1
+  nstages: 1
+
+polynomial_order: 1
+
+problem:
+  name: swe
+  gravity: 9.81
+  density_air: 1.225
+  density_water: 1000.0
+
+output:
+  path: ../../test/files_for_testing/jacobians/
+  vtu:
+    frequency: 120.0
+  logfile:
+    name: log
+    verbose: false
