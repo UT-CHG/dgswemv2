@@ -24,7 +24,7 @@ struct DGDiscretization {
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-      ar & mesh;
+        ar& mesh;
     }
 #endif
 };
@@ -54,7 +54,7 @@ struct HDGDiscretization {
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive&, unsigned) {
-      throw std::logic_error("Error: Serialization of HDGDiscretization not supported");
+        throw std::logic_error("Error: Serialization of HDGDiscretization not supported");
     }
 #endif
 };

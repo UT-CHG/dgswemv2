@@ -79,7 +79,7 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
         this->simulation_unit_clients.emplace_back(hpx::new_<ClientType>(here, input_string, locality_id, submesh_id));
 
         registration_futures.push_back(this->simulation_unit_clients.back().register_as(
-        std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
+            std::string{ClientType::GetBasename()} + std::to_string(locality_id) + '_' + std::to_string(submesh_id)));
 
         ++submesh_id;
     }
@@ -105,9 +105,9 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     for (uint step = 1; step <= this->n_steps; step++) {
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
             simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
-                    f.get();  // check for exceptions
-                    return this->simulation_unit_clients[sim_id].Step();
-                });
+                f.get();  // check for exceptions
+                return this->simulation_unit_clients[sim_id].Step();
+            });
         }
     }
 

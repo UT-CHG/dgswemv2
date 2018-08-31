@@ -53,7 +53,6 @@ struct HPXSimulationUnit
     void on_migrated();  // Do not rename this is overload member of the base class
 
   private:
-
     void SwapStates();
 };
 
@@ -119,18 +118,18 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
 
     for (uint stage = 0; stage < this->stepper.GetNumStages(); stage++) {
         step_future = step_future.then([this](auto&& f) {
-                f.get();
-                return ProblemType::hpx_stage_kernel(this);
-            });
+            f.get();
+            return ProblemType::hpx_stage_kernel(this);
+        });
     }
 
     return step_future.then([this](auto&& f) {
-            f.get();
-            if ( this->submesh_model ) {
-                this->submesh_model->InStep(0,0);
-            }
-            this->SwapStates();
-        });
+        f.get();
+        if (this->submesh_model) {
+            this->submesh_model->InStep(0, 0);
+        }
+        this->SwapStates();
+    });
 }
 
 template <typename ProblemType>
@@ -163,13 +162,13 @@ void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
         this->writer.GetLogFile() << "Departing from locality " << hpx::get_locality_id() << std::endl;
     }
 
-    ar& stepper& writer& discretization & problem_input& parser& communicator& submesh_model;
+    ar& stepper& writer& discretization& problem_input& parser& communicator& submesh_model;
 }
 
 template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::load(Archive& ar, unsigned) {
-    ar& stepper& writer& discretization & problem_input& parser& communicator& submesh_model;
+    ar& stepper& writer& discretization& problem_input& parser& communicator& submesh_model;
 
     this->writer.StartLog();
 
