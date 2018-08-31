@@ -38,7 +38,7 @@ Point<2> StraightTriangle::GetBarycentricCoordinates() {
 std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
     std::vector<Point<2>> midpoint_coord(3);
 
-    for (uint midpt = 0; midpt < 3; mid++pt) {
+    for (uint midpt = 0; midpt < 3; ++midpt) {
         midpoint_coord[midpt][GlobalCoord::x] = (this->nodal_coordinates[(midpt + 1) % 3][GlobalCoord::x] +
                                                  this->nodal_coordinates[(midpt + 2) % 3][GlobalCoord::x]) /
                                                 2.0;
