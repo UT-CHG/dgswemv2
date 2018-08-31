@@ -27,13 +27,13 @@ struct Source {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        /*ar  & coriolis_f
+        ar  & coriolis_f
             & manning
             & g_manning_n_sq
             & tau_s
             & p_atm
             & tide_pot
-            & manning_n;*/
+            & manning_n;
         // clang-format on
     }
 #endif

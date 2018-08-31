@@ -37,11 +37,8 @@ struct HPXSimulationUnit
     void Launch();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
 
-    hpx::future<void> Stage();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Stage, StageAction);
-
-    void SwapStates();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, SwapStates, SwapStatesAction);
+    hpx::future<void> Step();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
 
     double ResidualL2();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
@@ -54,6 +51,10 @@ struct HPXSimulationUnit
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
     void on_migrated();  // Do not rename this is overload member of the base class
+
+  private:
+
+    void SwapStates();
 };
 
 template <typename ProblemType>
@@ -113,8 +114,23 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-hpx::future<void> HPXSimulationUnit<ProblemType>::Stage() {
-    return ProblemType::hpx_stage_kernel(this);
+hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
+    hpx::future<void> step_future = hpx::make_ready_future();
+
+    for (uint stage = 0; stage < this->stepper.GetNumStages(); stage++) {
+        step_future = step_future.then([this](auto&& f) {
+                f.get();
+                return ProblemType::hpx_stage_kernel(this);
+            });
+    }
+
+    return step_future.then([this](auto&& f) {
+            f.get();
+            if ( this->submesh_model ) {
+                this->submesh_model->InStep(0,0);
+            }
+            this->SwapStates();
+        });
 }
 
 template <typename ProblemType>
@@ -206,13 +222,8 @@ class HPXSimulationUnitClient
         return hpx::async<ActionType>(this->get_id());
     }
 
-    hpx::future<void> Stage() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::StageAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> SwapStates() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::SwapStatesAction;
+    hpx::future<void> Step() {
+        using ActionType = typename HPXSimulationUnit<ProblemType>::StepAction;
         return hpx::async<ActionType>(this->get_id());
     }
 

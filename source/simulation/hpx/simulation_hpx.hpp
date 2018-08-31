@@ -103,20 +103,11 @@ hpx::future<void> HPXSimulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint stage = 0; stage < this->n_stages; stage++) {
-            for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
-                simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
-                    f.get();  // check for exceptions
-                    return this->simulation_unit_clients[sim_id].Stage();
-                });
-            }
-        }
-
         for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
             simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
-                f.get();  // check for exceptions
-                return this->simulation_unit_clients[sim_id].SwapStates();
-            });
+                    f.get();  // check for exceptions
+                    return this->simulation_unit_clients[sim_id].Step();
+                });
         }
     }
 
