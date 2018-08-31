@@ -12,7 +12,7 @@ void Problem::create_interfaces_kernel(
     // *** //
     using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal>;
 
-    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == GN::BoundaryTypes::internal) {
             using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
 

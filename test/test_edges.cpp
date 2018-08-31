@@ -84,11 +84,11 @@ int main() {
         edge_boundaries.emplace_back(EdgeBoundaryType(bound));
     }
 
-    for (uint n_bound = 0; n_bound < 3; n_bound++) {
+    for (uint n_bound = 0; n_bound < 3; ++n_bound) {
         u_proj_gp  = edge_boundaries[n_bound].ComputeUgp(u_proj);
         u_proj_res = edge_boundaries[n_bound].L2Projection(u_proj_gp);
 
-        for (uint dof = 0; dof < 11; dof++) {
+        for (uint dof = 0; dof < 11; ++dof) {
             if (!almost_equal(u_proj(0, dof), u_proj_res(0, dof))) {
                 error_found = true;
 
@@ -97,11 +97,11 @@ int main() {
         }
     }
 
-    for (uint dof = 0; dof < 11; dof++) {
+    for (uint dof = 0; dof < 11; ++dof) {
         set_constant(u, 0.0);
         row(u, 0)[dof] = 1.0;
 
-        for (uint n_bound = 0; n_bound < 3; n_bound++) {
+        for (uint n_bound = 0; n_bound < 3; ++n_bound) {
             // just checking orthogonality of Legendre 1D poly
             u_gp = edge_boundaries[n_bound].ComputeUgp(u);
 
@@ -143,7 +143,7 @@ int main() {
         u_proj_gp  = edge_interfaces[n_int].ComputeUgp(u_proj);
         u_proj_res = edge_interfaces[n_int].L2Projection(u_proj_gp);
 
-        for (uint dof = 0; dof < 11; dof++) {
+        for (uint dof = 0; dof < 11; ++dof) {
             if (!almost_equal(u_proj(0, dof), u_proj_res(0, dof))) {
                 error_found = true;
 
@@ -152,7 +152,7 @@ int main() {
         }
     }
 
-    for (uint dof = 0; dof < 11; dof++) {
+    for (uint dof = 0; dof < 11; ++dof) {
         set_constant(u, 0.0);
         row(u, 0)[dof] = 1.0;
 
@@ -186,14 +186,14 @@ int main() {
     DynMatrix<double> unit(1, integration.GetNumGP(21));
     set_constant(unit, 1.0);
 
-    for (uint n_bound = 0; n_bound < 1; n_bound++) {
-        for (uint dof = 0; dof < 66; dof++) {
+    for (uint n_bound = 0; n_bound < 1; ++n_bound) {
+        for (uint dof = 0; dof < 66; ++dof) {
             set_constant(u_phi, 0.0);
             row(u_phi, 0)[dof] = 1.0;
 
             u_phi_gp = edge_boundaries[n_bound].boundary.ComputeUgp(u_phi);
 
-            for (uint doff = 0; doff < 11; doff++) {
+            for (uint doff = 0; doff < 11; ++doff) {
                 if (!almost_equal(edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit)[0],
                                   edge_boundaries[n_bound].IntegrationLambda(doff, u_phi_gp)[0],
                                   1.e+03)) {
@@ -209,13 +209,13 @@ int main() {
     }
 
     for (uint n_int = 0; n_int < 3; n_int++) {
-        for (uint dof = 0; dof < 66; dof++) {
+        for (uint dof = 0; dof < 66; ++dof) {
             set_constant(u_phi, 0.0);
             row(u_phi, 0)[dof] = 1.0;
 
             u_phi_gp = edge_interfaces[n_int].interface.ComputeUgpIN(u_phi);
 
-            for (uint doff = 0; doff < 11; doff++) {
+            for (uint doff = 0; doff < 11; ++doff) {
                 if (!almost_equal(edge_interfaces[n_int].IntegrationPhiLambdaIN(dof, doff, unit)[0],
                                   edge_interfaces[n_int].IntegrationLambda(doff, u_phi_gp)[0],
                                   1.e+03)) {
@@ -225,7 +225,7 @@ int main() {
                 }
             }
 
-            for (uint doff = 0; doff < 11; doff++) {
+            for (uint doff = 0; doff < 11; ++doff) {
                 if (!almost_equal(std::abs(edge_interfaces[n_int].IntegrationPhiLambdaIN(dof, doff, unit)[0]),
                                   std::abs(edge_interfaces[n_int].IntegrationPhiLambdaEX(dof, doff, unit)[0]),
                                   1.e+03)) {

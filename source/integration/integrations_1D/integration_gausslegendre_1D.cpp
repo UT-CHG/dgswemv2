@@ -17,7 +17,7 @@ std::pair<DynVector<double>, std::vector<Point<1>>> GaussLegendre_1D::GetRule(co
     rule.first.resize(ngp);
     rule.second.resize(ngp);
 
-    for (uint gp = 0; gp < ngp; gp++) {
+    for (uint gp = 0; gp < ngp; ++gp) {
         rule.first[gp]  = gp_data.first[gp];
         rule.second[gp] = gp_data.second[gp];
     }

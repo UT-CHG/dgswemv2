@@ -25,8 +25,8 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
     // and tau term to dF_hat_dq
     add_dF_hat_tau_terms_bound_LF(edge_bound);
 
-    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); ++dof_j) {
             submatrix(internal.delta_local,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
@@ -40,8 +40,8 @@ void Problem::local_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryT
             -edge_bound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
     }
 
-    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); ++dof_j) {
             submatrix(boundary.delta_hat_local,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
@@ -61,8 +61,8 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
 
     edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
 
-    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); ++dof_j) {
             submatrix(boundary.delta_global,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
@@ -73,8 +73,8 @@ void Problem::global_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundary
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); ++dof_j) {
             submatrix(edge_internal.delta_hat_global,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,

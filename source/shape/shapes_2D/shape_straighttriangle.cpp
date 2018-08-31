@@ -38,7 +38,7 @@ Point<2> StraightTriangle::GetBarycentricCoordinates() {
 std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
     std::vector<Point<2>> midpoint_coord(3);
 
-    for (uint midpt = 0; midpt < 3; midpt++) {
+    for (uint midpt = 0; midpt < 3; mid++pt) {
         midpoint_coord[midpt][GlobalCoord::x] = (this->nodal_coordinates[(midpt + 1) % 3][GlobalCoord::x] +
                                                  this->nodal_coordinates[(midpt + 2) % 3][GlobalCoord::x]) /
                                                 2.0;
@@ -134,7 +134,7 @@ DynMatrix<double> StraightTriangle::GetPsi(const std::vector<Point<2>>& points) 
 
     DynMatrix<double> psi(ndof, npt);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         psi(0, pt) = -(points[pt][LocalCoordTri::z1] + points[pt][LocalCoordTri::z2]) / 2;  // N1
         psi(1, pt) = (1 + points[pt][LocalCoordTri::z1]) / 2;                               // N2
         psi(2, pt) = (1 + points[pt][LocalCoordTri::z2]) / 2;                               // N3
@@ -154,7 +154,7 @@ std::array<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const std::vector<Poi
 
     StatMatrix<double, 2, 2> J_inv = this->GetJinv(points)[0];
 
-    for (uint pt = 0; pt < points.size(); pt++) {
+    for (uint pt = 0; pt < points.size(); ++pt) {
         dpsi_dx(0, pt) =
             -0.5 * J_inv(LocalCoordTri::z1, GlobalCoord::x) - 0.5 * J_inv(LocalCoordTri::z2, GlobalCoord::x);
         dpsi_dy(0, pt) =
@@ -179,7 +179,7 @@ DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const st
 
     DynMatrix<double> psi_bound(ndof, npt);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         psi_bound(0, pt) = (1 - points[pt][LocalCoordTri::z1]) / 2;  // N1
         psi_bound(1, pt) = (1 + points[pt][LocalCoordTri::z1]) / 2;  // N2
     }
@@ -194,7 +194,7 @@ std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vect
 
     DynMatrix<double> psi_pts = this->GetPsi(points);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         global_coordinates[pt][GlobalCoord::x] = this->nodal_coordinates[0][GlobalCoord::x] * psi_pts(0, pt) +
                                                  this->nodal_coordinates[1][GlobalCoord::x] * psi_pts(1, pt) +
                                                  this->nodal_coordinates[2][GlobalCoord::x] * psi_pts(2, pt);
@@ -214,8 +214,8 @@ void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cell
     double z2;
     double dz = 2.0 / N_DIV;
 
-    for (uint i = 0; i <= N_DIV; i++) {
-        for (uint j = 0; j <= N_DIV - i; j++) {
+    for (uint i = 0; i <= N_DIV; ++i) {
+        for (uint j = 0; j <= N_DIV - i; ++j) {
             points.push_back({0, 0, 0});
 
             z1 = -1.0 + dz * j;
@@ -235,8 +235,8 @@ void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cell
 
     uint pt_ID;
 
-    for (uint i = 0; i < N_DIV; i++) {
-        for (uint j = 0; j < N_DIV - i; j++) {
+    for (uint i = 0; i < N_DIV; ++i) {
+        for (uint j = 0; j < N_DIV - i; ++j) {
             cells.push_back(std::vector<uint>(4));
 
             pt_ID = number_pt + (N_DIV + 1) * (N_DIV + 2) / 2 - (N_DIV - i + 1) * (N_DIV - i + 2) / 2 + j;
@@ -248,8 +248,8 @@ void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cell
         }
     }
 
-    for (uint i = 1; i < N_DIV; i++) {
-        for (uint j = 0; j < N_DIV - i; j++) {
+    for (uint i = 1; i < N_DIV; ++i) {
+        for (uint j = 0; j < N_DIV - i; ++j) {
             cells.push_back(std::vector<uint>(4));
 
             pt_ID = number_pt + (N_DIV + 1) * (N_DIV + 2) / 2 - (N_DIV - i + 1) * (N_DIV - i + 2) / 2 + j;

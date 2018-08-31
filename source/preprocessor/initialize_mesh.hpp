@@ -69,7 +69,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
     ProblemType::create_boundaries_kernel(raw_boundaries, mesh, problem_input, writer);
     ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, problem_input, communicator, writer);
 
-    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->second.size() != 0) {
             throw std::logic_error("Fatal Error: unprocessed raw_boundaries of boundary type " +
                                    std::to_string(it->first) + "!\n");

@@ -18,7 +18,7 @@ int main() {
         uint num_gp = dunavant.GetNumGP(p);
 
         double num_integration = 0;
-        for (uint gp = 0; gp < rule.first.size(); gp++) {
+        for (uint gp = 0; gp < rule.first.size(); ++gp) {
             num_integration += pow(rule.second[gp][GlobalCoord::x], p) * rule.first[gp];
         }
 

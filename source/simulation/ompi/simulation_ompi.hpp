@@ -67,7 +67,7 @@ void OMPISimulation<ProblemType>::Run() {
 
         ProblemType::ompi_preprocessor_kernel(this->sim_units);
 
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (this->sim_units[su_id]->writer.WritingLog()) {
                 this->sim_units[su_id]->writer.GetLogFile() << std::endl
                                                             << "Launching Simulation!" << std::endl
@@ -87,7 +87,7 @@ void OMPISimulation<ProblemType>::Run() {
 
         for (uint step = 1; step <= this->n_steps; step++) {
             for (uint stage = 0; stage < this->n_stages; stage++) {
-                for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+                for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
                     if (this->sim_units[su_id]->parser.ParsingInput()) {
                         this->sim_units[su_id]->parser.ParseInput(this->sim_units[su_id]->stepper,
                                                                   this->sim_units[su_id]->discretization.mesh);
@@ -97,7 +97,7 @@ void OMPISimulation<ProblemType>::Run() {
                 ProblemType::ompi_stage_kernel(this->sim_units);
             }
 
-            for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
                 this->sim_units[su_id]->discretization.mesh.CallForEachElement([this, su_id](auto& elt) {
                     ProblemType::swap_states_kernel(this->sim_units[su_id]->stepper, elt);
                 });

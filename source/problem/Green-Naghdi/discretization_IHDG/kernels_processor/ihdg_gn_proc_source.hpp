@@ -159,7 +159,7 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
         cwise_multiplication(cwise_multiplication(h2, c1), dbath_dy) +
         Global::g / NDParameters::alpha * cwise_multiplication(dze_dy, h);
 
-    for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+    for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
         subvector(internal.w1_rhs, GN::n_dimensions * dof, GN::n_dimensions) =
             elt.IntegrationPhi(dof, internal.w1_rhs_kernel_at_gp);
     }

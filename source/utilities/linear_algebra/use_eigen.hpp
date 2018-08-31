@@ -36,7 +36,7 @@ template <typename T>
 DynVector<T> IdentityVector(uint size) {
     DynVector<T> I_vector = DynVector<T>::Zero(size * size);
 
-    for (uint i = 0; i < size; i++) {
+    for (uint i = 0; i < size; ++i) {
         I_vector[i * size + i] = 1.0;
     }
 

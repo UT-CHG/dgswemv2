@@ -19,7 +19,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     begin_sim_id = sim_per_thread * thread_id;
     end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             const uint stage = sim_units[su_id]->stepper.GetStage();
 
@@ -37,7 +37,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     while (true) {
         iter++;
 
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             /* Local Step */
             sim_units[su_id]->discretization.mesh.CallForEachElement(
                 [&sim_units, su_id](auto& elt) { Problem::local_volume_kernel(sim_units[su_id]->stepper, elt); });
@@ -95,7 +95,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             bool nan_found = Problem::scrutinize_solution_kernel(sim_units[su_id]->stepper, elt);
 

@@ -101,7 +101,7 @@ void Problem::create_distributed_boundaries_kernel(
 
                 std::vector<LeveeInput> levee;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
+                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
                     bool found = false;
 
                     for (auto& levee_node : levee_data) {

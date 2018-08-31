@@ -95,17 +95,17 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
         this->int_fact = integration_rule.first * surface_J[0];
 
         this->int_phi_fact = transpose(this->phi_gp);
-        for (uint dof = 0; dof < this->master.ndof; dof++) {
-            for (uint gp = 0; gp < ngp; gp++) {
+        for (uint dof = 0; dof < this->master.ndof; ++dof) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 this->int_phi_fact(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
         this->int_phi_phi_fact.resize(ngp, std::pow(this->master.ndof, 2));
-        for (uint dof_i = 0; dof_i < this->master.ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < this->master.ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < this->master.ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < this->master.ndof; ++dof_j) {
                 uint lookup = this->master.ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_phi_phi_fact(gp, lookup) = this->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
                 }
             }

@@ -14,7 +14,7 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
         internal.local_dof_offset = local_dof_offset;
         local_dof_offset += elt.data.get_ndof();
 
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
             elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
         }
 

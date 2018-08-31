@@ -180,13 +180,13 @@ void Inputs::read_bcis(const std::string& bcis_file) {
             stream = std::stringstream(line);
             stream >> ncon;
 
-            for (uint con = 0; con < ncon; con++) {
+            for (uint con = 0; con < ncon; ++con) {
                 std::getline(file, line);
 
                 stream = std::stringstream(line);
                 stream >> frequency >> force_fact >> eq_argument;
 
-                for (uint node = 0; node < nnodes; node++) {
+                for (uint node = 0; node < nnodes; ++node) {
                     std::getline(file, line);
 
                     stream = std::stringstream(line);
@@ -211,13 +211,13 @@ void Inputs::read_bcis(const std::string& bcis_file) {
             stream = std::stringstream(line);
             stream >> ncon;
 
-            for (uint con = 0; con < ncon; con++) {
+            for (uint con = 0; con < ncon; ++con) {
                 std::getline(file, line);
 
                 stream = std::stringstream(line);
                 stream >> frequency >> force_fact >> eq_argument;
 
-                for (uint node = 0; node < nnodes; node++) {
+                for (uint node = 0; node < nnodes; ++node) {
                     std::getline(file, line);
 
                     stream = std::stringstream(line);

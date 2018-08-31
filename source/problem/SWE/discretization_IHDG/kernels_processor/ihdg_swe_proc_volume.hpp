@@ -71,8 +71,8 @@ void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
         column(internal.kronecker_DT_at_gp, gp) = IdentityVector<double>(SWE::n_variables) / stepper.GetDT();
     }
 
-    for (uint dof_i = 0; dof_i < elt.data.get_ndof(); dof_i++) {
-        for (uint dof_j = 0; dof_j < elt.data.get_ndof(); dof_j++) {
+    for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < elt.data.get_ndof(); ++dof_j) {
             submatrix(internal.delta_local,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,

@@ -64,7 +64,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         row(boundary_in.aux_at_gp, GN::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
 
         uint gp_ex;
-        for (uint gp = 0; gp < ngp; gp++) {
+        for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
             boundary_ex.aux_at_gp(GN::Auxiliaries::bath, gp_ex) = boundary_in.aux_at_gp(GN::Auxiliaries::bath, gp);

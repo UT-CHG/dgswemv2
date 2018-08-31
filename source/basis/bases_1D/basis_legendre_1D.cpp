@@ -9,11 +9,11 @@ DynMatrix<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>&
 
     std::vector<double> l1(npt);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         l1[pt] = points[pt][LocalCoordLin::l1];
     }
 
-    for (uint dof = 0; dof < ndof; dof++) {
+    for (uint dof = 0; dof < ndof; ++dof) {
         row(phi, dof) = transpose(jacobi_polynomial(dof, 0, 0, l1));
     }
 
@@ -30,11 +30,11 @@ std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::v
 
     std::vector<double> l1(npt);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         l1[pt] = points[pt][LocalCoordLin::l1];
     }
 
-    for (uint dof = 0; dof < ndof; dof++) {
+    for (uint dof = 0; dof < ndof; ++dof) {
         row(dphi_dl1, dof) = transpose(jacobi_polynomial_derivative(dof, 0, 0, l1));
     }
 
@@ -50,7 +50,7 @@ DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
 
     set_constant(m_inv, 0.0);
 
-    for (uint dof = 0; dof < ndof; dof++) {
+    for (uint dof = 0; dof < ndof; ++dof) {
         m_inv(dof, dof) = (2 * dof + 1) / 2.0;
     }
 

@@ -19,7 +19,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     begin_sim_id = sim_per_thread * thread_id;
     end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile()
                 << "Current (time, stage): (" << sim_units[su_id]->stepper.GetTimeAtCurrentStage() << ','
@@ -37,7 +37,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         sim_units[su_id]->communicator.SendAll(sim_units[su_id]->stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Starting work before receive" << std::endl;
         }
@@ -88,7 +88,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile()
                 << "Starting to wait on receive with timestamp: " << sim_units[su_id]->stepper.GetTimestamp()
@@ -131,7 +131,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(sim_units[su_id]->stepper.GetTimestamp());
     }
 }

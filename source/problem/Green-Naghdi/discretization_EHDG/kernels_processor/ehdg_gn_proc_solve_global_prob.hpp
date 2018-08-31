@@ -24,7 +24,7 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, HDGDiscretizatio
 
         internal.w1_w1 -= internal.w1_w2 * internal.w2_w2_inv * internal.w2_w1;
 
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
             elt.data.boundary[bound_id].w1_w1_hat -=
                 internal.w1_w2 * internal.w2_w2_inv * elt.data.boundary[bound_id].w2_w1_hat;
 

@@ -20,7 +20,7 @@ class EdgeBoundary {
     DynMatrix<double> m_inv;
 
   public:
-    EdgeBoundary(BoundaryType& boundary);
+    EdgeBoundary(BoundaryType& boundary, bool ccw = true);
 
     uint GetID() { return this->ID; }
     void SetID(uint ID) { this->ID = ID; }
@@ -43,7 +43,7 @@ class EdgeBoundary {
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(BoundaryType& boundary)
+EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(BoundaryType& boundary, bool ccw)
     : boundary(boundary) {
     // *** //
     typename BoundaryType::BoundaryIntegrationType integration;
@@ -55,7 +55,17 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
 
     BasisType basis;
 
-    this->lambda_gp = basis.GetPhi(this->boundary.GetMaster().p, integration_rule.second);
+    if (ccw) {  // if trace basis is defined counterclockwise around element
+        this->lambda_gp = basis.GetPhi(this->boundary.GetMaster().p, integration_rule.second);
+    } else {
+        std::vector<Point<dimension>> gauss_points = integration_rule.second;
+
+        for (uint gp = 0; gp < (ngp / 2); ++gp) {
+            std::swap(gauss_points[gp], gauss_points[ngp - gp - 1]);
+        }
+
+        this->lambda_gp = basis.GetPhi(this->boundary.GetMaster().p, gauss_points);
+    }
 
     uint ndof = row(this->lambda_gp, 0).size();
 
@@ -66,17 +76,17 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_lambda_fact = transpose(this->lambda_gp);
-        for (uint dof = 0; dof < ndof; dof++) {
-            for (uint gp = 0; gp < ngp; gp++) {
+        for (uint dof = 0; dof < ndof; ++dof) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 this->int_lambda_fact(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
         this->int_lambda_lambda_fact.resize(ngp, std::pow(ndof, 2));
-        for (uint dof_i = 0; dof_i < ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < ndof; ++dof_j) {
                 uint lookup = ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_lambda_lambda_fact(gp, lookup) =
                         this->lambda_gp(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
@@ -85,10 +95,10 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
 
         uint ndof_loc = this->boundary.data.get_ndof();
         this->int_phi_lambda_fact.resize(ngp, ndof * ndof_loc);
-        for (uint dof_i = 0; dof_i < ndof_loc; dof_i++) {
-            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < ndof_loc; ++dof_i) {
+            for (uint dof_j = 0; dof_j < ndof; ++dof_j) {
                 uint lookup = ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_phi_lambda_fact(gp, lookup) =
                         this->boundary.phi_gp(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }

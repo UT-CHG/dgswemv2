@@ -68,14 +68,14 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
         std::cerr << "Error found in Triangle element in Integration" << std::endl;
     }
 
-    for (uint dof = 0; dof < 66; dof++) {
+    for (uint dof = 0; dof < 66; ++dof) {
         if (!almost_equal(IntegrationPhi_true[dof], triangle.IntegrationPhi(dof, f_vals)[0], 1.e+04)) {
             error_found = true;
             std::cerr << "Error found in Triangle element in IntegrationPhi" << std::endl;
         }
     }
 
-    for (uint dof = 0; dof < 66; dof++) {
+    for (uint dof = 0; dof < 66; ++dof) {
         if (!almost_equal(
                 IntegrationDPhiDX_true[dof], triangle.IntegrationDPhi(GlobalCoord::x, dof, f_vals)[0], 1.e+04)) {
             error_found = true;
@@ -85,7 +85,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
         }
     }
     // Add 7 more modes
-    for (uint dof = 0; dof < 66; dof++) {
+    for (uint dof = 0; dof < 66; ++dof) {
         if (!almost_equal(
                 IntegrationDPhiDY_true[dof], triangle.IntegrationDPhi(GlobalCoord::y, dof, f_vals)[0], 1.e+04)) {
             error_found = true;
@@ -167,14 +167,14 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     DynMatrix<double> gp_vals(1, triangle.data.get_ngp_internal());
     DynMatrix<double> solution_vals(1, triangle.data.get_ndof());
 
-    for (uint dof = 0; dof < 66; dof++) {
+    for (uint dof = 0; dof < 66; ++dof) {
         set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         gp_vals       = triangle.ComputeUgp(mod_vals);
         solution_vals = triangle.ApplyMinv(mod_vals);
 
-        for (uint doff = 0; doff < 66; doff++) {
+        for (uint doff = 0; doff < 66; ++doff) {
             if (dof == doff) {
                 if (!almost_equal((1. / triangle.IntegrationPhi(doff, gp_vals)[0]), solution_vals(0, dof), 1.e+03)) {
                     error_found = true;
@@ -195,7 +195,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     DynMatrix<double> gp_dvals(1, triangle.data.get_ngp_internal());
     set_constant(gp_vals, 1.0);
 
-    for (uint dof = 0; dof < 66; dof++) {
+    for (uint dof = 0; dof < 66; ++dof) {
         set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
@@ -237,7 +237,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
     modal_vals_computed = triangle.L2ProjectionNode(nodal_vals);
 
-    for (uint i = 0; i < 3; i++) {
+    for (uint i = 0; i < 3; ++i) {
         if (!almost_equal(modal_vals_computed(0, i), modal_vals_true(0, i))) {
             error_found = true;
 
@@ -245,7 +245,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
         }
     }
 
-    for (uint i = 3; i < 66; i++) {
+    for (uint i = 3; i < 66; ++i) {
         if (!almost_equal(modal_vals_computed(0, i), 0.0, 1.e+04)) {
             error_found = true;
 
@@ -257,13 +257,13 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     DynMatrix<double> unit_gp(1, triangle.data.get_ngp_internal());
     set_constant(unit_gp, 1.0);
 
-    for (uint dof = 0; dof < 66; dof++) {
+    for (uint dof = 0; dof < 66; ++dof) {
         set_constant(mod_vals, 0.0);
         row(mod_vals, 0)[dof] = 1.0;
 
         gp_vals = triangle.ComputeUgp(mod_vals);
 
-        for (uint doff = 0; doff < 66; doff++) {
+        for (uint doff = 0; doff < 66; ++doff) {
             if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals)[0],
                               triangle.IntegrationPhiPhi(dof, doff, unit_gp)[0],
                               1.e+03)) {
@@ -275,7 +275,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
         gp_dvals = triangle.ComputeDUgp(GlobalCoord::x, mod_vals);
 
-        for (uint doff = 0; doff < 66; doff++) {
+        for (uint doff = 0; doff < 66; ++doff) {
             if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::x, doff, gp_vals)[0],
                               triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp)[0],
                               1.e+03)) {
@@ -295,7 +295,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
         gp_dvals = triangle.ComputeDUgp(GlobalCoord::y, mod_vals);
 
-        for (uint doff = 0; doff < 66; doff++) {
+        for (uint doff = 0; doff < 66; ++doff) {
             if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::y, doff, gp_vals)[0],
                               triangle.IntegrationPhiDPhi(dof, GlobalCoord::y, doff, unit_gp)[0],
                               1.e+03)) {

@@ -171,11 +171,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
         this->dchi_gp = this->master->dchi_gp;
-        for (uint dir = 0; dir < dimension; dir++) {
-            for (uint gp = 0; gp < this->master->ngp; gp++) {
-                for (uint dof = 0; dof < this->master->nvrtx; dof++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
+            for (uint gp = 0; gp < this->master->ngp; ++gp) {
+                for (uint dof = 0; dof < this->master->nvrtx; ++dof) {
                     double dchi = 0;
-                    for (uint z = 0; z < dimension; z++) {
+                    for (uint z = 0; z < dimension; ++z) {
                         dchi += this->master->dchi_gp[z](dof, gp) * J_inv[0](z, dir);
                     }
                     this->dchi_gp[dir](dof, gp) = dchi;
@@ -184,11 +184,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
         }
 
         this->dphi_gp = this->master->dphi_gp;
-        for (uint dir = 0; dir < dimension; dir++) {
-            for (uint gp = 0; gp < this->master->ngp; gp++) {
-                for (uint dof = 0; dof < this->master->ndof; dof++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
+            for (uint gp = 0; gp < this->master->ngp; ++gp) {
+                for (uint dof = 0; dof < this->master->ndof; ++dof) {
                     double dphi = 0.0;
-                    for (uint z = 0; z < dimension; z++) {
+                    for (uint z = 0; z < dimension; ++z) {
                         dphi += this->master->dphi_gp[z](dof, gp) * J_inv[0](z, dir);
                     }
                     this->dphi_gp[dir](dof, gp) = dphi;
@@ -202,10 +202,10 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
         this->int_phi_fact = this->master->int_phi_fact * std::abs(det_J[0]);
 
         this->int_phi_phi_fact.resize(this->master->ngp, std::pow(this->master->ndof, 2));
-        for (uint dof_i = 0; dof_i < this->master->ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < this->master->ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < this->master->ndof; ++dof_j) {
                 uint lookup = this->master->ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < this->master->ngp; gp++) {
+                for (uint gp = 0; gp < this->master->ngp; ++gp) {
                     this->int_phi_phi_fact(gp, lookup) =
                         this->master->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
                 }
@@ -213,11 +213,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
         }
 
         this->int_dphi_fact = this->master->int_dphi_fact;
-        for (uint dir = 0; dir < dimension; dir++) {
-            for (uint dof = 0; dof < this->master->ndof; dof++) {
-                for (uint gp = 0; gp < this->master->ngp; gp++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
+            for (uint dof = 0; dof < this->master->ndof; ++dof) {
+                for (uint gp = 0; gp < this->master->ngp; ++gp) {
                     double int_dphi = 0;
-                    for (uint z = 0; z < dimension; z++) {
+                    for (uint z = 0; z < dimension; ++z) {
                         int_dphi += this->master->int_dphi_fact[z](gp, dof) * J_inv[0](z, dir);
                     }
                     int_dphi *= std::abs(det_J[0]);
@@ -226,12 +226,12 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
             }
         }
 
-        for (uint dir = 0; dir < dimension; dir++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
             this->int_phi_dphi_fact[dir].resize(this->master->ngp, std::pow(this->master->ndof, 2));
-            for (uint dof_i = 0; dof_i < this->master->ndof; dof_i++) {
-                for (uint dof_j = 0; dof_j < this->master->ndof; dof_j++) {
+            for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
+                for (uint dof_j = 0; dof_j < this->master->ndof; ++dof_j) {
                     uint lookup = this->master->ndof * dof_i + dof_j;
-                    for (uint gp = 0; gp < this->master->ngp; gp++) {
+                    for (uint gp = 0; gp < this->master->ngp; ++gp) {
                         this->int_phi_dphi_fact[dir](gp, lookup) =
                             this->master->phi_gp(dof_i, gp) * this->int_dphi_fact[dir](gp, dof_j);
                     }
@@ -260,7 +260,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(this->master);
     Shape::Shape<dimension>* my_shape    = (Shape::Shape<dimension>*)(&this->shape);
 
-    for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
+    for (uint bound_id = 0; bound_id < this->boundary_type.size(); ++bound_id) {
         std::vector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);
 
         if (is_internal(this->boundary_type[bound_id])) {
@@ -531,7 +531,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 
     DynMatrix<double> true_gp(nvar, ngp);
 
-    for (uint gp = 0; gp < ngp; gp++) {
+    for (uint gp = 0; gp < ngp; ++gp) {
         column(true_gp, gp) = f(gp_global[gp]);
     }
 

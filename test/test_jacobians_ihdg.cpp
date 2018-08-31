@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
         internal.local_dof_offset = local_dof_offset;
         local_dof_offset += elt.data.get_ndof() * SWE::n_variables;
 
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
             elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
         }
 
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
         const uint stage = stepper.GetStage();
         auto& state      = elt.data.state[stage + 1];
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
         // randomly assign q_hat
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
         // randomly assign q_hat
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
         // randomly assign delta_q and increment
         DynVector<double> delta_q(SWE::n_variables * elt.data.get_ndof());
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             delta_q[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
 
         delta_q *= 1.0e-8;  // make it small
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) += delta_q[3 * dof];
             state.q(SWE::Variables::qx, dof) += delta_q[3 * dof + 1];
             state.q(SWE::Variables::qy, dof) += delta_q[3 * dof + 2];
@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
         rhs_local_prev[elt.GetID()] -= elt.data.internal.rhs_local;
 
         // compare
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(
                     delta_local_diff_est[elt.GetID()][3 * dof], rhs_local_prev[elt.GetID()][3 * dof], 1.0e12)) {
                 std::cerr << "error del_local in ze" << std::endl;
@@ -337,7 +337,7 @@ int main(int argc, char* argv[]) {
         rhs_global_prev[edge_int.GetID()] -= edge_internal.rhs_global;
 
         // compare
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof],
                                          rhs_global_prev[edge_int.GetID()][3 * dof],
                                          1.0e12)) {
@@ -372,7 +372,7 @@ int main(int argc, char* argv[]) {
         // randomly assign delta_q_hat and increment
         DynVector<double> delta_q_hat(SWE::n_variables * edge_int.edge_data.get_ndof());
 
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             delta_q_hat[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -406,7 +406,7 @@ int main(int argc, char* argv[]) {
         rhs_global_prev[edge_bound.GetID()] -= edge_internal.rhs_global;
 
         // compare
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof],
                                          rhs_global_prev[edge_bound.GetID()][3 * dof],
                                          1.0e12)) {
@@ -441,7 +441,7 @@ int main(int argc, char* argv[]) {
         // randomly assign delta_q_hat and increment
         DynVector<double> delta_q_hat(SWE::n_variables * edge_bound.edge_data.get_ndof());
 
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             delta_q_hat[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -489,7 +489,7 @@ int main(int argc, char* argv[]) {
         rhs_local_prev[elt.GetID()] -= elt.data.internal.rhs_local;
 
         // compare
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(
                     delta_local_diff_est[elt.GetID()][3 * dof], rhs_local_prev[elt.GetID()][3 * dof], 1.0e12)) {
                 std::cerr << "error del_hat_local in ze" << std::endl;
@@ -526,7 +526,7 @@ int main(int argc, char* argv[]) {
         rhs_global_prev[edge_int.GetID()] -= edge_internal.rhs_global;
 
         // compare
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(delta_global_diff_est[edge_int.GetID()][3 * dof],
                                          rhs_global_prev[edge_int.GetID()][3 * dof],
                                          1.0e12)) {
@@ -566,7 +566,7 @@ int main(int argc, char* argv[]) {
         rhs_global_prev[edge_bound.GetID()] -= edge_internal.rhs_global;
 
         // compare
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(delta_global_diff_est[edge_bound.GetID()][3 * dof],
                                          rhs_global_prev[edge_bound.GetID()][3 * dof],
                                          1.0e12)) {
