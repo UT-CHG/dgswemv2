@@ -1,10 +1,53 @@
-#include "../source/general_definitions.hpp"
 #include <yaml-cpp/yaml.h>
-#include "math.h"
+
+#include "problem/SWE/swe_definitions.hpp"
 
 #include "bathymetry.hpp"
 
 enum Pattern : uchar { simple = 0, zigzag = 1, checker = 2 };
+
+struct Node {
+    uint ID;
+    std::array<double, 3> coord;
+};
+
+struct Element {
+    uint ID;
+    uint type;
+    std::vector<uint> nodes;
+};
+
+struct Boundary {
+    uchar type;
+    std::vector<uint> nodes;
+
+    // Only needed for tidal and flow boundaries
+    double frequency;
+    double forcing_factor;
+    double equilibrium_argument;
+};
+
+std::ostream& operator<<(std::ostream& os, const Boundary& bd) {
+    switch (bd.type) {
+    case land:
+        os << "    type: land\n";
+        break;
+    case tide:
+        os << "    type: tide\n";
+        break;
+    case flow:
+        os << "    type: flow\n";
+        break;
+    }
+
+    if ( bd.type == tide || bd.type == flow ) {
+        os << "    frequency: " << bd.frequency << '\n'
+           << "    forcing factor: " << bd.forcing_factor << '\n'
+           << "    equilibrium argument: " << bd.equilibrium_argument << '\n';
+
+    }
+    return os;
+}
 
 struct MeshGeneratorInput {
     std::string mesh_name;
@@ -19,33 +62,18 @@ struct MeshGeneratorInput {
 
     Pattern pattern;
 
-    // 0 - land, 1 - tide, 2 - flow
-    std::vector<uchar> boundary_type;
+    std::vector<Boundary> boundary;
 
     MeshGeneratorInput(const std::string& input_string);
 
     void Summarize();
 };
 
-struct node {
-    uint ID;
-    std::array<double, 3> coord;
-};
+void simple_pattern_tri(uint, uint, std::vector<Element>&);
+void zigzag_pattern_tri(uint, uint, std::vector<Element>&);
+void checker_pattern_tri(uint, uint, std::vector<Element>&);
 
-struct element {
-    uint ID;
-    uint type;
-    std::vector<uint> nodes;
-};
-
-struct boundary {
-    uchar type;
-    std::vector<uint> nodes;
-};
-
-void simple_pattern_tri(uint, uint, std::vector<element>&);
-void zigzag_pattern_tri(uint, uint, std::vector<element>&);
-void checker_pattern_tri(uint, uint, std::vector<element>&);
+void WriteBCISFile(const std::string& mesh_name, const std::vector<Boundary>& boundaries);
 
 int main(int argc, const char* argv[]) {
     if (argc != 2) {
@@ -65,7 +93,7 @@ int main(int argc, const char* argv[]) {
     double dx = L / m;
     double dy = W / n;
 
-    std::vector<node> nodes((m + 1) * (n + 1));
+    std::vector<Node> nodes((m + 1) * (n + 1));
 
     for (uint i = 0; i <= m; i++) {
         for (uint j = 0; j <= n; j++) {
@@ -79,7 +107,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    std::vector<element> elements(2 * m * n);
+    std::vector<Element> elements(2 * m * n);
 
     switch (input.pattern) {
         case simple:
@@ -93,12 +121,7 @@ int main(int argc, const char* argv[]) {
             break;
     }
 
-    std::vector<boundary> boundaries(4);
-
-    boundaries[0].type = input.boundary_type[0];
-    boundaries[1].type = input.boundary_type[1];
-    boundaries[2].type = input.boundary_type[2];
-    boundaries[3].type = input.boundary_type[3];
+    std::vector<Boundary> boundaries(input.boundary);
 
     boundaries[0].nodes.resize(m + 1);
     boundaries[1].nodes.resize(n + 1);
@@ -115,7 +138,7 @@ int main(int argc, const char* argv[]) {
         boundaries[3].nodes[i] = i * (m + 1);
     }
 
-    std::ofstream file(input.mesh_name);
+    std::ofstream file(std::string{input.mesh_name+".14"});
 
     file << std::fixed << std::setprecision(12);
     file << "rectangle\n";
@@ -202,9 +225,29 @@ int main(int argc, const char* argv[]) {
 
     file << "0 = Number of generic boundaries\n";
     file << "0 = Total number of generic boundary nodes\n";
+
+    WriteBCISFile(input.mesh_name, boundaries);
 }
 
-MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) {
+void WriteBCISFile(const std::string& mesh_name, const std::vector<Boundary>& boundaries) {
+    std::ofstream file(std::string{mesh_name+".bcis"});
+
+    for (const Boundary& boundary : boundaries) {
+        if ( (boundary.type == SWE::BoundaryTypes::tide) ||
+             (boundary.type == SWE::BoundaryTypes::flow) ) {
+            file << static_cast<int>(boundary.type) << ' ' << boundary.nodes.size() << '\n';
+            //number of constituents currently hard-coded to 1
+            file << 1 << '\n';
+            file << boundary.frequency << ' ' << boundary.forcing_factor << ' ' << boundary.equilibrium_argument << '\n';
+            for (uint node_id : boundary.nodes ) {
+                file << node_id << ' ' << 0.0 << ' ' << 0.0 << '\n';
+            }
+        }
+    }
+}
+
+MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string)
+    : boundary(4) {
     YAML::Node yaml_input = YAML::LoadFile(input_string);
 
     auto throw_missing_node = [](const std::string& str) {
@@ -259,22 +302,47 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) {
         throw_missing_node("pattern");
     }
 
-    if (yaml_input["boundary_type"]) {
-        YAML::Node yaml_boundaries = yaml_input["boundary_type"];
+    if (yaml_input["boundary"]) {
+        YAML::Node yaml_boundaries = yaml_input["boundary"];
         if (!(yaml_boundaries.IsSequence() && yaml_boundaries.size() == 4)) {
             std::string err_msg{"Error: please check that the boundaries node is a sequence with 4 members"};
             throw std::logic_error(err_msg);
         }
 
+        uint bid{0};
         for (auto it = yaml_boundaries.begin(); it != yaml_boundaries.end(); ++it) {
-            this->boundary_type.push_back(it->as<uint>());
+            Boundary& bd = boundary[bid++];
+            YAML::Node boundary_node = *it;
+
+            std::string type_str = boundary_node["type"].as<std::string>();
+            if (type_str == "land") {
+                bd.type = SWE::BoundaryTypes::land;
+            } else if ( type_str == "tide" ) {
+                bd.type = SWE::BoundaryTypes::tide;
+            } else if ( type_str == "flow" ) {
+                bd.type = SWE::BoundaryTypes::flow;
+            } else {
+                std::string err_msg{"Error: Boundary type: "+type_str+" undefined"};
+                throw std::logic_error(err_msg);
+            }
+
+            if ( bd.type == tide || bd.type == flow ) {
+                if ( !boundary_node["frequency"] || !boundary_node["forcing_factor"] || !boundary_node["equilibrium_argument"] ) {
+                    std::string err_msg{"Error: mal-formatted boundary node"};
+                    throw std::logic_error(err_msg);
+                }
+
+                bd.frequency = boundary_node["frequency"].as<double>();
+                bd.forcing_factor = boundary_node["forcing_factor"].as<double>();
+                bd.equilibrium_argument = boundary_node["equilibrium_argument"].as<double>();
+            }
         }
 
     } else {
-        throw_missing_node("boundary_type");
+        throw_missing_node("boundary");
     }
 
-    this->mesh_name = yaml_input["mesh_name"] ? yaml_input["mesh_name"].as<std::string>() : "rectangular_mesh.14";
+    this->mesh_name = yaml_input["mesh_name"] ? yaml_input["mesh_name"].as<std::string>() : "rectangular_mesh";
 
     this->Summarize();
 }
@@ -301,16 +369,17 @@ void MeshGeneratorInput::Summarize() {
             break;
     }
 
-    std::cout << "  boundary_type: [";
-    for (uint bdry : this->boundary_type) {
-        std::cout << ' ' << bdry;
+    std::cout << "  boundary:\n";
+    for (uint i = 0; i < this->boundary.size(); ++i) {
+        std::cout << "  " << i << ":\n"
+                  << this->boundary[i];
     }
-    std::cout << " ]\n\n";
+    std::cout << "\n\n";
 
     std::cout << "  mesh name: " << this->mesh_name << '\n';
 }
 
-void simple_pattern_tri(uint m, uint n, std::vector<element>& elements) {
+void simple_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     // mesh with triangular elements simple pattern
     for (uint j = 0; j < n; j++) {
         for (uint i = 0; i < m; i++) {
@@ -327,7 +396,7 @@ void simple_pattern_tri(uint m, uint n, std::vector<element>& elements) {
     }
 }
 
-void zigzag_pattern_tri(uint m, uint n, std::vector<element>& elements) {
+void zigzag_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     // mesh with triangular elements zigzag pattern
     for (uint j = 0; j < n; j += 2) {
         for (uint i = 0; i < m; i++) {
@@ -358,7 +427,7 @@ void zigzag_pattern_tri(uint m, uint n, std::vector<element>& elements) {
     }
 }
 
-void checker_pattern_tri(uint m, uint n, std::vector<element>& elements) {
+void checker_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     // mesh with triangular elements checker pattern
     for (uint j = 0; j < n; j++) {
         for (uint i = j % 2; i < m; i += 2) {
