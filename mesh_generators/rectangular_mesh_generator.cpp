@@ -29,18 +29,18 @@ struct Boundary {
 
 std::ostream& operator<<(std::ostream& os, const Boundary& bd) {
     switch (bd.type) {
-    case land:
+    case SWE::BoundaryTypes::land:
         os << "    type: land\n";
         break;
-    case tide:
+    case SWE::BoundaryTypes::tide:
         os << "    type: tide\n";
         break;
-    case flow:
+    case SWE::BoundaryTypes::flow:
         os << "    type: flow\n";
         break;
     }
 
-    if ( bd.type == tide || bd.type == flow ) {
+    if ( bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow ) {
         os << "    frequency: " << bd.frequency << '\n'
            << "    forcing factor: " << bd.forcing_factor << '\n'
            << "    equilibrium argument: " << bd.equilibrium_argument << '\n';
@@ -326,7 +326,7 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string)
                 throw std::logic_error(err_msg);
             }
 
-            if ( bd.type == tide || bd.type == flow ) {
+            if ( bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow ) {
                 if ( !boundary_node["frequency"] || !boundary_node["forcing_factor"] || !boundary_node["equilibrium_argument"] ) {
                     std::string err_msg{"Error: mal-formatted boundary node"};
                     throw std::logic_error(err_msg);
