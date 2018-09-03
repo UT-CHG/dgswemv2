@@ -44,7 +44,7 @@ pattern: 0
 #    forcing_factor: 1
 #    equilibrium_argument: 0
 
-boundary_type:
+boundary:
   - type: land # (x1,y1)--(x2,y1)
   - type: land # (x1,y1)--(x1,y2)
   - type: land # (x1,y2)--(x2,y2)
