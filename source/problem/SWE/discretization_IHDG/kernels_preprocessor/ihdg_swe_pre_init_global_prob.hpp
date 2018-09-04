@@ -181,59 +181,43 @@ void Problem::initialize_global_problem_parallel_pre_send_kernel(HDGDiscretizati
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
 
-    std::vector<bool> set_global_dof_offset;
+    discretization.mesh_skeleton.CallForEachEdgeDistributed([&global_dof_offset](auto& edge_dbound) {
+        auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
-    // set who numbers the global dofs (lowest locality/submesh side)
-    for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); ++rank_boundary_id) {
-        typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
+        auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-        uint n_dbound = rank_boundary.db_data.elements_in.size();
+        set_constant(edge_dbound.edge_data.edge_state.q_hat, 0.0);
 
-        if (rank_boundary.db_data.locality_in < rank_boundary.db_data.locality_ex ||
-            (rank_boundary.db_data.locality_in == rank_boundary.db_data.locality_ex &&
-             rank_boundary.db_data.submesh_in < rank_boundary.db_data.submesh_ex)) {
-            // *** //
-            set_global_dof_offset.insert(set_global_dof_offset.begin(), n_dbound, true);
+        uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
+        uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
+        uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
+        uint submesh_ex  = edge_dbound.boundary.boundary_condition.exchanger.submesh_ex;
+
+        if (locality_in < locality_ex || (locality_in == locality_ex && submesh_in < submesh_ex)) {
+            edge_internal.global_dof_offset = global_dof_offset;
+
+            boundary.global_dof_offset = global_dof_offset;
+
+            global_dof_offset += edge_dbound.edge_data.get_ndof();
         } else {
-            set_global_dof_offset.insert(set_global_dof_offset.begin(), n_dbound, false);
+            edge_internal.global_dof_offset = 0;
+
+            boundary.global_dof_offset = 0;
         }
-    }
 
-    discretization.mesh_skeleton.CallForEachEdgeDistributed(
-        [&global_dof_offset, &set_global_dof_offset](auto& edge_dbound) {
-            auto& edge_internal = edge_dbound.edge_data.edge_internal;
+        // Initialize delta_hat_global and rhs_global containers
+        edge_internal.delta_hat_global.resize(SWE::n_variables * edge_dbound.edge_data.get_ndof(),
+                                              SWE::n_variables * edge_dbound.edge_data.get_ndof());
+        edge_internal.rhs_global.resize(SWE::n_variables * edge_dbound.edge_data.get_ndof());
 
-            auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+        // Initialize delta_hat_local container
+        boundary.delta_hat_local.resize(SWE::n_variables * edge_dbound.boundary.data.get_ndof(),
+                                        SWE::n_variables * edge_dbound.edge_data.get_ndof());
 
-            set_constant(edge_dbound.edge_data.edge_state.q_hat, 0.0);
-
-            if (set_global_dof_offset.back()) {
-                edge_internal.global_dof_offset = global_dof_offset;
-
-                boundary.global_dof_offset = global_dof_offset;
-
-                global_dof_offset += edge_dbound.edge_data.get_ndof();
-            } else {
-                edge_internal.global_dof_offset = 0;
-
-                boundary.global_dof_offset = 0;
-            }
-
-            set_global_dof_offset.pop_back();
-
-            // Initialize delta_hat_global and rhs_global containers
-            edge_internal.delta_hat_global.resize(SWE::n_variables * edge_dbound.edge_data.get_ndof(),
-                                                  SWE::n_variables * edge_dbound.edge_data.get_ndof());
-            edge_internal.rhs_global.resize(SWE::n_variables * edge_dbound.edge_data.get_ndof());
-
-            // Initialize delta_hat_local container
-            boundary.delta_hat_local.resize(SWE::n_variables * edge_dbound.boundary.data.get_ndof(),
-                                            SWE::n_variables * edge_dbound.edge_data.get_ndof());
-
-            // Initialize delta_global container
-            boundary.delta_global.resize(SWE::n_variables * edge_dbound.edge_data.get_ndof(),
-                                         SWE::n_variables * edge_dbound.boundary.data.get_ndof());
-        });
+        // Initialize delta_global container
+        boundary.delta_global.resize(SWE::n_variables * edge_dbound.edge_data.get_ndof(),
+                                     SWE::n_variables * edge_dbound.boundary.data.get_ndof());
+    });
 }
 
 void Problem::initialize_global_problem_parallel_finalize_pre_send_kernel(HDGDiscretization<Problem>& discretization,
@@ -295,25 +279,7 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send_kernel(HDGDis
 template <typename Communicator>
 void Problem::initialize_global_problem_parallel_post_receive_kernel(HDGDiscretization<Problem>& discretization,
                                                                      Communicator& communicator) {
-    std::vector<bool> set_global_dof_offset;
-
-    // set who numbers the global dofs (lowest locality/submesh side)
-    for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); ++rank_boundary_id) {
-        typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
-
-        uint n_dbound = rank_boundary.db_data.elements_in.size();
-
-        if (rank_boundary.db_data.locality_in < rank_boundary.db_data.locality_ex ||
-            (rank_boundary.db_data.locality_in == rank_boundary.db_data.locality_ex &&
-             rank_boundary.db_data.submesh_in < rank_boundary.db_data.submesh_ex)) {
-            // *** //
-            set_global_dof_offset.insert(set_global_dof_offset.begin(), n_dbound, true);
-        } else {
-            set_global_dof_offset.insert(set_global_dof_offset.begin(), n_dbound, false);
-        }
-    }
-
-    discretization.mesh_skeleton.CallForEachEdgeDistributed([&set_global_dof_offset](auto& edge_dbound) {
+    discretization.mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
         auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
@@ -324,13 +290,16 @@ void Problem::initialize_global_problem_parallel_post_receive_kernel(HDGDiscreti
 
         uint global_dof_offset = (uint)message[0];
 
-        if (!set_global_dof_offset.back()) {
+        uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
+        uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
+        uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
+        uint submesh_ex  = edge_dbound.boundary.boundary_condition.exchanger.submesh_ex;
+
+        if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
             edge_internal.global_dof_offset = global_dof_offset;
 
             boundary.global_dof_offset = global_dof_offset;
         }
-
-        set_global_dof_offset.pop_back();
     });
 }
 }

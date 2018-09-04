@@ -31,10 +31,19 @@ void Problem::create_distributed_boundaries_kernel(
         uint element_id_in, bound_id_in, p;
         // uint element_id_ex, bound_id_ex;
 
+        uint locality_in, submesh_in;
+        uint locality_ex, submesh_ex;
+
         std::vector<uint> begin_index(SWE::n_communications, 0);
 
         // check if the data in rank_boundary_data matches communicator rank boundary
         const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
+
+        locality_in = rb_meta_data.locality_in;
+        submesh_in  = rb_meta_data.submesh_in;
+
+        locality_ex = rb_meta_data.locality_ex;
+        submesh_ex  = rb_meta_data.submesh_ex;
 
         for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
             element_id_in = rb_meta_data.elements_in.at(dboundary_id);
@@ -65,7 +74,13 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
+                    DBC::Distributed(DBDataExchanger(locality_in,
+                                                     submesh_in,
+                                                     locality_ex,
+                                                     submesh_ex,
+                                                     offset,
+                                                     rank_boundary.send_buffer,
+                                                     rank_boundary.receive_buffer)));
 
                 n_distributed++;
 
