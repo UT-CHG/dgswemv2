@@ -29,22 +29,21 @@ struct Boundary {
 
 std::ostream& operator<<(std::ostream& os, const Boundary& bd) {
     switch (bd.type) {
-    case SWE::BoundaryTypes::land:
-        os << "    type: land\n";
-        break;
-    case SWE::BoundaryTypes::tide:
-        os << "    type: tide\n";
-        break;
-    case SWE::BoundaryTypes::flow:
-        os << "    type: flow\n";
-        break;
+        case SWE::BoundaryTypes::land:
+            os << "    type: land\n";
+            break;
+        case SWE::BoundaryTypes::tide:
+            os << "    type: tide\n";
+            break;
+        case SWE::BoundaryTypes::flow:
+            os << "    type: flow\n";
+            break;
     }
 
-    if ( bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow ) {
+    if (bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow) {
         os << "    frequency: " << bd.frequency << '\n'
            << "    forcing factor: " << bd.forcing_factor << '\n'
            << "    equilibrium argument: " << bd.equilibrium_argument << '\n';
-
     }
     return os;
 }
@@ -138,7 +137,7 @@ int main(int argc, const char* argv[]) {
         boundaries[3].nodes[i] = i * (m + 1);
     }
 
-    std::ofstream file(std::string{input.mesh_name+".14"});
+    std::ofstream file(std::string{input.mesh_name + ".14"});
 
     file << std::fixed << std::setprecision(12);
     file << "rectangle\n";
@@ -230,24 +229,23 @@ int main(int argc, const char* argv[]) {
 }
 
 void WriteBCISFile(const std::string& mesh_name, const std::vector<Boundary>& boundaries) {
-    std::ofstream file(std::string{mesh_name+".bcis"});
+    std::ofstream file(std::string{mesh_name + ".bcis"});
 
     for (const Boundary& boundary : boundaries) {
-        if ( (boundary.type == SWE::BoundaryTypes::tide) ||
-             (boundary.type == SWE::BoundaryTypes::flow) ) {
+        if ((boundary.type == SWE::BoundaryTypes::tide) || (boundary.type == SWE::BoundaryTypes::flow)) {
             file << static_cast<int>(boundary.type) << ' ' << boundary.nodes.size() << '\n';
-            //number of constituents currently hard-coded to 1
+            // number of constituents currently hard-coded to 1
             file << 1 << '\n';
-            file << boundary.frequency << ' ' << boundary.forcing_factor << ' ' << boundary.equilibrium_argument << '\n';
-            for (uint node_id : boundary.nodes ) {
+            file << boundary.frequency << ' ' << boundary.forcing_factor << ' ' << boundary.equilibrium_argument
+                 << '\n';
+            for (uint node_id : boundary.nodes) {
                 file << node_id << ' ' << 0.0 << ' ' << 0.0 << '\n';
             }
         }
     }
 }
 
-MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string)
-    : boundary(4) {
+MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) : boundary(4) {
     YAML::Node yaml_input = YAML::LoadFile(input_string);
 
     auto throw_missing_node = [](const std::string& str) {
@@ -311,29 +309,30 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string)
 
         uint bid{0};
         for (auto it = yaml_boundaries.begin(); it != yaml_boundaries.end(); ++it) {
-            Boundary& bd = boundary[bid++];
+            Boundary& bd             = boundary[bid++];
             YAML::Node boundary_node = *it;
 
             std::string type_str = boundary_node["type"].as<std::string>();
             if (type_str == "land") {
                 bd.type = SWE::BoundaryTypes::land;
-            } else if ( type_str == "tide" ) {
+            } else if (type_str == "tide") {
                 bd.type = SWE::BoundaryTypes::tide;
-            } else if ( type_str == "flow" ) {
+            } else if (type_str == "flow") {
                 bd.type = SWE::BoundaryTypes::flow;
             } else {
-                std::string err_msg{"Error: Boundary type: "+type_str+" undefined"};
+                std::string err_msg{"Error: Boundary type: " + type_str + " undefined"};
                 throw std::logic_error(err_msg);
             }
 
-            if ( bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow ) {
-                if ( !boundary_node["frequency"] || !boundary_node["forcing_factor"] || !boundary_node["equilibrium_argument"] ) {
+            if (bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow) {
+                if (!boundary_node["frequency"] || !boundary_node["forcing_factor"] ||
+                    !boundary_node["equilibrium_argument"]) {
                     std::string err_msg{"Error: mal-formatted boundary node"};
                     throw std::logic_error(err_msg);
                 }
 
-                bd.frequency = boundary_node["frequency"].as<double>();
-                bd.forcing_factor = boundary_node["forcing_factor"].as<double>();
+                bd.frequency            = boundary_node["frequency"].as<double>();
+                bd.forcing_factor       = boundary_node["forcing_factor"].as<double>();
                 bd.equilibrium_argument = boundary_node["equilibrium_argument"].as<double>();
             }
         }
@@ -371,8 +370,7 @@ void MeshGeneratorInput::Summarize() {
 
     std::cout << "  boundary:\n";
     for (uint i = 0; i < this->boundary.size(); ++i) {
-        std::cout << "  " << i << ":\n"
-                  << this->boundary[i];
+        std::cout << "  " << i << ":\n" << this->boundary[i];
     }
     std::cout << "\n\n";
 
