@@ -60,7 +60,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    ProblemType::serial_preprocessor_kernel(this->discretization, this->problem_input);
+    ProblemType::preprocessor_serial(this->discretization, this->problem_input);
 
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
@@ -78,7 +78,7 @@ void Simulation<ProblemType>::Run() {
                 this->parser.ParseInput(this->stepper, this->discretization.mesh);
             }
 
-            ProblemType::serial_stage_kernel(this->stepper, this->discretization);
+            ProblemType::stage_serial(this->stepper, this->discretization);
 
             ++(this->stepper);
         }
@@ -96,9 +96,8 @@ template <typename ProblemType>
 void Simulation<ProblemType>::ComputeL2Residual() {
     double residual_L2 = 0;
 
-    this->discretization.mesh.CallForEachElement([this, &residual_L2](auto& elt) {
-        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    });
+    this->discretization.mesh.CallForEachElement(
+        [this, &residual_L2](auto& elt) { residual_L2 += ProblemType::compute_residual_L2(this->stepper, elt); });
 
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
 }

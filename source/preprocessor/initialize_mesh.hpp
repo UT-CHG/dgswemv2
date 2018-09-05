@@ -65,9 +65,9 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
 
     mesh.CallForEachElement([&raw_boundaries](auto& elem) { elem.CreateRawBoundaries(raw_boundaries); });
 
-    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, problem_input, writer);
-    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, problem_input, writer);
-    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, problem_input, communicator, writer);
+    ProblemType::create_interfaces(raw_boundaries, mesh, problem_input, writer);
+    ProblemType::create_boundaries(raw_boundaries, mesh, problem_input, writer);
+    ProblemType::create_distributed_boundaries(raw_boundaries, mesh, problem_input, communicator, writer);
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->second.size() != 0) {

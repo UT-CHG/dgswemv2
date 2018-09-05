@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
@@ -148,8 +148,8 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
     }
 }
 
-void Problem::initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    initialize_data_serial_kernel(mesh, problem_specific_input);
+void Problem::initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    initialize_data_serial(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();

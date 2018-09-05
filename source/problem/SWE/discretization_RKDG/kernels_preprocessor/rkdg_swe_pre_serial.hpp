@@ -5,9 +5,9 @@
 
 namespace SWE {
 namespace RKDG {
-void Problem::serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
-                                         const ProblemInputType& problem_specific_input) {
-    Problem::initialize_data_kernel(discretization.mesh, problem_specific_input);
+void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
+                                  const ProblemInputType& problem_specific_input) {
+    Problem::initialize_data_serial(discretization.mesh, problem_specific_input);
 }
 }
 }

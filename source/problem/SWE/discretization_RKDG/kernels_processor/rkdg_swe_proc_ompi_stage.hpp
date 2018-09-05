@@ -8,7 +8,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename OMPISimUnitType>
-void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
+void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
     uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
 
     n_threads = (uint)omp_get_num_threads();

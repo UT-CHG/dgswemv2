@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace RKDG {
-void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
@@ -348,9 +348,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
     });
 }
 
-void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                       const ProblemInputType& problem_specific_input) {
-    initialize_data_kernel(mesh, problem_specific_input);
+void Problem::initialize_data_parallel_pre_send(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    initialize_data_serial(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();
@@ -409,7 +408,7 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
     });
 }
 
-void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh) {
+void Problem::initialize_data_parallel_post_receive(ProblemMeshType& mesh) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
 

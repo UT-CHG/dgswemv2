@@ -6,8 +6,8 @@
 namespace SWE {
 namespace EHDG {
 template <typename HPXSimUnitType>
-decltype(auto) Problem::hpx_preprocessor_kernel(HPXSimUnitType* sim_unit) {
-    Problem::initialize_data_parallel_kernel(sim_unit->discretization.mesh, sim_unit->problem_input);
+decltype(auto) Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
+    Problem::initialize_data_parallel(sim_unit->discretization.mesh, sim_unit->problem_input);
 
     Problem::initialize_global_problem(sim_unit->discretization);
 

@@ -3,7 +3,7 @@
 
 namespace SWE {
 namespace IHDG {
-void Problem::initialize_global_problem_serial_kernel(HDGDiscretization<Problem>& discretization) {
+void Problem::initialize_global_problem_serial(HDGDiscretization<Problem>& discretization) {
     uint local_dof_offset  = 0;
     uint global_dof_offset = 0;
 
@@ -99,10 +99,10 @@ void Problem::initialize_global_problem_serial_kernel(HDGDiscretization<Problem>
 }
 
 template <typename Communicator>
-void Problem::initialize_global_problem_parallel_pre_send_kernel(HDGDiscretization<Problem>& discretization,
-                                                                 Communicator& communicator,
-                                                                 uint& local_dof_offset,
-                                                                 uint& global_dof_offset) {
+void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<Problem>& discretization,
+                                                          Communicator& communicator,
+                                                          uint& local_dof_offset,
+                                                          uint& global_dof_offset) {
     discretization.mesh.CallForEachElement([&local_dof_offset](auto& elt) {
         auto& internal = elt.data.internal;
 
@@ -220,9 +220,9 @@ void Problem::initialize_global_problem_parallel_pre_send_kernel(HDGDiscretizati
     });
 }
 
-void Problem::initialize_global_problem_parallel_finalize_pre_send_kernel(HDGDiscretization<Problem>& discretization,
-                                                                          uint local_dof_offset,
-                                                                          uint global_dof_offset) {
+void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretization<Problem>& discretization,
+                                                                   uint local_dof_offset,
+                                                                   uint global_dof_offset) {
     discretization.mesh.CallForEachElement([&local_dof_offset](auto& elt) {
         auto& internal = elt.data.internal;
 
@@ -277,8 +277,8 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send_kernel(HDGDis
 }
 
 template <typename Communicator>
-void Problem::initialize_global_problem_parallel_post_receive_kernel(HDGDiscretization<Problem>& discretization,
-                                                                     Communicator& communicator) {
+void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<Problem>& discretization,
+                                                              Communicator& communicator) {
     discretization.mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
 

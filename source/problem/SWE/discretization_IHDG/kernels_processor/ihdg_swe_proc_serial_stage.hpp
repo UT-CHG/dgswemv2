@@ -7,7 +7,7 @@
 
 namespace SWE {
 namespace IHDG {
-void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
         const uint stage = stepper.GetStage();
 

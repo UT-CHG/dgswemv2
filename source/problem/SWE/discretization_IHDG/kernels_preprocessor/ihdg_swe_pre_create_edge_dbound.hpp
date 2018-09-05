@@ -3,9 +3,9 @@
 
 namespace SWE {
 namespace IHDG {
-void Problem::create_edge_distributeds_kernel(ProblemMeshType& mesh,
-                                              ProblemMeshSkeletonType& mesh_skeleton,
-                                              Writer<Problem>& writer) {
+void Problem::create_edge_distributeds(ProblemMeshType& mesh,
+                                       ProblemMeshSkeletonType& mesh_skeleton,
+                                       Writer<Problem>& writer) {
     using DistributedBoundaryTypes = Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>;
 
     using EdgeDistributedTypes =

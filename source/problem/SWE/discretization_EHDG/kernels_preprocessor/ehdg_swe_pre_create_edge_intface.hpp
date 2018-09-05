@@ -3,9 +3,9 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::create_edge_interfaces_kernel(ProblemMeshType& mesh,
-                                            ProblemMeshSkeletonType& mesh_skeleton,
-                                            Writer<Problem>& writer) {
+void Problem::create_edge_interfaces(ProblemMeshType& mesh,
+                                     ProblemMeshSkeletonType& mesh_skeleton,
+                                     Writer<Problem>& writer) {
     using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal>;
 
     using EdgeInterfaceTypes =

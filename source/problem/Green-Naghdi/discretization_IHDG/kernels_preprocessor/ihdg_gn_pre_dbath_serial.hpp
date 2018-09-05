@@ -5,7 +5,7 @@
 
 namespace GN {
 namespace IHDG {
-void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& discretization) {
+void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;

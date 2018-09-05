@@ -4,7 +4,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename RawBoundaryType>
-void Problem::create_distributed_boundaries_kernel(
+void Problem::create_distributed_boundaries(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType&,
     ProblemInputType& input,
@@ -12,7 +12,7 @@ void Problem::create_distributed_boundaries_kernel(
     Writer<Problem>& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
-void Problem::create_distributed_boundaries_kernel(
+void Problem::create_distributed_boundaries(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType& mesh,
     ProblemInputType& problem_input,

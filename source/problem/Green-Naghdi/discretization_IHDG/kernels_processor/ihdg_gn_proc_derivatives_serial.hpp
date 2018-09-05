@@ -5,7 +5,7 @@
 
 namespace GN {
 namespace IHDG {
-void Problem::serial_derivatives_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::compute_derivatives_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
 

@@ -136,7 +136,7 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
     if (this->writing_vtk_output && (stepper.GetStep() % this->vtk_output_frequency == 0)) {
         std::ofstream raw_data_file(this->vtk_file_name_raw);
 
-        ProblemType::write_VTK_data_kernel(mesh, raw_data_file);
+        ProblemType::write_VTK_data(mesh, raw_data_file);
 
         raw_data_file.close();
 
@@ -166,7 +166,7 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
     if (this->writing_vtu_output && (stepper.GetStep() % this->vtu_output_frequency == 0)) {
         std::ofstream raw_data_file(this->vtu_file_name_raw);
 
-        ProblemType::write_VTU_data_kernel(mesh, raw_data_file);
+        ProblemType::write_VTU_data(mesh, raw_data_file);
 
         raw_data_file.close();
 
@@ -201,7 +201,7 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
     }
 
     if (this->writing_modal_output && (stepper.GetStep() % this->modal_output_frequency == 0)) {
-        ProblemType::write_modal_data_kernel(stepper, mesh, this->output_path);
+        ProblemType::write_modal_data(stepper, mesh, this->output_path);
     }
 }
 

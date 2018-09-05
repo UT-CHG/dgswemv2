@@ -6,20 +6,19 @@
 namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
-void Problem::ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
+void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
 #pragma omp master
     {
         std::vector<uint> local_dof_offsets;
         std::vector<uint> global_dof_offsets;
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            Problem::initialize_data_parallel_kernel(sim_units[su_id]->discretization.mesh,
-                                                     sim_units[su_id]->problem_input);
+            Problem::initialize_data_parallel(sim_units[su_id]->discretization.mesh, sim_units[su_id]->problem_input);
 
             uint local_dof_offset  = 0;
             uint global_dof_offset = 0;
 
-            Problem::initialize_global_problem_parallel_pre_send_kernel(
+            Problem::initialize_global_problem_parallel_pre_send(
                 sim_units[su_id]->discretization, sim_units[su_id]->communicator, local_dof_offset, global_dof_offset);
 
             local_dof_offsets.push_back(local_dof_offset);
@@ -113,7 +112,7 @@ void Problem::ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitTy
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            Problem::initialize_global_problem_parallel_finalize_pre_send_kernel(
+            Problem::initialize_global_problem_parallel_finalize_pre_send(
                 sim_units[su_id]->discretization, local_dof_offsets[su_id], global_dof_offsets[su_id]);
         }
 
@@ -131,8 +130,8 @@ void Problem::ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitTy
             sim_units[su_id]->communicator.WaitAllReceives(SWE::CommTypes::preprocessor,
                                                            sim_units[su_id]->stepper.GetTimestamp());
 
-            Problem::initialize_global_problem_parallel_post_receive_kernel(sim_units[su_id]->discretization,
-                                                                            sim_units[su_id]->communicator);
+            Problem::initialize_global_problem_parallel_post_receive(sim_units[su_id]->discretization,
+                                                                     sim_units[su_id]->communicator);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {

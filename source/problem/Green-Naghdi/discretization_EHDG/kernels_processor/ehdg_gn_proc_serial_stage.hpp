@@ -8,8 +8,8 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
-    Problem::serial_swe_stage_kernel(stepper, discretization);
+void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+    Problem::swe_stage_serial(stepper, discretization);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
@@ -20,9 +20,9 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
         curr_state.q = next_state.q;
     });
 
-    Problem::serial_dispersive_correction_kernel(stepper, discretization);
+    Problem::dispersive_correction_serial(stepper, discretization);
 
-    Problem::serial_swe_stage_kernel(stepper, discretization);
+    Problem::swe_stage_serial(stepper, discretization);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = Problem::scrutinize_solution_kernel(stepper, elt);
@@ -32,7 +32,7 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
     });
 }
 
-void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_swe_interface_kernel(stepper, intface); });
@@ -71,9 +71,9 @@ void Problem::serial_swe_stage_kernel(const RKStepper& stepper, ProblemDiscretiz
     });
 }
 
-void Problem::serial_dispersive_correction_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::dispersive_correction_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     // Compute du, ddu
-    Problem::serial_derivatives_kernel(stepper, discretization);
+    Problem::compute_derivatives_serial(stepper, discretization);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_volume_kernel(stepper, elt); });
 

@@ -4,11 +4,10 @@
 namespace GN {
 namespace EHDG {
 template <typename RawBoundaryType>
-void Problem::create_boundaries_kernel(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    ProblemMeshType& mesh,
-    ProblemInputType& problem_input,
-    Writer<Problem>& writer) {
+void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                ProblemMeshType& mesh,
+                                ProblemInputType& problem_input,
+                                Writer<Problem>& writer) {
     // *** //
     using BoundaryTypes = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
 

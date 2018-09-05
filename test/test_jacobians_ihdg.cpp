@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::IHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::IHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::IHDG::Problem::initialize_data_serial_kernel(mesh, input.problem_input);
+    SWE::IHDG::Problem::initialize_data_serial(mesh, input.problem_input);
 
     mesh.CallForEachElement([](auto& elt) { elt.data.resize(2); });
 

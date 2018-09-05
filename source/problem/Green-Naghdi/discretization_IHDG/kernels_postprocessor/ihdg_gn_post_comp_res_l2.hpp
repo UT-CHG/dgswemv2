@@ -6,7 +6,7 @@
 namespace GN {
 namespace IHDG {
 template <typename ElementType>
-double Problem::compute_residual_L2_kernel(const RKStepper& stepper, ElementType& elt) {
+double Problem::compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
     double t = stepper.GetTimeAtCurrentStage();
 
     auto true_u = [t](Point<2>& pt) { return GN::true_u(t, pt); };

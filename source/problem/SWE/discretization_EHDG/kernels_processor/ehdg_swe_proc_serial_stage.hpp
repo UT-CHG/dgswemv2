@@ -7,7 +7,7 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_interface_kernel(stepper, intface); });
