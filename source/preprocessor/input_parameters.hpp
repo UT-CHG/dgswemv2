@@ -36,6 +36,8 @@ struct StepperInput {
 
     uint nstages;
     uint order;
+
+    double ramp_duration;
 };
 
 struct WriterInput {
@@ -159,6 +161,9 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             this->stepper_input.dt      = time_stepping["dt"].as<double>();
             this->stepper_input.nstages = time_stepping["order"].as<uint>();
             this->stepper_input.order   = time_stepping["nstages"].as<uint>();
+
+            this->stepper_input.ramp_duration = time_stepping["ramp_duration"] ?
+                time_stepping["ramp_duration"].as<double>() : 0;
         } else {
             std::string err_msg{"Error: Timestepping YAML node is malformatted\n"};
             throw std::logic_error(err_msg);
@@ -326,6 +331,7 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
     timestepping["dt"]         = this->stepper_input.dt;
     timestepping["order"]      = this->stepper_input.order;
     timestepping["nstages"]    = this->stepper_input.nstages;
+    timestepping["ramp_duration"]= this->stepper_input.ramp_duration;
 
     output << YAML::Key << "timestepping";
     output << YAML::Value << timestepping;

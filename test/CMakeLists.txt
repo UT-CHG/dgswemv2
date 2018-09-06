@@ -300,7 +300,8 @@ timestepping:\n\
   end_time: 12-05-2015 00:00                #dd-mm-yyyy hh:mm\n\
   dt: 1                           #in seconds\n\
   order: 2\n\
-  nstages: 2\n\n\
+  nstages: 2\n\
+  ramp_duration: 1.5\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
   name: swe\n\
@@ -338,9 +339,9 @@ output:\n\
     verbose: true\n\
   path: output/\n\
   vtk:\n\
-    frequency: 100\n
-load_balancer:\n\n
-  name: random
+    frequency: 100\n\n\
+load_balancer:\n\
+  name: random\n\
   rebalance_frequency: 10"
 )
 
