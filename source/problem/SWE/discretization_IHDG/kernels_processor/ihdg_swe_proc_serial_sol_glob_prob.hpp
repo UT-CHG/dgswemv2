@@ -1,9 +1,9 @@
-#ifndef IHDG_SWE_PROC_SOLVE_GLOBAL_PROB_HPP
-#define IHDG_SWE_PROC_SOLVE_GLOBAL_PROB_HPP
+#ifndef IHDG_SWE_PROC_SERIAL_SOL_GLOB_PROB_HPP
+#define IHDG_SWE_PROC_SERIAL_SOL_GLOB_PROB_HPP
 
 namespace SWE {
 namespace IHDG {
-bool Problem::solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization) {
+bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization) {
     SparseMatrixMeta<double> sparse_delta_local_inv;
     SparseMatrixMeta<double> sparse_delta_hat_local;
     SparseMatrixMeta<double> sparse_delta_global;

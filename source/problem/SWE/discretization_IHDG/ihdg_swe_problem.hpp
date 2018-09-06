@@ -164,7 +164,10 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_bound);
 
-    static bool solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
+    static bool serial_solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
+
+    template <typename OMPISimUnitType>
+    static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* global step end */
 

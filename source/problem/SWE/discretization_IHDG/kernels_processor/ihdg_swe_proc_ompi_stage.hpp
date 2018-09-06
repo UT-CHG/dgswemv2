@@ -4,6 +4,7 @@
 #include "general_definitions.hpp"
 
 #include "ihdg_swe_kernels_processor.hpp"
+#include "ihdg_swe_proc_ompi_sol_glob_prob.hpp"
 
 namespace SWE {
 namespace IHDG {
@@ -88,6 +89,12 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
                     Problem::global_edge_distributed_kernel(sim_units[su_id]->stepper, edge_dbound);
                 });
             /* Global Step */
+        }
+
+        bool converged = ompi_solve_global_problem(sim_units);
+
+        if (converged) {
+            break;
         }
 
         if (iter == 10) {

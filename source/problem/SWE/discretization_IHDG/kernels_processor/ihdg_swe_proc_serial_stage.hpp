@@ -4,6 +4,7 @@
 #include "general_definitions.hpp"
 
 #include "ihdg_swe_kernels_processor.hpp"
+#include "ihdg_swe_proc_serial_sol_glob_prob.hpp"
 
 namespace SWE {
 namespace IHDG {
@@ -51,7 +52,7 @@ void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& 
             [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
         /* Global Step */
 
-        bool converged = Problem::solve_global_problem(stepper, discretization);
+        bool converged = Problem::serial_solve_global_problem(stepper, discretization);
 
         if (converged) {
             break;
