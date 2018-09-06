@@ -92,8 +92,8 @@ class RKStepper {
             ++(this->step);
         }
 
-        if ( !Utilities::almost_equal(this->ramp_duration,0) ) {
-            this->ramp = std::tanh( 2 * (this->GetTimeAtCurrentStage()/86400) / this->ramp_duration );
+        if (!Utilities::almost_equal(this->ramp_duration, 0)) {
+            this->ramp = std::tanh(2 * (this->GetTimeAtCurrentStage() / 86400) / this->ramp_duration);
         }
 
         return *this;
@@ -140,8 +140,8 @@ void RKStepper::load(Archive& ar, unsigned) {
     step = timestamp / nstages;
     InitializeCoefficients();
 
-    if ( !Utilities::almost_equal(this->ramp_duration,0) ) {
-        this->ramp = std::tanh( 2 * (this->GetTimeAtCurrentStage()/86400) / this->ramp_duration );
+    if (!Utilities::almost_equal(this->ramp_duration, 0)) {
+        this->ramp = std::tanh(2 * (this->GetTimeAtCurrentStage() / 86400) / this->ramp_duration);
     } else {
         this->ramp = 1;
     }

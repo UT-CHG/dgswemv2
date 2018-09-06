@@ -9,7 +9,7 @@ RKStepper::RKStepper(const StepperInput& stepper_input)
       timestamp(0),
       t(0.),
       ramp_duration(stepper_input.ramp_duration),
-      ramp(Utilities::almost_equal(ramp_duration,0) ? 1. : 0.) {
+      ramp(Utilities::almost_equal(ramp_duration, 0) ? 1. : 0.) {
     this->InitializeCoefficients();
 }
 
