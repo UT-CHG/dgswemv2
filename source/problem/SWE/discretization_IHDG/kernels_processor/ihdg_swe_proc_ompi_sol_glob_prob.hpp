@@ -46,6 +46,9 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
             delta_hat_global_temp.resize(global_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
             rhs_global_temp.resize(global_dof_offset * SWE::n_variables);
 
+            set_constant(rhs_local_temp, 0.0);
+            set_constant(rhs_global_temp, 0.0);
+
             SparseMatrixMeta<double> sparse_delta_local_inv;
             SparseMatrixMeta<double> sparse_delta_hat_local;
             SparseMatrixMeta<double> sparse_delta_global;

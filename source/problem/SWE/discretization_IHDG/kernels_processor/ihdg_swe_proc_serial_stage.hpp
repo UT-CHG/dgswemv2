@@ -54,11 +54,11 @@ void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& 
 
         bool converged = Problem::serial_solve_global_problem(stepper, discretization);
 
-        if (converged) {
+        /*if (converged) {
             break;
-        }
+        }*/
 
-        if (iter == 100) {
+        if (iter == 5) {
             break;
         }
     }
