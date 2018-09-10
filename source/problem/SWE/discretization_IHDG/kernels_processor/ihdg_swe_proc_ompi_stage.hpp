@@ -10,17 +10,8 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
-
-    n_threads = (uint)omp_get_num_threads();
-    thread_id = (uint)omp_get_thread_num();
-
-    sim_per_thread = (sim_units.size() + n_threads - 1) / n_threads;
-
-    begin_sim_id = sim_per_thread * thread_id;
-    end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
-
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+#pragma omp parallel for
+    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             const uint stage = sim_units[su_id]->stepper.GetStage();
 
@@ -38,7 +29,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     while (true) {
         iter++;
 
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+#pragma omp parallel for
+        for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             /* Local Step */
             sim_units[su_id]->discretization.mesh.CallForEachElement(
                 [&sim_units, su_id](auto& elt) { Problem::local_volume_kernel(sim_units[su_id]->stepper, elt); });
@@ -102,7 +94,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+#pragma omp parallel for
+    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             bool nan_found = Problem::scrutinize_solution_kernel(sim_units[su_id]->stepper, elt);
 

@@ -28,6 +28,6 @@ problem:
   function_source: Enable  
 
 output:
-  path: ../
+  path: ../output/
   vtu:
     frequency: 360
