@@ -1,12 +1,12 @@
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 
-add_executable(
+#[[add_executable(
   test_linear_algebra_exe
   test_linear_algebra.cpp
 )
 
 target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
-target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
+target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})]]
 
 add_executable(
   test_jacobians_ehdg_exe
