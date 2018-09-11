@@ -5,6 +5,9 @@ add_executable(
   test_linear_algebra.cpp
 )
 
+target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
+target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
+
 add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp

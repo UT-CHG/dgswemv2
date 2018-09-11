@@ -34,7 +34,7 @@ struct HDGDiscretization {
     typename ProblemType::ProblemMeshType mesh;
     typename ProblemType::ProblemMeshSkeletonType mesh_skeleton;
 
-    typename ProblemType::ProblemGlobalDataType global_data;
+    uint n_global_dofs;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input, Writer<ProblemType>& writer) {
         std::tuple<> empty_comm;

@@ -85,11 +85,11 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 
         bool converged = ompi_solve_global_problem(sim_units);
 
-        /*if (converged) {
+        if (converged) {
             break;
-        }*/
+        }
 
-        if (iter == 5) {
+        if (iter == 100) {
             break;
         }
     }

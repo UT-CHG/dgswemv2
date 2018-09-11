@@ -112,6 +112,8 @@ if(EHDG_SWE)
 endif()
 
 if(IHDG_SWE)
+  find_package(PETSc REQUIRED)
+
   add_subdirectory(source/problem/SWE/discretization_IHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ihdg_swe_manufactured_solution)
