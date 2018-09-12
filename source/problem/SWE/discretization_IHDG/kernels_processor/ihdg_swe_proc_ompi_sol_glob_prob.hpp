@@ -5,13 +5,13 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
 bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    uint global_dof_offset = 2 * 3136;
+    uint n_global_dofs = sim_units[0]->discretization.n_global_dofs;
 
     SparseMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
 
-    delta_hat_global.resize(global_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
-    rhs_global.resize(global_dof_offset * SWE::n_variables);
+    delta_hat_global.resize(n_global_dofs * SWE::n_variables, n_global_dofs * SWE::n_variables);
+    rhs_global.resize(n_global_dofs * SWE::n_variables);
 
     set_constant(rhs_global, 0.0);
 
@@ -19,8 +19,8 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
         SparseMatrix<double> delta_hat_global_temp;
         DynVector<double> rhs_global_temp;
 
-        delta_hat_global_temp.resize(global_dof_offset * SWE::n_variables, global_dof_offset * SWE::n_variables);
-        rhs_global_temp.resize(global_dof_offset * SWE::n_variables);
+        delta_hat_global_temp.resize(n_global_dofs * SWE::n_variables, n_global_dofs * SWE::n_variables);
+        rhs_global_temp.resize(n_global_dofs * SWE::n_variables);
 
         set_constant(rhs_global_temp, 0.0);
 

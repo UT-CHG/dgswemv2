@@ -64,7 +64,11 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                0,
                MPI_COMM_WORLD);
 
+    uint n_global_dofs;
+
     if (locality_id == 0) {
+        n_global_dofs = std::accumulate(total_global_dof_offsets.begin(), total_global_dof_offsets.end(), 0);
+
         // exclusive scan
         std::rotate(total_local_dof_offsets.begin(), total_local_dof_offsets.end() - 1, total_local_dof_offsets.end());
         std::rotate(
@@ -79,6 +83,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
     }
 
+    MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+
     MPI_Scatter(
         &total_local_dof_offsets.front(), 1, MPI_UNSIGNED, &total_local_dof_offset, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
@@ -92,6 +98,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                 MPI_COMM_WORLD);
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+        sim_units[su_id]->discretization.n_global_dofs = n_global_dofs;
+
         local_dof_offsets[su_id] += total_local_dof_offset;
         global_dof_offsets[su_id] += total_global_dof_offset;
     }
