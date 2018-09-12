@@ -12,6 +12,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<Problem>& discr
 
         // Set offsets for global matrix construction
         internal.local_dof_offset = local_dof_offset;
+
         local_dof_offset += elt.data.get_ndof();
 
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
@@ -98,6 +99,7 @@ void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<Prob
 
         // Set offsets for global matrix construction
         internal.local_dof_offset = local_dof_offset;
+
         local_dof_offset += elt.data.get_ndof();
 
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {

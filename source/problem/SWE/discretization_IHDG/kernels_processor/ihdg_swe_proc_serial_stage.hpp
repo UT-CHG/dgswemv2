@@ -69,7 +69,6 @@ void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& 
         if (nan_found)
             abort();
     });
-    /* Local Step */
 }
 }
 }

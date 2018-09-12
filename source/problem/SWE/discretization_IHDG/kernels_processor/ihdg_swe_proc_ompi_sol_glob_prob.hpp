@@ -279,7 +279,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             auto& internal = elt.data.internal;
 
-            internal.rhs_local *= internal.delta_local_inv;
+            internal.rhs_local = internal.delta_local_inv * internal.rhs_local;
 
             for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
                 state.q(SWE::Variables::ze, dof) += internal.rhs_local[3 * dof];
