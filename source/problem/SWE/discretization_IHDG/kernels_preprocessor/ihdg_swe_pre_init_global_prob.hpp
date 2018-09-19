@@ -147,7 +147,7 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
         uint ndof_global = edge_int.edge_data.get_ndof();
 
-        // Set offsets for global matrix construction
+        // Set indexes for global matrix construction
         for (uint indx = 0; indx < ndof_global * SWE::n_variables; ++indx) {
             edge_internal.global_dof_indx[indx] += global_dof_offset;
         }
@@ -163,6 +163,7 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
         uint ndof_global = edge_bound.edge_data.get_ndof();
 
+        // Set indexes for global matrix construction
         for (uint indx = 0; indx < ndof_global * SWE::n_variables; ++indx) {
             edge_internal.global_dof_indx[indx] += global_dof_offset;
         }
@@ -177,17 +178,25 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
         uint ndof_global = edge_dbound.edge_data.get_ndof();
 
-        for (uint indx = 0; indx < ndof_global * SWE::n_variables; ++indx) {
-            edge_internal.global_dof_indx[indx] += global_dof_offset;
+        uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
+        uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
+        uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
+        uint submesh_ex  = edge_dbound.boundary.boundary_condition.exchanger.submesh_ex;
+
+        if (locality_in < locality_ex || (locality_in == locality_ex && submesh_in < submesh_ex)) {
+            // Set indexes for global matrix construction
+            for (uint indx = 0; indx < ndof_global * SWE::n_variables; ++indx) {
+                edge_internal.global_dof_indx[indx] += global_dof_offset;
+            }
+
+            boundary.global_dof_indx = edge_internal.global_dof_indx;
+
+            std::vector<double> message(1);
+
+            message[0] = (double)edge_internal.global_dof_indx[0];
+
+            edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::preprocessor, message);
         }
-
-        boundary.global_dof_indx = edge_internal.global_dof_indx;
-
-        std::vector<double> message(1);
-
-        message[0] = (double)edge_internal.global_dof_indx[0];
-
-        edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::preprocessor, message);
     });
 }
 
@@ -201,18 +210,22 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         uint ndof_global = edge_dbound.edge_data.get_ndof();
 
-        std::vector<double> message(1);
-
-        edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::preprocessor, message);
-
-        uint global_dof_offset = (uint)message[0];
-
         uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
         uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
         uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
         uint submesh_ex  = edge_dbound.boundary.boundary_condition.exchanger.submesh_ex;
 
         if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
+            std::vector<double> message(1);
+
+            edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::preprocessor,
+                                                                                   message);
+
+            uint global_dof_offset = (uint)message[0];
+
+            edge_internal.global_dof_indx.resize(ndof_global * SWE::n_variables);
+
+            // Set indexes for global matrix construction
             for (uint indx = 0; indx < ndof_global * SWE::n_variables; ++indx) {
                 edge_internal.global_dof_indx[indx] = indx + global_dof_offset;
             }

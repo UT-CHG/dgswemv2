@@ -4,14 +4,14 @@
 #
 ###############################################################################
 
-polynomial_order: 1
+polynomial_order: 2
 mesh:
   format: Meta
   file_name: ../../../examples/files_for_manufactured_solution/rectangular_mesh_8.meta
   coordinate_system: cartesian
 timestepping:
   start_time: 25-11-1987 00:00:00
-  end_time: 25-11-1987 03:00:00
+  end_time: 25-11-1987 12:00:00
   dt: 360
   order: 1
   nstages: 1
