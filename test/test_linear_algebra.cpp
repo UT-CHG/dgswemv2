@@ -36,20 +36,85 @@ int main(int argc, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     Vec vector;
-    VecCreateMPI(MPI_COMM_WORLD, 3, 12, &vector);
+    VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, 4, &vector);
 
-    double values[4] = {1.0, 2.0, 3.0, 4.0};
-    int indexes[4]   = {2 * rank, 2 * rank + 1, 2 * rank + 2, 2 * rank + 3};
+    double values[4] = {1, 2, 3, 4};
+    int indexes[4]   = {0, 1, 2, 3};
 
-    // VecSet(vector, 1.0);
-    VecSetValues(vector, 4, indexes, values, ADD_VALUES);
+    if (rank == 0)
+        VecSetValues(vector, 4, indexes, values, ADD_VALUES);
 
     VecAssemblyBegin(vector);
     VecAssemblyEnd(vector);
 
     VecView(vector, PETSC_VIEWER_STDOUT_WORLD);
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    /*Vec vector_loc;
+    VecCreateSeq(MPI_COMM_SELF, 4, &vector_loc);
+
+    int indx_loc[4] = {0, 1, 2, 3};
+
+    VecScatter scatter;
+    IS from, to;
+
+    ISCreateGeneral(MPI_COMM_SELF, 4, indexes, PETSC_COPY_VALUES, &from);
+    ISCreateGeneral(MPI_COMM_SELF, 4, indx_loc, PETSC_COPY_VALUES, &to);
+
+    VecScatterCreate(vector, from, vector_loc, to, &scatter);
+
+    VecScatterBegin(scatter, vector, vector_loc, INSERT_VALUES, SCATTER_FORWARD);
+    VecScatterEnd(scatter, vector, vector_loc, INSERT_VALUES, SCATTER_FORWARD);
+
+    ISDestroy(&from);
+    ISDestroy(&to);
+    VecScatterDestroy(&scatter);
+
+    if (rank == 1)
+        VecView(vector_loc, PETSC_VIEWER_STDOUT_SELF);
+
+    VecDestroy(&vector);
+    VecDestroy(&vector_loc);*/
+
+    Mat A;
+
+    MatCreate(MPI_COMM_WORLD, &A);
+    MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 4, 4);
+
+    MatSetUp(A);
+
+    int indx_i[4] = {0, 1, 2, 3};
+    int indx_j[4] = {0, 1, 2, 3};
+
+    double vals[16] = {5, 6, 6, 8, 2, 2, 2, 8, 6, 6, 2, 8, 2, 3, 6, 7};
+
+    if (rank == 0)
+        MatSetValues(A, 4, indx_i, 4, indx_j, vals, INSERT_VALUES);
+
+    MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);
+    MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);
+
+    MatView(A, PETSC_VIEWER_STDOUT_WORLD);
+
+    Vec sol;
+    VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, 4, &sol);
+
+    KSP ksp;
+    PC pc;
+
+    KSPCreate(PETSC_COMM_WORLD, &ksp);
+    KSPSetOperators(ksp, A, A);
+
+    /*KSPSetType(ksp, KSPPREONLY);
+
+    KSPGetPC(ksp, &pc);
+    PCSetType(pc, PCLU);
+    PCFactorSetMatSolverPackage(pc, MATSOLVERMUMPS);
+
+    KSPSetUp(ksp);*/
+
+    KSPSolve(ksp, vector, sol);
+
+    VecView(sol, PETSC_VIEWER_STDOUT_WORLD);
 
     PetscFinalize();
 }

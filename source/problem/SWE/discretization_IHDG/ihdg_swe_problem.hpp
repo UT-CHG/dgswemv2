@@ -100,16 +100,14 @@ struct Problem {
 
     static void initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_problem_serial(HDGDiscretization<Problem>& discretization);
+    static void initialize_global_problem_serial(HDGDiscretization<Problem>& discretization, uint& global_dof_offset);
 
     template <typename Communicator>
     static void initialize_global_problem_parallel_pre_send(HDGDiscretization<Problem>& discretization,
                                                             Communicator& communicator,
-                                                            uint& local_dof_offset,
                                                             uint& global_dof_offset);
 
     static void initialize_global_problem_parallel_finalize_pre_send(HDGDiscretization<Problem>& discretization,
-                                                                     uint local_dof_offset,
                                                                      uint global_dof_offset);
 
     template <typename Communicator>
