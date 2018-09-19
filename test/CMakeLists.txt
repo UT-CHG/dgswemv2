@@ -6,7 +6,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
 )
 
 target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
-target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})]]
+target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
 
 add_executable(
   test_jacobians_ehdg_exe
@@ -51,7 +51,7 @@ target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS
 add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
-)
+)]]
 
 add_executable(
   test_tuple_helpers_exe
