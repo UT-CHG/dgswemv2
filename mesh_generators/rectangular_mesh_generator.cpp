@@ -186,7 +186,7 @@ int main(int argc, const char* argv[]) {
 
     uint i = 1;
     for (uint n_bound = 0; n_bound < 4; n_bound++) {
-        if (boundaries[n_bound].type == 1) {
+        if (boundaries[n_bound].type == SWE::BoundaryTypes::tide) {
             file << boundaries[n_bound].nodes.size() << " = Number of nodes for open boundary " << i << '\n';
 
             std::for_each(boundaries[n_bound].nodes.begin(), boundaries[n_bound].nodes.end(), [&file](uint val) {
@@ -202,7 +202,7 @@ int main(int argc, const char* argv[]) {
 
     i = 1;
     for (uint n_bound = 0; n_bound < 4; n_bound++) {
-        if (boundaries[n_bound].type == 0) {
+        if (boundaries[n_bound].type == SWE::BoundaryTypes::land) {
             file << boundaries[n_bound].nodes.size() << " 0 = Number of nodes for land boundary " << i << '\n';
 
             std::for_each(boundaries[n_bound].nodes.begin(), boundaries[n_bound].nodes.end(), [&file](uint val) {
@@ -211,7 +211,7 @@ int main(int argc, const char* argv[]) {
 
             i++;
         }
-        if (boundaries[n_bound].type == 2) {
+        if (boundaries[n_bound].type == SWE::BoundaryTypes::flow) {
             file << boundaries[n_bound].nodes.size() << " 2 = Number of nodes for land boundary " << i << '\n';
 
             std::for_each(boundaries[n_bound].nodes.begin(), boundaries[n_bound].nodes.end(), [&file](uint val) {
@@ -239,7 +239,7 @@ void WriteBCISFile(const std::string& mesh_name, const std::vector<Boundary>& bo
             file << boundary.frequency << ' ' << boundary.forcing_factor << ' ' << boundary.equilibrium_argument
                  << '\n';
             for (uint node_id : boundary.nodes) {
-                file << node_id << ' ' << 0.0 << ' ' << 0.0 << '\n';
+                file << node_id << ' ' << 1.0 << ' ' << 0.0 << '\n';
             }
         }
     }
