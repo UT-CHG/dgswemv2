@@ -14,8 +14,8 @@ struct WetDry {
           h_at_vrtx(nvrtx),
           h_at_vrtx_temp(nvrtx) {}
 
-    bool wet;
-    bool went_completely_dry;
+    bool wet = true;
+    bool went_completely_dry = false;
 
     double bath_min;
 
