@@ -540,7 +540,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
     DynMatrix<double> sq_diff(nvar, ngp);
 
     for (uint var = 0; var < nvar; ++var) {
-        row(sq_diff, var) = cwise_multiplication(row(diff, var), row(diff, var));
+        row(sq_diff, var) = vec_cw_mult(row(diff, var), row(diff, var));
     }
 
     DynVector<double> L2;

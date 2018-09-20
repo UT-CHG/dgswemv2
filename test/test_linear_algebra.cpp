@@ -16,7 +16,7 @@ int main(int argc, char* args[]) {
         A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
         B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
 
-        DynMatrix<double> C = cwise_division(A, B);
+        DynMatrix<double> C = vec_cw_div(A, B);
 
         std::cout << A << B << C << "works\n";
     #endif

@@ -15,16 +15,15 @@ void Problem::local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt
     row(internal.aux_at_gp, GN::Auxiliaries::h) =
         row(internal.q_at_gp, GN::Variables::ze) + row(internal.aux_at_gp, GN::Auxiliaries::bath);
 
-    auto u = cwise_division(row(internal.q_at_gp, GN::Variables::qx), row(internal.aux_at_gp, GN::Auxiliaries::h));
-    auto v = cwise_division(row(internal.q_at_gp, GN::Variables::qy), row(internal.aux_at_gp, GN::Auxiliaries::h));
+    auto u = vec_cw_div(row(internal.q_at_gp, GN::Variables::qx), row(internal.aux_at_gp, GN::Auxiliaries::h));
+    auto v = vec_cw_div(row(internal.q_at_gp, GN::Variables::qy), row(internal.aux_at_gp, GN::Auxiliaries::h));
 
-    auto uuh = cwise_multiplication(u, row(internal.q_at_gp, GN::Variables::qx));
-    auto vvh = cwise_multiplication(v, row(internal.q_at_gp, GN::Variables::qy));
-    auto uvh = cwise_multiplication(u, row(internal.q_at_gp, GN::Variables::qy));
-    auto pe  = Global::g * (0.5 * cwise_multiplication(row(internal.q_at_gp, GN::Variables::ze),
-                                                      row(internal.q_at_gp, GN::Variables::ze)) +
-                           cwise_multiplication(row(internal.q_at_gp, GN::Variables::ze),
-                                                row(internal.aux_at_gp, GN::Auxiliaries::bath)));
+    auto uuh = vec_cw_mult(u, row(internal.q_at_gp, GN::Variables::qx));
+    auto vvh = vec_cw_mult(v, row(internal.q_at_gp, GN::Variables::qy));
+    auto uvh = vec_cw_mult(u, row(internal.q_at_gp, GN::Variables::qy));
+    auto pe  = Global::g *
+              (0.5 * vec_cw_mult(row(internal.q_at_gp, GN::Variables::ze), row(internal.q_at_gp, GN::Variables::ze)) +
+               vec_cw_mult(row(internal.q_at_gp, GN::Variables::ze), row(internal.aux_at_gp, GN::Auxiliaries::bath)));
 
     row(internal.Fx_at_gp, GN::Variables::ze) = row(internal.q_at_gp, GN::Variables::qx);
     row(internal.Fx_at_gp, GN::Variables::qx) = uuh + pe;
@@ -98,25 +97,25 @@ void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt)
 
     row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::x + GlobalCoord::x) =
         -NDParameters::alpha / 2.0 *
-        cwise_multiplication(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::x));
+        vec_cw_mult(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::x));
     row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::x + GlobalCoord::y) =
         -NDParameters::alpha / 2.0 *
-        cwise_multiplication(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::y));
+        vec_cw_mult(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::y));
     row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::y + GlobalCoord::x) =
         -NDParameters::alpha / 2.0 *
-        cwise_multiplication(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::x));
+        vec_cw_mult(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::x));
     row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::y + GlobalCoord::y) =
         -NDParameters::alpha / 2.0 *
-        cwise_multiplication(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::y));
+        vec_cw_mult(row(internal.aux_at_gp, GN::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::y));
 
     set_constant(internal.w1_w2_kernel_at_gp, 0.0);
 
     row(internal.w1_w2_kernel_at_gp, GlobalCoord::x) =
         -NDParameters::alpha / 2.0 *
-        cwise_division(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.aux_at_gp, GN::Auxiliaries::h));
+        vec_cw_div(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.aux_at_gp, GN::Auxiliaries::h));
     row(internal.w1_w2_kernel_at_gp, GlobalCoord::y) =
         -NDParameters::alpha / 2.0 *
-        cwise_division(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.aux_at_gp, GN::Auxiliaries::h));
+        vec_cw_div(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.aux_at_gp, GN::Auxiliaries::h));
 
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < elt.data.get_ndof(); ++dof_j) {

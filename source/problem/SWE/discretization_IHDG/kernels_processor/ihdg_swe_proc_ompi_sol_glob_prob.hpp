@@ -290,7 +290,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-            auto del_q_hat = subvector(solution, global_dof_indx[0], global_dof_indx.size());
+            auto del_q_hat = subvector(solution, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
 
             internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
             internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
@@ -311,7 +311,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-            auto del_q_hat = subvector(solution, global_dof_indx[0], global_dof_indx.size());
+            auto del_q_hat = subvector(solution, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
 
             internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 
@@ -331,7 +331,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-            auto del_q_hat = subvector(solution, global_dof_indx[0], global_dof_indx.size());
+            auto del_q_hat = subvector(solution, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
 
             internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 

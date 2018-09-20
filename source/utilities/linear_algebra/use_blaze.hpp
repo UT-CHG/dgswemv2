@@ -99,17 +99,17 @@ decltype(auto) power(const ArrayType& array, double exp) {
     return blaze::pow(array, exp);
 }
 
-template <typename LeftArrayType, typename RightArrayType>
-decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return array_left * array_right;
-}
-
-template <typename LeftArrayType, typename RightArrayType>
-decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return array_left / array_right;
-}
-
 /* Vector Operations */
+template <typename LeftVectorType, typename RightVectorType>
+decltype(auto) vec_cw_mult(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
+    return vector_left * vector_right;
+}
+
+template <typename LeftVectorType, typename RightVectorType>
+decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
+    return vector_left / vector_right;
+}
+
 template <typename T>
 decltype(auto) vector_from_array(T* array, uint n) {
     return DynVector<T>(n, array);

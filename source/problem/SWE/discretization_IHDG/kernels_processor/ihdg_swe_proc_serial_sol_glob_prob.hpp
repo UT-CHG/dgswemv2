@@ -36,7 +36,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         edge_internal.rhs_global -= boundary_in.delta_global * internal_in.delta_local_inv * internal_in.rhs_local +
                                     boundary_ex.delta_global * internal_ex.delta_local_inv * internal_ex.rhs_local;
 
-        subvector(rhs_global, global_dof_indx[0], global_dof_indx.size()) = edge_internal.rhs_global;
+        subvector(rhs_global, (uint)global_dof_indx[0], (uint)global_dof_indx.size()) = edge_internal.rhs_global;
 
         for (uint i = 0; i < global_dof_indx.size(); ++i) {
             for (uint j = 0; j < global_dof_indx.size(); ++j) {
@@ -96,7 +96,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
         edge_internal.rhs_global -= boundary.delta_global * internal.delta_local_inv * internal.rhs_local;
 
-        subvector(rhs_global, global_dof_indx[0], global_dof_indx.size()) = edge_internal.rhs_global;
+        subvector(rhs_global, (uint)global_dof_indx[0], (uint)global_dof_indx.size()) = edge_internal.rhs_global;
 
         for (uint i = 0; i < global_dof_indx.size(); ++i) {
             for (uint j = 0; j < global_dof_indx.size(); ++j) {
@@ -141,7 +141,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
         std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-        auto del_q_hat = subvector(rhs_global, global_dof_indx[0], global_dof_indx.size());
+        auto del_q_hat = subvector(rhs_global, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
 
         internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
         internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
@@ -162,7 +162,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
         std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-        auto del_q_hat = subvector(rhs_global, global_dof_indx[0], global_dof_indx.size());
+        auto del_q_hat = subvector(rhs_global, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
 
         internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 

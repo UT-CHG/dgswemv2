@@ -21,12 +21,12 @@ void Problem::source_kernel(const RKStepper& stepper, ElementType& elt) {
         set_constant(row(internal.source_at_gp, SWE::Variables::ze), 0.0);
 
         row(internal.source_at_gp, SWE::Variables::qx) =
-            Global::g * cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp),
-                                             cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::x),
-                                                                  row(internal.q_at_gp, SWE::Variables::ze)));
+            Global::g * vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::sp),
+                                    vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::x),
+                                                row(internal.q_at_gp, SWE::Variables::ze)));
         row(internal.source_at_gp, SWE::Variables::qy) =
             Global::g *
-            cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
+            vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
 
         if (SWE::SourceTerms::function_source) {
             auto source_u = [t](Point<2>& pt) { return SWE::source_u(t, pt); };

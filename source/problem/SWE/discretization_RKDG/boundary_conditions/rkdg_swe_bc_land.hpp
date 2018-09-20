@@ -50,14 +50,12 @@ void Land::ComputeFlux(const RKStepper& stepper,
     auto t_x = -n_y;
     auto t_y = n_x;
 
-    auto qn_ex = -(cwise_multiplication(row(q_in, SWE::Variables::qx), n_x) +
-                   cwise_multiplication(row(q_in, SWE::Variables::qy), n_y));
-    auto qt_ex = cwise_multiplication(row(q_in, SWE::Variables::qx), t_x) +
-                 cwise_multiplication(row(q_in, SWE::Variables::qy), t_y);
+    auto qn_ex = -(vec_cw_mult(row(q_in, SWE::Variables::qx), n_x) + vec_cw_mult(row(q_in, SWE::Variables::qy), n_y));
+    auto qt_ex = vec_cw_mult(row(q_in, SWE::Variables::qx), t_x) + vec_cw_mult(row(q_in, SWE::Variables::qy), t_y);
 
     row(this->q_ex, SWE::Variables::ze) = row(q_in, SWE::Variables::ze);
-    row(this->q_ex, SWE::Variables::qx) = cwise_multiplication(qn_ex, n_x) + cwise_multiplication(qt_ex, t_x);
-    row(this->q_ex, SWE::Variables::qy) = cwise_multiplication(qn_ex, n_y) + cwise_multiplication(qt_ex, t_y);
+    row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn_ex, n_x) + vec_cw_mult(qt_ex, t_x);
+    row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn_ex, n_y) + vec_cw_mult(qt_ex, t_y);
 
     for (uint gp = 0; gp < columns(q_in); ++gp) {
         column(F_hat, gp) = LLF_flux(

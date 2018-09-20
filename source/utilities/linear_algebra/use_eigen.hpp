@@ -78,17 +78,17 @@ decltype(auto) power(const ArrayType& array, double exp) {
     return array.array().pow(exp);
 }
 
-template <typename LeftArrayType, typename RightArrayType>
-decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return array_left.cwiseProduct(array_right);
-}
-
-template <typename LeftArrayType, typename RightArrayType>
-decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return array_left.cwiseQuotient(array_right);
-}
-
 /* Vector Operations */
+template <typename LeftVectorType, typename RightVectorType>
+decltype(auto) vec_cw_mult(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
+    return vector_left.cwiseProduct(vector_right);
+}
+
+template <typename LeftVectorType, typename RightVectorType>
+decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
+    return vector_left.cwiseQuotient(vector_right);
+}
+
 template <typename T>
 decltype(auto) vector_from_array(T* array, uint n) {
     return Eigen::Map<DynVector<T>>(array, n);

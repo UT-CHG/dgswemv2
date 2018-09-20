@@ -97,8 +97,8 @@ void Flow::ComputeFlux(const RKStepper& stepper,
     auto n_y = row(surface_normal, GlobalCoord::y);
 
     row(this->q_ex, SWE::Variables::ze) = row(q_in, SWE::Variables::ze);
-    row(this->q_ex, SWE::Variables::qx) = cwise_multiplication(qn, n_x);
-    row(this->q_ex, SWE::Variables::qy) = cwise_multiplication(qn, n_y);
+    row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn, n_x);
+    row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn, n_y);
 
     for (uint gp = 0; gp < columns(q_in); ++gp) {
         column(F_hat, gp) = LLF_flux(

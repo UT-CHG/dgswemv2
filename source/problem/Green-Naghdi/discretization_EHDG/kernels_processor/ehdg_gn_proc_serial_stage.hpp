@@ -104,10 +104,8 @@ void Problem::dispersive_correction_serial(const RKStepper& stepper, ProblemDisc
         auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
         auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
 
-        row(internal.source_at_gp, GN::Variables::qx) =
-            Global::g / NDParameters::alpha * cwise_multiplication(dze_dx, h);
-        row(internal.source_at_gp, GN::Variables::qy) =
-            Global::g / NDParameters::alpha * cwise_multiplication(dze_dy, h);
+        row(internal.source_at_gp, GN::Variables::qx) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dx, h);
+        row(internal.source_at_gp, GN::Variables::qy) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dy, h);
 
         row(internal.source_at_gp, GN::Variables::qx) -= elt.ComputeUgp(row(state.w1, GlobalCoord::x));
         row(internal.source_at_gp, GN::Variables::qy) -= elt.ComputeUgp(row(state.w1, GlobalCoord::y));

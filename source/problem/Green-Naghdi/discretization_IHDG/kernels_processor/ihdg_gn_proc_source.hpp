@@ -18,12 +18,10 @@ void Problem::local_swe_source_kernel(const RKStepper& stepper, ElementType& elt
     set_constant(row(internal.source_at_gp, GN::Variables::ze), 0.0);
 
     row(internal.source_at_gp, GN::Variables::qx) =
-        Global::g *
-        cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, GN::Variables::ze));
+        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, GN::Variables::ze));
 
     row(internal.source_at_gp, GN::Variables::qy) =
-        Global::g *
-        cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, GN::Variables::ze));
+        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, GN::Variables::ze));
 
     if (GN::SourceTerms::function_source) {
         auto source_u = [t](Point<2>& pt) { return GN::source_u(t, pt); };
@@ -114,8 +112,8 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     // have been calculated in derivatives kernel
 
     auto h  = row(internal.aux_at_gp, GN::Auxiliaries::h);
-    auto h2 = cwise_multiplication(h, h);
-    auto h3 = cwise_multiplication(h2, h);
+    auto h2 = vec_cw_mult(h, h);
+    auto h3 = vec_cw_mult(h2, h);
 
     auto dbath_dx = row(internal.dbath_at_gp, GlobalCoord::x);
     auto dbath_dy = row(internal.dbath_at_gp, GlobalCoord::y);
@@ -140,24 +138,21 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     auto vyx = row(internal.ddu_at_gp, GN::DDU::vyx);
     auto vyy = row(internal.ddu_at_gp, GN::DDU::vyy);
 
-    auto c1 = cwise_multiplication(vx, uy) + cwise_multiplication(ux, ux) + cwise_multiplication(ux, vy) +
-              cwise_multiplication(vy, vy);
+    auto c1 = vec_cw_mult(vx, uy) + vec_cw_mult(ux, ux) + vec_cw_mult(ux, vy) + vec_cw_mult(vy, vy);
 
-    auto c2 = cwise_multiplication(uy, vxx) + cwise_multiplication(vx, uyx) + 2.0 * cwise_multiplication(ux, uxx) +
-              cwise_multiplication(vy, uxx) + cwise_multiplication(ux, vyx) + 2.0 * cwise_multiplication(vy, vyx);
+    auto c2 = vec_cw_mult(uy, vxx) + vec_cw_mult(vx, uyx) + 2.0 * vec_cw_mult(ux, uxx) + vec_cw_mult(vy, uxx) +
+              vec_cw_mult(ux, vyx) + 2.0 * vec_cw_mult(vy, vyx);
 
-    auto c3 = cwise_multiplication(uy, vxy) + cwise_multiplication(vx, uyy) + 2.0 * cwise_multiplication(ux, uxy) +
-              cwise_multiplication(vy, uxy) + cwise_multiplication(ux, vyy) + 2.0 * cwise_multiplication(vy, vyy);
+    auto c3 = vec_cw_mult(uy, vxy) + vec_cw_mult(vx, uyy) + 2.0 * vec_cw_mult(ux, uxy) + vec_cw_mult(vy, uxy) +
+              vec_cw_mult(ux, vyy) + 2.0 * vec_cw_mult(vy, vyy);
 
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::x) =
-        2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dx) + 2.0 / 3.0 * cwise_multiplication(h3, c2) +
-        cwise_multiplication(cwise_multiplication(h2, c1), dbath_dx) +
-        Global::g / NDParameters::alpha * cwise_multiplication(dze_dx, h);
+        2.0 * vec_cw_mult(vec_cw_mult(h2, c1), dh_dx) + 2.0 / 3.0 * vec_cw_mult(h3, c2) +
+        vec_cw_mult(vec_cw_mult(h2, c1), dbath_dx) + Global::g / NDParameters::alpha * vec_cw_mult(dze_dx, h);
 
     row(internal.w1_rhs_kernel_at_gp, GlobalCoord::y) =
-        2.0 * cwise_multiplication(cwise_multiplication(h2, c1), dh_dy) + 2.0 / 3.0 * cwise_multiplication(h3, c3) +
-        cwise_multiplication(cwise_multiplication(h2, c1), dbath_dy) +
-        Global::g / NDParameters::alpha * cwise_multiplication(dze_dy, h);
+        2.0 * vec_cw_mult(vec_cw_mult(h2, c1), dh_dy) + 2.0 / 3.0 * vec_cw_mult(h3, c3) +
+        vec_cw_mult(vec_cw_mult(h2, c1), dbath_dy) + Global::g / NDParameters::alpha * vec_cw_mult(dze_dy, h);
 
     for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
         subvector(internal.w1_rhs, GN::n_dimensions * dof, GN::n_dimensions) =
