@@ -101,12 +101,12 @@ decltype(auto) power(const ArrayType& array, double exp) {
 
 template <typename LeftArrayType, typename RightArrayType>
 decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return blaze::map(array_left, array_right, [](double l, double r) { return r * l; });
+    return array_left * array_right;
 }
 
 template <typename LeftArrayType, typename RightArrayType>
 decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return blaze::map(array_left, array_right, [](double l, double r) { return r / l; });
+    return array_left / array_right;
 }
 
 /* Vector Operations */
