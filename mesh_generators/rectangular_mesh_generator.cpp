@@ -303,7 +303,9 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) : bounda
     if (yaml_input["boundary"]) {
         YAML::Node yaml_boundaries = yaml_input["boundary"];
         if (!(yaml_boundaries.IsSequence() && yaml_boundaries.size() == 4)) {
-            std::string err_msg{"Error: please check that the boundaries node is a sequence with 4 members"};
+            std::string err_msg{
+                "Error: please check that the boundaries node is a "
+                "sequence with 4 members"};
             throw std::logic_error(err_msg);
         }
 

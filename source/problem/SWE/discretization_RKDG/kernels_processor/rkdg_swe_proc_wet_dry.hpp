@@ -7,39 +7,39 @@ template <typename ElementType>
 void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& state    = elt.data.state[stage + 1];
-    auto& wd_state = elt.data.wet_dry_state;
-    uint number_of_dry_nodes = 0;
+    auto& state                  = elt.data.state[stage + 1];
+    auto& wd_state               = elt.data.wet_dry_state;
+    uint number_of_dry_nodes     = 0;
     wd_state.went_completely_dry = false;
 
-    //fixme: think about higher degree polynomials here (c.f. issue #107)
+    // fixme: think about higher degree polynomials here (c.f. issue #107)
     wd_state.q_lin     = elt.ProjectBasisToLinear(state.q);
     wd_state.q_at_vrtx = elt.ComputeLinearUvrtx(wd_state.q_lin);
 
     for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
         wd_state.h_at_vrtx[vrtx] = wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) + wd_state.bath_at_vrtx[vrtx];
 
-        if ( wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
+        if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
             ++number_of_dry_nodes;
         }
     }
 
     double h_avg = std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / elt.data.get_nvrtx();
-    if ( h_avg <= PostProcessing::h_o_threshold ) {
+    if (h_avg <= PostProcessing::h_o_threshold) {
         wd_state.went_completely_dry = true;
-        h_avg = PostProcessing::h_o_threshold;
+        h_avg                        = PostProcessing::h_o_threshold;
     }
 
     bool set_wet_element = false;
     bool set_dry_element = false;
     bool check_element   = false;
-    if (number_of_dry_nodes==0) {
-        if ( wd_state.wet ) {
+    if (number_of_dry_nodes == 0) {
+        if (wd_state.wet) {
             return;
         } else {
             check_element = true;
         }
-    } else if (number_of_dry_nodes==wd_state.h_at_vrtx.size()) {
+    } else if (number_of_dry_nodes == wd_state.h_at_vrtx.size()) {
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
             wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
             wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
@@ -54,14 +54,13 @@ void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) 
 
         return;
     } else {
-        if ( h_avg <= PostProcessing::h_o + PostProcessing::h_o_threshold ) {
+        if (h_avg <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
                 wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0;
                 wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0;
             }
         } else {
-
             auto h_min_iter = std::min_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
             uint h_min_vrtx = std::distance(wd_state.h_at_vrtx.begin(), h_min_iter);
 
@@ -75,7 +74,7 @@ void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) 
             wd_state.h_at_vrtx_temp[h_mid_vrtx] =
                 std::max(PostProcessing::h_o,
                          wd_state.h_at_vrtx[h_mid_vrtx] -
-                         (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
+                             (wd_state.h_at_vrtx_temp[h_min_vrtx] - wd_state.h_at_vrtx[h_min_vrtx]) / 2);
 
             wd_state.h_at_vrtx_temp[h_max_vrtx] =
                 wd_state.h_at_vrtx[h_max_vrtx] -
@@ -100,7 +99,7 @@ void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) 
                 }
             }
 
-            assert( n_dry_vrtx < 3 );
+            assert(n_dry_vrtx < 3);
 
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
@@ -129,7 +128,6 @@ void Problem::wetting_drying_kernel(const RKStepper& stepper, ElementType& elt) 
             set_dry_element = true;
         }
     }
-
 
     if (set_dry_element) {
         wd_state.wet = false;

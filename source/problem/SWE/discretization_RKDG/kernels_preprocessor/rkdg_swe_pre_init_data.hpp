@@ -90,8 +90,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
 
         row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
 
-
-        //bathymetry is not necessarily continuous across weir nodes
+        // bathymetry is not necessarily continuous across weir nodes
         for (uint node_id = 0; node_id < nnode; ++node_id) {
             bathymetry[node_id] = shape_ex.nodal_coordinates[node_id][GlobalCoord::z];
         }

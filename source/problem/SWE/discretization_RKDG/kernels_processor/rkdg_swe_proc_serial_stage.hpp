@@ -23,10 +23,10 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
         bool nan_found = Problem::scrutinize_solution_kernel(stepper, elt);
 
         if (nan_found) {
-          std::cerr << "Fatal Error: NaN found at element " << elt.GetID() << std::endl;
-          abort();
+            std::cerr << "Fatal Error: NaN found at element " << elt.GetID() << std::endl;
+            abort();
         }
-      });
+    });
 
     if (SWE::PostProcessing::wetting_drying) {
         discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); });
@@ -44,7 +44,6 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
 
         discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::slope_limiting_kernel(stepper, elt); });
     }
-
 }
 }
 }

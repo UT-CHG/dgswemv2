@@ -26,7 +26,7 @@ using DynMatrix = blaze::DynamicMatrix<T>;
 template <typename T, uint m>
 using HybMatrix = blaze::HybridMatrix<T, m, 16>;
 template <typename Matrix>
-using HybColumnType = decltype( blaze::column<1UL>( std::declval<Matrix>() ) );
+using HybColumnType = decltype(blaze::column<1UL>(std::declval<Matrix>()));
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;
