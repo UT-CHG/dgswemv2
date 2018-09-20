@@ -89,6 +89,11 @@ decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayT
 }
 
 /* Vector Operations */
+template <typename T>
+decltype(auto) vector_from_array(T* array, uint n) {
+    return Eigen::Map<DynVector<T>>(array, n);
+}
+
 template <typename VectorType>
 decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
     return vector.segment(start_row, size_row);

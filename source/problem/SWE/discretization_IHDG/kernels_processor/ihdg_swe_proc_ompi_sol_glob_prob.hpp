@@ -275,7 +275,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
     double* sol;
     VecGetArray(rhs_global, &sol);
 
-    Eigen::Map<DynVector<double>> solution(sol, n_global_dofs);
+    DynVector<double> solution = vector_from_array(sol, n_global_dofs);
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&solution](auto& edge_int) {

@@ -110,6 +110,11 @@ decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayT
 }
 
 /* Vector Operations */
+template <typename T>
+decltype(auto) vector_from_array(T* array, uint n) {
+    return DynVector<T>(n, array);
+}
+
 template <typename VectorType>
 decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
     return blaze::subvector(vector, start_row, size_row);
@@ -171,7 +176,7 @@ void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Solutions generated here can be rubbish
     printf("No sparse solver in Blaze! Consult use_blaze.hpp!\n");
 
-    assert(false);
+    abort();
 
     DynMatrix<double> A_dense;
 
