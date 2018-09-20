@@ -27,7 +27,6 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint ndof_global                   = edge_int.edge_data.get_ndof();
         std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
         edge_internal.delta_hat_global -=
@@ -37,10 +36,10 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         edge_internal.rhs_global -= boundary_in.delta_global * internal_in.delta_local_inv * internal_in.rhs_local +
                                     boundary_ex.delta_global * internal_ex.delta_local_inv * internal_ex.rhs_local;
 
-        subvector(rhs_global, global_dof_indx[0], ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+        subvector(rhs_global, global_dof_indx[0], global_dof_indx.size()) = edge_internal.rhs_global;
 
-        for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+        for (uint i = 0; i < global_dof_indx.size(); ++i) {
+            for (uint j = 0; j < global_dof_indx.size(); ++j) {
                 sparse_delta_hat_global.add_triplet(
                     global_dof_indx[i], global_dof_indx[j], edge_internal.delta_hat_global(i, j));
             }
@@ -57,8 +56,8 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
             std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
 
-            for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-                for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+            for (uint i = 0; i < global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < global_dof_con_indx.size(); ++j) {
                     sparse_delta_hat_global.add_triplet(
                         global_dof_indx[i], global_dof_con_indx[j], edge_internal.delta_hat_global(i, j));
                 }
@@ -76,8 +75,8 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
             std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
 
-            for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-                for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+            for (uint i = 0; i < global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < global_dof_con_indx.size(); ++j) {
                     sparse_delta_hat_global.add_triplet(
                         global_dof_indx[i], global_dof_con_indx[j], edge_internal.delta_hat_global(i, j));
                 }
@@ -91,17 +90,16 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         auto& internal = edge_bound.boundary.data.internal;
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint ndof_global                   = edge_bound.edge_data.get_ndof();
         std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
         edge_internal.delta_hat_global -= boundary.delta_global * internal.delta_local_inv * boundary.delta_hat_local;
 
         edge_internal.rhs_global -= boundary.delta_global * internal.delta_local_inv * internal.rhs_local;
 
-        subvector(rhs_global, global_dof_indx[0], ndof_global * SWE::n_variables) = edge_internal.rhs_global;
+        subvector(rhs_global, global_dof_indx[0], global_dof_indx.size()) = edge_internal.rhs_global;
 
-        for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-            for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+        for (uint i = 0; i < global_dof_indx.size(); ++i) {
+            for (uint j = 0; j < global_dof_indx.size(); ++j) {
                 sparse_delta_hat_global.add_triplet(
                     global_dof_indx[i], global_dof_indx[j], edge_internal.delta_hat_global(i, j));
             }
@@ -118,8 +116,8 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
             std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
 
-            for (uint i = 0; i < ndof_global * SWE::n_variables; ++i) {
-                for (uint j = 0; j < ndof_global * SWE::n_variables; ++j) {
+            for (uint i = 0; i < global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < global_dof_con_indx.size(); ++j) {
                     sparse_delta_hat_global.add_triplet(
                         global_dof_indx[i], global_dof_con_indx[j], edge_internal.delta_hat_global(i, j));
                 }
@@ -141,15 +139,14 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint ndof_global                   = edge_int.edge_data.get_ndof();
         std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-        auto del_q_hat = subvector(rhs_global, global_dof_indx[0], ndof_global * SWE::n_variables);
+        auto del_q_hat = subvector(rhs_global, global_dof_indx[0], global_dof_indx.size());
 
         internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
         internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
 
-        for (uint dof = 0; dof < ndof_global; ++dof) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
             edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
             edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
@@ -163,14 +160,13 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         auto& internal = edge_bound.boundary.data.internal;
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint ndof_global                   = edge_bound.edge_data.get_ndof();
         std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
-        auto del_q_hat = subvector(rhs_global, global_dof_indx[0], ndof_global * SWE::n_variables);
+        auto del_q_hat = subvector(rhs_global, global_dof_indx[0], global_dof_indx.size());
 
         internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 
-        for (uint dof = 0; dof < ndof_global; ++dof) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
             edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
             edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
@@ -193,7 +189,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         }
     });
 
-    double delta_norm = norm(rhs_global) / rhs_global.size();
+    double delta_norm = norm(rhs_global) / discretization.n_global_dofs;
 
     if (delta_norm < 1e-8) {
         return true;
