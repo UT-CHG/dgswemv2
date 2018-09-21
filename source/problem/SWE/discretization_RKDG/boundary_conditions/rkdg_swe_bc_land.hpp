@@ -25,10 +25,10 @@ class Land {
                      HybMatrix<double, SWE::n_variables>& F_hat);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const StatVector<double, SWE::n_dimensions>& surface_normal,
-                     const StatVector<double, SWE::n_variables>& q_in,
-                     const StatVector<double, SWE::n_auxiliaries>& aux_in,
-                     StatVector<double, SWE::n_variables>&& F_hat);
+                     const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                     const Column<HybMatrix<double, SWE::n_variables>>& q_in,
+                     const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
+                     Column<HybMatrix<double, SWE::n_variables>>&& F_hat);
 
     StatVector<double, SWE::n_variables> GetEX(const RKStepper& stepper,
                                                const StatVector<double, SWE::n_dimensions>& surface_normal,
@@ -72,10 +72,10 @@ void Land::ComputeFlux(const RKStepper& stepper,
 }
 
 void Land::ComputeFlux(const RKStepper& stepper,
-                       const StatVector<double, SWE::n_dimensions>& surface_normal,
-                       const StatVector<double, SWE::n_variables>& q_in,
-                       const StatVector<double, SWE::n_auxiliaries>& aux_in,
-                       StatVector<double, SWE::n_variables>&& F_hat) {
+                       const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                       const Column<HybMatrix<double, SWE::n_variables>>& q_in,
+                       const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
+                       Column<HybMatrix<double, SWE::n_variables>>&& F_hat) {
     // *** //
     double n_x = surface_normal[GlobalCoord::x];
     double n_y = surface_normal[GlobalCoord::y];
