@@ -56,7 +56,7 @@ bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& 
     }
 
     for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.q(SWE::Variables::qx, dof))) {
+        if (std::isnan(state.q(SWE::Variables::qy, dof))) {
             std::cerr << "Error: found isnan qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 

@@ -38,77 +38,61 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                                                        column(intface.surface_normal_in, gp));
 
         column(boundary_ex.F_hat_at_gp, gp_ex) = -column(boundary_in.F_hat_at_gp, gp);
-    }
 
-    // compute net volume flux out of IN/EX elements
-    double net_volume_flux_in = 0;
-    // double net_volume_flux_ex = 0;
+        if (boundary_in.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
+            if (!wet_in) {  // water flowing from dry IN element
+                // Zero flux on IN element side
+                set_constant(column(boundary_in.F_hat_at_gp, gp), 0.0);
 
-    net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
-    // net_volume_flux_ex = -net_volume_flux_in;
+                // Reflective Boundary on EX element side
+                BC::Land land_boundary;
+                land_boundary.Initialize(1);
 
-    if (net_volume_flux_in > 0) {
-        if (!wet_in) {  // water flowing from dry IN element
-            // Zero flux on IN element side
-            set_constant(boundary_in.F_hat_at_gp, 0.0);
+                land_boundary.ComputeFlux(stepper,
+                                          column(intface.surface_normal_ex, gp_ex),
+                                          column(boundary_ex.q_at_gp, gp_ex),
+                                          column(boundary_ex.aux_at_gp, gp_ex),
+                                          column(boundary_ex.F_hat_at_gp, gp_ex));
 
-            // Reflective Boundary on EX element side
-            BC::Land land_boundary;
-            land_boundary.Initialize(intface.data_ex.get_ngp_boundary(intface.bound_id_ex));
-
-            land_boundary.ComputeFlux(stepper,
-                                      intface.surface_normal_ex,
-                                      boundary_ex.q_at_gp,
-                                      boundary_ex.aux_at_gp,
-                                      boundary_ex.F_hat_at_gp);
-
-            net_volume_flux_in = 0;
-            // net_volume_flux_ex = 0;
-        } else if (!wet_ex) {  // water flowing to dry EX element
-            for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
-                gp_ex = ngp - gp - 1;
+            } else if (!wet_ex) {  // water flowing to dry EX element
 
                 column(boundary_ex.F_hat_at_gp, gp_ex) = LLF_flux(0.0,
                                                                   column(boundary_ex.q_at_gp, gp_ex),
                                                                   column(boundary_in.q_at_gp, gp),
                                                                   column(boundary_ex.aux_at_gp, gp_ex),
                                                                   column(intface.surface_normal_ex, gp_ex));
+
+                // Only remove gravity contributions for the momentum fluxes
+                boundary_ex.F_hat_at_gp(Variables::ze, gp_ex) = -boundary_in.F_hat_at_gp(Variables::ze, gp);
             }
+        } else if (boundary_in.F_hat_at_gp(Variables::ze, gp) < -1e-12) {
+            if (!wet_ex) {  // water flowing from dry EX element
+                // Zero flux on EX element side
+                set_constant(column(boundary_ex.F_hat_at_gp, gp_ex), 0.0);
 
-            net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
-            // net_volume_flux_ex = intface.IntegrationEX(boundary_ex.ze_numerical_flux_at_gp);
-        }
-    } else if (net_volume_flux_in < 0) {
-        if (!wet_ex) {  // water flowing from dry EX element
-            // Zero flux on EX element side
-            set_constant(boundary_ex.F_hat_at_gp, 0.0);
+                // Reflective Boundary on IN element side
+                BC::Land land_boundary;
+                land_boundary.Initialize(1);
 
-            // Reflective Boundary on IN element side
-            BC::Land land_boundary;
-            land_boundary.Initialize(intface.data_in.get_ngp_boundary(intface.bound_id_in));
+                land_boundary.ComputeFlux(stepper,
+                                          column(intface.surface_normal_in, gp),
+                                          column(boundary_in.q_at_gp, gp),
+                                          column(boundary_in.aux_at_gp, gp),
+                                          column(boundary_in.F_hat_at_gp, gp));
 
-            land_boundary.ComputeFlux(stepper,
-                                      intface.surface_normal_in,
-                                      boundary_in.q_at_gp,
-                                      boundary_in.aux_at_gp,
-                                      boundary_in.F_hat_at_gp);
-
-            net_volume_flux_in = 0;
-            // net_volume_flux_ex = 0;
-        } else if (!wet_in) {  // water flowing to dry IN element
-            for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
-                gp_ex = ngp - gp - 1;
+            } else if (!wet_in) {  // water flowing to dry IN element
 
                 column(boundary_in.F_hat_at_gp, gp) = LLF_flux(0.0,
                                                                column(boundary_in.q_at_gp, gp),
                                                                column(boundary_ex.q_at_gp, gp_ex),
                                                                column(boundary_in.aux_at_gp, gp),
                                                                column(intface.surface_normal_in, gp));
-            }
 
-            net_volume_flux_in = intface.IntegrationIN(boundary_in.F_hat_at_gp)[SWE::Variables::ze];
-            // net_volume_flux_ex = intface.IntegrationEX(boundary_ex.ze_numerical_flux_at_gp);
+                boundary_in.F_hat_at_gp(Variables::ze, gp) = -boundary_ex.F_hat_at_gp(Variables::ze, gp_ex);
+            }
         }
+
+        assert(!std::isnan(boundary_in.F_hat_at_gp(Variables::ze, gp)));
     }
 }
 }
