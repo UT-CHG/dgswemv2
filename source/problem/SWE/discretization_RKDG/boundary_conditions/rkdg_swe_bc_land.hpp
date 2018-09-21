@@ -25,7 +25,7 @@ class Land {
                      HybMatrix<double, SWE::n_variables>& F_hat);
 
     void ComputeFlux(const RKStepper& stepper,
-                     const StatVector<double, SWE::n_dimensions>& surface_normal
+                     const StatVector<double, SWE::n_dimensions>& surface_normal,
                      const StatVector<double, SWE::n_variables>& q_in,
                      const StatVector<double, SWE::n_auxiliaries>& aux_in,
                      StatVector<double, SWE::n_variables>&& F_hat);
@@ -72,7 +72,7 @@ void Land::ComputeFlux(const RKStepper& stepper,
 }
 
 void Land::ComputeFlux(const RKStepper& stepper,
-                       const StatVector<double, SWE::n_dimensions>& surface_normal
+                       const StatVector<double, SWE::n_dimensions>& surface_normal,
                        const StatVector<double, SWE::n_variables>& q_in,
                        const StatVector<double, SWE::n_auxiliaries>& aux_in,
                        StatVector<double, SWE::n_variables>&& F_hat) {
