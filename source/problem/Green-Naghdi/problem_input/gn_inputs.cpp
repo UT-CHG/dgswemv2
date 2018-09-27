@@ -157,7 +157,7 @@ Inputs::Inputs(YAML::Node& gn_node) {
 
 void Inputs::read_bcis(const std::string& bcis_file) {
     /*if (!Utilities::file_exists(bcis_file)) {
-        throw std::logic_error("Fata Error: BC/IS data file : " + bcis_file + " was not found!\n");
+        throw std::logic_error("Fata Error: BC/ISP data file : " + bcis_file + " was not found!\n");
     }*/
 
     std::ifstream file(bcis_file);

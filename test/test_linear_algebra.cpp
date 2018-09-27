@@ -49,16 +49,16 @@ int main(int argc, char* args[]) {
 
     VecView(vector, PETSC_VIEWER_STDOUT_WORLD);
 
-    /*Vec vector_loc;
-    VecCreateSeq(MPI_COMM_SELF, 4, &vector_loc);
-
-    int indx_loc[4] = {0, 1, 2, 3};
+    Vec vector_loc;
+    VecCreateSeq(MPI_COMM_SELF, 6, &vector_loc);
 
     VecScatter scatter;
     IS from, to;
 
-    ISCreateGeneral(MPI_COMM_SELF, 4, indexes, PETSC_COPY_VALUES, &from);
-    ISCreateGeneral(MPI_COMM_SELF, 4, indx_loc, PETSC_COPY_VALUES, &to);
+    int loc_indexes[6] = {0, 1, 2, 0, 1, 2};
+
+    ISCreateGeneral(MPI_COMM_SELF, 6, loc_indexes, PETSC_COPY_VALUES, &from);
+    ISCreateStride(MPI_COMM_SELF, 6, 0, 1, &to);
 
     VecScatterCreate(vector, from, vector_loc, to, &scatter);
 
@@ -69,11 +69,8 @@ int main(int argc, char* args[]) {
     ISDestroy(&to);
     VecScatterDestroy(&scatter);
 
-    if (rank == 1)
+    if (rank == 0)
         VecView(vector_loc, PETSC_VIEWER_STDOUT_SELF);
-
-    VecDestroy(&vector);
-    VecDestroy(&vector_loc);*/
 
     Mat A;
 
@@ -103,14 +100,8 @@ int main(int argc, char* args[]) {
 
     KSPCreate(PETSC_COMM_WORLD, &ksp);
     KSPSetOperators(ksp, A, A);
-
-    /*KSPSetType(ksp, KSPPREONLY);
-
     KSPGetPC(ksp, &pc);
     PCSetType(pc, PCLU);
-    PCFactorSetMatSolverPackage(pc, MATSOLVERMUMPS);
-
-    KSPSetUp(ksp);*/
 
     KSPSolve(ksp, vector, sol);
 

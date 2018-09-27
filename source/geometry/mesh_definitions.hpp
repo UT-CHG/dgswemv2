@@ -18,8 +18,8 @@ template <typename Data>
 using ElementTypeTuple = std::tuple<
     Element<2, Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>, Shape::StraightTriangle, Data>>;
 
-template <typename Data, typename... ISs>
-using InterfaceTypeTuple = std::tuple<Interface<1, Integration::GaussLegendre_1D, Data, ISs>...>;
+template <typename Data, typename... ISPs>
+using InterfaceTypeTuple = std::tuple<Interface<1, Integration::GaussLegendre_1D, Data, ISPs>...>;
 
 template <typename Data, typename... BCs>
 using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, BCs>...>;
@@ -27,13 +27,13 @@ using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, 
 template <typename Data, typename... DBCs>
 using DistributedBoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, DBCs>...>;
 
-template <typename Data, typename IS, typename BC, typename DBC>
+template <typename Data, typename ISP, typename BC, typename DBC>
 struct MeshType;
 
-template <typename Data, typename... ISs, typename... BCs, typename... DBCs>
-struct MeshType<Data, std::tuple<ISs...>, std::tuple<BCs...>, std::tuple<DBCs...>> {
+template <typename Data, typename... ISPs, typename... BCs, typename... DBCs>
+struct MeshType<Data, std::tuple<ISPs...>, std::tuple<BCs...>, std::tuple<DBCs...>> {
     using Type = Mesh<ElementTypeTuple<Data>,
-                      InterfaceTypeTuple<Data, ISs...>,
+                      InterfaceTypeTuple<Data, ISPs...>,
                       BoundaryTypeTuple<Data, BCs...>,
                       DistributedBoundaryTypeTuple<Data, DBCs...>>;
 };

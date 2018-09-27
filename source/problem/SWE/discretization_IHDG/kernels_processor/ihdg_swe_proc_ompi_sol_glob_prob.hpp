@@ -5,15 +5,16 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
 bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    uint n_global_dofs = sim_units[0]->discretization.n_global_dofs;
+    uint n_global_dofs                 = sim_units[0]->discretization.n_global_dofs;
+    std::vector<uint>& global_dof_indx = sim_units[0]->discretization.global_dof_indx;
 
     Mat delta_hat_global;
-    MatCreate(MPI_COMM_SELF, &delta_hat_global);
+    MatCreate(MPI_COMM_WORLD, &delta_hat_global);
     MatSetSizes(delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
     MatSetUp(delta_hat_global);
 
     Vec rhs_global;
-    VecCreateMPI(MPI_COMM_SELF, PETSC_DECIDE, n_global_dofs, &rhs_global);
+    VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_global_dofs, &rhs_global);
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
@@ -263,84 +264,104 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
     VecAssemblyEnd(rhs_global);
 
     KSP ksp;
-    PC pc;
-
-    KSPCreate(MPI_COMM_SELF, &ksp);
+    KSPCreate(MPI_COMM_WORLD, &ksp);
     KSPSetOperators(ksp, delta_hat_global, delta_hat_global);
+
+    /*PC pc;
     KSPGetPC(ksp, &pc);
-    PCSetType(pc, PCLU);
+    PCSetType(pc, PCLU);*/
 
     KSPSolve(ksp, rhs_global, rhs_global);
 
-    double* sol;
-    VecGetArray(rhs_global, &sol);
+    Vec sol;
+    VecCreateSeq(MPI_COMM_SELF, global_dof_indx.size(), &sol);
 
-    DynVector<double> solution = vector_from_array(sol, n_global_dofs);
+    IS from, to;
+    ISCreateGeneral(MPI_COMM_SELF, global_dof_indx.size(), (int*)&global_dof_indx.front(), PETSC_COPY_VALUES, &from);
+    ISCreateStride(MPI_COMM_SELF, global_dof_indx.size(), 0, 1, &to);
 
+    VecScatter scatter;
+    VecScatterCreate(rhs_global, from, sol, to, &scatter);
+
+    VecScatterBegin(scatter, rhs_global, sol, INSERT_VALUES, SCATTER_FORWARD);
+    VecScatterEnd(scatter, rhs_global, sol, INSERT_VALUES, SCATTER_FORWARD);
+
+    double* sol_ptr;
+    VecGetArray(sol, &sol_ptr);
+
+    DynVector<double> solution = vector_from_array(sol_ptr, global_dof_indx.size());
+
+    uint sol_offset = 0;
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&solution](auto& edge_int) {
-            auto& edge_state    = edge_int.edge_data.edge_state;
-            auto& edge_internal = edge_int.edge_data.edge_internal;
+        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
+            [&sol_offset, &solution](auto& edge_int) {
+                auto& edge_state = edge_int.edge_data.edge_state;
 
-            auto& internal_in = edge_int.interface.data_in.internal;
-            auto& internal_ex = edge_int.interface.data_ex.internal;
+                auto& internal_in = edge_int.interface.data_in.internal;
+                auto& internal_ex = edge_int.interface.data_ex.internal;
 
-            auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-            auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+                auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+                auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-            std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
+                uint n_global_dofs = edge_int.edge_data.edge_internal.global_dof_indx.size();
 
-            auto del_q_hat = subvector(solution, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
+                auto del_q_hat = subvector(solution, sol_offset, n_global_dofs);
 
-            internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
-            internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
+                internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
+                internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
 
-            for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-                edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-                edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-                edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-            }
-        });
+                for (uint dof = 0; dof < n_global_dofs; ++dof) {
+                    edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
+                    edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
+                    edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
+                }
 
-        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary([&solution](auto& edge_bound) {
-            auto& edge_state    = edge_bound.edge_data.edge_state;
-            auto& edge_internal = edge_bound.edge_data.edge_internal;
+                sol_offset += n_global_dofs;
+            });
 
-            auto& internal = edge_bound.boundary.data.internal;
-            auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary(
+            [&sol_offset, &solution](auto& edge_bound) {
+                auto& edge_state = edge_bound.edge_data.edge_state;
 
-            std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
+                auto& internal = edge_bound.boundary.data.internal;
+                auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-            auto del_q_hat = subvector(solution, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
+                uint n_global_dofs = edge_bound.edge_data.edge_internal.global_dof_indx.size();
 
-            internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
+                auto del_q_hat = subvector(solution, sol_offset, n_global_dofs);
 
-            for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-                edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-                edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-                edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-            }
-        });
+                internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 
-        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed([&solution](auto& edge_dbound) {
-            auto& edge_state    = edge_dbound.edge_data.edge_state;
-            auto& edge_internal = edge_dbound.edge_data.edge_internal;
+                for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
+                    edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
+                    edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
+                    edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
+                }
 
-            auto& internal = edge_dbound.boundary.data.internal;
-            auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+                sol_offset += n_global_dofs;
+            });
 
-            std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
+        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
+            [&sol_offset, &solution](auto& edge_dbound) {
+                auto& edge_state = edge_dbound.edge_data.edge_state;
 
-            auto del_q_hat = subvector(solution, (uint)global_dof_indx[0], (uint)global_dof_indx.size());
+                auto& internal = edge_dbound.boundary.data.internal;
+                auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-            internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
+                uint n_global_dofs = edge_dbound.edge_data.edge_internal.global_dof_indx.size();
 
-            for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-                edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-                edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-                edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-            }
-        });
+                auto del_q_hat = subvector(solution, sol_offset, n_global_dofs);
+
+                internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
+
+                for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
+                    edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
+                    edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
+                    edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
+                }
+
+                sol_offset += n_global_dofs;
+            });
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             const uint stage = sim_units[su_id]->stepper.GetStage();
@@ -359,13 +380,20 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
         });
     }
 
-    double delta_norm = norm(solution) / n_global_dofs;
+    double delta_norm;
+    VecNorm(rhs_global, NORM_2, &delta_norm);
+    delta_norm /= n_global_dofs;
 
-    VecRestoreArray(rhs_global, &sol);
+    VecRestoreArray(sol, &sol_ptr);
 
     MatDestroy(&delta_hat_global);
     VecDestroy(&rhs_global);
     KSPDestroy(&ksp);
+
+    VecDestroy(&sol);
+    ISDestroy(&from);
+    ISDestroy(&to);
+    VecScatterDestroy(&scatter);
 
     if (delta_norm < 1e-8) {
         return true;

@@ -36,13 +36,13 @@ struct Problem {
     using ProblemGlobalDataType = GlobalData;
 
     using ProblemMeshType = Geometry::MeshType<Data,
-                                               std::tuple<IS::Internal>,
+                                               std::tuple<ISP::Internal>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed>>::Type;
 
     using ProblemMeshSkeletonType =
         Geometry::MeshSkeletonType<EdgeData,
-                                   Geometry::InterfaceTypeTuple<Data, IS::Internal>,
+                                   Geometry::InterfaceTypeTuple<Data, ISP::Internal>,
                                    Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
                                    Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
 

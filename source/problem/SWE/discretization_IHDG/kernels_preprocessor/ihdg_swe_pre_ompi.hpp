@@ -70,6 +70,9 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
     MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
+    sim_units[0]->discretization.n_global_dofs = n_global_dofs;
+    std::vector<uint>& global_dof_indx         = sim_units[0]->discretization.global_dof_indx;
+
     MPI_Scatter(&total_global_dof_offsets.front(),
                 1,
                 MPI_UNSIGNED,
@@ -80,12 +83,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                 MPI_COMM_WORLD);
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->discretization.n_global_dofs = n_global_dofs;
-
         global_dof_offsets[su_id] += total_global_dof_offset;
-    }
 
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         Problem::initialize_global_problem_parallel_finalize_pre_send(sim_units[su_id]->discretization,
                                                                       global_dof_offsets[su_id]);
     }
@@ -103,8 +102,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         sim_units[su_id]->communicator.WaitAllReceives(SWE::CommTypes::preprocessor,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
-        Problem::initialize_global_problem_parallel_post_receive(sim_units[su_id]->discretization,
-                                                                 sim_units[su_id]->communicator);
+        Problem::initialize_global_problem_parallel_post_receive(
+            sim_units[su_id]->discretization, sim_units[su_id]->communicator, global_dof_indx);
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {

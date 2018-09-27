@@ -26,7 +26,7 @@ struct Problem {
     using ProblemDataType = Data;
 
     using ProblemMeshType = Geometry::MeshType<Data,
-                                               std::tuple<IS::Internal, IS::Levee>,
+                                               std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 

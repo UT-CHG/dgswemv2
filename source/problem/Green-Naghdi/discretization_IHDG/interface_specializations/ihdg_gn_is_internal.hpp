@@ -7,7 +7,7 @@
 
 namespace GN {
 namespace IHDG {
-namespace IS {
+namespace ISP {
 class Internal {
   public:
     template <typename InterfaceType>

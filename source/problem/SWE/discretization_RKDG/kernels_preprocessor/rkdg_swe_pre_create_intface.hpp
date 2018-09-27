@@ -9,7 +9,7 @@ void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, 
                                 ProblemInputType& problem_input,
                                 Writer<Problem>& writer) {
     // *** //
-    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal, IS::Levee>;
+    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::internal) {
@@ -72,7 +72,7 @@ void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, 
                     }
 
                     mesh.template CreateInterface<InterfaceTypeLevee>(
-                        std::move(raw_boundary_in), std::move(raw_boundary_ex), IS::Levee(levee));
+                        std::move(raw_boundary_in), std::move(raw_boundary_ex), ISP::Levee(levee));
                 }
 
                 it->second.erase(itt++);

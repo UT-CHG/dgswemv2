@@ -17,7 +17,7 @@ int main() {
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::EHDG::Data>;
     using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::BC::Land>;
     using InterfaceType =
-        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::IS::Internal>;
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::ISP::Internal>;
 
     using EdgeBoundaryTypes =
         Geometry::EdgeBoundaryTypeTuple<SWE::EHDG::EdgeData,
@@ -26,7 +26,7 @@ int main() {
 
     using EdgeInterfaceTypes =
         Geometry::EdgeInterfaceTypeTuple<SWE::EHDG::EdgeData,
-                                         Geometry::InterfaceTypeTuple<SWE::EHDG::Data, SWE::EHDG::IS::Internal>>::Type;
+                                         Geometry::InterfaceTypeTuple<SWE::EHDG::Data, SWE::EHDG::ISP::Internal>>::Type;
     using EdgeInterfaceType = typename std::tuple_element<0, EdgeInterfaceTypes>::type;
 
     // make an equilateral triangle

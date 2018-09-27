@@ -202,8 +202,23 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
 template <typename Communicator>
 void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<Problem>& discretization,
-                                                              Communicator& communicator) {
-    discretization.mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {
+                                                              Communicator& communicator,
+                                                              std::vector<uint>& global_dof_indx) {
+    discretization.mesh_skeleton.CallForEachEdgeInterface([&global_dof_indx](auto& edge_int) {
+        auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        global_dof_indx.insert(
+            global_dof_indx.end(), edge_internal.global_dof_indx.begin(), edge_internal.global_dof_indx.end());
+    });
+
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_dof_indx](auto& edge_bound) {
+        auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        global_dof_indx.insert(
+            global_dof_indx.end(), edge_internal.global_dof_indx.begin(), edge_internal.global_dof_indx.end());
+    });
+
+    discretization.mesh_skeleton.CallForEachEdgeDistributed([&global_dof_indx](auto& edge_dbound) {
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
         auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
@@ -232,6 +247,9 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
             boundary.global_dof_indx = edge_internal.global_dof_indx;
         }
+
+        global_dof_indx.insert(
+            global_dof_indx.end(), edge_internal.global_dof_indx.begin(), edge_internal.global_dof_indx.end());
     });
 }
 }

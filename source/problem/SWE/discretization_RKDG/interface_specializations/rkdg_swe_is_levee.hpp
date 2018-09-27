@@ -7,7 +7,7 @@
 
 namespace SWE {
 namespace RKDG {
-namespace IS {
+namespace ISP {
 class Levee {
   private:
     double H_tolerance = 0.01;

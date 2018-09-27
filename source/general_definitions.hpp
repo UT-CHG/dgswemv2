@@ -237,7 +237,7 @@ class Shape {
 
 #define PI 3.14159265359
 
-#define N_DIV 2               // postproc elem div
+#define N_DIV 2                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
 
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };

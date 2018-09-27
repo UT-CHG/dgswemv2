@@ -14,7 +14,7 @@ int main() {
     using RawBoundaryType = Geometry::RawBoundary<1, SWE::RKDG::Data>;
     using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::BC::Land>;
     using InterfaceType =
-        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::IS::Internal>;
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::ISP::Internal>;
 
     // make an equilateral triangle
     std::vector<Point<3>> vrtxs(3);

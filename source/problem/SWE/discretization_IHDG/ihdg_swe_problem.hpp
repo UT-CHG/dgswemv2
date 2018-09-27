@@ -33,13 +33,13 @@ struct Problem {
     using ProblemEdgeDataType = EdgeData;
 
     using ProblemMeshType = Geometry::MeshType<Data,
-                                               std::tuple<IS::Internal>,
+                                               std::tuple<ISP::Internal>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed>>::Type;
 
     using ProblemMeshSkeletonType =
         Geometry::MeshSkeletonType<EdgeData,
-                                   Geometry::InterfaceTypeTuple<Data, IS::Internal>,
+                                   Geometry::InterfaceTypeTuple<Data, ISP::Internal>,
                                    Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
                                    Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
 
@@ -112,7 +112,8 @@ struct Problem {
 
     template <typename Communicator>
     static void initialize_global_problem_parallel_post_receive(HDGDiscretization<Problem>& discretization,
-                                                                Communicator& communicator);
+                                                                Communicator& communicator,
+                                                                std::vector<uint>& global_dof_indx);
 
     // processor kernels
     static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);

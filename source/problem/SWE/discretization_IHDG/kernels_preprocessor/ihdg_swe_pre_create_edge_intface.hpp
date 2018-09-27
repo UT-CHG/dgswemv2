@@ -6,10 +6,10 @@ namespace IHDG {
 void Problem::create_edge_interfaces(ProblemMeshType& mesh,
                                      ProblemMeshSkeletonType& mesh_skeleton,
                                      Writer<Problem>& writer) {
-    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal>;
+    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal>;
 
     using EdgeInterfaceTypes =
-        Geometry::EdgeInterfaceTypeTuple<EdgeData, Geometry::InterfaceTypeTuple<Data, IS::Internal>>::Type;
+        Geometry::EdgeInterfaceTypeTuple<EdgeData, Geometry::InterfaceTypeTuple<Data, ISP::Internal>>::Type;
 
     uint old_edge_internal = mesh_skeleton.GetNumberEdgeInterfaces();
 
