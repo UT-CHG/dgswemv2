@@ -5,16 +5,10 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
 bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    uint n_global_dofs                 = sim_units[0]->discretization.n_global_dofs;
-    std::vector<uint>& global_dof_indx = sim_units[0]->discretization.global_dof_indx;
+    auto& global_data = sim_units[0]->discretization.global_data;
 
-    Mat delta_hat_global;
-    MatCreate(MPI_COMM_WORLD, &delta_hat_global);
-    MatSetSizes(delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
-    MatSetUp(delta_hat_global);
-
-    Vec rhs_global;
-    VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_global_dofs, &rhs_global);
+    Mat& delta_hat_global = global_data.delta_hat_global;
+    Vec& rhs_global       = global_data.rhs_global;
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
@@ -263,25 +257,15 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
     VecAssemblyBegin(rhs_global);
     VecAssemblyEnd(rhs_global);
 
-    KSP ksp;
-    KSPCreate(MPI_COMM_WORLD, &ksp);
-    KSPSetOperators(ksp, delta_hat_global, delta_hat_global);
-
     /*PC pc;
     KSPGetPC(ksp, &pc);
     PCSetType(pc, PCLU);*/
 
+    KSP& ksp            = global_data.ksp;
+    Vec& sol            = global_data.sol;
+    VecScatter& scatter = global_data.scatter;
+
     KSPSolve(ksp, rhs_global, rhs_global);
-
-    Vec sol;
-    VecCreateSeq(MPI_COMM_SELF, global_dof_indx.size(), &sol);
-
-    IS from, to;
-    ISCreateGeneral(MPI_COMM_SELF, global_dof_indx.size(), (int*)&global_dof_indx.front(), PETSC_COPY_VALUES, &from);
-    ISCreateStride(MPI_COMM_SELF, global_dof_indx.size(), 0, 1, &to);
-
-    VecScatter scatter;
-    VecScatterCreate(rhs_global, from, sol, to, &scatter);
 
     VecScatterBegin(scatter, rhs_global, sol, INSERT_VALUES, SCATTER_FORWARD);
     VecScatterEnd(scatter, rhs_global, sol, INSERT_VALUES, SCATTER_FORWARD);
@@ -289,7 +273,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
     double* sol_ptr;
     VecGetArray(sol, &sol_ptr);
 
-    DynVector<double> solution = vector_from_array(sol_ptr, global_dof_indx.size());
+    auto solution = vector_from_array(sol_ptr, global_data.global_dof_indx.size());
 
     uint sol_offset = 0;
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
@@ -380,20 +364,14 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
         });
     }
 
-    double delta_norm;
-    VecNorm(rhs_global, NORM_2, &delta_norm);
-    delta_norm /= n_global_dofs;
-
     VecRestoreArray(sol, &sol_ptr);
 
-    MatDestroy(&delta_hat_global);
-    VecDestroy(&rhs_global);
-    KSPDestroy(&ksp);
+    double delta_norm;
+    VecNorm(rhs_global, NORM_2, &delta_norm);
+    delta_norm /= global_data.n_global_dofs;
 
-    VecDestroy(&sol);
-    ISDestroy(&from);
-    ISDestroy(&to);
-    VecScatterDestroy(&scatter);
+    MatZeroEntries(delta_hat_global);
+    VecZeroEntries(rhs_global);
 
     if (delta_norm < 1e-8) {
         return true;

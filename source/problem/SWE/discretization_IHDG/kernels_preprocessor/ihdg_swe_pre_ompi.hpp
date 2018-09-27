@@ -7,6 +7,10 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
+    auto& global_data = sim_units[0]->discretization.global_data;
+
+    global_data.destruct = true;
+
     std::vector<uint> global_dof_offsets;
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
@@ -70,8 +74,16 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
     MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-    sim_units[0]->discretization.n_global_dofs = n_global_dofs;
-    std::vector<uint>& global_dof_indx         = sim_units[0]->discretization.global_dof_indx;
+    global_data.n_global_dofs = n_global_dofs;
+
+    MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
+    MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
+    MatSetUp(global_data.delta_hat_global);
+
+    VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_global_dofs, &(global_data.rhs_global));
+
+    KSPCreate(MPI_COMM_WORLD, &(global_data.ksp));
+    KSPSetOperators(global_data.ksp, global_data.delta_hat_global, global_data.delta_hat_global);
 
     MPI_Scatter(&total_global_dof_offsets.front(),
                 1,
@@ -103,13 +115,24 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
         Problem::initialize_global_problem_parallel_post_receive(
-            sim_units[su_id]->discretization, sim_units[su_id]->communicator, global_dof_indx);
+            sim_units[su_id]->discretization, sim_units[su_id]->communicator, global_data.global_dof_indx);
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(SWE::CommTypes::preprocessor,
                                                     sim_units[su_id]->stepper.GetTimestamp());
     }
+
+    VecCreateSeq(MPI_COMM_SELF, global_data.global_dof_indx.size(), &(global_data.sol));
+
+    ISCreateGeneral(MPI_COMM_SELF,
+                    global_data.global_dof_indx.size(),
+                    (int*)&global_data.global_dof_indx.front(),
+                    PETSC_COPY_VALUES,
+                    &(global_data.from));
+    ISCreateStride(MPI_COMM_SELF, global_data.global_dof_indx.size(), 0, 1, &(global_data.to));
+
+    VecScatterCreate(global_data.rhs_global, global_data.from, global_data.sol, global_data.to, &(global_data.scatter));
 }
 }
 }

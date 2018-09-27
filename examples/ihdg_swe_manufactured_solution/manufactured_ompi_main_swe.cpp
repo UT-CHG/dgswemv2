@@ -62,8 +62,6 @@ int main(int argc, char* argv[]) {
 
         simulation.ComputeL2Residual();
 
-        MPI_Barrier(MPI_COMM_WORLD);
-
         PetscFinalize();
 
         MPI_Finalize();
