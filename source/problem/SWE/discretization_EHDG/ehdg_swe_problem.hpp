@@ -31,7 +31,9 @@ struct Problem {
     using ProblemDataType = Data;
 
     using ProblemEdgeDataType = EdgeData;
-
+    
+    using ProblemGlobalDataType = std::tuple<>;
+    
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<ISP::Internal>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,

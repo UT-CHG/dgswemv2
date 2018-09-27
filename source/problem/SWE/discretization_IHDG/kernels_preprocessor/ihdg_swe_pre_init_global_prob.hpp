@@ -85,8 +85,6 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<Problem>& discr
         boundary.delta_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
     });
-
-    discretization.global_data.n_global_dofs = global_dof_offset;
 }
 
 template <typename Communicator>

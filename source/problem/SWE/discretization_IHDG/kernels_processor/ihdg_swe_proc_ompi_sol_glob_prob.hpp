@@ -257,10 +257,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
     VecAssemblyBegin(rhs_global);
     VecAssemblyEnd(rhs_global);
 
-    /*PC pc;
-    KSPGetPC(ksp, &pc);
-    PCSetType(pc, PCLU);*/
-
     KSP& ksp            = global_data.ksp;
     Vec& sol            = global_data.sol;
     VecScatter& scatter = global_data.scatter;
@@ -273,7 +269,10 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
     double* sol_ptr;
     VecGetArray(sol, &sol_ptr);
 
-    auto solution = vector_from_array(sol_ptr, global_data.global_dof_indx.size());
+    int sol_size;
+    VecGetLocalSize(sol, &sol_size);
+
+    auto solution = vector_from_array(sol_ptr, sol_size);
 
     uint sol_offset = 0;
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
@@ -294,7 +293,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
                 internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
                 internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
 
-                for (uint dof = 0; dof < n_global_dofs; ++dof) {
+                for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
                     edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
                     edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
                     edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
@@ -366,9 +365,13 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
     VecRestoreArray(sol, &sol_ptr);
 
+    int size;
     double delta_norm;
+
     VecNorm(rhs_global, NORM_2, &delta_norm);
-    delta_norm /= global_data.n_global_dofs;
+    VecGetSize(rhs_global, &size);
+
+    delta_norm /= size;
 
     MatZeroEntries(delta_hat_global);
     VecZeroEntries(rhs_global);

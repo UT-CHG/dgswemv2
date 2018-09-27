@@ -4,11 +4,10 @@
 namespace SWE {
 namespace IHDG {
 bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization) {
-    SparseMatrix<double> delta_hat_global;
-    DynVector<double> rhs_global;
+    auto& global_data = discretization.global_data;
 
-    delta_hat_global.resize(discretization.global_data.n_global_dofs, discretization.global_data.n_global_dofs);
-    rhs_global.resize(discretization.global_data.n_global_dofs);
+    SparseMatrix<double>& delta_hat_global = global_data.delta_hat_global;
+    DynVector<double>& rhs_global = global_data.rhs_global;
 
     SparseMatrixMeta<double> sparse_delta_hat_global;
 
@@ -189,7 +188,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         }
     });
 
-    double delta_norm = norm(rhs_global) / discretization.global_data.n_global_dofs;
+    double delta_norm = norm(rhs_global) / rows(rhs_global);
 
     if (delta_norm < 1e-8) {
         return true;

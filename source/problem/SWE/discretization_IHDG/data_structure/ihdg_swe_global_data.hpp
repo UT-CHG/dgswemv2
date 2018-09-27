@@ -6,18 +6,23 @@
 namespace SWE {
 namespace IHDG {
 struct GlobalData {
-    bool destruct = false;
+#ifndef HAS_PETSC
+    SparseMatrix<double> delta_hat_global;
+    DynVector<double> rhs_global;
+#endif
 
-    uint n_global_dofs;
-    std::vector<uint> global_dof_indx;
+#ifdef HAS_PETSC
+    bool destruct = false;
 
     Mat delta_hat_global;
     Vec rhs_global;
     KSP ksp;
-
+    PC pc;
+    
     IS from, to;
     VecScatter scatter;
     Vec sol;
+#endif
 };
 }
 }
