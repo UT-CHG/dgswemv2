@@ -20,12 +20,12 @@ decltype(auto) Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         }
 
         hpx::future<void> receive_future =
-            sim_unit->communicator.ReceiveAll(SWE::CommTypes::processor, sim_unit->stepper.GetTimestamp());
+            sim_unit->communicator.ReceiveAll(SWE::RKDG::CommTypes::bound_state, sim_unit->stepper.GetTimestamp());
 
         sim_unit->discretization.mesh.CallForEachDistributedBoundary(
             [sim_unit](auto& dbound) { Problem::distributed_boundary_send_kernel(sim_unit->stepper, dbound); });
 
-        sim_unit->communicator.SendAll(SWE::CommTypes::processor, sim_unit->stepper.GetTimestamp());
+        sim_unit->communicator.SendAll(SWE::RKDG::CommTypes::bound_state, sim_unit->stepper.GetTimestamp());
 
         if (sim_unit->writer.WritingVerboseLog()) {
             sim_unit->writer.GetLogFile() << "Starting work before receive" << std::endl;
@@ -81,7 +81,7 @@ decltype(auto) Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         }
 
         hpx::future<void> receive_future =
-            sim_unit->communicator.ReceiveAll(SWE::CommTypes::postprocessor, sim_unit->stepper.GetTimestamp());
+            sim_unit->communicator.ReceiveAll(SWE::RKDG::CommTypes::baryctr_state, sim_unit->stepper.GetTimestamp());
 
         if (SWE::PostProcessing::slope_limiting) {
             if (SWE::PostProcessing::wetting_drying) {
@@ -97,7 +97,7 @@ decltype(auto) Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             });
         }
 
-        sim_unit->communicator.SendAll(SWE::CommTypes::postprocessor, sim_unit->stepper.GetTimestamp());
+        sim_unit->communicator.SendAll(SWE::RKDG::CommTypes::baryctr_state, sim_unit->stepper.GetTimestamp());
 
         if (sim_unit->writer.WritingVerboseLog()) {
             sim_unit->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;

@@ -37,7 +37,7 @@ void Problem::create_distributed_boundaries(
         uint locality_in, submesh_in;
         uint locality_ex, submesh_ex;
 
-        std::vector<uint> begin_index(SWE::n_communications, 0);
+        std::vector<uint> begin_index(SWE::RKDG::n_communications, 0);
 
         // check if the data in rank_boundary_data matches communicator rank boundary
         const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
@@ -75,15 +75,15 @@ void Problem::create_distributed_boundaries(
                 throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
-            std::vector<uint> offset(SWE::n_communications);
+            std::vector<uint> offset(SWE::RKDG::n_communications);
 
-            offset[SWE::CommTypes::preprocessor]  = begin_index[SWE::CommTypes::preprocessor];
-            offset[SWE::CommTypes::processor]     = begin_index[SWE::CommTypes::processor];
-            offset[SWE::CommTypes::postprocessor] = begin_index[SWE::CommTypes::postprocessor];
+            offset[SWE::RKDG::CommTypes::baryctr_coord] = begin_index[SWE::RKDG::CommTypes::baryctr_coord];
+            offset[SWE::RKDG::CommTypes::bound_state]   = begin_index[SWE::RKDG::CommTypes::bound_state];
+            offset[SWE::RKDG::CommTypes::baryctr_state] = begin_index[SWE::RKDG::CommTypes::baryctr_state];
 
-            begin_index[SWE::CommTypes::preprocessor] += 2;
-            begin_index[SWE::CommTypes::processor] += SWE::n_variables * ngp + 1;
-            begin_index[SWE::CommTypes::postprocessor] += SWE::n_variables + 1;
+            begin_index[SWE::RKDG::CommTypes::baryctr_coord] += 2;
+            begin_index[SWE::RKDG::CommTypes::bound_state] += SWE::n_variables * ngp + 1; // + w/d state
+            begin_index[SWE::RKDG::CommTypes::baryctr_state] += SWE::n_variables + 1; // + w/d state
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
@@ -150,10 +150,10 @@ void Problem::create_distributed_boundaries(
             }
         }
 
-        rank_boundary.send_buffer.resize(SWE::n_communications);
-        rank_boundary.receive_buffer.resize(SWE::n_communications);
+        rank_boundary.send_buffer.resize(SWE::RKDG::n_communications);
+        rank_boundary.receive_buffer.resize(SWE::RKDG::n_communications);
 
-        for (uint comm = 0; comm < SWE::n_communications; ++comm) {
+        for (uint comm = 0; comm < SWE::RKDG::n_communications; ++comm) {
             rank_boundary.send_buffer[comm].resize(begin_index[comm]);
             rank_boundary.receive_buffer[comm].resize(begin_index[comm]);
         }

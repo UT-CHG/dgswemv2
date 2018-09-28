@@ -71,7 +71,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
     message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
 
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::RKDG::CommTypes::bound_state, message);
 
     uint gp_ex;
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {

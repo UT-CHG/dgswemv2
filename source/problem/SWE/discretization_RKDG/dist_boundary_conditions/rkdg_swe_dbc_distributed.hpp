@@ -41,7 +41,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
 
     message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
 
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::RKDG::CommTypes::bound_state, message);
 
     bool wet_ex = (bool)message[0];
 
