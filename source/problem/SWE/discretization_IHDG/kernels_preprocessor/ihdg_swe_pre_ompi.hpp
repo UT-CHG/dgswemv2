@@ -83,8 +83,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     KSPCreate(MPI_COMM_WORLD, &(global_data.ksp));
     KSPSetOperators(global_data.ksp, global_data.delta_hat_global, global_data.delta_hat_global);
 
-    //KSPGetPC(global_data.ksp, &(global_data.pc));
-    //PCSetType(global_data.pc, PCLU);
+    // KSPGetPC(global_data.ksp, &(global_data.pc));
+    // PCSetType(global_data.pc, PCLU);
 
     MPI_Scatter(&total_global_dof_offsets.front(),
                 1,
@@ -127,11 +127,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
     VecCreateSeq(MPI_COMM_SELF, global_dof_indx.size(), &(global_data.sol));
 
-    ISCreateGeneral(MPI_COMM_SELF,
-                    global_dof_indx.size(),
-                    (int*)&global_dof_indx.front(),
-                    PETSC_COPY_VALUES,
-                    &(global_data.from));
+    ISCreateGeneral(
+        MPI_COMM_SELF, global_dof_indx.size(), (int*)&global_dof_indx.front(), PETSC_COPY_VALUES, &(global_data.from));
     ISCreateStride(MPI_COMM_SELF, global_dof_indx.size(), 0, 1, &(global_data.to));
 
     VecScatterCreate(global_data.rhs_global, global_data.from, global_data.sol, global_data.to, &(global_data.scatter));

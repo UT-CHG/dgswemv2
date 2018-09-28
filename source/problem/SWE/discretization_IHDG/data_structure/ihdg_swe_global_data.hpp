@@ -18,7 +18,7 @@ struct GlobalData {
     Vec rhs_global;
     KSP ksp;
     PC pc;
-    
+
     IS from, to;
     VecScatter scatter;
     Vec sol;

@@ -7,7 +7,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
     auto& global_data = discretization.global_data;
 
     SparseMatrix<double>& delta_hat_global = global_data.delta_hat_global;
-    DynVector<double>& rhs_global = global_data.rhs_global;
+    DynVector<double>& rhs_global          = global_data.rhs_global;
 
     SparseMatrixMeta<double> sparse_delta_hat_global;
 
