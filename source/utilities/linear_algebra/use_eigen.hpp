@@ -23,6 +23,8 @@ template <typename T>
 using DynMatrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 template <typename T, uint m>
 using HybMatrix = Eigen::Matrix<T, m, Eigen::Dynamic>;
+template <typename Matrix>
+using Column = typename Eigen::DenseBase<Matrix>::ColXpr;
 
 template <typename T>
 using SparseMatrix = Eigen::SparseMatrix<T>;

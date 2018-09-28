@@ -5,12 +5,14 @@ namespace SWE {
 namespace RKDG {
 template <typename ElementType>
 void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
-    auto& wd_state = elt.data.wet_dry_state;
+    const uint stage = stepper.GetStage();
 
+    auto& wd_state   = elt.data.wet_dry_state;
+    auto& state      = elt.data.state[stage];
+
+    set_constant(state.rhs, 0.0);
+    
     if (wd_state.wet) {
-        const uint stage = stepper.GetStage();
-
-        auto& state    = elt.data.state[stage];
         auto& internal = elt.data.internal;
 
         internal.q_at_gp = elt.ComputeUgp(state.q);

@@ -30,7 +30,7 @@ static bool wetting_drying = false;
 static bool slope_limiting = false;
 
 static double h_o           = 0.1;
-static double h_o_threshold = 1.0e5 * std::numeric_limits<double>::epsilon();
+static double h_o_threshold = 1.0e-6;
 
 // Cockburn-Shu SL parameters
 static double M  = 1.0e-8;
