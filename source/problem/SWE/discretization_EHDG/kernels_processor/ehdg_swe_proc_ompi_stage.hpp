@@ -19,15 +19,13 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             sim_units[su_id]->writer.GetLogFile() << "Exchanging data" << std::endl;
         }
 
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::bound_state,
-                                                  sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
             Problem::global_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
         });
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::bound_state,
-                                               sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 
 #pragma omp parallel for
@@ -120,8 +118,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state,
-                                                    sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 }
 }

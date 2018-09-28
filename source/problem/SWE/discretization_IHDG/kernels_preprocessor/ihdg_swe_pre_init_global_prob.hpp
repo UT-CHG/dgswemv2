@@ -193,8 +193,7 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
             message[0] = (double)edge_internal.global_dof_indx[0];
 
-            edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(CommTypes::global_dof_indx,
-                                                                              message);
+            edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(CommTypes::global_dof_indx, message);
         }
     });
 }
@@ -232,8 +231,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
         if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
             std::vector<double> message(1);
 
-            edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(
-                CommTypes::global_dof_indx, message);
+            edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::global_dof_indx, message);
 
             uint global_dof_offset = (uint)message[0];
 

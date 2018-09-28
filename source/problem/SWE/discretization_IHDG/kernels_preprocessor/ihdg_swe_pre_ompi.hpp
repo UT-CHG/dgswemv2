@@ -101,13 +101,11 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::global_dof_indx,
-                                                  sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::global_dof_indx, sim_units[su_id]->stepper.GetTimestamp());
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.SendAll(CommTypes::global_dof_indx,
-                                               sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::global_dof_indx, sim_units[su_id]->stepper.GetTimestamp());
     }
 
     std::vector<uint> global_dof_indx;

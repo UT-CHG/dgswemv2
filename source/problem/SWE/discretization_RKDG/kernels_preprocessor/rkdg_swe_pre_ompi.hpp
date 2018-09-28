@@ -15,14 +15,12 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord,
-                                                  sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
     }
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord,
-                                               sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
     }
 
 #pragma omp parallel for
@@ -35,8 +33,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord,
-                                                    sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
     }
 }
 }
