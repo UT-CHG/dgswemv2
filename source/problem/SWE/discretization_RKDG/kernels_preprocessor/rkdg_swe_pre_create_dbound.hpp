@@ -82,8 +82,8 @@ void Problem::create_distributed_boundaries(
             offset[SWE::RKDG::CommTypes::baryctr_state] = begin_index[SWE::RKDG::CommTypes::baryctr_state];
 
             begin_index[SWE::RKDG::CommTypes::baryctr_coord] += 2;
-            begin_index[SWE::RKDG::CommTypes::bound_state] += SWE::n_variables * ngp + 1; // + w/d state
-            begin_index[SWE::RKDG::CommTypes::baryctr_state] += SWE::n_variables + 1; // + w/d state
+            begin_index[SWE::RKDG::CommTypes::bound_state] += SWE::n_variables * ngp + 1;  // + w/d state
+            begin_index[SWE::RKDG::CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;

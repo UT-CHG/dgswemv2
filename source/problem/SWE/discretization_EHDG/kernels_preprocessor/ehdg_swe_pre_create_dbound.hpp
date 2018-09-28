@@ -34,7 +34,7 @@ void Problem::create_distributed_boundaries(
         uint locality_in, submesh_in;
         uint locality_ex, submesh_ex;
 
-        std::vector<uint> begin_index(SWE::n_communications, 0);
+        std::vector<uint> begin_index(SWE::EHDG::n_communications, 0);
 
         // check if the data in rank_boundary_data matches communicator rank boundary
         const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
@@ -67,15 +67,11 @@ void Problem::create_distributed_boundaries(
                 throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
-            std::vector<uint> offset(SWE::n_communications);
+            std::vector<uint> offset(SWE::EHDG::n_communications);
 
-            offset[SWE::CommTypes::preprocessor]  = begin_index[SWE::CommTypes::preprocessor];
-            offset[SWE::CommTypes::processor]     = begin_index[SWE::CommTypes::processor];
-            offset[SWE::CommTypes::postprocessor] = begin_index[SWE::CommTypes::postprocessor];
+            offset[SWE::EHDG::CommTypes::bound_state] = begin_index[SWE::EHDG::CommTypes::bound_state];
 
-            begin_index[SWE::CommTypes::preprocessor] += 0;  // there's no preproc comm
-            begin_index[SWE::CommTypes::processor] += 2 * SWE::n_variables * ngp;
-            begin_index[SWE::CommTypes::postprocessor] += 0;  // there's no postproc comm
+            begin_index[SWE::EHDG::CommTypes::bound_state] += 2 * SWE::n_variables * ngp;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
@@ -100,10 +96,10 @@ void Problem::create_distributed_boundaries(
             }
         }
 
-        rank_boundary.send_buffer.resize(SWE::n_communications);
-        rank_boundary.receive_buffer.resize(SWE::n_communications);
+        rank_boundary.send_buffer.resize(SWE::EHDG::n_communications);
+        rank_boundary.receive_buffer.resize(SWE::EHDG::n_communications);
 
-        for (uint comm = 0; comm < SWE::n_communications; ++comm) {
+        for (uint comm = 0; comm < SWE::EHDG::n_communications; ++comm) {
             rank_boundary.send_buffer[comm].resize(begin_index[comm]);
             rank_boundary.receive_buffer[comm].resize(begin_index[comm]);
         }

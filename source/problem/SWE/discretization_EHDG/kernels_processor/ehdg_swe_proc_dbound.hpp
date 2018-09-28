@@ -52,7 +52,7 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     }
 
     // Set message to send buffer
-    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::processor, message);
+    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::EHDG::CommTypes::bound_state, message);
 }
 
 template <typename DistributedBoundaryType>
