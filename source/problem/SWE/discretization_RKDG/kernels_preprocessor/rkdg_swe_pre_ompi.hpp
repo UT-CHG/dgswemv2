@@ -15,19 +15,19 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(SWE::RKDG::CommTypes::baryctr_coord,
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord,
                                                   sim_units[su_id]->stepper.GetTimestamp());
     }
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.SendAll(SWE::RKDG::CommTypes::baryctr_coord,
+        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord,
                                                sim_units[su_id]->stepper.GetTimestamp());
     }
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllReceives(SWE::RKDG::CommTypes::baryctr_coord,
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
         Problem::initialize_data_parallel_post_receive(sim_units[su_id]->discretization.mesh);
@@ -35,7 +35,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(SWE::RKDG::CommTypes::baryctr_coord,
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord,
                                                     sim_units[su_id]->stepper.GetTimestamp());
     }
 }

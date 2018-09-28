@@ -404,7 +404,7 @@ void Problem::initialize_data_parallel_pre_send(ProblemMeshType& mesh, const Pro
         }
 
         // Set message to send buffer
-        dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::RKDG::CommTypes::baryctr_coord, message);
+        dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::baryctr_coord, message);
     });
 }
 
@@ -416,7 +416,7 @@ void Problem::initialize_data_parallel_post_receive(ProblemMeshType& mesh) {
 
         message.resize(SWE::n_dimensions);
 
-        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::RKDG::CommTypes::baryctr_coord, message);
+        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_coord, message);
 
         for (uint dim = 0; dim < SWE::n_dimensions; ++dim) {
             sl_state.baryctr_coord_neigh[dbound.bound_id][dim] = message[dim];

@@ -71,7 +71,7 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
     }
 
     // Set message to send buffer
-    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::RKDG::CommTypes::baryctr_state, message);
+    dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::baryctr_state, message);
 }
 
 template <typename DistributedBoundaryType>
@@ -83,7 +83,7 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper
 
     message.resize(1 + SWE::n_variables);
 
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::RKDG::CommTypes::baryctr_state, message);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_state, message);
 
     sl_state.wet_neigh[dbound.bound_id] = message[0];
 

@@ -19,14 +19,14 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             sim_units[su_id]->writer.GetLogFile() << "Exchanging data" << std::endl;
         }
 
-        sim_units[su_id]->communicator.ReceiveAll(SWE::RKDG::CommTypes::bound_state,
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::bound_state,
                                                   sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
             Problem::distributed_boundary_send_kernel(sim_units[su_id]->stepper, dbound);
         });
 
-        sim_units[su_id]->communicator.SendAll(SWE::RKDG::CommTypes::bound_state,
+        sim_units[su_id]->communicator.SendAll(CommTypes::bound_state,
                                                sim_units[su_id]->stepper.GetTimestamp());
     }
 
@@ -61,7 +61,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
                 << std::endl;
         }
 
-        sim_units[su_id]->communicator.WaitAllReceives(SWE::RKDG::CommTypes::bound_state,
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::bound_state,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
@@ -89,7 +89,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(SWE::RKDG::CommTypes::bound_state,
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state,
                                                     sim_units[su_id]->stepper.GetTimestamp());
     }
 
@@ -99,7 +99,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             sim_units[su_id]->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
         }
 
-        sim_units[su_id]->communicator.ReceiveAll(SWE::RKDG::CommTypes::baryctr_state,
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_state,
                                                   sim_units[su_id]->stepper.GetTimestamp());
 
         if (SWE::PostProcessing::slope_limiting) {
@@ -117,7 +117,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             });
         }
 
-        sim_units[su_id]->communicator.SendAll(SWE::RKDG::CommTypes::baryctr_state,
+        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_state,
                                                sim_units[su_id]->stepper.GetTimestamp());
     }
 
@@ -149,7 +149,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
                                                   << sim_units[su_id]->stepper.GetTimestamp() << std::endl;
         }
 
-        sim_units[su_id]->communicator.WaitAllReceives(SWE::RKDG::CommTypes::baryctr_state,
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_state,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
@@ -180,7 +180,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 
 #pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(SWE::RKDG::CommTypes::baryctr_state,
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_state,
                                                     sim_units[su_id]->stepper.GetTimestamp());
     }
 }

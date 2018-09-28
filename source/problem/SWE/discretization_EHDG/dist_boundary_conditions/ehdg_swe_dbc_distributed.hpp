@@ -50,7 +50,7 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
 
     message.resize(2 * SWE::n_variables * ngp);
 
-    edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::EHDG::CommTypes::bound_state, message);
+    edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::bound_state, message);
 
     uint gp_ex;
     for (uint gp = 0; gp < ngp; ++gp) {

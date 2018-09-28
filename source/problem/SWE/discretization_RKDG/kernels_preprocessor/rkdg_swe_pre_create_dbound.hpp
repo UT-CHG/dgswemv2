@@ -77,13 +77,13 @@ void Problem::create_distributed_boundaries(
 
             std::vector<uint> offset(SWE::RKDG::n_communications);
 
-            offset[SWE::RKDG::CommTypes::baryctr_coord] = begin_index[SWE::RKDG::CommTypes::baryctr_coord];
-            offset[SWE::RKDG::CommTypes::bound_state]   = begin_index[SWE::RKDG::CommTypes::bound_state];
-            offset[SWE::RKDG::CommTypes::baryctr_state] = begin_index[SWE::RKDG::CommTypes::baryctr_state];
+            offset[CommTypes::baryctr_coord] = begin_index[CommTypes::baryctr_coord];
+            offset[CommTypes::bound_state]   = begin_index[CommTypes::bound_state];
+            offset[CommTypes::baryctr_state] = begin_index[CommTypes::baryctr_state];
 
-            begin_index[SWE::RKDG::CommTypes::baryctr_coord] += 2;
-            begin_index[SWE::RKDG::CommTypes::bound_state] += SWE::n_variables * ngp + 1;  // + w/d state
-            begin_index[SWE::RKDG::CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
+            begin_index[CommTypes::baryctr_coord] += 2;
+            begin_index[CommTypes::bound_state] += SWE::n_variables * ngp + 1;  // + w/d state
+            begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
