@@ -24,6 +24,10 @@ class OMPISimulation {
 
     void Run();
     void ComputeL2Residual();
+
+#ifdef HAS_PETSC
+    void DestroyPETSc();
+#endif
 };
 
 template <typename ProblemType>
@@ -121,5 +125,12 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
         std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
 }
+
+#ifdef HAS_PETSC
+template <typename ProblemType>
+void OMPISimulation<ProblemType>::DestroyPETSc() {
+    this->sim_units[0]->discretization.global_data.destroy();
+}
+#endif
 
 #endif

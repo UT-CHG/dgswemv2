@@ -9,8 +9,6 @@ template <typename OMPISimUnitType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
     auto& global_data = sim_units[0]->discretization.global_data;
 
-    global_data.destruct = true;
-
     std::vector<uint> global_dof_offsets;
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {

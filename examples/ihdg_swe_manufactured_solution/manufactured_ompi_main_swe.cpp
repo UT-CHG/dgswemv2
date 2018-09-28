@@ -62,6 +62,8 @@ int main(int argc, char* argv[]) {
 
         simulation.ComputeL2Residual();
 
+        simulation.DestroyPETSc();
+
         PetscFinalize();
 
         MPI_Finalize();

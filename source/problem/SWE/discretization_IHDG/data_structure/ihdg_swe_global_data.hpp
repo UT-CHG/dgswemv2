@@ -12,8 +12,6 @@ struct GlobalData {
 #endif
 
 #ifdef HAS_PETSC
-    bool destruct = false;
-
     Mat delta_hat_global;
     Vec rhs_global;
     KSP ksp;
@@ -22,6 +20,17 @@ struct GlobalData {
     IS from, to;
     VecScatter scatter;
     Vec sol;
+
+    void destroy() {
+        MatDestroy(&delta_hat_global);
+        VecDestroy(&rhs_global);
+        KSPDestroy(&ksp);
+
+        ISDestroy(&from);
+        ISDestroy(&to);
+        VecScatterDestroy(&scatter);
+        VecDestroy(&sol);
+    }
 #endif
 };
 }
