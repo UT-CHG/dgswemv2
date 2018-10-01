@@ -28,12 +28,12 @@ template <typename T>
 using SparseMatrix = Eigen::SparseMatrix<T>;
 
 template <typename T>
-decltype(auto) IdentityMatrix(uint size) {
+decltype(auto) IdentityMatrix(const uint size) {
     return Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Identity(size, size);
 }
 
 template <typename T>
-DynVector<T> IdentityVector(uint size) {
+DynVector<T> IdentityVector(const uint size) {
     DynVector<T> I_vector = DynVector<T>::Zero(size * size);
 
     for (uint i = 0; i < size; ++i) {
@@ -47,20 +47,18 @@ template <typename T>
 struct SparseMatrixMeta {
     std::vector<Eigen::Triplet<T>> data;
 
-    void add_triplet(uint row, uint col, T value) { this->data.emplace_back(Eigen::Triplet<T>(row, col, value)); }
+    void add_triplet(const uint row, const uint col, const T value) {
+        this->data.emplace_back(Eigen::Triplet<T>(row, col, value));
+    }
 
     void get_sparse_matrix(SparseMatrix<T>& sparse_matrix) { sparse_matrix.setFromTriplets(data.begin(), data.end()); }
 };
 
 /* Vector/Matrix (aka Tensor) Operations */
 template <typename ArrayType>
-void set_constant(ArrayType& array, double value) {
-    array = ArrayType::Constant(array.rows(), array.cols(), value);
-}
-
-template <typename ArrayType>
-void set_constant(ArrayType&& array, double value) {
-    array = ArrayType::Constant(array.rows(), array.cols(), value);
+void set_constant(ArrayType&& array, const double value) {
+    array = std::remove_reference<ArrayType>::type::Constant(
+        std::forward<ArrayType>(array).rows(), std::forward<ArrayType>(array).cols(), value);
 }
 
 template <typename ArrayType>
@@ -74,7 +72,7 @@ double norm(const ArrayType& array) {
 }
 
 template <typename ArrayType>
-decltype(auto) power(const ArrayType& array, double exp) {
+decltype(auto) power(const ArrayType& array, const double exp) {
     return array.array().pow(exp);
 }
 
@@ -90,12 +88,12 @@ decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorTy
 }
 
 template <typename T>
-decltype(auto) vector_from_array(T* array, uint n) {
+decltype(auto) vector_from_array(T* array, const uint n) {
     return Eigen::Map<DynVector<T>>(array, n);
 }
 
 template <typename VectorType>
-decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
+decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint size_row) {
     return vector.segment(start_row, size_row);
 }
 
@@ -124,17 +122,21 @@ uint columns(const MatrixType& matrix) {
 }
 
 template <typename MatrixType>
-decltype(auto) submatrix(MatrixType& matrix, uint start_row, uint start_col, uint size_row, uint size_col) {
+decltype(auto) submatrix(MatrixType&& matrix,
+                         const uint start_row,
+                         const uint start_col,
+                         const uint size_row,
+                         const uint size_col) {
     return matrix.block(start_row, start_col, size_row, size_col);
 }
 
 template <typename MatrixType>
-decltype(auto) row(MatrixType& matrix, uint row) {
+decltype(auto) row(MatrixType&& matrix, const uint row) {
     return matrix.row(row);
 }
 
 template <typename MatrixType>
-decltype(auto) column(MatrixType& matrix, uint col) {
+decltype(auto) column(MatrixType&& matrix, const uint col) {
     return matrix.col(col);
 }
 

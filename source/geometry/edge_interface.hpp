@@ -21,7 +21,7 @@ class EdgeInterface {
     DynMatrix<double> m_inv;
 
   public:
-    EdgeInterface(InterfaceType& interface, bool ccw = true);
+    EdgeInterface(InterfaceType& interface, const bool ccw = true);
 
     uint GetID() { return this->ID; }
     void SetID(uint ID) { this->ID = ID; }
@@ -46,7 +46,8 @@ class EdgeInterface {
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(InterfaceType& interface, bool ccw)
+EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(InterfaceType& interface,
+                                                                                const bool ccw)
     : interface(interface) {
     // *** //
     uint p = std::max(this->interface.GetMasterIN().p, this->interface.GetMasterEX().p);

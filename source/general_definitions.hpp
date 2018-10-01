@@ -103,10 +103,8 @@ class Basis {
      */
     virtual DynMatrix<double> GetMinv(const uint p) = 0;
 
-    template <typename InputArrayType>
-    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
-    template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    virtual DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u)                      = 0;
+    virtual DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) = 0;
 };
 }
 

@@ -63,7 +63,7 @@ class Boundary {
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
 Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBoundary<dimension, DataType>&& raw_boundary,
                                                                        ConditonType&& boundary_condition)
-    : boundary_condition(boundary_condition),
+    : boundary_condition(std::move(boundary_condition)),
       data(raw_boundary.data),
       bound_id(raw_boundary.bound_id),
       master(raw_boundary.master),

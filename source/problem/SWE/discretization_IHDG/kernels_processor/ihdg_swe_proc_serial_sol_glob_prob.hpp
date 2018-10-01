@@ -188,7 +188,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         }
     });
 
-    double delta_norm = norm(rhs_global) / rows(rhs_global);
+    double delta_norm = norm(rhs_global) / rows(delta_hat_global);
 
     if (delta_norm < 1e-8) {
         return true;

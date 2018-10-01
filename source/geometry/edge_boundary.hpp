@@ -20,7 +20,7 @@ class EdgeBoundary {
     DynMatrix<double> m_inv;
 
   public:
-    EdgeBoundary(BoundaryType& boundary, bool ccw = true);
+    EdgeBoundary(BoundaryType& boundary, const bool ccw = true);
 
     uint GetID() { return this->ID; }
     void SetID(uint ID) { this->ID = ID; }
@@ -43,7 +43,7 @@ class EdgeBoundary {
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
-EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(BoundaryType& boundary, bool ccw)
+EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(BoundaryType& boundary, const bool ccw)
     : boundary(boundary) {
     // *** //
     typename BoundaryType::BoundaryIntegrationType integration;

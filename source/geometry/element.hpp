@@ -267,12 +267,12 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
                 RawBoundary<dimension - 1, DataType>(
-                    this->master->p, bound_id, bound_node_ID, this->data, *my_basis, *my_master, *my_shape));
+                    this->master->p, bound_id, std::move(bound_node_ID), this->data, *my_basis, *my_master, *my_shape));
         } else {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, bound_id},
                 RawBoundary<dimension - 1, DataType>(
-                    this->master->p, bound_id, bound_node_ID, this->data, *my_basis, *my_master, *my_shape));
+                    this->master->p, bound_id, std::move(bound_node_ID), this->data, *my_basis, *my_master, *my_shape));
         }
     }
 }

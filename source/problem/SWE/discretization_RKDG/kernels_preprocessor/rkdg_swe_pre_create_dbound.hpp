@@ -98,7 +98,7 @@ void Problem::create_distributed_boundaries(
                                                      submesh_in,
                                                      locality_ex,
                                                      submesh_ex,
-                                                     offset,
+                                                     std::move(offset),
                                                      rank_boundary.send_buffer,
                                                      rank_boundary.receive_buffer)));
 
@@ -139,7 +139,7 @@ void Problem::create_distributed_boundaries(
                                                           submesh_in,
                                                           locality_ex,
                                                           submesh_ex,
-                                                          offset,
+                                                          std::move(offset),
                                                           rank_boundary.send_buffer,
                                                           rank_boundary.receive_buffer),
                                           levee));

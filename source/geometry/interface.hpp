@@ -98,7 +98,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     RawBoundary<dimension, DataType>&& raw_boundary_in,
     RawBoundary<dimension, DataType>&& raw_boundary_ex,
     SpecializationType&& specialization)
-    : specialization(specialization),
+    : specialization(std::move(specialization)),
       data_in(raw_boundary_in.data),
       data_ex(raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),
