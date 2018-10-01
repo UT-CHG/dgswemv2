@@ -74,6 +74,7 @@ void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputTy
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
         auto& shape_in = intface.GetShapeIN();
+        auto& shape_ex = intface.GetShapeEX();
 
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
@@ -89,12 +90,12 @@ void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputTy
 
         row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
 
-        uint gp_ex;
-        for (uint gp = 0; gp < ngp; ++gp) {
-            gp_ex = ngp - gp - 1;
-
-            boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex) = boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
+        // bathymetry is not necessarily continuous across weir nodes
+        for (uint node_id = 0; node_id < nnode; ++node_id) {
+            bathymetry[node_id] = shape_ex.nodal_coordinates[node_id][GlobalCoord::z];
         }
+
+        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpEX(bathymetry);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);

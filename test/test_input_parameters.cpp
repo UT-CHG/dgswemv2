@@ -94,6 +94,7 @@ const static auto equal2 = [](const InputParameters<>& ipa, const InputParameter
            (ipa.stepper_input.order == ipb.stepper_input.order) &&
            Utilities::almost_equal(ipa.stepper_input.dt, ipb.stepper_input.dt) &&
            Utilities::almost_equal(ipa.stepper_input.run_time, ipb.stepper_input.run_time) &&
+           Utilities::almost_equal(ipa.stepper_input.ramp_duration, ipb.stepper_input.ramp_duration) &&
            (ipa.polynomial_order == ipb.polynomial_order) && swe_nodes_are_equal &&
            equal_writer(ipa.writer_input, ipb.writer_input) &&
            equal_load_balancer(ipa.load_balancer_input, ipb.load_balancer_input);
