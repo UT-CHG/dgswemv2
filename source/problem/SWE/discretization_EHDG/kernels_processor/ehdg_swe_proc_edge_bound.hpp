@@ -78,11 +78,8 @@ void Problem::global_edge_boundary_iteration(const RKStepper& stepper, EdgeBound
 
     /* Increment q */
 
-    for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-        edge_state.q_hat(SWE::Variables::ze, dof) += edge_internal.rhs_global[3 * dof];
-        edge_state.q_hat(SWE::Variables::qx, dof) += edge_internal.rhs_global[3 * dof + 1];
-        edge_state.q_hat(SWE::Variables::qy, dof) += edge_internal.rhs_global[3 * dof + 2];
-    }
+    edge_state.q_hat +=
+        reshape<double, SWE::n_variables, SO::ColumnMajor>(edge_internal.rhs_global, edge_bound.edge_data.get_ndof());
 }
 }
 }

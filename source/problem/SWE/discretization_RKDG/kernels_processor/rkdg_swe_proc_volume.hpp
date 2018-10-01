@@ -7,11 +7,11 @@ template <typename ElementType>
 void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& wd_state   = elt.data.wet_dry_state;
-    auto& state      = elt.data.state[stage];
+    auto& wd_state = elt.data.wet_dry_state;
+    auto& state    = elt.data.state[stage];
 
     set_constant(state.rhs, 0.0);
-    
+
     if (wd_state.wet) {
         auto& internal = elt.data.internal;
 

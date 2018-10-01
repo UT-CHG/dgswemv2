@@ -12,6 +12,13 @@
 #include "serialization/blaze_matrix.hpp"
 #endif
 
+namespace SO {
+constexpr bool ColumnMajor = blaze::columnMajor;
+constexpr bool RowMajor    = blaze::rowMajor;
+}
+
+constexpr int hyb_mat_buff_size = 16;
+
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;
 template <typename T, uint m, uint n>
@@ -24,7 +31,7 @@ using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
 template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
 template <typename T, uint m>
-using HybMatrix = blaze::HybridMatrix<T, m, 16>;
+using HybMatrix = blaze::HybridMatrix<T, m, hyb_mat_buff_size>;
 template <typename Matrix>
 using HybColumnType = decltype(blaze::column<1UL>(std::declval<Matrix>()));
 
@@ -117,9 +124,14 @@ decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint s
     return blaze::subvector(std::forward<VectorType>(vector), start_row, size_row);
 }
 
-template <typename T, uint n>
-DynMatrix<T> reshape(const DynVector<T>& vector) {
-    return DynMatrix<T>(n, n, vector.data());
+template <typename T, int n, int m = n, bool SO = blaze::rowMajor>
+blaze::StaticMatrix<T, n, m, SO> reshape(const StatVector<T, n * m>& vector) {
+    return blaze::StaticMatrix<T, n, m, SO>(n, m, vector.data());
+}
+
+template <typename T, int n, bool SO = blaze::rowMajor>
+blaze::HybridMatrix<T, n, hyb_mat_buff_size, SO> reshape(const DynVector<T>& vector, const int m) {
+    return blaze::HybridMatrix<T, n, hyb_mat_buff_size, SO>(n, m, vector.data());
 }
 
 /* Matrix Operations */

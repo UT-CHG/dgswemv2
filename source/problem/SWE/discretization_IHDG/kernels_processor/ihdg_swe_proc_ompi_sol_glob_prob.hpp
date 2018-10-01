@@ -293,11 +293,8 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
                 internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
                 internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
 
-                for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-                    edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-                    edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-                    edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-                }
+                edge_state.q_hat +=
+                    reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_int.edge_data.get_ndof());
 
                 sol_offset += n_global_dofs;
             });
@@ -315,11 +312,8 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
                 internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 
-                for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-                    edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-                    edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-                    edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-                }
+                edge_state.q_hat +=
+                    reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_bound.edge_data.get_ndof());
 
                 sol_offset += n_global_dofs;
             });
@@ -337,11 +331,8 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
                 internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 
-                for (uint dof = 0; dof < edge_dbound.edge_data.get_ndof(); ++dof) {
-                    edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-                    edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-                    edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-                }
+                edge_state.q_hat +=
+                    reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_dbound.edge_data.get_ndof());
 
                 sol_offset += n_global_dofs;
             });
@@ -355,11 +346,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             internal.rhs_local = internal.delta_local_inv * internal.rhs_local;
 
-            for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-                state.q(SWE::Variables::ze, dof) += internal.rhs_local[3 * dof];
-                state.q(SWE::Variables::qx, dof) += internal.rhs_local[3 * dof + 1];
-                state.q(SWE::Variables::qy, dof) += internal.rhs_local[3 * dof + 2];
-            }
+            state.q += reshape<double, SWE::n_variables, SO::ColumnMajor>(internal.rhs_local, elt.data.get_ndof());
         });
     }
 

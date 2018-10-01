@@ -10,6 +10,11 @@
 #include "serialization/eigen_matrix.hpp"
 #endif
 
+namespace SO {
+constexpr int ColumnMajor = Eigen::StorageOptions::ColMajor;
+constexpr int RowMajor    = Eigen::StorageOptions::RowMajor;
+}
+
 template <typename T, uint m>
 using StatVector = Eigen::Matrix<T, m, 1>;
 template <typename T, uint m, uint n>
@@ -99,17 +104,14 @@ decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint s
     return vector.segment(start_row, size_row);
 }
 
-template <typename T, uint n>
-StatMatrix<T, n, n> reshape(const StatVector<T, n * n>& vector) {
-    StatMatrix<T, n, n> ret;
+template <typename T, int n, int m = n, int SO = Eigen::StorageOptions::RowMajor>
+decltype(auto) reshape(const StatVector<T, n * m>& vector) {
+    return Eigen::Map<Eigen::Matrix<T, n, m, SO>>(const_cast<T*>(vector.data()), n, m);
+}
 
-    for (uint i = 0; i < n; ++i) {
-        for (uint j = 0; j < n; ++j) {
-            ret(i, j) = vector[i * n + j];
-        }
-    }
-
-    return ret;
+template <typename T, int n, int SO = Eigen::StorageOptions::RowMajor>
+decltype(auto) reshape(const DynVector<T>& vector, const int m) {
+    return Eigen::Map<Eigen::Matrix<T, n, Eigen::Dynamic, SO>>(const_cast<T*>(vector.data()), n, m);
 }
 
 /* Matrix Operations */

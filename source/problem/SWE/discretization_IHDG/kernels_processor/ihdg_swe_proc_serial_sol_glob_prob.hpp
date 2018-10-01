@@ -145,11 +145,8 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
         internal_in.rhs_local -= boundary_in.delta_hat_local * del_q_hat;
         internal_ex.rhs_local -= boundary_ex.delta_hat_local * del_q_hat;
 
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-            edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-            edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-        }
+        edge_state.q_hat +=
+            reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_int.edge_data.get_ndof());
     });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&rhs_global](auto& edge_bound) {
@@ -165,11 +162,8 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
         internal.rhs_local -= boundary.delta_hat_local * del_q_hat;
 
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
-            edge_state.q_hat(SWE::Variables::ze, dof) += del_q_hat[3 * dof];
-            edge_state.q_hat(SWE::Variables::qx, dof) += del_q_hat[3 * dof + 1];
-            edge_state.q_hat(SWE::Variables::qy, dof) += del_q_hat[3 * dof + 2];
-        }
+        edge_state.q_hat +=
+            reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_bound.edge_data.get_ndof());
     });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
@@ -181,11 +175,7 @@ bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretiz
 
         internal.rhs_local = internal.delta_local_inv * internal.rhs_local;
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q(SWE::Variables::ze, dof) += internal.rhs_local[3 * dof];
-            state.q(SWE::Variables::qx, dof) += internal.rhs_local[3 * dof + 1];
-            state.q(SWE::Variables::qy, dof) += internal.rhs_local[3 * dof + 2];
-        }
+        state.q += reshape<double, SWE::n_variables, SO::ColumnMajor>(internal.rhs_local, elt.data.get_ndof());
     });
 
     double delta_norm = norm(rhs_global) / rows(delta_hat_global);
