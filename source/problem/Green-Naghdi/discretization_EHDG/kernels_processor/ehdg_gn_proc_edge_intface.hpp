@@ -21,7 +21,7 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
     // at this point h_at_gp
     // has been calculated in derivatives kernel
 
-    // set h_hat, dbath_hat as average of states
+    // set h_hat as average of states
     uint gp_ex;
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;

@@ -3,7 +3,7 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::solve_global_dc_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization) {
+void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     SparseMatrixMeta<double> sparse_w1_w1_hat;
 
     SparseMatrixMeta<double> sparse_w2_w1;

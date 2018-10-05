@@ -7,7 +7,7 @@ template <typename RawBoundaryType>
 void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                 ProblemMeshType& mesh,
                                 ProblemInputType& problem_input,
-                                Writer<Problem>& writer) {
+                                ProblemWriterType& writer) {
     // *** //
     using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
 

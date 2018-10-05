@@ -26,6 +26,8 @@ namespace EHDG {
 struct Problem {
     using ProblemInputType = SWE::Inputs;
 
+    using ProblemWriterType = Writer<Problem>;
+
     using ProblemParserType = SWE::Parser;
 
     using ProblemDataType = Data;
@@ -56,13 +58,13 @@ struct Problem {
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& problem_input,
-                                  Writer<Problem>& writer);
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& problem_input,
-                                  Writer<Problem>& writer);
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
@@ -70,7 +72,7 @@ struct Problem {
         ProblemMeshType&,
         ProblemInputType& problem_input,
         std::tuple<>&,
-        Writer<Problem>&);
+        ProblemWriterType&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries(
@@ -78,19 +80,19 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        Writer<Problem>& writer);
+        ProblemWriterType& writer);
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer);
+                                       ProblemWriterType& writer);
 
     static void create_edge_boundaries(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer);
+                                       ProblemWriterType& writer);
 
     static void create_edge_distributeds(ProblemMeshType& mesh,
                                          ProblemMeshSkeletonType& mesh_skeleton,
-                                         Writer<Problem>& writer);
+                                         ProblemWriterType& writer);
 
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     const ProblemInputType& problem_specific_input);

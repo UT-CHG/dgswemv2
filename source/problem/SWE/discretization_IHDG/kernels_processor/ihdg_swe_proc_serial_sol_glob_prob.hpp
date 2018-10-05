@@ -3,7 +3,7 @@
 
 namespace SWE {
 namespace IHDG {
-bool Problem::serial_solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization) {
+bool Problem::serial_solve_global_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     auto& global_data = discretization.global_data;
 
     SparseMatrix<double>& delta_hat_global = global_data.delta_hat_global;

@@ -3,8 +3,7 @@
 
 namespace GN {
 namespace EHDG {
-template <typename ProblemType>
-void Problem::initialize_global_problem(HDGDiscretization<ProblemType>& discretization) {
+void Problem::initialize_global_problem(ProblemDiscretizationType& discretization) {
     SWE::EHDG::Problem::initialize_global_problem(discretization);
 
     uint local_dof_offset  = 0;

@@ -27,6 +27,8 @@ namespace EHDG {
 struct Problem {
     using ProblemInputType = GN::Inputs;
 
+    using ProblemWriterType = Writer<Problem>;
+
     using ProblemParserType = GN::Parser;
 
     using ProblemDataType = Data;
@@ -57,13 +59,13 @@ struct Problem {
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& problem_input,
-                                  Writer<Problem>& writer);
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& problem_input,
-                                  Writer<Problem>& writer);
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
@@ -71,7 +73,7 @@ struct Problem {
         ProblemMeshType&,
         ProblemInputType& problem_input,
         std::tuple<>&,
-        Writer<Problem>&);
+        ProblemWriterType&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries(
@@ -79,31 +81,28 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        Writer<Problem>& writer);
+        ProblemWriterType& writer);
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer);
+                                       ProblemWriterType& writer);
 
     static void create_edge_boundaries(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer);
+                                       ProblemWriterType& writer);
 
     static void create_edge_distributeds(ProblemMeshType& mesh,
                                          ProblemMeshSkeletonType& mesh_skeleton,
-                                         Writer<Problem>& writer);
+                                         ProblemWriterType& writer);
 
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     const ProblemInputType& problem_specific_input);
 
-    template <typename MeshType>
-    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
+    static void initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    template <typename MeshType>
-    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
+    static void initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    template <typename ProblemType>
-    static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
+    static void initialize_global_problem(ProblemDiscretizationType& discretization);
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization);
 
@@ -138,7 +137,7 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    static void solve_global_dc_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
+    static void solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     /* SWE part */
 
@@ -195,14 +194,11 @@ struct Problem {
     static void swap_states_kernel(const RKStepper& stepper, ElementType& elt);
 
     // writing output kernels
-    template <typename MeshType>
-    static void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
-    template <typename MeshType>
-    static void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTU_data(ProblemMeshType& mesh, std::ofstream& raw_data_file);
 
-    template <typename MeshType>
-    static void write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path);
+    static void write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path);
 
     template <typename ElementType>
     static double compute_residual_L2(const RKStepper& stepper, ElementType& elt);

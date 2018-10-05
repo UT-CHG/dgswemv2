@@ -5,7 +5,7 @@ namespace SWE {
 namespace IHDG {
 void Problem::create_edge_interfaces(ProblemMeshType& mesh,
                                      ProblemMeshSkeletonType& mesh_skeleton,
-                                     Writer<Problem>& writer) {
+                                     ProblemWriterType& writer) {
     using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal>;
 
     using EdgeInterfaceTypes =

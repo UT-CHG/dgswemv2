@@ -5,8 +5,7 @@
 
 namespace GN {
 namespace EHDG {
-template <typename MeshType>
-void Problem::write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path) {
+void Problem::write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
     SWE::EHDG::Problem::write_modal_data(stepper, mesh, output_path);
 }
 }

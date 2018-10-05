@@ -9,7 +9,7 @@ void Problem::create_distributed_boundaries(
     ProblemMeshType&,
     ProblemInputType& problem_input,
     std::tuple<>&,
-    Writer<Problem>& writer) {}
+    ProblemWriterType& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
 void Problem::create_distributed_boundaries(
@@ -17,7 +17,7 @@ void Problem::create_distributed_boundaries(
     ProblemMeshType& mesh,
     ProblemInputType& problem_input,
     Communicator& communicator,
-    Writer<Problem>& writer) {
+    ProblemWriterType& writer) {
     // *** //
     using DistributedBoundaryTypes = Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>;
 

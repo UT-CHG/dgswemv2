@@ -27,6 +27,8 @@ namespace IHDG {
 struct Problem {
     using ProblemInputType = SWE::Inputs;
 
+    using ProblemWriterType = Writer<Problem>;
+
     using ProblemParserType = SWE::Parser;
 
     using ProblemDataType = Data;
@@ -57,13 +59,13 @@ struct Problem {
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& problem_input,
-                                  Writer<Problem>& writer);
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& problem_input,
-                                  Writer<Problem>& writer);
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
@@ -71,7 +73,7 @@ struct Problem {
         ProblemMeshType&,
         ProblemInputType& problem_input,
         std::tuple<>&,
-        Writer<Problem>&);
+        ProblemWriterType&);
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries(
@@ -79,19 +81,19 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        Writer<Problem>& writer);
+        ProblemWriterType& writer);
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer);
+                                       ProblemWriterType& writer);
 
     static void create_edge_boundaries(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer);
+                                       ProblemWriterType& writer);
 
     static void create_edge_distributeds(ProblemMeshType& mesh,
                                          ProblemMeshSkeletonType& mesh_skeleton,
-                                         Writer<Problem>& writer);
+                                         ProblemWriterType& writer);
 
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     const ProblemInputType& problem_specific_input);
@@ -103,18 +105,18 @@ struct Problem {
 
     static void initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_problem_serial(HDGDiscretization<Problem>& discretization, uint& global_dof_offset);
+    static void initialize_global_problem_serial(ProblemDiscretizationType& discretization, uint& global_dof_offset);
 
     template <typename Communicator>
-    static void initialize_global_problem_parallel_pre_send(HDGDiscretization<Problem>& discretization,
+    static void initialize_global_problem_parallel_pre_send(ProblemDiscretizationType& discretization,
                                                             Communicator& communicator,
                                                             uint& global_dof_offset);
 
-    static void initialize_global_problem_parallel_finalize_pre_send(HDGDiscretization<Problem>& discretization,
+    static void initialize_global_problem_parallel_finalize_pre_send(ProblemDiscretizationType& discretization,
                                                                      uint global_dof_offset);
 
     template <typename Communicator>
-    static void initialize_global_problem_parallel_post_receive(HDGDiscretization<Problem>& discretization,
+    static void initialize_global_problem_parallel_post_receive(ProblemDiscretizationType& discretization,
                                                                 Communicator& communicator,
                                                                 std::vector<uint>& global_dof_indx);
 
@@ -163,7 +165,7 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_bound);
 
-    static bool serial_solve_global_problem(const RKStepper& stepper, HDGDiscretization<Problem>& discretization);
+    static bool serial_solve_global_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
     static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);

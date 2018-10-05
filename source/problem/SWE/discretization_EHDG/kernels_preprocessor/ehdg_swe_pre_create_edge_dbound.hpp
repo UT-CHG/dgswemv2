@@ -5,7 +5,7 @@ namespace SWE {
 namespace EHDG {
 void Problem::create_edge_distributeds(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       Writer<Problem>& writer) {
+                                       ProblemWriterType& writer) {
     using DistributedBoundaryTypes = Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>;
 
     using EdgeDistributedTypes =

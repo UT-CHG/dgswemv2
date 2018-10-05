@@ -18,7 +18,7 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     // at this point h_at_gp
     // has been calculated in derivatives kernel
 
-    // set h_hat, dbath_hat as internal state
+    // set h_hat as internal state
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = row(boundary.aux_at_gp, SWE::Auxiliaries::h);
 
     double tau = -20;  // hardcode the tau value here
