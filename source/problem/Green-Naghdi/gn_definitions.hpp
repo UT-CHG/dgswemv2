@@ -17,19 +17,6 @@ static double R_earth   = 6378200.0;
 const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water, R_earth);
 }
 
-namespace SourceTerms {
-static bool function_source = false;
-static bool bottom_friction = false;
-static bool meteo_forcing   = false;
-static bool tide_potential  = false;
-static bool coriolis        = false;
-
-static double Cf = 0.0;
-
-const bool ignored_vars =
-    Utilities::ignore(function_source, bottom_friction, meteo_forcing, tide_potential, coriolis, Cf);
-}
-
 constexpr uint n_dimensions  = 2;
 constexpr uint n_variables   = 3;
 constexpr uint n_auxiliaries = 2;
@@ -66,20 +53,6 @@ enum DDDBath : uint { bxxx = 0, bxxy = 1, bxyx = 2, bxyy = 3, byxx = 4, byxy = 5
 
 /* These must shadow SWE bc types */
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL };
-
-enum class SphericalProjectionType { None, Enable };
-
-enum class InitialConditionsType { Default, Constant, Function };
-
-enum class FunctionSourceType { None, Enable };
-
-enum class BottomFrictionType { None, Chezy, Manning };
-
-enum class MeteoForcingType { None, Enable };
-
-enum class TidePotentialType { None, Test };  // not yet implemented
-
-enum class CoriolisType { None, Enable };
 }
 
 #endif

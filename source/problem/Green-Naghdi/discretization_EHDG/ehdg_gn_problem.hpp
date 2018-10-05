@@ -96,14 +96,14 @@ struct Problem {
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_pre_send(ProblemMeshType& mesh,
-                                                  const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_post_receive(ProblemMeshType& mesh);
-
-    static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
+    template <typename ProblemType>
+    static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization);
 

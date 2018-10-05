@@ -49,7 +49,7 @@ class Parser {
 
 template <typename MeshType>
 void Parser::ParseInput(const RKStepper& stepper, MeshType& mesh) {
-    if (GN::SourceTerms::meteo_forcing) {
+    if (SWE::SourceTerms::meteo_forcing) {
         if (stepper.GetStep() % this->meteo_parse_frequency == 0 && stepper.GetStage() == 0) {
             this->ParseMeteoInput(stepper);
         }

@@ -3,9 +3,9 @@
 // SWE part of the problem
 #include "problem/SWE/swe_definitions.hpp"
 
-#include "manufactured_swe_initial_condition_functions.hpp"
-#include "manufactured_swe_source_functions.hpp"
-#include "manufactured_swe_true_solution_functions.hpp"
+#include "analytical_gn_initial_condition_functions.hpp"
+#include "analytical_gn_source_functions.hpp"
+#include "analytical_gn_true_solution_functions.hpp"
 
 #include "problem/SWE/discretization_EHDG/ehdg_swe_problem.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_kernels_preprocessor.hpp"
@@ -16,10 +16,6 @@
 
 // GN part of the problem
 #include "problem/Green-Naghdi/gn_definitions.hpp"
-
-#include "analytical_gn_initial_condition_functions.hpp"
-#include "analytical_gn_source_functions.hpp"
-#include "analytical_gn_true_solution_functions.hpp"
 
 #include "problem/Green-Naghdi/discretization_EHDG/ehdg_gn_problem.hpp"
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_kernels_preprocessor.hpp"

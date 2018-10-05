@@ -41,7 +41,7 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                std::vector<TideInput> tide;
+                std::vector<SWE::TideInput> tide;
 
                 for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
                     uint node_ID = raw_boundary.node_ID[node];
@@ -73,7 +73,7 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                std::vector<FlowInput> flow;
+                std::vector<SWE::FlowInput> flow;
 
                 for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
                     uint node_ID = raw_boundary.node_ID[node];

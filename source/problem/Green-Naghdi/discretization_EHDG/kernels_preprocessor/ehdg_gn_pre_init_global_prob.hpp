@@ -3,7 +3,10 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretization) {
+template <typename ProblemType>
+void Problem::initialize_global_problem(HDGDiscretization<ProblemType>& discretization) {
+    SWE::EHDG::Problem::initialize_global_problem(discretization);
+
     uint local_dof_offset  = 0;
     uint global_dof_offset = 0;
 
@@ -34,8 +37,6 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        set_constant(edge_int.edge_data.edge_state.q_hat, 0.0);
-
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
 
@@ -43,11 +44,6 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
         boundary_ex.global_dof_offset = global_dof_offset;
 
         global_dof_offset += edge_int.edge_data.get_ndof();
-
-        // Initialize delta_hat_global and rhs_global containers
-        edge_internal.delta_hat_global.resize(GN::n_variables * edge_int.edge_data.get_ndof(),
-                                              GN::n_variables * edge_int.edge_data.get_ndof());
-        edge_internal.rhs_global.resize(GN::n_variables * edge_int.edge_data.get_ndof());
 
         // Initialize w1 containers
         boundary_in.w1_w1_hat.resize(GN::n_dimensions * edge_int.interface.data_in.get_ndof(),
@@ -83,19 +79,12 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        set_constant(edge_bound.edge_data.edge_state.q_hat, 0.0);
-
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
 
         boundary.global_dof_offset = global_dof_offset;
 
         global_dof_offset += edge_bound.edge_data.get_ndof();
-
-        // Initialize delta_hat_global and rhs_global containers
-        edge_internal.delta_hat_global.resize(GN::n_variables * edge_bound.edge_data.get_ndof(),
-                                              GN::n_variables * edge_bound.edge_data.get_ndof());
-        edge_internal.rhs_global.resize(GN::n_variables * edge_bound.edge_data.get_ndof());
 
         // Initialize w1 containers
         boundary.w1_w1_hat.resize(GN::n_dimensions * edge_bound.boundary.data.get_ndof(),
@@ -109,17 +98,6 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
 
         boundary.w1_hat_w1.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
                                   GN::n_dimensions * edge_bound.boundary.data.get_ndof());
-    });
-
-    discretization.mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {
-        auto& edge_internal = edge_dbound.edge_data.edge_internal;
-
-        set_constant(edge_dbound.edge_data.edge_state.q_hat, 0.0);
-
-        // Initialize delta_hat_global and rhs_global containers
-        edge_internal.delta_hat_global.resize(GN::n_variables * edge_dbound.edge_data.get_ndof(),
-                                              GN::n_variables * edge_dbound.edge_data.get_ndof());
-        edge_internal.rhs_global.resize(GN::n_variables * edge_dbound.edge_data.get_ndof());
     });
 
     discretization.global_data.w1_w1_hat.resize(local_dof_offset * GN::n_dimensions,

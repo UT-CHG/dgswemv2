@@ -2,7 +2,7 @@
 
 namespace GN {
 Parser::Parser(const InputParameters<GN::Inputs>& input) {
-    if (input.problem_input.meteo_forcing.type == MeteoForcingType::Enable) {
+    if (input.problem_input.meteo_forcing.type == SWE::MeteoForcingType::Enable) {
         this->parsing_input = true;
 
         this->meteo_parse_frequency =

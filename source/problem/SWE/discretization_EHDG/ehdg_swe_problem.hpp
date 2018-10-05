@@ -101,14 +101,18 @@ struct Problem {
     template <typename HPXSimUnitType>
     static decltype(auto) preprocessor_hpx(HPXSimUnitType* sim_unit);
 
-    static void initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
+    template <typename ProblemType>
+    static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
 
     // processor kernels
-    static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    template <typename ProblemType>
+    static void stage_serial(const RKStepper& stepper, HDGDiscretization<ProblemType>& discretization);
 
     template <typename OMPISimUnitType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);

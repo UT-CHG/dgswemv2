@@ -3,7 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretization) {
+template <typename ProblemType>
+void Problem::initialize_global_problem(HDGDiscretization<ProblemType>& discretization) {
     discretization.mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 

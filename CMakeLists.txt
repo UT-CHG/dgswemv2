@@ -87,8 +87,8 @@ list(APPEND SWE_SOURCES
 )
 
 list(APPEND GN_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
-  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_parser/gn_parser.cpp
+${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_parser/gn_parser.cpp
 )
 
 include_directories(source)
