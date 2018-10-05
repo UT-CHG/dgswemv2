@@ -3,34 +3,21 @@
 
 #include "preprocessor/input_parameters.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
+#include "problem/SWE/problem_parser/swe_parser.hpp"
 
 #include "problem/Green-Naghdi/gn_definitions.hpp"
 
 #include "utilities/file_exists.hpp"
 
 namespace GN {
-class Parser {
-  private:
-    bool parsing_input = false;
-
-    uint meteo_parse_frequency;
-    std::string meteo_data_file;
-    std::map<uint, std::map<uint, std::vector<double>>> node_meteo_data_step;
-    std::map<uint, std::vector<double>> node_meteo_data_interp;
-
+class Parser : public SWE::Parser {
   public:
     Parser() = default;
     Parser(const InputParameters<GN::Inputs>& input);
     Parser(const InputParameters<GN::Inputs>& input, const uint locality_id, const uint submesh_id);
 
-    bool ParsingInput() { return parsing_input; }
-
     template <typename MeshType>
     void ParseInput(const RKStepper& stepper, MeshType& mesh);
-
-  private:
-    void ParseMeteoInput(const RKStepper& stepper);
-    void InterpolateMeteoData(const RKStepper& stepper);
 
   public:
 #ifdef HAS_HPX

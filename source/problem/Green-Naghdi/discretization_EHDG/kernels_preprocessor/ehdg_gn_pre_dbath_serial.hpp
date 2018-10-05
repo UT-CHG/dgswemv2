@@ -11,7 +11,7 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
         auto& internal = elt.data.internal;
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-            row(state.dbath, dir) = -elt.IntegrationDPhi(dir, row(internal.aux_at_gp, GN::Auxiliaries::bath));
+            row(state.dbath, dir) = -elt.IntegrationDPhi(dir, row(internal.aux_at_gp, SWE::Auxiliaries::bath));
         }
     });
 
@@ -27,8 +27,8 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
         for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
-            boundary_in.bath_hat_at_gp[gp] = (boundary_in.aux_at_gp(GN::Auxiliaries::bath, gp) +
-                                              boundary_ex.aux_at_gp(GN::Auxiliaries::bath, gp_ex)) /
+            boundary_in.bath_hat_at_gp[gp] = (boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp) +
+                                              boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex)) /
                                              2.0;
 
             boundary_ex.bath_hat_at_gp[gp_ex] = boundary_in.bath_hat_at_gp[gp];
@@ -47,7 +47,7 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
         auto& state    = bound.data.state[0];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        boundary.bath_hat_at_gp = row(boundary.aux_at_gp, GN::Auxiliaries::bath);
+        boundary.bath_hat_at_gp = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
             row(state.dbath, dir) +=

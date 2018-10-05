@@ -26,8 +26,8 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp) =
-            (boundary_in.aux_at_gp(GN::Auxiliaries::h, gp) + boundary_ex.aux_at_gp(GN::Auxiliaries::h, gp_ex)) / 2.0;
+        edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp) =
+            (boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp) + boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex)) / 2.0;
     }
 
     double tau = -20;  // hardcode the tau value here
@@ -40,8 +40,8 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
     for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
         gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
-        h_hat_in = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
-        h_hat_ex = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp_ex);
+        h_hat_in = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
+        h_hat_ex = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp_ex);
 
         bx_in = boundary_in.dbath_hat_at_gp(GlobalCoord::x, gp);
         by_in = boundary_in.dbath_hat_at_gp(GlobalCoord::y, gp);
@@ -84,17 +84,17 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
 
     row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::x) =
         -vec_cw_div(row(edge_int.interface.surface_normal_in, GlobalCoord::x),
-                    row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+                    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
     row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::y) =
         -vec_cw_div(row(edge_int.interface.surface_normal_in, GlobalCoord::y),
-                    row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+                    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
 
     row(boundary_ex.w2_w1_hat_kernel_at_gp, GlobalCoord::x) =
         -vec_cw_div(row(edge_int.interface.surface_normal_ex, GlobalCoord::x),
-                    row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+                    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
     row(boundary_ex.w2_w1_hat_kernel_at_gp, GlobalCoord::y) =
         -vec_cw_div(row(edge_int.interface.surface_normal_ex, GlobalCoord::y),
-                    row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+                    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
 
     for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); ++dof_j) {

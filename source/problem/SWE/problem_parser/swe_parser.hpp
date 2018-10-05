@@ -10,7 +10,7 @@
 
 namespace SWE {
 class Parser {
-  private:
+  protected:
     bool parsing_input = false;
 
     uint meteo_parse_frequency;
@@ -28,7 +28,7 @@ class Parser {
     template <typename MeshType>
     void ParseInput(const RKStepper& stepper, MeshType& mesh);
 
-  private:
+  protected:
     void ParseMeteoInput(const RKStepper& stepper);
     void InterpolateMeteoData(const RKStepper& stepper);
 

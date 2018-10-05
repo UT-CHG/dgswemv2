@@ -19,7 +19,7 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     // has been calculated in derivatives kernel
 
     // set h_hat, dbath_hat as internal state
-    row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h) = row(boundary.aux_at_gp, GN::Auxiliaries::h);
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = row(boundary.aux_at_gp, SWE::Auxiliaries::h);
 
     double tau = -20;  // hardcode the tau value here
 
@@ -29,7 +29,7 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     double nx, ny;
 
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        h_hat = edge_internal.aux_hat_at_gp(GN::Auxiliaries::h, gp);
+        h_hat = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
 
         bx = boundary.dbath_hat_at_gp(GlobalCoord::x, gp);
         by = boundary.dbath_hat_at_gp(GlobalCoord::y, gp);
@@ -54,9 +54,9 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
     }
 
     row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -vec_cw_div(
-        row(edge_bound.boundary.surface_normal, GlobalCoord::x), row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+        row(edge_bound.boundary.surface_normal, GlobalCoord::x), row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
     row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = -vec_cw_div(
-        row(edge_bound.boundary.surface_normal, GlobalCoord::y), row(edge_internal.aux_hat_at_gp, GN::Auxiliaries::h));
+        row(edge_bound.boundary.surface_normal, GlobalCoord::y), row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
 
     for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); ++dof_j) {

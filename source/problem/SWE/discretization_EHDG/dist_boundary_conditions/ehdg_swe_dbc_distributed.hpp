@@ -65,7 +65,7 @@ void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributed
     edge_internal.rhs_global_kernel_at_gp = boundary.Fn_at_gp + this->Fn_ex;
 
     // Add tau terms
-    SWE::EHDG::add_kernel_tau_terms_dbound_LF(edge_dbound);
+    add_kernel_tau_terms_dbound_LF(edge_dbound);
 }
 
 template <typename EdgeDistributedType>
@@ -75,7 +75,7 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
     // Add tau terms
-    SWE::EHDG::add_F_hat_tau_terms_bound_LF(edge_dbound);
+    add_F_hat_tau_terms_bound_LF(edge_dbound);
 }
 }
 }

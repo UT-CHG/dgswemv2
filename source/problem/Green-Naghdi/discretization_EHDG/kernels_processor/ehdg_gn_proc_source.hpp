@@ -18,7 +18,7 @@ void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt)
     // at this point h_at_gp, u_at_gp, du_at_gp and ddu_at_gp
     // have been calculated in derivatives kernel
 
-    auto h  = row(internal.aux_at_gp, GN::Auxiliaries::h);
+    auto h  = row(internal.aux_at_gp, SWE::Auxiliaries::h);
     auto h2 = vec_cw_mult(h, h);
     auto h3 = vec_cw_mult(h2, h);
 

@@ -14,16 +14,16 @@ void Problem::compute_derivatives_serial(const RKStepper& stepper, ProblemDiscre
 
         internal.q_at_gp = elt.ComputeUgp(state.q);
 
-        row(internal.aux_at_gp, GN::Auxiliaries::h) =
-            row(internal.q_at_gp, GN::Variables::ze) + row(internal.aux_at_gp, GN::Auxiliaries::bath);
+        row(internal.aux_at_gp, SWE::Auxiliaries::h) =
+            row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
 
         row(internal.u_at_gp, GlobalCoord::x) =
-            vec_cw_div(row(internal.q_at_gp, GN::Variables::qx), row(internal.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
         row(internal.u_at_gp, GlobalCoord::y) =
-            vec_cw_div(row(internal.q_at_gp, GN::Variables::qy), row(internal.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-            row(state.dze, dir) = -elt.IntegrationDPhi(dir, row(internal.q_at_gp, GN::Variables::ze));
+            row(state.dze, dir) = -elt.IntegrationDPhi(dir, row(internal.q_at_gp, SWE::Variables::ze));
         }
 
         for (uint u = 0; u < GN::n_dimensions; ++u) {
@@ -45,21 +45,21 @@ void Problem::compute_derivatives_serial(const RKStepper& stepper, ProblemDiscre
         boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
         boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
-        row(boundary_in.aux_at_gp, GN::Auxiliaries::h) =
-            row(boundary_in.q_at_gp, GN::Variables::ze) + row(boundary_in.aux_at_gp, GN::Auxiliaries::bath);
+        row(boundary_in.aux_at_gp, SWE::Auxiliaries::h) =
+            row(boundary_in.q_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
-        row(boundary_ex.aux_at_gp, GN::Auxiliaries::h) =
-            row(boundary_ex.q_at_gp, GN::Variables::ze) + row(boundary_ex.aux_at_gp, GN::Auxiliaries::bath);
+        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h) =
+            row(boundary_ex.q_at_gp, SWE::Variables::ze) + row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath);
 
         row(boundary_in.u_hat_at_gp, GlobalCoord::x) =
-            vec_cw_div(row(boundary_in.q_at_gp, GN::Variables::qx), row(boundary_in.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qx), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
         row(boundary_in.u_hat_at_gp, GlobalCoord::y) =
-            vec_cw_div(row(boundary_in.q_at_gp, GN::Variables::qy), row(boundary_in.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qy), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
 
         row(boundary_ex.u_hat_at_gp, GlobalCoord::x) =
-            vec_cw_div(row(boundary_ex.q_at_gp, GN::Variables::qx), row(boundary_ex.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qx), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
         row(boundary_ex.u_hat_at_gp, GlobalCoord::y) =
-            vec_cw_div(row(boundary_ex.q_at_gp, GN::Variables::qy), row(boundary_ex.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qy), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
 
         uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
         uint gp_ex;
@@ -67,7 +67,7 @@ void Problem::compute_derivatives_serial(const RKStepper& stepper, ProblemDiscre
             gp_ex = ngp - gp - 1;
 
             boundary_in.ze_hat_at_gp[gp] =
-                (boundary_in.q_at_gp(GN::Variables::ze, gp) + boundary_ex.q_at_gp(GN::Variables::ze, gp_ex)) / 2.0;
+                (boundary_in.q_at_gp(SWE::Variables::ze, gp) + boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex)) / 2.0;
 
             boundary_ex.ze_hat_at_gp[gp_ex] = boundary_in.ze_hat_at_gp[gp];
 
@@ -106,15 +106,15 @@ void Problem::compute_derivatives_serial(const RKStepper& stepper, ProblemDiscre
 
         boundary.q_at_gp = bound.ComputeUgp(state.q);
 
-        row(boundary.aux_at_gp, GN::Auxiliaries::h) =
-            row(boundary.q_at_gp, GN::Variables::ze) + row(boundary.aux_at_gp, GN::Auxiliaries::bath);
+        row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
+            row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
-        boundary.ze_hat_at_gp = row(boundary.q_at_gp, GN::Variables::ze);
+        boundary.ze_hat_at_gp = row(boundary.q_at_gp, SWE::Variables::ze);
 
         row(boundary.u_hat_at_gp, GlobalCoord::x) =
-            vec_cw_div(row(boundary.q_at_gp, GN::Variables::qx), row(boundary.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(boundary.q_at_gp, SWE::Variables::qx), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
         row(boundary.u_hat_at_gp, GlobalCoord::y) =
-            vec_cw_div(row(boundary.q_at_gp, GN::Variables::qy), row(boundary.aux_at_gp, GN::Auxiliaries::h));
+            vec_cw_div(row(boundary.q_at_gp, SWE::Variables::qy), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
             row(state.dze, dir) +=

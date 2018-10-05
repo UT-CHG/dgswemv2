@@ -52,7 +52,7 @@ void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
-    SWE::EHDG::add_F_hat_tau_terms_bound_LF(edge_bound);
+    add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 }
 }

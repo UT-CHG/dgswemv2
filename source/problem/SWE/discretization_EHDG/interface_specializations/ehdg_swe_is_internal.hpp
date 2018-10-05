@@ -36,7 +36,7 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
     }
 
     // Add tau terms
-    SWE::EHDG::add_kernel_tau_terms_intface_LF(edge_int);
+    add_kernel_tau_terms_intface_LF(edge_int);
 }
 
 template <typename EdgeInterfaceType>
@@ -48,7 +48,7 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
     boundary_ex.F_hat_at_gp = boundary_ex.Fn_at_gp;
 
     // Add tau terms
-    SWE::EHDG::add_F_hat_tau_terms_intface_LF(edge_int);
+    add_F_hat_tau_terms_intface_LF(edge_int);
 }
 }
 }
