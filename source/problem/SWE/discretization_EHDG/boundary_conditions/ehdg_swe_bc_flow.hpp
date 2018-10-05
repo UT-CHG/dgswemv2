@@ -9,7 +9,7 @@ namespace SWE {
 namespace EHDG {
 namespace BC {
 class Flow {
-  private:
+  protected:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;

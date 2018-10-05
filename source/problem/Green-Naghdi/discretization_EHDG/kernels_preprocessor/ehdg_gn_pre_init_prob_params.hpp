@@ -8,7 +8,7 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
     GN::Global::rho_air   = problem_specific_input.rho_air;
     GN::Global::rho_water = problem_specific_input.rho_water;
 
-    // specify forcing terms
+    // specify forcing terms for SWE
     if (problem_specific_input.function_source.type != SWE::FunctionSourceType::None) {
         SWE::SourceTerms::function_source = true;
     }

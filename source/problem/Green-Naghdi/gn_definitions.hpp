@@ -53,6 +53,11 @@ enum DDDBath : uint { bxxx = 0, bxxy = 1, bxyx = 2, bxyy = 3, byxx = 4, byxy = 5
 
 /* These must shadow SWE bc types */
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL };
+
+namespace EHDG {
+constexpr uint n_communications = 1;
+enum CommTypes : uchar { bound_state = 0 };
+}
 }
 
 #endif
