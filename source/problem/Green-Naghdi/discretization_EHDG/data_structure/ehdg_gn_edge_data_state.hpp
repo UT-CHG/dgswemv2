@@ -5,13 +5,9 @@
 
 namespace GN {
 namespace EHDG {
-struct EdgeState {
+struct EdgeState : SWE::EHDG::EdgeState {
     EdgeState() = default;
-    EdgeState(const uint ndof) : q_hat(GN::n_variables, ndof) {}
-
-    /* swe containers */
-
-    HybMatrix<double, GN::n_variables> q_hat;
+    EdgeState(const uint ndof) : SWE::EHDG::EdgeState(ndof) {}
 };
 }
 }

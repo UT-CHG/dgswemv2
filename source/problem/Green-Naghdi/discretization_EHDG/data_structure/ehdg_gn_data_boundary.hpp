@@ -5,13 +5,10 @@
 
 namespace GN {
 namespace EHDG {
-struct Boundary {
+struct Boundary : SWE::EHDG::Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
-        : q_at_gp(GN::n_variables, ngp),
-          aux_at_gp(GN::n_auxiliaries, ngp),
-          Fn_at_gp(GN::n_variables, ngp),
-          F_hat_at_gp(GN::n_variables, ngp),
+        : SWE::EHDG::Boundary(ngp),
           ze_hat_at_gp(ngp),
           bath_hat_at_gp(ngp),
           dbath_hat_at_gp(GN::n_dimensions, ngp),
@@ -23,16 +20,6 @@ struct Boundary {
           w2_w1_hat_kernel_at_gp(GN::n_dimensions, ngp),
           w1_hat_w1_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp),
           w1_hat_w2_kernel_at_gp(GN::n_dimensions, ngp) {}
-
-    /* swe containers */
-
-    HybMatrix<double, GN::n_variables> q_at_gp;
-    HybMatrix<double, GN::n_auxiliaries> aux_at_gp;
-
-    HybMatrix<double, GN::n_variables> Fn_at_gp;
-    HybMatrix<double, GN::n_variables> F_hat_at_gp;
-
-    /* dispersive correction containers */
 
     DynRowVector<double> ze_hat_at_gp;
 

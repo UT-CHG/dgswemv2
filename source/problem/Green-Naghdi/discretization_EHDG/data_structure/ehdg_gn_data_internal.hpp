@@ -5,18 +5,10 @@
 
 namespace GN {
 namespace EHDG {
-struct Internal {
+struct Internal : SWE::EHDG::Internal {
     Internal() = default;
     Internal(const uint ngp)
-        : q_at_gp(GN::n_variables, ngp),
-          aux_at_gp(GN::n_auxiliaries, ngp),
-          Fx_at_gp(GN::n_variables, ngp),
-          Fy_at_gp(GN::n_variables, ngp),
-          source_at_gp(GN::n_variables, ngp),
-          dbath_at_gp(GN::n_dimensions, ngp),
-          tau_s_at_gp(GN::n_dimensions, ngp),
-          dp_atm_at_gp(GN::n_dimensions, ngp),
-          dtide_pot_at_gp(GN::n_dimensions, ngp),
+        : SWE::EHDG::Internal(ngp),
           u_at_gp(GN::n_dimensions, ngp),
           du_at_gp(GN::n_du_terms, ngp),
           ddu_at_gp(GN::n_ddu_terms, ngp),
@@ -27,22 +19,6 @@ struct Internal {
           w1_rhs_kernel_at_gp(GN::n_dimensions, ngp),
           w2_w1_kernel_at_gp(GN::n_dimensions, ngp),
           w2_w2_kernel_at_gp(ngp) {}
-
-    /* swe containers */
-
-    HybMatrix<double, GN::n_variables> q_at_gp;
-    HybMatrix<double, GN::n_auxiliaries> aux_at_gp;
-
-    HybMatrix<double, GN::n_variables> Fx_at_gp;
-    HybMatrix<double, GN::n_variables> Fy_at_gp;
-
-    HybMatrix<double, GN::n_variables> source_at_gp;
-    HybMatrix<double, GN::n_dimensions> dbath_at_gp;
-    HybMatrix<double, GN::n_dimensions> tau_s_at_gp;
-    HybMatrix<double, GN::n_dimensions> dp_atm_at_gp;
-    HybMatrix<double, GN::n_dimensions> dtide_pot_at_gp;
-
-    /* dispersive correction containers */
 
     HybMatrix<double, GN::n_dimensions> u_at_gp;
     HybMatrix<double, GN::n_du_terms> du_at_gp;
