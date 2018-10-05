@@ -5,7 +5,7 @@
 
 namespace GN {
 namespace NDParameters {
-static double alpha     = 1.0;
+static double alpha = 1.0;
 
 const bool ignored_vars = Utilities::ignore(alpha);
 }
@@ -18,7 +18,7 @@ static double rho_water = 1000.0;
 const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water, R_earth);
 }
 
-constexpr uint n_dimensions  = 2;
+constexpr uint n_dimensions = 2;
 
 constexpr uint n_du_terms  = 4;
 constexpr uint n_ddu_terms = 8;
