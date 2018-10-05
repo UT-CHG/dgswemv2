@@ -14,17 +14,17 @@ class Internal {
     void Initialize(InterfaceType& intface) {} /*nothing to initialize*/
 
     template <typename EdgeInterfaceType>
-    void ComputeGlobalKernelsSWE(EdgeInterfaceType& edge_int);
+    void ComputeGlobalKernels(EdgeInterfaceType& edge_int);
 
     template <typename EdgeInterfaceType>
-    void ComputeNumericalFluxSWE(EdgeInterfaceType& edge_int);
+    void ComputeNumericalFlux(EdgeInterfaceType& edge_int);
 
     template <typename EdgeInterfaceType>
     void ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int);
 };
 
 template <typename EdgeInterfaceType>
-void Internal::ComputeGlobalKernelsSWE(EdgeInterfaceType& edge_int) {
+void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
@@ -39,11 +39,11 @@ void Internal::ComputeGlobalKernelsSWE(EdgeInterfaceType& edge_int) {
     }
 
     // Add tau terms
-    add_kernel_tau_terms_intface_LF(edge_int);
+    SWE::EHDG::add_kernel_tau_terms_intface_LF(edge_int);
 }
 
 template <typename EdgeInterfaceType>
-void Internal::ComputeNumericalFluxSWE(EdgeInterfaceType& edge_int) {
+void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
@@ -51,7 +51,7 @@ void Internal::ComputeNumericalFluxSWE(EdgeInterfaceType& edge_int) {
     boundary_ex.F_hat_at_gp = boundary_ex.Fn_at_gp;
 
     // Add tau terms
-    add_F_hat_tau_terms_intface_LF(edge_int);
+    SWE::EHDG::add_F_hat_tau_terms_intface_LF(edge_int);
 }
 
 template <typename EdgeInterfaceType>

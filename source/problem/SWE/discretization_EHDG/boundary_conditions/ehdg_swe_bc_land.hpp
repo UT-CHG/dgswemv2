@@ -3,6 +3,7 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
+#include "problem/SWE/discretization_EHDG/stabilization_parameters/ehdg_swe_stabilization_params.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -51,7 +52,7 @@ void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
-    add_F_hat_tau_terms_bound_LF(edge_bound);
+    SWE::EHDG::add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 }
 }

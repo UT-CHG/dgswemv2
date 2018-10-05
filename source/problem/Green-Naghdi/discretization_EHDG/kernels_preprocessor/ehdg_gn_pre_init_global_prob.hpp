@@ -34,6 +34,8 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
+        set_constant(edge_int.edge_data.edge_state.q_hat, 0.0);
+
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
 
@@ -81,6 +83,8 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
+        set_constant(edge_bound.edge_data.edge_state.q_hat, 0.0);
+
         // Set offsets for global matrix construction
         edge_internal.global_dof_offset = global_dof_offset;
 
@@ -109,6 +113,8 @@ void Problem::initialize_global_problem(HDGDiscretization<Problem>& discretizati
 
     discretization.mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
+
+        set_constant(edge_dbound.edge_data.edge_state.q_hat, 0.0);
 
         // Initialize delta_hat_global and rhs_global containers
         edge_internal.delta_hat_global.resize(GN::n_variables * edge_dbound.edge_data.get_ndof(),

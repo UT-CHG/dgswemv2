@@ -29,10 +29,10 @@ class Flow {
     /* something to be implemented in future */
 
     template <typename EdgeBoundaryType>
-    void ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
 
     template <typename EdgeBoundaryType>
-    void ComputeNumericalFluxSWE(EdgeBoundaryType& edge_bound) {}
+    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
 
     template <typename EdgeBoundaryType>
     void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}

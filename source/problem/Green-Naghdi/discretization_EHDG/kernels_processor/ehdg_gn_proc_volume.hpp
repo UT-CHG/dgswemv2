@@ -5,36 +5,7 @@ namespace GN {
 namespace EHDG {
 template <typename ElementType>
 void Problem::local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt) {
-    const uint stage = stepper.GetStage();
-
-    auto& state    = elt.data.state[stage];
-    auto& internal = elt.data.internal;
-
-    internal.q_at_gp = elt.ComputeUgp(state.q);
-
-    row(internal.aux_at_gp, GN::Auxiliaries::h) =
-        row(internal.q_at_gp, GN::Variables::ze) + row(internal.aux_at_gp, GN::Auxiliaries::bath);
-
-    auto u = vec_cw_div(row(internal.q_at_gp, GN::Variables::qx), row(internal.aux_at_gp, GN::Auxiliaries::h));
-    auto v = vec_cw_div(row(internal.q_at_gp, GN::Variables::qy), row(internal.aux_at_gp, GN::Auxiliaries::h));
-
-    auto uuh = vec_cw_mult(u, row(internal.q_at_gp, GN::Variables::qx));
-    auto vvh = vec_cw_mult(v, row(internal.q_at_gp, GN::Variables::qy));
-    auto uvh = vec_cw_mult(u, row(internal.q_at_gp, GN::Variables::qy));
-    auto pe  = Global::g *
-              (0.5 * vec_cw_mult(row(internal.q_at_gp, GN::Variables::ze), row(internal.q_at_gp, GN::Variables::ze)) +
-               vec_cw_mult(row(internal.q_at_gp, GN::Variables::ze), row(internal.aux_at_gp, GN::Auxiliaries::bath)));
-
-    row(internal.Fx_at_gp, GN::Variables::ze) = row(internal.q_at_gp, GN::Variables::qx);
-    row(internal.Fx_at_gp, GN::Variables::qx) = uuh + pe;
-    row(internal.Fx_at_gp, GN::Variables::qy) = uvh;
-
-    row(internal.Fy_at_gp, GN::Variables::ze) = row(internal.q_at_gp, GN::Variables::qy);
-    row(internal.Fy_at_gp, GN::Variables::qx) = uvh;
-    row(internal.Fy_at_gp, GN::Variables::qy) = vvh + pe;
-
-    state.rhs =
-        elt.IntegrationDPhi(GlobalCoord::x, internal.Fx_at_gp) + elt.IntegrationDPhi(GlobalCoord::y, internal.Fy_at_gp);
+    SWE::EHDG::Problem::local_volume_kernel(stepper, elt);
 }
 
 template <typename ElementType>

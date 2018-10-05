@@ -171,26 +171,17 @@ struct Problem {
     template <typename EdgeInterfaceType>
     static void global_swe_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
 
-    template <typename EdgeInterfaceType>
-    static void global_swe_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int);
-
     template <typename BoundaryType>
     static void global_swe_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
 
     template <typename EdgeBoundaryType>
     static void global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    template <typename EdgeBoundaryType>
-    static void global_swe_edge_boundary_iteration(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
-
     template <typename DistributedBoundaryType>
     static void global_swe_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
     static void global_swe_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
-
-    template <typename EdgeDistributedType>
-    static void global_swe_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     /* global step end */
 

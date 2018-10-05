@@ -3,6 +3,7 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/stabilization_parameters/ehdg_gn_stabilization_params.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -13,17 +14,17 @@ class Land {
     void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
 
     template <typename EdgeBoundaryType>
-    void ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeBoundaryType>
-    void ComputeNumericalFluxSWE(EdgeBoundaryType& edge_bound);
+    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 
     template <typename EdgeBoundaryType>
     void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 };
 
 template <typename EdgeBoundaryType>
-void Land::ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
@@ -47,12 +48,12 @@ void Land::ComputeGlobalKernelsSWE(const RKStepper& stepper, EdgeBoundaryType& e
 }
 
 template <typename EdgeBoundaryType>
-void Land::ComputeNumericalFluxSWE(EdgeBoundaryType& edge_bound) {
+void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
-    add_F_hat_tau_terms_bound_LF(edge_bound);
+    SWE::EHDG::add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 
 template <typename EdgeBoundaryType>
