@@ -15,7 +15,7 @@ static double g         = 9.81;
 static double rho_air   = 1.225;
 static double rho_water = 1000.0;
 
-const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water, R_earth);
+const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water);
 }
 
 constexpr uint n_dimensions = 2;
