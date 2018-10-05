@@ -5,7 +5,8 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
+template <typename MeshType>
+void Problem::write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
     std::vector<StatVector<double, SWE::n_variables>> q_point_data;
     std::vector<StatVector<double, SWE::n_variables>> q_cell_data;
 

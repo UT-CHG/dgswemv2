@@ -4,7 +4,9 @@
 #include "problem/Green-Naghdi/gn_definitions.hpp"
 
 namespace GN {
-namespace EHDG {}
+namespace EHDG {
+// Currently our stabilization parameter for dispersive correction is tau*I
+}
 }
 
 #endif

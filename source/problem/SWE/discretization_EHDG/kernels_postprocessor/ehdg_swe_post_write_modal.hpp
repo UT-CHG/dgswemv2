@@ -5,7 +5,8 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+template <typename MeshType>
+void Problem::write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, HybMatrix<double, SWE::n_variables>>> modal_q;
     std::vector<std::pair<uint, HybMatrix<double, 1>>> modal_aux;
 
