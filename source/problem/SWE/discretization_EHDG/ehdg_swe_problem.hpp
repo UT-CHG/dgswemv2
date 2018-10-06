@@ -101,7 +101,7 @@ struct Problem {
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     template <typename HPXSimUnitType>
-    static decltype(auto) preprocessor_hpx(HPXSimUnitType* sim_unit);
+    static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
     template <typename MeshType>
     static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
@@ -120,7 +120,7 @@ struct Problem {
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     template <typename HPXSimUnitType>
-    static decltype(auto) stage_hpx(HPXSimUnitType* sim_unit);
+    static auto stage_hpx(HPXSimUnitType* sim_unit);
 
     /* local step begin */
 

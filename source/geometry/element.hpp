@@ -59,17 +59,17 @@ class Element {
                                  pre_specialized_interfaces);
 
     template <typename F>
-    decltype(auto) L2ProjectionF(const F& f);
+    DynMatrix<double> L2ProjectionF(const F& f);
     template <typename InputArrayType>
     decltype(auto) L2ProjectionNode(const InputArrayType& nodal_values);
 
     template <typename InputArrayType>
-    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
+    DynMatrix<double> ProjectBasisToLinear(const InputArrayType& u);
     template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
 
     template <typename F>
-    decltype(auto) ComputeFgp(const F& f);
+    DynMatrix<double> ComputeFgp(const F& f);
     template <typename InputArrayType>
     decltype(auto) ComputeUgp(const InputArrayType& u);
     template <typename InputArrayType>
@@ -279,7 +279,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
     DynMatrix<double> projection = this->ComputeFgp(f) * this->int_phi_fact * this->m_inv;
 
@@ -291,14 +291,12 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
     // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    InputArrayType projection = nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
-
-    return projection;
+    return nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
     const InputArrayType& u) {
     if (const_J) {
         return this->master->basis.ProjectBasisToLinear(u);
@@ -310,7 +308,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
     const uint ndof,
     const InputArrayType& u_lin) {
     if (const_J) {
@@ -323,7 +321,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 

@@ -6,11 +6,11 @@
 namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
-inline decltype(auto) LLF_flux(const double gravity,
-                               const StatVector<double, SWE::n_variables>& q_in,
-                               const StatVector<double, SWE::n_variables>& q_ex,
-                               const StatVector<double, SWE::n_auxiliaries>& aux,
-                               const StatVector<double, SWE::n_dimensions>& surface_normal) {
+inline StatVector<double, SWE::n_variables> LLF_flux(const double gravity,
+                                                     const StatVector<double, SWE::n_variables>& q_in,
+                                                     const StatVector<double, SWE::n_variables>& q_ex,
+                                                     const StatVector<double, SWE::n_auxiliaries>& aux,
+                                                     const StatVector<double, SWE::n_dimensions>& surface_normal) {
     double bath = aux[SWE::Auxiliaries::bath];
     double sp   = aux[SWE::Auxiliaries::sp];
 

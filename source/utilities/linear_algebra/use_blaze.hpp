@@ -115,7 +115,7 @@ decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorTy
 }
 
 template <typename T>
-decltype(auto) vector_from_array(T* array, const uint n) {
+DynVector<T> vector_from_array(T* array, const uint n) {
     return DynVector<T>(n, array);
 }
 

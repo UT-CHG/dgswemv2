@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename HPXSimUnitType>
-decltype(auto) Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
+auto Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
     Problem::initialize_data_parallel_pre_send(sim_unit->discretization.mesh, sim_unit->problem_input);
 
     hpx::future<void> receive_future =

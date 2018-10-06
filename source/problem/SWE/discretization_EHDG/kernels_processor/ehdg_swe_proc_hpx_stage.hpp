@@ -8,7 +8,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename HPXSimUnitType>
-decltype(auto) Problem::stage_hpx(HPXSimUnitType* sim_unit) {
+auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
     if (sim_unit->writer.WritingVerboseLog()) {
         sim_unit->writer.GetLogFile() << "Current (time, stage): (" << sim_unit->stepper.GetTimeAtCurrentStage() << ','
                                       << sim_unit->stepper.GetStage() << ')' << std::endl;

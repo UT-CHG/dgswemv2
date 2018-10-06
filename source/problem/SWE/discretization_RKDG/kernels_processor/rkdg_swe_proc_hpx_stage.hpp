@@ -8,7 +8,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename HPXSimUnitType>
-decltype(auto) Problem::stage_hpx(HPXSimUnitType* sim_unit) {
+auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
     hpx::future<void> ready_future = hpx::make_ready_future();
 
     hpx::future<void> solve_future = ready_future.then([sim_unit](auto&& f) {

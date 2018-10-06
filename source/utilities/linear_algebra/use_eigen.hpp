@@ -35,7 +35,7 @@ template <typename T>
 using SparseMatrix = Eigen::SparseMatrix<T>;
 
 template <typename T>
-decltype(auto) IdentityMatrix(const uint size) {
+DynMatrix<T> IdentityMatrix(const uint size) {
     return Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Identity(size, size);
 }
 
@@ -95,7 +95,7 @@ decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorTy
 }
 
 template <typename T>
-decltype(auto) vector_from_array(T* array, const uint n) {
+Eigen::Map<DynVector<T>> vector_from_array(T* array, const uint n) {
     return Eigen::Map<DynVector<T>>(array, n);
 }
 
@@ -105,12 +105,12 @@ decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint s
 }
 
 template <typename T, int n, int m = n, int SO = Eigen::StorageOptions::RowMajor>
-decltype(auto) reshape(const StatVector<T, n * m>& vector) {
+Eigen::Map<Eigen::Matrix<T, n, m, SO>> reshape(const StatVector<T, n * m>& vector) {
     return Eigen::Map<Eigen::Matrix<T, n, m, SO>>(const_cast<T*>(vector.data()), n, m);
 }
 
 template <typename T, int n, int SO = Eigen::StorageOptions::RowMajor>
-decltype(auto) reshape(const DynVector<T>& vector, const int m) {
+Eigen::Map<Eigen::Matrix<T, n, Eigen::Dynamic, SO>> reshape(const DynVector<T>& vector, const int m) {
     return Eigen::Map<Eigen::Matrix<T, n, Eigen::Dynamic, SO>>(const_cast<T*>(vector.data()), n, m);
 }
 
