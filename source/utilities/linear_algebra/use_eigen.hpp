@@ -15,6 +15,9 @@ constexpr int ColumnMajor = Eigen::StorageOptions::ColMajor;
 constexpr int RowMajor    = Eigen::StorageOptions::RowMajor;
 }
 
+template <typename Matrix>
+using Column = typename Eigen::DenseBase<Matrix>::ColXpr;
+
 template <typename T, uint m>
 using StatVector = Eigen::Matrix<T, m, 1>;
 template <typename T, uint m, uint n>
@@ -28,9 +31,9 @@ template <typename T>
 using DynMatrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 template <typename T, uint m>
 using HybMatrix = Eigen::Matrix<T, m, Eigen::Dynamic>;
-template <typename Matrix>
-using Column = typename Eigen::DenseBase<Matrix>::ColXpr;
 
+template <typename T>
+using SparseVector = Eigen::SparseVector<T>;
 template <typename T>
 using SparseMatrix = Eigen::SparseMatrix<T>;
 

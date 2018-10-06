@@ -87,7 +87,7 @@ void Land::ComputeFlux(const RKStepper& stepper,
     this->q_ex(SWE::Variables::qx, 0) = qn_ex * n_x + qt_ex * t_x;
     this->q_ex(SWE::Variables::qy, 0) = qn_ex * n_y + qt_ex * t_y;
 
-    F_hat = LLF_flux(Global::g, q_in, this->q_ex, aux_in, surface_normal);
+    F_hat = LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, surface_normal);
 }
 
 StatVector<double, SWE::n_variables> Land::GetEX(const RKStepper& stepper,
