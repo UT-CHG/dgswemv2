@@ -94,7 +94,8 @@ struct Problem {
                                          ProblemMeshSkeletonType& mesh_skeleton,
                                          ProblemWriterType& writer);
 
-    static void preprocessor_serial(ProblemDiscretizationType& discretization,
+    template <typename ProblemType>
+    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>

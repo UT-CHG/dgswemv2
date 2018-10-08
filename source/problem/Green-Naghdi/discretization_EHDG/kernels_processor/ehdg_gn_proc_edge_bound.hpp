@@ -4,11 +4,6 @@
 namespace GN {
 namespace EHDG {
 template <typename EdgeBoundaryType>
-void Problem::global_swe_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
-    SWE::EHDG::Problem::global_edge_boundary_kernel(stepper, edge_bound);
-}
-
-template <typename EdgeBoundaryType>
 void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 

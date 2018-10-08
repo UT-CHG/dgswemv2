@@ -4,11 +4,6 @@
 namespace GN {
 namespace EHDG {
 template <typename ElementType>
-void Problem::local_swe_volume_kernel(const RKStepper& stepper, ElementType& elt) {
-    SWE::EHDG::Problem::local_volume_kernel(stepper, elt);
-}
-
-template <typename ElementType>
 void Problem::local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
 

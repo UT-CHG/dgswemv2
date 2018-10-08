@@ -37,7 +37,7 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        std::vector<uint>& gn_global_dof_indx = edge_internal.gn_global_dof_indx;
+        std::vector<uint>& dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
         boundary_in.w1_hat_w1 -= boundary_in.w1_hat_w2 * internal_in.w2_w2_inv * internal_in.w2_w1;
 
@@ -48,13 +48,13 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
                                        boundary_in.w1_hat_w1 * boundary_in.w1_w1_hat +
                                        boundary_ex.w1_hat_w1 * boundary_ex.w1_w1_hat;
 
-        subvector(w1_hat_rhs, (uint)gn_global_dof_indx[0], (uint)gn_global_dof_indx.size()) =
+        subvector(w1_hat_rhs, (uint)dc_global_dof_indx[0], (uint)dc_global_dof_indx.size()) =
             -(boundary_in.w1_hat_w1 * internal_in.w1_rhs + boundary_ex.w1_hat_w1 * internal_ex.w1_rhs);
 
-        for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
-            for (uint j = 0; j < gn_global_dof_indx.size(); ++j) {
+        for (uint i = 0; i < dc_global_dof_indx.size(); ++i) {
+            for (uint j = 0; j < dc_global_dof_indx.size(); ++j) {
                 sparse_w1_hat_w1_hat.add_triplet(
-                    gn_global_dof_indx[i], gn_global_dof_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                    dc_global_dof_indx[i], dc_global_dof_indx[j], edge_internal.w1_hat_w1_hat(i, j));
             }
         }
 
@@ -67,12 +67,12 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
             edge_internal.w1_hat_w1_hat = -(boundary_in.w1_hat_w2 * internal_in.w2_w2_inv * boundary_con.w2_w1_hat +
                                             boundary_in.w1_hat_w1 * boundary_con.w1_w1_hat);
 
-            std::vector<uint>& gn_global_dof_con_indx = boundary_con.gn_global_dof_indx;
+            std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-            for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
-                for (uint j = 0; j < gn_global_dof_con_indx.size(); ++j) {
+            for (uint i = 0; i < dc_global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < dc_global_dof_con_indx.size(); ++j) {
                     sparse_w1_hat_w1_hat.add_triplet(
-                        gn_global_dof_indx[i], gn_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                        dc_global_dof_indx[i], dc_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
                 }
             }
         }
@@ -86,12 +86,12 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
             edge_internal.w1_hat_w1_hat = -(boundary_ex.w1_hat_w2 * internal_ex.w2_w2_inv * boundary_con.w2_w1_hat +
                                             boundary_ex.w1_hat_w1 * boundary_con.w1_w1_hat);
 
-            std::vector<uint>& gn_global_dof_con_indx = boundary_con.gn_global_dof_indx;
+            std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-            for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
-                for (uint j = 0; j < gn_global_dof_con_indx.size(); ++j) {
+            for (uint i = 0; i < dc_global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < dc_global_dof_con_indx.size(); ++j) {
                     sparse_w1_hat_w1_hat.add_triplet(
-                        gn_global_dof_indx[i], gn_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                        dc_global_dof_indx[i], dc_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
                 }
             }
         }
@@ -103,7 +103,7 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
         auto& internal = edge_bound.boundary.data.internal;
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        std::vector<uint>& gn_global_dof_indx = edge_internal.gn_global_dof_indx;
+        std::vector<uint>& dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
         /* boundary.w1_hat_w1 -= boundary.w1_hat_w2 * internal.w2_w2_inv * internal.w2_w1; */
 
@@ -111,13 +111,13 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
             /* boundary.w1_hat_w2 * internal.w2_w2_inv * boundary.w2_w1_hat + */ boundary.w1_hat_w1 *
             boundary.w1_w1_hat;
 
-        subvector(w1_hat_rhs, (uint)gn_global_dof_indx[0], (uint)gn_global_dof_indx.size()) =
+        subvector(w1_hat_rhs, (uint)dc_global_dof_indx[0], (uint)dc_global_dof_indx.size()) =
             -boundary.w1_hat_w1 * internal.w1_rhs;
 
-        for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
-            for (uint j = 0; j < gn_global_dof_indx.size(); ++j) {
+        for (uint i = 0; i < dc_global_dof_indx.size(); ++i) {
+            for (uint j = 0; j < dc_global_dof_indx.size(); ++j) {
                 sparse_w1_hat_w1_hat.add_triplet(
-                    gn_global_dof_indx[i], gn_global_dof_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                    dc_global_dof_indx[i], dc_global_dof_indx[j], edge_internal.w1_hat_w1_hat(i, j));
             }
         }
 
@@ -130,12 +130,12 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
             edge_internal.w1_hat_w1_hat = -(/* boundary.w1_hat_w2 * internal.w2_w2_inv * boundary_con.w2_w1_hat + */
                                             boundary.w1_hat_w1 * boundary_con.w1_w1_hat);
 
-            std::vector<uint>& gn_global_dof_con_indx = boundary_con.gn_global_dof_indx;
+            std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-            for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
-                for (uint j = 0; j < gn_global_dof_con_indx.size(); ++j) {
+            for (uint i = 0; i < dc_global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < dc_global_dof_con_indx.size(); ++j) {
                     sparse_w1_hat_w1_hat.add_triplet(
-                        gn_global_dof_indx[i], gn_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                        dc_global_dof_indx[i], dc_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
                 }
             }
         }
@@ -152,9 +152,9 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
         auto& internal = elt.data.internal;
 
         for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
-            std::vector<uint>& gn_global_dof_indx = elt.data.boundary[bound_id].gn_global_dof_indx;
+            std::vector<uint>& dc_global_dof_indx = elt.data.boundary[bound_id].dc_global_dof_indx;
 
-            auto w1_hat = subvector(w1_hat_rhs, (uint)gn_global_dof_indx[0], (uint)gn_global_dof_indx.size());
+            auto w1_hat = subvector(w1_hat_rhs, (uint)dc_global_dof_indx[0], (uint)dc_global_dof_indx.size());
 
             internal.w1_rhs -= elt.data.boundary[bound_id].w1_w1_hat * w1_hat;
         }

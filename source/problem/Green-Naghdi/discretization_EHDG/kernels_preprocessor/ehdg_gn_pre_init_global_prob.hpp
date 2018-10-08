@@ -3,11 +3,7 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::initialize_global_problem(ProblemDiscretizationType& discretization) {
-    SWE::EHDG::Problem::initialize_global_problem(discretization);
-
-    uint gn_global_dof_offset = 0;
-
+void Problem::initialize_global_dc_problem(ProblemDiscretizationType& discretization, uint& dc_global_dof_offset) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
 
@@ -21,7 +17,7 @@ void Problem::initialize_global_problem(ProblemDiscretizationType& discretizatio
         internal.w2_w2.resize(elt.data.get_ndof(), elt.data.get_ndof());
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeInterface([&gn_global_dof_offset](auto& edge_int) {
+    discretization.mesh_skeleton.CallForEachEdgeInterface([&dc_global_dof_offset](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
@@ -30,16 +26,16 @@ void Problem::initialize_global_problem(ProblemDiscretizationType& discretizatio
         uint ndof_global = edge_int.edge_data.get_ndof();
 
         // Set indexes for global matrix construction
-        edge_internal.gn_global_dof_indx.resize(ndof_global * GN::n_dimensions);
+        edge_internal.dc_global_dof_indx.resize(ndof_global * GN::n_dimensions);
 
         for (uint indx = 0; indx < ndof_global * GN::n_dimensions; ++indx) {
-            edge_internal.gn_global_dof_indx[indx] = indx + gn_global_dof_offset;
+            edge_internal.dc_global_dof_indx[indx] = indx + dc_global_dof_offset;
         }
 
-        boundary_in.gn_global_dof_indx = edge_internal.gn_global_dof_indx;
-        boundary_ex.gn_global_dof_indx = edge_internal.gn_global_dof_indx;
+        boundary_in.dc_global_dof_indx = edge_internal.dc_global_dof_indx;
+        boundary_ex.dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
-        gn_global_dof_offset += ndof_global * GN::n_dimensions;
+        dc_global_dof_offset += ndof_global * GN::n_dimensions;
 
         // Initialize w1 containers
         boundary_in.w1_w1_hat.resize(GN::n_dimensions * edge_int.interface.data_in.get_ndof(),
@@ -70,7 +66,7 @@ void Problem::initialize_global_problem(ProblemDiscretizationType& discretizatio
                                      edge_int.interface.data_ex.get_ndof());
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeBoundary([&gn_global_dof_offset](auto& edge_bound) {
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&dc_global_dof_offset](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
@@ -78,15 +74,15 @@ void Problem::initialize_global_problem(ProblemDiscretizationType& discretizatio
         uint ndof_global = edge_bound.edge_data.get_ndof();
 
         // Set indexes for global matrix construction
-        edge_internal.gn_global_dof_indx.resize(ndof_global * GN::n_dimensions);
+        edge_internal.dc_global_dof_indx.resize(ndof_global * GN::n_dimensions);
 
         for (uint indx = 0; indx < ndof_global * GN::n_dimensions; ++indx) {
-            edge_internal.gn_global_dof_indx[indx] = indx + gn_global_dof_offset;
+            edge_internal.dc_global_dof_indx[indx] = indx + dc_global_dof_offset;
         }
 
-        boundary.gn_global_dof_indx = edge_internal.gn_global_dof_indx;
+        boundary.dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
-        gn_global_dof_offset += ndof_global * GN::n_dimensions;
+        dc_global_dof_offset += ndof_global * GN::n_dimensions;
 
         // Initialize w1 containers
         boundary.w1_w1_hat.resize(GN::n_dimensions * edge_bound.boundary.data.get_ndof(),
@@ -101,9 +97,6 @@ void Problem::initialize_global_problem(ProblemDiscretizationType& discretizatio
         boundary.w1_hat_w1.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
                                   GN::n_dimensions * edge_bound.boundary.data.get_ndof());
     });
-
-    discretization.global_data.w1_hat_w1_hat.resize(gn_global_dof_offset, gn_global_dof_offset);
-    discretization.global_data.w1_hat_rhs.resize(gn_global_dof_offset);
 }
 }
 }

@@ -4,11 +4,6 @@
 namespace GN {
 namespace EHDG {
 template <typename EdgeInterfaceType>
-void Problem::global_swe_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
-    SWE::EHDG::Problem::global_edge_interface_kernel(stepper, edge_int);
-}
-
-template <typename EdgeInterfaceType>
 void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 

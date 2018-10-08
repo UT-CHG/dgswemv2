@@ -44,7 +44,7 @@ struct Boundary : SWE::EHDG::Boundary {
     DynMatrix<double> w1_hat_w1;
     DynMatrix<double> w1_hat_w2;
 
-    std::vector<uint> gn_global_dof_indx;
+    std::vector<uint> dc_global_dof_indx;
 };
 }
 }

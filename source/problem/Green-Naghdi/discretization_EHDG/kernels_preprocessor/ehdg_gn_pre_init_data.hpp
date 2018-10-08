@@ -5,12 +5,12 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    SWE::EHDG::Problem::initialize_data_serial(mesh, problem_specific_input);
+void Problem::initialize_dc_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    /* nothing to init specific to DC problem part yet */
 }
 
-void Problem::initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    SWE::EHDG::Problem::initialize_data_parallel(mesh, problem_specific_input);
+void Problem::initialize_dc_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    /* nothing to init specific to DC problem part yet */
 }
 }
 }

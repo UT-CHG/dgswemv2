@@ -4,11 +4,6 @@
 namespace GN {
 namespace EHDG {
 template <typename ElementType>
-void Problem::local_swe_source_kernel(const RKStepper& stepper, ElementType& elt) {
-    SWE::EHDG::Problem::local_source_kernel(stepper, elt);
-}
-
-template <typename ElementType>
 void Problem::local_dc_source_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
