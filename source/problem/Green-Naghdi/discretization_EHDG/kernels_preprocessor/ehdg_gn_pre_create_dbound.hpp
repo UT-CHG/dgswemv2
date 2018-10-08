@@ -69,9 +69,15 @@ void Problem::create_distributed_boundaries(
 
             std::vector<uint> offset(GN::EHDG::n_communications);
 
-            offset[CommTypes::bound_state] = begin_index[CommTypes::bound_state];
+            offset[SWE::EHDG::CommTypes::bound_state] = begin_index[SWE::EHDG::CommTypes::bound_state];
+            offset[CommTypes::dc_global_dof_indx]     = begin_index[CommTypes::dc_global_dof_indx];
+            offset[CommTypes::dbath]                  = begin_index[CommTypes::dbath];
+            offset[CommTypes::derivatives]            = begin_index[CommTypes::derivatives];
 
-            begin_index[CommTypes::bound_state] += 2 * SWE::n_variables * ngp;
+            begin_index[SWE::EHDG::CommTypes::bound_state] += 2 * SWE::n_variables * ngp;
+            begin_index[CommTypes::dc_global_dof_indx] += 1;
+            begin_index[CommTypes::dbath] += GN::n_ddbath_terms * ngp;
+            begin_index[CommTypes::derivatives] += GN::n_du_terms * ngp;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;

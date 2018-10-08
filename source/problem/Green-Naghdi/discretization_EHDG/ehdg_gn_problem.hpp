@@ -122,14 +122,26 @@ struct Problem {
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization);
 
+    template <typename OMPISimUnitType>
+    static void compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
     // processor kernels
     static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* Dispersive correction part */
 
     static void dispersive_correction_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     static void compute_derivatives_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
+    template <typename OMPISimUnitType>
+    static void compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* local step */
 
@@ -160,7 +172,7 @@ struct Problem {
     static void swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* SWE part */
 

@@ -1,6 +1,8 @@
 #ifndef EHDG_GN_PRE_OMPI_HPP
 #define EHDG_GN_PRE_OMPI_HPP
 
+#include "ehdg_gn_pre_dbath_ompi.hpp"
+
 namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
@@ -102,16 +104,17 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::global_dof_indx, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dc_global_dof_indx,
+                                                  sim_units[su_id]->stepper.GetTimestamp());
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.SendAll(CommTypes::global_dof_indx, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::dc_global_dof_indx, sim_units[su_id]->stepper.GetTimestamp());
     }
 
     std::vector<uint> dc_global_dof_indx;
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::global_dof_indx,
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dc_global_dof_indx,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
         Problem::initialize_global_dc_problem_parallel_post_receive(
@@ -119,7 +122,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     }
 
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::global_dof_indx,
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dc_global_dof_indx,
                                                     sim_units[su_id]->stepper.GetTimestamp());
     }
 
@@ -134,6 +137,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
     VecScatterCreate(
         global_data.w1_hat_rhs, global_data.dc_from, global_data.dc_sol, global_data.dc_to, &(global_data.dc_scatter));
+
+    Problem::compute_bathymetry_derivatives_ompi(sim_units);
 }
 }
 }
