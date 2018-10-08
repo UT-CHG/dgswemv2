@@ -44,8 +44,7 @@ struct Boundary : SWE::EHDG::Boundary {
     DynMatrix<double> w1_hat_w1;
     DynMatrix<double> w1_hat_w2;
 
-    uint local_dof_offset  = 0;
-    uint global_dof_offset = 0;
+    std::vector<uint> gn_global_dof_indx;
 };
 }
 }

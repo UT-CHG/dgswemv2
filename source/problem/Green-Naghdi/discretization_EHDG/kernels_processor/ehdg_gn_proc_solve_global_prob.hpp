@@ -4,21 +4,15 @@
 namespace GN {
 namespace EHDG {
 void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
-    SparseMatrixMeta<double> sparse_w1_w1_hat;
+    auto& global_data = discretization.global_data;
 
-    SparseMatrixMeta<double> sparse_w2_w1;
-    SparseMatrixMeta<double> sparse_w2_w2_inv;
-    SparseMatrixMeta<double> sparse_w2_w1_hat;
+    SparseMatrix<double>& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
+    DynVector<double>& w1_hat_rhs       = global_data.w1_hat_rhs;
 
-    SparseMatrixMeta<double> sparse_w1_hat_w1;
-    SparseMatrixMeta<double> sparse_w1_hat_w2;
     SparseMatrixMeta<double> sparse_w1_hat_w1_hat;
 
-    discretization.mesh.CallForEachElement([&discretization, &sparse_w2_w1, &sparse_w2_w2_inv](auto& elt) {
+    discretization.mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
-
-        uint ndof         = elt.data.get_ndof();
-        uint local_offset = internal.local_dof_offset;
 
         internal.w2_w2_inv = inverse(internal.w2_w2);
 
@@ -32,181 +26,140 @@ void Problem::solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretiz
         }
 
         solve_sle(internal.w1_w1, internal.w1_rhs);
-
-        subvector(discretization.global_data.w1_rhs, local_offset * GN::n_dimensions, ndof * GN::n_dimensions) =
-            internal.w1_rhs;
-
-        for (uint i = 0; i < ndof; ++i) {
-            for (uint j = 0; j < ndof * GN::n_dimensions; ++j) {
-                sparse_w2_w1.add_triplet(local_offset + i, local_offset * GN::n_dimensions + j, internal.w2_w1(i, j));
-            }
-        }
-
-        for (uint i = 0; i < ndof; ++i) {
-            for (uint j = 0; j < ndof; ++j) {
-                sparse_w2_w2_inv.add_triplet(local_offset + i, local_offset + j, internal.w2_w2_inv(i, j));
-            }
-        }
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeInterface([&discretization,
-                                                           &sparse_w1_w1_hat,
-                                                           &sparse_w2_w1_hat,
-                                                           &sparse_w1_hat_w1,
-                                                           &sparse_w1_hat_w2,
-                                                           &sparse_w1_hat_w1_hat](auto& edge_int) {
+    discretization.mesh_skeleton.CallForEachEdgeInterface([&w1_hat_rhs, &sparse_w1_hat_w1_hat](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
+
+        auto& internal_in = edge_int.interface.data_in.internal;
+        auto& internal_ex = edge_int.interface.data_ex.internal;
 
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint ndof_local_in = edge_int.interface.data_in.get_ndof();
-        uint ndof_local_ex = edge_int.interface.data_ex.get_ndof();
-        uint ndof_global   = edge_int.edge_data.get_ndof();
+        std::vector<uint>& gn_global_dof_indx = edge_internal.gn_global_dof_indx;
 
-        uint local_offset_in = boundary_in.local_dof_offset;
-        uint local_offset_ex = boundary_ex.local_dof_offset;
-        uint global_offset   = edge_internal.global_dof_offset;
+        boundary_in.w1_hat_w1 -= boundary_in.w1_hat_w2 * internal_in.w2_w2_inv * internal_in.w2_w1;
 
-        for (uint i = 0; i < ndof_global * GN::n_dimensions; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w1_hat_w1_hat.add_triplet(global_offset * GN::n_dimensions + i,
-                                                 global_offset * GN::n_dimensions + j,
-                                                 edge_internal.w1_hat_w1_hat(i, j));
+        boundary_ex.w1_hat_w1 -= boundary_ex.w1_hat_w2 * internal_ex.w2_w2_inv * internal_ex.w2_w1;
+
+        edge_internal.w1_hat_w1_hat -= boundary_in.w1_hat_w2 * internal_in.w2_w2_inv * boundary_in.w2_w1_hat +
+                                       boundary_ex.w1_hat_w2 * internal_ex.w2_w2_inv * boundary_ex.w2_w1_hat +
+                                       boundary_in.w1_hat_w1 * boundary_in.w1_w1_hat +
+                                       boundary_ex.w1_hat_w1 * boundary_ex.w1_w1_hat;
+
+        subvector(w1_hat_rhs, (uint)gn_global_dof_indx[0], (uint)gn_global_dof_indx.size()) =
+            -(boundary_in.w1_hat_w1 * internal_in.w1_rhs + boundary_ex.w1_hat_w1 * internal_ex.w1_rhs);
+
+        for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
+            for (uint j = 0; j < gn_global_dof_indx.size(); ++j) {
+                sparse_w1_hat_w1_hat.add_triplet(
+                    gn_global_dof_indx[i], gn_global_dof_indx[j], edge_internal.w1_hat_w1_hat(i, j));
             }
         }
 
-        for (uint i = 0; i < ndof_local_in * GN::n_dimensions; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w1_w1_hat.add_triplet(local_offset_in * GN::n_dimensions + i,
-                                             global_offset * GN::n_dimensions + j,
-                                             boundary_in.w1_w1_hat(i, j));
+        for (uint bound_id = 0; bound_id < edge_int.interface.data_in.get_nbound(); ++bound_id) {
+            if (bound_id == edge_int.interface.bound_id_in)
+                continue;
 
-                sparse_w1_hat_w1.add_triplet(global_offset * GN::n_dimensions + j,
-                                             local_offset_in * GN::n_dimensions + i,
-                                             boundary_in.w1_hat_w1(j, i));
+            auto& boundary_con = edge_int.interface.data_in.boundary[bound_id];
+
+            edge_internal.w1_hat_w1_hat = -(boundary_in.w1_hat_w2 * internal_in.w2_w2_inv * boundary_con.w2_w1_hat +
+                                            boundary_in.w1_hat_w1 * boundary_con.w1_w1_hat);
+
+            std::vector<uint>& gn_global_dof_con_indx = boundary_con.gn_global_dof_indx;
+
+            for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < gn_global_dof_con_indx.size(); ++j) {
+                    sparse_w1_hat_w1_hat.add_triplet(
+                        gn_global_dof_indx[i], gn_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                }
             }
         }
 
-        for (uint i = 0; i < ndof_local_in; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w2_w1_hat.add_triplet(
-                    local_offset_in + i, global_offset * GN::n_dimensions + j, boundary_in.w2_w1_hat(i, j));
+        for (uint bound_id = 0; bound_id < edge_int.interface.data_ex.get_nbound(); ++bound_id) {
+            if (bound_id == edge_int.interface.bound_id_ex)
+                continue;
 
-                sparse_w1_hat_w2.add_triplet(
-                    global_offset * GN::n_dimensions + j, local_offset_in + i, boundary_in.w1_hat_w2(j, i));
-            }
-        }
+            auto& boundary_con = edge_int.interface.data_ex.boundary[bound_id];
 
-        for (uint i = 0; i < ndof_local_ex * GN::n_dimensions; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w1_w1_hat.add_triplet(local_offset_ex * GN::n_dimensions + i,
-                                             global_offset * GN::n_dimensions + j,
-                                             boundary_ex.w1_w1_hat(i, j));
+            edge_internal.w1_hat_w1_hat = -(boundary_ex.w1_hat_w2 * internal_ex.w2_w2_inv * boundary_con.w2_w1_hat +
+                                            boundary_ex.w1_hat_w1 * boundary_con.w1_w1_hat);
 
-                sparse_w1_hat_w1.add_triplet(global_offset * GN::n_dimensions + j,
-                                             local_offset_ex * GN::n_dimensions + i,
-                                             boundary_ex.w1_hat_w1(j, i));
-            }
-        }
+            std::vector<uint>& gn_global_dof_con_indx = boundary_con.gn_global_dof_indx;
 
-        for (uint i = 0; i < ndof_local_ex; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w2_w1_hat.add_triplet(
-                    local_offset_ex + i, global_offset * GN::n_dimensions + j, boundary_ex.w2_w1_hat(i, j));
-
-                sparse_w1_hat_w2.add_triplet(
-                    global_offset * GN::n_dimensions + j, local_offset_ex + i, boundary_ex.w1_hat_w2(j, i));
+            for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < gn_global_dof_con_indx.size(); ++j) {
+                    sparse_w1_hat_w1_hat.add_triplet(
+                        gn_global_dof_indx[i], gn_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                }
             }
         }
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeBoundary([&discretization,
-                                                          &sparse_w1_w1_hat,
-                                                          &sparse_w2_w1_hat,
-                                                          &sparse_w1_hat_w1,
-                                                          &sparse_w1_hat_w2,
-                                                          &sparse_w1_hat_w1_hat](auto& edge_bound) {
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&w1_hat_rhs, &sparse_w1_hat_w1_hat](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
+        auto& internal = edge_bound.boundary.data.internal;
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint ndof_local  = edge_bound.boundary.data.get_ndof();
-        uint ndof_global = edge_bound.edge_data.get_ndof();
+        std::vector<uint>& gn_global_dof_indx = edge_internal.gn_global_dof_indx;
 
-        uint local_offset  = boundary.local_dof_offset;
-        uint global_offset = edge_internal.global_dof_offset;
+        /* boundary.w1_hat_w1 -= boundary.w1_hat_w2 * internal.w2_w2_inv * internal.w2_w1; */
 
-        for (uint i = 0; i < ndof_global * GN::n_dimensions; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w1_hat_w1_hat.add_triplet(global_offset * GN::n_dimensions + i,
-                                                 global_offset * GN::n_dimensions + j,
-                                                 edge_internal.w1_hat_w1_hat(i, j));
+        edge_internal.w1_hat_w1_hat -=
+            /* boundary.w1_hat_w2 * internal.w2_w2_inv * boundary.w2_w1_hat + */ boundary.w1_hat_w1 *
+            boundary.w1_w1_hat;
+
+        subvector(w1_hat_rhs, (uint)gn_global_dof_indx[0], (uint)gn_global_dof_indx.size()) =
+            -boundary.w1_hat_w1 * internal.w1_rhs;
+
+        for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
+            for (uint j = 0; j < gn_global_dof_indx.size(); ++j) {
+                sparse_w1_hat_w1_hat.add_triplet(
+                    gn_global_dof_indx[i], gn_global_dof_indx[j], edge_internal.w1_hat_w1_hat(i, j));
             }
         }
 
-        for (uint i = 0; i < ndof_local * GN::n_dimensions; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w1_w1_hat.add_triplet(local_offset * GN::n_dimensions + i,
-                                             global_offset * GN::n_dimensions + j,
-                                             boundary.w1_w1_hat(i, j));
+        for (uint bound_id = 0; bound_id < edge_bound.boundary.data.get_nbound(); ++bound_id) {
+            if (bound_id == edge_bound.boundary.bound_id)
+                continue;
 
-                sparse_w1_hat_w1.add_triplet(global_offset * GN::n_dimensions + j,
-                                             local_offset * GN::n_dimensions + i,
-                                             boundary.w1_hat_w1(j, i));
-            }
-        }
+            auto& boundary_con = edge_bound.boundary.data.boundary[bound_id];
 
-        for (uint i = 0; i < ndof_local; ++i) {
-            for (uint j = 0; j < ndof_global * GN::n_dimensions; ++j) {
-                sparse_w2_w1_hat.add_triplet(
-                    local_offset + i, global_offset * GN::n_dimensions + j, boundary.w2_w1_hat(i, j));
+            edge_internal.w1_hat_w1_hat = -(/* boundary.w1_hat_w2 * internal.w2_w2_inv * boundary_con.w2_w1_hat + */
+                                            boundary.w1_hat_w1 * boundary_con.w1_w1_hat);
 
-                // sparse_w1_hat_w2.add_triplet(
-                //    global_offset * GN::n_dimensions + j, local_offset + i, boundary.w1_hat_w2(j, i));
+            std::vector<uint>& gn_global_dof_con_indx = boundary_con.gn_global_dof_indx;
+
+            for (uint i = 0; i < gn_global_dof_indx.size(); ++i) {
+                for (uint j = 0; j < gn_global_dof_con_indx.size(); ++j) {
+                    sparse_w1_hat_w1_hat.add_triplet(
+                        gn_global_dof_indx[i], gn_global_dof_con_indx[j], edge_internal.w1_hat_w1_hat(i, j));
+                }
             }
         }
     });
 
-    sparse_w1_w1_hat.get_sparse_matrix(discretization.global_data.w1_w1_hat);
+    sparse_w1_hat_w1_hat.get_sparse_matrix(w1_hat_w1_hat);
 
-    sparse_w2_w1.get_sparse_matrix(discretization.global_data.w2_w1);
-    sparse_w2_w2_inv.get_sparse_matrix(discretization.global_data.w2_w2_inv);
-    sparse_w2_w1_hat.get_sparse_matrix(discretization.global_data.w2_w1_hat);
+    solve_sle(w1_hat_w1_hat, w1_hat_rhs);
 
-    sparse_w1_hat_w1.get_sparse_matrix(discretization.global_data.w1_hat_w1);
-    sparse_w1_hat_w2.get_sparse_matrix(discretization.global_data.w1_hat_w2);
-    sparse_w1_hat_w1_hat.get_sparse_matrix(discretization.global_data.w1_hat_w1_hat);
-
-    discretization.global_data.w1_hat_w1 -=
-        discretization.global_data.w1_hat_w2 * discretization.global_data.w2_w2_inv * discretization.global_data.w2_w1;
-    discretization.global_data.w1_hat_w1_hat -= discretization.global_data.w1_hat_w2 *
-                                                discretization.global_data.w2_w2_inv *
-                                                discretization.global_data.w2_w1_hat;
-
-    discretization.global_data.w1_hat_w1_hat -=
-        discretization.global_data.w1_hat_w1 * discretization.global_data.w1_w1_hat;
-    discretization.global_data.w1_hat_rhs = -discretization.global_data.w1_hat_w1 * discretization.global_data.w1_rhs;
-
-    solve_sle(discretization.global_data.w1_hat_w1_hat, discretization.global_data.w1_hat_rhs);
-
-    discretization.global_data.w1_rhs -= discretization.global_data.w1_w1_hat * discretization.global_data.w1_hat_rhs;
-
-    discretization.mesh.CallForEachElement([&discretization, &stepper](auto& elt) {
+    discretization.mesh.CallForEachElement([&w1_hat_rhs, &stepper](auto& elt) {
         const uint stage = stepper.GetStage();
 
-        auto& state = elt.data.state[stage];
+        auto& state    = elt.data.state[stage];
+        auto& internal = elt.data.internal;
 
-        uint ndof         = elt.data.get_ndof();
-        uint local_offset = elt.data.internal.local_dof_offset;
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
+            std::vector<uint>& gn_global_dof_indx = elt.data.boundary[bound_id].gn_global_dof_indx;
 
-        auto w1_rhs =
-            subvector(discretization.global_data.w1_rhs, local_offset * GN::n_dimensions, ndof * GN::n_dimensions);
+            auto w1_hat = subvector(w1_hat_rhs, (uint)gn_global_dof_indx[0], (uint)gn_global_dof_indx.size());
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.w1(GlobalCoord::x, dof) = w1_rhs[2 * dof];
-            state.w1(GlobalCoord::y, dof) = w1_rhs[2 * dof + 1];
+            internal.w1_rhs -= elt.data.boundary[bound_id].w1_w1_hat * w1_hat;
         }
+
+        state.w1 = reshape<double, GN::n_dimensions, SO::ColumnMajor>(internal.w1_rhs, elt.data.get_ndof());
     });
 }
 }

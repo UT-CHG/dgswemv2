@@ -42,8 +42,6 @@ struct Internal : SWE::EHDG::Internal {
     DynMatrix<double> w2_w2;
     DynMatrix<double> w2_w2_inv;
     /* rhs_w2 = 0 */
-
-    uint local_dof_offset = 0;
 };
 }
 }
