@@ -1,8 +1,6 @@
 #ifndef RKDG_SWE_PRE_SERIAL_HPP
 #define RKDG_SWE_PRE_SERIAL_HPP
 
-#include "rkdg_swe_pre_init_data.hpp"
-
 namespace SWE {
 namespace RKDG {
 void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,

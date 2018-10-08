@@ -4,6 +4,7 @@
 #include "general_definitions.hpp"
 
 #include "ehdg_gn_kernels_processor.hpp"
+#include "ehdg_gn_proc_serial_sol_glob_prob.hpp"
 #include "ehdg_gn_proc_derivatives_serial.hpp"
 
 namespace GN {

@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_PRE_OMPI_HPP
 #define IHDG_SWE_PRE_OMPI_HPP
 
-#include "ihdg_swe_pre_init_data.hpp"
-
 namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>

@@ -21,7 +21,7 @@
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage\n"
-                  << "    /path/to/DG_HYPER_SWE input_file\n";
+                  << "    /path/to/bin input_file\n";
         return 1;
     } else {
         auto t1 = std::chrono::high_resolution_clock::now();

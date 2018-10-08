@@ -121,6 +121,8 @@ if(IHDG_SWE)
 endif()
 
 if(EHDG_GN)
+  find_package(PETSc REQUIRED)
+
   add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_gn_analytical_solution)

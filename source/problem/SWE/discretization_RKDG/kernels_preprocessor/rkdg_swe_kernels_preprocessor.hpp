@@ -6,5 +6,6 @@
 #include "rkdg_swe_pre_create_intface.hpp"
 #include "rkdg_swe_pre_create_bound.hpp"
 #include "rkdg_swe_pre_create_dbound.hpp"
+#include "rkdg_swe_pre_init_data.hpp"
 
 #endif

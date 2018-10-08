@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_PRE_HPX_HPP
 #define EHDG_SWE_PRE_HPX_HPP
 
-#include "ehdg_swe_pre_init_data.hpp"
-
 namespace SWE {
 namespace EHDG {
 template <typename HPXSimUnitType>

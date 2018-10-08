@@ -1,8 +1,6 @@
 #ifndef RKDG_SWE_PRE_HPX_HPP
 #define RKDG_SWE_PRE_HPX_HPP
 
-#include "rkdg_swe_pre_init_data.hpp"
-
 namespace SWE {
 namespace RKDG {
 template <typename HPXSimUnitType>

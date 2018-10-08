@@ -98,11 +98,27 @@ struct Problem {
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     const ProblemInputType& problem_specific_input);
 
+    template <typename OMPISimUnitType>
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+
     static void initialize_dc_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_dc_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_global_dc_problem(ProblemDiscretizationType& discretization, uint& dc_global_dof_offset);
+
+    template <typename Communicator>
+    static void initialize_global_dc_problem_parallel_pre_send(ProblemDiscretizationType& discretization,
+                                                               Communicator& communicator,
+                                                               uint& dc_global_dof_offset);
+
+    static void initialize_global_dc_problem_parallel_finalize_pre_send(ProblemDiscretizationType& discretization,
+                                                                        uint dc_global_dof_offset);
+
+    template <typename Communicator>
+    static void initialize_global_dc_problem_parallel_post_receive(ProblemDiscretizationType& discretization,
+                                                                   Communicator& communicator,
+                                                                   std::vector<uint>& dc_global_dof_indx);
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization);
 
@@ -142,6 +158,9 @@ struct Problem {
     /* SWE part */
 
     static void swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* SWE part */
 

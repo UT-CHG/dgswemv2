@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_PRE_SERIAL_HPP
 #define IHDG_SWE_PRE_SERIAL_HPP
 
-#include "ihdg_swe_pre_init_data.hpp"
-
 namespace SWE {
 namespace IHDG {
 void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,

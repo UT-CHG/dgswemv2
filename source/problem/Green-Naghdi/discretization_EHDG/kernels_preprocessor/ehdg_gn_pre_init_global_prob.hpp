@@ -98,6 +98,19 @@ void Problem::initialize_global_dc_problem(ProblemDiscretizationType& discretiza
                                   GN::n_dimensions * edge_bound.boundary.data.get_ndof());
     });
 }
+
+template <typename Communicator>
+void Problem::initialize_global_dc_problem_parallel_pre_send(ProblemDiscretizationType& discretization,
+                                                             Communicator& communicator,
+                                                             uint& dc_global_dof_offset) {}
+
+void Problem::initialize_global_dc_problem_parallel_finalize_pre_send(ProblemDiscretizationType& discretization,
+                                                                      uint dc_global_dof_offset) {}
+
+template <typename Communicator>
+void Problem::initialize_global_dc_problem_parallel_post_receive(ProblemDiscretizationType& discretization,
+                                                                 Communicator& communicator,
+                                                                 std::vector<uint>& dc_global_dof_indx) {}
 }
 }
 
