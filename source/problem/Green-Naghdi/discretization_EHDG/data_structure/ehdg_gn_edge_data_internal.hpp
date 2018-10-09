@@ -13,7 +13,7 @@ struct EdgeInternal : SWE::EHDG::EdgeInternal {
     HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_hat_w1_hat_kernel_at_gp;
 
     DynMatrix<double> w1_hat_w1_hat;
-    /* rhs_w1_hat = 0 */
+    DynVector<double> w1_hat_rhs;
 
     std::vector<uint> dc_global_dof_indx;
 };

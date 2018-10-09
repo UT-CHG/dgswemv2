@@ -13,7 +13,7 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
 
     uint dc_global_dof_offset = 0;
 
-    Problem::initialize_global_dc_problem(discretization, dc_global_dof_offset);
+    Problem::initialize_global_dc_problem_serial(discretization, dc_global_dof_offset);
 
     discretization.global_data.w1_hat_w1_hat.resize(dc_global_dof_offset, dc_global_dof_offset);
     discretization.global_data.w1_hat_rhs.resize(dc_global_dof_offset);

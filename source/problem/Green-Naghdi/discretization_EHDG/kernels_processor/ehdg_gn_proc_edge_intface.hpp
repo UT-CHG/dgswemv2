@@ -85,11 +85,12 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
                     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
 
     row(boundary_ex.w2_w1_hat_kernel_at_gp, GlobalCoord::x) =
-        -vec_cw_div(row(edge_int.interface.surface_normal_ex, GlobalCoord::x),
-                    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
+        vec_cw_div(row(edge_int.interface.surface_normal_in, GlobalCoord::x),
+                   row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
+
     row(boundary_ex.w2_w1_hat_kernel_at_gp, GlobalCoord::y) =
-        -vec_cw_div(row(edge_int.interface.surface_normal_ex, GlobalCoord::y),
-                    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
+        vec_cw_div(row(edge_int.interface.surface_normal_in, GlobalCoord::y),
+                   row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
 
     for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_int.interface.data_in.get_ndof(); ++dof_j) {

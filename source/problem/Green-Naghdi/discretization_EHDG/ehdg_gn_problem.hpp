@@ -105,7 +105,8 @@ struct Problem {
 
     static void initialize_dc_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_dc_problem(ProblemDiscretizationType& discretization, uint& dc_global_dof_offset);
+    static void initialize_global_dc_problem_serial(ProblemDiscretizationType& discretization,
+                                                    uint& dc_global_dof_offset);
 
     template <typename Communicator>
     static void initialize_global_dc_problem_parallel_pre_send(ProblemDiscretizationType& discretization,
@@ -157,6 +158,9 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
+    template <typename EdgeDistributedType>
+    static void local_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+
     /* global step */
 
     template <typename EdgeInterfaceType>
@@ -165,7 +169,13 @@ struct Problem {
     template <typename EdgeBoundaryType>
     static void global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
 
-    static void solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    template <typename EdgeDistributedType>
+    static void global_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+
+    static void serial_solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimUnitType>
+    static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     /* SWE part */
 

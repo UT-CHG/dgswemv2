@@ -94,7 +94,7 @@ void Problem::dispersive_correction_serial(const RKStepper& stepper, ProblemDisc
     discretization.mesh_skeleton.CallForEachEdgeBoundary(
         [&stepper](auto& edge_bound) { Problem::global_dc_edge_boundary_kernel(stepper, edge_bound); });
 
-    Problem::solve_global_dc_problem(stepper, discretization);
+    Problem::serial_solve_global_dc_problem(stepper, discretization);
 
     discretization.mesh.CallForEachElement(
         [&stepper](auto& elt) { Problem::dispersive_correction_kernel(stepper, elt); });
