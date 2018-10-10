@@ -224,12 +224,16 @@ void Problem::initialize_global_dc_problem_parallel_post_receive(ProblemDiscreti
     discretization.mesh_skeleton.CallForEachEdgeInterface([&dc_global_dof_indx](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
+        edge_internal.dc_sol_offset = dc_global_dof_indx.size();
+
         dc_global_dof_indx.insert(
             dc_global_dof_indx.end(), edge_internal.dc_global_dof_indx.begin(), edge_internal.dc_global_dof_indx.end());
     });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&dc_global_dof_indx](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
+
+        edge_internal.dc_sol_offset = dc_global_dof_indx.size();
 
         dc_global_dof_indx.insert(
             dc_global_dof_indx.end(), edge_internal.dc_global_dof_indx.begin(), edge_internal.dc_global_dof_indx.end());
@@ -264,6 +268,8 @@ void Problem::initialize_global_dc_problem_parallel_post_receive(ProblemDiscreti
 
             boundary.dc_global_dof_indx = edge_internal.dc_global_dof_indx;
         }
+
+        edge_internal.dc_sol_offset = dc_global_dof_indx.size();
 
         dc_global_dof_indx.insert(
             dc_global_dof_indx.end(), edge_internal.dc_global_dof_indx.begin(), edge_internal.dc_global_dof_indx.end());

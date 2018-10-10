@@ -25,6 +25,7 @@ struct EdgeInternal {
     DynVector<double> rhs_global;
 
     std::vector<uint> global_dof_indx;
+    uint sol_offset;
 };
 }
 }

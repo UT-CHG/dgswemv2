@@ -46,12 +46,10 @@ void Problem::local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBounda
             NDParameters::alpha / 2.0 * h_hat * bx * ny;
         boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp) +=
             NDParameters::alpha / 2.0 * h_hat * by * ny;
-    }
 
-    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -vec_cw_div(
-        row(edge_bound.boundary.surface_normal, GlobalCoord::x), row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
-    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = -vec_cw_div(
-        row(edge_bound.boundary.surface_normal, GlobalCoord::y), row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
+        boundary.w2_w1_hat_kernel_at_gp(GlobalCoord::x, gp) = -nx / h_hat;
+        boundary.w2_w1_hat_kernel_at_gp(GlobalCoord::y, gp) = -ny / h_hat;
+    }
 
     for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); ++dof_j) {
