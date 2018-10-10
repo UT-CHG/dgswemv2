@@ -13,6 +13,7 @@
 
 #include "data_structure/ehdg_swe_data.hpp"
 #include "data_structure/ehdg_swe_edge_data.hpp"
+#include "data_structure/ehdg_swe_global_data.hpp"
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"

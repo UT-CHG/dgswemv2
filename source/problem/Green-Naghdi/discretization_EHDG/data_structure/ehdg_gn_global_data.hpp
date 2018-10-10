@@ -5,7 +5,7 @@
 
 namespace GN {
 namespace EHDG {
-struct GlobalData {
+struct GlobalData : SWE::EHDG::GlobalData {
 #ifndef HAS_PETSC
     SparseMatrix<double> w1_hat_w1_hat;
     DynVector<double> w1_hat_rhs;
@@ -21,7 +21,9 @@ struct GlobalData {
     VecScatter dc_scatter;
     Vec dc_sol;
 
-    void destroy() {
+    void destroy() {        
+        SWE::EHDG::GlobalData::destroy();
+
         MatDestroy(&w1_hat_w1_hat);
         VecDestroy(&w1_hat_rhs);
         KSPDestroy(&dc_ksp);
