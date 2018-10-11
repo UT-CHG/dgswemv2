@@ -57,51 +57,62 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
-    ProblemType::preprocessor_ompi(this->sim_units);
+#pragma omp parallel
+    {
+        uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < this->sim_units.size(); ++su_id) {
-        if (this->sim_units[su_id]->writer.WritingLog()) {
-            this->sim_units[su_id]->writer.GetLogFile() << std::endl
-                                                        << "Launching Simulation!" << std::endl
-                                                        << std::endl;
-        }
+        n_threads = (uint)omp_get_num_threads();
+        thread_id = (uint)omp_get_thread_num();
 
-        if (this->sim_units[su_id]->writer.WritingOutput()) {
-            this->sim_units[su_id]->writer.WriteFirstStep(this->sim_units[su_id]->stepper,
-                                                          this->sim_units[su_id]->discretization.mesh);
-        }
+        sim_per_thread = (this->sim_units.size() + n_threads - 1) / n_threads;
 
-        uint n_stages = this->sim_units[su_id]->stepper.GetNumStages();
+        begin_sim_id = sim_per_thread * thread_id;
+        end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        this->sim_units[su_id]->discretization.mesh.CallForEachElement(
-            [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
-    }
+        ProblemType::preprocessor_ompi(this->sim_units);
 
-    for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint stage = 0; stage < this->n_stages; stage++) {
-#pragma omp parallel for
-            for (uint su_id = 0; su_id < this->sim_units.size(); ++su_id) {
-                if (this->sim_units[su_id]->parser.ParsingInput()) {
-                    this->sim_units[su_id]->parser.ParseInput(this->sim_units[su_id]->stepper,
-                                                              this->sim_units[su_id]->discretization.mesh);
-                }
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            if (this->sim_units[su_id]->writer.WritingLog()) {
+                this->sim_units[su_id]->writer.GetLogFile() << std::endl
+                                                            << "Launching Simulation!" << std::endl
+                                                            << std::endl;
             }
-
-            ProblemType::stage_ompi(this->sim_units);
-        }
-
-#pragma omp parallel for
-        for (uint su_id = 0; su_id < this->sim_units.size(); ++su_id) {
-            this->sim_units[su_id]->discretization.mesh.CallForEachElement(
-                [this, su_id](auto& elt) { ProblemType::swap_states_kernel(this->sim_units[su_id]->stepper, elt); });
 
             if (this->sim_units[su_id]->writer.WritingOutput()) {
-                this->sim_units[su_id]->writer.WriteOutput(this->sim_units[su_id]->stepper,
-                                                           this->sim_units[su_id]->discretization.mesh);
+                this->sim_units[su_id]->writer.WriteFirstStep(this->sim_units[su_id]->stepper,
+                                                              this->sim_units[su_id]->discretization.mesh);
+            }
+
+            uint n_stages = this->sim_units[su_id]->stepper.GetNumStages();
+
+            this->sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
+        }
+
+        for (uint step = 1; step <= this->n_steps; step++) {
+            for (uint stage = 0; stage < this->n_stages; stage++) {
+                for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+                    if (this->sim_units[su_id]->parser.ParsingInput()) {
+                        this->sim_units[su_id]->parser.ParseInput(this->sim_units[su_id]->stepper,
+                                                                  this->sim_units[su_id]->discretization.mesh);
+                    }
+                }
+
+                ProblemType::stage_ompi(this->sim_units);
+            }
+
+            for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+                this->sim_units[su_id]->discretization.mesh.CallForEachElement([this, su_id](auto& elt) {
+                    ProblemType::swap_states_kernel(this->sim_units[su_id]->stepper, elt);
+                });
+
+                if (this->sim_units[su_id]->writer.WritingOutput()) {
+                    this->sim_units[su_id]->writer.WriteOutput(this->sim_units[su_id]->stepper,
+                                                               this->sim_units[su_id]->discretization.mesh);
+                }
             }
         }
-    }
+    }  // close omp parallel region
 }
 
 template <typename ProblemType>
