@@ -10,7 +10,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
     Mat& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
     Vec& w1_hat_rhs    = global_data.w1_hat_rhs;
 
-#pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
@@ -294,7 +293,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
     auto solution = vector_from_array(sol_ptr, sol_size);
 
-#pragma omp parallel for
     for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&solution](auto& edge_int) {
             auto& edge_internal = edge_int.edge_data.edge_internal;

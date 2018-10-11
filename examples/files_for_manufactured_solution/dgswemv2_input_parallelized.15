@@ -15,6 +15,7 @@ timestepping:
   dt: 360
   order: 1
   nstages: 1
+  ramp_duration: 0
 problem:
   name: swe
   gravity: 9.81

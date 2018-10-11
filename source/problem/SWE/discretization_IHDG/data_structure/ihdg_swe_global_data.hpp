@@ -12,6 +12,8 @@ struct GlobalData {
 #endif
 
 #ifdef HAS_PETSC
+    bool converged = false;
+
     Mat delta_hat_global;
     Vec rhs_global;
     KSP ksp;

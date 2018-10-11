@@ -7,9 +7,18 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-/* First derivatives begin */
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
+
+    n_threads = (uint)omp_get_num_threads();
+    thread_id = (uint)omp_get_thread_num();
+
+    sim_per_thread = (sim_units.size() + n_threads - 1) / n_threads;
+
+    begin_sim_id = sim_per_thread * thread_id;
+    end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
+
+    /* First derivatives begin */
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
@@ -31,8 +40,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         sim_units[su_id]->communicator.SendAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
@@ -83,8 +91,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
@@ -119,15 +126,13 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
     }
-/* First derivatives end */
+    /* First derivatives end */
 
-/* Second derivatives begin */
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    /* Second derivatives begin */
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
@@ -154,8 +159,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         sim_units[su_id]->communicator.SendAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
@@ -219,8 +223,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
@@ -260,15 +263,13 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
     }
-/* Second derivatives end */
+    /* Second derivatives end */
 
-/* Trird derivatives begin */
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    /* Trird derivatives begin */
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
@@ -295,8 +296,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         sim_units[su_id]->communicator.SendAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
@@ -360,8 +360,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
@@ -404,8 +403,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-#pragma omp parallel for
-    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
     }
     /* Third derivatives end */
