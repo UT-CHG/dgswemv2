@@ -59,17 +59,17 @@ class Element {
                                  pre_specialized_interfaces);
 
     template <typename F>
-    decltype(auto) L2ProjectionF(const F& f);
+    DynMatrix<double> L2ProjectionF(const F& f);
     template <typename InputArrayType>
     decltype(auto) L2ProjectionNode(const InputArrayType& nodal_values);
 
     template <typename InputArrayType>
-    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
+    DynMatrix<double> ProjectBasisToLinear(const InputArrayType& u);
     template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
 
     template <typename F>
-    decltype(auto) ComputeFgp(const F& f);
+    DynMatrix<double> ComputeFgp(const F& f);
     template <typename InputArrayType>
     decltype(auto) ComputeUgp(const InputArrayType& u);
     template <typename InputArrayType>
@@ -171,11 +171,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
         this->dchi_gp = this->master->dchi_gp;
-        for (uint dir = 0; dir < dimension; dir++) {
-            for (uint gp = 0; gp < this->master->ngp; gp++) {
-                for (uint dof = 0; dof < this->master->nvrtx; dof++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
+            for (uint gp = 0; gp < this->master->ngp; ++gp) {
+                for (uint dof = 0; dof < this->master->nvrtx; ++dof) {
                     double dchi = 0;
-                    for (uint z = 0; z < dimension; z++) {
+                    for (uint z = 0; z < dimension; ++z) {
                         dchi += this->master->dchi_gp[z](dof, gp) * J_inv[0](z, dir);
                     }
                     this->dchi_gp[dir](dof, gp) = dchi;
@@ -184,11 +184,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
         }
 
         this->dphi_gp = this->master->dphi_gp;
-        for (uint dir = 0; dir < dimension; dir++) {
-            for (uint gp = 0; gp < this->master->ngp; gp++) {
-                for (uint dof = 0; dof < this->master->ndof; dof++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
+            for (uint gp = 0; gp < this->master->ngp; ++gp) {
+                for (uint dof = 0; dof < this->master->ndof; ++dof) {
                     double dphi = 0.0;
-                    for (uint z = 0; z < dimension; z++) {
+                    for (uint z = 0; z < dimension; ++z) {
                         dphi += this->master->dphi_gp[z](dof, gp) * J_inv[0](z, dir);
                     }
                     this->dphi_gp[dir](dof, gp) = dphi;
@@ -202,10 +202,10 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
         this->int_phi_fact = this->master->int_phi_fact * std::abs(det_J[0]);
 
         this->int_phi_phi_fact.resize(this->master->ngp, std::pow(this->master->ndof, 2));
-        for (uint dof_i = 0; dof_i < this->master->ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < this->master->ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < this->master->ndof; ++dof_j) {
                 uint lookup = this->master->ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < this->master->ngp; gp++) {
+                for (uint gp = 0; gp < this->master->ngp; ++gp) {
                     this->int_phi_phi_fact(gp, lookup) =
                         this->master->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
                 }
@@ -213,11 +213,11 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
         }
 
         this->int_dphi_fact = this->master->int_dphi_fact;
-        for (uint dir = 0; dir < dimension; dir++) {
-            for (uint dof = 0; dof < this->master->ndof; dof++) {
-                for (uint gp = 0; gp < this->master->ngp; gp++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
+            for (uint dof = 0; dof < this->master->ndof; ++dof) {
+                for (uint gp = 0; gp < this->master->ngp; ++gp) {
                     double int_dphi = 0;
-                    for (uint z = 0; z < dimension; z++) {
+                    for (uint z = 0; z < dimension; ++z) {
                         int_dphi += this->master->int_dphi_fact[z](gp, dof) * J_inv[0](z, dir);
                     }
                     int_dphi *= std::abs(det_J[0]);
@@ -226,12 +226,12 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
             }
         }
 
-        for (uint dir = 0; dir < dimension; dir++) {
+        for (uint dir = 0; dir < dimension; ++dir) {
             this->int_phi_dphi_fact[dir].resize(this->master->ngp, std::pow(this->master->ndof, 2));
-            for (uint dof_i = 0; dof_i < this->master->ndof; dof_i++) {
-                for (uint dof_j = 0; dof_j < this->master->ndof; dof_j++) {
+            for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
+                for (uint dof_j = 0; dof_j < this->master->ndof; ++dof_j) {
                     uint lookup = this->master->ndof * dof_i + dof_j;
-                    for (uint gp = 0; gp < this->master->ngp; gp++) {
+                    for (uint gp = 0; gp < this->master->ngp; ++gp) {
                         this->int_phi_dphi_fact[dir](gp, lookup) =
                             this->master->phi_gp(dof_i, gp) * this->int_dphi_fact[dir](gp, dof_j);
                     }
@@ -260,26 +260,26 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(this->master);
     Shape::Shape<dimension>* my_shape    = (Shape::Shape<dimension>*)(&this->shape);
 
-    for (uint bound_id = 0; bound_id < this->boundary_type.size(); bound_id++) {
+    for (uint bound_id = 0; bound_id < this->boundary_type.size(); ++bound_id) {
         std::vector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);
 
         if (is_internal(this->boundary_type[bound_id])) {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
                 RawBoundary<dimension - 1, DataType>(
-                    this->master->p, bound_id, bound_node_ID, this->data, *my_basis, *my_master, *my_shape));
+                    this->master->p, bound_id, std::move(bound_node_ID), this->data, *my_basis, *my_master, *my_shape));
         } else {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, bound_id},
                 RawBoundary<dimension - 1, DataType>(
-                    this->master->p, bound_id, bound_node_ID, this->data, *my_basis, *my_master, *my_shape));
+                    this->master->p, bound_id, std::move(bound_node_ID), this->data, *my_basis, *my_master, *my_shape));
         }
     }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
     DynMatrix<double> projection = this->ComputeFgp(f) * this->int_phi_fact * this->m_inv;
 
@@ -291,14 +291,12 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
     // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    InputArrayType projection = nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
-
-    return projection;
+    return nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
     const InputArrayType& u) {
     if (const_J) {
         return this->master->basis.ProjectBasisToLinear(u);
@@ -310,7 +308,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
     const uint ndof,
     const InputArrayType& u_lin) {
     if (const_J) {
@@ -323,7 +321,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
@@ -531,7 +529,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
 
     DynMatrix<double> true_gp(nvar, ngp);
 
-    for (uint gp = 0; gp < ngp; gp++) {
+    for (uint gp = 0; gp < ngp; ++gp) {
         column(true_gp, gp) = f(gp_global[gp]);
     }
 
@@ -540,7 +538,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
     DynMatrix<double> sq_diff(nvar, ngp);
 
     for (uint var = 0; var < nvar; ++var) {
-        row(sq_diff, var) = cwise_multiplication(row(diff, var), row(diff, var));
+        row(sq_diff, var) = vec_cw_mult(row(diff, var), row(diff, var));
     }
 
     DynVector<double> L2;

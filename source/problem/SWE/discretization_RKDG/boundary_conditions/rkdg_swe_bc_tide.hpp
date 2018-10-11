@@ -48,11 +48,11 @@ Tide::Tide(const std::vector<TideInput>& tide_input) {
     this->amplitude.resize(n_contituents);
     this->phase.resize(n_contituents);
 
-    for (uint con = 0; con < n_contituents; con++) {
+    for (uint con = 0; con < n_contituents; ++con) {
         this->amplitude[con].resize(n_nodes);
         this->phase[con].resize(n_nodes);
 
-        for (uint node = 0; node < n_nodes; node++) {
+        for (uint node = 0; node < n_nodes; ++node) {
             this->amplitude[con][node] = tide_input[node].amplitude[con];
             this->phase[con][node]     = tide_input[node].phase[con];
         }
@@ -69,7 +69,7 @@ void Tide::Initialize(BoundaryType& bound) {
     this->amplitude_gp.resize(n_contituents);
     this->phase_gp.resize(n_contituents);
 
-    for (uint con = 0; con < n_contituents; con++) {
+    for (uint con = 0; con < n_contituents; ++con) {
         this->amplitude_gp[con] = bound.ComputeBoundaryNodalUgp(this->amplitude[con]);
         this->phase_gp[con]     = bound.ComputeBoundaryNodalUgp(this->phase[con]);
     }
@@ -83,7 +83,7 @@ void Tide::ComputeFlux(const RKStepper& stepper,
     // *** //
     set_constant(this->q_ex, 0.0);
 
-    for (uint con = 0; con < this->frequency.size(); con++) {
+    for (uint con = 0; con < this->frequency.size(); ++con) {
         for (uint gp = 0; gp < columns(q_in); ++gp) {
             row(this->q_ex, SWE::Variables::ze)[gp] += stepper.GetRamp() * this->forcing_fact[con] *
                                                        this->amplitude_gp[con][gp] *

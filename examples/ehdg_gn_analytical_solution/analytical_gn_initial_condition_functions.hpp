@@ -3,8 +3,8 @@
 
 #include "utilities/ignore.hpp"
 
-namespace GN {
-inline StatVector<double, GN::n_variables> ic_u(const double t, const Point<2>& pt) {
+namespace SWE {
+inline StatVector<double, SWE::n_variables> ic_u(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
     constexpr double ao = 0.05;
@@ -20,7 +20,7 @@ inline StatVector<double, GN::n_variables> ic_u(const double t, const Point<2>& 
 
     double ic_qy = 0.0;
 
-    StatVector<double, GN::n_variables> ic_u{ic_ze, ic_qx, ic_qy};
+    StatVector<double, SWE::n_variables> ic_u{ic_ze, ic_qx, ic_qy};
 
     return ic_u;
 }

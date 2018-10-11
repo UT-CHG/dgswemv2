@@ -4,10 +4,11 @@
 #include "general_definitions.hpp"
 
 #include "ihdg_swe_kernels_processor.hpp"
+#include "ihdg_swe_proc_serial_sol_glob_prob.hpp"
 
 namespace SWE {
 namespace IHDG {
-void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
         const uint stage = stepper.GetStage();
 
@@ -51,7 +52,7 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
             [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
         /* Global Step */
 
-        bool converged = Problem::solve_global_problem(stepper, discretization);
+        bool converged = Problem::serial_solve_global_problem(stepper, discretization);
 
         if (converged) {
             break;
@@ -68,7 +69,6 @@ void Problem::serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizatio
         if (nan_found)
             abort();
     });
-    /* Local Step */
 }
 }
 }

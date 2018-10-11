@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace IHDG {
-void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
@@ -66,7 +66,7 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
         row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
 
         uint gp_ex;
-        for (uint gp = 0; gp < ngp; gp++) {
+        for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
             boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex) = boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
@@ -116,7 +116,7 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
             const std::vector<uint>& node_ID = elt.GetNodeID();
 
-            for (uint node = 0; node < elt.data.get_nnode(); node++) {
+            for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
             }
 
@@ -134,7 +134,7 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
         mesh.CallForEachElement([&problem_specific_input](auto& elt) {
             double y_avg = 0;
 
-            for (uint node = 0; node < elt.data.get_nnode(); node++) {
+            for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 y_avg += elt.GetShape().nodal_coordinates[node][GlobalCoord::y];
             }
 
@@ -148,8 +148,8 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
     }
 }
 
-void Problem::initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    initialize_data_serial_kernel(mesh, problem_specific_input);
+void Problem::initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    initialize_data_serial(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();

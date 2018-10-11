@@ -5,18 +5,35 @@
 
 namespace GN {
 namespace EHDG {
-struct GlobalData {
-    SparseMatrix<double> w1_w1_hat;
-    DynVector<double> w1_rhs;
-
-    SparseMatrix<double> w2_w1;
-    SparseMatrix<double> w2_w2_inv;
-    SparseMatrix<double> w2_w1_hat;
-
-    SparseMatrix<double> w1_hat_w1;
-    SparseMatrix<double> w1_hat_w2;
+struct GlobalData : SWE::EHDG::GlobalData {
+#ifndef HAS_PETSC
     SparseMatrix<double> w1_hat_w1_hat;
     DynVector<double> w1_hat_rhs;
+#endif
+
+#ifdef HAS_PETSC
+    Mat w1_hat_w1_hat;
+    Vec w1_hat_rhs;
+    KSP dc_ksp;
+    PC dc_pc;
+
+    IS dc_from, dc_to;
+    VecScatter dc_scatter;
+    Vec dc_sol;
+
+    void destroy() {
+        SWE::EHDG::GlobalData::destroy();
+
+        MatDestroy(&w1_hat_w1_hat);
+        VecDestroy(&w1_hat_rhs);
+        KSPDestroy(&dc_ksp);
+
+        ISDestroy(&dc_from);
+        ISDestroy(&dc_to);
+        VecScatterDestroy(&dc_scatter);
+        VecDestroy(&dc_sol);
+    }
+#endif
 };
 }
 }

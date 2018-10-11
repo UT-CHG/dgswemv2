@@ -7,11 +7,11 @@ template <typename ElementType>
 void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& wd_state   = elt.data.wet_dry_state;
-    auto& state      = elt.data.state[stage];
+    auto& wd_state = elt.data.wet_dry_state;
+    auto& state    = elt.data.state[stage];
 
     set_constant(state.rhs, 0.0);
-    
+
     if (wd_state.wet) {
         auto& internal = elt.data.internal;
 
@@ -20,25 +20,22 @@ void Problem::volume_kernel(const RKStepper& stepper, ElementType& elt) {
         row(internal.aux_at_gp, SWE::Auxiliaries::h) =
             row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
 
-        auto u =
-            cwise_division(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
-        auto v =
-            cwise_division(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+        auto u = vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+        auto v = vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
 
-        auto uuh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qx));
-        auto vvh = cwise_multiplication(v, row(internal.q_at_gp, SWE::Variables::qy));
-        auto uvh = cwise_multiplication(u, row(internal.q_at_gp, SWE::Variables::qy));
-        auto pe  = Global::g * (0.5 * cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
-                                                          row(internal.q_at_gp, SWE::Variables::ze)) +
-                               cwise_multiplication(row(internal.q_at_gp, SWE::Variables::ze),
-                                                    row(internal.aux_at_gp, SWE::Auxiliaries::bath)));
+        auto uuh = vec_cw_mult(u, row(internal.q_at_gp, SWE::Variables::qx));
+        auto vvh = vec_cw_mult(v, row(internal.q_at_gp, SWE::Variables::qy));
+        auto uvh = vec_cw_mult(u, row(internal.q_at_gp, SWE::Variables::qy));
+        auto pe =
+            Global::g *
+            (0.5 * vec_cw_mult(row(internal.q_at_gp, SWE::Variables::ze), row(internal.q_at_gp, SWE::Variables::ze)) +
+             vec_cw_mult(row(internal.q_at_gp, SWE::Variables::ze), row(internal.aux_at_gp, SWE::Auxiliaries::bath)));
 
-        row(internal.Fx_at_gp, SWE::Variables::ze) = cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp),
-                                                                          row(internal.q_at_gp, SWE::Variables::qx));
+        row(internal.Fx_at_gp, SWE::Variables::ze) =
+            vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::sp), row(internal.q_at_gp, SWE::Variables::qx));
         row(internal.Fx_at_gp, SWE::Variables::qx) =
-            cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp), uuh + pe);
-        row(internal.Fx_at_gp, SWE::Variables::qy) =
-            cwise_multiplication(row(internal.aux_at_gp, SWE::Auxiliaries::sp), uvh);
+            vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::sp), uuh + pe);
+        row(internal.Fx_at_gp, SWE::Variables::qy) = vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::sp), uvh);
 
         row(internal.Fy_at_gp, SWE::Variables::ze) = row(internal.q_at_gp, SWE::Variables::qy);
         row(internal.Fy_at_gp, SWE::Variables::qx) = uvh;

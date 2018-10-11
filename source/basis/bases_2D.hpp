@@ -17,10 +17,8 @@ class Dubiner_2D : Basis<2> {
 
     DynMatrix<double> GetMinv(const uint p);
 
-    template <typename InputArrayType>
-    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
-    template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u);
+    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin);
 
   private:
     /**
@@ -81,7 +79,5 @@ class Dubiner_2D : Basis<2> {
     std::array<double, 2> ComputeSingularDPhiDZ2(const uint q);
 };
 }
-
-#include "bases_2D/basis_dubiner_2D.tpp"
 
 #endif

@@ -11,8 +11,8 @@ mesh:
 
 timestepping:
   start_time: 25-11-1987 00:00:00
-  end_time: 25-11-1987 12:00:00             
-  dt: 360                      
+  end_time: 25-11-1987 12:00:00
+  dt: 360
   order: 1
   nstages: 1
 
@@ -28,6 +28,6 @@ problem:
   function_source: Enable  
 
 output:
-  path: ../
-  vtk:
+  path: ../output/
+  vtu:
     frequency: 360

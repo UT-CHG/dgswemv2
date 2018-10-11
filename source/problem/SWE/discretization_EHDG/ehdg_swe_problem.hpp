@@ -27,22 +27,24 @@ namespace EHDG {
 struct Problem {
     using ProblemInputType = SWE::Inputs;
 
+    using ProblemWriterType = Writer<Problem>;
+
     using ProblemParserType = SWE::Parser;
 
     using ProblemDataType = Data;
 
     using ProblemEdgeDataType = EdgeData;
 
-    using ProblemGlobalDataType = GlobalData;
+    using ProblemGlobalDataType = std::tuple<>;
 
     using ProblemMeshType = Geometry::MeshType<Data,
-                                               std::tuple<IS::Internal>,
+                                               std::tuple<ISP::Internal>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed>>::Type;
 
     using ProblemMeshSkeletonType =
         Geometry::MeshSkeletonType<EdgeData,
-                                   Geometry::InterfaceTypeTuple<Data, IS::Internal>,
+                                   Geometry::InterfaceTypeTuple<Data, ISP::Internal>,
                                    Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
                                    Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
 
@@ -54,70 +56,73 @@ struct Problem {
     static void preprocess_mesh_data(InputParameters<ProblemInputType>& input);
 
     template <typename RawBoundaryType>
-    static void create_interfaces_kernel(
-        std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-        ProblemMeshType& mesh,
-        ProblemInputType& problem_input,
-        Writer<Problem>& writer);
+    static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                  ProblemMeshType& mesh,
+                                  ProblemInputType& problem_input,
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
-    static void create_boundaries_kernel(
-        std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-        ProblemMeshType& mesh,
-        ProblemInputType& problem_input,
-        Writer<Problem>& writer);
+    static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                  ProblemMeshType& mesh,
+                                  ProblemInputType& problem_input,
+                                  ProblemWriterType& writer);
 
     template <typename RawBoundaryType>
-    static void create_distributed_boundaries_kernel(
+    static void create_distributed_boundaries(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType&,
         ProblemInputType& problem_input,
         std::tuple<>&,
-        Writer<Problem>&);
+        ProblemWriterType&);
 
     template <typename RawBoundaryType, typename Communicator>
-    static void create_distributed_boundaries_kernel(
+    static void create_distributed_boundaries(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        Writer<Problem>& writer);
+        ProblemWriterType& writer);
 
-    static void create_edge_interfaces_kernel(ProblemMeshType& mesh,
-                                              ProblemMeshSkeletonType& mesh_skeleton,
-                                              Writer<Problem>& writer);
+    static void create_edge_interfaces(ProblemMeshType& mesh,
+                                       ProblemMeshSkeletonType& mesh_skeleton,
+                                       ProblemWriterType& writer);
 
-    static void create_edge_boundaries_kernel(ProblemMeshType& mesh,
-                                              ProblemMeshSkeletonType& mesh_skeleton,
-                                              Writer<Problem>& writer);
+    static void create_edge_boundaries(ProblemMeshType& mesh,
+                                       ProblemMeshSkeletonType& mesh_skeleton,
+                                       ProblemWriterType& writer);
 
-    static void create_edge_distributeds_kernel(ProblemMeshType& mesh,
-                                                ProblemMeshSkeletonType& mesh_skeleton,
-                                                Writer<Problem>& writer);
+    static void create_edge_distributeds(ProblemMeshType& mesh,
+                                         ProblemMeshSkeletonType& mesh_skeleton,
+                                         ProblemWriterType& writer);
 
-    static void serial_preprocessor_kernel(ProblemDiscretizationType& discretization,
-                                           const ProblemInputType& problem_specific_input);
+    template <typename ProblemType>
+    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
+                                    const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
-    static void ompi_preprocessor_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     template <typename HPXSimUnitType>
-    static decltype(auto) hpx_preprocessor_kernel(HPXSimUnitType* sim_unit);
+    static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
-    static void initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_problem(HDGDiscretization<Problem>& discretization);
+    template <typename ProblemType>
+    static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
 
     // processor kernels
-    static void serial_stage_kernel(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    template <typename ProblemType>
+    static void stage_serial(const RKStepper& stepper, HDGDiscretization<ProblemType>& discretization);
 
     template <typename OMPISimUnitType>
-    static void ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
 
     template <typename HPXSimUnitType>
-    static decltype(auto) hpx_stage_kernel(HPXSimUnitType* sim_unit);
+    static auto stage_hpx(HPXSimUnitType* sim_unit);
 
     /* local step begin */
 
@@ -179,16 +184,17 @@ struct Problem {
     static void swap_states_kernel(const RKStepper& stepper, ElementType& elt);
 
     // writing output kernels
-    static void write_VTK_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
+    template <typename MeshType>
+    static void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file);
 
-    static void write_VTU_data_kernel(ProblemMeshType& mesh, std::ofstream& raw_data_file);
+    template <typename MeshType>
+    static void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file);
 
-    static void write_modal_data_kernel(const RKStepper& stepper,
-                                        ProblemMeshType& mesh,
-                                        const std::string& output_path);
+    template <typename MeshType>
+    static void write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path);
 
     template <typename ElementType>
-    static double compute_residual_L2_kernel(const RKStepper& stepper, ElementType& elt);
+    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt);
 };
 }
 }

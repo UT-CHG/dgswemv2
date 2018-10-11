@@ -8,7 +8,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename OMPISimUnitType>
-void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
+void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
     uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
 
     n_threads = (uint)omp_get_num_threads();
@@ -28,13 +28,13 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             sim_units[su_id]->writer.GetLogFile() << "Exchanging data" << std::endl;
         }
 
-        sim_units[su_id]->communicator.ReceiveAll(SWE::CommTypes::processor, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
             Problem::global_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
         });
 
-        sim_units[su_id]->communicator.SendAll(SWE::CommTypes::processor, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
@@ -86,7 +86,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                 << std::endl;
         }
 
-        sim_units[su_id]->communicator.WaitAllReceives(SWE::CommTypes::processor,
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::bound_state,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
@@ -124,8 +124,7 @@ void Problem::ompi_stage_kernel(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(SWE::CommTypes::processor,
-                                                    sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 }
 }

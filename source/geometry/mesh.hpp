@@ -54,7 +54,7 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
     template <typename ElementType, typename... Args>
-    void CreateElement(const uint n, Args&&... args);
+    void CreateElement(const uint ID, Args&&... args);
     template <typename InterfaceType, typename... Args>
     void CreateInterface(Args&&... args);
     template <typename BoundaryType, typename... Args>
@@ -97,12 +97,12 @@ template <typename ElementType, typename... Args>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
-          std::tuple<DistributedBoundaries...>>::CreateElement(const uint n, Args&&... args) {
+          std::tuple<DistributedBoundaries...>>::CreateElement(const uint ID, Args&&... args) {
     using MasterType = typename ElementType::ElementMasterType;
 
     MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->masters);
 
-    this->elements.template emplace<ElementType>(n, ElementType(n, master_elt, std::forward<Args>(args)...));
+    this->elements.template emplace<ElementType>(ID, ElementType(ID, master_elt, std::forward<Args>(args)...));
 }
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>

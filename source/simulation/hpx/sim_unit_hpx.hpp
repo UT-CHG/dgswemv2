@@ -18,7 +18,7 @@ struct HPXSimulationUnit
 
     HPXCommunicator communicator;
     RKStepper stepper;
-    Writer<ProblemType> writer;
+    typename ProblemType::ProblemWriterType writer;
     typename ProblemType::ProblemParserType parser;
 
     typename ProblemType::ProblemInputType problem_input;
@@ -73,7 +73,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
     this->discretization.mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
     this->communicator        = HPXCommunicator(input.mesh_input.dbmd_data);
     this->stepper             = RKStepper(input.stepper_input);
-    this->writer              = Writer<ProblemType>(input.writer_input, locality_id, submesh_id);
+    this->writer              = typename ProblemType::ProblemWriterType(input.writer_input, locality_id, submesh_id);
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 
     this->problem_input = input.problem_input;
@@ -94,7 +94,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
 template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Preprocessor() {
-    return ProblemType::hpx_preprocessor_kernel(this);
+    return ProblemType::preprocessor_hpx(this);
 }
 
 template <typename ProblemType>
@@ -123,7 +123,7 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
             if (this->parser.ParsingInput()) {
                 this->parser.ParseInput(this->stepper, this->discretization.mesh);
             }
-            return ProblemType::hpx_stage_kernel(this);
+            return ProblemType::stage_hpx(this);
         });
     }
 
@@ -150,9 +150,8 @@ template <typename ProblemType>
 double HPXSimulationUnit<ProblemType>::ResidualL2() {
     double residual_L2 = 0;
 
-    this->discretization.mesh.CallForEachElement([this, &residual_L2](auto& elt) {
-        residual_L2 += ProblemType::compute_residual_L2_kernel(this->stepper, elt);
-    });
+    this->discretization.mesh.CallForEachElement(
+        [this, &residual_L2](auto& elt) { residual_L2 += ProblemType::compute_residual_L2(this->stepper, elt); });
 
     this->writer.GetLogFile() << "residual inner product: " << residual_L2 << std::endl;
 

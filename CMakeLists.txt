@@ -87,8 +87,8 @@ list(APPEND SWE_SOURCES
 )
 
 list(APPEND GN_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
-  ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_parser/gn_parser.cpp
+${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_parser/swe_parser.cpp
 )
 
 include_directories(source)
@@ -112,6 +112,8 @@ if(EHDG_SWE)
 endif()
 
 if(IHDG_SWE)
+  find_package(PETSc REQUIRED)
+
   add_subdirectory(source/problem/SWE/discretization_IHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ihdg_swe_manufactured_solution)
@@ -119,6 +121,8 @@ if(IHDG_SWE)
 endif()
 
 if(EHDG_GN)
+  find_package(PETSc REQUIRED)
+
   add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_gn_analytical_solution)

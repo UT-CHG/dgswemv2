@@ -83,7 +83,7 @@ int main() {
     double h_avg =
         std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / triangle.data.get_nvrtx();
 
-    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); vrtx++) {
+    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); ++vrtx) {
         if (!almost_equal(wd_state.q_at_vrtx(SWE::Variables::ze, vrtx), h_avg - wd_state.bath_at_vrtx[vrtx], 1.e+4)) {
             error_found = true;
             printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
@@ -132,7 +132,7 @@ int main() {
         printf("Completely wet element is not wet!\n");
     }
 
-    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); vrtx++) {
+    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); ++vrtx) {
         if (!almost_equal(wd_state.q_at_vrtx(SWE::Variables::ze, vrtx), SWE::PostProcessing::h_o, 1.e+4)) {
             error_found = true;
             printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
@@ -183,7 +183,7 @@ int main() {
 
     h_avg = std::accumulate(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end(), 0.0) / triangle.data.get_nvrtx();
 
-    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); vrtx++) {
+    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); ++vrtx) {
         if (!almost_equal(wd_state.q_at_vrtx(SWE::Variables::ze, vrtx), h_avg - wd_state.bath_at_vrtx[vrtx], 1.e+4)) {
             error_found = true;
             printf("Error in setting ze at vrtx %d. Set value: %f. Correct value: %f.\n",
@@ -260,7 +260,7 @@ int main() {
                2.5 * SWE::PostProcessing::h_o - wd_state.bath_at_vrtx[2]);
     }
 
-    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); vrtx++) {
+    for (uint vrtx = 0; vrtx < triangle.data.get_nvrtx(); ++vrtx) {
         if (!almost_equal(wd_state.q_at_vrtx(SWE::Variables::qx, vrtx), 0.0)) {
             error_found = true;
             printf("Error in setting qx at vrtx %d. Set value: %f. Correct value: %f.\n",

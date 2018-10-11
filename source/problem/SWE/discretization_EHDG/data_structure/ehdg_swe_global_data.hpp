@@ -6,7 +6,8 @@
 namespace SWE {
 namespace EHDG {
 struct GlobalData {
-    /* There is no global problem to solve at this point */
+    // For GN compatibility
+    void destroy() {}
 };
 }
 }

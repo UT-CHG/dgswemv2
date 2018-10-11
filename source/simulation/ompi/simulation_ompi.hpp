@@ -24,6 +24,10 @@ class OMPISimulation {
 
     void Run();
     void ComputeL2Residual();
+
+#ifdef HAS_PETSC
+    void DestroyPETSc();
+#endif
 };
 
 template <typename ProblemType>
@@ -65,7 +69,7 @@ void OMPISimulation<ProblemType>::Run() {
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        ProblemType::ompi_preprocessor_kernel(this->sim_units);
+        ProblemType::preprocessor_ompi(this->sim_units);
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
             if (this->sim_units[su_id]->writer.WritingLog()) {
@@ -94,7 +98,7 @@ void OMPISimulation<ProblemType>::Run() {
                     }
                 }
 
-                ProblemType::ompi_stage_kernel(this->sim_units);
+                ProblemType::stage_ompi(this->sim_units);
             }
 
             for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
@@ -122,7 +126,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
 
     for (auto& sim_unit : this->sim_units) {
         sim_unit->discretization.mesh.CallForEachElement([&sim_unit, &residual_l2](auto& elt) {
-            residual_l2 += ProblemType::compute_residual_L2_kernel(sim_unit->stepper, elt);
+            residual_l2 += ProblemType::compute_residual_L2(sim_unit->stepper, elt);
         });
     }
 
@@ -132,5 +136,12 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
         std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
 }
+
+#ifdef HAS_PETSC
+template <typename ProblemType>
+void OMPISimulation<ProblemType>::DestroyPETSc() {
+    this->sim_units[0]->discretization.global_data.destroy();
+}
+#endif
 
 #endif

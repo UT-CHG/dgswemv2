@@ -7,7 +7,7 @@
 
 namespace SWE {
 namespace RKDG {
-namespace IS {
+namespace ISP {
 class Internal {
   public:
     template <typename InterfaceType>

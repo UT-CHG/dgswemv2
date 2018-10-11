@@ -98,7 +98,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     RawBoundary<dimension, DataType>&& raw_boundary_in,
     RawBoundary<dimension, DataType>&& raw_boundary_ex,
     SpecializationType&& specialization)
-    : specialization(specialization),
+    : specialization(std::move(specialization)),
       data_in(raw_boundary_in.data),
       data_ex(raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),
@@ -152,24 +152,24 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->int_fact_ex = integration_rule.first * surface_J[0];
 
         this->int_phi_fact_in = transpose(this->phi_gp_in);
-        for (uint dof = 0; dof < this->master_in.ndof; dof++) {
-            for (uint gp = 0; gp < ngp; gp++) {
+        for (uint dof = 0; dof < this->master_in.ndof; ++dof) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 this->int_phi_fact_in(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
         this->int_phi_fact_ex = transpose(this->phi_gp_ex);
-        for (uint dof = 0; dof < this->master_ex.ndof; dof++) {
-            for (uint gp = 0; gp < ngp; gp++) {
+        for (uint dof = 0; dof < this->master_ex.ndof; ++dof) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 this->int_phi_fact_ex(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
         this->int_phi_phi_fact_in.resize(ngp, std::pow(this->master_in.ndof, 2));
-        for (uint dof_i = 0; dof_i < this->master_in.ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < this->master_in.ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < this->master_in.ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < this->master_in.ndof; ++dof_j) {
                 uint lookup = this->master_in.ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_phi_phi_fact_in(gp, lookup) =
                         this->phi_gp_in(dof_i, gp) * this->int_phi_fact_in(gp, dof_j);
                 }
@@ -177,10 +177,10 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         }
 
         this->int_phi_phi_fact_ex.resize(ngp, std::pow(this->master_ex.ndof, 2));
-        for (uint dof_i = 0; dof_i < this->master_ex.ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < this->master_ex.ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < this->master_ex.ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < this->master_ex.ndof; ++dof_j) {
                 uint lookup = this->master_ex.ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_phi_phi_fact_ex(gp, lookup) =
                         this->phi_gp_ex(dof_i, gp) * this->int_phi_fact_ex(gp, dof_j);
                 }

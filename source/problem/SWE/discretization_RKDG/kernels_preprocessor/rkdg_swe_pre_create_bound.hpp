@@ -4,15 +4,14 @@
 namespace SWE {
 namespace RKDG {
 template <typename RawBoundaryType>
-void Problem::create_boundaries_kernel(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    ProblemMeshType& mesh,
-    ProblemInputType& problem_input,
-    Writer<Problem>& writer) {
+void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                ProblemMeshType& mesh,
+                                ProblemInputType& problem_input,
+                                ProblemWriterType& writer) {
     // *** //
     using BoundaryTypes = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
 
-    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::land) {
             using BoundaryTypeLand = typename std::tuple_element<0, BoundaryTypes>::type;
 
@@ -44,7 +43,7 @@ void Problem::create_boundaries_kernel(
 
                 std::vector<TideInput> tide;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
+                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
                     uint node_ID = raw_boundary.node_ID[node];
 
                     if (tide_data.find(node_ID) != tide_data.end()) {
@@ -76,7 +75,7 @@ void Problem::create_boundaries_kernel(
 
                 std::vector<FlowInput> flow;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); node++) {
+                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
                     uint node_ID = raw_boundary.node_ID[node];
 
                     if (flow_data.find(node_ID) != flow_data.end()) {

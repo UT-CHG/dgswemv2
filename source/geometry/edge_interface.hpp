@@ -21,7 +21,7 @@ class EdgeInterface {
     DynMatrix<double> m_inv;
 
   public:
-    EdgeInterface(InterfaceType& interface);
+    EdgeInterface(InterfaceType& interface, const bool ccw = true);
 
     uint GetID() { return this->ID; }
     void SetID(uint ID) { this->ID = ID; }
@@ -46,7 +46,8 @@ class EdgeInterface {
 };
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>
-EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(InterfaceType& interface)
+EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(InterfaceType& interface,
+                                                                                const bool ccw)
     : interface(interface) {
     // *** //
     uint p = std::max(this->interface.GetMasterIN().p, this->interface.GetMasterEX().p);
@@ -59,7 +60,17 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 
     BasisType basis;
 
-    this->lambda_gp = basis.GetPhi(p, integration_rule.second);
+    if (ccw) {  // if trace basis is defined counterclockwise around element
+        this->lambda_gp = basis.GetPhi(p, integration_rule.second);
+    } else {
+        std::vector<Point<dimension>> gauss_points = integration_rule.second;
+
+        for (uint gp = 0; gp < (ngp / 2); ++gp) {
+            std::swap(gauss_points[gp], gauss_points[ngp - gp - 1]);
+        }
+
+        this->lambda_gp = basis.GetPhi(p, gauss_points);
+    }
 
     uint ndof = row(this->lambda_gp, 0).size();
 
@@ -71,17 +82,17 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_lambda_fact = transpose(this->lambda_gp);
-        for (uint dof = 0; dof < ndof; dof++) {
-            for (uint gp = 0; gp < ngp; gp++) {
+        for (uint dof = 0; dof < ndof; ++dof) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 this->int_lambda_fact(gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 
         this->int_lambda_lambda_fact.resize(ngp, std::pow(ndof, 2));
-        for (uint dof_i = 0; dof_i < ndof; dof_i++) {
-            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < ndof; ++dof_i) {
+            for (uint dof_j = 0; dof_j < ndof; ++dof_j) {
                 uint lookup = ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_lambda_lambda_fact(gp, lookup) =
                         this->lambda_gp(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
@@ -90,10 +101,10 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 
         uint ndof_loc_in = this->interface.data_in.get_ndof();
         this->int_phi_lambda_fact_in.resize(ngp, ndof * ndof_loc_in);
-        for (uint dof_i = 0; dof_i < ndof_loc_in; dof_i++) {
-            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < ndof_loc_in; ++dof_i) {
+            for (uint dof_j = 0; dof_j < ndof; ++dof_j) {
                 uint lookup = ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     this->int_phi_lambda_fact_in(gp, lookup) =
                         this->interface.phi_gp_in(dof_i, gp) * this->int_lambda_fact(gp, dof_j);
                 }
@@ -102,10 +113,10 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 
         uint ndof_loc_ex = this->interface.data_ex.get_ndof();
         this->int_phi_lambda_fact_ex.resize(ngp, ndof * ndof_loc_ex);
-        for (uint dof_i = 0; dof_i < ndof_loc_ex; dof_i++) {
-            for (uint dof_j = 0; dof_j < ndof; dof_j++) {
+        for (uint dof_i = 0; dof_i < ndof_loc_ex; ++dof_i) {
+            for (uint dof_j = 0; dof_j < ndof; ++dof_j) {
                 uint lookup = ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < ngp; gp++) {
+                for (uint gp = 0; gp < ngp; ++gp) {
                     uint gp_ex = ngp - gp - 1;
                     this->int_phi_lambda_fact_ex(gp, lookup) =
                         this->interface.phi_gp_ex(dof_i, gp) * this->int_lambda_fact(gp_ex, dof_j);
@@ -127,9 +138,7 @@ template <typename InputArrayType>
 inline decltype(auto) EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::L2Projection(
     const InputArrayType& u_gp) {
     // projection(q, dof) = gp_values(q, gp) * int_lambda_fact(gp, dof) * m_inv(dof, dof)
-    InputArrayType projection = u_gp * this->int_lambda_fact * this->m_inv;
-
-    return projection;
+    return u_gp * this->int_lambda_fact * this->m_inv;
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename InterfaceType>

@@ -12,7 +12,7 @@
 
 using InputType = InputParameters<SWE::Inputs>;
 using MeshType  = Geometry::MeshType<SWE::RKDG::Data,
-                                    std::tuple<SWE::RKDG::IS::Internal, SWE::RKDG::IS::Levee>,
+                                    std::tuple<SWE::RKDG::ISP::Internal, SWE::RKDG::ISP::Levee>,
                                     std::tuple<SWE::RKDG::BC::Land, SWE::RKDG::BC::Tide, SWE::RKDG::BC::Flow>,
                                     std::tuple<SWE::RKDG::DBC::Distributed, SWE::RKDG::DBC::DistributedLevee>>::Type;
 

@@ -18,12 +18,18 @@ class RawBoundary {
   public:
     RawBoundary(uint p,
                 uint bound_id,
-                std::vector<uint>& node_ID,
+                std::vector<uint>&& node_ID,
                 DataType& data,
                 Basis::Basis<dimension + 1>& basis,
                 Master::Master<dimension + 1>& master,
                 Shape::Shape<dimension + 1>& shape)
-        : p(p), bound_id(bound_id), node_ID(node_ID), data(data), basis(basis), master(master), shape(shape) {}
+        : p(p),
+          bound_id(bound_id),
+          node_ID(std::move(node_ID)),
+          data(data),
+          basis(basis),
+          master(master),
+          shape(shape) {}
 };
 }
 

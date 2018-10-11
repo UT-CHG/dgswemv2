@@ -39,7 +39,7 @@ int main() {
     y = o_triangle.ComputeNodalUgp(y_node);
 
     DynMatrix<double> f_vals(1, ngp);
-    for (uint gp = 0; gp < ngp; gp++) {
+    for (uint gp = 0; gp < ngp; ++gp) {
         f_vals(0, gp) = std::pow(x(0, gp) + 1., 2) + std::pow(y(0, gp) - 1., 2);
     }
 

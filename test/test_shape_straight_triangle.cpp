@@ -88,7 +88,7 @@ int main() {
 
     std::vector<double> interpolation_comp(7);
 
-    for (uint i = 0; i < 6; i++) {
+    for (uint i = 0; i < 6; ++i) {
         interpolation_comp[i] =
             psi_interp(0, i) * nodal_vals[0] + psi_interp(1, i) * nodal_vals[1] + psi_interp(2, i) * nodal_vals[2];
 
@@ -115,20 +115,20 @@ int main() {
 
     DynMatrix<double> psi_bound_interp;
 
-    for (uint bound_id = 0; bound_id < 3; bound_id++) {
+    for (uint bound_id = 0; bound_id < 3; ++bound_id) {
         bound_nodal_vals[0] = nodal_vals[(bound_id + 1) % 3];
         bound_nodal_vals[1] = nodal_vals[(bound_id + 2) % 3];
 
         psi_bound_interp = triangle.GetBoundaryPsi(bound_id, bound_interpolation_pts);
 
-        for (uint i = 0; i < 5; i++) {
+        for (uint i = 0; i < 5; ++i) {
             bound_interpolation_comp[bound_id][i] =
                 psi_bound_interp(0, i) * bound_nodal_vals[0] + psi_bound_interp(1, i) * bound_nodal_vals[1];
         }
     }
 
-    for (uint bound_id = 0; bound_id < 3; bound_id++) {
-        for (uint i = 0; i < 5; i++) {
+    for (uint bound_id = 0; bound_id < 3; ++bound_id) {
+        for (uint i = 0; i < 5; ++i) {
             if (!almost_equal(bound_interpolation_true[bound_id][i], bound_interpolation_comp[bound_id][i])) {
                 std::cerr << "Error in GetBoundaryPsi\n";
                 error_found = true;

@@ -6,13 +6,34 @@
 namespace SWE {
 namespace IHDG {
 struct GlobalData {
-    SparseMatrix<double> delta_local_inv;
-    SparseMatrix<double> delta_hat_local;
-    DynVector<double> rhs_local;
-
-    SparseMatrix<double> delta_global;
+#ifndef HAS_PETSC
     SparseMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
+#endif
+
+#ifdef HAS_PETSC
+    bool converged = false;
+
+    Mat delta_hat_global;
+    Vec rhs_global;
+    KSP ksp;
+    PC pc;
+
+    IS from, to;
+    VecScatter scatter;
+    Vec sol;
+
+    void destroy() {
+        MatDestroy(&delta_hat_global);
+        VecDestroy(&rhs_global);
+        KSPDestroy(&ksp);
+
+        ISDestroy(&from);
+        ISDestroy(&to);
+        VecScatterDestroy(&scatter);
+        VecDestroy(&sol);
+    }
+#endif
 };
 }
 }

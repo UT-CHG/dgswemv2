@@ -232,7 +232,7 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
 }
 
 std::array<uint, 2> AdcircFormat::get_internal_node_pair(std::array<uint, 2>& node_pair) const {
-    for (auto it = this->IBCONN.begin(); it != this->IBCONN.end(); it++) {
+    for (auto it = this->IBCONN.begin(); it != this->IBCONN.end(); ++it) {
         uint segment_id = it->first;
 
         auto& segment_nbvv   = this->NBVV[segment_id];
@@ -245,7 +245,7 @@ std::array<uint, 2> AdcircFormat::get_internal_node_pair(std::array<uint, 2>& no
             return std::array<uint, 2>{segment_ibconn[1], segment_ibconn[0]};
         }
 
-        for (uint node = 1; node < n_nodes - 1; node++) {
+        for (uint node = 1; node < n_nodes - 1; ++node) {
             if (segment_nbvv[node] == node_pair[0]) {
                 if (segment_nbvv[node + 1] == node_pair[1]) {  // look node after
                     return std::array<uint, 2>{segment_ibconn[node + 1], segment_ibconn[node]};
@@ -264,7 +264,7 @@ std::array<uint, 2> AdcircFormat::get_internal_node_pair(std::array<uint, 2>& no
             return std::array<uint, 2>{segment_nbvv[1], segment_nbvv[0]};
         }
 
-        for (uint node = 1; node < n_nodes - 1; node++) {
+        for (uint node = 1; node < n_nodes - 1; ++node) {
             if (segment_ibconn[node] == node_pair[0]) {
                 if (segment_ibconn[node + 1] == node_pair[1]) {  // look node after
                     return std::array<uint, 2>{segment_nbvv[node + 1], segment_nbvv[node]};

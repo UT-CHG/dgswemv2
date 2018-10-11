@@ -5,36 +5,18 @@
 
 namespace GN {
 namespace EHDG {
-struct EdgeInternal {
+struct EdgeInternal : SWE::EHDG::EdgeInternal {
     EdgeInternal() = default;
     EdgeInternal(const uint ngp)
-        : q_hat_at_gp(GN::n_variables, ngp),
-          aux_hat_at_gp(GN::n_auxiliaries, ngp),
-          q_init_at_gp(GN::n_variables, ngp),
-          delta_hat_global_kernel_at_gp(GN::n_variables * GN::n_variables, ngp),
-          rhs_global_kernel_at_gp(GN::n_variables, ngp),
-          w1_hat_w1_hat_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp) {}
-
-    /* swe containers */
-
-    HybMatrix<double, GN::n_variables> q_hat_at_gp;
-    HybMatrix<double, GN::n_auxiliaries> aux_hat_at_gp;
-    HybMatrix<double, GN::n_variables> q_init_at_gp;
-
-    HybMatrix<double, GN::n_variables * GN::n_variables> delta_hat_global_kernel_at_gp;
-    HybMatrix<double, GN::n_variables> rhs_global_kernel_at_gp;
-
-    DynMatrix<double> delta_hat_global;
-    DynVector<double> rhs_global;
-
-    /* dc containers */
+        : SWE::EHDG::EdgeInternal(ngp), w1_hat_w1_hat_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp) {}
 
     HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_hat_w1_hat_kernel_at_gp;
 
     DynMatrix<double> w1_hat_w1_hat;
-    /* rhs_w1_hat = 0 */
+    DynVector<double> w1_hat_rhs;
 
-    uint global_dof_offset = 0;
+    std::vector<uint> dc_global_dof_indx;
+    uint dc_sol_offset;
 };
 }
 }

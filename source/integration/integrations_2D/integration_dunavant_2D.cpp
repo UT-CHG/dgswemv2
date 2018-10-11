@@ -20,7 +20,7 @@ std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const u
     }
 
     uint ngp = 0;
-    for (uint i = 0; i < permutation.size(); i++)
+    for (uint i = 0; i < permutation.size(); ++i)
         ngp += permutation[i];
 
     std::pair<DynVector<double>, std::vector<Point<2>>> rule;
@@ -28,7 +28,7 @@ std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const u
     rule.second.resize(ngp);
 
     uint gp = 0;
-    for (uint i = 0; i < gp_data.first.size(); i++) {
+    for (uint i = 0; i < gp_data.first.size(); ++i) {
         if (permutation[i] == 1) {
             rule.first[gp]  = 2 * gp_data.first[i];
             rule.second[gp] = {2 * gp_data.second[i][0] - 1, 2 * gp_data.second[i][1] - 1};

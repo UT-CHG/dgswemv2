@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::IHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::IHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::IHDG::Problem::initialize_data_serial_kernel(mesh, input.problem_input);
+    SWE::IHDG::Problem::initialize_data_serial(mesh, input.problem_input);
 
     mesh.CallForEachElement([](auto& elt) { elt.data.resize(2); });
 
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
         internal.local_dof_offset = local_dof_offset;
         local_dof_offset += elt.data.get_ndof() * SWE::n_variables;
 
-        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); bound_id++) {
+        for (uint bound_id = 0; bound_id < elt.data.get_nbound(); ++bound_id) {
             elt.data.boundary[bound_id].local_dof_offset = internal.local_dof_offset;
         }
 
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
         const uint stage = stepper.GetStage();
         auto& state      = elt.data.state[stage + 1];
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
         auto& edge_state = edge_int.edge_data.edge_state;
 
         // randomly assign q_hat
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
         auto& edge_state = edge_bound.edge_data.edge_state;
 
         // randomly assign q_hat
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -317,14 +317,14 @@ int main(int argc, char* argv[]) {
     DynVector<double> delta_q_hat(dof_global);
 
     // randomly assign delta_q
-    for (uint dof = 0; dof < dof_local; dof++) {
+    for (uint dof = 0; dof < dof_local; ++dof) {
         delta_q[dof] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
     }
 
     delta_q *= 1.0e-8;  // make it small
 
     // randomly assign delta_q_hat
-    for (uint dof = 0; dof < dof_global; dof++) {
+    for (uint dof = 0; dof < dof_global; ++dof) {
         delta_q_hat[dof] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
     }
 
@@ -499,7 +499,7 @@ int main(int argc, char* argv[]) {
     rhs_local_prev -= rhs_local;
     rhs_global_prev -= rhs_global;
 
-    for (uint dof = 0; dof < dof_local; dof++) {
+    for (uint dof = 0; dof < dof_local; ++dof) {
         if (!Utilities::almost_equal(delta_hat_local_diff_est[dof], rhs_local_prev[dof], 1.0e12)) {
             std::cerr << "error del hat local" << std::endl;
             std::cout << std::setprecision(15) << delta_hat_local_diff_est[dof] << ' ' << rhs_local_prev[dof]
@@ -509,7 +509,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (uint dof = 0; dof < dof_global; dof++) {
+    for (uint dof = 0; dof < dof_global; ++dof) {
         if (!Utilities::almost_equal(delta_hat_global_diff_est[dof], rhs_global_prev[dof], 1.0e12)) {
             std::cerr << "error del hat global" << std::endl;
             std::cout << std::setprecision(15) << delta_hat_global_diff_est[dof] << ' ' << rhs_global_prev[dof]
@@ -657,7 +657,7 @@ int main(int argc, char* argv[]) {
     rhs_local_prev -= rhs_local;
     rhs_global_prev -= rhs_global;
 
-    for (uint dof = 0; dof < dof_local; dof++) {
+    for (uint dof = 0; dof < dof_local; ++dof) {
         if (!Utilities::almost_equal(delta_local_diff_est[dof], rhs_local_prev[dof], 1.0e12)) {
             std::cerr << "error del local" << std::endl;
             std::cout << std::setprecision(15) << delta_local_diff_est[dof] << ' ' << rhs_local_prev[dof] << std::endl;
@@ -666,7 +666,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (uint dof = 0; dof < dof_global; dof++) {
+    for (uint dof = 0; dof < dof_global; ++dof) {
         if (!Utilities::almost_equal(delta_global_diff_est[dof], rhs_global_prev[dof], 1.0e12)) {
             std::cerr << "error del global" << std::endl;
             std::cout << std::setprecision(15) << delta_global_diff_est[dof] << ' ' << rhs_global_prev[dof]
@@ -677,14 +677,14 @@ int main(int argc, char* argv[]) {
     }
 
     // randomly assign delta_q
-    for (uint dof = 0; dof < dof_local; dof++) {
+    for (uint dof = 0; dof < dof_local; ++dof) {
         delta_q[dof] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
     }
 
     delta_q *= 1.0e-8;  // make it small
 
     // randomly assign delta_q_hat
-    for (uint dof = 0; dof < dof_global; dof++) {
+    for (uint dof = 0; dof < dof_global; ++dof) {
         delta_q_hat[dof] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
     }
 
@@ -879,7 +879,7 @@ int main(int argc, char* argv[]) {
     // get true diff
     rhs_prev -= rhs;
 
-    for (uint dof = 0; dof < dof_local + dof_global; dof++) {
+    for (uint dof = 0; dof < dof_local + dof_global; ++dof) {
         if (!Utilities::almost_equal(diff_est[dof], rhs_prev[dof], 1.0e12)) {
             std::cerr << "error del compound" << std::endl;
             std::cout << std::setprecision(15) << diff_est[dof] << ' ' << rhs_prev[dof] << std::endl;
@@ -889,7 +889,7 @@ int main(int argc, char* argv[]) {
     }
 
     // randomly assign delta_q_hat
-    for (uint dof = 0; dof < dof_global; dof++) {
+    for (uint dof = 0; dof < dof_global; ++dof) {
         delta_q_hat[dof] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
     }
 
@@ -1062,7 +1062,7 @@ int main(int argc, char* argv[]) {
 
     rhs_global_prev -= rhs_global;
 
-    for (uint dof = 0; dof < dof_global; dof++) {
+    for (uint dof = 0; dof < dof_global; ++dof) {
         if (!Utilities::almost_equal(delta_global_diff_est[dof], rhs_global_prev[dof], 1.0e12)) {
             std::cerr << "error back substitute del global" << std::endl;
             std::cout << std::setprecision(15) << delta_global_diff_est[dof] << ' ' << rhs_global_prev[dof]

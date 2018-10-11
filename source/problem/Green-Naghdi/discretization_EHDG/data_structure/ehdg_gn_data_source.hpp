@@ -5,23 +5,9 @@
 
 namespace GN {
 namespace EHDG {
-struct Source {
+struct Source : SWE::EHDG::Source {
     Source() = default;
-    Source(const uint nnode)
-        : parsed_meteo_data(nnode), tau_s(nnode), p_atm(nnode), tide_pot(nnode), manning_n(nnode) {}
-
-    double coriolis_f = 0.0;
-
-    bool manning          = false;
-    double g_manning_n_sq = 0.0;
-
-    std::vector<std::vector<double>*> parsed_meteo_data;
-
-    std::vector<StatVector<double, GN::n_dimensions>> tau_s;
-    std::vector<double> p_atm;
-
-    std::vector<double> tide_pot;
-    std::vector<double> manning_n;
+    Source(const uint nnode) : SWE::EHDG::Source(nnode) {}
 };
 }
 }

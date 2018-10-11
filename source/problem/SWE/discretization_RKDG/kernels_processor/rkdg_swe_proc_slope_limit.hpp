@@ -71,7 +71,7 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
     }
 
     // Set message to send buffer
-    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::postprocessor, message);
+    dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::baryctr_state, message);
 }
 
 template <typename DistributedBoundaryType>
@@ -83,7 +83,7 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper
 
     message.resize(1 + SWE::n_variables);
 
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::postprocessor, message);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_state, message);
 
     sl_state.wet_neigh[dbound.bound_id] = message[0];
 
@@ -109,7 +109,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
                    (sl_state.q_at_baryctr[SWE::Variables::ze] + sl_state.bath_at_baryctr);
         double c = std::sqrt(Global::g * (sl_state.q_at_baryctr[SWE::Variables::ze] + sl_state.bath_at_baryctr));
 
-        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             uint element_1 = bound;
             uint element_2 = (bound + 1) % 3;
 
@@ -160,7 +160,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         for (uint var = 0; var < 3; var++) {
             double delta_sum = 0.0;
 
-            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+            for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
                 delta_sum += sl_state.delta(var, bound);
             }
 
@@ -168,7 +168,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
                 double positive = 0.0;
                 double negative = 0.0;
 
-                for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
                     positive += std::max(0.0, sl_state.delta(var, bound));
                     negative += std::max(0.0, -sl_state.delta(var, bound));
                 }
@@ -176,7 +176,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
                 double theta_positive = std::min(1.0, negative / positive);
                 double theta_negative = std::min(1.0, positive / negative);
 
-                for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+                for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
                     sl_state.delta(var, bound) = theta_positive * std::max(0.0, sl_state.delta(var, bound)) -
                                                  theta_negative * std::max(0.0, -sl_state.delta(var, bound));
                 }
@@ -191,10 +191,10 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
         T(1, 1) = -1.0;
         T(2, 2) = -1.0;
 
-        for (uint vrtx = 0; vrtx < 3; vrtx++) {
+        for (uint vrtx = 0; vrtx < 3; ++vrtx) {
             column(sl_state.q_at_vrtx, vrtx) = sl_state.q_at_baryctr;
 
-            for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+            for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
                 sl_state.q_at_vrtx(SWE::Variables::ze, vrtx) += T(vrtx, bound) * sl_state.delta(0, bound);
                 sl_state.q_at_vrtx(SWE::Variables::qx, vrtx) += T(vrtx, bound) * sl_state.delta(1, bound);
                 sl_state.q_at_vrtx(SWE::Variables::qy, vrtx) += T(vrtx, bound) * sl_state.delta(2, bound);
@@ -203,7 +203,7 @@ void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) 
 
         bool limit = false;
 
-        for (uint vrtx = 0; vrtx < 3; vrtx++) {
+        for (uint vrtx = 0; vrtx < 3; ++vrtx) {
             double del_q_norm = norm(column(sl_state.q_at_vrtx, vrtx) - column(sl_state.q_lin, vrtx));
             double q_norm     = norm(column(sl_state.q_lin, vrtx));
 

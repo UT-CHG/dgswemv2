@@ -5,6 +5,13 @@
 #include "simulation/stepper/rk_stepper.hpp"
 
 class DBDataExchanger {
+  public:
+    const uint locality_in;
+    const uint submesh_in;
+
+    const uint locality_ex;
+    const uint submesh_ex;
+
   private:
     std::vector<uint> offset;
 
@@ -13,7 +20,11 @@ class DBDataExchanger {
 
   public:
     DBDataExchanger() = default;
-    DBDataExchanger(const std::vector<uint>& offset,
+    DBDataExchanger(const uint locality_in,
+                    const uint submesh_in,
+                    const uint locality_ex,
+                    const uint submesh_ex,
+                    std::vector<uint>&& offset,
                     std::vector<std::vector<double>>& send_buffer,
                     std::vector<std::vector<double>>& receive_buffer);
 
@@ -21,10 +32,20 @@ class DBDataExchanger {
     void GetFromReceiveBuffer(const uint comm_type, std::vector<double>& message);
 };
 
-DBDataExchanger::DBDataExchanger(const std::vector<uint>& offset,
+DBDataExchanger::DBDataExchanger(const uint locality_in,
+                                 const uint submesh_in,
+                                 const uint locality_ex,
+                                 const uint submesh_ex,
+                                 std::vector<uint>&& offset,
                                  std::vector<std::vector<double>>& send_buffer,
                                  std::vector<std::vector<double>>& receive_buffer)
-    : offset(offset), send_buffer(send_buffer), receive_buffer(receive_buffer) {}
+    : locality_in(locality_in),
+      submesh_in(submesh_in),
+      locality_ex(locality_ex),
+      submesh_ex(submesh_ex),
+      offset(std::move(offset)),
+      send_buffer(send_buffer),
+      receive_buffer(receive_buffer) {}
 
 void DBDataExchanger::SetToSendBuffer(const uint comm_type, const std::vector<double>& message) {
     std::copy(message.begin(), message.end(), this->send_buffer[comm_type].begin() + this->offset[comm_type]);

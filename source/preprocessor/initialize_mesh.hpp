@@ -8,19 +8,19 @@
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
                               InputParameters<typename ProblemType::ProblemInputType>& input,
-                              Writer<ProblemType>& writer);
+                              typename ProblemType::ProblemWriterType& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
                                            InputParameters<typename ProblemType::ProblemInputType>& input,
                                            Communicator& communicator,
-                                           Writer<ProblemType>& writer);
+                                           typename ProblemType::ProblemWriterType& writer);
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
                      InputParameters<typename ProblemType::ProblemInputType>& input,
                      Communicator& communicator,
-                     Writer<ProblemType>& writer) {
+                     typename ProblemType::ProblemWriterType& writer) {
     mesh.SetMeshName(input.mesh_input.mesh_data.mesh_name);
 
     initialize_mesh_elements<ProblemType>(mesh, input, writer);
@@ -31,7 +31,7 @@ void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
                               InputParameters<typename ProblemType::ProblemInputType>& input,
-                              Writer<ProblemType>& writer) {
+                              typename ProblemType::ProblemWriterType& writer) {
     MeshMetaData& mesh_data = input.mesh_input.mesh_data;
 
     using ElementType =
@@ -58,18 +58,18 @@ template <typename ProblemType, typename Communicator>
 void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType& mesh,
                                            typename ProblemType::ProblemInputType& problem_input,
                                            Communicator& communicator,
-                                           Writer<ProblemType>& writer) {
+                                           typename ProblemType::ProblemWriterType& writer) {
     using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundaries;
 
     mesh.CallForEachElement([&raw_boundaries](auto& elem) { elem.CreateRawBoundaries(raw_boundaries); });
 
-    ProblemType::create_interfaces_kernel(raw_boundaries, mesh, problem_input, writer);
-    ProblemType::create_boundaries_kernel(raw_boundaries, mesh, problem_input, writer);
-    ProblemType::create_distributed_boundaries_kernel(raw_boundaries, mesh, problem_input, communicator, writer);
+    ProblemType::create_interfaces(raw_boundaries, mesh, problem_input, writer);
+    ProblemType::create_boundaries(raw_boundaries, mesh, problem_input, writer);
+    ProblemType::create_distributed_boundaries(raw_boundaries, mesh, problem_input, communicator, writer);
 
-    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->second.size() != 0) {
             throw std::logic_error("Fatal Error: unprocessed raw_boundaries of boundary type " +
                                    std::to_string(it->first) + "!\n");

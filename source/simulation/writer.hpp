@@ -136,7 +136,7 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
     if (this->writing_vtk_output && (stepper.GetStep() % this->vtk_output_frequency == 0)) {
         std::ofstream raw_data_file(this->vtk_file_name_raw);
 
-        ProblemType::write_VTK_data_kernel(mesh, raw_data_file);
+        ProblemType::write_VTK_data(mesh, raw_data_file);
 
         raw_data_file.close();
 
@@ -166,7 +166,7 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
     if (this->writing_vtu_output && (stepper.GetStep() % this->vtu_output_frequency == 0)) {
         std::ofstream raw_data_file(this->vtu_file_name_raw);
 
-        ProblemType::write_VTU_data_kernel(mesh, raw_data_file);
+        ProblemType::write_VTU_data(mesh, raw_data_file);
 
         raw_data_file.close();
 
@@ -201,7 +201,7 @@ void Writer<ProblemType>::WriteOutput(const RKStepper& stepper, typename Problem
     }
 
     if (this->writing_modal_output && (stepper.GetStep() % this->modal_output_frequency == 0)) {
-        ProblemType::write_modal_data_kernel(stepper, mesh, this->output_path);
+        ProblemType::write_modal_data(stepper, mesh, this->output_path);
     }
 }
 
@@ -220,12 +220,12 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
     file << "DATASET UNSTRUCTURED_GRID\n";
     file << "POINTS " << points.size() << " double\n";
 
-    for (auto it = points.begin(); it != points.end(); it++) {
+    for (auto it = points.begin(); it != points.end(); ++it) {
         file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
     }
 
     uint n_cell_entries = 0;
-    for (auto it = cells.begin(); it != cells.end(); it++) {
+    for (auto it = cells.begin(); it != cells.end(); ++it) {
         switch ((*it)[0]) {
             case VTKElementTypes::straight_triangle:
                 n_cell_entries += 4;
@@ -242,7 +242,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
 
     uint n_nodes;
 
-    for (auto it = cells.begin(); it != cells.end(); it++) {
+    for (auto it = cells.begin(); it != cells.end(); ++it) {
         switch ((*it)[0]) {
             case VTKElementTypes::straight_triangle:
                 file << 3 << '\t';
@@ -255,7 +255,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
                 exit(1);
         }
 
-        for (uint i = 1; i <= n_nodes; i++) {
+        for (uint i = 1; i <= n_nodes; ++i) {
             file << (*it)[i] << '\t';
         }
         file << '\n';
@@ -263,7 +263,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
 
     file << "CELL_TYPES " << cells.size() << '\n';
 
-    for (auto it = cells.begin(); it != cells.end(); it++) {
+    for (auto it = cells.begin(); it != cells.end(); ++it) {
         file << (*it)[0] << '\n';
     }
 
@@ -291,7 +291,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
     file << "\t\t\t<Points>\n";
     file << "\t\t\t\t<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n\t\t\t\t\t";
 
-    for (auto it = points.begin(); it != points.end(); it++) {
+    for (auto it = points.begin(); it != points.end(); ++it) {
         file << (*it)[0] << ' ' << (*it)[1] << ' ' << (*it)[2] << ' ';
     }
 
@@ -304,7 +304,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 
     uint n_nodes;
 
-    for (auto it = cells.begin(); it != cells.end(); it++) {
+    for (auto it = cells.begin(); it != cells.end(); ++it) {
         switch ((*it)[0]) {
             case VTKElementTypes::straight_triangle:
                 n_nodes = 3;
@@ -316,7 +316,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
                 exit(1);
         }
 
-        for (uint i = 1; i <= n_nodes; i++) {
+        for (uint i = 1; i <= n_nodes; ++i) {
             file << (*it)[i] << ' ';
         }
     }
@@ -327,7 +327,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 
     uint offset = 0;
 
-    for (auto it = cells.begin(); it != cells.end(); it++) {
+    for (auto it = cells.begin(); it != cells.end(); ++it) {
         switch ((*it)[0]) {
             case VTKElementTypes::straight_triangle:
                 offset += 3;
@@ -345,7 +345,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 
     file << "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n\t\t\t\t\t";
 
-    for (auto it = cells.begin(); it != cells.end(); it++) {
+    for (auto it = cells.begin(); it != cells.end(); ++it) {
         file << (*it)[0] << ' ';
     }
 

@@ -4,15 +4,14 @@
 namespace SWE {
 namespace RKDG {
 template <typename RawBoundaryType>
-void Problem::create_interfaces_kernel(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    ProblemMeshType& mesh,
-    ProblemInputType& problem_input,
-    Writer<Problem>& writer) {
+void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                ProblemMeshType& mesh,
+                                ProblemInputType& problem_input,
+                                ProblemWriterType& writer) {
     // *** //
-    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal, IS::Levee>;
+    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
 
-    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::internal) {
             using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
 
@@ -54,7 +53,7 @@ void Problem::create_interfaces_kernel(
 
                     std::vector<LeveeInput> levee;
 
-                    for (uint node = 0; node < raw_boundary_in.node_ID.size(); node++) {
+                    for (uint node = 0; node < raw_boundary_in.node_ID.size(); ++node) {
                         std::pair<uint, uint> key_levee_data{
                             raw_boundary_in.node_ID[node],
                             raw_boundary_ex.node_ID[raw_boundary_in.node_ID.size() - node - 1]};
@@ -73,7 +72,7 @@ void Problem::create_interfaces_kernel(
                     }
 
                     mesh.template CreateInterface<InterfaceTypeLevee>(
-                        std::move(raw_boundary_in), std::move(raw_boundary_ex), IS::Levee(levee));
+                        std::move(raw_boundary_in), std::move(raw_boundary_ex), ISP::Levee(levee));
                 }
 
                 it->second.erase(itt++);

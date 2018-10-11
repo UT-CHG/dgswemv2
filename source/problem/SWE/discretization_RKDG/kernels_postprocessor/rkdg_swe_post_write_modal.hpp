@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace RKDG {
-void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+void Problem::write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, HybMatrix<double, SWE::n_variables>>> modal_q;
     std::vector<std::pair<uint, HybMatrix<double, 1>>> modal_aux;
 
@@ -24,7 +24,7 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_q.begin(); it != modal_q.end(); it++) {
+    for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
         uint ndof = columns((*it).second);
 
         for (uint dof = 0; dof < ndof; ++dof) {
@@ -42,7 +42,7 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_q.begin(); it != modal_q.end(); it++) {
+    for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
         uint ndof = columns((*it).second);
 
         for (uint dof = 0; dof < ndof; ++dof) {
@@ -60,7 +60,7 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_q.begin(); it != modal_q.end(); it++) {
+    for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
         uint ndof = columns((*it).second);
 
         for (uint dof = 0; dof < ndof; ++dof) {
@@ -78,7 +78,7 @@ void Problem::write_modal_data_kernel(const RKStepper& stepper, ProblemMeshType&
     }
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
-    for (auto it = modal_aux.begin(); it != modal_aux.end(); it++) {
+    for (auto it = modal_aux.begin(); it != modal_aux.end(); ++it) {
         uint ndof = columns((*it).second);
 
         for (uint dof = 0; dof < ndof; ++dof) {

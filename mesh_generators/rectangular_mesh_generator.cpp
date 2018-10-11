@@ -94,8 +94,8 @@ int main(int argc, const char* argv[]) {
 
     std::vector<Node> nodes((m + 1) * (n + 1));
 
-    for (uint i = 0; i <= m; i++) {
-        for (uint j = 0; j <= n; j++) {
+    for (uint i = 0; i <= m; ++i) {
+        for (uint j = 0; j <= n; ++j) {
             nodes[j * (m + 1) + i].ID = j * (m + 1) + i;
 
             nodes[j * (m + 1) + i].coord[0] = input.x1 + dx * i;
@@ -127,12 +127,12 @@ int main(int argc, const char* argv[]) {
     boundaries[2].nodes.resize(m + 1);
     boundaries[3].nodes.resize(n + 1);
 
-    for (uint i = 0; i <= m; i++) {
+    for (uint i = 0; i <= m; ++i) {
         boundaries[0].nodes[i] = i;
         boundaries[2].nodes[i] = i + (m + 1) * n;
     }
 
-    for (uint i = 0; i <= n; i++) {
+    for (uint i = 0; i <= n; ++i) {
         boundaries[1].nodes[i] = m + i * (m + 1);
         boundaries[3].nodes[i] = i * (m + 1);
     }
@@ -143,7 +143,7 @@ int main(int argc, const char* argv[]) {
     file << "rectangle\n";
     file << 2 * m * n << "    " << (m + 1) * (n + 1) << '\n';
 
-    for (uint node = 0; node < nodes.size(); node++) {
+    for (uint node = 0; node < nodes.size(); ++node) {
         file << nodes[node].ID << ' ';
         file << nodes[node].coord[0] << ' ';
         file << nodes[node].coord[1] << ' ';
@@ -168,7 +168,7 @@ int main(int argc, const char* argv[]) {
     uint n_tide_node = 0;
     uint n_flow_node = 0;
 
-    for (uint n_bound = 0; n_bound < 4; n_bound++) {
+    for (uint n_bound = 0; n_bound < 4; ++n_bound) {
         if (boundaries[n_bound].type == 0) {
             n_land++;
             n_land_node += boundaries[n_bound].nodes.size();
@@ -185,7 +185,7 @@ int main(int argc, const char* argv[]) {
     file << n_tide_node << " = Total number of open boundary nodes\n";
 
     uint i = 1;
-    for (uint n_bound = 0; n_bound < 4; n_bound++) {
+    for (uint n_bound = 0; n_bound < 4; ++n_bound) {
         if (boundaries[n_bound].type == SWE::BoundaryTypes::tide) {
             file << boundaries[n_bound].nodes.size() << " = Number of nodes for open boundary " << i << '\n';
 
@@ -201,7 +201,7 @@ int main(int argc, const char* argv[]) {
     file << n_land_node + n_flow_node << " = Total number of land boundary nodes\n";
 
     i = 1;
-    for (uint n_bound = 0; n_bound < 4; n_bound++) {
+    for (uint n_bound = 0; n_bound < 4; ++n_bound) {
         if (boundaries[n_bound].type == SWE::BoundaryTypes::land) {
             file << boundaries[n_bound].nodes.size() << " 0 = Number of nodes for land boundary " << i << '\n';
 
@@ -381,8 +381,8 @@ void MeshGeneratorInput::Summarize() {
 
 void simple_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     // mesh with triangular elements simple pattern
-    for (uint j = 0; j < n; j++) {
-        for (uint i = 0; i < m; i++) {
+    for (uint j = 0; j < n; ++j) {
+        for (uint i = 0; i < m; ++i) {
             elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
@@ -399,7 +399,7 @@ void simple_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
 void zigzag_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     // mesh with triangular elements zigzag pattern
     for (uint j = 0; j < n; j += 2) {
-        for (uint i = 0; i < m; i++) {
+        for (uint i = 0; i < m; ++i) {
             elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
@@ -413,7 +413,7 @@ void zigzag_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     }
 
     for (uint j = 1; j < n; j += 2) {
-        for (uint i = 0; i < m; i++) {
+        for (uint i = 0; i < m; ++i) {
             elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
             elements[2 * i + 2 * m * j].nodes =
@@ -429,7 +429,7 @@ void zigzag_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
 
 void checker_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
     // mesh with triangular elements checker pattern
-    for (uint j = 0; j < n; j++) {
+    for (uint j = 0; j < n; ++j) {
         for (uint i = j % 2; i < m; i += 2) {
             elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;
@@ -443,7 +443,7 @@ void checker_pattern_tri(uint m, uint n, std::vector<Element>& elements) {
         }
     }
 
-    for (uint j = 0; j < n; j++) {
+    for (uint j = 0; j < n; ++j) {
         for (uint i = (j + 1) % 2; i < m; i += 2) {
             elements[2 * i + 2 * m * j].ID   = 2 * i + 2 * m * j;
             elements[2 * i + 2 * m * j].type = 3;

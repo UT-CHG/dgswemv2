@@ -10,12 +10,12 @@ DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const std::vector<Point<2>>& 
     std::vector<double> n1(npt);
     std::vector<double> n2(npt);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         n1[pt] = 2 * (1 + points[pt][LocalCoordTri::z1]) / (1 - points[pt][LocalCoordTri::z2]) - 1;
         n2[pt] = points[pt][LocalCoordTri::z2];
     }
 
-    for (uint dof = 0; dof < ndof; dof++) {
+    for (uint dof = 0; dof < ndof; ++dof) {
         uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
         uint lower_tri_num = (tri_num_indx + 1) * tri_num_indx / 2;
 
@@ -40,12 +40,12 @@ std::array<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const std::ve
     std::vector<double> n1(npt);
     std::vector<double> n2(npt);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         n1[pt] = 2 * (1 + points[pt][LocalCoordTri::z1]) / (1 - points[pt][LocalCoordTri::z2]) - 1;
         n2[pt] = points[pt][LocalCoordTri::z2];
     }
 
-    for (uint dof = 0; dof < ndof; dof++) {
+    for (uint dof = 0; dof < ndof; ++dof) {
         uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
         uint lower_tri_num = (tri_num_indx + 1) * tri_num_indx / 2;
 
@@ -69,7 +69,7 @@ DynMatrix<double> Dubiner_2D::GetMinv(const uint p) {
 
     set_constant(m_inv, 0.0);
 
-    for (uint dof = 0; dof < ndof; dof++) {
+    for (uint dof = 0; dof < ndof; ++dof) {
         uint tri_num_indx  = (uint)std::ceil((-3. + std::sqrt(1. + 8. * (dof + 1))) / 2.);
         uint lower_tri_num = (tri_num_indx + 1) * tri_num_indx / 2;
 
@@ -95,7 +95,7 @@ DynVector<double> Dubiner_2D::ComputePhi(const uint p,
     DynVector<double> psi_p  = jacobi_polynomial(p, 0, 0, n1);
     DynVector<double> psi_pq = jacobi_polynomial(q, 2 * p + 1, 0, n2);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         phi[pt] = psi_p[pt] * std::pow((1 - n2[pt]) / 2, (int)p) * psi_pq[pt];
 
         if (std::isnan(n1[pt])) {  // value of Dubiner polynomial at singular point (-1,1)
@@ -123,7 +123,7 @@ DynVector<double> Dubiner_2D::ComputeDPhiDZ1(const uint p,
     DynVector<double> psi_pq     = jacobi_polynomial(q, 2 * p + 1, 0, n2);
     DynVector<double> dpsi_p_dn1 = jacobi_polynomial_derivative(p, 0, 0, n1);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         dphi_dz1[pt] = (2.0 / (1.0 - n2[pt])) * dpsi_p_dn1[pt] * pow((1.0 - n2[pt]) / 2.0, (int)p) * psi_pq[pt];
 
         if (std::isnan(n1[pt])) {  // value of Dubiner polynomial derivatives at singular point (-1,1)
@@ -154,7 +154,7 @@ DynVector<double> Dubiner_2D::ComputeDPhiDZ2(const uint p,
     DynVector<double> dpsi_p_dn1  = jacobi_polynomial_derivative(p, 0, 0, n1);
     DynVector<double> dpsi_pq_dn2 = jacobi_polynomial_derivative(q, 2 * p + 1, 0, n2);
 
-    for (uint pt = 0; pt < npt; pt++) {
+    for (uint pt = 0; pt < npt; ++pt) {
         dphi_dz2[pt] =
             ((1 + n1[pt]) / (1.0 - n2[pt])) * dpsi_p_dn1[pt] * pow((1.0 - n2[pt]) / 2.0, (int)p) * psi_pq[pt] +
             psi_p[pt] * (pow((1.0 - n2[pt]) / 2.0, (int)p) * dpsi_pq_dn2[pt] -
@@ -208,5 +208,31 @@ std::array<double, 2> Dubiner_2D::ComputeSingularDPhiDZ2(const uint q) {
     }
 
     return dphi_data;
+}
+
+inline DynMatrix<double> Dubiner_2D::ProjectBasisToLinear(const DynMatrix<double>& u) {
+    uint nvar = rows(u);
+
+    DynMatrix<double> u_lin(nvar, 3);
+
+    column(u_lin, 0) = column(u, 0) - column(u, 1) - column(u, 2);
+    column(u_lin, 1) = column(u, 0) - column(u, 1) + column(u, 2);
+    column(u_lin, 2) = column(u, 0) + 2.0 * column(u, 1);
+
+    return u_lin;
+}
+
+inline DynMatrix<double> Dubiner_2D::ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) {
+    uint nvar = rows(u_lin);
+
+    DynMatrix<double> u(nvar, ndof);
+
+    set_constant(u, 0.0);
+
+    column(u, 0) = (column(u_lin, 0) + column(u_lin, 1) + column(u_lin, 2)) / 3.0;
+    column(u, 1) = (-column(u_lin, 0) - column(u_lin, 1) + 2.0 * column(u_lin, 2)) / 6.0;
+    column(u, 2) = (-column(u_lin, 0) + column(u_lin, 1)) / 2.0;
+
+    return u;
 }
 }

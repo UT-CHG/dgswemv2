@@ -36,7 +36,7 @@ using uint = unsigned int;
 
 /* This will have to go into linear_algebra.hpp */
 #define USE_EIGEN
-// #define USE_BLAZE
+//#define USE_BLAZE
 
 #ifdef USE_BLAZE
 #include "utilities/linear_algebra/use_blaze.hpp"
@@ -103,10 +103,8 @@ class Basis {
      */
     virtual DynMatrix<double> GetMinv(const uint p) = 0;
 
-    template <typename InputArrayType>
-    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
-    template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    virtual DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u)                      = 0;
+    virtual DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) = 0;
 };
 }
 
@@ -237,7 +235,7 @@ class Shape {
 
 #define PI 3.14159265359
 
-#define N_DIV 1                // postproc elem div
+#define N_DIV 2                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
 
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };

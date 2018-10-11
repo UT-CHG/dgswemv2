@@ -26,7 +26,7 @@ struct Data {
 
         this->internal = Internal(this->ngp_internal);
 
-        for (uint bound_id = 0; bound_id < this->nbound; bound_id++) {
+        for (uint bound_id = 0; bound_id < this->nbound; ++bound_id) {
             this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
         }
 

@@ -7,7 +7,7 @@
 
 namespace SWE {
 namespace RKDG {
-namespace IS {
+namespace ISP {
 class Levee {
   private:
     double H_tolerance = 0.01;
@@ -41,7 +41,7 @@ Levee::Levee(const std::vector<LeveeInput>& levee_input) {
     this->C_subcritical.resize(n_nodes);
     this->C_supercritical.resize(n_nodes);
 
-    for (uint node = 0; node < n_nodes; node++) {
+    for (uint node = 0; node < n_nodes; ++node) {
         this->H_barrier[node]       = levee_input[node].H_barrier;
         this->C_subcritical[node]   = levee_input[node].C_subcritical;
         this->C_supercritical[node] = levee_input[node].C_supercritical;

@@ -5,13 +5,13 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& discretization) {
+void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-            row(state.dbath, dir) = -elt.IntegrationDPhi(dir, row(internal.aux_at_gp, GN::Auxiliaries::bath));
+            row(state.dbath, dir) = -elt.IntegrationDPhi(dir, row(internal.aux_at_gp, SWE::Auxiliaries::bath));
         }
     });
 
@@ -27,19 +27,19 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
-            boundary_in.bath_hat_at_gp[gp] = (boundary_in.aux_at_gp(GN::Auxiliaries::bath, gp) +
-                                              boundary_ex.aux_at_gp(GN::Auxiliaries::bath, gp_ex)) /
+            boundary_in.bath_hat_at_gp[gp] = (boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp) +
+                                              boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex)) /
                                              2.0;
 
             boundary_ex.bath_hat_at_gp[gp_ex] = boundary_in.bath_hat_at_gp[gp];
         }
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-            row(state_in.dbath, dir) += intface.IntegrationPhiIN(
-                cwise_multiplication(boundary_in.bath_hat_at_gp, row(intface.surface_normal_in, dir)));
+            row(state_in.dbath, dir) +=
+                intface.IntegrationPhiIN(vec_cw_mult(boundary_in.bath_hat_at_gp, row(intface.surface_normal_in, dir)));
 
-            row(state_ex.dbath, dir) += intface.IntegrationPhiEX(
-                cwise_multiplication(boundary_ex.bath_hat_at_gp, row(intface.surface_normal_ex, dir)));
+            row(state_ex.dbath, dir) +=
+                intface.IntegrationPhiEX(vec_cw_mult(boundary_ex.bath_hat_at_gp, row(intface.surface_normal_ex, dir)));
         }
     });
 
@@ -47,11 +47,11 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         auto& state    = bound.data.state[0];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        boundary.bath_hat_at_gp = row(boundary.aux_at_gp, GN::Auxiliaries::bath);
+        boundary.bath_hat_at_gp = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
             row(state.dbath, dir) +=
-                bound.IntegrationPhi(cwise_multiplication(boundary.bath_hat_at_gp, row(bound.surface_normal, dir)));
+                bound.IntegrationPhi(vec_cw_mult(boundary.bath_hat_at_gp, row(bound.surface_normal, dir)));
         }
     });
 
@@ -101,10 +101,10 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state_in.ddbath, GN::n_dimensions * dbath + dir) += intface.IntegrationPhiIN(
-                    cwise_multiplication(row(boundary_in.dbath_hat_at_gp, dbath), row(intface.surface_normal_in, dir)));
+                    vec_cw_mult(row(boundary_in.dbath_hat_at_gp, dbath), row(intface.surface_normal_in, dir)));
 
                 row(state_ex.ddbath, GN::n_dimensions * dbath + dir) += intface.IntegrationPhiEX(
-                    cwise_multiplication(row(boundary_ex.dbath_hat_at_gp, dbath), row(intface.surface_normal_ex, dir)));
+                    vec_cw_mult(row(boundary_ex.dbath_hat_at_gp, dbath), row(intface.surface_normal_ex, dir)));
             }
         }
     });
@@ -118,7 +118,7 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state.ddbath, GN::n_dimensions * dbath + dir) += bound.IntegrationPhi(
-                    cwise_multiplication(row(boundary.dbath_hat_at_gp, dbath), row(bound.surface_normal, dir)));
+                    vec_cw_mult(row(boundary.dbath_hat_at_gp, dbath), row(bound.surface_normal, dir)));
             }
         }
     });
@@ -168,11 +168,11 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
 
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state_in.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiIN(cwise_multiplication(
-                    row(boundary_in.ddbath_hat_at_gp, ddbath), row(intface.surface_normal_in, dir)));
+                row(state_in.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiIN(
+                    vec_cw_mult(row(boundary_in.ddbath_hat_at_gp, ddbath), row(intface.surface_normal_in, dir)));
 
-                row(state_ex.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiEX(cwise_multiplication(
-                    row(boundary_ex.ddbath_hat_at_gp, ddbath), row(intface.surface_normal_ex, dir)));
+                row(state_ex.dddbath, GN::n_dimensions * ddbath + dir) += intface.IntegrationPhiEX(
+                    vec_cw_mult(row(boundary_ex.ddbath_hat_at_gp, ddbath), row(intface.surface_normal_ex, dir)));
             }
         }
     });
@@ -186,7 +186,7 @@ void Problem::serial_bathymetry_derivatives_kernel(ProblemDiscretizationType& di
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state.dddbath, GN::n_dimensions * ddbath + dir) += bound.IntegrationPhi(
-                    cwise_multiplication(row(boundary.ddbath_hat_at_gp, ddbath), row(bound.surface_normal, dir)));
+                    vec_cw_mult(row(boundary.ddbath_hat_at_gp, ddbath), row(bound.surface_normal, dir)));
             }
         }
     });

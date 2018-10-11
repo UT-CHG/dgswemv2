@@ -4,15 +4,14 @@
 namespace SWE {
 namespace EHDG {
 template <typename RawBoundaryType>
-void Problem::create_interfaces_kernel(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    ProblemMeshType& mesh,
-    ProblemInputType& problem_input,
-    Writer<Problem>& writer) {
+void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                ProblemMeshType& mesh,
+                                ProblemInputType& problem_input,
+                                ProblemWriterType& writer) {
     // *** //
-    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, IS::Internal>;
+    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal>;
 
-    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); it++) {
+    for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::internal) {
             using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
 

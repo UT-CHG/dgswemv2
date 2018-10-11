@@ -39,12 +39,11 @@ static double nu = 1.5;
 const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
-constexpr uint n_dimensions  = 2;
+constexpr uint n_dimensions = 2;
+
 constexpr uint n_variables   = 3;
 constexpr uint n_auxiliaries = 3;
-
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
-
 enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
 
 enum JacobianVariables : uint {
@@ -61,9 +60,20 @@ enum JacobianVariables : uint {
 
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
 
+namespace RKDG {
 constexpr uint n_communications = 3;
+enum CommTypes : uchar { baryctr_coord = 0, bound_state = 1, baryctr_state = 2 };
+}
 
-enum CommTypes : uchar { preprocessor = 0, processor = 1, postprocessor = 2 };
+namespace EHDG {
+constexpr uint n_communications = 1;
+enum CommTypes : uchar { bound_state = 0 };
+}
+
+namespace IHDG {
+constexpr uint n_communications = 1;
+enum CommTypes : uchar { global_dof_indx = 0 };
+}
 
 enum class SphericalProjectionType { None, Enable };
 

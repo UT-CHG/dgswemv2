@@ -3,9 +3,9 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::create_edge_boundaries_kernel(ProblemMeshType& mesh,
-                                            ProblemMeshSkeletonType& mesh_skeleton,
-                                            Writer<Problem>& writer) {
+void Problem::create_edge_boundaries(ProblemMeshType& mesh,
+                                     ProblemMeshSkeletonType& mesh_skeleton,
+                                     ProblemWriterType& writer) {
     using BoundaryTypes = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
 
     using EdgeBoundaryTypes =

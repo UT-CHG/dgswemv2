@@ -5,7 +5,8 @@
 
 namespace SWE {
 namespace EHDG {
-void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+template <typename MeshType>
+void Problem::initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
@@ -66,7 +67,7 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
         row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
 
         uint gp_ex;
-        for (uint gp = 0; gp < ngp; gp++) {
+        for (uint gp = 0; gp < ngp; ++gp) {
             gp_ex = ngp - gp - 1;
 
             boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex) = boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
@@ -148,8 +149,9 @@ void Problem::initialize_data_serial_kernel(ProblemMeshType& mesh, const Problem
     }
 }
 
-void Problem::initialize_data_parallel_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    initialize_data_serial_kernel(mesh, problem_specific_input);
+template <typename MeshType>
+void Problem::initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input) {
+    initialize_data_serial(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();

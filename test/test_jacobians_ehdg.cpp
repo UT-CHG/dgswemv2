@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     initialize_mesh<SWE::EHDG::Problem>(mesh, input, empty_comm, writer);
     initialize_mesh_skeleton<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
 
-    SWE::EHDG::Problem::initialize_data_serial_kernel(mesh, input.problem_input);
+    SWE::EHDG::Problem::initialize_data_serial(mesh, input.problem_input);
 
     mesh_skeleton.CallForEachEdgeInterface([](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
         const uint stage = stepper.GetStage();
         auto& state      = elt.data.state[stage];
 
-        for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
 
         // randomly assign q_hat
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
         // randomly assign delta_q_hat and increment
         DynVector<double> delta_q_hat(SWE::n_variables * edge_int.edge_data.get_ndof());
 
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             delta_q_hat[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
         // difference estimate
 
         // compare
-        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_int.edge_data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(diff_est[3 * dof], edge_internal.rhs_global[3 * dof], 1.0e12)) {
                 std::cerr << "error in ze" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof] << ' ' << edge_internal.rhs_global[3 * dof]
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
         // randomly assign q_hat
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             edge_state.q_hat(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             edge_state.q_hat(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
         // randomly assign delta_q_hat and increment
         DynVector<double> delta_q_hat(SWE::n_variables * edge_bound.edge_data.get_ndof());
 
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             delta_q_hat[3 * dof + SWE::Variables::ze] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qx] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
             delta_q_hat[3 * dof + SWE::Variables::qy] = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
         // difference estimate
 
         // compare
-        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); dof++) {
+        for (uint dof = 0; dof < edge_bound.edge_data.get_ndof(); ++dof) {
             if (!Utilities::almost_equal(diff_est[3 * dof], edge_internal.rhs_global[3 * dof], 1.0e12)) {
                 std::cerr << "error in ze" << std::endl;
                 std::cout << std::setprecision(15) << diff_est[3 * dof] << ' ' << edge_internal.rhs_global[3 * dof]

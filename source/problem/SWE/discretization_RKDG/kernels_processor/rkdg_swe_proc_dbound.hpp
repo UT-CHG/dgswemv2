@@ -28,7 +28,7 @@ void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, Distrib
     }
 
     // Set message to send buffer
-    dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::processor, message);
+    dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::bound_state, message);
 }
 
 template <typename DistributedBoundaryType>
@@ -40,7 +40,7 @@ void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedB
 
     message.resize(1);  // just wet/dry state info
 
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::processor, message);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::bound_state, message);
 
     bool wet_ex = (bool)message[0];
 

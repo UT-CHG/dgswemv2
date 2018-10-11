@@ -3,64 +3,35 @@
 
 #include "general_definitions.hpp"
 #include "simulation/stepper/rk_stepper.hpp"
-#include "ehdg_gn_dbc_db_data_exch.hpp"
+#include "communication/db_data_exchanger.hpp"
 
 namespace GN {
 namespace EHDG {
 namespace DBC {
-class Distributed {
-  public:
-    DBDataExchanger exchanger;
-
-    HybMatrix<double, GN::n_variables> q_ex;
-    HybMatrix<double, GN::n_variables> Fn_ex;
-
+class Distributed : public SWE::EHDG::DBC::Distributed {
   public:
     Distributed() = default;
-    Distributed(const DBDataExchanger& exchanger);
-
-    template <typename DistributedBoundaryType>
-    void Initialize(DistributedBoundaryType& dbound);
+    Distributed(const DBDataExchanger& exchanger) : SWE::EHDG::DBC::Distributed(exchanger) {}
 
     template <typename EdgeDistributedType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
-
-    template <typename EdgeDistributedType>
-    void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
+    void ComputeGlobalKernelsDC(EdgeDistributedType& edge_dbound);
 };
 
-Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
-
-template <typename DistributedBoundaryType>
-void Distributed::Initialize(DistributedBoundaryType& dbound) {
-    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-    this->q_ex.resize(GN::n_variables, ngp);
-    this->Fn_ex.resize(GN::n_variables, ngp);
-}
-
 template <typename EdgeDistributedType>
-void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void Distributed::ComputeGlobalKernelsDC(EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    StatVector<double, GN::n_variables> q_ex;
-    StatVector<double, GN::n_variables> Fn_ex;
+    double tau = -20;
 
-    edge_internal.rhs_global_kernel_at_gp = boundary.Fn_at_gp + this->Fn_ex;
+    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
+        column(edge_internal.w1_hat_w1_hat_kernel_at_gp, gp) = -tau * IdentityVector<double>(GN::n_dimensions);
 
-    // Add tau terms
-    add_kernel_tau_terms_dbound_LF(edge_dbound);
-}
+        column(boundary.w1_hat_w1_kernel_at_gp, gp) = tau * IdentityVector<double>(GN::n_dimensions);
+    }
 
-template <typename EdgeDistributedType>
-void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
-
-    boundary.F_hat_at_gp = boundary.Fn_at_gp;
-
-    // Add tau terms
-    add_F_hat_tau_terms_bound_LF(edge_dbound);
+    boundary.w1_hat_w2_kernel_at_gp = edge_dbound.boundary.surface_normal;
 }
 }
 }

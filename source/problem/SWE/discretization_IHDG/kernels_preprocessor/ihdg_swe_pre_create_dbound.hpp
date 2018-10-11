@@ -4,20 +4,20 @@
 namespace SWE {
 namespace IHDG {
 template <typename RawBoundaryType>
-void Problem::create_distributed_boundaries_kernel(
+void Problem::create_distributed_boundaries(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType&,
     ProblemInputType& problem_input,
     std::tuple<>&,
-    Writer<Problem>& writer) {}
+    ProblemWriterType& writer) {}
 
 template <typename RawBoundaryType, typename Communicator>
-void Problem::create_distributed_boundaries_kernel(
+void Problem::create_distributed_boundaries(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
     ProblemMeshType& mesh,
     ProblemInputType& problem_input,
     Communicator& communicator,
-    Writer<Problem>& writer) {
+    ProblemWriterType& writer) {
     // *** //
     using DistributedBoundaryTypes = Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>;
 
@@ -31,10 +31,19 @@ void Problem::create_distributed_boundaries_kernel(
         uint element_id_in, bound_id_in, p;
         // uint element_id_ex, bound_id_ex;
 
-        std::vector<uint> begin_index(SWE::n_communications, 0);
+        uint locality_in, submesh_in;
+        uint locality_ex, submesh_ex;
+
+        std::vector<uint> begin_index(SWE::IHDG::n_communications, 0);
 
         // check if the data in rank_boundary_data matches communicator rank boundary
         const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
+
+        locality_in = rb_meta_data.locality_in;
+        submesh_in  = rb_meta_data.submesh_in;
+
+        locality_ex = rb_meta_data.locality_ex;
+        submesh_ex  = rb_meta_data.submesh_ex;
 
         for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
             element_id_in = rb_meta_data.elements_in.at(dboundary_id);
@@ -46,15 +55,11 @@ void Problem::create_distributed_boundaries_kernel(
 
             std::pair<uint, uint> dbound_key = std::pair<uint, uint>{element_id_in, bound_id_in};
 
-            std::vector<uint> offset(SWE::n_communications);
+            std::vector<uint> offset(SWE::IHDG::n_communications);
 
-            offset[SWE::CommTypes::preprocessor]  = begin_index[SWE::CommTypes::preprocessor];
-            offset[SWE::CommTypes::processor]     = begin_index[SWE::CommTypes::processor];
-            offset[SWE::CommTypes::postprocessor] = begin_index[SWE::CommTypes::postprocessor];
+            offset[CommTypes::global_dof_indx] = begin_index[CommTypes::global_dof_indx];
 
-            begin_index[SWE::CommTypes::preprocessor] += 1;
-            begin_index[SWE::CommTypes::processor] += 0;      // there's no proc comm
-            begin_index[SWE::CommTypes::postprocessor] += 0;  // there's no postproc comm
+            begin_index[CommTypes::global_dof_indx] += 1;
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
@@ -65,7 +70,13 @@ void Problem::create_distributed_boundaries_kernel(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(DBDataExchanger(offset, rank_boundary.send_buffer, rank_boundary.receive_buffer)));
+                    DBC::Distributed(DBDataExchanger(locality_in,
+                                                     submesh_in,
+                                                     locality_ex,
+                                                     submesh_ex,
+                                                     std::move(offset),
+                                                     rank_boundary.send_buffer,
+                                                     rank_boundary.receive_buffer)));
 
                 n_distributed++;
 
@@ -73,10 +84,10 @@ void Problem::create_distributed_boundaries_kernel(
             }
         }
 
-        rank_boundary.send_buffer.resize(SWE::n_communications);
-        rank_boundary.receive_buffer.resize(SWE::n_communications);
+        rank_boundary.send_buffer.resize(SWE::IHDG::n_communications);
+        rank_boundary.receive_buffer.resize(SWE::IHDG::n_communications);
 
-        for (uint comm = 0; comm < SWE::n_communications; ++comm) {
+        for (uint comm = 0; comm < SWE::IHDG::n_communications; ++comm) {
             rank_boundary.send_buffer[comm].resize(begin_index[comm]);
             rank_boundary.receive_buffer[comm].resize(begin_index[comm]);
         }

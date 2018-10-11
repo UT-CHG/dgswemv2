@@ -1,5 +1,6 @@
 #include <mpi.h>
 #include <omp.h>
+#include <petscksp.h>
 
 #include "general_definitions.hpp"
 #include "problem/SWE/swe_definitions.hpp"
@@ -40,6 +41,8 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        PetscInitialize(&argc, &argv, (char*)0, NULL);
+
         std::string input_string = std::string(argv[1]);
 
         OMPISimulation<SWE::IHDG::Problem> simulation(input_string);
@@ -58,6 +61,10 @@ int main(int argc, char* argv[]) {
         }
 
         simulation.ComputeL2Residual();
+
+        simulation.DestroyPETSc();
+
+        PetscFinalize();
 
         MPI_Finalize();
 

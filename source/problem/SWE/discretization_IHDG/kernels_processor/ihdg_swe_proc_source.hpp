@@ -15,11 +15,9 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
     set_constant(row(internal.source_at_gp, SWE::Variables::ze), 0.0);
 
     row(internal.source_at_gp, SWE::Variables::qx) =
-        Global::g *
-        cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));
+        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));
     row(internal.source_at_gp, SWE::Variables::qy) =
-        Global::g *
-        cwise_multiplication(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
+        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
 
     if (SWE::SourceTerms::function_source) {
         auto source_u = [t](Point<2>& pt) { return SWE::source_u(t, pt); };
@@ -96,7 +94,7 @@ void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
         }
     }*/
 
-    for (uint dof = 0; dof < elt.data.get_ndof(); dof++) {
+    for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
         subvector(internal.rhs_local, SWE::n_variables * dof, SWE::n_variables) +=
             elt.IntegrationPhi(dof, internal.source_at_gp);
     }

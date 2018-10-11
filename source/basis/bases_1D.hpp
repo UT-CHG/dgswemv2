@@ -12,10 +12,8 @@ class Legendre_1D : Basis<1> {
 
     DynMatrix<double> GetMinv(const uint p);
 
-    template <typename InputArrayType>
-    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
-    template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u);
+    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin);
 };
 }
 

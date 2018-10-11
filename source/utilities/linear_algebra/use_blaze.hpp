@@ -12,6 +12,16 @@
 #include "serialization/blaze_matrix.hpp"
 #endif
 
+namespace SO {
+constexpr bool ColumnMajor = blaze::columnMajor;
+constexpr bool RowMajor    = blaze::rowMajor;
+}
+
+constexpr int hyb_mat_buff_size = 16;
+
+template <typename Matrix>
+using Column = decltype(blaze::column(std::declval<Matrix>(), std::declval<int>()));
+
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;
 template <typename T, uint m, uint n>
@@ -24,9 +34,7 @@ using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
 template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
 template <typename T, uint m>
-using HybMatrix = blaze::HybridMatrix<T, m, 16>;
-template <typename Matrix>
-using HybColumnType = decltype(blaze::column<1UL>(std::declval<Matrix>()));
+using HybMatrix = blaze::HybridMatrix<T, m, hyb_mat_buff_size>;
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;
@@ -37,10 +45,10 @@ template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
 template <typename T>
-DynVector<T> IdentityVector(uint size) {
+DynVector<T> IdentityVector(const uint size) {
     DynVector<T> I_vector(size * size, 0.0);
 
-    for (uint i = 0; i < size; i++) {
+    for (uint i = 0; i < size; ++i) {
         I_vector[i * size + i] = 1.0;
     }
 
@@ -51,7 +59,7 @@ template <typename T>
 struct SparseMatrixMeta {
     std::map<uint, std::map<uint, T>> data;
 
-    void add_triplet(uint row, uint col, T value) { this->data[row][col] = value; }
+    void add_triplet(const uint row, const uint col, const T value) { this->data[row][col] = value; }
 
     void get_sparse_matrix(SparseMatrix<T>& sparse_matrix) {
         uint nel = 0;
@@ -77,11 +85,6 @@ struct SparseMatrixMeta {
 
 /* Vector/Matrix (aka Array) Operations */
 template <typename ArrayType>
-void set_constant(ArrayType& array, double value) {
-    array = value;
-}
-
-template <typename ArrayType>
 void set_constant(ArrayType&& array, double value) {
     array = value;
 }
@@ -97,29 +100,39 @@ double norm(const ArrayType& array) {
 }
 
 template <typename ArrayType>
-decltype(auto) power(const ArrayType& array, double exp) {
+decltype(auto) power(const ArrayType& array, const double exp) {
     return blaze::pow(array, exp);
 }
 
-template <typename LeftArrayType, typename RightArrayType>
-decltype(auto) cwise_multiplication(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return blaze::map(array_left, array_right, [](double l, double r) { return r * l; });
-}
-
-template <typename LeftArrayType, typename RightArrayType>
-decltype(auto) cwise_division(const LeftArrayType& array_left, const RightArrayType& array_right) {
-    return blaze::map(array_left, array_right, [](double l, double r) { return r / l; });
-}
-
 /* Vector Operations */
-template <typename VectorType>
-decltype(auto) subvector(VectorType& vector, uint start_row, uint size_row) {
-    return blaze::subvector(vector, start_row, size_row);
+template <typename LeftVectorType, typename RightVectorType>
+decltype(auto) vec_cw_mult(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
+    return vector_left * vector_right;
 }
 
-template <typename T, uint n>
-DynMatrix<T> reshape(const DynVector<T>& vector) {
-    return DynMatrix<T>(n, n, vector.data());
+template <typename LeftVectorType, typename RightVectorType>
+decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
+    return vector_left / vector_right;
+}
+
+template <typename T>
+DynVector<T> vector_from_array(T* array, const uint n) {
+    return DynVector<T>(n, array);
+}
+
+template <typename VectorType>
+decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint size_row) {
+    return blaze::subvector(std::forward<VectorType>(vector), start_row, size_row);
+}
+
+template <typename T, int n, int m = n, bool SO = blaze::rowMajor>
+blaze::StaticMatrix<T, n, m, SO> reshape(const StatVector<T, n * m>& vector) {
+    return blaze::StaticMatrix<T, n, m, SO>(n, m, vector.data());
+}
+
+template <typename T, int n, bool SO = blaze::rowMajor>
+blaze::HybridMatrix<T, n, hyb_mat_buff_size, SO> reshape(const DynVector<T>& vector, const int m) {
+    return blaze::HybridMatrix<T, n, hyb_mat_buff_size, SO>(n, m, vector.data());
 }
 
 /* Matrix Operations */
@@ -134,18 +147,22 @@ uint columns(const MatrixType& matrix) {
 }
 
 template <typename MatrixType>
-decltype(auto) submatrix(MatrixType& matrix, uint start_row, uint start_col, uint size_row, uint size_col) {
-    return blaze::submatrix(matrix, start_row, start_col, size_row, size_col);
+decltype(auto) submatrix(MatrixType&& matrix,
+                         const uint start_row,
+                         const uint start_col,
+                         const uint size_row,
+                         const uint size_col) {
+    return blaze::submatrix(std::forward<MatrixType>(matrix), start_row, start_col, size_row, size_col);
 }
 
 template <typename MatrixType>
-decltype(auto) row(MatrixType& matrix, uint row) {
-    return blaze::row(matrix, row);
+decltype(auto) row(MatrixType&& matrix, const uint row) {
+    return blaze::row(std::forward<MatrixType>(matrix), row);
 }
 
 template <typename MatrixType>
-decltype(auto) column(MatrixType& matrix, uint col) {
-    return blaze::column(matrix, col);
+decltype(auto) column(MatrixType&& matrix, const uint col) {
+    return blaze::column(std::forward<MatrixType>(matrix), col);
 }
 
 template <typename MatrixType>
@@ -173,7 +190,7 @@ void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Solutions generated here can be rubbish
     printf("No sparse solver in Blaze! Consult use_blaze.hpp!\n");
 
-    assert(false);
+    abort();
 
     DynMatrix<double> A_dense;
 

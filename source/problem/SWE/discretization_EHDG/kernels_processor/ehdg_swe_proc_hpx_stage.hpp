@@ -8,7 +8,7 @@
 namespace SWE {
 namespace EHDG {
 template <typename HPXSimUnitType>
-decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
+auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
     if (sim_unit->writer.WritingVerboseLog()) {
         sim_unit->writer.GetLogFile() << "Current (time, stage): (" << sim_unit->stepper.GetTimeAtCurrentStage() << ','
                                       << sim_unit->stepper.GetStage() << ')' << std::endl;
@@ -17,12 +17,12 @@ decltype(auto) Problem::hpx_stage_kernel(HPXSimUnitType* sim_unit) {
     }
 
     hpx::future<void> receive_future =
-        sim_unit->communicator.ReceiveAll(SWE::CommTypes::processor, sim_unit->stepper.GetTimestamp());
+        sim_unit->communicator.ReceiveAll(CommTypes::bound_state, sim_unit->stepper.GetTimestamp());
 
     sim_unit->discretization.mesh.CallForEachDistributedBoundary(
         [sim_unit](auto& dbound) { Problem::global_distributed_boundary_kernel(sim_unit->stepper, dbound); });
 
-    sim_unit->communicator.SendAll(SWE::CommTypes::processor, sim_unit->stepper.GetTimestamp());
+    sim_unit->communicator.SendAll(CommTypes::bound_state, sim_unit->stepper.GetTimestamp());
 
     if (sim_unit->writer.WritingVerboseLog()) {
         sim_unit->writer.GetLogFile() << "Starting work before receive" << std::endl;

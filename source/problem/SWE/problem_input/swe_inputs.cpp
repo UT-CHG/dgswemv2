@@ -208,7 +208,7 @@ Inputs::Inputs(YAML::Node& swe_node) {
 
 void Inputs::read_bcis(const std::string& bcis_file) {
     /*if (!Utilities::file_exists(bcis_file)) {
-        throw std::logic_error("Fata Error: BC/IS data file : " + bcis_file + " was not found!\n");
+        throw std::logic_error("Fata Error: BC/ISP data file : " + bcis_file + " was not found!\n");
     }*/
 
     std::ifstream file(bcis_file);
@@ -231,13 +231,13 @@ void Inputs::read_bcis(const std::string& bcis_file) {
             stream = std::stringstream(line);
             stream >> ncon;
 
-            for (uint con = 0; con < ncon; con++) {
+            for (uint con = 0; con < ncon; ++con) {
                 std::getline(file, line);
 
                 stream = std::stringstream(line);
                 stream >> frequency >> force_fact >> eq_argument;
 
-                for (uint node = 0; node < nnodes; node++) {
+                for (uint node = 0; node < nnodes; ++node) {
                     std::getline(file, line);
 
                     stream = std::stringstream(line);
@@ -262,13 +262,13 @@ void Inputs::read_bcis(const std::string& bcis_file) {
             stream = std::stringstream(line);
             stream >> ncon;
 
-            for (uint con = 0; con < ncon; con++) {
+            for (uint con = 0; con < ncon; ++con) {
                 std::getline(file, line);
 
                 stream = std::stringstream(line);
                 stream >> frequency >> force_fact >> eq_argument;
 
-                for (uint node = 0; node < nnodes; node++) {
+                for (uint node = 0; node < nnodes; ++node) {
                     std::getline(file, line);
 
                     stream = std::stringstream(line);
@@ -287,7 +287,7 @@ void Inputs::read_bcis(const std::string& bcis_file) {
         } else if (btype == SWE::BoundaryTypes::levee) {
             uint front_node, back_node;
 
-            for (uint node = 0; node < nnodes; node++) {
+            for (uint node = 0; node < nnodes; ++node) {
                 std::getline(file, line);
 
                 LeveeInput levee;

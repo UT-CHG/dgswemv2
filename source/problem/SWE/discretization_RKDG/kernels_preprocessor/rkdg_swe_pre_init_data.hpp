@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace RKDG {
-void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
@@ -43,11 +43,11 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
 
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 internal.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 internal.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
             }
         }
@@ -112,7 +112,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
             double R         = problem_specific_input.spherical_projection.R;
 
             uint gp_ex;
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 gp_ex = ngp - gp - 1;
 
                 boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = cos_phi_o / std::cos(y_at_gp[gp] / R);
@@ -120,7 +120,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
             }
         } else {
             uint gp_ex;
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 gp_ex = ngp - gp - 1;
 
                 boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = 1.0;
@@ -159,11 +159,11 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
 
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
             }
         }
@@ -196,7 +196,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
             const std::vector<uint>& node_ID = elt.GetNodeID();
 
-            for (uint node = 0; node < elt.data.get_nnode(); node++) {
+            for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
             }
 
@@ -214,7 +214,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         mesh.CallForEachElement([&problem_specific_input](auto& elt) {
             double y_avg = 0;
 
-            for (uint node = 0; node < elt.data.get_nnode(); node++) {
+            for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 y_avg += elt.GetShape().nodal_coordinates[node][GlobalCoord::y];
             }
 
@@ -234,7 +234,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         auto& state    = elt.data.state[0];
         auto& wd_state = elt.data.wet_dry_state;
 
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             wd_state.bath_at_vrtx[vrtx] = shape.nodal_coordinates[vrtx][GlobalCoord::z];
         }
 
@@ -244,13 +244,13 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
 
         wd_state.q_at_vrtx = elt.ComputeLinearUvrtx(wd_state.q_lin);
 
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             wd_state.h_at_vrtx[vrtx] = wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) + wd_state.bath_at_vrtx[vrtx];
         }
 
         bool set_wet_element = true;
 
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
 
@@ -263,7 +263,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         } else {
             wd_state.wet = false;
 
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
                 wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
             }
@@ -282,7 +282,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
 
         DynRowVector<double> bath_lin(elt.data.get_nvrtx());
 
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             bath_lin[vrtx] = shape.nodal_coordinates[vrtx][GlobalCoord::z];
         }
 
@@ -292,7 +292,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         sl_state.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
 
-        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
         }
     });
@@ -320,7 +320,7 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
         Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
         std::vector<double> b(2);
 
-        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
@@ -349,9 +349,8 @@ void Problem::initialize_data_kernel(ProblemMeshType& mesh, const ProblemInputTy
     });
 }
 
-void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
-                                                       const ProblemInputType& problem_specific_input) {
-    initialize_data_kernel(mesh, problem_specific_input);
+void Problem::initialize_data_parallel_pre_send(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+    initialize_data_serial(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();
@@ -383,11 +382,11 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
 
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
-            for (uint gp = 0; gp < ngp; gp++) {
+            for (uint gp = 0; gp < ngp; ++gp) {
                 boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
             }
         }
@@ -406,11 +405,11 @@ void Problem::initialize_data_parallel_pre_send_kernel(ProblemMeshType& mesh,
         }
 
         // Set message to send buffer
-        dbound.boundary_condition.exchanger.SetToSendBuffer(SWE::CommTypes::preprocessor, message);
+        dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::baryctr_coord, message);
     });
 }
 
-void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh) {
+void Problem::initialize_data_parallel_post_receive(ProblemMeshType& mesh) {
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;
 
@@ -418,7 +417,7 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh
 
         message.resize(SWE::n_dimensions);
 
-        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(SWE::CommTypes::preprocessor, message);
+        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_coord, message);
 
         for (uint dim = 0; dim < SWE::n_dimensions; ++dim) {
             sl_state.baryctr_coord_neigh[dbound.bound_id][dim] = message[dim];
@@ -431,7 +430,7 @@ void Problem::initialize_data_parallel_post_receive_kernel(ProblemMeshType& mesh
         Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
         std::vector<double> b(2);
 
-        for (uint bound = 0; bound < elt.data.get_nbound(); bound++) {
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
