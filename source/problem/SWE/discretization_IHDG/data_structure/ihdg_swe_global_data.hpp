@@ -12,8 +12,6 @@ struct GlobalData {
 #endif
 
 #ifdef HAS_PETSC
-    bool converged = false;
-
     Mat delta_hat_global;
     Vec rhs_global;
     KSP ksp;
@@ -22,6 +20,9 @@ struct GlobalData {
     IS from, to;
     VecScatter scatter;
     Vec sol;
+
+    DynVector<double> solution;
+    bool converged = false;
 
     void destroy() {
         MatDestroy(&delta_hat_global);

@@ -69,7 +69,7 @@ void OMPISimulation<ProblemType>::Run() {
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        ProblemType::preprocessor_ompi(this->sim_units);
+        ProblemType::preprocessor_ompi(this->sim_units, begin_sim_id, end_sim_id);
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
             if (this->sim_units[su_id]->writer.WritingLog()) {
@@ -98,7 +98,7 @@ void OMPISimulation<ProblemType>::Run() {
                     }
                 }
 
-                ProblemType::stage_ompi(this->sim_units);
+                ProblemType::stage_ompi(this->sim_units, begin_sim_id, end_sim_id);
             }
 
             for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {

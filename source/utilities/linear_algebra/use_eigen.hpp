@@ -98,8 +98,8 @@ decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorTy
 }
 
 template <typename T>
-Eigen::Map<DynVector<T>> vector_from_array(T* array, const uint n) {
-    return Eigen::Map<DynVector<T>>(array, n);
+Eigen::Map<DynVector<T>> vector_from_array(T* array, const uint m) {
+    return Eigen::Map<DynVector<T>>(array, m);
 }
 
 template <typename VectorType>
@@ -107,14 +107,21 @@ decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint s
     return vector.segment(start_row, size_row);
 }
 
-template <typename T, int n, int m = n, int SO = Eigen::StorageOptions::RowMajor>
-Eigen::Map<Eigen::Matrix<T, n, m, SO>> reshape(const StatVector<T, n * m>& vector) {
-    return Eigen::Map<Eigen::Matrix<T, n, m, SO>>(const_cast<T*>(vector.data()), n, m);
+template <typename T, int m, int n = m, int SO = Eigen::StorageOptions::RowMajor>
+Eigen::Map<Eigen::Matrix<T, m, n, SO>> reshape(const StatVector<T, m * n>& vector) {
+    return Eigen::Map<Eigen::Matrix<T, m, n, SO>>(const_cast<T*>(vector.data()), m, n);
 }
 
-template <typename T, int n, int SO = Eigen::StorageOptions::RowMajor>
-Eigen::Map<Eigen::Matrix<T, n, Eigen::Dynamic, SO>> reshape(const DynVector<T>& vector, const int m) {
-    return Eigen::Map<Eigen::Matrix<T, n, Eigen::Dynamic, SO>>(const_cast<T*>(vector.data()), n, m);
+template <typename T, int m, int SO = Eigen::StorageOptions::RowMajor>
+Eigen::Map<Eigen::Matrix<T, m, Eigen::Dynamic, SO>> reshape(const DynVector<T>& vector, const int n) {
+    return Eigen::Map<Eigen::Matrix<T, m, Eigen::Dynamic, SO>>(const_cast<T*>(vector.data()), m, n);
+}
+
+template <typename T, int SO = Eigen::StorageOptions::RowMajor>
+Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, SO>> reshape(const DynVector<T>& vector,
+                                                                         const int m,
+                                                                         const int n) {
+    return Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, SO>>(const_cast<T*>(vector.data()), m, n);
 }
 
 /* Matrix Operations */
@@ -155,6 +162,33 @@ decltype(auto) determinant(MatrixType& matrix) {
 template <typename MatrixType>
 decltype(auto) inverse(MatrixType& matrix) {
     return matrix.inverse();
+}
+
+template <typename T, int m, int n = m, int SO = Eigen::StorageOptions::RowMajor>
+StatVector<T, m * n> flatten(const StatMatrix<T, m, n>& matrix) {
+    StatVector<T, m * n> ret;
+
+    Eigen::Map<Eigen::Matrix<double, m, n, SO>>(ret.data(), m, n) = matrix;
+
+    return ret;
+}
+
+template <typename T, int m, int SO = Eigen::StorageOptions::RowMajor>
+DynVector<T> flatten(const HybMatrix<T, m>& matrix, const uint n) {
+    DynVector<T> ret(m * n);
+
+    Eigen::Map<Eigen::Matrix<double, m, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
+
+    return ret;
+}
+
+template <typename T, int SO = Eigen::StorageOptions::RowMajor>
+DynVector<T> flatten(const DynMatrix<T>& matrix, const uint n, const uint m) {
+    DynVector<T> ret(m * n);
+
+    Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
+
+    return ret;
 }
 
 /* Solving Linear System */

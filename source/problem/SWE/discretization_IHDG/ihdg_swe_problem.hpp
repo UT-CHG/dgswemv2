@@ -99,7 +99,9 @@ struct Problem {
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
-    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                  uint begin_sim_id,
+                                  uint end_sim_id);
 
     static void initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
@@ -124,7 +126,9 @@ struct Problem {
     static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                           uint begin_sim_id,
+                           uint end_sim_id);
 
     /* local step begin */
 
@@ -168,7 +172,9 @@ struct Problem {
     static bool serial_solve_global_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                          uint begin_sim_id,
+                                          uint end_sim_id);
 
     /* global step end */
 

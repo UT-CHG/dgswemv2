@@ -100,7 +100,9 @@ struct Problem {
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
-    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                  uint begin_sim_id,
+                                  uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
@@ -119,7 +121,9 @@ struct Problem {
     static void stage_serial(const RKStepper& stepper, HDGDiscretization<ProblemType>& discretization);
 
     template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                           uint begin_sim_id,
+                           uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto stage_hpx(HPXSimUnitType* sim_unit);

@@ -15,6 +15,9 @@ struct EdgeInternal : SWE::EHDG::EdgeInternal {
     DynMatrix<double> w1_hat_w1_hat;
     DynVector<double> w1_hat_rhs;
 
+    DynVector<double> w1_hat_w1_hat_flat;
+    std::vector<DynVector<double>> w1_hat_w1_hat_con_flat;
+
     std::vector<uint> dc_global_dof_indx;
     uint dc_sol_offset;
 };

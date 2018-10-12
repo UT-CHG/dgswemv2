@@ -99,7 +99,9 @@ struct Problem {
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
-    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                  uint begin_sim_id,
+                                  uint end_sim_id);
 
     static void initialize_dc_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
 
@@ -124,13 +126,17 @@ struct Problem {
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                                    uint begin_sim_id,
+                                                    uint end_sim_id);
 
     // processor kernels
     static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                           uint begin_sim_id,
+                           uint end_sim_id);
 
     /* Dispersive correction part */
 
@@ -139,10 +145,14 @@ struct Problem {
     static void compute_derivatives_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                           uint begin_sim_id,
+                                           uint end_sim_id);
 
     template <typename OMPISimUnitType>
-    static void compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                         uint begin_sim_id,
+                                         uint end_sim_id);
 
     /* local step */
 
@@ -175,14 +185,18 @@ struct Problem {
     static void serial_solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                             uint begin_sim_id,
+                                             uint end_sim_id);
 
     /* SWE part */
 
     static void swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
-    static void swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units);
+    static void swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                               uint begin_sim_id,
+                               uint end_sim_id);
 
     /* SWE part */
 

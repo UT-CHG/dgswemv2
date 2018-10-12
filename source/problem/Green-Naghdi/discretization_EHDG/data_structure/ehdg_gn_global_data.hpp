@@ -21,6 +21,8 @@ struct GlobalData : SWE::EHDG::GlobalData {
     VecScatter dc_scatter;
     Vec dc_sol;
 
+    DynVector<double> dc_solution;
+
     void destroy() {
         SWE::EHDG::GlobalData::destroy();
 

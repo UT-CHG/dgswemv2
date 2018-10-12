@@ -4,7 +4,9 @@
 namespace SWE {
 namespace IHDG {
 template <typename OMPISimUnitType>
-void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
+void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                uint begin_sim_id,
+                                uint end_sim_id) {
 #pragma omp master
     {
         auto& global_data = sim_units[0]->discretization.global_data;
@@ -81,8 +83,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         KSPCreate(MPI_COMM_WORLD, &(global_data.ksp));
         KSPSetOperators(global_data.ksp, global_data.delta_hat_global, global_data.delta_hat_global);
 
-        KSPGetPC(global_data.ksp, &(global_data.pc));
-        PCSetType(global_data.pc, PCLU);
+        //KSPGetPC(global_data.ksp, &(global_data.pc));
+        //PCSetType(global_data.pc, PCLU);
 
         MPI_Scatter(&total_global_dof_offsets.front(),
                     1,
@@ -136,7 +138,6 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         VecScatterCreate(
             global_data.rhs_global, global_data.from, global_data.sol, global_data.to, &(global_data.scatter));
     }
-
 #pragma omp barrier
 }
 }

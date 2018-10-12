@@ -10,18 +10,8 @@
 namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
-void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    Problem::swe_stage_ompi(sim_units);
-
-    uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
-
-    n_threads = (uint)omp_get_num_threads();
-    thread_id = (uint)omp_get_thread_num();
-
-    sim_per_thread = (sim_units.size() + n_threads - 1) / n_threads;
-
-    begin_sim_id = sim_per_thread * thread_id;
-    end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
+void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, uint begin_sim_id, uint end_sim_id) {
+    Problem::swe_stage_ompi(sim_units, begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
@@ -34,9 +24,9 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         });
     }
 
-    Problem::dispersive_correction_ompi(sim_units);
+    Problem::dispersive_correction_ompi(sim_units, begin_sim_id, end_sim_id);
 
-    Problem::swe_stage_ompi(sim_units);
+    Problem::swe_stage_ompi(sim_units, begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
@@ -51,17 +41,9 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 }
 
 template <typename OMPISimUnitType>
-void Problem::swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
-
-    n_threads = (uint)omp_get_num_threads();
-    thread_id = (uint)omp_get_thread_num();
-
-    sim_per_thread = (sim_units.size() + n_threads - 1) / n_threads;
-
-    begin_sim_id = sim_per_thread * thread_id;
-    end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
-
+void Problem::swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                             uint begin_sim_id,
+                             uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile()
@@ -178,18 +160,10 @@ void Problem::swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_
 }
 
 template <typename OMPISimUnitType>
-void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    Problem::compute_derivatives_ompi(sim_units);
-
-    uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
-
-    n_threads = (uint)omp_get_num_threads();
-    thread_id = (uint)omp_get_thread_num();
-
-    sim_per_thread = (sim_units.size() + n_threads - 1) / n_threads;
-
-    begin_sim_id = sim_per_thread * thread_id;
-    end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)sim_units.size());
+void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                         uint begin_sim_id,
+                                         uint end_sim_id) {
+    Problem::compute_derivatives_ompi(sim_units, begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement(
@@ -225,12 +199,7 @@ void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnit
             });
     }
 
-#pragma omp barrier
-
-#pragma omp master
-    { Problem::ompi_solve_global_dc_problem(sim_units); }
-
-#pragma omp barrier
+    Problem::ompi_solve_global_dc_problem(sim_units, begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->discretization.mesh.CallForEachElement(

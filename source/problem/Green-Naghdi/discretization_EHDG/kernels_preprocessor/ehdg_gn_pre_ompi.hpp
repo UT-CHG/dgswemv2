@@ -6,8 +6,10 @@
 namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
-void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units) {
-    SWE::EHDG::Problem::preprocessor_ompi(sim_units);
+void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                uint begin_sim_id,
+                                uint end_sim_id) {
+    SWE::EHDG::Problem::preprocessor_ompi(sim_units, begin_sim_id, end_sim_id);
 
 #pragma omp master
     {
@@ -89,8 +91,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
 
-        KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
-        PCSetType(global_data.dc_pc, PCLU);
+        //KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
+        //PCSetType(global_data.dc_pc, PCLU);
 
         MPI_Scatter(&total_dc_global_dof_offsets.front(),
                     1,
@@ -150,7 +152,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
 #pragma omp barrier
 
-    Problem::compute_bathymetry_derivatives_ompi(sim_units);
+    Problem::compute_bathymetry_derivatives_ompi(sim_units, begin_sim_id, end_sim_id);
 }
 }
 }

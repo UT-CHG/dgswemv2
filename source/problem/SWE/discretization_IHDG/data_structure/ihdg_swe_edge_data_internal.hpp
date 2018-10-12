@@ -24,6 +24,9 @@ struct EdgeInternal {
     DynMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
 
+    DynVector<double> delta_hat_global_flat;
+    std::vector<DynVector<double>> delta_hat_global_con_flat;
+
     std::vector<uint> global_dof_indx;
     uint sol_offset;
 };
