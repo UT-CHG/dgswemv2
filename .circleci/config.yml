@@ -33,7 +33,7 @@ jobs:
             rm -rf /usr/dgswemv2/build/*
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
-                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_BUILD_TYPE=Debug \
                 -DSET_VERBOSE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
@@ -94,6 +94,7 @@ jobs:
       - attach_workspace:
           at: /usr/dgswemv2
       - run:
+          no_output_timeout: 60m
           name: EHDG Parallel Manufactured Solution
           command: |
             /usr/dgswemv2/scripts/correctness/test_ehdg_parallel_correctness.sh
