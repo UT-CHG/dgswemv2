@@ -33,7 +33,7 @@ jobs:
             rm -rf /usr/dgswemv2/build/*
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
-                -DCMAKE_BUILD_TYPE=Debug \
+                -DCMAKE_BUILD_TYPE=Release \
                 -DSET_VERBOSE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
