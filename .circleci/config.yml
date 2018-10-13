@@ -61,7 +61,7 @@ jobs:
           command: |
             ctest --test-regex unit
 
-  run_parallel_correctness:
+  rkdg_run_parallel_correctness:
     <<: *defaults
     steps:
       - restore_cache:
@@ -69,11 +69,11 @@ jobs:
       - attach_workspace:
           at: /usr/dgswemv2
       - run:
-          name: Parallel Manufactured Solution
+          name: RKDG Parallel Manufactured Solution
           command: |
             /usr/dgswemv2/scripts/correctness/test_parallel_correctness.sh
 
-  run_parallel_weirs:
+  rkdg_run_parallel_weirs:
     <<: *defaults
     steps:
       - restore_cache:
@@ -82,7 +82,7 @@ jobs:
           at: /usr/dgswemv2
       - run:
           no_output_timeout: 60m
-          name: Parallel Weirs
+          name: RKDG Parallel Weirs
           command: |
             /usr/dgswemv2/scripts/correctness/test_parallel_weirs.sh
 
@@ -98,9 +98,9 @@ workflows:
       - run_unit_tests:
           requires:
             - build_dgswemv2
-      - run_parallel_correctness:
+      - rkdg_run_parallel_correctness:
           requires:
             - build_dgswemv2
-      - run_parallel_weirs:
+      - rkdg_run_parallel_weirs:
           requires:
             - build_dgswemv2
