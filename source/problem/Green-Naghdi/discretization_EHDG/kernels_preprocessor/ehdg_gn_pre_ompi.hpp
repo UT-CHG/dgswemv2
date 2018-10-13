@@ -11,6 +11,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                                 uint end_sim_id) {
     SWE::EHDG::Problem::preprocessor_ompi(sim_units, begin_sim_id, end_sim_id);
 
+#pragma omp barrier
 #pragma omp master
     {
         auto& global_data = sim_units[0]->discretization.global_data;
