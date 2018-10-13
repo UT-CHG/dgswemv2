@@ -39,8 +39,8 @@ jobs:
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
                 -DBUILD_EXAMPLES=On \
-                -RKDG_SWE=On \
-                -EHDG_SWE=On \
+                -DRKDG_SWE=On \
+                -DEHDG_SWE=On \
                 /usr/dgswemv2
             make
       - persist_to_workspace:
