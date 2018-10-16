@@ -29,7 +29,7 @@ HPXCommunicator::HPXCommunicator(const DistributedBoundaryMetaData& db_data) {
 }
 
 void HPXCommunicator::SendAll(const uint comm_type, const uint timestamp) {
-    const uint offset = this->GetNCommunications()*timestamp + comm_type;
+    const uint offset = this->GetNCommunications() * timestamp + comm_type;
 
     for (auto& rank_boundary : this->rank_boundaries) {
         rank_boundary.outgoing.set(rank_boundary.send_buffer[comm_type], offset);
@@ -40,11 +40,11 @@ hpx::future<void> HPXCommunicator::ReceiveAll(const uint comm_type, const uint t
     std::vector<hpx::future<void>> receive_futures;
     receive_futures.reserve(this->rank_boundaries.size());
 
-    const uint offset = this->GetNCommunications()*timestamp + comm_type;
+    const uint offset = this->GetNCommunications() * timestamp + comm_type;
 
     for (auto& rank_boundary : this->rank_boundaries) {
-        receive_futures.push_back(rank_boundary.incoming.get(offset).then(
-            [&rank_boundary, comm_type](hpx::future<array_double> msg_future) {
+        receive_futures.push_back(
+            rank_boundary.incoming.get(offset).then([&rank_boundary, comm_type](hpx::future<array_double> msg_future) {
                 rank_boundary.receive_buffer[comm_type] = msg_future.get();
             }));
     }
