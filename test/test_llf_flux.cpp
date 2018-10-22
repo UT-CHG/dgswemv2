@@ -19,29 +19,42 @@ bool test_configuration(const int configuration,
                         const double true_qy_flux) {
     bool error_found = false;
 
-    StatVector<double, 3> q_in{ze_in, qx_in, qy_in};
-    StatVector<double, 3> q_ex{ze_ex, qx_ex, qy_ex};
-    StatVector<double, 3> aux_in{bath, ze_in + bath, sp};
+    HybMatrix<double, 3> q_in(3, 1);
+    q_in(0, 0) = ze_in;
+    q_in(1, 0) = qx_in;
+    q_in(2, 0) = qy_in;
+    HybMatrix<double, 3> q_ex(3, 1);
+    q_ex(0, 0) = ze_ex;
+    q_ex(1, 0) = qx_ex;
+    q_ex(2, 0) = qy_ex;
+    HybMatrix<double, 3> aux_in(3, 1);
+    aux_in(0, 0) = bath;
+    aux_in(1, 0) = ze_in + bath;
+    aux_in(2, 0) = sp;
+    HybMatrix<double, 2> norm(2, 1);
+    norm(0, 0) = normal[0];
+    norm(1, 0) = normal[1];
 
-    StatVector<double, 3> F_hat;
+    HybMatrix<double, 3> F_hat(3, 1);
 
-    F_hat = SWE::RKDG::LLF_flux(SWE::Global::g, q_in, q_ex, aux_in, normal);
+    SWE::RKDG::LLF_flux(
+        SWE::Global::g, column(q_in, 0), column(q_ex, 0), column(aux_in, 0), column(norm, 0), column(F_hat, 0));
 
-    if (!Utilities::almost_equal(F_hat[0], true_ze_flux)) {
+    if (!Utilities::almost_equal(F_hat(0, 0), true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";
-        std::cerr << "Got: " << F_hat[0] << " Should be:  " << true_ze_flux << "\n";
+        std::cerr << "Got: " << F_hat(0, 0) << " Should be:  " << true_ze_flux << "\n";
         error_found = true;
     }
 
-    if (!Utilities::almost_equal(F_hat[1], true_qx_flux)) {
+    if (!Utilities::almost_equal(F_hat(1, 0), true_qx_flux)) {
         std::cerr << "Error in configuration " << configuration << " in x-momentum flux\n";
-        std::cerr << "Got: " << F_hat[1] << " Should be:  " << true_qx_flux << "\n";
+        std::cerr << "Got: " << F_hat(1, 0) << " Should be:  " << true_qx_flux << "\n";
         error_found = true;
     }
 
-    if (!Utilities::almost_equal(F_hat[2], true_qy_flux)) {
+    if (!Utilities::almost_equal(F_hat(2, 0), true_qy_flux)) {
         std::cerr << "Error in configuration 1 in y-momentum flux\n";
-        std::cerr << "Got: " << F_hat[2] << " Should be:  " << true_qy_flux << "\n";
+        std::cerr << "Got: " << F_hat(2, 0) << " Should be:  " << true_qy_flux << "\n";
         error_found = true;
     }
 

@@ -174,7 +174,9 @@ StatVector<T, m * n> flatten(const StatMatrix<T, m, n>& matrix) {
 }
 
 template <typename T, int m, int SO = Eigen::StorageOptions::RowMajor>
-DynVector<T> flatten(const HybMatrix<T, m>& matrix, const uint n) {
+DynVector<T> flatten(const HybMatrix<T, m>& matrix) {
+    uint n = matrix.cols();
+
     DynVector<T> ret(m * n);
 
     Eigen::Map<Eigen::Matrix<double, m, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
@@ -183,7 +185,10 @@ DynVector<T> flatten(const HybMatrix<T, m>& matrix, const uint n) {
 }
 
 template <typename T, int SO = Eigen::StorageOptions::RowMajor>
-DynVector<T> flatten(const DynMatrix<T>& matrix, const uint n, const uint m) {
+DynVector<T> flatten(const DynMatrix<T>& matrix) {
+    uint m = matrix.rows();
+    uint n = matrix.cols();
+
     DynVector<T> ret(m * n);
 
     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
