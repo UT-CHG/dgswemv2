@@ -12,13 +12,13 @@ namespace SWE {
 namespace RKDG {
 namespace DBC {
 class DistributedLevee {
-  private:
-    HybMatrix<double, SWE::n_variables> q_ex;
-
   public:
     DBDataExchanger exchanger;
 
+  private:
     double H_tolerance = 0.01;
+
+    HybMatrix<double, SWE::n_variables> q_ex;
 
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
@@ -27,6 +27,8 @@ class DistributedLevee {
     DynRowVector<double> H_bar_gp;
     DynRowVector<double> C_subcrit_gp;
     DynRowVector<double> C_supercrit_gp;
+
+    BC::Land land_boundary;
 
   public:
     DistributedLevee() = default;
@@ -86,9 +88,6 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    BC::Land land_boundary;
-    land_boundary.Initialize(dbound.data.get_ngp_boundary(dbound.bound_id));
-
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
     double gravity;
@@ -107,7 +106,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
 
             // reflective boundary
-            land_boundary.GetEX(
+            this->land_boundary.GetEX(
                 stepper, column(dbound.surface_normal, gp), column(boundary.q_at_gp, gp), column(this->q_ex, gp));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;

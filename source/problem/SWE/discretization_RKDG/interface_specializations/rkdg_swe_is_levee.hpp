@@ -23,6 +23,8 @@ class Levee {
     DynRowVector<double> C_subcrit_gp;
     DynRowVector<double> C_supercrit_gp;
 
+    BC::Land land_boundary;
+
   public:
     Levee() = default;
     Levee(const std::vector<LeveeInput>& levee_input);
@@ -70,9 +72,6 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
     uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
 
-    BC::Land land_boundary;
-    land_boundary.Initialize(ngp);
-
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
     double gravity_in, gravity_ex;
@@ -95,16 +94,16 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
 
             // reflective boundary in
-            land_boundary.GetEX(stepper,
-                                column(intface.surface_normal_in, gp),
-                                column(boundary_in.q_at_gp, gp),
-                                column(this->q_in_ex, gp));
+            this->land_boundary.GetEX(stepper,
+                                      column(intface.surface_normal_in, gp),
+                                      column(boundary_in.q_at_gp, gp),
+                                      column(this->q_in_ex, gp));
 
             // reflective boundary ex
-            land_boundary.GetEX(stepper,
-                                column(intface.surface_normal_ex, gp_ex),
-                                column(boundary_ex.q_at_gp, gp_ex),
-                                column(this->q_ex_ex, gp_ex));
+            this->land_boundary.GetEX(stepper,
+                                      column(intface.surface_normal_ex, gp_ex),
+                                      column(boundary_ex.q_at_gp, gp_ex),
+                                      column(this->q_ex_ex, gp_ex));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 

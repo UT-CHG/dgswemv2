@@ -13,6 +13,8 @@ class Distributed {
   private:
     HybMatrix<double, SWE::n_variables> q_ex;
 
+    BC::Land land_boundary;
+
   public:
     DBDataExchanger exchanger;
 
@@ -33,6 +35,8 @@ template <typename DistributedBoundaryType>
 void Distributed::Initialize(DistributedBoundaryType& dbound) {
     uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
     this->q_ex.resize(SWE::n_variables, ngp);
+
+    this->land_boundary.Initialize(1);
 }
 
 template <typename DistributedBoundaryType>
@@ -65,44 +69,36 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
                  column(boundary.aux_at_gp, gp),
                  column(dbound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
-    }
 
-    // compute net volume flux out of IN/EX elements
-    double net_volume_flux_in = 0;
+        if (boundary.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
+            if (!wet_in) {  // water flowing from dry IN element
+                // Zero flux on IN element side
+                set_constant(column(boundary.F_hat_at_gp, gp), 0.0);
+            }
+        } else if (boundary.F_hat_at_gp(Variables::ze, gp) < -1e-12) {
+            if (!wet_ex) {  // water flowing from dry EX element
+                // Reflective Boundary on IN element side
+                this->land_boundary.ComputeFlux(stepper,
+                                                column(dbound.surface_normal, gp),
+                                                column(boundary.q_at_gp, gp),
+                                                column(boundary.aux_at_gp, gp),
+                                                column(boundary.F_hat_at_gp, gp));
+            } else if (!wet_in) {  // water flowing to dry IN element
+                double temp_flux_ze = boundary.F_hat_at_gp(Variables::ze, gp);
 
-    net_volume_flux_in = dbound.Integration(boundary.F_hat_at_gp)[SWE::Variables::ze];
-
-    if (net_volume_flux_in > 0) {
-        if (!wet_in) {  // water flowing from dry IN element
-            // Zero flux on IN element side
-            set_constant(boundary.F_hat_at_gp, 0.0);
-
-            net_volume_flux_in = 0;
-        } else if (!wet_ex) {  // water flowing to dry EX element
-            net_volume_flux_in = dbound.Integration(boundary.F_hat_at_gp)[SWE::Variables::ze];
-        }
-    } else if (net_volume_flux_in < 0) {
-        if (!wet_ex) {  // water flowing from dry EX element
-            // Reflective Boundary on IN element side
-            BC::Land land_boundary;
-            land_boundary.Initialize(dbound.data.get_ngp_boundary(dbound.bound_id));
-
-            // land_boundary.ComputeFlux(
-            //    stepper, dbound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);
-
-            net_volume_flux_in = 0;
-        } else if (!wet_in) {  // water flowing to dry IN element
-            for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
                 LLF_flux(0.0,
                          column(boundary.q_at_gp, gp),
                          column(this->q_ex, gp),
                          column(boundary.aux_at_gp, gp),
                          column(dbound.surface_normal, gp),
                          column(boundary.F_hat_at_gp, gp));
-            }
 
-            net_volume_flux_in = dbound.Integration(boundary.F_hat_at_gp)[SWE::Variables::ze];
+                // Only remove gravity contributions for the momentum fluxes
+                boundary.F_hat_at_gp(Variables::ze, gp) = temp_flux_ze;
+            }
         }
+
+        assert(!std::isnan(boundary.F_hat_at_gp(Variables::ze, gp)));
     }
 }
 }
