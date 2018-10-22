@@ -17,8 +17,7 @@ void Problem::boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
 
         boundary.q_at_gp = bound.ComputeUgp(state.q);
 
-        bound.boundary_condition.ComputeFlux(
-            stepper, bound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);
+        bound.boundary_condition.ComputeFlux(stepper, bound);
 
         // now compute contributions to the righthand side
         state.rhs -= bound.IntegrationPhi(boundary.F_hat_at_gp);

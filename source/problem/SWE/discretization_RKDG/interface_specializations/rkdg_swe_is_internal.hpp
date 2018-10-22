@@ -31,11 +31,12 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = ngp - gp - 1;
 
-        column(boundary_in.F_hat_at_gp, gp) = LLF_flux(Global::g,
+        LLF_flux(Global::g,
                                                        column(boundary_in.q_at_gp, gp),
                                                        column(boundary_ex.q_at_gp, gp_ex),
                                                        column(boundary_in.aux_at_gp, gp),
-                                                       column(intface.surface_normal_in, gp));
+                                                       column(intface.surface_normal_in, gp),
+                                                       column(boundary_in.F_hat_at_gp, gp));
 
         column(boundary_ex.F_hat_at_gp, gp_ex) = -column(boundary_in.F_hat_at_gp, gp);
 
@@ -56,11 +57,11 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             } else if (!wet_ex) {  // water flowing to dry EX element
 
-                column(boundary_ex.F_hat_at_gp, gp_ex) = LLF_flux(0.0,
+                LLF_flux(0.0,
                                                                   column(boundary_ex.q_at_gp, gp_ex),
                                                                   column(boundary_in.q_at_gp, gp),
                                                                   column(boundary_ex.aux_at_gp, gp_ex),
-                                                                  column(intface.surface_normal_ex, gp_ex));
+                                                                  column(intface.surface_normal_ex, gp_ex),column(boundary_ex.F_hat_at_gp, gp_ex));
 
                 // Only remove gravity contributions for the momentum fluxes
                 boundary_ex.F_hat_at_gp(Variables::ze, gp_ex) = -boundary_in.F_hat_at_gp(Variables::ze, gp);
@@ -82,11 +83,12 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
             } else if (!wet_in) {  // water flowing to dry IN element
 
-                column(boundary_in.F_hat_at_gp, gp) = LLF_flux(0.0,
+                LLF_flux(0.0,
                                                                column(boundary_in.q_at_gp, gp),
                                                                column(boundary_ex.q_at_gp, gp_ex),
                                                                column(boundary_in.aux_at_gp, gp),
-                                                               column(intface.surface_normal_in, gp));
+                                                               column(intface.surface_normal_in, gp),
+                                                               column(boundary_in.F_hat_at_gp, gp) );
 
                 boundary_in.F_hat_at_gp(Variables::ze, gp) = -boundary_ex.F_hat_at_gp(Variables::ze, gp_ex);
             }

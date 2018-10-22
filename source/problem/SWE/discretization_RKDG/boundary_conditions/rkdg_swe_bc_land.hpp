@@ -18,11 +18,8 @@ class Land {
 
     void Initialize(uint ngp);
 
-    void ComputeFlux(const RKStepper& stepper,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                     const HybMatrix<double, SWE::n_variables>& q_in,
-                     const HybMatrix<double, SWE::n_variables>& aux_in,
-                     HybMatrix<double, SWE::n_variables>& F_hat);
+    template <typename BoundaryType>
+    void ComputeFlux(const RKStepper& stepper, BoundaryType& bound);
 
     void ComputeFlux(const RKStepper& stepper,
                      const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
@@ -30,9 +27,10 @@ class Land {
                      const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
                      Column<HybMatrix<double, SWE::n_variables>>&& F_hat);
 
-    StatVector<double, SWE::n_variables> GetEX(const RKStepper& stepper,
-                                               const StatVector<double, SWE::n_dimensions>& surface_normal,
-                                               const StatVector<double, SWE::n_variables>& q_in);
+    void GetEX(const RKStepper& stepper,
+                                               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                                               const Column<HybMatrix<double, SWE::n_variables>>& q_in,
+                                               Column<HybMatrix<double, SWE::n_variables>>&& q_ex);
 };
 
 template <typename BoundaryType>
@@ -45,27 +43,26 @@ void Land::Initialize(uint ngp) {
     this->q_ex.resize(SWE::n_variables, ngp);
 }
 
-void Land::ComputeFlux(const RKStepper& stepper,
-                       const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                       const HybMatrix<double, SWE::n_variables>& q_in,
-                       const HybMatrix<double, SWE::n_variables>& aux_in,
-                       HybMatrix<double, SWE::n_variables>& F_hat) {
-    // *** //
-    auto n_x = row(surface_normal, GlobalCoord::x);
-    auto n_y = row(surface_normal, GlobalCoord::y);
+template <typename BoundaryType>
+void Land::ComputeFlux(const RKStepper& stepper, BoundaryType& bound){
+    auto& boundary = bound.data.boundary[bound.bound_id];
+    
+    auto n_x = row(bound.surface_normal, GlobalCoord::x);
+    auto n_y = row(bound.surface_normal, GlobalCoord::y);
     auto t_x = -n_y;
     auto t_y = n_x;
 
-    auto qn_ex = -(vec_cw_mult(row(q_in, SWE::Variables::qx), n_x) + vec_cw_mult(row(q_in, SWE::Variables::qy), n_y));
-    auto qt_ex = vec_cw_mult(row(q_in, SWE::Variables::qx), t_x) + vec_cw_mult(row(q_in, SWE::Variables::qy), t_y);
+    auto qn_ex = -(vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), n_x) + vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), n_y));
+    auto qt_ex = vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), t_x) + vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), t_y);
 
-    row(this->q_ex, SWE::Variables::ze) = row(q_in, SWE::Variables::ze);
+    row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn_ex, n_x) + vec_cw_mult(qt_ex, t_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn_ex, n_y) + vec_cw_mult(qt_ex, t_y);
 
-    for (uint gp = 0; gp < columns(q_in); ++gp) {
-        column(F_hat, gp) = LLF_flux(
-            Global::g, column(q_in, gp), column(this->q_ex, gp), column(aux_in, gp), column(surface_normal, gp));
+    for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
+        LLF_flux(
+            Global::g, column(boundary.q_at_gp, gp), column(this->q_ex, gp), column(boundary.aux_at_gp, gp), column(bound.surface_normal, gp),
+            column(boundary.F_hat_at_gp, gp));
     }
 }
 
@@ -87,14 +84,13 @@ void Land::ComputeFlux(const RKStepper& stepper,
     this->q_ex(SWE::Variables::qx, 0) = qn_ex * n_x + qt_ex * t_x;
     this->q_ex(SWE::Variables::qy, 0) = qn_ex * n_y + qt_ex * t_y;
 
-    F_hat = LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, surface_normal);
+    LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, surface_normal, std::move(F_hat));
 }
 
-StatVector<double, SWE::n_variables> Land::GetEX(const RKStepper& stepper,
-                                                 const StatVector<double, SWE::n_dimensions>& surface_normal,
-                                                 const StatVector<double, SWE::n_variables>& q_in) {
-    StatVector<double, SWE::n_variables> q_ex;
-
+void Land::GetEX(const RKStepper& stepper,
+                                                 const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                                               const Column<HybMatrix<double, SWE::n_variables>>& q_in,
+                                               Column<HybMatrix<double, SWE::n_variables>>&& q_ex) {
     double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
 
     n_x = surface_normal[GlobalCoord::x];
@@ -111,8 +107,6 @@ StatVector<double, SWE::n_variables> Land::GetEX(const RKStepper& stepper,
     q_ex[SWE::Variables::ze] = q_in[SWE::Variables::ze];
     q_ex[SWE::Variables::qx] = qn_ex * n_x + qt_ex * t_x;
     q_ex[SWE::Variables::qy] = qn_ex * n_y + qt_ex * t_y;
-
-    return q_ex;
 }
 }
 }

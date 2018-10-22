@@ -59,11 +59,12 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        column(boundary.F_hat_at_gp, gp) = LLF_flux(Global::g,
+        LLF_flux(Global::g,
                                                     column(boundary.q_at_gp, gp),
                                                     column(this->q_ex, gp),
                                                     column(boundary.aux_at_gp, gp),
-                                                    column(dbound.surface_normal, gp));
+                                                    column(dbound.surface_normal, gp),
+                                                    column(boundary.F_hat_at_gp, gp));
     }
 
     // compute net volume flux out of IN/EX elements
@@ -86,17 +87,18 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
             BC::Land land_boundary;
             land_boundary.Initialize(dbound.data.get_ngp_boundary(dbound.bound_id));
 
-            land_boundary.ComputeFlux(
-                stepper, dbound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);
+            //land_boundary.ComputeFlux(
+            //    stepper, dbound.surface_normal, boundary.q_at_gp, boundary.aux_at_gp, boundary.F_hat_at_gp);
 
             net_volume_flux_in = 0;
         } else if (!wet_in) {  // water flowing to dry IN element
             for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-                column(boundary.F_hat_at_gp, gp) = LLF_flux(0.0,
+                LLF_flux(0.0,
                                                             column(boundary.q_at_gp, gp),
                                                             column(this->q_ex, gp),
                                                             column(boundary.aux_at_gp, gp),
-                                                            column(dbound.surface_normal, gp));
+                                                            column(dbound.surface_normal, gp),
+                                                            column(boundary.F_hat_at_gp, gp));
             }
 
             net_volume_flux_in = dbound.Integration(boundary.F_hat_at_gp)[SWE::Variables::ze];

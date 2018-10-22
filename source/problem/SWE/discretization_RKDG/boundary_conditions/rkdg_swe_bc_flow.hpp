@@ -31,11 +31,8 @@ class Flow {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    void ComputeFlux(const RKStepper& stepper,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                     const HybMatrix<double, SWE::n_variables>& q_in,
-                     const HybMatrix<double, SWE::n_variables>& aux_in,
-                     HybMatrix<double, SWE::n_variables>& F_hat);
+    template <typename BoundaryType>
+    void ComputeFlux(const RKStepper& stepper, BoundaryType& bound);
 };
 
 Flow::Flow(const std::vector<FlowInput>& flow_input) {
@@ -77,32 +74,31 @@ void Flow::Initialize(BoundaryType& bound) {
     }
 }
 
-void Flow::ComputeFlux(const RKStepper& stepper,
-                       const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                       const HybMatrix<double, SWE::n_variables>& q_in,
-                       const HybMatrix<double, SWE::n_variables>& aux_in,
-                       HybMatrix<double, SWE::n_variables>& F_hat) {
-    // *** //
+template <typename BoundaryType>
+void Flow::ComputeFlux(const RKStepper& stepper, BoundaryType& bound){
+    auto& boundary = bound.data.boundary[bound.bound_id];
+        
     set_constant(this->qn, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); ++con) {
-        for (uint gp = 0; gp < columns(q_in); ++gp) {
+        for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
             this->qn[gp] += stepper.GetRamp() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
                             cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() + this->equilib_arg[con] -
                                 this->phase_gp[con][gp]);
         }
     }
 
-    auto n_x = row(surface_normal, GlobalCoord::x);
-    auto n_y = row(surface_normal, GlobalCoord::y);
+    auto n_x = row(bound.surface_normal, GlobalCoord::x);
+    auto n_y = row(bound.surface_normal, GlobalCoord::y);
 
-    row(this->q_ex, SWE::Variables::ze) = row(q_in, SWE::Variables::ze);
+    row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn, n_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn, n_y);
 
-    for (uint gp = 0; gp < columns(q_in); ++gp) {
-        column(F_hat, gp) = LLF_flux(
-            Global::g, column(q_in, gp), column(this->q_ex, gp), column(aux_in, gp), column(surface_normal, gp));
+    for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
+    LLF_flux(
+            Global::g, column(boundary.q_at_gp, gp), column(this->q_ex, gp), column(boundary.aux_at_gp, gp), column(bound.surface_normal, gp),
+            column( boundary.F_hat_at_gp, gp));
     }
 }
 }
