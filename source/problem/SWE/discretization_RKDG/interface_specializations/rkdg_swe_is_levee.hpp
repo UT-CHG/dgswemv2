@@ -93,12 +93,18 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
 
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
+
             // reflective boundary in
-                land_boundary.GetEX(stepper, column(intface.surface_normal_in, gp), column(boundary_in.q_at_gp, gp), column(this->q_in_ex, gp));
+            land_boundary.GetEX(stepper,
+                                column(intface.surface_normal_in, gp),
+                                column(boundary_in.q_at_gp, gp),
+                                column(this->q_in_ex, gp));
 
             // reflective boundary ex
-            land_boundary.GetEX(
-                stepper, column(intface.surface_normal_ex, gp_ex), column(boundary_ex.q_at_gp, gp_ex), column(this->q_ex_ex, gp_ex));
+            land_boundary.GetEX(stepper,
+                                column(intface.surface_normal_ex, gp_ex),
+                                column(boundary_ex.q_at_gp, gp_ex),
+                                column(this->q_ex_ex, gp_ex));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 
@@ -160,18 +166,18 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
         }
 
         LLF_flux(gravity_in,
-                                                       column(boundary_in.q_at_gp, gp),
-                                                       column(this->q_in_ex, gp),
-                                                       column(boundary_in.aux_at_gp, gp),
-                                                       column(intface.surface_normal_in, gp),
-                                                       column(boundary_in.F_hat_at_gp, gp));
+                 column(boundary_in.q_at_gp, gp),
+                 column(this->q_in_ex, gp),
+                 column(boundary_in.aux_at_gp, gp),
+                 column(intface.surface_normal_in, gp),
+                 column(boundary_in.F_hat_at_gp, gp));
 
         LLF_flux(gravity_ex,
-                                                          column(boundary_ex.q_at_gp, gp_ex),
-                                                          column(this->q_ex_ex, gp_ex),
-                                                          column(boundary_ex.aux_at_gp, gp_ex),
-                                                          column(intface.surface_normal_ex, gp_ex),
-                                                          column(boundary_ex.F_hat_at_gp, gp_ex));
+                 column(boundary_ex.q_at_gp, gp_ex),
+                 column(this->q_ex_ex, gp_ex),
+                 column(boundary_ex.aux_at_gp, gp_ex),
+                 column(intface.surface_normal_ex, gp_ex),
+                 column(boundary_ex.F_hat_at_gp, gp_ex));
     }
 }
 }

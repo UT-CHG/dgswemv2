@@ -105,8 +105,10 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
+
             // reflective boundary
-                land_boundary.GetEX(stepper, column(dbound.surface_normal, gp), column(boundary.q_at_gp, gp), column(this->q_ex, gp));
+            land_boundary.GetEX(
+                stepper, column(dbound.surface_normal, gp), column(boundary.q_at_gp, gp), column(this->q_ex, gp));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 
@@ -156,11 +158,11 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
         }
 
         LLF_flux(gravity,
-                                                    column(boundary.q_at_gp, gp),
-                                                    column(q_ex, gp),
-                                                    column(boundary.aux_at_gp, gp),
-                                                    column(dbound.surface_normal, gp),
-                                                    column(boundary.F_hat_at_gp, gp));
+                 column(boundary.q_at_gp, gp),
+                 column(q_ex, gp),
+                 column(boundary.aux_at_gp, gp),
+                 column(dbound.surface_normal, gp),
+                 column(boundary.F_hat_at_gp, gp));
     }
 }
 }

@@ -28,9 +28,9 @@ class Land {
                      Column<HybMatrix<double, SWE::n_variables>>&& F_hat);
 
     void GetEX(const RKStepper& stepper,
-                                               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
-                                               const Column<HybMatrix<double, SWE::n_variables>>& q_in,
-                                               Column<HybMatrix<double, SWE::n_variables>>&& q_ex);
+               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+               const Column<HybMatrix<double, SWE::n_variables>>& q_in,
+               Column<HybMatrix<double, SWE::n_variables>>&& q_ex);
 };
 
 template <typename BoundaryType>
@@ -44,25 +44,30 @@ void Land::Initialize(uint ngp) {
 }
 
 template <typename BoundaryType>
-void Land::ComputeFlux(const RKStepper& stepper, BoundaryType& bound){
+void Land::ComputeFlux(const RKStepper& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
-    
+
     auto n_x = row(bound.surface_normal, GlobalCoord::x);
     auto n_y = row(bound.surface_normal, GlobalCoord::y);
     auto t_x = -n_y;
     auto t_y = n_x;
 
-    auto qn_ex = -(vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), n_x) + vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), n_y));
-    auto qt_ex = vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), t_x) + vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), t_y);
+    auto qn_ex = -(vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), n_x) +
+                   vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), n_y));
+    auto qt_ex = vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), t_x) +
+                 vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), t_y);
 
     row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn_ex, n_x) + vec_cw_mult(qt_ex, t_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn_ex, n_y) + vec_cw_mult(qt_ex, t_y);
 
     for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
-        LLF_flux(
-            Global::g, column(boundary.q_at_gp, gp), column(this->q_ex, gp), column(boundary.aux_at_gp, gp), column(bound.surface_normal, gp),
-            column(boundary.F_hat_at_gp, gp));
+        LLF_flux(Global::g,
+                 column(boundary.q_at_gp, gp),
+                 column(this->q_ex, gp),
+                 column(boundary.aux_at_gp, gp),
+                 column(bound.surface_normal, gp),
+                 column(boundary.F_hat_at_gp, gp));
     }
 }
 
@@ -88,9 +93,9 @@ void Land::ComputeFlux(const RKStepper& stepper,
 }
 
 void Land::GetEX(const RKStepper& stepper,
-                                                 const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
-                                               const Column<HybMatrix<double, SWE::n_variables>>& q_in,
-                                               Column<HybMatrix<double, SWE::n_variables>>&& q_ex) {
+                 const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                 const Column<HybMatrix<double, SWE::n_variables>>& q_in,
+                 Column<HybMatrix<double, SWE::n_variables>>&& q_ex) {
     double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;
 
     n_x = surface_normal[GlobalCoord::x];

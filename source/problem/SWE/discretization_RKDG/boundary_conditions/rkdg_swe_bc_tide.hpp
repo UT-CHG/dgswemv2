@@ -73,9 +73,9 @@ void Tide::Initialize(BoundaryType& bound) {
 }
 
 template <typename BoundaryType>
-void Tide::ComputeFlux(const RKStepper& stepper, BoundaryType& bound){
+void Tide::ComputeFlux(const RKStepper& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
-    
+
     set_constant(this->q_ex, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); ++con) {
@@ -91,9 +91,12 @@ void Tide::ComputeFlux(const RKStepper& stepper, BoundaryType& bound){
     row(this->q_ex, SWE::Variables::qy) = row(boundary.q_at_gp, SWE::Variables::qy);
 
     for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
-        LLF_flux(
-            Global::g, column(boundary.q_at_gp, gp), column(this->q_ex, gp), column(boundary.aux_at_gp, gp), column(bound.surface_normal, gp),
-            column(boundary.F_hat_at_gp, gp));
+        LLF_flux(Global::g,
+                 column(boundary.q_at_gp, gp),
+                 column(this->q_ex, gp),
+                 column(boundary.aux_at_gp, gp),
+                 column(bound.surface_normal, gp),
+                 column(boundary.F_hat_at_gp, gp));
     }
 }
 }
