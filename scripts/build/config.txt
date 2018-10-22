@@ -13,7 +13,7 @@ fi
 
 if [ "$MACHINE" == "stampede2-knl" ] || [ "$MACHINE" == "stampede2-skx" ]; then
     NUM_BUILDCORES=16
-    MODULES="xalt/1.7 TACC gcc/7.1.0 boost/1.64 cmake/3.8.2"
+    MODULES="xalt/2.1.2 TACC gcc/7.1.0 boost/1.64 cmake/3.8.2"
     CMAKE="cmake"
 
 #    VTUNE_MODULES="vtune/17.update4"
