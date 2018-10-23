@@ -116,8 +116,8 @@ decltype(auto) vec_cw_div(const LeftVectorType& vector_left, const RightVectorTy
 }
 
 template <typename T>
-DynVector<T> vector_from_array(T* array, const uint n) {
-    return DynVector<T>(n, array);
+DynVector<T> vector_from_array(T* array, const uint m) {
+    return DynVector<T>(m, array);
 }
 
 template <typename VectorType>
@@ -125,14 +125,19 @@ decltype(auto) subvector(VectorType&& vector, const uint start_row, const uint s
     return blaze::subvector(std::forward<VectorType>(vector), start_row, size_row);
 }
 
-template <typename T, int n, int m = n, bool SO = blaze::rowMajor>
-blaze::StaticMatrix<T, n, m, SO> reshape(const StatVector<T, n * m>& vector) {
-    return blaze::StaticMatrix<T, n, m, SO>(n, m, vector.data());
+template <typename T, int m, int n = m, bool SO = blaze::rowMajor>
+blaze::StaticMatrix<T, m, n, SO> reshape(const StatVector<T, m * n>& vector) {
+    return blaze::StaticMatrix<T, m, n, SO>(m, n, vector.data());
 }
 
-template <typename T, int n, bool SO = blaze::rowMajor>
-blaze::HybridMatrix<T, n, hyb_mat_buff_size, SO> reshape(const DynVector<T>& vector, const int m) {
-    return blaze::HybridMatrix<T, n, hyb_mat_buff_size, SO>(n, m, vector.data());
+template <typename T, int m, bool SO = blaze::rowMajor>
+blaze::HybridMatrix<T, m, hyb_mat_buff_size, SO> reshape(const DynVector<T>& vector, const int n) {
+    return blaze::HybridMatrix<T, m, hyb_mat_buff_size, SO>(m, n, vector.data());
+}
+
+template <typename T, bool SO = blaze::rowMajor>
+blaze::DynamicMatrix<T, SO> reshape(const DynVector<T>& vector, const int m, const int n) {
+    return blaze::DynamicMatrix<T, SO>(m, n, vector.data());
 }
 
 /* Matrix Operations */
@@ -173,6 +178,32 @@ double determinant(MatrixType& matrix) {
 template <typename MatrixType>
 decltype(auto) inverse(MatrixType& matrix) {
     return blaze::inv(matrix);
+}
+
+template <typename T, int m, int n = m, bool SO = blaze::rowMajor>
+StatVector<T, m * n> flatten(const StatMatrix<T, m, n>& matrix) {
+    StatVector<T, m * n> ret;
+
+    return ret;
+}
+
+template <typename T, int m, bool SO = blaze::rowMajor>
+DynVector<T> flatten(const HybMatrix<T, m>& matrix) {
+    uint n = blaze::columns(matrix);
+
+    DynVector<T> ret(m * n);
+
+    return ret;
+}
+
+template <typename T, bool SO = blaze::rowMajor>
+DynVector<T> flatten(const DynMatrix<T>& matrix) {
+    uint m = blaze::rows(matrix);
+    uint n = blaze::columns(matrix);
+
+    DynVector<T> ret(m * n);
+
+    return ret;
 }
 
 /* Solving Linear System */

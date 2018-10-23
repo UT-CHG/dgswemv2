@@ -23,8 +23,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
             auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
             auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-            std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
-
             edge_internal.delta_hat_global -=
                 boundary_in.delta_global * internal_in.delta_local_inv * boundary_in.delta_hat_local +
                 boundary_ex.delta_global * internal_ex.delta_local_inv * boundary_ex.delta_hat_local;
@@ -45,8 +43,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
                 edge_internal.delta_hat_global =
                     -boundary_in.delta_global * internal_in.delta_local_inv * boundary_con.delta_hat_local;
 
-                std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
-
                 edge_internal.delta_hat_global_con_flat[bcon_id] = flatten<double>(edge_internal.delta_hat_global);
 
                 ++bcon_id;
@@ -61,8 +57,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
                 edge_internal.delta_hat_global =
                     -boundary_ex.delta_global * internal_ex.delta_local_inv * boundary_con.delta_hat_local;
 
-                std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
-
                 edge_internal.delta_hat_global_con_flat[bcon_id] = flatten<double>(edge_internal.delta_hat_global);
 
                 ++bcon_id;
@@ -74,8 +68,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             auto& internal = edge_bound.boundary.data.internal;
             auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-            std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
             edge_internal.delta_hat_global -=
                 boundary.delta_global * internal.delta_local_inv * boundary.delta_hat_local;
@@ -95,8 +87,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
                 edge_internal.delta_hat_global =
                     -boundary.delta_global * internal.delta_local_inv * boundary_con.delta_hat_local;
 
-                std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
-
                 edge_internal.delta_hat_global_con_flat[bcon_id] = flatten<double>(edge_internal.delta_hat_global);
 
                 ++bcon_id;
@@ -108,8 +98,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             auto& internal = edge_dbound.boundary.data.internal;
             auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
-
-            std::vector<uint>& global_dof_indx = edge_internal.global_dof_indx;
 
             edge_internal.delta_hat_global -=
                 boundary.delta_global * internal.delta_local_inv * boundary.delta_hat_local;
@@ -128,8 +116,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
                 edge_internal.delta_hat_global =
                     -boundary.delta_global * internal.delta_local_inv * boundary_con.delta_hat_local;
-
-                std::vector<uint>& global_dof_con_indx = boundary_con.global_dof_indx;
 
                 edge_internal.delta_hat_global_con_flat[bcon_id] = flatten<double>(edge_internal.delta_hat_global);
 

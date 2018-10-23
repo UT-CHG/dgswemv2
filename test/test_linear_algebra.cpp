@@ -9,28 +9,28 @@ ITS HERE JUST TO CHECK FUNCTIONALITIES OF LINEAR ALGEBRA PACKAGES
 */
 
 int main(int argc, char* args[]) {
-    /*#ifdef USE_BLAZE
-        DynMatrix<double> A(3, 3);
-        DynMatrix<double> B(3, 3);
+#ifdef USE_BLAZE
+    DynMatrix<double> A(3, 3);
+    DynMatrix<double> B(3, 3);
 
-        A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-        B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
 
-        DynMatrix<double> C = vec_cw_div(A, B);
+    DynMatrix<double> C = vec_cw_div(A, B);
 
-        std::cout << A << B << C << "works\n";
-    #endif
+    std::cout << A << B << C << "works\n";
+#endif
 
-    #ifdef USE_EIGEN
-        DynVector<double> a(9);
-        a << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+#ifdef USE_EIGEN
+    DynVector<double> a(9);
+    a << 1, 2, 3, 4, 5, 6, 7, 8, 9;
 
-        DynMatrix<double> A = reshape<double, 3>(a);
+    DynMatrix<double> A = reshape<double, 3>(a);
 
-        std::cout << a << '\n' << A << "\nworks\n";
-    #endif*/
+    std::cout << a << '\n' << A << "\nworks\n";
+#endif
 
-    PetscInitialize(&argc, &args, (char*)0, NULL);
+    /*PetscInitialize(&argc, &args, (char*)0, NULL);
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -107,5 +107,5 @@ int main(int argc, char* args[]) {
 
     VecView(sol, PETSC_VIEWER_STDOUT_WORLD);
 
-    PetscFinalize();
+    PetscFinalize();*/
 }
