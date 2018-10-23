@@ -45,11 +45,9 @@ DynMatrix<T> IdentityMatrix(const uint size) {
 template <typename T>
 DynVector<T> IdentityVector(const uint size) {
     DynVector<T> I_vector = DynVector<T>::Zero(size * size);
-
     for (uint i = 0; i < size; ++i) {
         I_vector[i * size + i] = 1.0;
     }
-
     return I_vector;
 }
 
@@ -167,9 +165,7 @@ decltype(auto) inverse(MatrixType& matrix) {
 template <typename T, int m, int n = m, int SO = Eigen::StorageOptions::RowMajor>
 StatVector<T, m * n> flatten(const StatMatrix<T, m, n>& matrix) {
     StatVector<T, m * n> ret;
-
     Eigen::Map<Eigen::Matrix<double, m, n, SO>>(ret.data(), m, n) = matrix;
-
     return ret;
 }
 
@@ -178,9 +174,7 @@ DynVector<T> flatten(const HybMatrix<T, m>& matrix) {
     uint n = matrix.cols();
 
     DynVector<T> ret(m * n);
-
     Eigen::Map<Eigen::Matrix<double, m, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
-
     return ret;
 }
 
@@ -190,9 +184,7 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
     uint n = matrix.cols();
 
     DynVector<T> ret(m * n);
-
     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
-
     return ret;
 }
 
@@ -205,11 +197,8 @@ void solve_sle(MatrixType& A, ArrayType& B) {
 template <typename ArrayType, typename T>
 void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     Eigen::SparseLU<SparseMatrix<T>> solver;
-
     solver.analyzePattern(A_sparse);
-
     solver.factorize(A_sparse);
-
     B = solver.solve(B);
 }
 

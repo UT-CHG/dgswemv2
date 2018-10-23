@@ -47,11 +47,9 @@ using IdentityMatrix = blaze::IdentityMatrix<T>;
 template <typename T>
 DynVector<T> IdentityVector(const uint size) {
     DynVector<T> I_vector(size * size, 0.0);
-
     for (uint i = 0; i < size; ++i) {
         I_vector[i * size + i] = 1.0;
     }
-
     return I_vector;
 }
 
@@ -182,8 +180,8 @@ decltype(auto) inverse(MatrixType& matrix) {
 
 template <typename T, int m, int n = m, bool SO = blaze::rowMajor>
 StatVector<T, m * n> flatten(const StatMatrix<T, m, n>& matrix) {
-    StatVector<T, m * n> ret;
-
+    StatVector<T, m * n> ret(matrix.data());
+    blaze::CustomMatrix<T, blaze::unaligned, blaze::unpadded, SO>(ret.data(), m, n) = matrix;
     return ret;
 }
 
@@ -191,8 +189,8 @@ template <typename T, int m, bool SO = blaze::rowMajor>
 DynVector<T> flatten(const HybMatrix<T, m>& matrix) {
     uint n = blaze::columns(matrix);
 
-    DynVector<T> ret(m * n);
-
+    DynVector<T> ret(m * n, matrix.data());
+    blaze::CustomMatrix<T, blaze::unaligned, blaze::unpadded, SO>(ret.data(), m, n) = matrix;
     return ret;
 }
 
@@ -202,7 +200,7 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
     uint n = blaze::columns(matrix);
 
     DynVector<T> ret(m * n);
-
+    blaze::CustomMatrix<T, blaze::unaligned, blaze::unpadded, SO>(ret.data(), m, n) = matrix;
     return ret;
 }
 
@@ -210,7 +208,6 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
 template <typename MatrixType, typename ArrayType>
 void solve_sle(MatrixType& A, ArrayType& B) {
     int ipiv[blaze::columns(A)];
-
     blaze::gesv(A, B, ipiv);
 }
 
@@ -220,15 +217,10 @@ void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Transforming sparse to dense causes ill conditioned problems
     // Solutions generated here can be rubbish
     printf("No sparse solver in Blaze! Consult use_blaze.hpp!\n");
-
     abort();
 
-    DynMatrix<double> A_dense;
-
-    A_dense = A_sparse;
-
+    DynMatrix<double> A_dense = A_sparse;
     int ipiv[blaze::columns(A_dense)];
-
     blaze::gesv(A_dense, B, ipiv);
 }
 

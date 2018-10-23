@@ -10,15 +10,14 @@ ITS HERE JUST TO CHECK FUNCTIONALITIES OF LINEAR ALGEBRA PACKAGES
 
 int main(int argc, char* args[]) {
 #ifdef USE_BLAZE
-    DynMatrix<double> A(3, 3);
-    DynMatrix<double> B(3, 3);
+    DynVector<double> a(9);
+    a = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
-    B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    DynMatrix<double> A = reshape<double, SO::ColumnMajor>(a, 3, 3);
 
-    DynMatrix<double> C = vec_cw_div(A, B);
+    DynVector<double> b = flatten<double>(A);
 
-    std::cout << A << B << C << "works\n";
+    std::cout << A << a << b << "works\n";
 #endif
 
 #ifdef USE_EIGEN
