@@ -159,8 +159,10 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
 
     // DEFORMATION
     DynVector<double> det_J = this->shape.GetJdet(this->master->integration_rule.second);
-    std::vector<StatMatrix<double, dimension, dimension>> J_inv =
-        this->shape.GetJinv(this->master->integration_rule.second);
+    std::vector<StatMatrix<double, dimension, dimension>,
+		AlignedAllocator<StatMatrix<double, dimension, dimension>>
+		> J_inv =
+      this->shape.GetJinv(this->master->integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
 

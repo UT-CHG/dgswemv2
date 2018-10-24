@@ -6,6 +6,7 @@
 #include <blaze/math/Submatrix.h>
 #include <blaze/math/Column.h>
 #include <blaze/math/Row.h>
+#include <blaze/util/AlignedAllocator.h>
 
 #ifdef HAS_HPX
 #include "serialization/blaze_vector.hpp"
@@ -43,6 +44,9 @@ using SparseMatrix = blaze::CompressedMatrix<T>;
 
 template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
+
+template <typename BlazeType>
+using AlignedAllocator = blaze::AlignedAllocator<BlazeType>;
 
 template <typename T>
 DynVector<T> IdentityVector(const uint size) {

@@ -80,8 +80,10 @@ DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::
     return surface_J;
 }
 
-std::vector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
-    std::vector<StatMatrix<double, 2, 2>> J_inv(1);
+std::vector<StatMatrix<double, 2, 2>,
+	    AlignedAllocator<StatMatrix<double, 2, 2>>
+	    >  StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
+    std::vector<StatMatrix<double, 2, 2>,AlignedAllocator<StatMatrix<double, 2, 2>>> J_inv(1);
 
     StatMatrix<double, 2, 2> J;
 
@@ -95,9 +97,13 @@ std::vector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const std::vecto
     return J_inv;
 }
 
-std::vector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint bound_id,
-                                                                      const std::vector<Point<2>>& points) {
-    std::vector<StatVector<double, 2>> surface_normal(1);
+std::vector<StatVector<double, 2>,
+	    AlignedAllocator<StatVector<double,2>>
+	    > StraightTriangle::GetSurfaceNormal(const uint bound_id,
+						 const std::vector<Point<2>>& points) {
+  std::vector<StatVector<double, 2>,
+	      AlignedAllocator<StatVector<double,2>>
+	      > surface_normal(1);
 
     StatMatrix<double, 2, 2> J;
 
@@ -109,12 +115,10 @@ std::vector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint
     double det_J = determinant(J);
     double cw    = det_J / std::abs(det_J);  // CW or CCW
 
-    double length = sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
-                                 this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x],
-                             2.0) +
-                         pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
-                                 this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y],
-                             2.0));
+    double length = std::hypot(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
+			       this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x],
+			       this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
+			       this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y]);
 
     surface_normal[0][GlobalCoord::x] = cw *
                                         (this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
