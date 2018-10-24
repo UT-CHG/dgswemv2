@@ -23,13 +23,14 @@
 #include <tuple>
 #include <stdlib.h>
 #include <time.h>
-#include "utilities/linear_algebra.hpp"
-
-#include "edge_types.hpp"
 
 #ifdef HAS_HPX
 #include "simulation/hpx/load_balancer/serialization_headers.hpp"
 #endif
+#include "utilities/linear_algebra.hpp"
+
+#include "edge_types.hpp"
+
 
 using uchar = unsigned char;
 
