@@ -13,9 +13,9 @@
 namespace SWE {
 namespace RKDG {
 struct Data {
-    std::vector<State,AlignedAllocator<State>> state;
+    AlignedVector<State> state;
     Internal internal;
-    std::vector<Boundary,AlignedAllocator<Boundary>> boundary;
+    AlignedVector<Boundary> boundary;
 
     Source source;
     WetDry wet_dry_state;

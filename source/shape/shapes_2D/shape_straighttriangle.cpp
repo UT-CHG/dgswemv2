@@ -80,10 +80,8 @@ DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::
     return surface_J;
 }
 
-std::vector<StatMatrix<double, 2, 2>,
-	    AlignedAllocator<StatMatrix<double, 2, 2>>
-	    >  StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
-    std::vector<StatMatrix<double, 2, 2>,AlignedAllocator<StatMatrix<double, 2, 2>>> J_inv(1);
+AlignedVector<StatMatrix<double, 2, 2>>  StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
+    AlignedVector<StatMatrix<double, 2, 2>> J_inv(1);
 
     StatMatrix<double, 2, 2> J;
 
@@ -97,13 +95,9 @@ std::vector<StatMatrix<double, 2, 2>,
     return J_inv;
 }
 
-std::vector<StatVector<double, 2>,
-	    AlignedAllocator<StatVector<double,2>>
-	    > StraightTriangle::GetSurfaceNormal(const uint bound_id,
-						 const std::vector<Point<2>>& points) {
-  std::vector<StatVector<double, 2>,
-	      AlignedAllocator<StatVector<double,2>>
-	      > surface_normal(1);
+AlignedVector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint bound_id,
+									const std::vector<Point<2>>& points) {
+    AlignedVector<StatVector<double, 2>> surface_normal(1);
 
     StatMatrix<double, 2, 2> J;
 

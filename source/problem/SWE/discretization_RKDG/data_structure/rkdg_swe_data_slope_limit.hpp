@@ -22,8 +22,7 @@ struct SlopeLimit {
           wet_neigh(nbound),
           q_at_baryctr_neigh(nbound) {}
 
-    std::vector<StatVector<double, SWE::n_dimensions>,
-                AlignedAllocator<StatVector<double, SWE::n_dimensions>>> surface_normal;
+    AlignedVector<StatVector<double, SWE::n_dimensions>> surface_normal;
 
     Point<2> baryctr_coord;
     std::vector<Point<2>> midpts_coord;
@@ -44,8 +43,7 @@ struct SlopeLimit {
     DynRowVector<double> bath_at_midpts;
 
     std::vector<bool> wet_neigh;
-    std::vector<StatVector<double, SWE::n_variables>,
-                AlignedAllocator<StatVector<double, SWE::n_variables>>> q_at_baryctr_neigh;
+    AlignedVector<StatVector<double, SWE::n_variables>> q_at_baryctr_neigh;
 
     StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
     StatMatrix<double, SWE::n_variables, SWE::n_variables> R;

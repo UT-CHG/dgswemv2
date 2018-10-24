@@ -16,7 +16,7 @@ namespace Utilities {
 template <typename... Ts>
 struct HeterogeneousVector {
     using TupleType = std::tuple<Ts...>;
-    std::tuple<std::vector<Ts,AlignedAllocator<Ts>>...> data;
+    std::tuple<AlignedVector<Ts>...> data;
 
     /**
      * Returns the total number of elements in the HeterogeneousVector
@@ -75,9 +75,7 @@ struct HeterogeneousVector {
 template <typename... Ts>
 struct HeterogeneousMap {
     using TupleType = std::tuple<Ts...>;
-    std::tuple<
-        std::map<uint, Ts, std::less<uint>, AlignedAllocator<std::pair<const uint, Ts>>>...
-    > data;
+    std::tuple<AlignedMap<uint, Ts>...> data;
 
     /**
      * Returns the total number of elements in the HeterogeneousMap
