@@ -199,10 +199,12 @@ int main() {
                                   1.e+03)) {
                     error_found = true;
 
-                    std::cout << edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit)[0] << ' '
+                    std::cout << std::setprecision(16)
+			      << edge_boundaries[n_bound].IntegrationPhiLambda(dof, doff, unit)[0] << ' '
                               << edge_boundaries[n_bound].IntegrationLambda(doff, u_phi_gp)[0] << std::endl;
 
-                    std::cerr << "Error found in boundary edge in IntegrationPhiLambda" << std::endl;
+                    std::cerr << "Error found in boundary edge in IntegrationPhiLambda\n"
+			      << "  dof: " << dof << " doff: " << doff << std::endl;
                 }
             }
         }
