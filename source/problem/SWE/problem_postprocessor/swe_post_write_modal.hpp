@@ -1,11 +1,11 @@
-#ifndef RKDG_SWE_POST_WRITE_MODAL_HPP
-#define RKDG_SWE_POST_WRITE_MODAL_HPP
+#ifndef SWE_POST_WRITE_MODAL_HPP
+#define SWE_POST_WRITE_MODAL_HPP
 
 #include "general_definitions.hpp"
 
 namespace SWE {
-namespace RKDG {
-void Problem::write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+template <typename MeshType>
+void write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path) {
     std::vector<std::pair<uint, HybMatrix<double, SWE::n_variables>>> modal_q;
     std::vector<std::pair<uint, HybMatrix<double, 1>>> modal_aux;
 
@@ -87,7 +87,6 @@ void Problem::write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, 
     }
 
     file.close();
-}
 }
 }
 

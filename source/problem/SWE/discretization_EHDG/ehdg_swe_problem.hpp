@@ -17,6 +17,7 @@
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
+#include "problem/SWE/problem_postprocessor/swe_postprocessor.hpp"
 
 #include "geometry/mesh_definitions.hpp"
 #include "geometry/mesh_skeleton_definitions.hpp"
@@ -195,16 +196,24 @@ struct Problem {
 
     // writing output kernels
     template <typename MeshType>
-    static void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
+        SWE::write_VTK_data(mesh, raw_data_file);
+    }
 
     template <typename MeshType>
-    static void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
+        SWE::write_VTU_data(mesh, raw_data_file);
+    }
 
     template <typename MeshType>
-    static void write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path);
+    static void write_modal_data(const RKStepper& stepper, MeshType& mesh, const std::string& output_path) {
+        SWE::write_modal_data(stepper, mesh, output_path);
+    }
 
     template <typename ElementType>
-    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt);
+    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
+        return SWE::compute_residual_L2(stepper, elt);
+    }
 };
 }
 }

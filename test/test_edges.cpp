@@ -1,6 +1,8 @@
 #include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
 #include "geometry/mesh_definitions.hpp"
+#include "preprocessor/input_parameters.hpp"
+#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
 #include "problem/SWE/discretization_EHDG/ehdg_swe_problem.hpp"
 
 int main() {

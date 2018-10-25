@@ -7,6 +7,7 @@
 #include "ehdg_swe_data_internal.hpp"
 #include "ehdg_swe_data_boundary.hpp"
 #include "ehdg_swe_data_source.hpp"
+#include "ehdg_swe_data_wet_dry.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -16,6 +17,7 @@ struct Data {
     std::vector<Boundary> boundary;
 
     Source source;
+    WetDry wet_dry_state;
 
     void initialize() {
         this->state = std::vector<State>{State(this->ndof)};

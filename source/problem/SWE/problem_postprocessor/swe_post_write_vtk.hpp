@@ -1,11 +1,11 @@
-#ifndef RKDG_SWE_POST_WRITE_VTK_HPP
-#define RKDG_SWE_POST_WRITE_VTK_HPP
+#ifndef SWE_POST_WRITE_VTK_HPP
+#define SWE_POST_WRITE_VTK_HPP
 
 #include "general_definitions.hpp"
 
 namespace SWE {
-namespace RKDG {
-void Problem::write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
+template <typename MeshType>
+void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
     std::vector<StatVector<double, SWE::n_variables>> q_point_data;
     std::vector<StatVector<double, SWE::n_variables>> q_cell_data;
 
@@ -88,7 +88,6 @@ void Problem::write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = aux_point_data.begin(); it != aux_point_data.end(); ++it)
         raw_data_file << (*it)[SWE::Auxiliaries::bath] << std::endl;
-}
 }
 }
 

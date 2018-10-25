@@ -1,11 +1,11 @@
-#ifndef RKDG_SWE_POST_WRITE_VTU_HPP
-#define RKDG_SWE_POST_WRITE_VTU_HPP
+#ifndef SWE_POST_WRITE_VTU_HPP
+#define SWE_POST_WRITE_VTU_HPP
 
 #include "general_definitions.hpp"
 
 namespace SWE {
-namespace RKDG {
-void Problem::write_VTU_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
+template <typename MeshType>
+void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     std::vector<StatVector<double, SWE::n_variables>> q_point_data;
     std::vector<StatVector<double, SWE::n_variables>> q_cell_data;
 
@@ -92,7 +92,6 @@ void Problem::write_VTU_data(ProblemMeshType& mesh, std::ofstream& raw_data_file
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t</CellData>\n";
-}
 }
 }
 

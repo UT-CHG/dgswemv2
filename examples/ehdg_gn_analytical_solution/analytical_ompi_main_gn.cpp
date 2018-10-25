@@ -13,7 +13,6 @@
 
 #include "problem/SWE/discretization_EHDG/ehdg_swe_problem.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_kernels_preprocessor.hpp"
-#include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_pre_ompi.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_ompi_step.hpp"
@@ -23,7 +22,6 @@
 
 #include "problem/Green-Naghdi/discretization_EHDG/ehdg_gn_problem.hpp"
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_kernels_preprocessor.hpp"
-#include "problem/Green-Naghdi/discretization_EHDG/kernels_postprocessor/ehdg_gn_kernels_postprocessor.hpp"
 
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_pre_ompi.hpp"
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_processor/ehdg_gn_proc_ompi_step.hpp"

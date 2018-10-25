@@ -6,6 +6,8 @@
 #include "simulation/stepper/rk_stepper.hpp"
 
 #include "problem/SWE/problem_function_files/swe_source_functions.hpp"
+#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
+
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_wet_dry.hpp"
 

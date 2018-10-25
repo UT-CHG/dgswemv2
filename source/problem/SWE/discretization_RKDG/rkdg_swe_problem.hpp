@@ -6,12 +6,16 @@
 #include "simulation/discretization.hpp"
 
 #include "problem/SWE/swe_definitions.hpp"
+
 #include "boundary_conditions/rkdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/rkdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/rkdg_swe_interface_specializations.hpp"
+
 #include "data_structure/rkdg_swe_data.hpp"
+
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
+#include "problem/SWE/problem_postprocessor/swe_postprocessor.hpp"
 
 #include "geometry/mesh_definitions.hpp"
 #include "preprocessor/mesh_metadata.hpp"
@@ -153,14 +157,22 @@ struct Problem {
     static void slope_limiting_kernel(const RKStepper& stepper, ElementType& elt);
 
     // postprocessor kernels
-    static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
+        SWE::write_VTK_data(mesh, raw_data_file);
+    }
 
-    static void write_VTU_data(ProblemMeshType& mesh, std::ofstream& raw_data_file);
+    static void write_VTU_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
+        SWE::write_VTU_data(mesh, raw_data_file);
+    }
 
-    static void write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path);
+    static void write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+        SWE::write_modal_data(stepper, mesh, output_path);
+    }
 
     template <typename ElementType>
-    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt);
+    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
+        return SWE::compute_residual_L2(stepper, elt);
+    }
 };
 }
 }
