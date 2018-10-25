@@ -49,7 +49,7 @@ int main() {
     }
 
     // check SurfaceNormal
-    std::vector<StatVector<double, 2>> SurfaceNormal_true(3);
+    AlignedVector<StatVector<double, 2>> SurfaceNormal_true(3);
 
     SurfaceNormal_true[0][GlobalCoord::x] = std::sqrt(3.) / 2.;
     SurfaceNormal_true[0][GlobalCoord::y] = 0.5;

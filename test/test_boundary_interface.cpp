@@ -43,7 +43,7 @@ int main() {
     // generate boundaries
     triangle.CreateRawBoundaries(raw_boundary);
 
-    std::vector<BoundaryType> boundaries;
+    AlignedVector<BoundaryType> boundaries;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
         boundaries.emplace_back(BoundaryType(std::move(rb.second)));
@@ -233,7 +233,7 @@ int main() {
     }
 
     // generate Interfaces
-    std::vector<InterfaceType> interfaces;
+    AlignedVector<InterfaceType> interfaces;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
         interfaces.emplace_back(InterfaceType(std::move(rb.second), std::move(rb.second)));

@@ -72,13 +72,13 @@ int main() {
     DynMatrix<double> u_proj_gp(1, integration.GetNumGP(21));  // ngp for 2*p+1
 
     // generate edge boundaries
-    std::vector<BoundaryType> boundaries;
+    AlignedVector<BoundaryType> boundaries;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
         boundaries.emplace_back(BoundaryType(std::move(rb.second)));
     }
 
-    std::vector<EdgeBoundaryType> edge_boundaries;
+    AlignedVector<EdgeBoundaryType> edge_boundaries;
 
     for (auto& bound : boundaries) {
         edge_boundaries.emplace_back(EdgeBoundaryType(bound));
@@ -127,13 +127,13 @@ int main() {
     }
 
     // generate edge intenrals
-    std::vector<InterfaceType> interfaces;
+    AlignedVector<InterfaceType> interfaces;
 
     for (auto& rb : raw_boundary[SWE::BoundaryTypes::land]) {
         interfaces.emplace_back(InterfaceType(std::move(rb.second), std::move(rb.second)));
     }
 
-    std::vector<EdgeInterfaceType> edge_interfaces;
+    AlignedVector<EdgeInterfaceType> edge_interfaces;
 
     for (auto& intface : interfaces) {
         edge_interfaces.emplace_back(EdgeInterfaceType(intface));
