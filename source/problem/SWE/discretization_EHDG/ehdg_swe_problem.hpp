@@ -26,22 +26,24 @@
 namespace SWE {
 namespace EHDG {
 struct Problem {
-    using ProblemInputType = SWE::Inputs;
+    using ProblemInputType   = SWE::Inputs;
+    using ProblemStepperType = RKStepper;
+    using ProblemWriterType  = Writer<Problem>;
+    using ProblemParserType  = SWE::Parser;
 
-    using ProblemWriterType = Writer<Problem>;
-
-    using ProblemParserType = SWE::Parser;
-
-    using ProblemDataType = Data;
-
-    using ProblemEdgeDataType = EdgeData;
-
+    using ProblemDataType       = Data;
+    using ProblemEdgeDataType   = EdgeData;
     using ProblemGlobalDataType = std::tuple<>;
 
+    using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
+    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
+    using ProblemDistributedBoundaryTypes =
+        Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
+
     using ProblemMeshType = Geometry::MeshType<Data,
-                                               std::tuple<ISP::Internal>,
+                                               std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
-                                               std::tuple<DBC::Distributed>>::Type;
+                                               std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemMeshSkeletonType =
         Geometry::MeshSkeletonType<EdgeData,

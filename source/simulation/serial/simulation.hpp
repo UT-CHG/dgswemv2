@@ -11,7 +11,7 @@ class Simulation {
 
     typename ProblemType::ProblemDiscretizationType discretization;
 
-    RKStepper stepper;
+    typename ProblemType::ProblemStepperType stepper;
     typename ProblemType::ProblemWriterType writer;
     typename ProblemType::ProblemParserType parser;
 
@@ -42,7 +42,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
     this->n_steps = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
 
     this->discretization.mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
-    this->stepper             = RKStepper(input.stepper_input);
+    this->stepper             = typename ProblemType::ProblemStepperType(input.stepper_input);
     this->writer              = typename ProblemType::ProblemWriterType(input.writer_input);
     this->parser              = typename ProblemType::ProblemParserType(input);
 

@@ -23,13 +23,17 @@
 namespace SWE {
 namespace RKDG {
 struct Problem {
-    using ProblemInputType = SWE::Inputs;
-
-    using ProblemWriterType = Writer<Problem>;
-
-    using ProblemParserType = SWE::Parser;
+    using ProblemInputType   = SWE::Inputs;
+    using ProblemStepperType = RKStepper;
+    using ProblemWriterType  = Writer<Problem>;
+    using ProblemParserType  = SWE::Parser;
 
     using ProblemDataType = Data;
+
+    using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
+    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
+    using ProblemDistributedBoundaryTypes =
+        Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
 
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<ISP::Internal, ISP::Levee>,

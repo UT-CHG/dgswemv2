@@ -9,12 +9,11 @@ void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, 
                                 ProblemInputType& problem_input,
                                 ProblemWriterType& writer) {
     // *** //
-    using InterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
+    using InterfaceTypeInternal = std::tuple_element<0, ProblemInterfaceTypes>::type;
+    using InterfaceTypeLevee    = std::tuple_element<1, ProblemInterfaceTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::internal) {
-            using InterfaceTypeInternal = std::tuple_element<0, InterfaceTypes>::type;
-
             uint n_intface_old_internal = mesh.GetNumberInterfaces();
 
             auto itt = it->second.begin();
@@ -37,8 +36,6 @@ void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, 
                                     << mesh.GetNumberInterfaces() - n_intface_old_internal << std::endl;
             }
         } else if (it->first == SWE::BoundaryTypes::levee) {
-            using InterfaceTypeLevee = std::tuple_element<1, InterfaceTypes>::type;
-
             uint n_intface_old_levee = mesh.GetNumberInterfaces();
 
             auto& levee_data = problem_input.levee_is_data;

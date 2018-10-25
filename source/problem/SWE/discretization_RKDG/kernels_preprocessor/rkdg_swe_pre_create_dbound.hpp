@@ -19,8 +19,8 @@ void Problem::create_distributed_boundaries(
     Communicator& communicator,
     ProblemWriterType& writer) {
     // *** //
-    using DistributedBoundaryTypes =
-        Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
+    using DBTypeDistributed      = typename std::tuple_element<0, ProblemDistributedBoundaryTypes>::type;
+    using DBTypeDistributedLevee = typename std::tuple_element<1, ProblemDistributedBoundaryTypes>::type;
 
     auto& raw_bound_distributed = raw_boundaries[distributed(SWE::BoundaryTypes::internal)];
     auto& raw_bound_distr_levee = raw_boundaries[distributed(SWE::BoundaryTypes::levee)];
@@ -60,14 +60,10 @@ void Problem::create_distributed_boundaries(
             // this finds number of gps used in integrations at the current bound
             // revise for a safer more efficient way to do so, be careful about keeping 2 * p + 1 consistent
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
-                using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
-
                 typename DBTypeDistributed::BoundaryIntegrationType boundary_integration;
 
                 ngp = boundary_integration.GetNumGP(2 * p + 1);
             } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
-                using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
-
                 typename DBTypeDistributedLevee::BoundaryIntegrationType boundary_integration;
 
                 ngp = boundary_integration.GetNumGP(2 * p + 1);
@@ -86,8 +82,6 @@ void Problem::create_distributed_boundaries(
             begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
 
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
-                using DBTypeDistributed = typename std::tuple_element<0, DistributedBoundaryTypes>::type;
-
                 auto& raw_boundary = raw_bound_distributed.find(dbound_key)->second;
 
                 raw_boundary.p = p;
@@ -106,8 +100,6 @@ void Problem::create_distributed_boundaries(
 
                 raw_bound_distributed.erase(dbound_key);
             } else if (raw_bound_distr_levee.find(dbound_key) != raw_bound_distr_levee.end()) {
-                using DBTypeDistributedLevee = typename std::tuple_element<1, DistributedBoundaryTypes>::type;
-
                 auto& raw_boundary = raw_bound_distr_levee.find(dbound_key)->second;
 
                 raw_boundary.p = p;

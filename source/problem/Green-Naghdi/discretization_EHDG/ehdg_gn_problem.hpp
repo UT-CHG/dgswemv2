@@ -25,17 +25,18 @@
 namespace GN {
 namespace EHDG {
 struct Problem {
-    using ProblemInputType = GN::Inputs;
+    using ProblemInputType   = GN::Inputs;
+    using ProblemStepperType = RKStepper;
+    using ProblemWriterType  = Writer<Problem>;
+    using ProblemParserType  = GN::Parser;
 
-    using ProblemWriterType = Writer<Problem>;
-
-    using ProblemParserType = GN::Parser;
-
-    using ProblemDataType = Data;
-
-    using ProblemEdgeDataType = EdgeData;
-
+    using ProblemDataType       = Data;
+    using ProblemEdgeDataType   = EdgeData;
     using ProblemGlobalDataType = GlobalData;
+
+    using ProblemInterfaceTypes           = Geometry::InterfaceTypeTuple<Data, ISP::Internal>;
+    using ProblemBoundaryTypes            = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
+    using ProblemDistributedBoundaryTypes = Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>;
 
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<ISP::Internal>,

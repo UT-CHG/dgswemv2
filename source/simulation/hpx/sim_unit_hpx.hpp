@@ -17,7 +17,7 @@ struct HPXSimulationUnit
     typename ProblemType::ProblemDiscretizationType discretization;
 
     HPXCommunicator communicator;
-    RKStepper stepper;
+    typename ProblemType::ProblemStepperType stepper;
     typename ProblemType::ProblemWriterType writer;
     typename ProblemType::ProblemParserType parser;
 
@@ -72,7 +72,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
     this->discretization.mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
     this->communicator        = HPXCommunicator(input.mesh_input.dbmd_data);
-    this->stepper             = RKStepper(input.stepper_input);
+    this->stepper             = typename ProblemType::ProblemStepperType(input.stepper_input);
     this->writer              = typename ProblemType::ProblemWriterType(input.writer_input, locality_id, submesh_id);
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 

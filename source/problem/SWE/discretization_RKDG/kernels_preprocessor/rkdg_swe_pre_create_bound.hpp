@@ -9,12 +9,12 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
                                 ProblemInputType& problem_input,
                                 ProblemWriterType& writer) {
     // *** //
-    using BoundaryTypes = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
+    using BoundaryTypeLand = typename std::tuple_element<0, ProblemBoundaryTypes>::type;
+    using BoundaryTypeTide = typename std::tuple_element<1, ProblemBoundaryTypes>::type;
+    using BoundaryTypeFlow = typename std::tuple_element<2, ProblemBoundaryTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::land) {
-            using BoundaryTypeLand = typename std::tuple_element<0, BoundaryTypes>::type;
-
             uint n_bound_old_land = mesh.GetNumberBoundaries();
 
             auto itt = it->second.begin();
@@ -31,8 +31,6 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
                                     << std::endl;
             }
         } else if (it->first == SWE::BoundaryTypes::tide) {
-            using BoundaryTypeTide = typename std::tuple_element<1, BoundaryTypes>::type;
-
             uint n_bound_old_tide = mesh.GetNumberBoundaries();
 
             auto& tide_data = problem_input.tide_bc_data;
@@ -63,8 +61,6 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
                                     << std::endl;
             }
         } else if (it->first == SWE::BoundaryTypes::flow) {
-            using BoundaryTypeFlow = typename std::tuple_element<2, BoundaryTypes>::type;
-
             uint n_bound_old_flow = mesh.GetNumberBoundaries();
 
             auto& flow_data = problem_input.flow_bc_data;
