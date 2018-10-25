@@ -1,26 +1,18 @@
-#ifndef RKDG_SWE_PRE_CREATE_DBOUND_HPP
-#define RKDG_SWE_PRE_CREATE_DBOUND_HPP
+#ifndef SWE_PRE_CREATE_DBOUND_HPP
+#define SWE_PRE_CREATE_DBOUND_HPP
 
 namespace SWE {
-namespace RKDG {
-template <typename RawBoundaryType>
-void Problem::create_distributed_boundaries(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    ProblemMeshType&,
-    ProblemInputType& input,
-    std::tuple<>&,
-    ProblemWriterType& writer) {}
-
-template <typename RawBoundaryType, typename Communicator>
-void Problem::create_distributed_boundaries(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-    ProblemMeshType& mesh,
-    ProblemInputType& problem_input,
-    Communicator& communicator,
-    ProblemWriterType& writer) {
+template <typename ProblemType, typename RawBoundaryType, typename Communicator>
+void create_distributed_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                                   typename ProblemType::ProblemMeshType& mesh,
+                                   typename ProblemType::ProblemInputType& problem_input,
+                                   Communicator& communicator,
+                                   typename ProblemType::ProblemWriterType& writer) {
     // *** //
-    using DBTypeDistributed      = typename std::tuple_element<0, ProblemDistributedBoundaryTypes>::type;
-    using DBTypeDistributedLevee = typename std::tuple_element<1, ProblemDistributedBoundaryTypes>::type;
+    using DBTypeDistributed =
+        typename std::tuple_element<0, typename ProblemType::ProblemDistributedBoundaryTypes>::type;
+    using DBTypeDistributedLevee =
+        typename std::tuple_element<1, typename ProblemType::ProblemDistributedBoundaryTypes>::type;
 
     auto& raw_bound_distributed = raw_boundaries[distributed(SWE::BoundaryTypes::internal)];
     auto& raw_bound_distr_levee = raw_boundaries[distributed(SWE::BoundaryTypes::levee)];
@@ -37,7 +29,7 @@ void Problem::create_distributed_boundaries(
         uint locality_in, submesh_in;
         uint locality_ex, submesh_ex;
 
-        std::vector<uint> begin_index(SWE::RKDG::n_communications, 0);
+        std::vector<uint> begin_index(ProblemType::n_communications, 0);
 
         // check if the data in rank_boundary_data matches communicator rank boundary
         const RankBoundaryMetaData& rb_meta_data = rank_boundary.db_data;
@@ -71,16 +63,6 @@ void Problem::create_distributed_boundaries(
                 throw std::logic_error("Fatal Error: unable to find raw distributed boundary!\n");
             }
 
-            std::vector<uint> offset(SWE::RKDG::n_communications);
-
-            offset[CommTypes::baryctr_coord] = begin_index[CommTypes::baryctr_coord];
-            offset[CommTypes::bound_state]   = begin_index[CommTypes::bound_state];
-            offset[CommTypes::baryctr_state] = begin_index[CommTypes::baryctr_state];
-
-            begin_index[CommTypes::baryctr_coord] += 2;
-            begin_index[CommTypes::bound_state] += SWE::n_variables * ngp + 1;  // + w/d state
-            begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
-
             if (raw_bound_distributed.find(dbound_key) != raw_bound_distributed.end()) {
                 auto& raw_boundary = raw_bound_distributed.find(dbound_key)->second;
 
@@ -88,13 +70,13 @@ void Problem::create_distributed_boundaries(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributed>(
                     std::move(raw_boundary),
-                    DBC::Distributed(DBDataExchanger(locality_in,
-                                                     submesh_in,
-                                                     locality_ex,
-                                                     submesh_ex,
-                                                     std::move(offset),
-                                                     rank_boundary.send_buffer,
-                                                     rank_boundary.receive_buffer)));
+                    DBDataExchanger(locality_in,
+                                    submesh_in,
+                                    locality_ex,
+                                    submesh_ex,
+                                    ProblemType::comm_buffer_offsets(begin_index, ngp),
+                                    rank_boundary.send_buffer,
+                                    rank_boundary.receive_buffer));
 
                 n_distributed++;
 
@@ -127,14 +109,14 @@ void Problem::create_distributed_boundaries(
 
                 mesh.template CreateDistributedBoundary<DBTypeDistributedLevee>(
                     std::move(raw_boundary),
-                    DBC::DistributedLevee(DBDataExchanger(locality_in,
-                                                          submesh_in,
-                                                          locality_ex,
-                                                          submesh_ex,
-                                                          std::move(offset),
-                                                          rank_boundary.send_buffer,
-                                                          rank_boundary.receive_buffer),
-                                          levee));
+                    DBDataExchanger(locality_in,
+                                    submesh_in,
+                                    locality_ex,
+                                    submesh_ex,
+                                    ProblemType::comm_buffer_offsets(begin_index, ngp),
+                                    rank_boundary.send_buffer,
+                                    rank_boundary.receive_buffer),
+                    levee);
 
                 n_distr_levee++;
 
@@ -142,10 +124,10 @@ void Problem::create_distributed_boundaries(
             }
         }
 
-        rank_boundary.send_buffer.resize(SWE::RKDG::n_communications);
-        rank_boundary.receive_buffer.resize(SWE::RKDG::n_communications);
+        rank_boundary.send_buffer.resize(ProblemType::n_communications);
+        rank_boundary.receive_buffer.resize(ProblemType::n_communications);
 
-        for (uint comm = 0; comm < SWE::RKDG::n_communications; ++comm) {
+        for (uint comm = 0; comm < ProblemType::n_communications; ++comm) {
             rank_boundary.send_buffer[comm].resize(begin_index[comm]);
             rank_boundary.receive_buffer[comm].resize(begin_index[comm]);
         }
@@ -157,7 +139,6 @@ void Problem::create_distributed_boundaries(
         writer.GetLogFile() << "Number of distributed boundaries: " << n_distributed << std::endl
                             << "Number of distributed levee boundaries: " << n_distr_levee << std::endl;
     }
-}
 }
 }
 

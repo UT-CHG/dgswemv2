@@ -1,17 +1,16 @@
-#ifndef RKDG_SWE_PRE_CREATE_BOUND_HPP
-#define RKDG_SWE_PRE_CREATE_BOUND_HPP
+#ifndef SWE_PRE_CREATE_BOUND_HPP
+#define SWE_PRE_CREATE_BOUND_HPP
 
 namespace SWE {
-namespace RKDG {
-template <typename RawBoundaryType>
-void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-                                ProblemMeshType& mesh,
-                                ProblemInputType& problem_input,
-                                ProblemWriterType& writer) {
+template <typename ProblemType, typename RawBoundaryType>
+void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                       typename ProblemType::ProblemMeshType& mesh,
+                       typename ProblemType::ProblemInputType& problem_input,
+                       typename ProblemType::ProblemWriterType& writer) {
     // *** //
-    using BoundaryTypeLand = typename std::tuple_element<0, ProblemBoundaryTypes>::type;
-    using BoundaryTypeTide = typename std::tuple_element<1, ProblemBoundaryTypes>::type;
-    using BoundaryTypeFlow = typename std::tuple_element<2, ProblemBoundaryTypes>::type;
+    using BoundaryTypeLand = typename std::tuple_element<0, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeTide = typename std::tuple_element<1, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeFlow = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::land) {
@@ -51,7 +50,7 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
                     }
                 }
 
-                mesh.template CreateBoundary<BoundaryTypeTide>(std::move(raw_boundary), BC::Tide(tide));
+                mesh.template CreateBoundary<BoundaryTypeTide>(std::move(raw_boundary), tide);
 
                 it->second.erase(itt++);
             }
@@ -81,7 +80,7 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
                     }
                 }
 
-                mesh.template CreateBoundary<BoundaryTypeFlow>(std::move(raw_boundary), BC::Flow(flow));
+                mesh.template CreateBoundary<BoundaryTypeFlow>(std::move(raw_boundary), flow);
 
                 it->second.erase(itt++);
             }
@@ -94,7 +93,6 @@ void Problem::create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, 
     }
 
     mesh.CallForEachBoundary([](auto& bound) { bound.boundary_condition.Initialize(bound); });
-}
 }
 }
 

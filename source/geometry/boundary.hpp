@@ -28,7 +28,8 @@ class Boundary {
     DynMatrix<double> int_phi_phi_fact;
 
   public:
-    Boundary(RawBoundary<dimension, DataType>&& raw_boundary, ConditonType&& boundary_condition = ConditonType());
+    template <typename... Args>
+    Boundary(RawBoundary<dimension, DataType>&& raw_boundary, Args&&... args);
 
     Master::Master<dimension + 1>& GetMaster() { return this->master; }
     Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
@@ -61,9 +62,10 @@ class Boundary {
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+template <typename... Args>
 Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBoundary<dimension, DataType>&& raw_boundary,
-                                                                       ConditonType&& boundary_condition)
-    : boundary_condition(std::move(boundary_condition)),
+                                                                       Args&&... args)
+    : boundary_condition(std::forward<Args>(args)...),
       data(raw_boundary.data),
       bound_id(raw_boundary.bound_id),
       master(raw_boundary.master),

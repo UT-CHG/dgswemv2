@@ -41,9 +41,10 @@ class Interface {
     DynMatrix<double> int_phi_phi_fact_ex;
 
   public:
+    template <typename... Args>
     Interface(RawBoundary<dimension, DataType>&& raw_boundary_in,
               RawBoundary<dimension, DataType>&& raw_boundary_ex,
-              SpecializationType&& specialization = SpecializationType());
+              Args&&... args);
 
     Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
     Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
@@ -94,11 +95,12 @@ class Interface {
 };
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename... Args>
 Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     RawBoundary<dimension, DataType>&& raw_boundary_in,
     RawBoundary<dimension, DataType>&& raw_boundary_ex,
-    SpecializationType&& specialization)
-    : specialization(std::move(specialization)),
+    Args&&... args)
+    : specialization(std::forward<Args>(args)...),
       data_in(raw_boundary_in.data),
       data_ex(raw_boundary_ex.data),
       bound_id_in(raw_boundary_in.bound_id),

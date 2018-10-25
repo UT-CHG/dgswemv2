@@ -1,16 +1,15 @@
-#ifndef RKDG_SWE_PRE_CREATE_INTFACE_HPP
-#define RKDG_SWE_PRE_CREATE_INTFACE_HPP
+#ifndef SWE_PRE_CREATE_INTFACE_HPP
+#define SWE_PRE_CREATE_INTFACE_HPP
 
 namespace SWE {
-namespace RKDG {
-template <typename RawBoundaryType>
-void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
-                                ProblemMeshType& mesh,
-                                ProblemInputType& problem_input,
-                                ProblemWriterType& writer) {
+template <typename ProblemType, typename RawBoundaryType>
+void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
+                       typename ProblemType::ProblemMeshType& mesh,
+                       typename ProblemType::ProblemInputType& problem_input,
+                       typename ProblemType::ProblemWriterType& writer) {
     // *** //
-    using InterfaceTypeInternal = std::tuple_element<0, ProblemInterfaceTypes>::type;
-    using InterfaceTypeLevee    = std::tuple_element<1, ProblemInterfaceTypes>::type;
+    using InterfaceTypeInternal = typename std::tuple_element<0, typename ProblemType::ProblemInterfaceTypes>::type;
+    using InterfaceTypeLevee    = typename std::tuple_element<1, typename ProblemType::ProblemInterfaceTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::internal) {
@@ -69,7 +68,7 @@ void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, 
                     }
 
                     mesh.template CreateInterface<InterfaceTypeLevee>(
-                        std::move(raw_boundary_in), std::move(raw_boundary_ex), ISP::Levee(levee));
+                        std::move(raw_boundary_in), std::move(raw_boundary_ex), levee);
                 }
 
                 it->second.erase(itt++);
@@ -83,7 +82,6 @@ void Problem::create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, 
     }
 
     mesh.CallForEachInterface([](auto& intface) { intface.specialization.Initialize(intface); });
-}
 }
 }
 

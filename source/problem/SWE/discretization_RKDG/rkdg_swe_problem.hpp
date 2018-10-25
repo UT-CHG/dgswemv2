@@ -58,14 +58,13 @@ struct Problem {
                                   ProblemMeshType& mesh,
                                   ProblemInputType& input,
                                   ProblemWriterType& writer);
-
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType&,
         ProblemInputType& input,
         std::tuple<>&,
-        ProblemWriterType&);
+        ProblemWriterType&) {}
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries(
@@ -74,6 +73,10 @@ struct Problem {
         ProblemInputType& input,
         Communicator& communicator,
         ProblemWriterType& writer);
+
+    // helpers to create communication
+    static constexpr uint n_communications = SWE::RKDG::n_communications;
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
 
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     const ProblemInputType& problem_specific_input);

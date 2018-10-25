@@ -76,7 +76,7 @@ struct Problem {
         ProblemMeshType&,
         ProblemInputType& problem_input,
         std::tuple<>&,
-        ProblemWriterType&);
+        ProblemWriterType&) {}
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries(
@@ -85,6 +85,10 @@ struct Problem {
         ProblemInputType& input,
         Communicator& communicator,
         ProblemWriterType& writer);
+
+    // helpers to create communication
+    static constexpr uint n_communications = SWE::EHDG::n_communications;
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
