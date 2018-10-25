@@ -1,5 +1,5 @@
-#ifndef EHDG_GN_PROC_SERIAL_STAGE_HPP
-#define EHDG_GN_PROC_SERIAL_STAGE_HPP
+#ifndef EHDG_GN_PROC_SERIAL_STEP_HPP
+#define EHDG_GN_PROC_SERIAL_STEP_HPP
 
 #include "general_definitions.hpp"
 
@@ -9,6 +9,25 @@
 
 namespace GN {
 namespace EHDG {
+template <typename SerialSimType>
+void Problem::step_serial(SerialSimType* sim) {
+    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
+        if (sim->parser.ParsingInput()) {
+            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+        }
+
+        Problem::stage_serial(sim->stepper, sim->discretization);
+
+        ++(sim->stepper);
+    }
+
+    sim->discretization.mesh.CallForEachElement([sim](auto& elt) { Problem::swap_states_kernel(sim->stepper, elt); });
+
+    if (sim->writer.WritingOutput()) {
+        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    }
+}
+
 void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     Problem::swe_stage_serial(stepper, discretization);
 

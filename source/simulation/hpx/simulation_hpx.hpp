@@ -38,7 +38,6 @@ class HPXSimulation : public hpx::components::component_base<HPXSimulation<Probl
 
   private:
     uint n_steps;
-    uint n_stages;
 
     std::vector<ClientType> simulation_unit_clients;
 
@@ -60,8 +59,7 @@ HPXSimulation<ProblemType>::HPXSimulation(const std::string& input_string) {
 
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-    this->n_stages = input.stepper_input.nstages;
+    this->n_steps = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
 
     hpx::future<void> lb_future =
         LoadBalancer::AbstractFactory::initialize_locality_and_world_models<ProblemType>(locality_id, input_string);

@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_PROC_EDGE_INTFACE_HPP
 #define IHDG_SWE_PROC_EDGE_INTFACE_HPP
 
-#include <eigen3/Eigen/Dense>
-
 namespace SWE {
 namespace IHDG {
 template <typename EdgeInterfaceType>

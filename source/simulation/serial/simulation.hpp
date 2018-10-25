@@ -8,7 +8,6 @@ template <typename ProblemType>
 class Simulation {
   private:
     uint n_steps;
-    uint n_stages;
 
     typename ProblemType::ProblemDiscretizationType discretization;
 
@@ -24,6 +23,9 @@ class Simulation {
 
     void Run();
     void ComputeL2Residual();
+
+  private:
+    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -37,8 +39,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
     ProblemType::preprocess_mesh_data(input);
 
-    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-    this->n_stages = input.stepper_input.nstages;
+    this->n_steps = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
 
     this->discretization.mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
     this->stepper             = RKStepper(input.stepper_input);
@@ -66,29 +67,16 @@ void Simulation<ProblemType>::Run() {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
 
-    this->discretization.mesh.CallForEachElement([this](auto& elt) { elt.data.resize(this->n_stages + 1); });
+    uint n_stages = this->stepper.GetNumStages();
+
+    this->discretization.mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->discretization.mesh);
     }
 
     for (uint step = 1; step <= this->n_steps; ++step) {
-        for (uint stage = 0; stage < this->n_stages; ++stage) {
-            if (this->parser.ParsingInput()) {
-                this->parser.ParseInput(this->stepper, this->discretization.mesh);
-            }
-
-            ProblemType::stage_serial(this->stepper, this->discretization);
-
-            ++(this->stepper);
-        }
-
-        this->discretization.mesh.CallForEachElement(
-            [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
-
-        if (this->writer.WritingOutput()) {
-            this->writer.WriteOutput(this->stepper, this->discretization.mesh);
-        }
+        ProblemType::step_serial(this);
     }
 }
 

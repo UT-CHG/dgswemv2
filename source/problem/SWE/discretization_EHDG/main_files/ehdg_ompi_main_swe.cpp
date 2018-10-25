@@ -13,7 +13,7 @@
 #include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_pre_ompi.hpp"
-#include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_ompi_stage.hpp"
+#include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_ompi_step.hpp"
 
 #include "simulation/ompi/simulation_ompi.hpp"
 #include "simulation/stepper/rk_stepper.hpp"

@@ -14,7 +14,6 @@ template <typename ProblemType>
 class OMPISimulation {
   private:
     uint n_steps;
-    uint n_stages;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> sim_units;
 
@@ -28,6 +27,9 @@ class OMPISimulation {
 #ifdef HAS_PETSC
     void DestroyPETSc();
 #endif
+
+  private:
+    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -37,8 +39,7 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
-    this->n_steps  = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
-    this->n_stages = input.stepper_input.nstages;
+    this->n_steps = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
 
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
@@ -90,27 +91,7 @@ void OMPISimulation<ProblemType>::Run() {
         }
 
         for (uint step = 1; step <= this->n_steps; step++) {
-            for (uint stage = 0; stage < this->n_stages; stage++) {
-                for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-                    if (this->sim_units[su_id]->parser.ParsingInput()) {
-                        this->sim_units[su_id]->parser.ParseInput(this->sim_units[su_id]->stepper,
-                                                                  this->sim_units[su_id]->discretization.mesh);
-                    }
-                }
-
-                ProblemType::stage_ompi(this->sim_units, begin_sim_id, end_sim_id);
-            }
-
-            for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-                this->sim_units[su_id]->discretization.mesh.CallForEachElement([this, su_id](auto& elt) {
-                    ProblemType::swap_states_kernel(this->sim_units[su_id]->stepper, elt);
-                });
-
-                if (this->sim_units[su_id]->writer.WritingOutput()) {
-                    this->sim_units[su_id]->writer.WriteOutput(this->sim_units[su_id]->stepper,
-                                                               this->sim_units[su_id]->discretization.mesh);
-                }
-            }
+            ProblemType::step_ompi(this, begin_sim_id, end_sim_id);
         }
     }  // close omp parallel region
 }

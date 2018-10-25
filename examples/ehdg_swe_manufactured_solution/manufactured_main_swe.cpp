@@ -10,7 +10,7 @@
 #include "problem/SWE/discretization_EHDG/kernels_postprocessor/ehdg_swe_kernels_postprocessor.hpp"
 
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_pre_serial.hpp"
-#include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_serial_stage.hpp"
+#include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_serial_step.hpp"
 
 #include "simulation/serial/simulation.hpp"
 #include "simulation/stepper/rk_stepper.hpp"

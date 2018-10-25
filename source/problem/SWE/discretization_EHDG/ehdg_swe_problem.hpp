@@ -117,8 +117,14 @@ struct Problem {
     static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
 
     // processor kernels
+    template <typename SerialSimType>
+    static void step_serial(SerialSimType* sim);
+
     template <typename ProblemType>
     static void stage_serial(const RKStepper& stepper, HDGDiscretization<ProblemType>& discretization);
+
+    template <typename OMPISimType>
+    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
 
     template <typename OMPISimUnitType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,

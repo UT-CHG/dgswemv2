@@ -86,7 +86,13 @@ struct Problem {
     static void initialize_data_parallel_post_receive(ProblemMeshType& mesh);
 
     // processor kernels
+    template <typename SerialSimType>
+    static void step_serial(SerialSimType* sim);
+
     static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+
+    template <typename OMPISimType>
+    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
 
     template <typename OMPISimUnitType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,

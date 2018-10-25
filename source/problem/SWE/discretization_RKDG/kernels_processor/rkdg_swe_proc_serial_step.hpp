@@ -1,12 +1,30 @@
-#ifndef RKDG_SWE_PROC_SERIAL_STAGE_HPP
-#define RKDG_SWE_PROC_SERIAL_STAGE_HPP
+#ifndef RKDG_SWE_PROC_SERIAL_STEP_HPP
+#define RKDG_SWE_PROC_SERIAL_STEP_HPP
 
 #include "general_definitions.hpp"
-
 #include "rkdg_swe_kernels_processor.hpp"
 
 namespace SWE {
 namespace RKDG {
+template <typename SerialSimType>
+void Problem::step_serial(SerialSimType* sim) {
+    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
+        if (sim->parser.ParsingInput()) {
+            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+        }
+
+        Problem::stage_serial(sim->stepper, sim->discretization);
+
+        ++(sim->stepper);
+    }
+
+    sim->discretization.mesh.CallForEachElement([sim](auto& elt) { Problem::swap_states_kernel(sim->stepper, elt); });
+
+    if (sim->writer.WritingOutput()) {
+        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    }
+}
+
 void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::volume_kernel(stepper, elt); });
 

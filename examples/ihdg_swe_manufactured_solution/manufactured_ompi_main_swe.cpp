@@ -14,7 +14,7 @@
 #include "problem/SWE/discretization_IHDG/kernels_postprocessor/ihdg_swe_kernels_postprocessor.hpp"
 
 #include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_pre_ompi.hpp"
-#include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_proc_ompi_stage.hpp"
+#include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_proc_ompi_step.hpp"
 
 #include "simulation/ompi/simulation_ompi.hpp"
 #include "simulation/stepper/rk_stepper.hpp"

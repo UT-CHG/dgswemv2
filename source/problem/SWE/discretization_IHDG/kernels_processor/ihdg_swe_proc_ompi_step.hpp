@@ -1,5 +1,5 @@
-#ifndef IHDG_SWE_PROC_OMPI_STAGE_HPP
-#define IHDG_SWE_PROC_OMPI_STAGE_HPP
+#ifndef IHDG_SWE_PROC_OMPI_STEP_HPP
+#define IHDG_SWE_PROC_OMPI_STEP_HPP
 
 #include "general_definitions.hpp"
 
@@ -8,6 +8,30 @@
 
 namespace SWE {
 namespace IHDG {
+template <typename OMPISimType>
+void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    for (uint stage = 0; stage < sim->sim_units[0]->stepper.GetNumStages(); ++stage) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+            if (sim->sim_units[su_id]->parser.ParsingInput()) {
+                sim->sim_units[su_id]->parser.ParseInput(sim->sim_units[su_id]->stepper,
+                                                         sim->sim_units[su_id]->discretization.mesh);
+            }
+        }
+
+        Problem::stage_ompi(sim->sim_units, begin_sim_id, end_sim_id);
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim->sim_units[su_id]->discretization.mesh.CallForEachElement(
+            [sim, su_id](auto& elt) { Problem::swap_states_kernel(sim->sim_units[su_id]->stepper, elt); });
+
+        if (sim->sim_units[su_id]->writer.WritingOutput()) {
+            sim->sim_units[su_id]->writer.WriteOutput(sim->sim_units[su_id]->stepper,
+                                                      sim->sim_units[su_id]->discretization.mesh);
+        }
+    }
+}
+
 template <typename OMPISimUnitType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, uint begin_sim_id, uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
