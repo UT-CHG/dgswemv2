@@ -1,8 +1,8 @@
 #ifndef LINEAR_ALGEBRA_HPP
 #define LINEAR_ALGEBRA_HPP
 
-//#define USE_EIGEN
-#define USE_BLAZE
+#define USE_EIGEN
+//#define USE_BLAZE
 
 #ifdef USE_BLAZE
 #include "utilities/linear_algebra/use_blaze.hpp"
@@ -25,5 +25,5 @@ using AlignedVector = std::vector<T, AlignedAllocator<T>>;
 // A fix is adding const to Key in std::pair in AllignedAllocator
 // https://github.com/JakobEngel/dso/issues/111
 template <typename Key, typename T, typename Compare = std::less<Key>>
-using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<Key, T>>>;
+using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<const Key, T>>>;
 #endif
