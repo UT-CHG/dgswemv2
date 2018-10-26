@@ -272,6 +272,8 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiPhi" << std::endl;
+                std::cerr << std::setprecision(16) << "  " << triangle.IntegrationPhi(doff, gp_vals)[0] << ' '
+                          << triangle.IntegrationPhiPhi(dof, doff, unit_gp)[0] << '\n';
             }
         }
 
@@ -284,6 +286,8 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
+                std::cerr << std::setprecision(16) << "  " << triangle.IntegrationDPhi(GlobalCoord::x, doff, gp_vals)[0]
+                          << ' ' << triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp)[0] << '\n';
             }
 
             if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals)[0],

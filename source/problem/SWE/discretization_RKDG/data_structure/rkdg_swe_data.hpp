@@ -13,16 +13,16 @@
 namespace SWE {
 namespace RKDG {
 struct Data {
-    std::vector<State> state;
+    AlignedVector<State> state;
     Internal internal;
-    std::vector<Boundary> boundary;
+    AlignedVector<Boundary> boundary;
 
     Source source;
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 
     void initialize() {
-        this->state = std::vector<State>{State(this->ndof)};
+        this->state.emplace_back(this->ndof);
 
         this->internal = Internal(this->ngp_internal);
 

@@ -172,7 +172,8 @@ if [ ! -d "$YAML_CPP_BUILD_PATH" ]; then
     #
 
     CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH}"
+                 -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH}\
+                 -DYAML_CPP_BUILD_TESTS=OFF"
     if [ -v CXX_COMPILER ]; then
     CMAKE_FLAGS="$CMAKE_FLAGS \
                  -DCMAKE_CXX_COMPILER=${CXX_COMPILER}"

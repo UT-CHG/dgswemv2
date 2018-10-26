@@ -111,9 +111,9 @@ class Element {
 
     void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
     template <typename InputArrayType, typename OutputArrayType>
-    void WriteCellDataVTK(const InputArrayType& u, std::vector<OutputArrayType>& cell_data);
+    void WriteCellDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& cell_data);
     template <typename InputArrayType, typename OutputArrayType>
-    void WritePointDataVTK(const InputArrayType& u, std::vector<OutputArrayType>& point_data);
+    void WritePointDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& point_data);
 
     template <typename F, typename InputArrayType>
     double ComputeResidualL2(const F& f, const InputArrayType& u);
@@ -159,7 +159,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
 
     // DEFORMATION
     DynVector<double> det_J = this->shape.GetJdet(this->master->integration_rule.second);
-    std::vector<StatMatrix<double, dimension, dimension>> J_inv =
+    AlignedVector<StatMatrix<double, dimension, dimension>> J_inv =
         this->shape.GetJinv(this->master->integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
@@ -485,7 +485,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename InputArrayType, typename OutputArrayType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(
     const InputArrayType& u,
-    std::vector<OutputArrayType>& cell_data) {
+    AlignedVector<OutputArrayType>& cell_data) {
     // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
     OutputArrayType temp;
 
@@ -500,7 +500,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename InputArrayType, typename OutputArrayType>
 inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(
     const InputArrayType& u,
-    std::vector<OutputArrayType>& point_data) {
+    AlignedVector<OutputArrayType>& point_data) {
     // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)
     OutputArrayType temp;
 
