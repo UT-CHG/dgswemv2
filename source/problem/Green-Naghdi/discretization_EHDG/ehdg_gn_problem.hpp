@@ -151,7 +151,7 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -163,9 +163,11 @@ struct Problem {
 
     /* Dispersive correction part */
 
-    static void dispersive_correction_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void dispersive_correction_serial(const ProblemStepperType& stepper,
+                                             ProblemDiscretizationType& discretization);
 
-    static void compute_derivatives_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void compute_derivatives_serial(const ProblemStepperType& stepper,
+                                           ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
     static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
@@ -180,32 +182,33 @@ struct Problem {
     /* local step */
 
     template <typename ElementType>
-    static void local_dc_volume_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_dc_volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void local_dc_source_kernel(const RKStepper& stepper, ElementType& elt);
+    static void local_dc_source_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename EdgeInterfaceType>
-    static void local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+    static void local_dc_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeBoundaryType>
-    static void local_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    static void local_dc_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeDistributedType>
-    static void local_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    static void local_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
 
     /* global step */
 
     template <typename EdgeInterfaceType>
-    static void global_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int);
+    static void global_dc_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeBoundaryType>
-    static void global_dc_edge_boundary_kernel(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    static void global_dc_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeDistributedType>
-    static void global_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    static void global_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
 
-    static void serial_solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void serial_solve_global_dc_problem(const ProblemStepperType& stepper,
+                                               ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
     static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
@@ -214,7 +217,7 @@ struct Problem {
 
     /* SWE part */
 
-    static void swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void swe_stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimUnitType>
     static void swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
@@ -224,13 +227,13 @@ struct Problem {
     /* SWE part */
 
     template <typename ElementType>
-    static void dc_update_kernel(const RKStepper& stepper, ElementType& elt);
+    static void dc_update_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void dispersive_correction_kernel(const RKStepper& stepper, ElementType& elt);
+    static void dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void swap_states_kernel(const RKStepper& stepper, ElementType& elt);
+    static void swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     // writing output kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
@@ -241,12 +244,14 @@ struct Problem {
         return SWE::write_VTU_data(mesh, raw_data_file);
     }
 
-    static void write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+    static void write_modal_data(const ProblemStepperType& stepper,
+                                 ProblemMeshType& mesh,
+                                 const std::string& output_path) {
         return SWE::write_modal_data(stepper, mesh, output_path);
     }
 
     template <typename ElementType>
-    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
+    static double compute_residual_L2(const ProblemStepperType& stepper, ElementType& elt) {
         return SWE::compute_residual_L2(stepper, elt);
     }
 };

@@ -12,8 +12,8 @@ class Tide : public SWE::EHDG::BC::Tide {
     Tide() = default;
     Tide(const std::vector<SWE::TideInput>& tide_input) : SWE::EHDG::BC::Tide(tide_input) {}
 
-    template <typename EdgeBoundaryType>
-    void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
 };
 }
 }

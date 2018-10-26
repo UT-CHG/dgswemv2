@@ -12,8 +12,8 @@ class Flow : public SWE::EHDG::BC::Flow {
     Flow() = default;
     Flow(const std::vector<SWE::FlowInput>& flow_input) : SWE::EHDG::BC::Flow(flow_input) {}
 
-    template <typename EdgeBoundaryType>
-    void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
 };
 }
 }

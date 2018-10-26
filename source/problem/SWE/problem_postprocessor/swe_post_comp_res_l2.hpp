@@ -4,8 +4,8 @@
 #include "general_definitions.hpp"
 
 namespace SWE {
-template <typename ElementType>
-double compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+double compute_residual_L2(const StepperType& stepper, ElementType& elt) {
     double t = stepper.GetTimeAtCurrentStage();
 
     auto true_u = [t](Point<2>& pt) { return SWE::true_u(t, pt); };

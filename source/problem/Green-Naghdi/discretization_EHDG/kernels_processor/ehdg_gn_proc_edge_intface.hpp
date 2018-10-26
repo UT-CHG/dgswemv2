@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename EdgeInterfaceType>
-void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+void Problem::local_dc_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& internal_in = edge_int.interface.data_in.internal;
@@ -144,7 +144,7 @@ void Problem::local_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInter
 }
 
 template <typename EdgeInterfaceType>
-void Problem::global_dc_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+void Problem::global_dc_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];

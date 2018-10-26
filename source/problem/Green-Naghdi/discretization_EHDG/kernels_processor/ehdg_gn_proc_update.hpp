@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename ElementType>
-void Problem::dc_update_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::dc_update_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
     const double dt  = stepper.GetDT();
 
@@ -22,7 +22,7 @@ void Problem::dc_update_kernel(const RKStepper& stepper, ElementType& elt) {
 }
 
 template <typename ElementType>
-void Problem::dispersive_correction_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];
@@ -50,7 +50,7 @@ void Problem::dispersive_correction_kernel(const RKStepper& stepper, ElementType
 }
 
 template <typename ElementType>
-void Problem::swap_states_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     uint n_stages = stepper.GetNumStages();
     auto& state   = elt.data.state;
 

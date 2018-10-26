@@ -64,10 +64,7 @@ struct Problem {
         SWE::initialize_problem_parameters(problem_specific_input);
     }
 
-    template <typename InputType>
-    static void preprocess_mesh_data(InputType& input) {
-        SWE::preprocess_mesh_data(input);
-    }
+    static void preprocess_mesh_data(InputParameters<ProblemInputType>& input) { SWE::preprocess_mesh_data(input); }
 
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,

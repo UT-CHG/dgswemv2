@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename EdgeDistributedType>
-void Problem::local_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void Problem::local_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& internal = edge_dbound.boundary.data.internal;
@@ -81,7 +81,7 @@ void Problem::local_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDis
 }
 
 template <typename EdgeDistributedType>
-void Problem::global_dc_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void Problem::global_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];

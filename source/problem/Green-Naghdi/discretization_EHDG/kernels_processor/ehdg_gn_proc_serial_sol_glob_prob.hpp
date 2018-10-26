@@ -3,7 +3,8 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::serial_solve_global_dc_problem(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::serial_solve_global_dc_problem(const ProblemStepperType& stepper,
+                                             ProblemDiscretizationType& discretization) {
     auto& global_data = discretization.global_data;
 
     SparseMatrix<double>& w1_hat_w1_hat = global_data.w1_hat_w1_hat;

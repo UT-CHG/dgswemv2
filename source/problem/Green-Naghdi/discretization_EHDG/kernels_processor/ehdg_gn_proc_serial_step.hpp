@@ -28,7 +28,7 @@ void Problem::step_serial(SerialSimType* sim) {
     }
 }
 
-void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
     Problem::swe_stage_serial(stepper, discretization);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
@@ -52,7 +52,7 @@ void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& 
     });
 }
 
-void Problem::swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::swe_stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { SWE::EHDG::Problem::global_interface_kernel(stepper, intface); });
@@ -93,7 +93,8 @@ void Problem::swe_stage_serial(const RKStepper& stepper, ProblemDiscretizationTy
     });
 }
 
-void Problem::dispersive_correction_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+void Problem::dispersive_correction_serial(const ProblemStepperType& stepper,
+                                           ProblemDiscretizationType& discretization) {
     // Compute du, ddu
     Problem::compute_derivatives_serial(stepper, discretization);
 

@@ -10,12 +10,12 @@ namespace EHDG {
 namespace BC {
 class Land : public SWE::EHDG::BC::Land {
   public:
-    template <typename EdgeBoundaryType>
-    void ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 };
 
-template <typename EdgeBoundaryType>
-void Land::ComputeGlobalKernelsDC(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Land::ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
