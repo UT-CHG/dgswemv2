@@ -25,5 +25,5 @@ using AlignedVector = std::vector<T, AlignedAllocator<T>>;
 // A fix is adding const to Key in std::pair in AllignedAllocator
 // https://github.com/JakobEngel/dso/issues/111
 template <typename Key, typename T, typename Compare = std::less<Key>>
-using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<const Key, T>>>;
+using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<Key, T>>>;
 #endif

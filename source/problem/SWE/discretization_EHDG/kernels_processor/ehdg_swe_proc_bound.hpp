@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename BoundaryType>
-void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void Problem::global_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];
@@ -35,8 +35,8 @@ void Problem::global_boundary_kernel(const RKStepper& stepper, BoundaryType& bou
     row(boundary.Fn_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
 }
 
-template <typename BoundaryType>
-void Problem::local_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void Problem::local_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];

@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename EdgeDistributedType>
-void Problem::local_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+template <typename StepperType, typename EdgeDistributedType>
+void Problem::local_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
@@ -53,39 +53,39 @@ void Problem::local_edge_distributed_kernel(const RKStepper& stepper, EdgeDistri
     }
 }
 
-template <typename EdgeDistributedType>
-void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_bound) {
-    auto& edge_internal = edge_bound.edge_data.edge_internal;
+template <typename StepperType, typename EdgeDistributedType>
+void Problem::global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
+    auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    edge_bound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_bound);
+    edge_dbound.boundary.boundary_condition.ComputeGlobalKernels(edge_dbound);
 
-    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); ++dof_i) {
-        for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); ++dof_j) {
+    for (uint dof_i = 0; dof_i < edge_dbound.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_dbound.boundary.data.get_ndof(); ++dof_j) {
             submatrix(boundary.delta_global,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
                 reshape<double, SWE::n_variables>(
-                    edge_bound.IntegrationPhiLambda(dof_j, dof_i, boundary.delta_global_kernel_at_gp));
+                    edge_dbound.IntegrationPhiLambda(dof_j, dof_i, boundary.delta_global_kernel_at_gp));
         }
     }
 
-    for (uint dof_i = 0; dof_i < edge_bound.edge_data.get_ndof(); ++dof_i) {
-        for (uint dof_j = 0; dof_j < edge_bound.edge_data.get_ndof(); ++dof_j) {
+    for (uint dof_i = 0; dof_i < edge_dbound.edge_data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < edge_dbound.edge_data.get_ndof(); ++dof_j) {
             submatrix(edge_internal.delta_hat_global,
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) =
                 reshape<double, SWE::n_variables>(
-                    edge_bound.IntegrationLambdaLambda(dof_j, dof_i, edge_internal.delta_hat_global_kernel_at_gp));
+                    edge_dbound.IntegrationLambdaLambda(dof_j, dof_i, edge_internal.delta_hat_global_kernel_at_gp));
         }
 
         subvector(edge_internal.rhs_global, SWE::n_variables * dof_i, SWE::n_variables) =
-            -edge_bound.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
+            -edge_dbound.IntegrationLambda(dof_i, edge_internal.rhs_global_kernel_at_gp);
     }
 }
 }

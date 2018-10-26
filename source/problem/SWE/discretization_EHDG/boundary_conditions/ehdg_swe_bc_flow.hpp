@@ -27,8 +27,8 @@ class Flow {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {}
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
 
     template <typename EdgeBoundaryType>
     void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}

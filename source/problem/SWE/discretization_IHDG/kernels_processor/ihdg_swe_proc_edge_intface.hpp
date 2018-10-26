@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename EdgeInterfaceType>
-void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+template <typename StepperType, typename EdgeInterfaceType>
+void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
@@ -81,8 +81,8 @@ void Problem::local_edge_interface_kernel(const RKStepper& stepper, EdgeInterfac
     }
 }
 
-template <typename EdgeInterfaceType>
-void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+template <typename StepperType, typename EdgeInterfaceType>
+void Problem::global_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];

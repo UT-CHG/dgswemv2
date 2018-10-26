@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename DistributedBoundaryType>
-void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+template <typename StepperType, typename DistributedBoundaryType>
+void Problem::global_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];
@@ -55,8 +55,8 @@ void Problem::global_distributed_boundary_kernel(const RKStepper& stepper, Distr
     dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::bound_state, message);
 }
 
-template <typename DistributedBoundaryType>
-void Problem::local_distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+template <typename StepperType, typename DistributedBoundaryType>
+void Problem::local_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];

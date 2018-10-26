@@ -25,8 +25,8 @@ void Problem::step_serial(SerialSimType* sim) {
     }
 }
 
-template <typename ProblemType>
-void Problem::stage_serial(const RKStepper& stepper, HDGDiscretization<ProblemType>& discretization) {
+template <typename StepperType, typename ProblemType>
+void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_interface_kernel(stepper, intface); });

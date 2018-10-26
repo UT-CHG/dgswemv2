@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename ElementType>
-void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
     // auto& source   = elt.data.source;
 

@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename InterfaceType>
-void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
+template <typename StepperType, typename InterfaceType>
+void Problem::global_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
     auto& state_in    = intface.data_in.state[stage];
@@ -69,8 +69,8 @@ void Problem::global_interface_kernel(const RKStepper& stepper, InterfaceType& i
     row(boundary_ex.Fn_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh_ex, nx_ex) + vec_cw_mult(vvh_ex + pe_ex, ny_ex);
 }
 
-template <typename InterfaceType>
-void Problem::local_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
+template <typename StepperType, typename InterfaceType>
+void Problem::local_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
     auto& state_in    = intface.data_in.state[stage];

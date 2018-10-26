@@ -12,12 +12,12 @@ class Land {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
 
-    template <typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 };
 
-template <typename EdgeBoundaryType>
-void Land::ComputeGlobalKernels(const RKStepper& stepper, EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Land::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];

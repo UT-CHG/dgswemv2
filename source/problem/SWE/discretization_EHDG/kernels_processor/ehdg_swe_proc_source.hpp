@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename ElementType>
-void Problem::local_source_kernel(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];

@@ -27,7 +27,8 @@ void Problem::step_serial(SerialSimType* sim) {
     }
 }
 
-void Problem::stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization) {
+template <typename StepperType>
+void Problem::stage_serial(const StepperType& stepper, ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
         const uint stage = stepper.GetStage();
 

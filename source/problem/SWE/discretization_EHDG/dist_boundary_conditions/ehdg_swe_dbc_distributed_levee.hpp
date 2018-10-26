@@ -35,7 +35,7 @@ class DistributedLevee {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
 
     template <typename EdgeDistributedType>
     void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
@@ -68,7 +68,7 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 }
 
 template <typename EdgeDistributedType>
-void DistributedLevee::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void DistributedLevee::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     // Something to implement in the future
 }
 

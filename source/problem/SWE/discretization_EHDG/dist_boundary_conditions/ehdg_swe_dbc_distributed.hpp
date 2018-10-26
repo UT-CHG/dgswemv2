@@ -23,7 +23,7 @@ class Distributed {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    void ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound);
+    void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
 
     template <typename EdgeDistributedType>
     void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
@@ -39,7 +39,7 @@ void Distributed::Initialize(DistributedBoundaryType& dbound) {
 }
 
 template <typename EdgeDistributedType>
-void Distributed::ComputeGlobalKernels(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];

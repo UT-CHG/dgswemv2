@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename ElementType>
-void Problem::update_kernel(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::update_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
     const double dt  = stepper.GetDT();
 
@@ -21,16 +21,16 @@ void Problem::update_kernel(const RKStepper& stepper, ElementType& elt) {
     }
 }
 
-template <typename ElementType>
-void Problem::swap_states_kernel(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::swap_states_kernel(const StepperType& stepper, ElementType& elt) {
     uint n_stages = stepper.GetNumStages();
     auto& state   = elt.data.state;
 
     std::swap(state[0].q, state[n_stages].q);
 }
 
-template <typename ElementType>
-bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+bool Problem::scrutinize_solution_kernel(const StepperType& stepper, ElementType& elt) {
     uint stage = stepper.GetStage();
 
     auto& state = elt.data.state[stage + 1];

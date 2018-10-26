@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename ElementType>
-void Problem::local_volume_kernel(const RKStepper& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::local_volume_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage + 1];

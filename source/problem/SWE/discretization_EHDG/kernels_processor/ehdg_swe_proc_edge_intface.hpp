@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename EdgeInterfaceType>
-void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+template <typename StepperType, typename EdgeInterfaceType>
+void Problem::global_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
@@ -39,8 +39,8 @@ void Problem::global_edge_interface_kernel(const RKStepper& stepper, EdgeInterfa
     edge_int.interface.specialization.ComputeNumericalFlux(edge_int);
 }
 
-template <typename EdgeInterfaceType>
-void Problem::global_edge_interface_iteration(const RKStepper& stepper, EdgeInterfaceType& edge_int) {
+template <typename StepperType, typename EdgeInterfaceType>
+void Problem::global_edge_interface_iteration(const StepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
 

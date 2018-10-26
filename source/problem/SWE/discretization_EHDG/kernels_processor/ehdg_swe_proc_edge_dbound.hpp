@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename EdgeDistributedType>
-void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+template <typename StepperType, typename EdgeDistributedType>
+void Problem::global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
@@ -39,8 +39,8 @@ void Problem::global_edge_distributed_kernel(const RKStepper& stepper, EdgeDistr
     edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
 }
 
-template <typename EdgeDistributedType>
-void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDistributedType& edge_dbound) {
+template <typename StepperType, typename EdgeDistributedType>
+void Problem::global_edge_distributed_iteration(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
@@ -53,7 +53,7 @@ void Problem::global_edge_distributed_iteration(const RKStepper& stepper, EdgeDi
 
     /* Assemble global kernels */
 
-    edge_dbound.boundary.boundary_condition.ComputeGlobalKernels(stepper, edge_dbound);
+    edge_dbound.boundary.boundary_condition.ComputeGlobalKernels(edge_dbound);
 
     /* Assemble global system */
 
