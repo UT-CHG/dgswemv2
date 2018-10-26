@@ -38,7 +38,7 @@ class DistributedLevee {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    void ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    void ComputeFlux(DistributedBoundaryType& dbound);
 };
 
 DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input)
@@ -68,7 +68,7 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 }
 
 template <typename DistributedBoundaryType>
-void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void DistributedLevee::ComputeFlux(DistributedBoundaryType& dbound) {
     std::vector<double> message;
 
     message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
@@ -107,7 +107,7 @@ void DistributedLevee::ComputeFlux(const RKStepper& stepper, DistributedBoundary
 
             // reflective boundary
             this->land_boundary.GetEX(
-                stepper, column(dbound.surface_normal, gp), column(boundary.q_at_gp, gp), column(this->q_ex, gp));
+                column(dbound.surface_normal, gp), column(boundary.q_at_gp, gp), column(this->q_ex, gp));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex
             double n_x, n_y, t_x, t_y, qn_in, qt_in;
 

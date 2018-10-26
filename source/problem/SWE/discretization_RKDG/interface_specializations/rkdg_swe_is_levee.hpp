@@ -33,7 +33,7 @@ class Levee {
     void Initialize(InterfaceType& intface);
 
     template <typename InterfaceType>
-    void ComputeFlux(const RKStepper& stepper, InterfaceType& intface);
+    void ComputeFlux(InterfaceType& intface);
 };
 
 Levee::Levee(const std::vector<LeveeInput>& levee_input) {
@@ -63,7 +63,7 @@ void Levee::Initialize(InterfaceType& intface) {
 }
 
 template <typename InterfaceType>
-void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
+void Levee::ComputeFlux(InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
@@ -94,14 +94,11 @@ void Levee::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
 
             // reflective boundary in
-            this->land_boundary.GetEX(stepper,
-                                      column(intface.surface_normal_in, gp),
-                                      column(boundary_in.q_at_gp, gp),
-                                      column(this->q_in_ex, gp));
+            this->land_boundary.GetEX(
+                column(intface.surface_normal_in, gp), column(boundary_in.q_at_gp, gp), column(this->q_in_ex, gp));
 
             // reflective boundary ex
-            this->land_boundary.GetEX(stepper,
-                                      column(intface.surface_normal_ex, gp_ex),
+            this->land_boundary.GetEX(column(intface.surface_normal_ex, gp_ex),
                                       column(boundary_ex.q_at_gp, gp_ex),
                                       column(this->q_ex_ex, gp_ex));
         } else if (h_above_levee_in > h_above_levee_ex) {  // overtopping from in to ex

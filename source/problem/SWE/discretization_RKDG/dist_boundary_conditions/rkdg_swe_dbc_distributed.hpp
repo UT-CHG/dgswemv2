@@ -26,7 +26,7 @@ class Distributed {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    void ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    void ComputeFlux(DistributedBoundaryType& dbound);
 };
 
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
@@ -40,7 +40,7 @@ void Distributed::Initialize(DistributedBoundaryType& dbound) {
 }
 
 template <typename DistributedBoundaryType>
-void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
     std::vector<double> message;
 
     message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
@@ -78,8 +78,7 @@ void Distributed::ComputeFlux(const RKStepper& stepper, DistributedBoundaryType&
         } else if (boundary.F_hat_at_gp(Variables::ze, gp) < -1e-12) {
             if (!wet_ex) {  // water flowing from dry EX element
                 // Reflective Boundary on IN element side
-                this->land_boundary.ComputeFlux(stepper,
-                                                column(dbound.surface_normal, gp),
+                this->land_boundary.ComputeFlux(column(dbound.surface_normal, gp),
                                                 column(boundary.q_at_gp, gp),
                                                 column(boundary.aux_at_gp, gp),
                                                 column(boundary.F_hat_at_gp, gp));

@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::distributed_boundary_send_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];
@@ -32,7 +32,7 @@ void Problem::distributed_boundary_send_kernel(const RKStepper& stepper, Distrib
 }
 
 template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound) {
+void Problem::distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
     auto& wd_state_in = dbound.data.wet_dry_state;
 
     // Get message from exterior state
@@ -50,7 +50,7 @@ void Problem::distributed_boundary_kernel(const RKStepper& stepper, DistributedB
         auto& state    = dbound.data.state[stage];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-        dbound.boundary_condition.ComputeFlux(stepper, dbound);
+        dbound.boundary_condition.ComputeFlux(dbound);
 
         // now compute contributions to the righthand side
         state.rhs -= dbound.IntegrationPhi(boundary.F_hat_at_gp);

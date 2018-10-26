@@ -4,7 +4,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename ElementType>
-void Problem::update_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::update_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
     const double dt  = stepper.GetDT();
 
@@ -22,7 +22,7 @@ void Problem::update_kernel(const RKStepper& stepper, ElementType& elt) {
 }
 
 template <typename ElementType>
-void Problem::swap_states_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     uint n_stages = stepper.GetNumStages();
     auto& state   = elt.data.state;
 
@@ -30,7 +30,7 @@ void Problem::swap_states_kernel(const RKStepper& stepper, ElementType& elt) {
 }
 
 template <typename ElementType>
-bool Problem::scrutinize_solution_kernel(const RKStepper& stepper, ElementType& elt) {
+bool Problem::scrutinize_solution_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     uint stage = stepper.GetStage();
 
     auto& state = elt.data.state[stage + 1];

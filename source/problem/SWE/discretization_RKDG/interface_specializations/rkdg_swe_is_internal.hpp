@@ -15,8 +15,9 @@ class Internal {
   public:
     template <typename InterfaceType>
     void Initialize(InterfaceType& intface);
+
     template <typename InterfaceType>
-    void ComputeFlux(const RKStepper& stepper, InterfaceType& intface);
+    void ComputeFlux(InterfaceType& intface);
 };
 
 template <typename InterfaceType>
@@ -25,7 +26,7 @@ void Internal::Initialize(InterfaceType& intface) {
 }
 
 template <typename InterfaceType>
-void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
+void Internal::ComputeFlux(InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
@@ -53,8 +54,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 set_constant(column(boundary_in.F_hat_at_gp, gp), 0.0);
 
                 // Reflective Boundary on EX element side
-                this->land_boundary.ComputeFlux(stepper,
-                                                column(intface.surface_normal_ex, gp_ex),
+                this->land_boundary.ComputeFlux(column(intface.surface_normal_ex, gp_ex),
                                                 column(boundary_ex.q_at_gp, gp_ex),
                                                 column(boundary_ex.aux_at_gp, gp_ex),
                                                 column(boundary_ex.F_hat_at_gp, gp_ex));
@@ -76,8 +76,7 @@ void Internal::ComputeFlux(const RKStepper& stepper, InterfaceType& intface) {
                 set_constant(column(boundary_ex.F_hat_at_gp, gp_ex), 0.0);
 
                 // Reflective Boundary on IN element side
-                this->land_boundary.ComputeFlux(stepper,
-                                                column(intface.surface_normal_in, gp),
+                this->land_boundary.ComputeFlux(column(intface.surface_normal_in, gp),
                                                 column(boundary_in.q_at_gp, gp),
                                                 column(boundary_in.aux_at_gp, gp),
                                                 column(boundary_in.F_hat_at_gp, gp));

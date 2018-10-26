@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename InterfaceType>
-void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
+void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
@@ -22,7 +22,7 @@ void Problem::interface_kernel(const RKStepper& stepper, InterfaceType& intface)
         boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
         boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
-        intface.specialization.ComputeFlux(stepper, intface);
+        intface.specialization.ComputeFlux(intface);
 
         // now compute contributions to the righthand side
         state_in.rhs -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp);

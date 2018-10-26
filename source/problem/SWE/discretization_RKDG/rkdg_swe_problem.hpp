@@ -104,7 +104,7 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    static void stage_serial(const RKStepper& stepper, ProblemDiscretizationType& discretization);
+    static void stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -118,54 +118,54 @@ struct Problem {
     static auto stage_hpx(HPXSimUnitType* sim_unit);
 
     template <typename ElementType>
-    static void volume_kernel(const RKStepper& stepper, ElementType& elt);
+    static void volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void source_kernel(const RKStepper& stepper, ElementType& elt);
+    static void source_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename InterfaceType>
-    static void interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+    static void interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface);
 
     template <typename BoundaryType>
-    static void boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+    static void boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void distributed_boundary_send_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void distributed_boundary_send_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    static void distributed_boundary_kernel(const RKStepper& stepper, DistributedBoundaryType& dbound);
+    static void distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound);
 
     template <typename ElementType>
-    static void update_kernel(const RKStepper& stepper, ElementType& elt);
+    static void update_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static bool scrutinize_solution_kernel(const RKStepper& stepper, ElementType& elt);
+    static bool scrutinize_solution_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void swap_states_kernel(const RKStepper& stepper, ElementType& elt);
+    static void swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void wetting_drying_kernel(const RKStepper& stepper, ElementType& elt);
+    static void wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void slope_limiting_prepare_element_kernel(const RKStepper& stepper, ElementType& elt);
+    static void slope_limiting_prepare_element_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename InterfaceType>
-    static void slope_limiting_prepare_interface_kernel(const RKStepper& stepper, InterfaceType& intface);
+    static void slope_limiting_prepare_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface);
 
     template <typename BoundaryType>
-    static void slope_limiting_prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound);
+    static void slope_limiting_prepare_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound);
 
     template <typename DistributedBoundaryType>
-    static void slope_limiting_distributed_boundary_send_kernel(const RKStepper& stepper,
+    static void slope_limiting_distributed_boundary_send_kernel(const ProblemStepperType& stepper,
                                                                 DistributedBoundaryType& dbound);
 
     template <typename DistributedBoundaryType>
-    static void slope_limiting_prepare_distributed_boundary_kernel(const RKStepper& stepper,
+    static void slope_limiting_prepare_distributed_boundary_kernel(const ProblemStepperType& stepper,
                                                                    DistributedBoundaryType& dbound);
 
     template <typename ElementType>
-    static void slope_limiting_kernel(const RKStepper& stepper, ElementType& elt);
+    static void slope_limiting_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     // postprocessor kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
@@ -176,12 +176,14 @@ struct Problem {
         SWE::write_VTU_data(mesh, raw_data_file);
     }
 
-    static void write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+    static void write_modal_data(const ProblemStepperType& stepper,
+                                 ProblemMeshType& mesh,
+                                 const std::string& output_path) {
         SWE::write_modal_data(stepper, mesh, output_path);
     }
 
     template <typename ElementType>
-    static double compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
+    static double compute_residual_L2(const ProblemStepperType& stepper, ElementType& elt) {
         return SWE::compute_residual_L2(stepper, elt);
     }
 };

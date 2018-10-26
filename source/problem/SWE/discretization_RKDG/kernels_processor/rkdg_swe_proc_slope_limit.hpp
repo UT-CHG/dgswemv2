@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename ElementType>
-void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::slope_limiting_prepare_element_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
@@ -22,7 +22,7 @@ void Problem::slope_limiting_prepare_element_kernel(const RKStepper& stepper, El
 }
 
 template <typename InterfaceType>
-void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, InterfaceType& intface) {
+void Problem::slope_limiting_prepare_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
@@ -39,7 +39,7 @@ void Problem::slope_limiting_prepare_interface_kernel(const RKStepper& stepper, 
 }
 
 template <typename BoundaryType>
-void Problem::slope_limiting_prepare_boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::slope_limiting_prepare_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
     auto& wd_state = bound.data.wet_dry_state;
     auto& sl_state = bound.data.slope_limit_state;
 
@@ -51,7 +51,7 @@ void Problem::slope_limiting_prepare_boundary_kernel(const RKStepper& stepper, B
 }
 
 template <typename DistributedBoundaryType>
-void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& stepper,
+void Problem::slope_limiting_distributed_boundary_send_kernel(const ProblemStepperType& stepper,
                                                               DistributedBoundaryType& dbound) {
     auto& wd_state = dbound.data.wet_dry_state;
 
@@ -75,7 +75,7 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const RKStepper& s
 }
 
 template <typename DistributedBoundaryType>
-void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper& stepper,
+void Problem::slope_limiting_prepare_distributed_boundary_kernel(const ProblemStepperType& stepper,
                                                                  DistributedBoundaryType& dbound) {
     auto& sl_state = dbound.data.slope_limit_state;
 
@@ -93,7 +93,7 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const RKStepper
 }
 
 template <typename ElementType>
-void Problem::slope_limiting_kernel(const RKStepper& stepper, ElementType& elt) {
+void Problem::slope_limiting_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 

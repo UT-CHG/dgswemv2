@@ -5,7 +5,7 @@
 
 namespace SWE {
 template <typename MeshType>
-void initialize_data_serial(MeshType& mesh, const SWE::Inputs& problem_specific_input) {
+void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
@@ -169,6 +169,46 @@ void initialize_data_serial(MeshType& mesh, const SWE::Inputs& problem_specific_
         }
     });
 
+    mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
+        auto& shape = dbound.GetShape();
+
+        auto& boundary = dbound.data.boundary[dbound.bound_id];
+
+        uint nnode = dbound.data.get_nnode();
+        uint ngp   = dbound.data.get_ngp_boundary(dbound.bound_id);
+
+        DynRowVector<double> bathymetry(nnode);
+
+        for (uint node_id = 0; node_id < nnode; ++node_id) {
+            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
+        }
+
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeNodalUgp(bathymetry);
+
+        if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
+            DynRowVector<double> y_node(nnode);
+
+            for (uint node_id = 0; node_id < dbound.data.get_nnode(); node_id++) {
+                y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
+            }
+
+            DynRowVector<double> y_at_gp(ngp);
+
+            y_at_gp = dbound.ComputeNodalUgp(y_node);
+
+            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
+            double R         = problem_specific_input.spherical_projection.R;
+
+            for (uint gp = 0; gp < ngp; ++gp) {
+                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
+            }
+        } else {
+            for (uint gp = 0; gp < ngp; ++gp) {
+                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
+            }
+        }
+    });
+
     // SOURCE TERMS INITIALIZE
     // Manning N bottom friction
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
@@ -226,51 +266,6 @@ void initialize_data_serial(MeshType& mesh, const SWE::Inputs& problem_specific_
             elt.data.source.coriolis_f = 2 * 7.2921E-5 * std::sin(latitude_avg);
         });
     }
-}
-
-template <typename MeshType>
-void initialize_data_parallel(MeshType& mesh, const SWE::Inputs& problem_specific_input) {
-    initialize_data_serial(mesh, problem_specific_input);
-
-    mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
-        auto& shape = dbound.GetShape();
-
-        auto& boundary = dbound.data.boundary[dbound.bound_id];
-
-        uint nnode = dbound.data.get_nnode();
-        uint ngp   = dbound.data.get_ngp_boundary(dbound.bound_id);
-
-        DynRowVector<double> bathymetry(nnode);
-
-        for (uint node_id = 0; node_id < nnode; ++node_id) {
-            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
-        }
-
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeNodalUgp(bathymetry);
-
-        if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
-            DynRowVector<double> y_node(nnode);
-
-            for (uint node_id = 0; node_id < dbound.data.get_nnode(); node_id++) {
-                y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
-            }
-
-            DynRowVector<double> y_at_gp(ngp);
-
-            y_at_gp = dbound.ComputeNodalUgp(y_node);
-
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
-            double R         = problem_specific_input.spherical_projection.R;
-
-            for (uint gp = 0; gp < ngp; ++gp) {
-                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
-            }
-        } else {
-            for (uint gp = 0; gp < ngp; ++gp) {
-                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
-            }
-        }
-    });
 }
 }
 

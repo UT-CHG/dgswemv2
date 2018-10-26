@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 template <typename BoundaryType>
-void Problem::boundary_kernel(const RKStepper& stepper, BoundaryType& bound) {
+void Problem::boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
     auto& wd_state = bound.data.wet_dry_state;
 
     if (wd_state.wet) {

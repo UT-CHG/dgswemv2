@@ -18,17 +18,15 @@ class Land {
 
     void Initialize(uint ngp);
 
-    template <typename BoundaryType>
-    void ComputeFlux(const RKStepper& stepper, BoundaryType& bound);
+    template <typename StepperType, typename BoundaryType>
+    void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
 
-    void ComputeFlux(const RKStepper& stepper,
-                     const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+    void ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
                      const Column<HybMatrix<double, SWE::n_variables>>& q_in,
                      const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
                      Column<HybMatrix<double, SWE::n_variables>>&& F_hat);
 
-    void GetEX(const RKStepper& stepper,
-               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+    void GetEX(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
                const Column<HybMatrix<double, SWE::n_variables>>& q_in,
                Column<HybMatrix<double, SWE::n_variables>>&& q_ex);
 };
@@ -43,8 +41,8 @@ void Land::Initialize(uint ngp) {
     this->q_ex.resize(SWE::n_variables, ngp);
 }
 
-template <typename BoundaryType>
-void Land::ComputeFlux(const RKStepper& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void Land::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
 
     auto n_x = row(bound.surface_normal, GlobalCoord::x);
@@ -71,8 +69,7 @@ void Land::ComputeFlux(const RKStepper& stepper, BoundaryType& bound) {
     }
 }
 
-void Land::ComputeFlux(const RKStepper& stepper,
-                       const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+void Land::ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
                        const Column<HybMatrix<double, SWE::n_variables>>& q_in,
                        const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
                        Column<HybMatrix<double, SWE::n_variables>>&& F_hat) {
@@ -92,8 +89,7 @@ void Land::ComputeFlux(const RKStepper& stepper,
     LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, surface_normal, std::move(F_hat));
 }
 
-void Land::GetEX(const RKStepper& stepper,
-                 const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+void Land::GetEX(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
                  const Column<HybMatrix<double, SWE::n_variables>>& q_in,
                  Column<HybMatrix<double, SWE::n_variables>>&& q_ex) {
     double n_x, n_y, t_x, t_y, qn_in, qt_in, qn_ex, qt_ex;

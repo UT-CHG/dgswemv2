@@ -30,8 +30,8 @@ class Tide {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename BoundaryType>
-    void ComputeFlux(const RKStepper& stepper, BoundaryType& bound);
+    template <typename StepperType, typename BoundaryType>
+    void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
 };
 
 Tide::Tide(const std::vector<TideInput>& tide_input) {
@@ -72,8 +72,8 @@ void Tide::Initialize(BoundaryType& bound) {
     }
 }
 
-template <typename BoundaryType>
-void Tide::ComputeFlux(const RKStepper& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void Tide::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
 
     set_constant(this->q_ex, 0.0);

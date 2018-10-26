@@ -6,7 +6,7 @@
 namespace SWE {
 namespace RKDG {
 void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    SWE::initialize_data_serial(mesh, problem_specific_input);
+    SWE::initialize_data(mesh, problem_specific_input);
 
     // WETTING-DRYING INITIALIZE
     mesh.CallForEachElement([](auto& elt) {
@@ -131,7 +131,7 @@ void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputTy
 }
 
 void Problem::initialize_data_parallel_pre_send(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
-    SWE::initialize_data_parallel(mesh, problem_specific_input);
+    Problem::initialize_data_serial(mesh, problem_specific_input);
 
     mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& sl_state = dbound.data.slope_limit_state;

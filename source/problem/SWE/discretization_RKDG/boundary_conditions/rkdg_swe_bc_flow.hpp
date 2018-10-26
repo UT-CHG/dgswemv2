@@ -31,8 +31,8 @@ class Flow {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename BoundaryType>
-    void ComputeFlux(const RKStepper& stepper, BoundaryType& bound);
+    template <typename StepperType, typename BoundaryType>
+    void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
 };
 
 Flow::Flow(const std::vector<FlowInput>& flow_input) {
@@ -74,8 +74,8 @@ void Flow::Initialize(BoundaryType& bound) {
     }
 }
 
-template <typename BoundaryType>
-void Flow::ComputeFlux(const RKStepper& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void Flow::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
 
     set_constant(this->qn, 0.0);
