@@ -24,16 +24,15 @@
 #include <stdlib.h>
 #include <time.h>
 
+using uint  = unsigned int;
+using uchar = unsigned char;
+
 #ifdef HAS_HPX
 #include "simulation/hpx/load_balancer/serialization_headers.hpp"
 #endif
 #include "utilities/linear_algebra.hpp"
 
 #include "edge_types.hpp"
-
-using uchar = unsigned char;
-
-using uint = unsigned int;
 
 template <uint dimension>
 using Point = std::array<double, dimension>;

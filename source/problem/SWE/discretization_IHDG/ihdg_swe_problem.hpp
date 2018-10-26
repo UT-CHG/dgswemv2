@@ -17,6 +17,7 @@
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
+#include "problem/SWE/problem_preprocessor/swe_preprocessor.hpp"
 #include "problem/SWE/problem_postprocessor/swe_postprocessor.hpp"
 
 #include "geometry/mesh_definitions.hpp"
@@ -59,9 +60,14 @@ struct Problem {
     using ProblemDiscretizationType = HDGDiscretization<Problem>;
 
     // preprocessor kernels
-    static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
+    static void initialize_problem_parameters(ProblemInputType& problem_specific_input) {
+        SWE::initialize_problem_parameters(problem_specific_input);
+    }
 
-    static void preprocess_mesh_data(InputParameters<ProblemInputType>& input);
+    template <typename InputType>
+    static void preprocess_mesh_data(InputType& input) {
+        SWE::preprocess_mesh_data(input);
+    }
 
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
@@ -115,9 +121,11 @@ struct Problem {
                                   uint begin_sim_id,
                                   uint end_sim_id);
 
-    static void initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename MeshType>
+    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
     static void initialize_global_problem_serial(ProblemDiscretizationType& discretization, uint& global_dof_offset);
 

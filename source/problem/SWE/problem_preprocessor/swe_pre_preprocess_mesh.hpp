@@ -1,9 +1,9 @@
-#ifndef IHDG_SWE_PRE_PREPROCESS_MESH_HPP
-#define IHDG_SWE_PRE_PREPROCESS_MESH_HPP
+#ifndef SWE_PRE_PREPROCESS_MESH_HPP
+#define SWE_PRE_PREPROCESS_MESH_HPP
 
 namespace SWE {
-namespace IHDG {
-void Problem::preprocess_mesh_data(InputParameters<ProblemInputType>& input) {
+template <typename InputType>
+void preprocess_mesh_data(InputType& input) {
     // need to do projection to cartesian coordinate system by projecting on a cylinder
     if (input.mesh_input.mesh_coordinate_sys == CoordinateSystem::spherical) {
         if (input.problem_input.spherical_projection.type == SphericalProjectionType::None) {
@@ -24,7 +24,6 @@ void Problem::preprocess_mesh_data(InputParameters<ProblemInputType>& input) {
             node.second.coordinates[GlobalCoord::y] = R * node.second.coordinates[GlobalCoord::y] * PI / 180.0;
         }
     }
-}
 }
 }
 

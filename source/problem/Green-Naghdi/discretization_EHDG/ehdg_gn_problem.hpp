@@ -58,9 +58,15 @@ struct Problem {
     using ProblemDiscretizationType = HDGDiscretization<Problem>;
 
     // preprocessor kernels
-    static void initialize_problem_parameters(const ProblemInputType& problem_specific_input);
+    static void initialize_problem_parameters(const ProblemInputType& problem_specific_input) {
+        SWE::initialize_problem_parameters(problem_specific_input);
 
-    static void preprocess_mesh_data(InputParameters<ProblemInputType>& input);
+        GN::Global::g         = problem_specific_input.g;
+        GN::Global::rho_air   = problem_specific_input.rho_air;
+        GN::Global::rho_water = problem_specific_input.rho_water;
+    }
+
+    static void preprocess_mesh_data(InputParameters<ProblemInputType>& input) { SWE::preprocess_mesh_data(input); }
 
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
@@ -228,20 +234,20 @@ struct Problem {
 
     // writing output kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
-        return SWE::EHDG::Problem::write_VTK_data(mesh, raw_data_file);
+        return SWE::write_VTK_data(mesh, raw_data_file);
     }
 
     static void write_VTU_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
-        return SWE::EHDG::Problem::write_VTU_data(mesh, raw_data_file);
+        return SWE::write_VTU_data(mesh, raw_data_file);
     }
 
     static void write_modal_data(const RKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
-        return SWE::EHDG::Problem::write_modal_data(stepper, mesh, output_path);
+        return SWE::write_modal_data(stepper, mesh, output_path);
     }
 
     template <typename ElementType>
     static double compute_residual_L2(const RKStepper& stepper, ElementType& elt) {
-        return SWE::EHDG::Problem::compute_residual_L2(stepper, elt);
+        return SWE::compute_residual_L2(stepper, elt);
     }
 };
 }

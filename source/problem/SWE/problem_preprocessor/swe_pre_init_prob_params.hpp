@@ -1,9 +1,8 @@
-#ifndef EHDG_SWE_PRE_INIT_PROB_PARAMS_HPP
-#define EHDG_SWE_PRE_INIT_PROB_PARAMS_HPP
+#ifndef SWE_PRE_INIT_PROB_PARAMS_HPP
+#define SWE_PRE_INIT_PROB_PARAMS_HPP
 
 namespace SWE {
-namespace EHDG {
-void Problem::initialize_problem_parameters(const ProblemInputType& problem_specific_input) {
+void initialize_problem_parameters(const SWE::Inputs& problem_specific_input) {
     SWE::Global::g         = problem_specific_input.g;
     SWE::Global::rho_air   = problem_specific_input.rho_air;
     SWE::Global::rho_water = problem_specific_input.rho_water;
@@ -45,7 +44,6 @@ void Problem::initialize_problem_parameters(const ProblemInputType& problem_spec
             SWE::PostProcessing::nu = problem_specific_input.slope_limit.nu;
         }
     }
-}
 }
 }
 
