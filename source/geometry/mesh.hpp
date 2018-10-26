@@ -41,10 +41,11 @@ class Mesh<std::tuple<Elements...>,
   public:
     Mesh() = default;
     Mesh(const uint p) : p(p), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+
     Mesh& operator=(const Mesh&) = delete;
-    Mesh(Mesh&) = delete;
-    Mesh& operator=(Mesh&&) =default;
-    Mesh(Mesh&&) = default;
+    Mesh(Mesh&)                  = delete;
+    Mesh& operator=(Mesh&&) = default;
+    Mesh(Mesh&&)            = default;
 
     std::string GetMeshName() { return this->mesh_name; }
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }

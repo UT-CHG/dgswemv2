@@ -17,7 +17,7 @@ struct Source {
 
     std::vector<std::vector<double>*> parsed_meteo_data;
 
-    std::vector<StatVector<double, SWE::n_dimensions>> tau_s;
+    AlignedVector<StatVector<double, SWE::n_dimensions>> tau_s;
     std::vector<double> p_atm;
 
     std::vector<double> tide_pot;
