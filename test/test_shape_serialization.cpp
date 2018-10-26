@@ -11,9 +11,9 @@ bool is_equal(Shape::StraightTriangle& o_tri, Shape::StraightTriangle& i_tri) {
     for (uint bd_id = 0; bd_id < 3; ++bd_id) {
         std::vector<Point<2>> test_pt{test_points[bd_id]};
 
-	using Vec = StatVector<double,2>;
-        std::vector<Vec,AlignedAllocator<Vec>> o_normal = o_tri.GetSurfaceNormal(bd_id, test_pt);
-        std::vector<Vec,AlignedAllocator<Vec>> i_normal = i_tri.GetSurfaceNormal(bd_id, test_pt);
+        using Vec                                        = StatVector<double, 2>;
+        std::vector<Vec, AlignedAllocator<Vec>> o_normal = o_tri.GetSurfaceNormal(bd_id, test_pt);
+        std::vector<Vec, AlignedAllocator<Vec>> i_normal = i_tri.GetSurfaceNormal(bd_id, test_pt);
 
         is_equal &= almost_equal(o_normal[0][0], i_normal[0][0]);
         is_equal &= almost_equal(o_normal[0][1], i_normal[0][1]);

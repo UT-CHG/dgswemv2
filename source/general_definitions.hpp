@@ -31,7 +31,6 @@
 
 #include "edge_types.hpp"
 
-
 using uchar = unsigned char;
 
 using uint = unsigned int;
@@ -197,10 +196,12 @@ class Shape {
     virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points)                          = 0;
     virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
 
-    virtual AlignedVector<StatMatrix<double, dimension, dimension>> GetJinv(const std::vector<Point<dimension>>& points) = 0;
+    virtual AlignedVector<StatMatrix<double, dimension, dimension>> GetJinv(
+        const std::vector<Point<dimension>>& points) = 0;
 
-    virtual AlignedVector<StatVector<double, dimension>> GetSurfaceNormal( const uint bound_id,
-    					       				   const std::vector<Point<dimension>>& points) = 0;
+    virtual AlignedVector<StatVector<double, dimension>> GetSurfaceNormal(
+        const uint bound_id,
+        const std::vector<Point<dimension>>& points) = 0;
 
     virtual DynMatrix<double> GetPsi(const std::vector<Point<dimension>>& points)                         = 0;
     virtual std::array<DynMatrix<double>, dimension> GetDPsi(const std::vector<Point<dimension>>& points) = 0;

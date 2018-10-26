@@ -19,8 +19,7 @@ class StraightTriangle : public Shape<2> {
 
     AlignedVector<StatMatrix<double, 2, 2>> GetJinv(const std::vector<Point<2>>& points);
 
-    AlignedVector<StatVector<double, 2>> GetSurfaceNormal( const uint bound_id,
-							   const std::vector<Point<2>>& points);
+    AlignedVector<StatVector<double, 2>> GetSurfaceNormal(const uint bound_id, const std::vector<Point<2>>& points);
 
     DynMatrix<double> GetPsi(const std::vector<Point<2>>& points);
     std::array<DynMatrix<double>, 2> GetDPsi(const std::vector<Point<2>>& points);
