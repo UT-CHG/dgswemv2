@@ -1,20 +1,12 @@
 #ifndef RKDG_SWE_PRE_CREATE_HPP
 #define RKDG_SWE_PRE_CREATE_HPP
 
-#include "problem/SWE/problem_preprocessor/swe_preprocessor.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_intface.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_bound.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_dbound.hpp"
 
 namespace SWE {
 namespace RKDG {
-/*std::vector<uint> create_offset() {
-    std::vector<uint> offset(SWE::EHDG::n_communications);
-
-    // offset[CommTypes::bound_state] = begin_index[CommTypes::bound_state];
-
-    // begin_index[CommTypes::bound_state] += 2 * SWE::n_variables * ngp;
-
-    return offset;
-}*/
-
 std::vector<uint> Problem::comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
     std::vector<uint> offset(SWE::RKDG::n_communications);
 

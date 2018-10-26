@@ -40,16 +40,21 @@ struct Problem {
     using ProblemDistributedBoundaryTypes =
         Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
 
+    using ProblemEdgeInterfaceTypes = Geometry::EdgeInterfaceTypeTuple<EdgeData, ProblemInterfaceTypes>::Type;
+    using ProblemEdgeBoundaryTypes  = Geometry::EdgeBoundaryTypeTuple<EdgeData, ProblemBoundaryTypes>::Type;
+    using ProblemEdgeDistributedTypes =
+        Geometry::EdgeDistributedTypeTuple<EdgeData, ProblemDistributedBoundaryTypes>::Type;
+
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
-    using ProblemMeshSkeletonType =
-        Geometry::MeshSkeletonType<EdgeData,
-                                   Geometry::InterfaceTypeTuple<Data, ISP::Internal>,
-                                   Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
-                                   Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed>>::Type;
+    using ProblemMeshSkeletonType = Geometry::MeshSkeletonType<
+        EdgeData,
+        Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>,
+        Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>,
+        Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemDiscretizationType = HDGDiscretization<Problem>;
 
@@ -76,7 +81,7 @@ struct Problem {
         ProblemMeshType&,
         ProblemInputType& problem_input,
         std::tuple<>&,
-        ProblemWriterType&);
+        ProblemWriterType&) {}
 
     template <typename RawBoundaryType, typename Communicator>
     static void create_distributed_boundaries(
@@ -85,6 +90,10 @@ struct Problem {
         ProblemInputType& input,
         Communicator& communicator,
         ProblemWriterType& writer);
+
+    // helpers to create communication
+    static constexpr uint n_communications = SWE::IHDG::n_communications;
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,

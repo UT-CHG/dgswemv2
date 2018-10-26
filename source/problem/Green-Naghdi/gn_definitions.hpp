@@ -31,7 +31,7 @@ enum DDBath : uint { bxx = 0, bxy = 1, byx = 2, byy = 3 };
 enum DDDBath : uint { bxxx = 0, bxxy = 1, bxyx = 2, bxyy = 3, byxx = 4, byxy = 5, byyx = 6, byyy = 7 };
 
 /* These must shadow SWE bc types */
-enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL };
+enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
 
 namespace EHDG {
 constexpr uint n_communications = SWE::EHDG::n_communications + 3;
