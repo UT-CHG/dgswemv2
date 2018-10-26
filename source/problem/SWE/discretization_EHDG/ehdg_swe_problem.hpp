@@ -199,15 +199,6 @@ struct Problem {
 
     /* global step end */
 
-    template <typename StepperType, typename ElementType>
-    static void update_kernel(const StepperType& stepper, ElementType& elt);
-
-    template <typename StepperType, typename ElementType>
-    static bool scrutinize_solution_kernel(const StepperType& stepper, ElementType& elt);
-
-    template <typename StepperType, typename ElementType>
-    static void swap_states_kernel(const StepperType& stepper, ElementType& elt);
-
     // writing output kernels
     template <typename MeshType>
     static void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {

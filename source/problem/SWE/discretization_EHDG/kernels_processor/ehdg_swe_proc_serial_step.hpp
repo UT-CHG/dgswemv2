@@ -18,8 +18,6 @@ void Problem::step_serial(SerialSimType* sim) {
         ++(sim->stepper);
     }
 
-    sim->discretization.mesh.CallForEachElement([sim](auto& elt) { Problem::swap_states_kernel(sim->stepper, elt); });
-
     if (sim->writer.WritingOutput()) {
         sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
     }
@@ -52,10 +50,16 @@ void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<Problem
     discretization.mesh.CallForEachBoundary(
         [&stepper](auto& bound) { Problem::local_boundary_kernel(stepper, bound); });
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::update_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        auto& state = elt.data.state[stepper.GetStage()];
+
+        state.solution = elt.ApplyMinv(state.rhs);
+
+        stepper.UpdateState(elt);
+    });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        bool nan_found = Problem::scrutinize_solution_kernel(stepper, elt);
+        bool nan_found = SWE::scrutinize_solution(stepper, elt);
 
         if (nan_found)
             abort();

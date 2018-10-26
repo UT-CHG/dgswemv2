@@ -4,24 +4,6 @@
 namespace GN {
 namespace EHDG {
 template <typename ElementType>
-void Problem::dc_update_kernel(const ProblemStepperType& stepper, ElementType& elt) {
-    const uint stage = stepper.GetStage();
-    const double dt  = stepper.GetDT();
-
-    auto& state      = elt.data.state;
-    auto& curr_state = elt.data.state[stage];
-    auto& next_state = elt.data.state[stage + 1];
-
-    curr_state.solution = elt.ApplyMinv(curr_state.rhs);
-
-    set_constant(next_state.q, 0.0);
-
-    for (uint s = 0; s <= stage; ++s) {
-        next_state.q += stepper.ark[stage][s] * state[s].q + dt * stepper.brk[stage][s] * state[s].solution;
-    }
-}
-
-template <typename ElementType>
 void Problem::dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
@@ -47,14 +29,6 @@ void Problem::dispersive_correction_kernel(const ProblemStepperType& stepper, El
 
     row(state.q, SWE::Variables::qx) += stepper.GetDT() * row(state.solution, SWE::Variables::qx);
     row(state.q, SWE::Variables::qy) += stepper.GetDT() * row(state.solution, SWE::Variables::qy);
-}
-
-template <typename ElementType>
-void Problem::swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt) {
-    uint n_stages = stepper.GetNumStages();
-    auto& state   = elt.data.state;
-
-    std::swap(state[0].q, state[n_stages].q);
 }
 }
 }

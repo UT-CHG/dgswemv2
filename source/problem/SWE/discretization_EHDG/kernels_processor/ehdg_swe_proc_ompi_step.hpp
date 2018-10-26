@@ -20,9 +20,6 @@ void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim->sim_units[su_id]->discretization.mesh.CallForEachElement(
-            [sim, su_id](auto& elt) { Problem::swap_states_kernel(sim->sim_units[su_id]->stepper, elt); });
-
         if (sim->sim_units[su_id]->writer.WritingOutput()) {
             sim->sim_units[su_id]->writer.WriteOutput(sim->sim_units[su_id]->stepper,
                                                       sim->sim_units[su_id]->discretization.mesh);
@@ -118,11 +115,16 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             Problem::local_distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement(
-            [&sim_units, su_id](auto& elt) { Problem::update_kernel(sim_units[su_id]->stepper, elt); });
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            auto& state = elt.data.state[sim_units[su_id]->stepper.GetStage()];
+
+            state.solution = elt.ApplyMinv(state.rhs);
+
+            sim_units[su_id]->stepper.UpdateState(elt);
+        });
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            bool nan_found = Problem::scrutinize_solution_kernel(sim_units[su_id]->stepper, elt);
+            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
 
             if (nan_found)
                 MPI_Abort(MPI_COMM_WORLD, 0);

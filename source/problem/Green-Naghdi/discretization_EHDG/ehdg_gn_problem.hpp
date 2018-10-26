@@ -227,13 +227,7 @@ struct Problem {
     /* SWE part */
 
     template <typename ElementType>
-    static void dc_update_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename ElementType>
     static void dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     // writing output kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {

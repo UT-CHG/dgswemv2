@@ -136,15 +136,6 @@ struct Problem {
     static void distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound);
 
     template <typename ElementType>
-    static void update_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static bool scrutinize_solution_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename ElementType>
-    static void swap_states_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename ElementType>
     static void wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename ElementType>

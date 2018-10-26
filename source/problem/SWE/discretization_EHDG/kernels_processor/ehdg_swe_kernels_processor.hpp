@@ -9,6 +9,5 @@
 #include "ehdg_swe_proc_edge_intface.hpp"
 #include "ehdg_swe_proc_edge_bound.hpp"
 #include "ehdg_swe_proc_edge_dbound.hpp"
-#include "ehdg_swe_proc_update.hpp"
 
 #endif

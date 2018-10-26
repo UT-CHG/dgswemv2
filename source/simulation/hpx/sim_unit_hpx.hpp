@@ -51,9 +51,6 @@ struct HPXSimulationUnit
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
     void on_migrated();  // Do not rename this is overload member of the base class
-
-  private:
-    void SwapStates();
 };
 
 template <typename ProblemType>
@@ -113,7 +110,6 @@ void HPXSimulationUnit<ProblemType>::Launch() {
 }
 
 template <typename ProblemType>
-
 hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     hpx::future<void> step_future = hpx::make_ready_future();
 
@@ -132,18 +128,11 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
         if (this->submesh_model) {
             this->submesh_model->InStep(0, 0);
         }
-        this->SwapStates();
+
+        if (this->writer.WritingOutput()) {
+            this->writer.WriteOutput(this->stepper, this->discretization.mesh);
+        }
     });
-}
-
-template <typename ProblemType>
-void HPXSimulationUnit<ProblemType>::SwapStates() {
-    this->discretization.mesh.CallForEachElement(
-        [this](auto& elt) { ProblemType::swap_states_kernel(this->stepper, elt); });
-
-    if (this->writer.WritingOutput()) {
-        this->writer.WriteOutput(this->stepper, this->discretization.mesh);
-    }
 }
 
 template <typename ProblemType>

@@ -76,11 +76,16 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         sim_unit->discretization.mesh.CallForEachDistributedBoundary(
             [sim_unit](auto& dbound) { Problem::local_distributed_boundary_kernel(sim_unit->stepper, dbound); });
 
-        sim_unit->discretization.mesh.CallForEachElement(
-            [sim_unit](auto& elt) { Problem::update_kernel(sim_unit->stepper, elt); });
+        sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
+            auto& state = elt.data.state[sim_unit->stepper.GetStage()];
+
+            state.solution = elt.ApplyMinv(state.rhs);
+
+            sim_unit->stepper.UpdateState(elt);
+        });
 
         sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
-            bool nan_found = Problem::scrutinize_solution_kernel(sim_unit->stepper, elt);
+            bool nan_found = SWE::scrutinize_solution(sim_unit->stepper, elt);
 
             if (nan_found)
                 hpx::terminate();
