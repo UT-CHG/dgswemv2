@@ -3,6 +3,7 @@
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
+#include <eigen3/Eigen/StdVector>
 
 #define EIGEN_DONT_PARALLELIZE
 
@@ -36,6 +37,9 @@ template <typename T>
 using SparseVector = Eigen::SparseVector<T>;
 template <typename T>
 using SparseMatrix = Eigen::SparseMatrix<T>;
+
+template <typename EigenType>
+using AlignedAllocator = Eigen::aligned_allocator<EigenType>;
 
 template <typename T>
 DynMatrix<T> IdentityMatrix(const uint size) {

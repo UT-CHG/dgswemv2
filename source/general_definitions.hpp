@@ -24,27 +24,16 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "edge_types.hpp"
-
 #ifdef HAS_HPX
 #include "simulation/hpx/load_balancer/serialization_headers.hpp"
 #endif
+#include "utilities/linear_algebra.hpp"
+
+#include "edge_types.hpp"
 
 using uchar = unsigned char;
 
 using uint = unsigned int;
-
-/* This will have to go into linear_algebra.hpp */
-//#define USE_EIGEN
-#define USE_BLAZE
-
-#ifdef USE_BLAZE
-#include "utilities/linear_algebra/use_blaze.hpp"
-#endif
-
-#ifdef USE_EIGEN
-#include "utilities/linear_algebra/use_eigen.hpp"
-#endif
 
 template <uint dimension>
 using Point = std::array<double, dimension>;
@@ -206,9 +195,11 @@ class Shape {
 
     virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points)                          = 0;
     virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
-    virtual std::vector<StatMatrix<double, dimension, dimension>> GetJinv(
+
+    virtual AlignedVector<StatMatrix<double, dimension, dimension>> GetJinv(
         const std::vector<Point<dimension>>& points) = 0;
-    virtual std::vector<StatVector<double, dimension>> GetSurfaceNormal(
+
+    virtual AlignedVector<StatVector<double, dimension>> GetSurfaceNormal(
         const uint bound_id,
         const std::vector<Point<dimension>>& points) = 0;
 

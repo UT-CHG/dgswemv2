@@ -30,7 +30,7 @@ PartitionerInputs::PartitionerInputs(const MeshMetaData& mesh, Inputs inputs) {
             is_wet &= (h_at_vrtx >= inputs.wet_dry.h_o);
         }
 
-        weights.insert(std::make_pair(elt.first, std::vector<double>{1., is_wet}));
+        weights.insert(std::make_pair(elt.first, std::vector<double>{1., (double)is_wet}));
     }
 
     {
