@@ -1,10 +1,8 @@
 #ifndef GN_INPUTS_HPP
 #define GN_INPUTS_HPP
 
-#include "general_definitions.hpp"
 #include "problem/Green-Naghdi/gn_definitions.hpp"
 #include <yaml-cpp/yaml.h>
-
 #include "utilities/file_exists.hpp"
 
 namespace GN {

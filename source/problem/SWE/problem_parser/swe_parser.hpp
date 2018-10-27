@@ -1,11 +1,6 @@
 #ifndef SWE_PARSER_HPP
 #define SWE_PARSER_HPP
 
-#include "preprocessor/input_parameters.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-
-#include "problem/SWE/swe_definitions.hpp"
-
 #include "utilities/file_exists.hpp"
 
 namespace SWE {

@@ -2,8 +2,7 @@
 #define MESH_HPP
 
 #include "general_definitions.hpp"
-
-#include "utilities//heterogeneous_containers.hpp"
+#include "utilities/heterogeneous_containers.hpp"
 #include "mesh_utilities.hpp"
 
 namespace Geometry {

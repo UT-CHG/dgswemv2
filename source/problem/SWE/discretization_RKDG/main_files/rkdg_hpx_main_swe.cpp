@@ -19,7 +19,6 @@
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
 
 #include "simulation/hpx/simulation_hpx.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
 
 REGISTER_HPX_COMPONENTS(SWE::RKDG::Problem);
 

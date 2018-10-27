@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_PROC_SERIAL_STEP_HPP
 #define EHDG_GN_PROC_SERIAL_STEP_HPP
 
-#include "general_definitions.hpp"
-
 #include "ehdg_gn_kernels_processor.hpp"
 #include "ehdg_gn_proc_serial_sol_glob_prob.hpp"
 #include "ehdg_gn_proc_derivatives_serial.hpp"

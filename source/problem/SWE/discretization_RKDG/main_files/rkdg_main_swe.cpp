@@ -12,7 +12,6 @@
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_serial_step.hpp"
 
 #include "simulation/serial/simulation.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

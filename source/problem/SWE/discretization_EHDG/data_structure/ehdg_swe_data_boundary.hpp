@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_DATA_BOUNDARY_HPP
 #define EHDG_SWE_DATA_BOUNDARY_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 namespace EHDG {
 struct Boundary {

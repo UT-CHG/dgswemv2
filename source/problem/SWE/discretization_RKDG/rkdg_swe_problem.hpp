@@ -5,7 +5,7 @@
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
-#include "problem/SWE/swe_definitions.hpp"
+#include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
 
 #include "boundary_conditions/rkdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/rkdg_swe_distributed_boundary_conditions.hpp"

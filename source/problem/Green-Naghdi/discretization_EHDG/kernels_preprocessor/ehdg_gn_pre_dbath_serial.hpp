@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_PRE_DBATH_SERIAL_HPP
 #define EHDG_GN_PRE_DBATH_SERIAL_HPP
 
-#include "general_definitions.hpp"
-
 namespace GN {
 namespace EHDG {
 void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization) {

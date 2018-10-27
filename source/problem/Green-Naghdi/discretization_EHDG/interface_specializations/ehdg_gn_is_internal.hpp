@@ -1,10 +1,6 @@
 #ifndef EHDG_GN_IS_INTERNAL_HPP
 #define EHDG_GN_IS_INTERNAL_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-#include "problem/Green-Naghdi/discretization_EHDG/stabilization_parameters/ehdg_gn_stabilization_params.hpp"
-
 namespace GN {
 namespace EHDG {
 namespace ISP {

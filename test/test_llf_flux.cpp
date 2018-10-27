@@ -1,4 +1,6 @@
+#include "general_definitions.hpp"
 #include "utilities/almost_equal.hpp"
+#include "problem/SWE/swe_definitions.hpp"
 
 #include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
 

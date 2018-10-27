@@ -1,14 +1,6 @@
 #ifndef GN_PARSER_HPP
 #define GN_PARSER_HPP
 
-#include "preprocessor/input_parameters.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/problem_parser/swe_parser.hpp"
-
-#include "problem/Green-Naghdi/gn_definitions.hpp"
-
-#include "utilities/file_exists.hpp"
-
 namespace GN {
 class Parser : public SWE::Parser {
   public:

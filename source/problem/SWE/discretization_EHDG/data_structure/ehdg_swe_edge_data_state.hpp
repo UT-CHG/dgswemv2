@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_EDGE_DATA_STATE_HPP
 #define EHDG_SWE_EDGE_DATA_STATE_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 namespace EHDG {
 struct EdgeState {

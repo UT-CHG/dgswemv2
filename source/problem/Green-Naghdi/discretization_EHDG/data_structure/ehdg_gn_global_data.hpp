@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_GLOBAL_DATA_HPP
 #define EHDG_GN_GLOBAL_DATA_HPP
 
-#include "general_definitions.hpp"
-
 namespace GN {
 namespace EHDG {
 struct GlobalData : SWE::EHDG::GlobalData {

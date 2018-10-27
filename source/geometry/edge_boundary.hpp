@@ -1,6 +1,8 @@
 #ifndef CLASS_EDGE_BOUNDARY_HPP
 #define CLASS_EDGE_BOUNDARY_HPP
 
+#include "general_definitions.hpp"
+
 namespace Geometry {
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
 class EdgeBoundary {

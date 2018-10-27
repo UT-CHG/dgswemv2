@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_EDGE_DATA_HPP
 #define IHDG_SWE_EDGE_DATA_HPP
 
-#include "general_definitions.hpp"
-
 #include "ihdg_swe_edge_data_state.hpp"
 #include "ihdg_swe_edge_data_internal.hpp"
 

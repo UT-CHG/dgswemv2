@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_GLOBAL_DATA_HPP
 #define IHDG_SWE_GLOBAL_DATA_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 namespace IHDG {
 struct GlobalData {

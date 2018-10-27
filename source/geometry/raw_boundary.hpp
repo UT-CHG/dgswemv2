@@ -1,6 +1,8 @@
 #ifndef CLASS_RAW_BOUNDARY_HPP
 #define CLASS_RAW_BOUNDARY_HPP
 
+#include "general_definitions.hpp"
+
 namespace Geometry {
 template <uint dimension, typename DataType>
 class RawBoundary {

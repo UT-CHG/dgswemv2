@@ -1,6 +1,8 @@
 #ifndef CLASS_BOUNDARY_HPP
 #define CLASS_BOUNDARY_HPP
 
+#include "general_definitions.hpp"
+
 namespace Geometry {
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
 class Boundary {

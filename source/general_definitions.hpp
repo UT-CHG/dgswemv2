@@ -27,26 +27,21 @@
 using uint  = unsigned int;
 using uchar = unsigned char;
 
-#ifdef HAS_HPX
-#include "simulation/hpx/load_balancer/serialization_headers.hpp"
-#endif
-#include "utilities/linear_algebra.hpp"
-
-#include "edge_types.hpp"
-
 template <uint dimension>
 using Point = std::array<double, dimension>;
-
 template <typename type>
 using Array2D = std::vector<std::vector<type>>;
-
 template <typename type>
 using Array3D = std::vector<std::vector<std::vector<type>>>;
-
 template <typename type>
 using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
 
-/* This will have to go into linear_algebra.hpp */
+#include "utilities/linear_algebra.hpp"
+#include "utilities/edge_types.hpp"
+
+#ifdef HAS_HPX
+#include "simulation/hpx/load_balancer/serialization_headers.hpp"
+#endif
 
 namespace Basis {
 /**

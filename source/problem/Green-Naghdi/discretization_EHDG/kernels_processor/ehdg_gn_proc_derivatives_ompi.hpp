@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_PROC_DERIVATIVES_OMPI_HPP
 #define EHDG_GN_PROC_DERIVATIVES_OMPI_HPP
 
-#include "general_definitions.hpp"
-
 namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>

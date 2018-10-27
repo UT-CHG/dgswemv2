@@ -1,6 +1,8 @@
 #ifndef MESH_SKELETON_DEFINITIONS_HPP
 #define MESH_SKELETON_DEFINITIONS_HPP
 
+#include "general_definitions.hpp"
+
 #include "mesh_skeleton.hpp"
 #include "edge_interface.hpp"
 #include "edge_boundary.hpp"

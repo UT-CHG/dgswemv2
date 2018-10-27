@@ -1,8 +1,6 @@
 #ifndef SWE_POST_WRITE_MODAL_HPP
 #define SWE_POST_WRITE_MODAL_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 template <typename StepperType, typename MeshType>
 void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::string& output_path) {

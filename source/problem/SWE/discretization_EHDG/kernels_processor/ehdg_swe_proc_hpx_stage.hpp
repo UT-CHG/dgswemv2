@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_PROC_HPX_STAGE_HPP
 #define EHDG_SWE_PROC_HPX_STAGE_HPP
 
-#include "general_definitions.hpp"
-
 #include "ehdg_swe_kernels_processor.hpp"
 
 namespace SWE {

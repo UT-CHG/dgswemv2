@@ -1,8 +1,6 @@
 #ifndef SWE_POST_WRITE_VTU_HPP
 #define SWE_POST_WRITE_VTU_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 template <typename MeshType>
 void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {

@@ -1,8 +1,6 @@
 #ifndef RKDG_SWE_DATA_SOURCE_HPP
 #define RKDG_SWE_DATA_SOURCE_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 namespace RKDG {
 struct Source {

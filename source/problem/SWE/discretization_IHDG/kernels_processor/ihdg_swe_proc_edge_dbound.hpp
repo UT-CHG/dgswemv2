@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_PROC_EDGE_DBOUND_HPP
 #define IHDG_SWE_PROC_EDGE_DBOUND_HPP
 
-#include "problem/SWE/discretization_IHDG/stabilization_parameters/ihdg_swe_stabilization_params.hpp"
-
 namespace SWE {
 namespace IHDG {
 template <typename StepperType, typename EdgeDistributedType>

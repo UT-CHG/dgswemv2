@@ -1,8 +1,6 @@
 #ifndef RKDG_SWE_PROC_HPX_STAGE_HPP
 #define RKDG_SWE_PROC_HPX_STAGE_HPP
 
-#include "general_definitions.hpp"
-
 #include "rkdg_swe_kernels_processor.hpp"
 
 namespace SWE {

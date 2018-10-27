@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_DATA_SOURCE_HPP
 #define EHDG_SWE_DATA_SOURCE_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 namespace EHDG {
 struct Source {

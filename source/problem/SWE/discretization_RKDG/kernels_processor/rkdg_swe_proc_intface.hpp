@@ -1,8 +1,6 @@
 #ifndef RKDG_SWE_PROC_INTFACE_HPP
 #define RKDG_SWE_PROC_INTFACE_HPP
 
-#include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
-
 namespace SWE {
 namespace RKDG {
 template <typename InterfaceType>

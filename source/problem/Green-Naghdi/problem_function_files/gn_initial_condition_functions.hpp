@@ -1,8 +1,6 @@
 #ifndef GN_INITIAL_CONDITION_FUNCTIONS_HPP
 #define GN_INITIAL_CONDITION_FUNCTIONS_HPP
 
-#include "general_definitions.hpp"
-
 namespace GN {
 inline StatVector<double, SWE::n_variables> ic_u(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;

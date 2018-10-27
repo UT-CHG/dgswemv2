@@ -1,8 +1,6 @@
 #ifndef SWE_TRUE_SOLUTION_FUNCTIONS_HPP
 #define SWE_TRUE_SOLUTION_FUNCTIONS_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 inline StatVector<double, SWE::n_variables> true_u(const double t, const Point<2>& pt) {
     double true_ze = 0.0;

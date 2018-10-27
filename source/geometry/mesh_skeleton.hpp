@@ -2,8 +2,7 @@
 #define MESH_SKELETON_HPP
 
 #include "general_definitions.hpp"
-
-#include "utilities//heterogeneous_containers.hpp"
+#include "utilities/heterogeneous_containers.hpp"
 
 namespace Geometry {
 // Since elements types already come in a tuple. We can use specialization

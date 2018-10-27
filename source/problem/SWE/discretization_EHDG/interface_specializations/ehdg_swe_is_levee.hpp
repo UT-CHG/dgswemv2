@@ -1,10 +1,6 @@
 #ifndef EHDG_SWE_IS_LEVEE_HPP
 #define EHDG_SWE_IS_LEVEE_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/discretization_EHDG/stabilization_parameters/ehdg_swe_stabilization_params.hpp"
-
 namespace SWE {
 namespace EHDG {
 namespace ISP {

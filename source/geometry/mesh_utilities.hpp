@@ -1,6 +1,8 @@
 #ifndef MESH_UTILITIES_HPP
 #define MESH_UTILITIES_HPP
 
+#include "general_definitions.hpp"
+
 namespace Geometry {
 template <typename E>
 struct make_master_type;

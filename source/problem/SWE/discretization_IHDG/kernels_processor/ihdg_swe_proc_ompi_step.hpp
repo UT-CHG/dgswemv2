@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_PROC_OMPI_STEP_HPP
 #define IHDG_SWE_PROC_OMPI_STEP_HPP
 
-#include "general_definitions.hpp"
-
 #include "ihdg_swe_kernels_processor.hpp"
 #include "ihdg_swe_proc_ompi_sol_glob_prob.hpp"
 

@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_EDGE_DATA_HPP
 #define EHDG_GN_EDGE_DATA_HPP
 
-#include "general_definitions.hpp"
-
 #include "ehdg_gn_edge_data_state.hpp"
 #include "ehdg_gn_edge_data_internal.hpp"
 

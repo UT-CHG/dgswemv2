@@ -5,7 +5,7 @@
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
-#include "problem/SWE/swe_definitions.hpp"
+#include "problem/SWE/discretization_EHDG/stabilization_parameters/ehdg_swe_stabilization_params.hpp"
 
 #include "boundary_conditions/ehdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ehdg_swe_distributed_boundary_conditions.hpp"

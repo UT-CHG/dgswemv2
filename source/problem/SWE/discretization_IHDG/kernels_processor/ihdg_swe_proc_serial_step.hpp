@@ -1,8 +1,6 @@
 #ifndef IHDG_SWE_PROC_SERIAL_STEP_HPP
 #define IHDG_SWE_PROC_SERIAL_STEP_HPP
 
-#include "general_definitions.hpp"
-
 #include "ihdg_swe_kernels_processor.hpp"
 #include "ihdg_swe_proc_serial_sol_glob_prob.hpp"
 

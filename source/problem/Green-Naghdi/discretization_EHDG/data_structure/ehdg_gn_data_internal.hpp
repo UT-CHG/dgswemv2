@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_DATA_INTERNAL_HPP
 #define EHDG_GN_DATA_INTERNAL_HPP
 
-#include "general_definitions.hpp"
-
 namespace GN {
 namespace EHDG {
 struct Internal : SWE::EHDG::Internal {

@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_STAB_PARAM_LF_HPP
 #define EHDG_SWE_STAB_PARAM_LF_HPP
 
-#include "problem/SWE/swe_definitions.hpp"
-
 namespace SWE {
 namespace EHDG {
 template <typename EdgeInterfaceType>

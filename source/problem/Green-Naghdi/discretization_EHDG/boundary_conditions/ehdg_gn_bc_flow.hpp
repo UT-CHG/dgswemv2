@@ -1,9 +1,6 @@
 #ifndef EHDG_GN_BC_FLOW_HPP
 #define EHDG_GN_BC_FLOW_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-
 namespace GN {
 namespace EHDG {
 namespace BC {

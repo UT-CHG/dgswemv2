@@ -5,7 +5,7 @@
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
-#include "problem/Green-Naghdi/gn_definitions.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/stabilization_parameters/ehdg_gn_stabilization_params.hpp"
 
 #include "boundary_conditions/ehdg_gn_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ehdg_gn_distributed_boundary_conditions.hpp"

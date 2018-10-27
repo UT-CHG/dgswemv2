@@ -1,8 +1,6 @@
 #ifndef SWE_POST_COMP_RES_L2_HPP
 #define SWE_POST_COMP_RES_L2_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 template <typename StepperType, typename ElementType>
 double compute_residual_L2(const StepperType& stepper, ElementType& elt) {

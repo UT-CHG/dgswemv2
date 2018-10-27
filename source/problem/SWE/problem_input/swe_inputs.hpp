@@ -1,10 +1,8 @@
 #ifndef SWE_INPUTS_HPP
 #define SWE_INPUTS_HPP
 
-#include "general_definitions.hpp"
 #include "problem/SWE/swe_definitions.hpp"
 #include <yaml-cpp/yaml.h>
-
 #include "utilities/file_exists.hpp"
 
 namespace SWE {

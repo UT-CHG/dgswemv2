@@ -1,6 +1,8 @@
 #ifndef CLASS_INTERFACE_HPP
 #define CLASS_INTERFACE_HPP
 
+#include "general_definitions.hpp"
+
 namespace Geometry {
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
 class Interface {

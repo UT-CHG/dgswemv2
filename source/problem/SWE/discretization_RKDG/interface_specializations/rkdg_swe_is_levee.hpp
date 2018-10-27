@@ -1,10 +1,6 @@
 #ifndef RKDG_SWE_IS_LEVEE_HPP
 #define RKDG_SWE_IS_LEVEE_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
-
 namespace SWE {
 namespace RKDG {
 namespace ISP {

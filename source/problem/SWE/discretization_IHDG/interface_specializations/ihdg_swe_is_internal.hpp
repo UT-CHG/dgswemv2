@@ -1,10 +1,6 @@
 #ifndef IHDG_SWE_IS_INTERNAL_HPP
 #define IHDG_SWE_IS_INTERNAL_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-#include "problem/SWE/discretization_IHDG/stabilization_parameters/ihdg_swe_stabilization_params.hpp"
-
 namespace SWE {
 namespace IHDG {
 namespace ISP {

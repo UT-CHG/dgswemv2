@@ -1,8 +1,6 @@
 #ifndef EHDG_GN_PROC_DERIVATIVES_SERIAL_HPP
 #define EHDG_GN_PROC_DERIVATIVES_SERIAL_HPP
 
-#include "general_definitions.hpp"
-
 namespace GN {
 namespace EHDG {
 void Problem::compute_derivatives_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {

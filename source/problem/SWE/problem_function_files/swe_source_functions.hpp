@@ -1,8 +1,6 @@
 #ifndef SWE_SOURCE_FUNCTIONS_HPP
 #define SWE_SOURCE_FUNCTIONS_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 inline StatVector<double, SWE::n_variables> source_u(const double t, const Point<2>& pt) {
     double source_ze = 0.0;

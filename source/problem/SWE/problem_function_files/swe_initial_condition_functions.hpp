@@ -1,8 +1,6 @@
 #ifndef SWE_INITIAL_CONDITION_FUNCTIONS_HPP
 #define SWE_INITIAL_CONDITION_FUNCTIONS_HPP
 
-#include "general_definitions.hpp"
-
 namespace SWE {
 inline StatVector<double, SWE::n_variables> ic_u(const double t, const Point<2>& pt) {
     double ic_ze = 0.0;

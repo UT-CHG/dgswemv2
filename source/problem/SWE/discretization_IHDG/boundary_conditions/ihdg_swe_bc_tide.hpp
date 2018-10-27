@@ -1,9 +1,6 @@
 #ifndef IHDG_SWE_BC_TIDE_HPP
 #define IHDG_SWE_BC_TIDE_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
-
 namespace SWE {
 namespace IHDG {
 namespace BC {

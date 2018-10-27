@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_DATA_HPP
 #define EHDG_SWE_DATA_HPP
 
-#include "general_definitions.hpp"
-
 #include "ehdg_swe_data_state.hpp"
 #include "ehdg_swe_data_internal.hpp"
 #include "ehdg_swe_data_boundary.hpp"

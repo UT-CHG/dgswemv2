@@ -1,6 +1,8 @@
 #ifndef MESH_DEFINITIONS_HPP
 #define MESH_DEFINITIONS_HPP
 
+#include "general_definitions.hpp"
+
 #include "mesh.hpp"
 #include "raw_boundary.hpp"
 #include "element.hpp"

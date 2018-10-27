@@ -1,8 +1,6 @@
 #ifndef EHDG_SWE_DBC_DISTRIBUTED_HPP
 #define EHDG_SWE_DBC_DISTRIBUTED_HPP
 
-#include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
 #include "communication/db_data_exchanger.hpp"
 
 namespace SWE {

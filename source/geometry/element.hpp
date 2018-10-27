@@ -1,6 +1,8 @@
 #ifndef CLASS_ELEMENT_HPP
 #define CLASS_ELEMENT_HPP
 
+#include "general_definitions.hpp"
+
 namespace Geometry {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 class Element {

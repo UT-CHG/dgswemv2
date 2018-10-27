@@ -2,7 +2,6 @@
 #define DB_DATA_EXCH_HPP
 
 #include "general_definitions.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
 
 class DBDataExchanger {
   public:
