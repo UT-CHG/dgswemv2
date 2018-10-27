@@ -1,9 +1,9 @@
 #ifndef USE_EIGEN_HPP
 #define USE_EIGEN_HPP
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/StdVector>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <Eigen/StdVector>
 
 #define EIGEN_DONT_PARALLELIZE
 
