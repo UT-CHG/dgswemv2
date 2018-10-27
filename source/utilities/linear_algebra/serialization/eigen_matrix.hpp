@@ -1,9 +1,10 @@
 #ifndef SERIALIZATION_EIGEN_MATRIX_HPP
 #define SERIALIZATION_EIGEN_MATRIX_HPP
 
+#include <hpx/include/serialization.hpp>
+
 namespace hpx {
 namespace serialization {
-
 // Vector serialization
 template <typename Scalar, int Rows, int Cols, int Options, int MaxRows, int MaxCols>
 std::enable_if_t<(Rows == 1) || (Cols == 1)>
