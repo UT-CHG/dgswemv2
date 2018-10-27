@@ -467,7 +467,8 @@ if(USE_HPX)
   )
 
   set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
-  target_link_libraries(test_wetting_drying_exe ${YAML_CPP_LIBRARIES})
+  target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
   add_test(
     Unit_shape_serialization
@@ -485,7 +486,8 @@ if(USE_HPX)
   )
 
   set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
-  target_link_libraries(test_element_serialization_exe ${YAML_CPP_LIBRARIES})
+  target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
   add_test(
     Unit_element_serialization
@@ -523,8 +525,10 @@ if(USE_HPX)
   )
 
   set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
-  target_link_libraries(test_rk_stepper_serialization_exe ${YAML_CPP_LIBRARIES})
+  target_include_directories(test_rk_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_rk_stepper_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
+  
   add_test(
     Unit_rk_stepper_serialization
     test_rk_stepper_serialization_exe
@@ -536,7 +540,8 @@ if(USE_HPX)
   )
 
   set_target_properties(test_serialize_chrono_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
-  target_link_libraries(test_serialize_chrono_exe ${YAML_CPP_LIBRARIES})
+  target_include_directories(test_serialize_chrono_exe PRIVATE ${HPX_INCLUDE_DIRS})
+  target_link_libraries(test_serialize_chrono_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
   add_test(
     Unit_serialize_chrono
@@ -550,8 +555,9 @@ if(USE_HPX)
     )
 
     set_target_properties(test_blaze_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX -DUSE_BLAZE")
-    target_link_libraries(test_blaze_serialization_exe ${YAML_CPP_LIBRARIES})
-
+    target_include_directories(test_blaze_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+    target_link_libraries(test_blaze_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
+  
     add_test(
       Unit_blaze_serialization
       test_blaze_serialization_exe
@@ -565,8 +571,9 @@ if(USE_HPX)
     )
 
     set_target_properties(test_eigen_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX -DUSE_EIGEN")
-    target_link_libraries(test_eigen_serialization_exe ${YAML_CPP_LIBRARIES})
-
+    target_include_directories(test_eigen_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
+    target_link_libraries(test_eigen_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
+  
     add_test(
       Unit_eigen_serialization
       test_eigen_serialization_exe
