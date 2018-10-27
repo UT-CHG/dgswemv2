@@ -444,8 +444,8 @@ add_test(
   test_heartbeat_exe
 )
 
-#[[if(USE_HPX)
-  add_executable(
+if(USE_HPX)
+  #[[add_executable(
     test_rkdg_swe_serialization_exe
     test_rkdg_swe_serialization.cpp
   )
@@ -458,7 +458,7 @@ add_test(
   add_test(
     Unit_rkdg_swe_serialization
     test_rkdg_swe_serialization_exe
-  )
+  )]]
 
   add_executable(
     test_shape_serialization_exe
@@ -466,10 +466,7 @@ add_test(
     ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
   )
 
-  set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS ${COMPILE_FLGS})
 
   add_test(
     Unit_shape_serialization
@@ -486,17 +483,14 @@ add_test(
     ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
   )
 
-  set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS ${COMPILE_FLGS})
 
   add_test(
     Unit_element_serialization
     test_element_serialization_exe
   )
 
-  add_executable(
+  #[[add_executable(
     test_mesh_serialization_exe
     test_mesh_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
@@ -518,7 +512,7 @@ add_test(
     Unit_mesh_serialization
     test_mesh_serialization_exe
     ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
-  )
+  )]]
 
   add_executable(
     test_rk_stepper_serialization_exe
@@ -526,10 +520,7 @@ add_test(
     ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
   )
 
-  set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_rk_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_rk_stepper_serialization_exe ${HPX_LIBRARIES})
+  set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS ${COMPILE_FLGS})
 
   add_test(
     Unit_rk_stepper_serialization
@@ -541,10 +532,7 @@ add_test(
     test_serialize_chrono.cpp
   )
 
-  set_target_properties(test_serialize_chrono_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_serialize_chrono_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_serialize_chrono_exe ${HPX_LIBRARIES})
+  set_target_properties(test_serialize_chrono_exe PROPERTIES COMPILE_FLAGS ${COMPILE_FLGS})
 
   add_test(
     Unit_serialize_chrono
@@ -556,10 +544,7 @@ add_test(
     test_blaze_serialization.cpp
   )
 
-  set_target_properties(test_blaze_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_blaze_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_blaze_serialization_exe ${HPX_LIBRARIES})
+  set_target_properties(test_blaze_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX -DUSE_BLAZE")
 
   add_test(
     Unit_blaze_serialization
@@ -571,14 +556,10 @@ add_test(
     test_eigen_serialization.cpp
   )
 
-  set_target_properties(test_eigen_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
-
-  target_include_directories(test_eigen_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_eigen_serialization_exe ${HPX_LIBRARIES})
+  set_target_properties(test_eigen_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX -DUSE_EIGEN")
 
   add_test(
     Unit_eigen_serialization
     test_eigen_serialization_exe
   )
-
-endif()]]
+endif()
