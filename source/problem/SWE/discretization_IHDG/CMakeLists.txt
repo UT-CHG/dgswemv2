@@ -1,5 +1,3 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
-
 add_executable(
   IHDG_SWE_SERIAL
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_IHDG/main_files/ihdg_main_swe.cpp
@@ -7,9 +5,7 @@ add_executable(
   ${SWE_SOURCES}
 )
 
-target_include_directories(IHDG_SWE_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(IHDG_SWE_SERIAL ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-
+set_target_properties(IHDG_SWE_SERIAL PROPERTIES COMPILE_FLAGS ${COMPILE_FLGS})
 install(TARGETS IHDG_SWE_SERIAL DESTINATION bin)
 
 #[[if(USE_OMPI)

@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (DG_HYPER CXX C)
 
+option(USE_EIGEN "Use Eigen" ON)
+option(USE_BLAZE "Use Blaze" OFF)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
 option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
@@ -32,6 +34,8 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
+
 if(COMPILER_WARNINGS)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
@@ -50,20 +54,45 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
+list(APPEND INCLUDE_DIRS ${METIS_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR})
+list(APPEND LINK_LIBS ${METIS_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
-find_package(Eigen3 REQUIRED)
-find_package(blaze REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+if(USE_EIGEN)
+  find_package(Eigen3 REQUIRED)
+  set(COMPILE_FLGS "-DUSE_EIGEN")
+endif()
+
+if(USE_BLAZE)
+  find_package(blaze REQUIRED)
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  list (APPEND LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+  set(COMPILE_FLGS "-DUSE_BLAZE")
+endif()
 
 if(USE_OMPI)
   find_package(OpenMP REQUIRED)
   find_package(MPI REQUIRED)
+  list (APPEND INCLUDE_DIRS ${MPI_CXX_INCLUDE_PATH})
+  list (APPEND LINK_LIBS ${MPI_CXX_LIBRARIES} ${OpenMP_CXX_FLAGS})
+  set(COMPILE_FLGS "${COMPILE_FLGS} ${OpenMP_CXX_FLAGS}")
+
+  if (EHDG_GN OR IHDG_SWE)
+    find_package(PETSc REQUIRED)
+    list(APPEND INCLUDE_DIRS ${PETSC_INCLUDES})
+    list(APPEND LINK_LIBS ${PETSC_LIBRARIES})
+  endif()
 endif()
 
 if(USE_HPX)
   find_package(HPX REQUIRED)
+  list(APPEND INCLUDE_DIRS ${HPX_INCLUDE_DIRS})
+  list(APPEND LINK_LIBS ${HPX_LIBRARIES})
+  set(COMPILE_FLGS "${COMPILE_FLGS} -DHAS_HPX")
 endif()
+
+link_directories(${INCLUDE_DIRS})
+link_libraries(${LINK_LIBS})
 
 list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
@@ -81,13 +110,8 @@ list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
-list(APPEND SWE_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-)
-
-list(APPEND GN_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-)
+list(APPEND SWE_SOURCES ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp)
+list(APPEND GN_SOURCES ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp)
 
 include_directories(source)
 
@@ -110,8 +134,6 @@ if(EHDG_SWE)
 endif()
 
 if(IHDG_SWE)
-  find_package(PETSc REQUIRED)
-
   add_subdirectory(source/problem/SWE/discretization_IHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ihdg_swe_manufactured_solution)
@@ -119,8 +141,6 @@ if(IHDG_SWE)
 endif()
 
 if(EHDG_GN)
-  find_package(PETSc REQUIRED)
-
   add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ehdg_gn_analytical_solution)

@@ -1,9 +1,6 @@
 #ifndef LINEAR_ALGEBRA_HPP
 #define LINEAR_ALGEBRA_HPP
 
-#define USE_EIGEN
-//#define USE_BLAZE
-
 #ifdef USE_BLAZE
 #include "utilities/linear_algebra/use_blaze.hpp"
 #endif
