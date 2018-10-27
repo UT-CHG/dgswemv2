@@ -1,6 +1,8 @@
 #ifndef SERIALIZATION_EIGEN_MATRIX_HPP
 #define SERIALIZATION_EIGEN_MATRIX_HPP
 
+#include <hpx/include/serialization.hpp>
+
 namespace hpx {
 namespace serialization {
 

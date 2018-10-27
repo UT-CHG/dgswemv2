@@ -37,7 +37,7 @@ jobs:
                 -DSET_VERBOSE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
-                -DUSE_HPX=off \
+                -DUSE_HPX=On \
                 -DBUILD_EXAMPLES=On \
                 -DRKDG_SWE=On \
                 -DEHDG_SWE=On \
