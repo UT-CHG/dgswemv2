@@ -1,9 +1,9 @@
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
-
 add_executable(
   test_linear_algebra_exe
   test_linear_algebra.cpp
 )
+
+set_target_properties(test_linear_algebra_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 #[[target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
 target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
@@ -58,6 +58,8 @@ add_executable(
   test_tuple_helpers.cpp
 )
 
+set_target_properties(test_tuple_helpers_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+
 add_test(
   Unit_tuple_helpers
   test_tuple_helpers_exe
@@ -67,6 +69,8 @@ add_executable(
   test_heterogeneous_containers_exe
   test_heterogeneous_containers.cpp
 )
+
+set_target_properties(test_heterogeneous_containers_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_heterogeneous_containers
@@ -80,7 +84,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-target_link_libraries(test_adcirc_format_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_adcirc_format_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_adcirc_format
@@ -96,6 +100,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp
 )
 
+set_target_properties(test_basis_legendre_1d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+
 add_test(
   Unit_basis_legendre_1d
   test_basis_legendre_1d_exe
@@ -108,6 +114,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
 )
 
+set_target_properties(test_basis_dubiner_2d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+
 add_test(
   Unit_basis_dubiner_2d
   test_basis_dubiner_2d_exe
@@ -118,6 +126,8 @@ add_executable(
   test_integ_gausslegendre_1d.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
+
+set_target_properties(test_integ_gausslegendre_1d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_integ_gausslegendre_1d
@@ -130,6 +140,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
 )
 
+set_target_properties(test_integ_dunavant_2d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+
 add_test(
   Unit_integ_dunavant_2d
   test_integ_dunavant_2d_exe
@@ -141,7 +153,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-target_link_libraries(test_shape_straight_triangle_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_shape_straight_triangle_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_shape_straight_triangle
@@ -158,7 +170,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-target_link_libraries(test_element_triangle_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_element_triangle_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_link_libraries(test_element_triangle_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_element_triangle
@@ -175,7 +188,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-target_link_libraries(test_boundary_interface_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_boundary_interface_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_link_libraries(test_boundary_interface_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_boundary_interface
@@ -193,7 +207,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-target_link_libraries(test_edges_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_edges_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_link_libraries(test_edges_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_edges
@@ -206,6 +221,9 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
+set_target_properties(test_rk_stepper_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_link_libraries(test_rk_stepper_exe ${YAML_CPP_LIBRARIES})
+
 add_test(
   Unit_RK_stepper
   test_rk_stepper_exe
@@ -215,6 +233,8 @@ add_executable(
   test_llf_flux_exe
   test_llf_flux.cpp
 )
+
+set_target_properties(test_llf_flux_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_llf_flux
@@ -232,7 +252,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
-target_link_libraries(test_wetting_drying_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_wetting_drying_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_link_libraries(test_wetting_drying_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_wetting_drying
@@ -247,7 +268,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 )
 
-target_link_libraries(test_mesh_metadata_exe ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_mesh_metadata_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_mesh_metadata
@@ -256,14 +277,13 @@ add_test(
   ${PROJECT_SOURCE_DIR}/test/files_for_testing/weir/weir.14
 )
 
-include_directories("${YAML_CPP_INCLUDE_DIR}")
-
 add_executable(
   test_swe_inputs_exe
   test_swe_inputs.cpp
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
+set_target_properties(test_swe_inputs_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_swe_inputs_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -280,7 +300,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
-target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set_target_properties(test_input_parameters_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_input_parameters
@@ -401,8 +422,9 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 )
 
+set_target_properties(test_partition_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_include_directories(test_partition_exe PRIVATE ${METIS_INCLUDE_DIRS})
-target_link_libraries(test_partition_exe ${METIS_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_partition_exe ${METIS_LIBRARIES})
 
 add_test(
   Unit_partition
@@ -414,6 +436,8 @@ add_executable(
   test_heartbeat_exe
   test_heartbeat.cpp
 )
+
+set_target_properties(test_heartbeat_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 
 add_test(
   Unit_heartbeat

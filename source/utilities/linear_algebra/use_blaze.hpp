@@ -1,12 +1,12 @@
 #ifndef USE_BLAZE_HPP
 #define USE_BLAZE_HPP
 
-#include <blaze/Math.h>
-#include <blaze/math/Subvector.h>
-#include <blaze/math/Submatrix.h>
-#include <blaze/math/Column.h>
-#include <blaze/math/Row.h>
-#include <blaze/util/AlignedAllocator.h>
+#include <Math.h>
+#include <math/Subvector.h>
+#include <math/Submatrix.h>
+#include <math/Column.h>
+#include <math/Row.h>
+#include <util/AlignedAllocator.h>
 
 #ifdef HAS_HPX
 #include "serialization/blaze_vector.hpp"
