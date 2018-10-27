@@ -2,7 +2,6 @@
 #define MESH_METADATA_HPP
 
 #include "general_definitions.hpp"
-
 #include "ADCIRC_reader/adcirc_format.hpp"
 #include "utilities/file_exists.hpp"
 

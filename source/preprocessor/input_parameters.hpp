@@ -1,10 +1,11 @@
 #ifndef INPUT_PARAMETERS_HPP
 #define INPUT_PARAMETERS_HPP
 
+#include "general_definitions.hpp"
+#include <yaml-cpp/yaml.h>
+
 #include "ADCIRC_reader/adcirc_format.hpp"
 #include "mesh_metadata.hpp"
-
-#include <yaml-cpp/yaml.h>
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/Green-Naghdi/problem_input/gn_inputs.hpp"

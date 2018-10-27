@@ -420,7 +420,7 @@ add_test(
   test_heartbeat_exe
 )
 
-if(USE_HPX)
+#if(USE_HPX)
   #[[add_executable(
     test_rkdg_swe_serialization_exe
     test_rkdg_swe_serialization.cpp
@@ -436,7 +436,7 @@ if(USE_HPX)
     test_rkdg_swe_serialization_exe
   )]]
 
-  add_executable(
+#[[  add_executable(
     test_shape_serialization_exe
     test_shape_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
@@ -496,7 +496,7 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
   )]]
 
-  add_executable(
+  #[[add_executable(
     test_rk_stepper_serialization_exe
     test_rk_stepper_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
