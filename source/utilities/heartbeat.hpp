@@ -1,7 +1,7 @@
 #ifndef HEARTBEAT_HPP
 #define HEARTBEAT_HPP
 
-#include <chrono>
+#include "general_definitions.hpp"
 
 #ifdef HAS_HPX
 #include "serialize_chrono.hpp"

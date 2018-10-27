@@ -2,11 +2,9 @@
 #define SIM_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
-
 #include "preprocessor/input_parameters.hpp"
 #include "communication/hpx_communicator.hpp"
 
-#include "simulation/writer.hpp"
 #include "simulation/hpx/load_balancer/base_model.hpp"
 #include "simulation/hpx/load_balancer/abstract_load_balancer_factory.hpp"
 

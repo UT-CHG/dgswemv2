@@ -1,6 +1,7 @@
 #ifndef DISCRETIZATION_HPP
 #define DISCRETIZATION_HPP
 
+#include "general_definitions.hpp"
 #include "preprocessor/initialize_mesh.hpp"
 #include "preprocessor/initialize_mesh_skeleton.hpp"
 

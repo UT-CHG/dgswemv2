@@ -1,8 +1,8 @@
 #ifndef RK_STEPPER_HPP
 #define RK_STEPPER_HPP
 
-#include "utilities/almost_equal.hpp"
 #include "general_definitions.hpp"
+#include "utilities/almost_equal.hpp"
 #include "preprocessor/input_parameters.hpp"
 
 /**

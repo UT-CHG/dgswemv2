@@ -2,15 +2,11 @@
 #define SIMULATION_HPX_HPP
 
 #include "general_definitions.hpp"
-
 #include "preprocessor/input_parameters.hpp"
-#include "communication/hpx_communicator.hpp"
 #include "utilities/file_exists.hpp"
+#include "sim_unit_hpx.hpp"
 
 #include <hpx/util/unwrapped.hpp>
-
-#include "sim_unit_hpx.hpp"
-#include "simulation/writer.hpp"
 #include "simulation/hpx/load_balancer/load_balancer_headers.hpp"
 
 template <typename ClientType>

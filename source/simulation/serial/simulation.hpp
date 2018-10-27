@@ -1,8 +1,8 @@
 #ifndef SIMULATION_HPP
 #define SIMULATION_HPP
 
+#include "general_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
-#include "simulation/writer.hpp"
 
 template <typename ProblemType>
 class Simulation {
