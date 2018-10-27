@@ -120,6 +120,29 @@ void Problem::local_dc_volume_kernel(const ProblemStepperType& stepper, ElementT
         }
     }
 }
+
+template <typename ElementType>
+void Problem::dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+    const uint stage = stepper.GetStage();
+
+    auto& state    = elt.data.state[stage];
+    auto& internal = elt.data.internal;
+
+    auto h = row(internal.aux_at_gp, SWE::Auxiliaries::h);
+
+    auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
+    auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
+
+    row(internal.source_at_gp, SWE::Variables::qx) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dx, h);
+    row(internal.source_at_gp, SWE::Variables::qy) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dy, h);
+
+    row(internal.source_at_gp, SWE::Variables::qx) -= elt.ComputeUgp(row(state.w1, GlobalCoord::x));
+    row(internal.source_at_gp, SWE::Variables::qy) -= elt.ComputeUgp(row(state.w1, GlobalCoord::y));
+
+    set_constant(row(state.rhs, SWE::Variables::ze), 0);
+    row(state.rhs, SWE::Variables::qx) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qx));
+    row(state.rhs, SWE::Variables::qy) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qy));
+}
 }
 }
 

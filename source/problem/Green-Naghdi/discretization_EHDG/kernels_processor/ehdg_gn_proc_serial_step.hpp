@@ -11,51 +11,36 @@ namespace GN {
 namespace EHDG {
 template <typename SerialSimType>
 void Problem::step_serial(SerialSimType* sim) {
+    Problem::swe_stage_serial(sim->stepper, sim->discretization);
+
+    sim->discretization.mesh.CallForEachElement([](auto& elt) {
+        auto& curr_state = elt.data.state[0];
+        auto& next_state = elt.data.state[1];
+
+        curr_state.q = next_state.q;
+    });
+
     for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
         if (sim->parser.ParsingInput()) {
             sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
         }
 
-        Problem::stage_serial(sim->stepper, sim->discretization);
+        Problem::dispersive_correction_serial(sim->stepper, sim->discretization);
 
         ++(sim->stepper);
     }
 
-    sim->discretization.mesh.CallForEachElement([sim](auto& elt) {
-        uint n_stages = sim->stepper.GetNumStages();
+    Problem::swe_stage_serial(sim->stepper, sim->discretization);
 
+    sim->discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state = elt.data.state;
 
-        std::swap(state[0].q, state[n_stages].q);
+        std::swap(state[0].q, state[1].q);
     });
 
     if (sim->writer.WritingOutput()) {
         sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
     }
-}
-
-void Problem::stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
-    Problem::swe_stage_serial(stepper, discretization);
-
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        const uint stage = stepper.GetStage();
-
-        auto& curr_state = elt.data.state[stage];
-        auto& next_state = elt.data.state[stage + 1];
-
-        curr_state.q = next_state.q;
-    });
-
-    Problem::dispersive_correction_serial(stepper, discretization);
-
-    Problem::swe_stage_serial(stepper, discretization);
-
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        bool nan_found = SWE::scrutinize_solution(stepper, elt);
-
-        if (nan_found)
-            abort();
-    });
 }
 
 void Problem::swe_stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
@@ -88,10 +73,8 @@ void Problem::swe_stage_serial(const ProblemStepperType& stepper, ProblemDiscret
     /* Local Step */
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        const uint stage = stepper.GetStage();
-
-        auto& curr_state = elt.data.state[stage];
-        auto& next_state = elt.data.state[stage + 1];
+        auto& curr_state = elt.data.state[0];
+        auto& next_state = elt.data.state[1];
 
         curr_state.solution = elt.ApplyMinv(curr_state.rhs);
 
@@ -122,8 +105,15 @@ void Problem::dispersive_correction_serial(const ProblemStepperType& stepper,
 
     Problem::serial_solve_global_dc_problem(stepper, discretization);
 
-    discretization.mesh.CallForEachElement(
-        [&stepper](auto& elt) { Problem::dispersive_correction_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        Problem::dispersive_correction_kernel(stepper, elt);
+
+        auto& state = elt.data.state[stepper.GetStage()];
+
+        state.solution = elt.ApplyMinv(state.rhs);
+
+        stepper.UpdateState(elt);
+    });
 }
 }
 }
