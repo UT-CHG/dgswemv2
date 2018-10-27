@@ -3,7 +3,6 @@
 
 #include "general_definitions.hpp"
 #include "problem/SWE/swe_definitions.hpp"
-
 #include "utilities/file_exists.hpp"
 
 struct AdcircFormat {

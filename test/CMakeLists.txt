@@ -420,8 +420,8 @@ add_test(
   test_heartbeat_exe
 )
 
-#if(USE_HPX)
-  #[[add_executable(
+#[[if(USE_HPX)
+  add_executable(
     test_rkdg_swe_serialization_exe
     test_rkdg_swe_serialization.cpp
   )
@@ -434,9 +434,9 @@ add_test(
   add_test(
     Unit_rkdg_swe_serialization
     test_rkdg_swe_serialization_exe
-  )]]
+  )
 
-#[[  add_executable(
+  add_executable(
     test_shape_serialization_exe
     test_shape_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
@@ -472,7 +472,7 @@ add_test(
     test_element_serialization_exe
   )
 
-  #[[add_executable(
+  add_executable(
     test_mesh_serialization_exe
     test_mesh_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
@@ -494,9 +494,9 @@ add_test(
     Unit_mesh_serialization
     test_mesh_serialization_exe
     ${PROJECT_SOURCE_DIR}/test/files_for_testing/correct_input.15
-  )]]
+  )
 
-  #[[add_executable(
+  add_executable(
     test_rk_stepper_serialization_exe
     test_rk_stepper_serialization.cpp
     ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
@@ -557,4 +557,4 @@ add_test(
     test_eigen_serialization_exe
   )
 
-endif()
+endif()]]
