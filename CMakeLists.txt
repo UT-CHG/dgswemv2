@@ -55,6 +55,11 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+if(NOT USE_EIGEN AND NOT USE_BLAZE) 
+  message(WARNING "Linear algebra package not specified! Using default: Eigen!")
+  set(USE_EIGEN ON)
+endif()
+
 if(USE_EIGEN)
   find_package(Eigen3 REQUIRED)
   set(LINALG_FLAG "-DUSE_EIGEN")
