@@ -27,9 +27,8 @@ WORKDIR /usr/dgswemv2
 COPY . /usr/dgswemv2
 
 # Setup project space
-#RUN /usr/dgswemv2/scripts/docker/set-up-dependencies.sh
+RUN /usr/dgswemv2/scripts/docker/set-up-dependencies.sh
 #    cd dgswemv2                                            && \
-
 
 # Final project setup
 #RUN sh setup.sh

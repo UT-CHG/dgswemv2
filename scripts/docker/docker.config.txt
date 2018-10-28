@@ -3,8 +3,8 @@ NUM_BUILDCORES=2
 
 CMAKE="/usr/bin/cmake"
 
-CXX_COMPILER=/usr/bin/g++-5
-C_COMPILER=/usr/bin/gcc-5
+CXX_COMPILER=/usr/bin/g++
+C_COMPILER=/usr/bin/gcc
 
 WORK=/usr
 

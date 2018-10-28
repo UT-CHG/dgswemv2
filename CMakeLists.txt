@@ -24,9 +24,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     message(FATAL_ERROR "Intel version must be at least 17.0")
   endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # require at least 5.2
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
-    message(FATAL_ERROR "GCC version must be at least 5.2")
+  # require at least 6.0
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+    message(FATAL_ERROR "GCC version must be at least 6.0")
   endif()
 else()
   message(WARNING "Using untested compiler")

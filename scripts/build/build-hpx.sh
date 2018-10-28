@@ -185,7 +185,8 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
                  -DHPX_WITH_THREAD_IDLE_RATES=${IDLE_RATES} \
                  -DHPX_WITH_CXX14=On \
                  -DHPX_WITH_TESTS=Off \
-                 -DHPX_WITH_EXAMPLES=Off"
+                 -DHPX_WITH_EXAMPLES=Off \
+                 -DMPI_CXX_SKIP_MPICXX=true"
     if [ $MACHINE = "stampede2-skx" ]; then
     CMAKE_FLAGS="${CMAKE_FLAGS} \
                  -DHPX_WITH_MORE_THAN_64_THREADS=On \
