@@ -158,12 +158,13 @@ class Master {
         const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 
-    template <typename InputArrayType>
-    decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
-    template <typename InputArrayType>
-    decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
-    template <typename InputArrayType>
-    decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
+    // The following member methods have to be defined (cannot define templated member methods as virual)
+    // template <typename InputArrayType>
+    // decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
+    // template <typename InputArrayType>
+    // decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
+    // template <typename InputArrayType>
+    // decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 };
 }
 
@@ -222,6 +223,7 @@ class Shape {
  * Base class for the stepper types for a simulation.
  */
 class Stepper {
+  public:
     /**
      * Get the order accuracy of the stepper
      */
@@ -234,6 +236,11 @@ class Stepper {
      * Get the size of the timestep (in seconds)
      */
     virtual double GetDT() const = 0;
+
+    /**
+     * Set the size of the timestep (in seconds)
+     */
+    virtual void SetDT(double dt) = 0;
 
     /**
      * Get the current step number
@@ -267,11 +274,12 @@ class Stepper {
      */
     virtual Stepper& operator++() = 0;
 
+    // The following member method has to be defined (cannot define templated member methods as virual)
     /**
      * This operation will do one time stage update for an element
      */
-    template <typename ElementType>
-    void UpdateState(ElementType& elt) const;
+    // template <typename ElementType>
+    // void UpdateState(ElementType& elt) const;
 };
 
 #define PI 3.14159265359

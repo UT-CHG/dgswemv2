@@ -2,6 +2,7 @@
 #define EHDG_GN_PROBLEM_HPP
 
 #include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
+#include "simulation/stepper/second_strang_stepper.hpp"
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
@@ -26,7 +27,7 @@ namespace GN {
 namespace EHDG {
 struct Problem {
     using ProblemInputType   = GN::Inputs;
-    using ProblemStepperType = ESSPRKStepper;
+    using ProblemStepperType = SecondStrangStepper<ESSPRKStepper, ESSPRKStepper>;
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = GN::Parser;
 

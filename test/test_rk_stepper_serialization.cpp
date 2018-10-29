@@ -17,11 +17,11 @@ State solve_ode(ESSPRKStepper& explicit_ssp_rk_stepper, const State& y0, uint ns
             rhs[stage]   = compute_rhs(y[stage], explicit_ssp_rk_stepper.GetTimeAtCurrentStage());
             y[stage + 1] = {0, 0};
             for (uint s = 0; s < stage + 1; ++s) {
-                y[stage + 1][0] +=
-                    explicit_ssp_rk_stepper.ark[stage][s] * y[s][0] + explicit_ssp_rk_stepper.GetDT() * explicit_ssp_rk_stepper.brk[stage][s] * rhs[s][0];
+                y[stage + 1][0] += explicit_ssp_rk_stepper.ark[stage][s] * y[s][0] +
+                                   explicit_ssp_rk_stepper.GetDT() * explicit_ssp_rk_stepper.brk[stage][s] * rhs[s][0];
 
-                y[stage + 1][1] +=
-                    explicit_ssp_rk_stepper.ark[stage][s] * y[s][1] + explicit_ssp_rk_stepper.GetDT() * explicit_ssp_rk_stepper.brk[stage][s] * rhs[s][1];
+                y[stage + 1][1] += explicit_ssp_rk_stepper.ark[stage][s] * y[s][1] +
+                                   explicit_ssp_rk_stepper.GetDT() * explicit_ssp_rk_stepper.brk[stage][s] * rhs[s][1];
             }
             ++explicit_ssp_rk_stepper;
         }
