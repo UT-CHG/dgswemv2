@@ -15,7 +15,7 @@
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_ompi_step.hpp"
 
 #include "simulation/ompi/simulation_ompi.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

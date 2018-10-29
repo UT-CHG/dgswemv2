@@ -3,7 +3,7 @@
 #include "geometry/mesh_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 
 #include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
 #include "problem/SWE/problem_function_files/swe_source_functions.hpp"
@@ -47,7 +47,7 @@ int main() {
     stepper_input.order   = 1;
     stepper_input.dt      = 1;
 
-    RKStepper stepper(stepper_input);
+    ESSPRKStepper stepper(stepper_input);
 
     auto& wd_state = triangle.data.wet_dry_state;
     auto& state    = triangle.data.state[1];

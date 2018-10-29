@@ -14,7 +14,7 @@
 #include "preprocessor/initialize_mesh.hpp"
 #include "preprocessor/initialize_mesh_skeleton.hpp"
 #include "simulation/serial/simulation.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 
 #include "utilities/almost_equal.hpp"
 
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     typename SWE::IHDG::Problem::ProblemMeshType mesh;
     typename SWE::IHDG::Problem::ProblemMeshSkeletonType mesh_skeleton;
 
-    RKStepper stepper;
+    ESSPRKStepper stepper;
     Writer<SWE::IHDG::Problem> writer;
 
     input.read_mesh();  // read mesh meta data
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
     mesh = typename SWE::IHDG::Problem::ProblemMeshType(input.polynomial_order);
 
-    stepper = RKStepper(input.stepper_input);
+    stepper = ESSPRKStepper(input.stepper_input);
     writer  = Writer<SWE::IHDG::Problem>(input.writer_input);
 
     if (writer.WritingLog()) {

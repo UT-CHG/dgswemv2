@@ -1,7 +1,7 @@
 #ifndef EHDG_SWE_PROBLEM_HPP
 #define EHDG_SWE_PROBLEM_HPP
 
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
@@ -28,7 +28,7 @@ namespace SWE {
 namespace EHDG {
 struct Problem {
     using ProblemInputType   = SWE::Inputs;
-    using ProblemStepperType = RKStepper;
+    using ProblemStepperType = ESSPRKStepper;
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 

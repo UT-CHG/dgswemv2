@@ -23,7 +23,7 @@
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_processor/ehdg_gn_proc_serial_step.hpp"
 
 #include "simulation/serial/simulation.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
