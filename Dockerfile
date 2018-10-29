@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 # github.com/bremerm31
 MAINTAINER Max Bremer
@@ -14,6 +14,7 @@ RUN apt-get update                                             && \
     apt-get -y install gfortran                                && \
     apt-get -y install libblas-dev liblapack-dev               && \
     apt-get -y install libhwloc-dev                            && \
+    apt-get -y install libboost-all-dev                        && \
     apt-get -y install python-dev                              && \
     apt-get -y install python-pip                              && \
     apt-get -y install git                                     && \
@@ -28,7 +29,6 @@ COPY . /usr/dgswemv2
 # Setup project space
 RUN /usr/dgswemv2/scripts/docker/set-up-dependencies.sh
 #    cd dgswemv2                                            && \
-
 
 # Final project setup
 #RUN sh setup.sh
