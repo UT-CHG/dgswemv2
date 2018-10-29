@@ -8,15 +8,8 @@
 #include "general_definitions.hpp"
 #include "problem/SWE/swe_definitions.hpp"
 
-#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
-#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
-#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
-
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
-
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_hpx.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
 
 #include "simulation/hpx/simulation_hpx.hpp"
 
@@ -37,12 +30,12 @@ int hpx_main(int argc, char* argv[]) {
 
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
-    std::vector<HPXSimulationClient<SWE::RKDG::Problem>> simulation_clients;
+    std::vector<HPXSimulationClient> simulation_clients;
     simulation_clients.reserve(localities.size());
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
-        simulation_clients.emplace_back(hpx::new_<HPXSimulation<SWE::RKDG::Problem>>(locality, input_string));
+        simulation_clients.emplace_back(hpx::new_<HPXSimulation>(locality, input_string));
     }
 
     std::vector<hpx::future<void>> run_futures;

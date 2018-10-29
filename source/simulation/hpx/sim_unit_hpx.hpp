@@ -5,12 +5,17 @@
 #include "preprocessor/input_parameters.hpp"
 #include "communication/hpx_communicator.hpp"
 
-#include "simulation/hpx/load_balancer/base_model.hpp"
-#include "simulation/hpx/load_balancer/abstract_load_balancer_factory.hpp"
+#include "simulation/hpx/sim_unit_hpx_base.hpp"
+//#include "simulation/hpx/load_balancer/base_model.hpp"
+//#include "simulation/hpx/load_balancer/abstract_load_balancer_factory.hpp"
+
+#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_hpx.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
+
 
 template <typename ProblemType>
-struct HPXSimulationUnit
-    : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
+struct HPXSimulationUnit : public HPXSimulationUnitBase, hpx::components::managed_component_base<HPXSimulationUnit<ProblemType>> {
     // *** //
     typename ProblemType::ProblemDiscretizationType discretization;
 
@@ -21,7 +26,7 @@ struct HPXSimulationUnit
 
     typename ProblemType::ProblemInputType problem_input;
 
-    std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
+//    std::unique_ptr<LoadBalancer::SubmeshModel> submesh_model = nullptr;
 
     HPXSimulationUnit() = default;
     HPXSimulationUnit(const std::string& input_string, const uint locality_id, const uint submesh_id);
@@ -30,18 +35,14 @@ struct HPXSimulationUnit
     HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs) = default;
 
     hpx::future<void> Preprocessor();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Preprocessor, PreprocessorAction);
 
     void Launch();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Launch, LaunchAction);
 
     hpx::future<void> Step();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, Step, StepAction);
 
     double ResidualL2();
-    HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnit, ResidualL2, ResidualL2Action);
 
-    template <typename Archive>
+/*    template <typename Archive>
     void save(Archive& ar, unsigned) const;
 
     template <typename Archive>
@@ -49,6 +50,7 @@ struct HPXSimulationUnit
     HPX_SERIALIZATION_SPLIT_MEMBER();
 
     void on_migrated();  // Do not rename this is overload member of the base class
+*/
 };
 
 template <typename ProblemType>
@@ -73,8 +75,8 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
     this->problem_input = input.problem_input;
 
-    this->submesh_model = LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
-        locality_id, submesh_id, input.load_balancer_input);
+/*    this->submesh_model = nullptr; LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
+                                     locality_id, submesh_id, input.load_balancer_input);*/
 
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
@@ -123,9 +125,9 @@ hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
 
     return step_future.then([this](auto&& f) {
         f.get();
-        if (this->submesh_model) {
+/*        if (this->submesh_model) {
             this->submesh_model->InStep(0, 0);
-        }
+            }*/
 
         if (this->writer.WritingOutput()) {
             this->writer.WriteOutput(this->stepper, this->discretization.mesh);
@@ -144,7 +146,7 @@ double HPXSimulationUnit<ProblemType>::ResidualL2() {
 
     return residual_L2;
 }
-
+/*
 template <typename ProblemType>
 template <typename Archive>
 void HPXSimulationUnit<ProblemType>::save(Archive& ar, unsigned) const {
@@ -187,39 +189,10 @@ void HPXSimulationUnit<ProblemType>::on_migrated() {
     initialize_mesh_interfaces_boundaries<ProblemType, HPXCommunicator>(
         discretization.mesh, problem_input, communicator, writer);
 }
+*/
 
-template <typename ProblemType>
-class HPXSimulationUnitClient
-    : public hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>> {
-  private:
-    using BaseType = hpx::components::client_base<HPXSimulationUnitClient<ProblemType>, HPXSimulationUnit<ProblemType>>;
-
-  public:
-    HPXSimulationUnitClient() = default;
-    HPXSimulationUnitClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
-    HPXSimulationUnitClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
-
-    static constexpr const char* GetBasename() { return "Simulation_Unit_Client_"; }
-
-    hpx::future<void> Preprocessor() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::PreprocessorAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Launch() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::LaunchAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<void> Step() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::StepAction;
-        return hpx::async<ActionType>(this->get_id());
-    }
-
-    hpx::future<double> ResidualL2() {
-        using ActionType = typename HPXSimulationUnit<ProblemType>::ResidualL2Action;
-        return hpx::async<ActionType>(this->get_id());
-    }
-};
+using RKDG_SWE_SimUnit = HPXSimulationUnit<SWE::RKDG::Problem>;
+using RKDG_SWE_Server = hpx::components::managed_component<RKDG_SWE_SimUnit>;
+HPX_REGISTER_DERIVED_COMPONENT_FACTORY(RKDG_SWE_Server, RKDG_SWE_SimUnit, "HPXSimulationUnitBase");
 
 #endif

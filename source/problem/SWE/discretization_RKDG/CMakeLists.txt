@@ -32,6 +32,7 @@ if(USE_HPX)
     ${SOURCES}
     ${SWE_SOURCES}
     ${PROJECT_SOURCE_DIR}/source/communication/hpx_communicator.cpp
+    ${PROJECT_SOURCE_DIR}/source/simulation/hpx/sim_unit_hpx_base.cpp
   )
 
   set_target_properties(RKDG_SWE_HPX PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
