@@ -3,6 +3,9 @@
 
 #include <yaml-cpp/yaml.h>
 
+HPX_REGISTER_COMPONENT_HEAP(hpx::components::managed_component<HPXSimulationUnitBase>);
+HPX_DEFINE_GET_COMPONENT_TYPE(HPXSimulationUnitBase);
+
 HPXSimulationUnitClient HPXSimulationUnitFactory::Create(const hpx::naming::id_type& here,
                                                          const std::string& input_string,
                                                          const uint locality_id,

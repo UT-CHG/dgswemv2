@@ -19,7 +19,7 @@ timestepping:
 polynomial_order: 1
 
 problem:
-  name: swe
+  name: rkdg_swe
   gravity: 9.81
   density_air: 1.225
   density_water: 1000.0

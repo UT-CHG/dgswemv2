@@ -2,6 +2,8 @@
 #define SIM_UNIT_HPX_HPP
 
 #include "general_definitions.hpp"
+
+#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "preprocessor/input_parameters.hpp"
 #include "communication/hpx_communicator.hpp"
 
@@ -10,6 +12,7 @@
 //#include "simulation/hpx/load_balancer/abstract_load_balancer_factory.hpp"
 
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_hpx.hpp"
 #include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
 
@@ -17,6 +20,12 @@
 template <typename ProblemType>
 struct HPXSimulationUnit : public HPXSimulationUnitBase, hpx::components::managed_component_base<HPXSimulationUnit<ProblemType>> {
     // *** //
+
+    //HPX requires these typedefs to properly disambiguate look ups
+    using hpx::components::managed_component_base<HPXSimulationUnit<ProblemType>>::wrapping_type;
+    using type_holder = HPXSimulationUnit<ProblemType>;
+    using base_type_holder = HPXSimulationUnitBase;
+
     typename ProblemType::ProblemDiscretizationType discretization;
 
     HPXCommunicator communicator;
@@ -77,7 +86,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
 
 /*    this->submesh_model = nullptr; LoadBalancer::AbstractFactory::create_submesh_model<ProblemType>(
                                      locality_id, submesh_id, input.load_balancer_input);*/
-
+    std::cout << "Building sim unit" << '\n';
     if (this->writer.WritingLog()) {
         this->writer.StartLog();
 

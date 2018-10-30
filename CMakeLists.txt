@@ -9,12 +9,12 @@ option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
 option(SET_VERBOSE "Verbose MakeFile" OFF)
 option(BUILD_EXAMPLES "Build Examples" OFF)
 
-option(RKDG_SWE "Build RKDG SWE simulations" ON)
-option(EHDG_SWE "Build EHDG SWE simulations" OFF)
-option(IHDG_SWE "Build EHDG SWE simulations" OFF)
+option(RKDG "Build with RKDG discretization" ON)
+option(EHDG "Build with explicit HDG discretization" OFF)
+option(IHDG "Build with implicit HDG discretization" OFF)
 
-option(EHDG_GN "Build EHDG GN simulations" OFF)
-option(IHDG_GN "Build IHDG GN simulations" OFF)
+option(SWE "Build with shallow water equations support" ON)
+option(GN "Build with Green-Nahgdi support" OFF)
 
 enable_testing()
 
@@ -99,21 +99,14 @@ list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
-list(APPEND SWE_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-)
-
-list(APPEND GN_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-)
-
 include_directories(source)
 
 add_subdirectory(test)
 add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)
 
-if(RKDG_SWE)
+add_subdirectory(source)
+#[[if(RKDG_SWE)
   add_subdirectory(source/problem/SWE/discretization_RKDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/rkdg_swe_manufactured_solution)
@@ -150,8 +143,8 @@ if(EHDG_GN)
 endif()
 
 if(IHDG_GN)
-  #[[add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
+  add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
   if(BUILD_EXAMPLES)
     add_subdirectory(examples/ihdg_gn_analytical_solution)
-  endif()]]
-endif()
+  endif()
+endif()]]

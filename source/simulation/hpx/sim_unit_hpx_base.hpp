@@ -23,9 +23,6 @@ struct HPXSimulationUnitBase
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnitBase, ResidualL2_, ResidualL2Action);
 };
 
-HPX_REGISTER_COMPONENT_HEAP(hpx::components::managed_component<HPXSimulationUnitBase>);
-HPX_DEFINE_GET_COMPONENT_TYPE(HPXSimulationUnitBase);
-
 class HPXSimulationUnitClient
     : public hpx::components::client_base<HPXSimulationUnitClient, HPXSimulationUnitBase> {
   private:

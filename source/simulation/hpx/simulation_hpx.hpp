@@ -131,9 +131,7 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient, HP
     }
 };
 
-#define REGISTER_HPX_COMPONENTS(ProblemType)                                                                      \
-    using hpx_simulation_swe_component_ = hpx::components::simple_component<HPXSimulation>;                       \
-    HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);                                   \
-//    DGSWEMV2_REGISTER_LOAD_BALANCERS(ProblemType);
-// *** //
+using hpx_simulation_swe_component_ = hpx::components::simple_component<HPXSimulation>;
+HPX_REGISTER_COMPONENT(hpx_simulation_swe_component_, hpx_simulation_swe_);
+
 #endif

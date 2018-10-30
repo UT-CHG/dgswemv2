@@ -6,14 +6,8 @@
 #include <hpx/include/lcos.hpp>
 
 #include "general_definitions.hpp"
-#include "problem/SWE/swe_definitions.hpp"
-
-#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
 
 #include "simulation/hpx/simulation_hpx.hpp"
-
-REGISTER_HPX_COMPONENTS(SWE::RKDG::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
