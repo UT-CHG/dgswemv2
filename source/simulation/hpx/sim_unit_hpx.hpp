@@ -22,7 +22,7 @@ struct HPXSimulationUnit : public HPXSimulationUnitBase, hpx::components::manage
     // *** //
 
     //HPX requires these typedefs to properly disambiguate look ups
-    using wrapping_type = hpx::components::managed_component_base<HPXSimulationUnit<ProblemType>>::wrapping_type;
+    using wrapping_type = typename hpx::components::managed_component_base<HPXSimulationUnit<ProblemType>>::wrapping_type;
     using type_holder = HPXSimulationUnit<ProblemType>;
     using base_type_holder = HPXSimulationUnitBase;
 
