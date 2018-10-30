@@ -103,14 +103,18 @@ if (SWE)
   list(APPEND SOURCES
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
   )
-  list (APPEND PROBLEM_FLAGS "${PROBLEM_FLAGS} -DBUILD_SWE")
+  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DSWE_SUPPORT")
 endif()
 
 if (GN)
   list(APPEND SOURCES
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
   )
-  list (APPEND PROBLEM_FLAGS "${PROBLEM_FLAGS} -DBUILD_SWE")
+  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DGN_SUPPORT")
+endif()
+
+if (RKDG)
+  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DRKDG_SUPPORT")
 endif()
 
 include_directories(source)

@@ -1,14 +1,14 @@
-#add_executable(
-#  RKDG_SWE_SERIAL
-#  ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/rkdg_main_swe.cpp
-#  ${SOURCES}
-#  ${SWE_SOURCES}
-#)
+add_executable(
+  dgswemv2-serial
+  ${PROJECT_SOURCE_DIR}/source/dgswemv2-serial.cpp
+  ${SOURCES}
+  ${PROJECT_SOURCE_DIR}/source/simulation/serial/simulation_base.cpp
+)
 
-#set_target_properties(RKDG_SWE_SERIAL PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
-#target_include_directories(RKDG_SWE_SERIAL PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-#target_link_libraries(RKDG_SWE_SERIAL ${YAML_CPP_LIBRARIES})
-#install(TARGETS RKDG_SWE_SERIAL DESTINATION bin)
+set_target_properties(dgswemv2-serial PROPERTIES COMPILE_FLAGS "${LINALG_FLAG} ${PROBLEM_FLAGS}")
+target_include_directories(dgswemv2-serial PRIVATE ${YAML_CPP_INCLUDE_DIR})  
+target_link_libraries(dgswemv2-serial ${YAML_CPP_LIBRARIES})
+install(TARGETS dgswemv2-serial DESTINATION bin)
 
 #if(USE_OMPI)
 #  add_executable(

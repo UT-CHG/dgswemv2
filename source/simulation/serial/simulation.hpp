@@ -4,8 +4,14 @@
 #include "general_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 
+#include "simulation/serial/simulation_base.hpp"
+
+#include "problem/definitions.hpp"
+#include "problem/serial_functions.hpp"
+
+namespace Serial {
 template <typename ProblemType>
-class Simulation {
+class Simulation : public SimulationBase {
   private:
     uint n_steps;
 
@@ -89,5 +95,5 @@ void Simulation<ProblemType>::ComputeL2Residual() {
 
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
 }
-
+}
 #endif

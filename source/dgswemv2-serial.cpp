@@ -1,17 +1,6 @@
 #include "general_definitions.hpp"
-#include "problem/SWE/swe_definitions.hpp"
 
-#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
-#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
-#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
-
-#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
-
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_serial.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_serial_step.hpp"
-
-#include "simulation/serial/simulation.hpp"
+#include "simulation/serial/simulation_base.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -21,10 +10,10 @@ int main(int argc, char* argv[]) {
     } else {
         std::string input_string = std::string(argv[1]);
 
-        Simulation<SWE::RKDG::Problem> simulation(input_string);
+        std::unique_ptr<Serial::SimulationBase> simulation = Serial::SimulationFactory::Create(input_string);
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        simulation.Run();
+        simulation->Run();
         auto t2 = std::chrono::high_resolution_clock::now();
 
         std::cout << "Time Elapsed (in us): " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()

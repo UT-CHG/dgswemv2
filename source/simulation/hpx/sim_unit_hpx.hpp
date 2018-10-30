@@ -3,7 +3,6 @@
 
 #include "general_definitions.hpp"
 
-#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
 #include "preprocessor/input_parameters.hpp"
 #include "communication/hpx_communicator.hpp"
 
@@ -11,11 +10,8 @@
 //#include "simulation/hpx/load_balancer/base_model.hpp"
 //#include "simulation/hpx/load_balancer/abstract_load_balancer_factory.hpp"
 
-#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_hpx.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
-
+#include "problem/definitions.hpp"
+#include "problem/hpx_functions.hpp"
 
 template <typename ProblemType>
 struct HPXSimulationUnit : public HPXSimulationUnitBase, hpx::components::managed_component_base<HPXSimulationUnit<ProblemType>> {
