@@ -335,7 +335,7 @@ timestepping:\n\
   ramp_duration: 1.5\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
-  name: swe\n\
+  name: rkdg_swe\n\
   gravity: 9.81\n\
   density_air: 1.225\n\
   density_water: 1000\n\
@@ -389,7 +389,7 @@ timestepping:\n\
   nstages: 2\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
-  name: swe\n\
+  name: rkdg_swe\n\
   gravity: 9.81\n\
   density_air: 1.225\n\
   density_water: 1000\n\

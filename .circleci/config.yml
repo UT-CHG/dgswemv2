@@ -39,8 +39,8 @@ jobs:
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
                 -DBUILD_EXAMPLES=On \
-                -DRKDG_SWE=On \
-                -DEHDG_SWE=On \
+#                -DRKDG_SWE=On \
+#                -DEHDG_SWE=On \
                 /usr/dgswemv2
             make
       - persist_to_workspace:
@@ -111,14 +111,14 @@ workflows:
       - run_unit_tests:
           requires:
             - build_dgswemv2
-      - rkdg_run_parallel_correctness:
-          requires:
-            - build_dgswemv2
-      - rkdg_run_parallel_weirs:
-          requires:
-            - build_dgswemv2
-      - ehdg_run_parallel_correctness:
-          requires:
-            - build_dgswemv2
+ #     - rkdg_run_parallel_correctness:
+ #         requires:
+ #           - build_dgswemv2
+ #     - rkdg_run_parallel_weirs:
+ #         requires:
+ #           - build_dgswemv2
+ #     - ehdg_run_parallel_correctness:
+ #         requires:
+ #           - build_dgswemv2
 
             

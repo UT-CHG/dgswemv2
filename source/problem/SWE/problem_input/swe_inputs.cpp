@@ -2,6 +2,15 @@
 
 namespace SWE {
 Inputs::Inputs(YAML::Node& swe_node) {
+    if ( swe_node["name"] ) {
+        this->name = swe_node["name"].as<std::string>();
+
+        //check for acceptable names
+        if ( this->name != "rkdg_swe" ) {
+            throw std::runtime_error{"Fatal error: unknown problem name: "+this->name+'\n'};
+        }
+    }
+
     if (swe_node["gravity"]) {
         this->g = swe_node["gravity"].as<double>();
     } else {
@@ -304,7 +313,7 @@ void Inputs::read_bcis(const std::string& bcis_file) {
 YAML::Node Inputs::as_yaml_node() {
     YAML::Node ret;
 
-    ret["name"]          = "swe";
+    ret["name"]          = this->name;
     ret["gravity"]       = this->g;
     ret["density_air"]   = this->rho_air;
     ret["density_water"] = this->rho_water;
