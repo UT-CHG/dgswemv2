@@ -110,7 +110,8 @@ struct Problem {
                                          ProblemMeshSkeletonType& mesh_skeleton,
                                          ProblemWriterType& writer);
 
-    static void preprocessor_serial(ProblemDiscretizationType& discretization,
+    template <typename ProblemType>
+    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
@@ -124,18 +125,21 @@ struct Problem {
     template <typename MeshType>
     static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
 
-    static void initialize_global_problem_serial(ProblemDiscretizationType& discretization, uint& global_dof_offset);
+    template <typename ProblemType>
+    static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
+                                                 uint& global_dof_offset);
 
-    template <typename Communicator>
-    static void initialize_global_problem_parallel_pre_send(ProblemDiscretizationType& discretization,
+    template <typename ProblemType, typename Communicator>
+    static void initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
                                                             Communicator& communicator,
                                                             uint& global_dof_offset);
 
-    static void initialize_global_problem_parallel_finalize_pre_send(ProblemDiscretizationType& discretization,
+    template <typename ProblemType>
+    static void initialize_global_problem_parallel_finalize_pre_send(HDGDiscretization<ProblemType>& discretization,
                                                                      uint global_dof_offset);
 
-    template <typename Communicator>
-    static void initialize_global_problem_parallel_post_receive(ProblemDiscretizationType& discretization,
+    template <typename ProblemType, typename Communicator>
+    static void initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization,
                                                                 Communicator& communicator,
                                                                 std::vector<uint>& global_dof_indx);
 
@@ -143,8 +147,8 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    template <typename StepperType>
-    static void stage_serial(const StepperType& stepper, ProblemDiscretizationType& discretization);
+    template <typename StepperType, typename ProblemType>
+    static void stage_serial(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -193,8 +197,8 @@ struct Problem {
     template <typename StepperType, typename EdgeDistributedType>
     static void global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_bound);
 
-    template <typename StepperType>
-    static bool serial_solve_global_problem(const StepperType& stepper, ProblemDiscretizationType& discretization);
+    template <typename StepperType, typename ProblemType>
+    static bool serial_solve_global_problem(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
 
     template <typename OMPISimUnitType>
     static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,

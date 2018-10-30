@@ -18,21 +18,13 @@ void Problem::step_serial(SerialSimType* sim) {
         ++(sim->stepper);
     }
 
-    sim->discretization.mesh.CallForEachElement([sim](auto& elt) {
-        uint n_stages = sim->stepper.GetNumStages();
-
-        auto& state = elt.data.state;
-
-        std::swap(state[0].q, state[n_stages].q);
-    });
-
     if (sim->writer.WritingOutput()) {
         sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
     }
 }
 
-template <typename StepperType>
-void Problem::stage_serial(const StepperType& stepper, ProblemDiscretizationType& discretization) {
+template <typename StepperType, typename ProblemType>
+void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
     discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
         const uint stage = stepper.GetStage();
 
@@ -86,6 +78,14 @@ void Problem::stage_serial(const StepperType& stepper, ProblemDiscretizationType
             break;
         }
     }
+
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        uint n_stages = stepper.GetNumStages();
+
+        auto& state = elt.data.state;
+
+        std::swap(state[0].q, state[n_stages].q);
+    });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = SWE::scrutinize_solution(stepper, elt);

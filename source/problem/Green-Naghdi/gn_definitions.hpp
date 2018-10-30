@@ -3,7 +3,16 @@
 
 #include "utilities/ignore.hpp"
 
+//#define EHDG_SWE
+#define IHDG_SWE
+
+#ifdef EHDG_SWE
 namespace SWE_SIM = SWE::EHDG;
+#endif
+
+#ifdef IHDG_SWE
+namespace SWE_SIM = SWE::IHDG;
+#endif
 
 namespace GN {
 namespace NDParameters {

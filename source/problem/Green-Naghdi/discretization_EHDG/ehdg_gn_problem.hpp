@@ -152,15 +152,8 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    static void stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
-
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
-
-    template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                           uint begin_sim_id,
-                           uint end_sim_id);
 
     /* Dispersive correction part */
 
@@ -215,17 +208,6 @@ struct Problem {
     static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                              uint begin_sim_id,
                                              uint end_sim_id);
-
-    /* SWE part */
-
-    static void swe_stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
-
-    template <typename OMPISimUnitType>
-    static void swe_stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                               uint begin_sim_id,
-                               uint end_sim_id);
-
-    /* SWE part */
 
     template <typename ElementType>
     static void dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt);
