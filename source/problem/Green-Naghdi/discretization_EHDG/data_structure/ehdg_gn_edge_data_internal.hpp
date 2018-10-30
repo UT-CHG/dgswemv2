@@ -3,10 +3,10 @@
 
 namespace GN {
 namespace EHDG {
-struct EdgeInternal : SWE::EHDG::EdgeInternal {
+struct EdgeInternal : SWE_SIM::EdgeInternal {
     EdgeInternal() = default;
     EdgeInternal(const uint ngp)
-        : SWE::EHDG::EdgeInternal(ngp), w1_hat_w1_hat_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp) {}
+        : SWE_SIM::EdgeInternal(ngp), w1_hat_w1_hat_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp) {}
 
     HybMatrix<double, GN::n_dimensions * GN::n_dimensions> w1_hat_w1_hat_kernel_at_gp;
 

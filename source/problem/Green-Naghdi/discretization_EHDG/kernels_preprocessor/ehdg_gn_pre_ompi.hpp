@@ -9,7 +9,7 @@ template <typename OMPISimUnitType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                 uint begin_sim_id,
                                 uint end_sim_id) {
-    SWE::EHDG::Problem::preprocessor_ompi(sim_units, begin_sim_id, end_sim_id);
+    SWE_SIM::Problem::preprocessor_ompi(sim_units, begin_sim_id, end_sim_id);
 
 #pragma omp barrier
 #pragma omp master

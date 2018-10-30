@@ -3,9 +3,9 @@
 
 namespace GN {
 namespace EHDG {
-struct EdgeState : SWE::EHDG::EdgeState {
+struct EdgeState : SWE_SIM::EdgeState {
     EdgeState() = default;
-    EdgeState(const uint ndof) : SWE::EHDG::EdgeState(ndof) {}
+    EdgeState(const uint ndof) : SWE_SIM::EdgeState(ndof) {}
 };
 }
 }

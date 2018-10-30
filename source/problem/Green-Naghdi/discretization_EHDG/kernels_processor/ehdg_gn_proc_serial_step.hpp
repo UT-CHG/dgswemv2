@@ -14,7 +14,7 @@ void Problem::step_serial(SerialSimType* sim) {
             sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
         }
 
-        SWE::EHDG::Problem::stage_serial(sim->stepper, sim->discretization);
+        SWE_SIM::Problem::stage_serial(sim->stepper, sim->discretization);
 
         ++(sim->stepper);
     }
@@ -34,7 +34,7 @@ void Problem::step_serial(SerialSimType* sim) {
             sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
         }
 
-        SWE::EHDG::Problem::stage_serial(sim->stepper, sim->discretization);
+        SWE_SIM::Problem::stage_serial(sim->stepper, sim->discretization);
 
         ++(sim->stepper);
     }

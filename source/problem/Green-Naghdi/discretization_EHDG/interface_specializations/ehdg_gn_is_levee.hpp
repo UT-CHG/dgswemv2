@@ -4,10 +4,10 @@
 namespace GN {
 namespace EHDG {
 namespace ISP {
-class Levee : public SWE::EHDG::ISP::Levee {
+class Levee : public SWE_SIM::ISP::Levee {
   public:
     Levee() = default;
-    Levee(const std::vector<SWE::LeveeInput>& levee_input) : SWE::EHDG::ISP::Levee(levee_input){};
+    Levee(const std::vector<SWE::LeveeInput>& levee_input) : SWE_SIM::ISP::Levee(levee_input){};
 
     template <typename EdgeInterfaceType>
     void ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int);

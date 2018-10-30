@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 namespace BC {
-class Land : public SWE::EHDG::BC::Land {
+class Land : public SWE_SIM::BC::Land {
   public:
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound);

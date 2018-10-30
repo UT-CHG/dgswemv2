@@ -3,10 +3,10 @@
 
 namespace GN {
 namespace EHDG {
-struct Internal : SWE::EHDG::Internal {
+struct Internal : SWE_SIM::Internal {
     Internal() = default;
     Internal(const uint ngp)
-        : SWE::EHDG::Internal(ngp),
+        : SWE_SIM::Internal(ngp),
           u_at_gp(GN::n_dimensions, ngp),
           du_at_gp(GN::n_du_terms, ngp),
           ddu_at_gp(GN::n_ddu_terms, ngp),

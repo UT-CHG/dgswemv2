@@ -11,14 +11,14 @@
 namespace GN {
 namespace EHDG {
 std::vector<uint> Problem::comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
-    std::vector<uint> offset(GN::EHDG::n_communications);
+    std::vector<uint> offset = SWE_SIM::Problem::comm_buffer_offsets(begin_index, ngp);
 
-    offset[SWE::EHDG::CommTypes::bound_state] = begin_index[SWE::EHDG::CommTypes::bound_state];
-    offset[CommTypes::dc_global_dof_indx]     = begin_index[CommTypes::dc_global_dof_indx];
-    offset[CommTypes::dbath]                  = begin_index[CommTypes::dbath];
-    offset[CommTypes::derivatives]            = begin_index[CommTypes::derivatives];
+    offset.resize(Problem::n_communications);
 
-    begin_index[SWE::EHDG::CommTypes::bound_state] += 2 * SWE::n_variables * ngp;
+    offset[CommTypes::dc_global_dof_indx] = begin_index[CommTypes::dc_global_dof_indx];
+    offset[CommTypes::dbath]              = begin_index[CommTypes::dbath];
+    offset[CommTypes::derivatives]        = begin_index[CommTypes::derivatives];
+
     begin_index[CommTypes::dc_global_dof_indx] += 1;
     begin_index[CommTypes::dbath] += GN::n_ddbath_terms * ngp;
     begin_index[CommTypes::derivatives] += GN::n_du_terms * ngp;

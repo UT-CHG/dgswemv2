@@ -3,6 +3,8 @@
 
 #include "utilities/ignore.hpp"
 
+namespace SWE_SIM = SWE::EHDG;
+
 namespace GN {
 namespace NDParameters {
 static double alpha = 1.0;
@@ -34,11 +36,11 @@ enum DDDBath : uint { bxxx = 0, bxxy = 1, bxyx = 2, bxyy = 3, byxx = 4, byxy = 5
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, internal = INTERNAL, levee = INTERNAL + 1 };
 
 namespace EHDG {
-constexpr uint n_communications = SWE::EHDG::n_communications + 3;
+constexpr uint n_communications = SWE_SIM::n_communications + 3;
 enum CommTypes : uchar {
-    dc_global_dof_indx = SWE::EHDG::n_communications + 0,
-    dbath              = SWE::EHDG::n_communications + 1,
-    derivatives        = SWE::EHDG::n_communications + 2
+    dc_global_dof_indx = SWE_SIM::n_communications + 0,
+    dbath              = SWE_SIM::n_communications + 1,
+    derivatives        = SWE_SIM::n_communications + 2
 };
 }
 }

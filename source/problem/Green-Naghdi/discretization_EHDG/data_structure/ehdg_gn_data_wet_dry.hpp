@@ -3,7 +3,7 @@
 
 namespace GN {
 namespace EHDG {
-struct WetDry : SWE::EHDG::WetDry {};
+struct WetDry : SWE_SIM::WetDry {};
 }
 }
 

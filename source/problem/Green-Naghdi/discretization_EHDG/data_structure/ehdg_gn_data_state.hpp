@@ -3,10 +3,10 @@
 
 namespace GN {
 namespace EHDG {
-struct State : SWE::EHDG::State {
+struct State : SWE_SIM::State {
     State() = default;
     State(const uint ndof)
-        : SWE::EHDG::State(ndof),
+        : SWE_SIM::State(ndof),
           dbath(GN::n_dimensions, ndof),
           dze(GN::n_dimensions, ndof),
           du(GN::n_du_terms, ndof),

@@ -3,10 +3,10 @@
 
 namespace GN {
 namespace EHDG {
-struct Boundary : SWE::EHDG::Boundary {
+struct Boundary : SWE_SIM::Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
-        : SWE::EHDG::Boundary(ngp),
+        : SWE_SIM::Boundary(ngp),
           ze_hat_at_gp(ngp),
           bath_hat_at_gp(ngp),
           dbath_hat_at_gp(GN::n_dimensions, ngp),

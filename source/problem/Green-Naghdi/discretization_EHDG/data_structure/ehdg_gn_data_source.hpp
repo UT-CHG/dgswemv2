@@ -3,9 +3,9 @@
 
 namespace GN {
 namespace EHDG {
-struct Source : SWE::EHDG::Source {
+struct Source : SWE_SIM::Source {
     Source() = default;
-    Source(const uint nnode) : SWE::EHDG::Source(nnode) {}
+    Source(const uint nnode) : SWE_SIM::Source(nnode) {}
 };
 }
 }
