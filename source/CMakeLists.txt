@@ -1,17 +1,3 @@
-if (SWE)
-  list(APPEND SOURCES
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-  )
-  list (APPEND PROBLEM_FLAGS "${PROBLEM_FLAGS} -DBUILD_SWE")
-endif()
-
-if (GN)
-  list(APPEND SOURCES
-    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-  )
-  list (APPEND PROBLEM_FLAGS "${PROBLEM_FLAGS} -DBUILD_SWE")
-endif()
-
 #add_executable(
 #  RKDG_SWE_SERIAL
 #  ${PROJECT_SOURCE_DIR}/source/problem/SWE/discretization_RKDG/main_files/rkdg_main_swe.cpp

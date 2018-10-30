@@ -99,6 +99,20 @@ list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
+if (SWE)
+  list(APPEND SOURCES
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  )
+  list (APPEND PROBLEM_FLAGS "${PROBLEM_FLAGS} -DBUILD_SWE")
+endif()
+
+if (GN)
+  list(APPEND SOURCES
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  )
+  list (APPEND PROBLEM_FLAGS "${PROBLEM_FLAGS} -DBUILD_SWE")
+endif()
+
 include_directories(source)
 
 add_subdirectory(test)

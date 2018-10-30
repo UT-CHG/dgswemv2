@@ -10,7 +10,6 @@ add_executable(
   partitioner
   partitioner.cpp
   ${SOURCES}
-  ${SWE_SOURCES}
   ${PARTITIONER_SOURCES}
 )
 

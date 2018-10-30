@@ -170,6 +170,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_include_directories(test_element_triangle_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_element_triangle_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_element_triangle_exe ${YAML_CPP_LIBRARIES})
 
@@ -188,6 +189,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_include_directories(test_boundary_interface_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_boundary_interface_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_boundary_interface_exe ${YAML_CPP_LIBRARIES})
 
@@ -207,6 +209,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
+target_include_directories(test_edges_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_edges_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_edges_exe ${YAML_CPP_LIBRARIES})
 
@@ -221,6 +224,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
+target_include_directories(test_rk_stepper_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_rk_stepper_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_rk_stepper_exe ${YAML_CPP_LIBRARIES})
 
@@ -252,6 +256,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
 )
 
+target_include_directories(test_wetting_drying_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_wetting_drying_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_wetting_drying_exe ${YAML_CPP_LIBRARIES})
 
@@ -283,6 +288,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
+target_include_directories(test_swe_inputs_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_swe_inputs_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_swe_inputs_exe ${YAML_CPP_LIBRARIES})
 
@@ -300,6 +306,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
+target_include_directories(test_input_parameters_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
 set_target_properties(test_input_parameters_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
 target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
 
