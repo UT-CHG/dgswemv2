@@ -7,7 +7,7 @@
 #include "sim_unit_ompi.hpp"
 
 template <typename ProblemType>
-class OMPISimulation {
+class OMPISimulation : public OMPISimulationBase {
   private:
     uint n_steps;
 
