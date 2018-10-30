@@ -6,6 +6,9 @@
 struct HPXSimulationUnitBase
 //    : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
     : public hpx::components::abstract_managed_component_base<HPXSimulationUnitBase> {
+
+    virtual ~HPXSimulationUnitBase() = default;
+
     virtual hpx::future<void> Preprocessor() = 0;
     hpx::future<void> Preprocessor_() { return Preprocessor(); }
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnitBase, Preprocessor_, PreprocessorAction);
