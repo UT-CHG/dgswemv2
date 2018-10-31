@@ -157,8 +157,7 @@ struct Problem {
 
     /* Dispersive correction part */
 
-    static void dispersive_correction_serial(ProblemStepperType& stepper,
-                                             ProblemDiscretizationType& discretization);
+    static void dispersive_correction_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
 
     static void compute_derivatives_serial(const ProblemStepperType& stepper,
                                            ProblemDiscretizationType& discretization);

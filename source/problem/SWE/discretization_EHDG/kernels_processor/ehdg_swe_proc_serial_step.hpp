@@ -62,7 +62,7 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
             abort();
     });
     /* Local Step */
-    
+
     ++stepper;
 }
 }

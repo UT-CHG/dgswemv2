@@ -38,8 +38,7 @@ void Problem::step_serial(SerialSimType* sim) {
     }
 }
 
-void Problem::dispersive_correction_serial(ProblemStepperType& stepper,
-                                           ProblemDiscretizationType& discretization) {
+void Problem::dispersive_correction_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
     // Compute du, ddu
     Problem::compute_derivatives_serial(stepper, discretization);
 
