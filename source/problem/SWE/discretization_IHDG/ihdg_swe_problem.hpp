@@ -148,7 +148,7 @@ struct Problem {
     static void step_serial(SerialSimType* sim);
 
     template <typename StepperType, typename ProblemType>
-    static void stage_serial(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+    static void stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);

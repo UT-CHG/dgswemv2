@@ -92,8 +92,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
 
-        // KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
-        // PCSetType(global_data.dc_pc, PCLU);
+        KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
+        PCSetType(global_data.dc_pc, PCLU);
 
         MPI_Scatter(&total_dc_global_dof_offsets.front(),
                     1,

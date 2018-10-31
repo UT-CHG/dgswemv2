@@ -15,8 +15,6 @@ void Problem::step_serial(SerialSimType* sim) {
         }
 
         SWE_SIM::Problem::stage_serial(sim->stepper, sim->discretization);
-
-        ++(sim->stepper);
     }
 
     for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
@@ -25,8 +23,6 @@ void Problem::step_serial(SerialSimType* sim) {
         }
 
         Problem::dispersive_correction_serial(sim->stepper, sim->discretization);
-
-        ++(sim->stepper);
     }
 
     for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
@@ -35,8 +31,6 @@ void Problem::step_serial(SerialSimType* sim) {
         }
 
         SWE_SIM::Problem::stage_serial(sim->stepper, sim->discretization);
-
-        ++(sim->stepper);
     }
 
     if (sim->writer.WritingOutput()) {
@@ -44,7 +38,7 @@ void Problem::step_serial(SerialSimType* sim) {
     }
 }
 
-void Problem::dispersive_correction_serial(const ProblemStepperType& stepper,
+void Problem::dispersive_correction_serial(ProblemStepperType& stepper,
                                            ProblemDiscretizationType& discretization) {
     // Compute du, ddu
     Problem::compute_derivatives_serial(stepper, discretization);
@@ -76,6 +70,8 @@ void Problem::dispersive_correction_serial(const ProblemStepperType& stepper,
 
         stepper.UpdateState(elt);
     });
+
+    ++stepper;
 }
 }
 }

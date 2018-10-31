@@ -14,8 +14,6 @@ void Problem::step_serial(SerialSimType* sim) {
         }
 
         Problem::stage_serial(sim->stepper, sim->discretization);
-
-        ++(sim->stepper);
     }
 
     if (sim->writer.WritingOutput()) {
@@ -24,7 +22,7 @@ void Problem::step_serial(SerialSimType* sim) {
 }
 
 template <typename StepperType, typename ProblemType>
-void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
+void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
     discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
         const uint stage = stepper.GetStage();
 
@@ -93,6 +91,8 @@ void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<Problem
         if (nan_found)
             abort();
     });
+
+    ++stepper;
 }
 }
 }

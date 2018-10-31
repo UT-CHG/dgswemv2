@@ -13,8 +13,6 @@ void Problem::step_serial(SerialSimType* sim) {
         }
 
         Problem::stage_serial(sim->stepper, sim->discretization);
-
-        ++(sim->stepper);
     }
 
     if (sim->writer.WritingOutput()) {
@@ -23,7 +21,7 @@ void Problem::step_serial(SerialSimType* sim) {
 }
 
 template <typename StepperType, typename ProblemType>
-void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
+void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_interface_kernel(stepper, intface); });
@@ -64,6 +62,8 @@ void Problem::stage_serial(const StepperType& stepper, HDGDiscretization<Problem
             abort();
     });
     /* Local Step */
+    
+    ++stepper;
 }
 }
 }

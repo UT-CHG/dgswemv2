@@ -102,6 +102,8 @@ void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnit
 
             sim_units[su_id]->stepper.UpdateState(elt);
         });
+
+        ++(sim_units[su_id]->stepper);
     }
 }
 }
