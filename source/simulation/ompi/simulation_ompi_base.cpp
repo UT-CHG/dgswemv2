@@ -17,4 +17,5 @@ std::unique_ptr<OMPISimulationBase> OMPISimulationFactory::Create(const std::str
     } else {
         throw std::runtime_error{"Input file has no node 'problem' with field 'name'\n"};
     }
+    return nullptr;
 }

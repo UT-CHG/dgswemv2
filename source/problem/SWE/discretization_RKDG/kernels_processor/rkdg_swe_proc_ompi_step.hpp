@@ -7,6 +7,7 @@ namespace SWE {
 namespace RKDG {
 template <typename OMPISimType>
 void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    assert(sim->sim_units.size() > 0);
     for (uint stage = 0; stage < sim->sim_units[0]->stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim->sim_units[su_id]->parser.ParsingInput()) {

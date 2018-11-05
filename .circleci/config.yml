@@ -112,9 +112,9 @@ workflows:
  #     - rkdg_run_parallel_correctness:
  #         requires:
  #           - build_dgswemv2
- #     - rkdg_run_parallel_weirs:
- #         requires:
- #           - build_dgswemv2
+      - rkdg_run_parallel_weirs:
+          requires:
+            - build_dgswemv2
  #     - ehdg_run_parallel_correctness:
  #         requires:
  #           - build_dgswemv2
