@@ -60,8 +60,8 @@ jobs:
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
-		-DRKDG=On \
-		-DEHDG=On \
+                -DRKDG=On \
+                -DEHDG=On \
                 -DBUILD_EXAMPLES=On \
                 /usr/dgswemv2
             make
