@@ -10,7 +10,9 @@ std::unique_ptr<OMPISimulationBase> OMPISimulationFactory::Create(const std::str
         std::string problem_name = input_["problem"]["name"].as<std::string>();
 
         if ( problem_name == "rkdg_swe" ) {
-            return std::make_unique<OMPISimulation<SWE::RKDG::Problem>>(input_string);
+            return OMPISimulationFactory::CreateSimulation<SWE::RKDG::Problem>(input_string);
+        } else if (problem_name == "ehdg_swe") {
+            return OMPISimulationFactory::CreateSimulation<SWE::EHDG::Problem>(input_string);
         } else {
             throw std::runtime_error{"Unknown problem name: "+problem_name};
         }

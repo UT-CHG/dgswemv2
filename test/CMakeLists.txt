@@ -78,6 +78,16 @@ add_test(
 )
 
 add_executable(
+  test_is_defined_exe
+  test_is_defined.cpp
+)
+
+add_test(
+  Unit_is_defined
+  test_is_defined_exe
+)
+
+add_executable(
   test_adcirc_format_exe
   test_adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp

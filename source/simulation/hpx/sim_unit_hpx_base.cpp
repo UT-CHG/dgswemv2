@@ -16,7 +16,9 @@ HPXSimulationUnitClient HPXSimulationUnitFactory::Create(const hpx::naming::id_t
         std::string problem_name = input_["problem"]["name"].as<std::string>();
 
         if ( problem_name == "rkdg_swe" ) {
-            return hpx::components::new_<HPXSimulationUnit<SWE::RKDG::Problem>>(here, input_string, locality_id, submesh_id);
+            return HPXSimulationUnitFactory::CreateSimulationUnit<SWE::RKDG::Problem>(here,input_string, locality_id, submesh_id);
+        } else if ( problem_name == "ehdg_swe" ) {
+            return HPXSimulationUnitFactory::CreateSimulationUnit<SWE::EHDG::Problem>(here,input_string, locality_id, submesh_id);
         } else {
             throw std::runtime_error{"Unknown problem name: "+problem_name};
         }

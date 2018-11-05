@@ -21,6 +21,28 @@ jobs:
           paths:
             - /usr/dgswemv2
 
+  #this tests if the sfinae to build only SWE support is properly working
+  build_dgswemv2_swe_only:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Building dgswemv2---SWE only
+          command: |
+            cmake --version
+            rm -rf /usr/dgswemv2/build/*
+            cmake \
+                -DCMAKE_PREFIX_PATH=/usr/install \
+                -DCMAKE_BUILD_TYPE=Debug \
+                -DSET_VERBOSE=On \
+                -DCOMPILER_WARNINGS=On \
+                -DUSE_OMPI=On \
+                -DUSE_HPX=On \
+                -DBUILD_EXAMPLES=On \
+                /usr/dgswemv2
+            make
+
   build_dgswemv2:
     <<: *defaults
     steps:
@@ -38,6 +60,8 @@ jobs:
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
+		-DRKDG=On \
+		-DEHDG=On \
                 -DBUILD_EXAMPLES=On \
                 /usr/dgswemv2
             make
@@ -103,6 +127,9 @@ workflows:
   build-and-test:
     jobs:
       - checkout_code
+      - build_dgswemv2_swe_only:
+          requires:
+            - checkout_code
       - build_dgswemv2:
           requires:
             - checkout_code

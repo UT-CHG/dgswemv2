@@ -116,6 +116,9 @@ endif()
 if (RKDG)
   set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DRKDG_SUPPORT")
 endif()
+if (RKDG)
+  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DEHDG_SUPPORT")
+endif()
 
 include_directories(source)
 
