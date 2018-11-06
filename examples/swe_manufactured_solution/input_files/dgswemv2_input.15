@@ -19,7 +19,7 @@ timestepping:
 polynomial_order: 1
 
 problem:
-  name: swe
+  name: rkdg_swe
   gravity: 9.81
   initial_conditions:
     type: Function

@@ -93,7 +93,7 @@ jobs:
       - run:
           name: RKDG Parallel Manufactured Solution
           command: |
-            /usr/dgswemv2/scripts/correctness/test_rkdg_parallel_correctness.sh
+            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh rkdg_swe
 
   rkdg_run_parallel_weirs:
     <<: *defaults
@@ -119,7 +119,7 @@ jobs:
           no_output_timeout: 60m
           name: EHDG Parallel Manufactured Solution
           command: |
-            /usr/dgswemv2/scripts/correctness/test_ehdg_parallel_correctness.sh
+            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh ehdg_swe
 
 
 workflows:
@@ -136,14 +136,14 @@ workflows:
       - run_unit_tests:
           requires:
             - build_dgswemv2
- #     - rkdg_run_parallel_correctness:
- #         requires:
- #           - build_dgswemv2
+      - rkdg_run_parallel_correctness:
+          requires:
+            - build_dgswemv2
       - rkdg_run_parallel_weirs:
           requires:
             - build_dgswemv2
- #     - ehdg_run_parallel_correctness:
- #         requires:
- #           - build_dgswemv2
+      - ehdg_run_parallel_correctness:
+          requires:
+            - build_dgswemv2
 
             

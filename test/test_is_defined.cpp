@@ -13,6 +13,6 @@ int main() {
               << "is_defined<Defined>: " << std::boolalpha << Utilities::is_defined<Defined>::value
               << " (should be true)" << std::endl;
 
-    return !Utilities::is_defined<NotDefined>::value && Utilities::is_defined<Defined>::value;
-
+    return !(!Utilities::is_defined<NotDefined>::value &&
+             Utilities::is_defined<Defined>::value);
 }
