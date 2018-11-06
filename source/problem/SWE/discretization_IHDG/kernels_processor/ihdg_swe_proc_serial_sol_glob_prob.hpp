@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType>
-bool Problem::serial_solve_global_problem(const StepperType& stepper, ProblemDiscretizationType& discretization) {
+template <typename StepperType, typename ProblemType>
+bool Problem::serial_solve_global_problem(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
     auto& global_data = discretization.global_data;
 
     SparseMatrix<double>& delta_hat_global = global_data.delta_hat_global;

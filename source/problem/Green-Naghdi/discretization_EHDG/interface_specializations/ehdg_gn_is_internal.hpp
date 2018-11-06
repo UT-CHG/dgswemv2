@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 namespace ISP {
-class Internal : public SWE::EHDG::ISP::Internal {
+class Internal : public SWE_SIM::ISP::Internal {
   public:
     template <typename EdgeInterfaceType>
     void ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int);

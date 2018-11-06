@@ -1,3 +1,6 @@
+//#define EHDG_SWE
+#define IHDG_SWE
+
 #include "general_definitions.hpp"
 
 // SWE part of the problem
@@ -7,11 +10,21 @@
 #include "analytical_gn_source_functions.hpp"
 #include "analytical_gn_true_solution_functions.hpp"
 
+#ifdef EHDG_SWE
 #include "problem/SWE/discretization_EHDG/ehdg_swe_problem.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_kernels_preprocessor.hpp"
 
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_pre_serial.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_serial_step.hpp"
+#endif
+
+#ifdef IHDG_SWE
+#include "problem/SWE/discretization_IHDG/ihdg_swe_problem.hpp"
+#include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_kernels_preprocessor.hpp"
+
+#include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_pre_serial.hpp"
+#include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_proc_serial_step.hpp"
+#endif
 
 // GN part of the problem
 #include "problem/Green-Naghdi/gn_definitions.hpp"
@@ -23,7 +36,7 @@
 #include "problem/Green-Naghdi/discretization_EHDG/kernels_processor/ehdg_gn_proc_serial_step.hpp"
 
 #include "simulation/serial/simulation.hpp"
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {

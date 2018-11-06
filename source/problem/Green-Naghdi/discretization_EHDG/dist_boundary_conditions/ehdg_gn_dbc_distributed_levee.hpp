@@ -6,11 +6,11 @@
 namespace GN {
 namespace EHDG {
 namespace DBC {
-class DistributedLevee : public SWE::EHDG::DBC::DistributedLevee {
+class DistributedLevee : public SWE_SIM::DBC::DistributedLevee {
   public:
     DistributedLevee() = default;
     DistributedLevee(const DBDataExchanger& exchanger, const std::vector<SWE::LeveeInput>& levee_input)
-        : SWE::EHDG::DBC::DistributedLevee(exchanger, levee_input) {}
+        : SWE_SIM::DBC::DistributedLevee(exchanger, levee_input) {}
 
     template <typename EdgeDistributedType>
     void ComputeGlobalKernelsDC(EdgeDistributedType& edge_dbound);

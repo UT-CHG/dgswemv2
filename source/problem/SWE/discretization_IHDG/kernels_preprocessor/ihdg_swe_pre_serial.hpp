@@ -3,7 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
+template <typename ProblemType>
+void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                   const ProblemInputType& problem_specific_input) {
     Problem::initialize_data_serial(discretization.mesh, problem_specific_input);
 

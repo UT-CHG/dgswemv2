@@ -7,7 +7,7 @@ namespace GN {
 namespace EHDG {
 void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
                                   const ProblemInputType& problem_specific_input) {
-    SWE::EHDG::Problem::preprocessor_serial(discretization, problem_specific_input);
+    SWE_SIM::Problem::preprocessor_serial(discretization, problem_specific_input);
 
     Problem::initialize_dc_data_serial(discretization.mesh, problem_specific_input);
 

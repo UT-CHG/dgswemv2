@@ -3,17 +3,28 @@
 
 namespace GN {
 namespace EHDG {
-struct State : SWE::EHDG::State {
+struct State : SWE_SIM::State {
     State() = default;
     State(const uint ndof)
-        : SWE::EHDG::State(ndof),
+        : SWE_SIM::State(ndof),
+#ifdef IHDG_SWE
+          rhs(SWE::n_variables, ndof),
+          solution(SWE::n_variables, ndof),
+#endif
           dbath(GN::n_dimensions, ndof),
           dze(GN::n_dimensions, ndof),
           du(GN::n_du_terms, ndof),
           ddu(GN::n_ddu_terms, ndof),
           ddbath(GN::n_ddbath_terms, ndof),
           dddbath(GN::n_dddbath_terms, ndof),
-          w1(GN::n_dimensions, ndof) {}
+          w1(GN::n_dimensions, ndof) {
+    }
+
+    // These are not present in IHDG simulations
+#ifdef IHDG_SWE
+    HybMatrix<double, SWE::n_variables> rhs;
+    HybMatrix<double, SWE::n_variables> solution;
+#endif
 
     HybMatrix<double, GN::n_dimensions> dbath;
     HybMatrix<double, GN::n_dimensions> dze;

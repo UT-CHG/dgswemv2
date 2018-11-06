@@ -12,16 +12,16 @@
 #include "manufactured_swe_source_functions.hpp"
 #include "manufactured_swe_true_solution_functions.hpp"
 
-#include "problem/SWE/discretization_EHDG/ehdg_swe_problem.hpp"
-#include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_kernels_preprocessor.hpp"
+#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
 
-#include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_pre_hpx.hpp"
-#include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_hpx_stage.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_hpx.hpp"
+#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_hpx_stage.hpp"
 
 #include "simulation/hpx/simulation_hpx.hpp"
 #include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 
-REGISTER_HPX_COMPONENTS(SWE::EHDG::Problem);
+REGISTER_HPX_COMPONENTS(SWE::RKDG::Problem);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -38,15 +38,12 @@ int hpx_main(int argc, char* argv[]) {
 
     const std::vector<hpx::naming::id_type> localities = hpx::find_all_localities();
 
-    std::vector<HPXSimulationClient<SWE::EHDG::Problem>> simulation_clients;
+    std::vector<HPXSimulationClient<SWE::RKDG::Problem>> simulation_clients;
     simulation_clients.reserve(localities.size());
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
-        hpx::future<hpx::id_type> simulation_id =
-            hpx::new_<hpx::components::simple_component<HPXSimulation<SWE::EHDG::Problem>>>(locality, input_string);
-
-        simulation_clients.emplace_back(std::move(simulation_id));
+        simulation_clients.emplace_back(hpx::new_<HPXSimulation<SWE::RKDG::Problem>>(locality, input_string));
     }
 
     std::vector<hpx::future<void>> run_futures;

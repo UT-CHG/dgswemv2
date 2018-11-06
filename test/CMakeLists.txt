@@ -231,7 +231,7 @@ add_test(
 add_executable(
   test_rk_stepper_exe
   test_rk_stepper.cpp
-  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
 )
 
 target_include_directories(test_rk_stepper_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
@@ -263,7 +263,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
-  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
 )
 
 target_include_directories(test_wetting_drying_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
@@ -538,7 +538,7 @@ if(USE_HPX)
   add_executable(
     test_rk_stepper_serialization_exe
     test_rk_stepper_serialization.cpp
-    ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+    ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
   )
 
   set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")

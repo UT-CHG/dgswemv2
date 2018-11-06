@@ -158,12 +158,13 @@ class Master {
         const uint bound_id,
         const std::vector<Point<dimension - 1>>& z_boundary) = 0;
 
-    template <typename InputArrayType>
-    decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
-    template <typename InputArrayType>
-    decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
-    template <typename InputArrayType>
-    decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
+    // The following member methods have to be defined (cannot define templated member methods as virual)
+    // template <typename InputArrayType>
+    // decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
+    // template <typename InputArrayType>
+    // decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
+    // template <typename InputArrayType>
+    // decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 };
 }
 
@@ -217,6 +218,69 @@ class Shape {
 #endif
 };
 }
+
+/**
+ * Base class for the stepper types for a simulation.
+ */
+class Stepper {
+  public:
+    /**
+     * Get the order accuracy of the stepper
+     */
+    virtual uint GetOrder() const = 0;
+    /**
+     * Get the number of stages per timestep
+     */
+    virtual uint GetNumStages() const = 0;
+    /**
+     * Get the size of the timestep (in seconds)
+     */
+    virtual double GetDT() const = 0;
+
+    /**
+     * Set the size of the timestep (in seconds)
+     */
+    virtual void SetDT(double dt) = 0;
+
+    /**
+     * Get the current step number
+     */
+    virtual uint GetStep() const = 0;
+    /**
+     * Get the current stage number
+     */
+    virtual uint GetStage() const = 0;
+    /**
+     * Get the current timestamp
+     * The timestamp is the total number of stages that have been executed up to this point.
+     */
+    virtual uint GetTimestamp() const = 0;
+
+    /**
+     * Get the simulated time at the current step and stage
+     */
+    virtual double GetTimeAtCurrentStage() const = 0;
+    /**
+     * Get ramp factor
+     * Often for stability reasons, we scale boundary or source terms by a number that goes from 0 to 1
+     * as the simulation begins. We refer to this factor as ramp. In this stepper, we
+     * use a hyperbolic tangent function. When `t = ramp_duration`, `ramp = tanh(2)`.
+     */
+    virtual double GetRamp() const = 0;
+
+    /**
+     * Prefix incrementor advances the stepper by one stage
+     * This operation will update all of the internal states of the stepper by one stage.
+     */
+    virtual Stepper& operator++() = 0;
+
+    // The following member method has to be defined (cannot define templated member methods as virual)
+    /**
+     * This operation will do one time stage update for an element
+     */
+    // template <typename ElementType>
+    // void UpdateState(ElementType& elt) const;
+};
 
 #define PI 3.14159265359
 

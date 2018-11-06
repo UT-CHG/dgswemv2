@@ -1,6 +1,6 @@
-#include "rk_stepper.hpp"
+#include "explicit_ssp_rk_stepper.hpp"
 
-RKStepper::RKStepper(const StepperInput& stepper_input)
+ESSPRKStepper::ESSPRKStepper(const StepperInput& stepper_input)
     : order(stepper_input.order),
       nstages(stepper_input.nstages),
       dt(stepper_input.dt),
@@ -13,7 +13,7 @@ RKStepper::RKStepper(const StepperInput& stepper_input)
     this->InitializeCoefficients();
 }
 
-void RKStepper::InitializeCoefficients() {
+void ESSPRKStepper::InitializeCoefficients() {
     // Allocate the time stepping arrays
     this->ark.reserve(this->nstages);
     this->brk.reserve(this->nstages);

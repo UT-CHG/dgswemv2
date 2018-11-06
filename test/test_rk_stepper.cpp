@@ -1,4 +1,4 @@
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 #include "preprocessor/input_parameters.hpp"
 
 #include <cmath>
@@ -37,7 +37,7 @@ int main() {
         stepper_input.order   = pair.second;
         stepper_input.dt      = dt;
 
-        RKStepper rk_stepper(stepper_input);
+        ESSPRKStepper explicit_ssp_rk_stepper(stepper_input);
 
         double t = 0;
 
@@ -46,17 +46,19 @@ int main() {
         std::vector<State> rhs(pair.first);
 
         for (uint step = 0; step < nsteps; ++step) {
-            for (uint stage = 0; stage < rk_stepper.GetNumStages(); ++stage) {
-                rhs[stage]   = compute_rhs(y[stage], rk_stepper.GetTimeAtCurrentStage());
+            for (uint stage = 0; stage < explicit_ssp_rk_stepper.GetNumStages(); ++stage) {
+                rhs[stage]   = compute_rhs(y[stage], explicit_ssp_rk_stepper.GetTimeAtCurrentStage());
                 y[stage + 1] = {0, 0};
                 for (uint s = 0; s < stage + 1; ++s) {
-                    y[stage + 1][0] += rk_stepper.ark[stage][s] * y[s][0] + dt * rk_stepper.brk[stage][s] * rhs[s][0];
+                    y[stage + 1][0] += explicit_ssp_rk_stepper.ark[stage][s] * y[s][0] +
+                                       dt * explicit_ssp_rk_stepper.brk[stage][s] * rhs[s][0];
 
-                    y[stage + 1][1] += rk_stepper.ark[stage][s] * y[s][1] + dt * rk_stepper.brk[stage][s] * rhs[s][1];
+                    y[stage + 1][1] += explicit_ssp_rk_stepper.ark[stage][s] * y[s][1] +
+                                       dt * explicit_ssp_rk_stepper.brk[stage][s] * rhs[s][1];
                 }
-                ++rk_stepper;
+                ++explicit_ssp_rk_stepper;
             }
-            std::swap(y[0], y[rk_stepper.GetNumStages()]);
+            std::swap(y[0], y[explicit_ssp_rk_stepper.GetNumStages()]);
             t += dt;
         }
 

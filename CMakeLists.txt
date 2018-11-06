@@ -87,7 +87,7 @@ list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 
-  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/rk_stepper.cpp
+  ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
 
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp

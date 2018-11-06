@@ -5,7 +5,7 @@
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
 
-#include "simulation/stepper/rk_stepper.hpp"
+#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
@@ -27,7 +27,7 @@ namespace SWE {
 namespace RKDG {
 struct Problem {
     using ProblemInputType   = SWE::Inputs;
-    using ProblemStepperType = RKStepper;
+    using ProblemStepperType = ESSPRKStepper;
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
@@ -106,7 +106,7 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    static void stage_serial(const ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
+    static void stage_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
