@@ -20,8 +20,18 @@ if(USE_OMPI)
   )
 
   set_target_properties(dgswemv2-ompi PROPERTIES COMPILE_FLAGS "${OpenMP_CXX_FLAGS} ${LINALG_FLAG} ${PROBLEM_FLAGS}")
-  target_include_directories(dgswemv2-ompi PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH})
-  target_link_libraries(dgswemv2-ompi ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES} ${OpenMP_CXX_FLAGS})
+  target_include_directories(dgswemv2-ompi PRIVATE ${YAML_CPP_INCLUDE_DIR} ${MPI_CXX_INCLUDE_PATH} ${PETSC_INCLUDES})
+  target_link_libraries(dgswemv2-ompi ${YAML_CPP_LIBRARIES} ${MPI_CXX_LIBRARIES} ${OpenMP_CXX_FLAGS} ${PETSC_LIBRARIES})
+
+  message(${PETSC_INCLUDES} ${PETSC_LIBRARIES})
+
+  if(PETSC_FOUND)
+    get_target_property(previous dgswemv2-ompi COMPILE_FLAGS)
+    set_target_properties(dgswemv2-ompi PROPERTIES COMPILE_FLAGS "${previous} -DHAS_PETSC")
+    #target_include_directories(dgswemv2-ompi PRIVATE ${PETSC_INCLUDES})
+    #target_link_libraries(dgswemv2-ompi ${PETSC_LIBRARIES})
+  endif()
+
   install(TARGETS dgswemv2-ompi DESTINATION bin)
 endif()
 

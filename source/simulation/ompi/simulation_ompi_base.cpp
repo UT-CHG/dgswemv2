@@ -13,6 +13,8 @@ std::unique_ptr<OMPISimulationBase> OMPISimulationFactory::Create(const std::str
             return OMPISimulationFactory::CreateSimulation<SWE::RKDG::Problem>(input_string);
         } else if (problem_name == "ehdg_swe") {
             return OMPISimulationFactory::CreateSimulation<SWE::EHDG::Problem>(input_string);
+        } else if (problem_name == "ihdg_swe") {
+            return OMPISimulationFactory::CreateSimulation<SWE::IHDG::Problem>(input_string);
         } else {
             throw std::runtime_error{"Unknown problem name: "+problem_name};
         }

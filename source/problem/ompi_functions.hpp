@@ -14,6 +14,12 @@
 #include "problem/SWE/discretization_EHDG/kernels_processor/ehdg_swe_proc_ompi_step.hpp"
 
 #endif
+#ifdef IHDG_SUPPORT
+
+#include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_pre_ompi.hpp"
+#include "problem/SWE/discretization_IHDG/kernels_processor/ihdg_swe_proc_ompi_step.hpp"
+
+#endif
 #endif
 
 #endif

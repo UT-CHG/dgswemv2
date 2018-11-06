@@ -8,6 +8,9 @@ struct Problem;
 namespace EHDG {
 struct Problem;
 }
+namespace IHDG {
+struct Problem;
+}
 }
 
 #ifdef SWE_SUPPORT
@@ -18,6 +21,10 @@ struct Problem;
 #ifdef EHDG_SUPPORT
 #include "problem/SWE/discretization_EHDG/ehdg_swe_problem.hpp"
 #include "problem/SWE/discretization_EHDG/kernels_preprocessor/ehdg_swe_kernels_preprocessor.hpp"
+#endif
+#ifdef IHDG_SUPPORT
+#include "problem/SWE/discretization_IHDG/ihdg_swe_problem.hpp"
+#include "problem/SWE/discretization_IHDG/kernels_preprocessor/ihdg_swe_kernels_preprocessor.hpp"
 #endif
 #endif
 

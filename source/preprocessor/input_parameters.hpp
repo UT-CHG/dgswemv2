@@ -405,7 +405,8 @@ inline SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_
     YAML::Node swe_node = input_file["problem"];
 
     if (swe_node["name"].as<std::string>() == "rkdg_swe" ||
-        swe_node["name"].as<std::string>() == "ehdg_swe" ) {
+        swe_node["name"].as<std::string>() == "ehdg_swe" ||  
+        swe_node["name"].as<std::string>() == "ihdg_swe") {
         return SWE::Inputs(swe_node);
     } else {
         std::string err_msg("Error: Shallow water type must specify a SWE yaml-node\n");

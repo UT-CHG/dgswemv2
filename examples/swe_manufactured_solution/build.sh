@@ -64,7 +64,7 @@ make_swe_manufactured_solution() {
 
 	if [ "${TARGET}" == "serial" ]; then
 	    sed -i.tmp '/return 0/i\
-	    simulation->ComputeL2Residual();\' ${MAIN_DIR}/dgswemv2-serial.cpp
+	    simulation->ComputeL2Residual();' ${MAIN_DIR}/dgswemv2-serial.cpp
 	elif [ "${TARGET}" == "ompi" ]; then
 	    sed -i.tmp '/        MPI_Finalize();/i\
                 simulation->ComputeL2Residual();\' ${MAIN_DIR}/dgswemv2-ompi.cpp
