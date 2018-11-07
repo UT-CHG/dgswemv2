@@ -196,11 +196,29 @@ void HPXSimulationUnit<ProblemType>::on_migrated() {
 }
 */
 
-using RKDG_SWE_SimUnit = HPXSimulationUnit<SWE::RKDG::Problem>;
+struct HPXEmptySimUnit : HPXSimulationUnitBase, hpx::components::managed_component_base<HPXEmptySimUnit> {
+    //HPX requires these typedefs to properly disambiguate look ups
+    using wrapping_type = typename hpx::components::managed_component_base<HPXEmptySimUnit>::wrapping_type;
+    using type_holder = HPXEmptySimUnit;
+    using base_type_holder = HPXSimulationUnitBase;
+
+    hpx::future<void> Preprocessor() { return hpx::make_ready_future(); }
+
+    void Launch() {}
+
+    hpx::future<void> Step() { return hpx::make_ready_future(); }
+    double ResidualL2() { return 0.; }
+};
+
+using RKDG_SWE_SimUnit = std::conditional<Utilities::is_defined<SWE::RKDG::Problem>::value,
+                                          HPXSimulationUnit<SWE::RKDG::Problem>,
+                                          HPXEmptySimUnit>::type;
 using RKDG_SWE_Server = hpx::components::managed_component<RKDG_SWE_SimUnit>;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(RKDG_SWE_Server, RKDG_SWE_SimUnit, "HPXSimulationUnitBase");
 
-using EHDG_SWE_SimUnit = HPXSimulationUnit<SWE::EHDG::Problem>;
+using EHDG_SWE_SimUnit = std::conditional<Utilities::is_defined<SWE::EHDG::Problem>::value,
+                                          HPXSimulationUnit<SWE::EHDG::Problem>,
+                                          HPXEmptySimUnit>::type;
 using EHDG_SWE_Server = hpx::components::managed_component<EHDG_SWE_SimUnit>;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(EHDG_SWE_Server, EHDG_SWE_SimUnit, "HPXSimulationUnitBase");
 

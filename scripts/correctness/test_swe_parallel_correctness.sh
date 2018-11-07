@@ -18,7 +18,7 @@ else
     PROBLEM="rkdg_swe"
 fi
 
-source $DGSWEMV2_ROOT/examples/swe_manufactured_solution/build.sh
+source ${DGSWEMV2_ROOT_}/examples/swe_manufactured_solution/build.sh
 
 echo "Building mesh for manufactured solution..."
 cd $DGSWEMV2_ROOT_/mesh_generators
@@ -36,9 +36,9 @@ echo "Compiling code (if necessary)..."
 cd $DGSWEMV2_ROOT_/build
 make rectangular_mesh_generator
 make partitioner
-make_swe_manufactured_solution ${DGSWEMV2_ROOT} serial
-make_swe_manufactured_solution ${DGSWEMV2_ROOT} ompi
-make_swe_manufactured_solution ${DGSWEMV2_ROOT} hpx
+make_swe_manufactured_solution ${DGSWEMV2_ROOT_} serial
+make_swe_manufactured_solution ${DGSWEMV2_ROOT_} ompi
+make_swe_manufactured_solution ${DGSWEMV2_ROOT_} hpx
 echo ""
 echo "Setting up runtime files..."
 cd $HOME
