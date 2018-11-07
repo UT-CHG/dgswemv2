@@ -34,10 +34,10 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
+add_definitions(-std=c++14 -g)
 
 if(COMPILER_WARNINGS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  add_definitions(-Wall)
 endif()
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -62,7 +62,7 @@ endif()
 
 if(USE_EIGEN)
   find_package(Eigen3 REQUIRED)
-  set(LINALG_FLAG "-DUSE_EIGEN")
+  list(APPEND LINALG_DEFINITION USE_EIGEN)
   link_libraries(Eigen3::Eigen)
 endif()
 
@@ -70,7 +70,7 @@ if(USE_BLAZE)
   find_package(blaze REQUIRED)
   find_package(BLAS REQUIRED)
   find_package(LAPACK REQUIRED)
-  set(LINALG_FLAG "-DUSE_BLAZE")
+  list(APPEND LINALG_DEFINITION USE_BLAZE)
   link_libraries(blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
@@ -103,27 +103,27 @@ if (SWE)
   list(APPEND SOURCES
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
   )
-  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DSWE_SUPPORT")
+  list( APPEND PROBLEM_DEFINITIONS SWE_SUPPORT )
 endif()
 
 if (GN)
   list(APPEND SOURCES
     ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
   )
-  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DGN_SUPPORT")
+  list(APPEND PROBLEM_DEFINITIONS GN_SUPPORT)
 endif()
 
 if (RKDG)
-  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DRKDG_SUPPORT")
+  list(APPEND PROBLEM_DEFINITIONS RKDG_SUPPORT)
 endif()
 if (EHDG)
-  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DEHDG_SUPPORT")
+  list(APPEND PROBLEM_DEFINITIONS EHDG_SUPPORT)
 endif()
 if (IHDG)
   if(USE_OMPI)
     find_package(PETSc REQUIRED)
   endif()
-  set ( PROBLEM_FLAGS "${PROBLEM_FLAGS} -DIHDG_SUPPORT")
+  list(APPEND PROBLEM_DEFINITIONS IHDG_SUPPORT)
 endif()
 
 include_directories(source)
