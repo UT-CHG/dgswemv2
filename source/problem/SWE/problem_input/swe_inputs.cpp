@@ -2,15 +2,6 @@
 
 namespace SWE {
 Inputs::Inputs(YAML::Node& swe_node) {
-    if ( swe_node["name"] ) {
-        this->name = swe_node["name"].as<std::string>();
-
-        //check for acceptable names
-        if ( this->name != "rkdg_swe" && this->name != "ehdg_swe" && this->name != "ihdg_swe" ) {
-            throw std::runtime_error{"Fatal error: unknown problem name: "+this->name+'\n'};
-        }
-    }
-
     if (swe_node["gravity"]) {
         this->g = swe_node["gravity"].as<double>();
     } else {

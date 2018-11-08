@@ -99,6 +99,13 @@ list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
+#If solving the Green-Naghdi equations, SWE_SUPPORT is implicitly implied
+if (GN)
+  set(SWE ON)
+  set(EHDG ON)
+  set(IHDG ON) #implicitly requires PETSc for OMPI targets
+endif()
+
 if (SWE)
   list(APPEND SOURCES
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
@@ -107,9 +114,6 @@ if (SWE)
 endif()
 
 if (GN)
-  list(APPEND SOURCES
-    ${PROJECT_SOURCE_DIR}/source/problem/Green-Naghdi/problem_input/gn_inputs.cpp
-  )
   list(APPEND PROBLEM_DEFINITIONS GN_SUPPORT)
 endif()
 
@@ -133,45 +137,3 @@ add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)
 
 add_subdirectory(source)
-#[[if(RKDG_SWE)
-  add_subdirectory(source/problem/SWE/discretization_RKDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/rkdg_swe_manufactured_solution)
-  endif()
-endif()
-
-if(EHDG_SWE)
-  add_subdirectory(source/problem/SWE/discretization_EHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ehdg_swe_manufactured_solution)
-  endif()
-endif()
-
-if(IHDG_SWE)
-  if(USE_OMPI)
-    find_package(PETSc REQUIRED)
-  endif()
-
-  add_subdirectory(source/problem/SWE/discretization_IHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ihdg_swe_manufactured_solution)
-  endif()
-endif()
-
-if(EHDG_GN)
-  if(USE_OMPI)
-    find_package(PETSc REQUIRED)
-  endif()
-
-  add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ehdg_gn_analytical_solution)
-  endif()
-endif()
-
-if(IHDG_GN)
-  add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ihdg_gn_analytical_solution)
-  endif()
-endif()]]

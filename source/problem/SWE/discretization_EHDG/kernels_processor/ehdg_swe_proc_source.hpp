@@ -1,6 +1,8 @@
 #ifndef EHDG_SWE_PROC_SOURCE_HPP
 #define EHDG_SWE_PROC_SOURCE_HPP
 
+#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
+
 namespace SWE {
 namespace EHDG {
 template <typename StepperType, typename ElementType>

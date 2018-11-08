@@ -21,5 +21,14 @@
 
 #endif
 #endif
+#ifdef GN_SUPPORT
+#ifdef EHDG_SUPPORT
+
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_pre_ompi.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_processor/ehdg_gn_proc_ompi_step.hpp"
+
+#endif
+#endif
+
 
 #endif

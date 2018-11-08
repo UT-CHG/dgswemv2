@@ -22,4 +22,13 @@
 #endif
 #endif
 
+#ifdef GN_SUPPORT
+#ifdef EHDG_SUPPORT
+
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_pre_serial.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_processor/ehdg_gn_proc_serial_step.hpp"
+
+#endif
+#endif
+
 #endif

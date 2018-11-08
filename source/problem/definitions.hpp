@@ -13,6 +13,12 @@ struct Problem;
 }
 }
 
+namespace GN {
+namespace EHDG {
+struct Problem;
+}
+}
+
 #ifdef SWE_SUPPORT
 #ifdef RKDG_SUPPORT
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
@@ -29,7 +35,10 @@ struct Problem;
 #endif
 
 #ifdef GN_SUPPORT
-
+#ifdef EHDG_SUPPORT
+#include "problem/Green-Naghdi/discretization_EHDG/ehdg_gn_problem.hpp"
+#include "problem/Green-Naghdi/discretization_EHDG/kernels_preprocessor/ehdg_gn_kernels_preprocessor.hpp"
+#endif
 #endif
 
 #endif
