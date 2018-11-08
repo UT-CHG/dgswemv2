@@ -4,7 +4,7 @@
 # Build script for manufactured solution
 # Takes arguments:
 #  $1: path/to/dgswemv2
-#  $2  (optional) target type
+#  $2: (optional) target type
 #      must be one of (serial(default), ompi, hpx)
 #  $3: (optional) build_directory
 #      defaults to $1/build
@@ -90,14 +90,14 @@ make_swe_manufactured_solution() {
 
 	return ${status}
     else
-	echo "Usage:"
-	echo "    Build script for manufactured solution"
-	echo "    Takes arguments:"
-	echo "      1: path/to/dgswemv2"
-	echo "      2  (optional) target type"
-	echo "          must be one of (serial(default), ompi, hpx)"
-	echo "      3: (optional) build_directory"
-	echo "          defaults to $1/build"
+	echo 'Usage:'
+	echo '    Build script for manufactured solution'
+	echo '    Takes arguments:'
+	echo '      ${1}: path/to/dgswemv2'
+	echo '      ${2}: (optional) target type'
+	echo '            must be one of (serial(default), ompi, hpx)'
+	echo '      ${3}: (optional) build_directory'
+	echo '            defaults to ${1}/build'
 	return 1
     fi
 

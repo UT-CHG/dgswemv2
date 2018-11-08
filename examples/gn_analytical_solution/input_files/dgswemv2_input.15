@@ -1,0 +1,32 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Adcirc
+  file_name: rectangular_mesh.14
+  coordinate_system: cartesian
+
+timestepping:
+  start_time: 25-11-1987 00:00:00                
+  end_time: 25-11-1987 00:00:05                
+  dt: 0.01                           #in seconds
+  order: 1
+  nstages: 1
+
+polynomial_order: 1
+
+problem:
+  name: ehdg_gn
+  gravity: 9.81
+  density_air: 1.225
+  density_water: 1000
+  initial_conditions:
+    type: Function
+
+output:
+  path: output/
+  vtu:
+    frequency: 0.5

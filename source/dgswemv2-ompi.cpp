@@ -1,5 +1,8 @@
 #include <mpi.h>
 #include <omp.h>
+#ifdef HAS_PETSC
+#include <petscksp.h>
+#endif
 
 #include "general_definitions.hpp"
 
@@ -27,6 +30,10 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        #ifdef HAS_PETSC
+        PetscInitialize(&argc, &argv, (char*)0, NULL);
+        #endif
+
         std::string input_string = std::string(argv[1]);
 
         std::unique_ptr<OMPISimulationBase> simulation = OMPISimulationFactory::Create(input_string);
@@ -43,6 +50,8 @@ int main(int argc, char* argv[]) {
             std::cout << "Time Elapsed (in us): "
                       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
+
+        simulation->DestroyPETSc();
 
         MPI_Finalize();
 
