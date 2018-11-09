@@ -10,6 +10,7 @@ int main() {
         std::cout << "Beginning test 1\n";
 
         YAML::Node test;
+        test["name"] = std::string{"rkdg_swe"}; //must be set
         SWE::Inputs result(test);
 
         if (!Utilities::almost_equal(9.81, result.g)) {
@@ -35,10 +36,11 @@ int main() {
     {
         std::cout << "\nBeginning test 2\n";
         YAML::Node test;
+        test["name"] = std::string{"rkdg_swe"};
         test["gravity"] = 1.0;
 
         YAML::Node bf_node;
-        bf_node["type"]        = std::string("Chezy");
+        bf_node["type"]        = std::string{"Chezy"};
         bf_node["coefficient"] = 0.01;
 
         YAML::Node ic_node;
@@ -78,6 +80,7 @@ int main() {
         bf_node["coefficient"] = -0.01;
 
         YAML::Node test;
+        test["name"] = std::string{"rkdg_swe"};
         test["bottom_friction"] = bf_node;
 
         bool local_error{true};
@@ -102,6 +105,7 @@ int main() {
         YAML::Node ic_node;
         ic_node["type"] = "Function";
         YAML::Node test;
+        test["name"] = std::string{"rkdg_swe"};
         test["initial_conditions"] = ic_node;
 
         SWE::Inputs result(test);

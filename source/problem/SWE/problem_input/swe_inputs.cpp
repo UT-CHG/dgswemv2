@@ -2,6 +2,9 @@
 
 namespace SWE {
 Inputs::Inputs(YAML::Node& swe_node) {
+    assert(swe_node["name"]);
+    this->name = swe_node["name"].as<std::string>();
+
     if (swe_node["gravity"]) {
         this->g = swe_node["gravity"].as<double>();
     } else {
