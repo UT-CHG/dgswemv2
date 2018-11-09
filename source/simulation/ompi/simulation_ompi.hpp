@@ -117,7 +117,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
 #ifdef HAS_PETSC
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::DestroyPETSc() {
-    //this->sim_units[0]->discretization.global_data.destroy();
+    // this->sim_units[0]->discretization.global_data.destroy();
 }
 #endif
 

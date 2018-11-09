@@ -405,12 +405,11 @@ inline SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_
     if (input_file["problem"]) {
         YAML::Node swe_node = input_file["problem"];
 
-        if (swe_node["name"].as<std::string>() == "rkdg_swe" ||
-            swe_node["name"].as<std::string>() == "ehdg_swe" ||
+        if (swe_node["name"].as<std::string>() == "rkdg_swe" || swe_node["name"].as<std::string>() == "ehdg_swe" ||
             swe_node["name"].as<std::string>() == "ihdg_swe") {
             return SWE::Inputs(swe_node);
         } else {
-            std::string err_msg{"Error: Unknown problem name: "+swe_node["name"].as<std::string>()};
+            std::string err_msg{"Error: Unknown problem name: " + swe_node["name"].as<std::string>()};
             throw std::logic_error(err_msg);
         }
     } else {
@@ -423,11 +422,10 @@ template <>
 inline GN::Inputs InputParameters<typename GN::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
     if (input_file["problem"]) {
         YAML::Node gn_node = input_file["problem"];
-        if (gn_node["name"].as<std::string>() == "ehdg_gn" ||
-            gn_node["name"].as<std::string>() == "ihdg_gn") {
+        if (gn_node["name"].as<std::string>() == "ehdg_gn" || gn_node["name"].as<std::string>() == "ihdg_gn") {
             return GN::Inputs(gn_node);
         } else {
-            std::string err_msg{"Error: Unknown problem name: "+gn_node["name"].as<std::string>()};
+            std::string err_msg{"Error: Unknown problem name: " + gn_node["name"].as<std::string>()};
             throw std::logic_error(err_msg);
         }
     } else {

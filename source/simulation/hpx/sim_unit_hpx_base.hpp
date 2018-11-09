@@ -5,9 +5,8 @@
 #include "utilities/is_defined.hpp"
 
 struct HPXSimulationUnitBase
-//    : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
+    //    : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
     : public hpx::components::abstract_managed_component_base<HPXSimulationUnitBase> {
-
     virtual ~HPXSimulationUnitBase() = default;
 
     virtual hpx::future<void> Preprocessor() = 0;
@@ -27,8 +26,7 @@ struct HPXSimulationUnitBase
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulationUnitBase, ResidualL2_, ResidualL2Action);
 };
 
-class HPXSimulationUnitClient
-    : public hpx::components::client_base<HPXSimulationUnitClient, HPXSimulationUnitBase> {
+class HPXSimulationUnitClient : public hpx::components::client_base<HPXSimulationUnitClient, HPXSimulationUnitBase> {
   private:
     using BaseType = hpx::components::client_base<HPXSimulationUnitClient, HPXSimulationUnitBase>;
 
@@ -68,16 +66,18 @@ struct HPXSimulationUnitFactory {
                                           const std::string& input_string,
                                           const uint locality_id,
                                           const uint submesh_id);
-private:
+
+  private:
     template <typename ProblemType>
     static HPXSimulationUnitClient CreateSimulationUnit(const hpx::naming::id_type& here,
                                                         const std::string& input_string,
                                                         const uint locality_id,
                                                         const uint submesh_id) {
-        return HPXSimulationUnitFactory::CreateSimulationUnitImpl<ProblemType>(here, input_string, locality_id, submesh_id, Utilities::is_defined<ProblemType>{});
+        return HPXSimulationUnitFactory::CreateSimulationUnitImpl<ProblemType>(
+            here, input_string, locality_id, submesh_id, Utilities::is_defined<ProblemType>{});
     }
 
-    template<typename ProblemType>
+    template <typename ProblemType>
     static HPXSimulationUnitClient CreateSimulationUnitImpl(const hpx::naming::id_type& here,
                                                             const std::string& input_string,
                                                             const uint locality_id,
@@ -86,16 +86,15 @@ private:
         return hpx::components::new_<HPXSimulationUnit<ProblemType>>(here, input_string, locality_id, submesh_id);
     }
 
-    template<typename ProblemType>
+    template <typename ProblemType>
     static HPXSimulationUnitClient CreateSimulationUnitImpl(const hpx::naming::id_type& here,
                                                             const std::string& input_string,
                                                             const uint locality_id,
                                                             const uint submesh_id,
                                                             std::false_type) {
-        throw std::runtime_error( "Problem class not supported, please check cmake configuration for proper support\n");
+        throw std::runtime_error("Problem class not supported, please check cmake configuration for proper support\n");
         return HPXSimulationUnitClient();
-}
+    }
 };
-
 
 #endif
