@@ -220,6 +220,8 @@ struct SlopeLimiting {
 
 // Problem specific inputs
 struct Inputs {
+    std::string name;
+
     double g         = 9.81;
     double rho_air   = 1.2250;
     double rho_water = 1000.0;

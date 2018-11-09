@@ -2,8 +2,12 @@
 #define SIM_UNIT_OMPI_HPP
 
 #include "general_definitions.hpp"
+
 #include "preprocessor/input_parameters.hpp"
 #include "communication/ompi_communicator.hpp"
+
+#include "problem/definitions.hpp"
+#include "problem/ompi_functions.hpp"
 
 template <typename ProblemType>
 struct OMPISimulationUnit {

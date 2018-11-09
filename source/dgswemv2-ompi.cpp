@@ -1,20 +1,12 @@
 #include <mpi.h>
 #include <omp.h>
+#ifdef HAS_PETSC
+#include <petscksp.h>
+#endif
 
 #include "general_definitions.hpp"
-#include "problem/SWE/swe_definitions.hpp"
 
-#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
-#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
-#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
-
-#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_kernels_preprocessor.hpp"
-
-#include "problem/SWE/discretization_RKDG/kernels_preprocessor/rkdg_swe_pre_ompi.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_ompi_step.hpp"
-
-#include "simulation/ompi/simulation_ompi.hpp"
+#include "simulation/ompi/simulation_ompi_base.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -38,11 +30,15 @@ int main(int argc, char* argv[]) {
             }
         }
 
+#ifdef HAS_PETSC
+        PetscInitialize(&argc, &argv, (char*)0, NULL);
+#endif
+
         std::string input_string = std::string(argv[1]);
 
-        OMPISimulation<SWE::RKDG::Problem> simulation(input_string);
+        std::unique_ptr<OMPISimulationBase> simulation = OMPISimulationFactory::Create(input_string);
 
-        simulation.Run();
+        simulation->Run();
 
         MPI_Barrier(MPI_COMM_WORLD);
         auto t2 = std::chrono::high_resolution_clock::now();
@@ -54,6 +50,8 @@ int main(int argc, char* argv[]) {
             std::cout << "Time Elapsed (in us): "
                       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
+
+        simulation->DestroyPETSc();
 
         MPI_Finalize();
 

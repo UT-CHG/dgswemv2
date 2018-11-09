@@ -3,7 +3,7 @@ add_executable(
   test_linear_algebra.cpp
 )
 
-set_target_properties(test_linear_algebra_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_linear_algebra_exe PRIVATE ${LINALG_DEFINITION})
 
 #[[target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
 target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
@@ -58,7 +58,7 @@ add_executable(
   test_tuple_helpers.cpp
 )
 
-set_target_properties(test_tuple_helpers_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_tuple_helpers_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_tuple_helpers
@@ -70,11 +70,21 @@ add_executable(
   test_heterogeneous_containers.cpp
 )
 
-set_target_properties(test_heterogeneous_containers_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_heterogeneous_containers_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_heterogeneous_containers
   test_heterogeneous_containers_exe
+)
+
+add_executable(
+  test_is_defined_exe
+  test_is_defined.cpp
+)
+
+add_test(
+  Unit_is_defined
+  test_is_defined_exe
 )
 
 add_executable(
@@ -84,7 +94,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-set_target_properties(test_adcirc_format_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_adcirc_format_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_adcirc_format
@@ -100,7 +110,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/basis/bases_1D/basis_legendre_1D.cpp
 )
 
-set_target_properties(test_basis_legendre_1d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_basis_legendre_1d_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_basis_legendre_1d
@@ -114,7 +124,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
 )
 
-set_target_properties(test_basis_dubiner_2d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_basis_dubiner_2d_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_basis_dubiner_2d
@@ -127,7 +137,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
-set_target_properties(test_integ_gausslegendre_1d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_integ_gausslegendre_1d_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_integ_gausslegendre_1d
@@ -140,7 +150,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
 )
 
-set_target_properties(test_integ_dunavant_2d_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_integ_dunavant_2d_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_integ_dunavant_2d
@@ -153,7 +163,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-set_target_properties(test_shape_straight_triangle_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_shape_straight_triangle_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_shape_straight_triangle
@@ -170,7 +180,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-set_target_properties(test_element_triangle_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_element_triangle_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_element_triangle_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_element_triangle_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -188,7 +199,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-set_target_properties(test_boundary_interface_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_boundary_interface_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_boundary_interface_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_boundary_interface_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -207,7 +219,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
 )
 
-set_target_properties(test_edges_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_edges_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_edges_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_edges_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -221,7 +234,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
 )
 
-set_target_properties(test_rk_stepper_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_rk_stepper_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_rk_stepper_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_rk_stepper_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -234,7 +248,7 @@ add_executable(
   test_llf_flux.cpp
 )
 
-set_target_properties(test_llf_flux_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_llf_flux_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_llf_flux
@@ -252,7 +266,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
 )
 
-set_target_properties(test_wetting_drying_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_wetting_drying_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_wetting_drying_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_wetting_drying_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -268,7 +283,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 )
 
-set_target_properties(test_mesh_metadata_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_mesh_metadata_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_mesh_metadata
@@ -283,7 +298,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
-set_target_properties(test_swe_inputs_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_swe_inputs_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_swe_inputs_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_swe_inputs_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -300,7 +316,8 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
 )
 
-set_target_properties(test_input_parameters_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_include_directories(test_input_parameters_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})
+target_compile_definitions(test_input_parameters_exe PRIVATE ${LINALG_DEFINITION})
 target_link_libraries(test_input_parameters_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
@@ -328,7 +345,7 @@ timestepping:\n\
   ramp_duration: 1.5\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
-  name: swe\n\
+  name: rkdg_swe\n\
   gravity: 9.81\n\
   density_air: 1.225\n\
   density_water: 1000\n\
@@ -382,7 +399,7 @@ timestepping:\n\
   nstages: 2\n\n\
 polynomial_order: 2\n\n\
 problem:\n\
-  name: swe\n\
+  name: rkdg_swe\n\
   gravity: 9.81\n\
   density_air: 1.225\n\
   density_water: 1000\n\
@@ -422,7 +439,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/preprocessor/mesh_metadata.cpp
 )
 
-set_target_properties(test_partition_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_partition_exe PRIVATE ${LINALG_DEFINITION})
 target_include_directories(test_partition_exe PRIVATE ${METIS_INCLUDE_DIRS})
 target_link_libraries(test_partition_exe ${METIS_LIBRARIES})
 
@@ -437,7 +454,7 @@ add_executable(
   test_heartbeat.cpp
 )
 
-set_target_properties(test_heartbeat_exe PROPERTIES COMPILE_FLAGS ${LINALG_FLAG})
+target_compile_definitions(test_heartbeat_exe PRIVATE ${LINALG_DEFINITION})
 
 add_test(
   Unit_heartbeat
@@ -450,7 +467,7 @@ if(USE_HPX)
     test_rkdg_swe_serialization.cpp
   )
 
-  set_target_properties(test_rkdg_swe_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+  target_compile_definitions(test_rkdg_swe_serialization_exe PRIVATE HAS_HPX)
 
   target_include_directories(test_rkdg_swe_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_rkdg_swe_serialization_exe ${HPX_LIBRARIES})
@@ -466,7 +483,7 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
   )
 
-  set_target_properties(test_shape_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
+  target_compile_definitions(test_shape_serialization_exe PRIVATE HAS_HPX ${LINALG_DEFINITION})
   target_include_directories(test_shape_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_shape_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
@@ -485,7 +502,7 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
   )
 
-  set_target_properties(test_element_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
+  target_compile_definitions(test_element_serialization_exe PRIVATE HAS_HPX ${LINALG_DEFINITION})
   target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
@@ -507,7 +524,7 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
   )
 
-  set_target_properties(test_mesh_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX")
+  target_compile_definitions(test_mesh_serialization_exe PRIVATE "-DHAS_HPX")
 
   target_include_directories(test_mesh_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_mesh_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
@@ -524,7 +541,7 @@ if(USE_HPX)
     ${PROJECT_SOURCE_DIR}/source/simulation/stepper/explicit_ssp_rk_stepper.cpp
   )
 
-  set_target_properties(test_rk_stepper_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
+  target_compile_definitions(test_rk_stepper_serialization_exe PRIVATE HAS_HPX ${LINALG_DEFINITION})
   target_include_directories(test_rk_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_rk_stepper_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
@@ -539,7 +556,7 @@ if(USE_HPX)
     test_serialize_chrono.cpp
   )
 
-  set_target_properties(test_serialize_chrono_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX ${LINALG_FLAG}")
+  target_compile_definitions(test_serialize_chrono_exe PRIVATE HAS_HPX ${LINALG_DEFINITION})
   target_include_directories(test_serialize_chrono_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_serialize_chrono_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
@@ -554,7 +571,7 @@ if(USE_HPX)
       test_blaze_serialization.cpp
     )
 
-    set_target_properties(test_blaze_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX -DUSE_BLAZE")
+    target_compile_definitions(test_blaze_serialization_exe PRIVATE HAS_HPX USE_BLAZE)
     target_include_directories(test_blaze_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
     target_link_libraries(test_blaze_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
   
@@ -570,7 +587,7 @@ if(USE_HPX)
       test_eigen_serialization.cpp
     )
 
-    set_target_properties(test_eigen_serialization_exe PROPERTIES COMPILE_FLAGS "-DHAS_HPX -DUSE_EIGEN")
+    target_compile_definitions(test_eigen_serialization_exe PRIVATE HAS_HPX USE_EIGEN)
     target_include_directories(test_eigen_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
     target_link_libraries(test_eigen_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
   

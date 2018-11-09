@@ -21,6 +21,28 @@ jobs:
           paths:
             - /usr/dgswemv2
 
+  #this tests if the sfinae to build only SWE support is properly working
+  build_dgswemv2_swe_only:
+    <<: *defaults
+    steps:
+      - restore_cache:
+          key: v2-repo-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          name: Building dgswemv2---SWE only
+          command: |
+            cmake --version
+            rm -rf /usr/dgswemv2/build/*
+            cmake \
+                -DCMAKE_PREFIX_PATH=/usr/install \
+                -DCMAKE_BUILD_TYPE=Debug \
+                -DSET_VERBOSE=On \
+                -DCOMPILER_WARNINGS=On \
+                -DUSE_OMPI=On \
+                -DUSE_HPX=On \
+                -DBUILD_EXAMPLES=On \
+                /usr/dgswemv2
+            make
+
   build_dgswemv2:
     <<: *defaults
     steps:
@@ -38,9 +60,9 @@ jobs:
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
+                -DRKDG=On \
+                -DEHDG=On \
                 -DBUILD_EXAMPLES=On \
-                -DRKDG_SWE=On \
-                -DEHDG_SWE=On \
                 /usr/dgswemv2
             make
       - persist_to_workspace:
@@ -71,7 +93,7 @@ jobs:
       - run:
           name: RKDG Parallel Manufactured Solution
           command: |
-            /usr/dgswemv2/scripts/correctness/test_rkdg_parallel_correctness.sh
+            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh rkdg_swe
 
   rkdg_run_parallel_weirs:
     <<: *defaults
@@ -97,7 +119,7 @@ jobs:
           no_output_timeout: 60m
           name: EHDG Parallel Manufactured Solution
           command: |
-            /usr/dgswemv2/scripts/correctness/test_ehdg_parallel_correctness.sh
+            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh ehdg_swe
 
 
 workflows:
@@ -105,6 +127,9 @@ workflows:
   build-and-test:
     jobs:
       - checkout_code
+      - build_dgswemv2_swe_only:
+          requires:
+            - checkout_code
       - build_dgswemv2:
           requires:
             - checkout_code

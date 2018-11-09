@@ -9,12 +9,12 @@ option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
 option(SET_VERBOSE "Verbose MakeFile" OFF)
 option(BUILD_EXAMPLES "Build Examples" OFF)
 
-option(RKDG_SWE "Build RKDG SWE simulations" ON)
-option(EHDG_SWE "Build EHDG SWE simulations" OFF)
-option(IHDG_SWE "Build EHDG SWE simulations" OFF)
+option(RKDG "Build with RKDG discretization" ON)
+option(EHDG "Build with explicit HDG discretization" OFF)
+option(IHDG "Build with implicit HDG discretization" OFF)
 
-option(EHDG_GN "Build EHDG GN simulations" OFF)
-option(IHDG_GN "Build IHDG GN simulations" OFF)
+option(SWE "Build with shallow water equations support" ON)
+option(GN "Build with Green-Nahgdi support" OFF)
 
 enable_testing()
 
@@ -34,10 +34,10 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
+add_definitions(-std=c++14 -g)
 
 if(COMPILER_WARNINGS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  add_definitions(-Wall)
 endif()
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -62,7 +62,7 @@ endif()
 
 if(USE_EIGEN)
   find_package(Eigen3 REQUIRED)
-  set(LINALG_FLAG "-DUSE_EIGEN")
+  list(APPEND LINALG_DEFINITION USE_EIGEN)
   link_libraries(Eigen3::Eigen)
 endif()
 
@@ -70,7 +70,7 @@ if(USE_BLAZE)
   find_package(blaze REQUIRED)
   find_package(BLAS REQUIRED)
   find_package(LAPACK REQUIRED)
-  set(LINALG_FLAG "-DUSE_BLAZE")
+  list(APPEND LINALG_DEFINITION USE_BLAZE)
   link_libraries(blaze::blaze ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
@@ -99,13 +99,36 @@ list (APPEND SOURCES
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
 )
 
-list(APPEND SWE_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-)
+#If solving the Green-Naghdi equations, SWE_SUPPORT is implicitly implied
+if (GN)
+  set(SWE ON)
+  set(EHDG ON)
+  set(IHDG ON) #implicitly requires PETSc for OMPI targets
+endif()
 
-list(APPEND GN_SOURCES
-  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
-)
+if (SWE)
+  list(APPEND SOURCES
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+  )
+  list( APPEND PROBLEM_DEFINITIONS SWE_SUPPORT )
+endif()
+
+if (GN)
+  list(APPEND PROBLEM_DEFINITIONS GN_SUPPORT)
+endif()
+
+if (RKDG)
+  list(APPEND PROBLEM_DEFINITIONS RKDG_SUPPORT)
+endif()
+if (EHDG)
+  list(APPEND PROBLEM_DEFINITIONS EHDG_SUPPORT)
+endif()
+if (IHDG)
+  if(USE_OMPI)
+    find_package(PETSc REQUIRED)
+  endif()
+  list(APPEND PROBLEM_DEFINITIONS IHDG_SUPPORT)
+endif()
 
 include_directories(source)
 
@@ -113,45 +136,4 @@ add_subdirectory(test)
 add_subdirectory(mesh_generators)
 add_subdirectory(partitioner)
 
-if(RKDG_SWE)
-  add_subdirectory(source/problem/SWE/discretization_RKDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/rkdg_swe_manufactured_solution)
-  endif()
-endif()
-
-if(EHDG_SWE)
-  add_subdirectory(source/problem/SWE/discretization_EHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ehdg_swe_manufactured_solution)
-  endif()
-endif()
-
-if(IHDG_SWE)
-  if(USE_OMPI)
-    find_package(PETSc REQUIRED)
-  endif()
-
-  add_subdirectory(source/problem/SWE/discretization_IHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ihdg_swe_manufactured_solution)
-  endif()
-endif()
-
-if(EHDG_GN)
-  if(USE_OMPI)
-    find_package(PETSc REQUIRED)
-  endif()
-
-  add_subdirectory(source/problem/Green-Naghdi/discretization_EHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ehdg_gn_analytical_solution)
-  endif()
-endif()
-
-if(IHDG_GN)
-  #[[add_subdirectory(source/problem/Green-Naghdi/discretization_IHDG)
-  if(BUILD_EXAMPLES)
-    add_subdirectory(examples/ihdg_gn_analytical_solution)
-  endif()]]
-endif()
+add_subdirectory(source)

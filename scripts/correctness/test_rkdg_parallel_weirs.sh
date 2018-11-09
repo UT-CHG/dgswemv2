@@ -22,20 +22,20 @@ cd ${DGSWEMV2_TEST}
 
 echo ""
 echo "seting up serial test case"
-MAIN_DIR="${DGSWEMV2_ROOT_}/source/problem/SWE/discretization_RKDG/main_files"
+MAIN_DIR="${DGSWEMV2_ROOT_}/source/"
 sed -i.tmp '/return 0/i\
-        simulation.ComputeL2Residual();\
-' ${MAIN_DIR}/rkdg_main_swe.cpp
+        simulation->ComputeL2Residual();\
+' ${MAIN_DIR}/dgswemv2-serial.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make -j ${num_build_cores} RKDG_SWE_SERIAL
+make -j ${num_build_cores} dgswemv2-serial
 cd $MAIN_DIR
 #undo the addition of the ComputeL2Residual call
-mv rkdg_main_swe.cpp.tmp rkdg_main_swe.cpp
+mv dgswemv2-serial.cpp.tmp dgswemv2-serial.cpp
 echo ""
 echo "Running Serial Test case..."
 cd $DGSWEMV2_TEST
 rm -f serial.out
-$DGSWEMV2_ROOT_/build/source/problem/SWE/discretization_RKDG/RKDG_SWE_SERIAL dgswemv2_input.15 &> serial.out
+$DGSWEMV2_ROOT_/build/source/dgswemv2-serial dgswemv2_input.15 &> serial.out
 
 echo ""
 echo "Building HPX Test case..."
@@ -45,26 +45,26 @@ $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 3 1
 sed -i.tmp '/    return hpx::finalize();/i\
     hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);\
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;\
-' ${MAIN_DIR}/rkdg_hpx_main_swe.cpp
+' ${MAIN_DIR}/dgswemv2-hpx.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make -j ${num_build_cores} RKDG_SWE_HPX
+make -j ${num_build_cores} dgswemv2-hpx
 cd $MAIN_DIR
-mv rkdg_hpx_main_swe.cpp.tmp rkdg_hpx_main_swe.cpp
+mv dgswemv2-hpx.cpp.tmp dgswemv2-hpx.cpp
 echo ""
 echo "Running HPX Test case..."
 cd $DGSWEMV2_TEST
 rm -f hpx.out
-$DGSWEMV2_ROOT_/build/source/problem/SWE/discretization_RKDG/RKDG_SWE_HPX dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
+$DGSWEMV2_ROOT_/build/source/dgswemv2-hpx dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
 
 echo ""
 echo "Building MPI Test case..."
 sed -i.tmp '/        MPI_Finalize();/i\
-        simulation.ComputeL2Residual();\
-' ${MAIN_DIR}/rkdg_ompi_main_swe.cpp
+        simulation->ComputeL2Residual();\
+' ${MAIN_DIR}/dgswemv2-ompi.cpp
 cd ${DGSWEMV2_ROOT_}/build
-make -j ${num_build_cores} RKDG_SWE_OMPI
+make -j ${num_build_cores} dgswemv2-ompi
 cd $MAIN_DIR
-mv rkdg_ompi_main_swe.cpp.tmp rkdg_ompi_main_swe.cpp
+mv dgswemv2-ompi.cpp.tmp dgswemv2-ompi.cpp
 
 echo ""
 echo "Running OMPI Test case..."
@@ -79,7 +79,7 @@ rm -f ompi.out
 # Running MPI as root is strongly discouraged by the OpemMPI people, so it really
 # should only be used inside a container.
 # See: https://github.com/open-mpi/ompi/issues/4451
-OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/source/problem/SWE/discretization_RKDG/RKDG_SWE_OMPI dgswemv2_input_parallelized.15 &> ompi.out
+OMP_NUM_THREADS=1 mpirun -np 2 ${CI_MPI_CLI} $DGSWEMV2_ROOT_/build/source/dgswemv2-ompi dgswemv2_input_parallelized.15 &> ompi.out
 
 python $DGSWEMV2_ROOT_/scripts/correctness/compare_l2_errors.py
 exit $?

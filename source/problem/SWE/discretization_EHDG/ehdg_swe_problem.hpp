@@ -1,6 +1,10 @@
 #ifndef EHDG_SWE_PROBLEM_HPP
 #define EHDG_SWE_PROBLEM_HPP
 
+#include "problem/SWE/swe_definitions.hpp"
+#include "problem/SWE/problem_input/swe_inputs.hpp"
+#include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
+
 #include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"

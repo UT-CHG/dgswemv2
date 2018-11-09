@@ -2,6 +2,7 @@
 #define SWE_PARSER_HPP
 
 #include "utilities/file_exists.hpp"
+#include "preprocessor/input_parameters.hpp"
 
 namespace SWE {
 class Parser {

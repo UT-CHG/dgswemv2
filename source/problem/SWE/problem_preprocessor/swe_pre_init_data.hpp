@@ -3,6 +3,8 @@
 
 #include "utilities/file_exists.hpp"
 
+#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
+
 namespace SWE {
 template <typename MeshType>
 void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) {
