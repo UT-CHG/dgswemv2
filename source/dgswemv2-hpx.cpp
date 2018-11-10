@@ -12,7 +12,7 @@
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage\n"
-                  << "    /path/to/RKDG_SWE_HPX input_file\n";
+                  << "    /path/to/dgswemv2-hpx input_file\n";
         return 1;
     } else {
         return hpx::init(argc, argv);

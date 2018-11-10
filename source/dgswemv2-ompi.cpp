@@ -11,7 +11,7 @@
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         std::cerr << "Usage\n"
-                  << "    /path/to/RKDG_SWE_OMPI input_file\n";
+                  << "    /path/to/dgswemv2-ompi input_file\n";
         return 1;
     } else {
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -51,7 +51,9 @@ int main(int argc, char* argv[]) {
                       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
 
-        simulation->DestroyPETSc();
+#ifdef HAS_PETSC
+        PetscFinalize();
+#endif
 
         MPI_Finalize();
 
