@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
-project (DG_HYPER CXX C)
+project (DGSWEMv2 CXX C)
 
 option(USE_EIGEN "Use Eigen" ON)
 option(USE_BLAZE "Use Blaze" OFF)
@@ -7,14 +7,13 @@ option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
 option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
 option(SET_VERBOSE "Verbose MakeFile" OFF)
-option(BUILD_EXAMPLES "Build Examples" OFF)
 
 option(RKDG "Build with RKDG discretization" ON)
 option(EHDG "Build with explicit HDG discretization" OFF)
 option(IHDG "Build with implicit HDG discretization" OFF)
 
 option(SWE "Build with shallow water equations support" ON)
-option(GN "Build with Green-Nahgdi support" OFF)
+option(GN "Build with Green-Nahgdi equations support" OFF)
 
 enable_testing()
 

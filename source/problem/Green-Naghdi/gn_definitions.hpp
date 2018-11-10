@@ -3,8 +3,8 @@
 
 #include "utilities/ignore.hpp"
 
-//#define EHDG_SWE
-#define IHDG_SWE
+#define EHDG_SWE
+//#define IHDG_SWE
 
 #ifdef EHDG_SWE
 namespace SWE_SIM = SWE::EHDG;

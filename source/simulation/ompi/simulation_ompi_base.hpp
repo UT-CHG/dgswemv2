@@ -10,7 +10,6 @@ class OMPISimulationBase {
 
     virtual void Run()               = 0;
     virtual void ComputeL2Residual() = 0;
-    virtual void DestroyPETSc() {}
 };
 
 template <typename ProblemType>
