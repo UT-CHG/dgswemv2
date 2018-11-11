@@ -12,6 +12,7 @@ class SimulationBase {
 
     virtual void Run()               = 0;
     virtual void ComputeL2Residual() = 0;
+    virtual void Finalize()          = 0;
 };
 
 template <typename ProblemType>

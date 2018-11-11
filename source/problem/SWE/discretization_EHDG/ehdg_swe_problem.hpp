@@ -223,6 +223,9 @@ struct Problem {
     static double compute_residual_L2(const StepperType& stepper, ElementType& elt) {
         return SWE::compute_residual_L2(stepper, elt);
     }
+
+    template <typename SimType>
+    static void finalize_simulation(SimType* sim) {}
 };
 }
 }
