@@ -29,6 +29,7 @@ class Simulation : public SimulationBase {
 
     void Run();
     void ComputeL2Residual();
+    void Finalize();
 
   private:
     friend ProblemType;
@@ -94,6 +95,11 @@ void Simulation<ProblemType>::ComputeL2Residual() {
         [this, &residual_L2](auto& elt) { residual_L2 += ProblemType::compute_residual_L2(this->stepper, elt); });
 
     std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
+}
+
+template <typename ProblemType>
+void Simulation<ProblemType>::Finalize() {
+    ProblemType::finalize_simulation(this);
 }
 }
 #endif

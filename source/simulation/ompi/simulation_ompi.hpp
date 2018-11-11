@@ -19,6 +19,7 @@ class OMPISimulation : public OMPISimulationBase {
 
     void Run();
     void ComputeL2Residual();
+    void Finalize();
 
   private:
     friend ProblemType;
@@ -108,6 +109,11 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     if (locality_id == 0) {
         std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
     }
+}
+
+template <typename ProblemType>
+void OMPISimulation<ProblemType>::Finalize() {
+    ProblemType::finalize_simulation(this);
 }
 
 #endif

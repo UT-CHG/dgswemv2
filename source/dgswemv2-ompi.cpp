@@ -51,6 +51,8 @@ int main(int argc, char* argv[]) {
                       << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
         }
 
+        simulation->Finalize();
+
 #ifdef HAS_PETSC
         PetscFinalize();
 #endif
