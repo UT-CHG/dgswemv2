@@ -3,15 +3,15 @@
 
 namespace SWE {
 inline StatVector<double, SWE::n_variables> source_u(const double t, const Point<2>& pt) {
-    constexpr double x1 = 40000.;
-    constexpr double x2 = 83200.;
-    constexpr double y1 = 10000.;
-    constexpr double y2 = 53200.;
+    constexpr double x1 = 400.;
+    constexpr double x2 = 1000.;
+    constexpr double y1 = 100.;
+    constexpr double y2 = 700.;
 
-    constexpr double Ho = 2.;
-    constexpr double zo = 0.25;
+    constexpr double Ho = 0.2;
+    constexpr double zo = 0.025;
 
-    constexpr double w   = 2 * PI / 43200.;
+    constexpr double w   = 2 * PI / 600.;
     constexpr double tau = 0;
 
     const double x = pt[GlobalCoord::x];
