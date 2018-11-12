@@ -11,8 +11,8 @@ mesh:
 
 timestepping:
   start_time: 25-11-1987 00:00:00                
-  end_time: 25-11-1987 01:00:00                
-  dt: 1                           #in seconds
+  end_time: 25-11-1987 00:10:00                
+  dt: 0.5                          
   order: 2
   nstages: 2
 
@@ -21,6 +21,8 @@ polynomial_order: 1
 problem:
   name: rkdg_swe
   gravity: 9.81
+  density_water: 1000
+  density_air: 1.225
   initial_conditions:
     type: Function
   function_source: Enable
