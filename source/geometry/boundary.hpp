@@ -21,6 +21,8 @@ class Boundary {
 
     std::vector<uint> node_ID;
 
+    std::vector<Point<dimension + 1>> gp_global_coordinates;
+
     DynMatrix<double> psi_gp;
     DynMatrix<double> psi_bound_gp;
     DynMatrix<double> phi_gp;
@@ -38,6 +40,8 @@ class Boundary {
 
     std::vector<uint>& GetNodeID() { return this->node_ID; }
 
+    template <typename F>
+    DynMatrix<double> ComputeFgp(const F& f);
     template <typename InputArrayType>
     decltype(auto) ComputeUgp(const InputArrayType& u);
 
@@ -84,6 +88,9 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     std::vector<Point<dimension + 1>> z_master =
         this->master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
+    // Global coordinates of gps
+    this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(z_master);
+
     // Compute factors to expand nodal values
     this->psi_gp = this->shape.GetPsi(z_master);
 
@@ -125,6 +132,21 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     }
 
     this->data.set_ngp_boundary(this->bound_id, ngp);
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
+template <typename F>
+inline DynMatrix<double> Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeFgp(const F& f) {
+    uint nvar = f(this->gp_global_coordinates[0]).size();
+    uint ngp  = this->gp_global_coordinates.size();
+
+    DynMatrix<double> f_vals(nvar, ngp);
+
+    for (uint gp = 0; gp < this->gp_global_coordinates.size(); ++gp) {
+        column(f_vals, gp) = f(this->gp_global_coordinates[gp]);
+    }
+
+    return f_vals;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
