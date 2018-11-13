@@ -535,7 +535,7 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
         column(true_gp, gp) = f(gp_global[gp]);
     }
 
-    // find square difference betwee u_gp and true_gp
+    // find square difference between u_gp and true_gp
     DynMatrix<double> diff = true_gp - u_gp;
     DynMatrix<double> sq_diff(nvar, ngp);
 
@@ -543,16 +543,21 @@ double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(co
         row(sq_diff, var) = vec_cw_mult(row(diff, var), row(diff, var));
     }
 
-    DynVector<double> L2;
+    DynVector<double> l2;
 
     // integrate over element
     if (const_J) {
-        L2 = sq_diff * rule.first * std::abs(this->shape.GetJdet(rule.second)[0]);
+        l2 = sq_diff * rule.first * std::abs(this->shape.GetJdet(rule.second)[0]);
     } else {
         // Placeholder for nonconstant Jacobian
     }
 
-    return L2[0];
+    double L2 = 0;
+    for (uint var = 0; var < nvar; ++var) {
+        L2 += l2[var];
+    }
+
+    return L2;
 }
 }
 

@@ -84,6 +84,11 @@ double norm(const ArrayType& array) {
 }
 
 template <typename ArrayType>
+double sq_norm(const ArrayType& array) {
+    return array.squaredNorm();
+}
+
+template <typename ArrayType>
 decltype(auto) power(const ArrayType& array, const double exp) {
     return array.array().pow(exp);
 }

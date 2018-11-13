@@ -97,6 +97,11 @@ decltype(auto) transpose(const ArrayType& array) {
 }
 
 template <typename ArrayType>
+double sq_norm(const ArrayType& array) {
+    return blaze::sqrNorm(array);
+}
+
+template <typename ArrayType>
 double norm(const ArrayType& array) {
     return blaze::norm(array);
 }
