@@ -4,8 +4,8 @@
 #include "utilities/ignore.hpp"
 
 namespace SWE {
-inline StatVector<double, SWE::n_variables> true_u(const double t, const Point<2>& pt) {
-    constexpr double x1 = -PI;
+inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2>& pt) {
+    /*constexpr double x1 = -PI;
     constexpr double x2 = PI;
     constexpr double y1 = -PI;
     constexpr double y2 = PI;
@@ -24,11 +24,15 @@ inline StatVector<double, SWE::n_variables> true_u(const double t, const Point<2
                      (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
 
     double true_qy = zo * cos(w * (pt[GlobalCoord::x] - x1)) * sin(w * (pt[GlobalCoord::y] - y1)) * sin(w * (t + tau)) /
-                     (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));
+                     (cos(w * (x2 - x1)) * cos(w * (y2 - y1)));*/
 
-    StatVector<double, SWE::n_variables> true_u{true_ze, true_qx, true_qy};
+    double true_ze = exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]) - sin(3 * t));
+    double true_qx = cos(pt[GlobalCoord::x] - 4 * t);
+    double true_qy = sin(pt[GlobalCoord::y] + 4 * t);
 
-    return true_u;
+    StatVector<double, SWE::n_variables> true_q{true_ze, true_qx, true_qy};
+
+    return true_q;
 }
 }
 

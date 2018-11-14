@@ -226,6 +226,8 @@ void Inputs::read_bcis(const std::string& bcis_file) {
         stream >> btype >> nnodes;
 
         if (btype == SWE::BoundaryTypes::tide) {
+            TideBoundary tide_bound;
+
             uint ncon, node_ID;
             double frequency, force_fact, eq_argument, amplitude, phase;
 
@@ -246,17 +248,21 @@ void Inputs::read_bcis(const std::string& bcis_file) {
                     stream = std::stringstream(line);
                     stream >> node_ID >> amplitude >> phase;
 
-                    TideInput& tide = this->tide_bc_data[node_ID];
+                    TideNode& tide_node = tide_bound.tide_nodes[node_ID];
 
-                    tide.frequency.emplace_back(frequency);
-                    tide.forcing_fact.emplace_back(force_fact);
-                    tide.equilib_arg.emplace_back(eq_argument);
+                    tide_node.frequency.emplace_back(frequency);
+                    tide_node.forcing_fact.emplace_back(force_fact);
+                    tide_node.equilib_arg.emplace_back(eq_argument);
 
-                    tide.amplitude.emplace_back(amplitude);
-                    tide.phase.emplace_back(phase);
+                    tide_node.amplitude.emplace_back(amplitude);
+                    tide_node.phase.emplace_back(phase);
                 }
             }
+
+            this->tide_bc_data.push_back(std::move(tide_bound));
         } else if (btype == SWE::BoundaryTypes::flow) {
+            FlowBoundary flow_bound;
+
             uint ncon, node_ID;
             double frequency, force_fact, eq_argument, amplitude, phase;
 
@@ -277,16 +283,18 @@ void Inputs::read_bcis(const std::string& bcis_file) {
                     stream = std::stringstream(line);
                     stream >> node_ID >> amplitude >> phase;
 
-                    FlowInput& flow = this->flow_bc_data[node_ID];
+                    FlowNode& flow_node = flow_bound.flow_nodes[node_ID];
 
-                    flow.frequency.emplace_back(frequency);
-                    flow.forcing_fact.emplace_back(force_fact);
-                    flow.equilib_arg.emplace_back(eq_argument);
+                    flow_node.frequency.emplace_back(frequency);
+                    flow_node.forcing_fact.emplace_back(force_fact);
+                    flow_node.equilib_arg.emplace_back(eq_argument);
 
-                    flow.amplitude.emplace_back(amplitude);
-                    flow.phase.emplace_back(phase);
+                    flow_node.amplitude.emplace_back(amplitude);
+                    flow_node.phase.emplace_back(phase);
                 }
             }
+
+            this->flow_bc_data.push_back(std::move(flow_bound));
         } else if (btype == SWE::BoundaryTypes::levee) {
             uint front_node, back_node;
 

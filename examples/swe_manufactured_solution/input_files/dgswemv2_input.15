@@ -20,7 +20,7 @@ polynomial_order: 1
 
 problem:
   name: rkdg_swe
-  gravity: 9.81
+  gravity: 1.0
   density_water: 1000
   density_air: 1.225
   initial_conditions:

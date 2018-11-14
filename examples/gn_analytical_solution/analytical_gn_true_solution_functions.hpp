@@ -4,7 +4,7 @@
 #include "utilities/ignore.hpp"
 
 namespace SWE {
-inline StatVector<double, SWE::n_variables> true_u(const double t, const Point<2>& pt) {
+inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
     constexpr double ao = 0.05;
@@ -20,9 +20,9 @@ inline StatVector<double, SWE::n_variables> true_u(const double t, const Point<2
 
     double true_qy = 0.0;
 
-    StatVector<double, SWE::n_variables> true_u{true_ze, true_qx, true_qy};
+    StatVector<double, SWE::n_variables> true_q{true_ze, true_qx, true_qy};
 
-    return true_u;
+    return true_q;
 }
 }
 

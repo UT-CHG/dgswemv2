@@ -31,9 +31,9 @@ void Problem::source_kernel(const ProblemStepperType& stepper, ElementType& elt)
             vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
 
         if (SWE::SourceTerms::function_source) {
-            auto source_u = [t](Point<2>& pt) { return SWE::source_u(t, pt); };
+            auto source_q = [t](Point<2>& pt) { return SWE::source_q(t, pt); };
 
-            internal.source_at_gp += elt.ComputeFgp(source_u);
+            internal.source_at_gp += elt.ComputeFgp(source_q);
         }
 
         /*if (SWE::SourceTerms::bottom_friction) {

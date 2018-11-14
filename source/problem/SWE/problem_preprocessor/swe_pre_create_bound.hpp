@@ -8,9 +8,10 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
                        typename ProblemType::ProblemInputType& problem_input,
                        typename ProblemType::ProblemWriterType& writer) {
     // *** //
-    using BoundaryTypeLand = typename std::tuple_element<0, typename ProblemType::ProblemBoundaryTypes>::type;
-    using BoundaryTypeTide = typename std::tuple_element<1, typename ProblemType::ProblemBoundaryTypes>::type;
-    using BoundaryTypeFlow = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeLand     = typename std::tuple_element<0, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeTide     = typename std::tuple_element<1, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeFlow     = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeFunction = typename std::tuple_element<3, typename ProblemType::ProblemBoundaryTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::land) {
@@ -38,17 +39,19 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                std::vector<TideInput> tide;
+                std::vector<TideNode> tide;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
-                    uint node_ID = raw_boundary.node_ID[node];
+                bool found_data = false;
 
-                    if (tide_data.find(node_ID) != tide_data.end()) {
-                        tide.push_back(tide_data[node_ID]);
-                    } else {
-                        throw std::logic_error("Fatal Error: unable to find tide data!\n");
-                    }
+                for (auto& tide_bound : tide_data) {
+                    found_data = tide_bound.get_tide_data(raw_boundary.node_ID, tide);
+
+                    if (found_data)
+                        break;
                 }
+
+                if (!found_data)
+                    throw std::logic_error("Fatal Error: unable to find tide data!\n");
 
                 mesh.template CreateBoundary<BoundaryTypeTide>(std::move(raw_boundary), tide);
 
@@ -68,17 +71,19 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                std::vector<FlowInput> flow;
+                std::vector<FlowNode> flow;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
-                    uint node_ID = raw_boundary.node_ID[node];
+                bool found_data = false;
 
-                    if (flow_data.find(node_ID) != flow_data.end()) {
-                        flow.push_back(flow_data[node_ID]);
-                    } else {
-                        throw std::logic_error("Fatal Error: unable to find flow data!\n");
-                    }
+                for (auto& flow_bound : flow_data) {
+                    found_data = flow_bound.get_flow_data(raw_boundary.node_ID, flow);
+
+                    if (found_data)
+                        break;
                 }
+
+                if (!found_data)
+                    throw std::logic_error("Fatal Error: unable to find flow data!\n");
 
                 mesh.template CreateBoundary<BoundaryTypeFlow>(std::move(raw_boundary), flow);
 
@@ -88,6 +93,22 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             if (writer.WritingLog()) {
                 writer.GetLogFile() << "Number of flow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_flow
                                     << std::endl;
+            }
+        } else if (it->first == SWE::BoundaryTypes::function) {
+            uint n_bound_old_func = mesh.GetNumberBoundaries();
+
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
+                auto& raw_boundary = itt->second;
+
+                mesh.template CreateBoundary<BoundaryTypeFunction>(std::move(raw_boundary));
+
+                it->second.erase(itt++);
+            }
+
+            if (writer.WritingLog()) {
+                writer.GetLogFile() << "Number of function boundaries: "
+                                    << mesh.GetNumberBoundaries() - n_bound_old_func << std::endl;
             }
         }
     }

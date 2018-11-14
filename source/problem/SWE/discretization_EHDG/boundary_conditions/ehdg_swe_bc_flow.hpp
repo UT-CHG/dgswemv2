@@ -6,31 +6,35 @@ namespace EHDG {
 namespace BC {
 class Flow {
   private:
+    HybMatrix<double, SWE::n_variables> q_ex;
+    DynRowVector<double> qn;
+
+  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
 
-    Array2D<double> amplitude;
-    Array2D<double> phase;
+    std::vector<DynRowVector<double>> amplitude;
+    std::vector<DynRowVector<double>> phase;
 
-    Array2D<double> amplitude_gp;
-    Array2D<double> phase_gp;
+    std::vector<DynRowVector<double>> amplitude_gp;
+    std::vector<DynRowVector<double>> phase_gp;
 
   public:
     Flow() = default;
-    Flow(const std::vector<FlowInput>& flow_input);
+    Flow(const std::vector<FlowNode>& flow_input);
 
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeBoundaryType>
-    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
+    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 };
 
-Flow::Flow(const std::vector<FlowInput>& flow_input) {
+Flow::Flow(const std::vector<FlowNode>& flow_input) {
     this->frequency    = flow_input[0].frequency;
     this->forcing_fact = flow_input[0].forcing_fact;
     this->equilib_arg  = flow_input[0].equilib_arg;
@@ -54,18 +58,31 @@ Flow::Flow(const std::vector<FlowInput>& flow_input) {
 
 template <typename BoundaryType>
 void Flow::Initialize(BoundaryType& bound) {
+    uint ngp           = bound.data.get_ngp_boundary(bound.bound_id);
     uint n_contituents = this->frequency.size();
+
+    this->q_ex.resize(SWE::n_variables, ngp);
+    this->qn.resize(ngp);
 
     this->amplitude_gp.resize(n_contituents);
     this->phase_gp.resize(n_contituents);
 
     for (uint con = 0; con < n_contituents; ++con) {
-        this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-        this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-
-        // bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
-        // bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+        this->amplitude_gp[con] = bound.ComputeBoundaryNodalUgp(this->amplitude[con]);
+        this->phase_gp[con]     = bound.ComputeBoundaryNodalUgp(this->phase[con]);
     }
+}
+
+template <typename StepperType, typename EdgeBoundaryType>
+void Flow::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) { }
+
+template <typename EdgeBoundaryType>
+void Flow::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
+    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    boundary.F_hat_at_gp = boundary.Fn_at_gp;
+
+    add_F_hat_tau_terms_bound_LF(edge_bound);
 }
 }
 }

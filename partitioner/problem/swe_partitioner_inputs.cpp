@@ -22,7 +22,7 @@ PartitionerInputs::PartitionerInputs(const MeshMetaData& mesh, Inputs inputs) {
 
             } else if (inputs.initial_conditions.type == SWE::InitialConditionsType::Function) {
                 Point<2> pt{coordinates[0], coordinates[1]};
-                h_at_vrtx = ic_u(0, pt)[SWE::Variables::ze] + bath_at_vrtx;
+                h_at_vrtx = ic_q(0, pt)[SWE::Variables::ze] + bath_at_vrtx;
             } else {  // unknown input conditition; set the whole mesh to wet
                 h_at_vrtx = 2 * inputs.wet_dry.h_o;
             }

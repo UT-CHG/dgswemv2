@@ -46,7 +46,7 @@ struct InitialConditions {
 };
 
 // Problem specific bcis information containers
-struct TideInput {
+struct TideNode {
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
@@ -68,7 +68,34 @@ struct TideInput {
 #endif
 };
 
-struct FlowInput {
+struct TideBoundary {
+    std::map<uint, TideNode> tide_nodes;
+
+    bool get_tide_data(const std::vector<uint>& node_ID, std::vector<TideNode>& tide) {
+        for (uint node : node_ID) {  // Check if the boundary segment belongs here
+            if (this->tide_nodes.find(node) == this->tide_nodes.end()) {
+                return false;
+            }
+        }
+
+        for (uint node : node_ID) {
+            tide.push_back(this->tide_nodes[node]);
+        }
+
+        return true;
+    }
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & tide_nodes;
+        // clang-format on
+    }
+#endif
+};
+
+struct FlowNode {
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
@@ -85,6 +112,33 @@ struct FlowInput {
             & equilib_arg
             & amplitude
             & phase;
+        // clang-format on
+    }
+#endif
+};
+
+struct FlowBoundary {
+    std::map<uint, FlowNode> flow_nodes;
+
+    bool get_flow_data(const std::vector<uint>& node_ID, std::vector<FlowNode>& flow) {
+        for (uint node : node_ID) {  // Check if the boundary segment belongs here
+            if (this->flow_nodes.find(node) == this->flow_nodes.end()) {
+                return false;
+            }
+        }
+
+        for (uint node : node_ID) {
+            flow.push_back(this->flow_nodes[node]);
+        }
+
+        return true;
+    }
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & tide_nodes;
         // clang-format on
     }
 #endif
@@ -229,8 +283,8 @@ struct Inputs {
     SphericalProjection spherical_projection;
     InitialConditions initial_conditions;
 
-    std::map<uint, TideInput> tide_bc_data;
-    std::map<uint, FlowInput> flow_bc_data;
+    std::vector<TideBoundary> tide_bc_data;
+    std::vector<FlowBoundary> flow_bc_data;
     std::map<std::pair<uint, uint>, LeveeInput> levee_is_data;
 
     FunctionSource function_source;

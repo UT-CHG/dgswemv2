@@ -68,9 +68,9 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
 
             state.q = elt.L2ProjectionNode(u_node);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
-            auto u_init = [](Point<2>& pt) { return SWE::ic_u(0, pt); };
+            auto q_init = [](Point<2>& pt) { return SWE::ic_q(0, pt); };
 
-            state.q = elt.L2ProjectionF(u_init);
+            state.q = elt.L2ProjectionF(q_init);
         }
     });
 
