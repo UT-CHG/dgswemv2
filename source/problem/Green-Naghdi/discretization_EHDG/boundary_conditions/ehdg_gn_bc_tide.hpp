@@ -7,7 +7,7 @@ namespace BC {
 class Tide : public SWE_SIM::BC::Tide {
   public:
     Tide() = default;
-    Tide(const std::vector<SWE::TideInput>& tide_input) : SWE_SIM::BC::Tide(tide_input) {}
+    Tide(const std::vector<SWE::TideNode>& tide_input) : SWE_SIM::BC::Tide(tide_input) {}
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}

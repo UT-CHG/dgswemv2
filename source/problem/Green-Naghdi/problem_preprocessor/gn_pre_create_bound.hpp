@@ -38,17 +38,19 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                std::vector<SWE::TideInput> tide;
+                std::vector<SWE::TideNode> tide;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
-                    uint node_ID = raw_boundary.node_ID[node];
+                bool found_data = false;
 
-                    if (tide_data.find(node_ID) != tide_data.end()) {
-                        tide.push_back(tide_data[node_ID]);
-                    } else {
-                        throw std::logic_error("Fatal Error: unable to find tide data!\n");
-                    }
+                for (auto& tide_bound : tide_data) {
+                    found_data = tide_bound.get_tide_data(raw_boundary.node_ID, tide);
+
+                    if (found_data)
+                        break;
                 }
+
+                if (!found_data)
+                    throw std::logic_error("Fatal Error: unable to find tide data!\n");
 
                 mesh.template CreateBoundary<BoundaryTypeTide>(std::move(raw_boundary), tide);
 
@@ -68,17 +70,19 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             while (itt != it->second.end()) {
                 auto& raw_boundary = itt->second;
 
-                std::vector<SWE::FlowInput> flow;
+                std::vector<SWE::FlowNode> flow;
 
-                for (uint node = 0; node < raw_boundary.node_ID.size(); ++node) {
-                    uint node_ID = raw_boundary.node_ID[node];
+                bool found_data = false;
 
-                    if (flow_data.find(node_ID) != flow_data.end()) {
-                        flow.push_back(flow_data[node_ID]);
-                    } else {
-                        throw std::logic_error("Fatal Error: unable to find flow data!\n");
-                    }
+                for (auto& flow_bound : flow_data) {
+                    found_data = flow_bound.get_flow_data(raw_boundary.node_ID, flow);
+
+                    if (found_data)
+                        break;
                 }
+
+                if (!found_data)
+                    throw std::logic_error("Fatal Error: unable to find flow data!\n");
 
                 mesh.template CreateBoundary<BoundaryTypeFlow>(std::move(raw_boundary), flow);
 

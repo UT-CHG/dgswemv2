@@ -9,16 +9,16 @@
 # This input file is used to generate rectangle with diagonally opposite
 # vertices (x1,y1) and (x2,y2)
 
-x1: -3.141592653590
-y1: -3.141592653590
+x1: -1
+y1: -1
 
-x2: 3.141592653590
-y2: 3.141592653590
+x2: 1
+y2: 1
 
 # We then determine the number of element edges along each edge
 
-num_x_subdivisions: 20
-num_y_subdivisions: 20
+num_x_subdivisions: 16
+num_y_subdivisions: 16
 
 # The next step is to determine the pattern
 #  (0) simple pattern
@@ -45,10 +45,10 @@ pattern: 0
 #    equilibrium_argument: 0
 
 boundary:
-  - type: land # (x1,y1)--(x2,y1)
-  - type: land # (x2,y1)--(x2,y2)
-  - type: land # (x1,y2)--(x2,y2)
-  - type: land # (x1,y1)--(x1,y2)
+  - type: function # (x1,y1)--(x2,y1)
+  - type: function # (x2,y1)--(x2,y2)
+  - type: function # (x1,y2)--(x2,y2)
+  - type: function # (x1,y1)--(x1,y2)
 
 # The generated output mesh will be written to the following (path)/file
 # If this node is left empty, the default is set to recangular_mesh

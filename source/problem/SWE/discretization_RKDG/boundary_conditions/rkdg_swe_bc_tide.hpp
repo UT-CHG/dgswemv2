@@ -21,7 +21,7 @@ class Tide {
 
   public:
     Tide() = default;
-    Tide(const std::vector<TideInput>& tide_input);
+    Tide(const std::vector<TideNode>& tide_input);
 
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
@@ -30,7 +30,7 @@ class Tide {
     void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
 };
 
-Tide::Tide(const std::vector<TideInput>& tide_input) {
+Tide::Tide(const std::vector<TideNode>& tide_input) {
     this->frequency    = tide_input[0].frequency;
     this->forcing_fact = tide_input[0].forcing_fact;
     this->equilib_arg  = tide_input[0].equilib_arg;

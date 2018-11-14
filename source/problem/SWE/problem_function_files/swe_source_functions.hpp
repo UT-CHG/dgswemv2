@@ -2,14 +2,14 @@
 #define SWE_SOURCE_FUNCTIONS_HPP
 
 namespace SWE {
-inline StatVector<double, SWE::n_variables> source_u(const double t, const Point<2>& pt) {
+inline StatVector<double, SWE::n_variables> source_q(const double t, const Point<2>& pt) {
     double source_ze = 0.0;
     double source_qx = 0.0;
     double source_qy = 0.0;
 
-    StatVector<double, SWE::n_variables> source_u{source_ze, source_qx, source_qy};
+    StatVector<double, SWE::n_variables> source_q{source_ze, source_qx, source_qy};
 
-    return source_u;
+    return source_q;
 }
 }
 

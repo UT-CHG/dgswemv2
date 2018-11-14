@@ -18,7 +18,7 @@ class Flow {
 
   public:
     Flow() = default;
-    Flow(const std::vector<FlowInput>& flow_input);
+    Flow(const std::vector<FlowNode>& flow_input);
 
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
@@ -30,7 +30,7 @@ class Flow {
     void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
 };
 
-Flow::Flow(const std::vector<FlowInput>& flow_input) {
+Flow::Flow(const std::vector<FlowNode>& flow_input) {
     this->frequency    = flow_input[0].frequency;
     this->forcing_fact = flow_input[0].forcing_fact;
     this->equilib_arg  = flow_input[0].equilib_arg;
