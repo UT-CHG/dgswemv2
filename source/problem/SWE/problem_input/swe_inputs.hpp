@@ -138,7 +138,7 @@ struct FlowBoundary {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & tide_nodes;
+        ar  & flow_nodes;
         // clang-format on
     }
 #endif
