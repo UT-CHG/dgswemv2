@@ -74,7 +74,7 @@ void Flow::Initialize(BoundaryType& bound) {
 }
 
 template <typename StepperType, typename EdgeBoundaryType>
-void Flow::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) { }
+void Flow::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
 
 template <typename EdgeBoundaryType>
 void Flow::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
