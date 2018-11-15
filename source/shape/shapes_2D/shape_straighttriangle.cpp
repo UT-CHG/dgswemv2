@@ -69,12 +69,12 @@ DynVector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points)
 DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) {
     DynVector<double> surface_J(1);
 
-    surface_J[0] = sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
-                                this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x],
-                            2.0) +
-                        pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
-                                this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y],
-                            2.0)) /
+    surface_J[0] = std::sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
+                                     this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::x],
+                                 2.0) +
+                             pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::y] -
+                                     this->nodal_coordinates[(bound_id + 1) % 3][GlobalCoord::y],
+                                 2.0)) /
                    2.0;  // half length for straight edge
 
     return surface_J;
