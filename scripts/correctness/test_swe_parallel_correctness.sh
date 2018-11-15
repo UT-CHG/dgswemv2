@@ -27,7 +27,7 @@ cat > bathymetry.hpp <<EOL
 #define BATHYMETRY_HPP
 
 double bathymetry_function(double x, double y) {
-    return 0.2;  // bathymetry for manufactured solution
+    return 2.0;  // bathymetry for manufactured solution
 }
 #endif
 EOL
@@ -46,8 +46,6 @@ mkdir -p dgswemv2_test
 cp -r $DGSWEMV2_ROOT_/examples/swe_manufactured_solution/input_files/* dgswemv2_test
 
 cd dgswemv2_test
-#Halve the manufactured solution run time to shorten circleci test time
-sed -i 's/  end_time: 25-11-1987 01:00:00                /  end_time: 25-11-1987 00:30:00/g' dgswemv2_input.15
 sed -i "s/  name: rkdg_swe/  name: ${PROBLEM}/g" dgswemv2_input.15
 $DGSWEMV2_ROOT_/build/mesh_generators/rectangular_mesh_generator mesh_generator_input.yml
 
