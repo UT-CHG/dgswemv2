@@ -12,12 +12,12 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Accessor>;
 
-    using RawBoundaryType = Geometry::RawBoundary<1, SWE::RKDG::Data>;
-    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::BC::Land>;
+    using RawBoundaryType = Geometry::RawBoundary<1, SWE::RKDG::Accessor>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::RKDG::Accessor, SWE::RKDG::BC::Land>;
     using InterfaceType =
-        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Data, SWE::RKDG::ISP::Internal>;
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Accessor, SWE::RKDG::ISP::Internal>;
 
     // make an equilateral triangle
     std::vector<Point<3>> vrtxs(3);

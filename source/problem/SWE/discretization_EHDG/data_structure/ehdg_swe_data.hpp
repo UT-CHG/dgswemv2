@@ -9,7 +9,7 @@
 
 namespace SWE {
 namespace EHDG {
-struct Data {
+struct Accessor {
     AlignedVector<State> state;
     Internal internal;
     AlignedVector<Boundary> boundary;
