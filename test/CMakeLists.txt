@@ -98,6 +98,18 @@ add_test(
 )
 
 add_executable(
+  test_at_each_exe
+  test_at_each.cpp
+)
+
+add_test(
+  Unit_at_each
+  test_at_each_exe
+)
+
+target_compile_definitions(test_at_each_exe PRIVATE ${LINALG_DEFINITION})
+
+add_executable(
   test_adcirc_format_exe
   test_adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
