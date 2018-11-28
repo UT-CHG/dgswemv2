@@ -88,6 +88,16 @@ add_test(
 )
 
 add_executable(
+  test_is_soa_exe
+  test_is_soa.cpp
+)
+
+add_test(
+  Unit_is_soa
+  test_is_soa_exe
+)
+
+add_executable(
   test_adcirc_format_exe
   test_adcirc_format.cpp
   ${PROJECT_SOURCE_DIR}/source/preprocessor/ADCIRC_reader/adcirc_format.cpp
