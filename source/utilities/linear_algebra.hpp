@@ -1,6 +1,8 @@
 #ifndef LINEAR_ALGEBRA_HPP
 #define LINEAR_ALGEBRA_HPP
 
+#include <utility>
+
 #ifdef USE_BLAZE
 #include "utilities/linear_algebra/use_blaze.hpp"
 #endif
@@ -23,4 +25,16 @@ using AlignedVector = std::vector<T, AlignedAllocator<T>>;
 // https://github.com/JakobEngel/dso/issues/111
 template <typename Key, typename T, typename Compare = std::less<Key>>
 using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<const Key, T>>>;
+
+namespace detail {
+template<typename T, size_t... Is>
+std::array<DynRow<T>,sizeof...(Is)> make_rows_impl( std::array<DynMatrix<T>,sizeof...(Is)>& mats, size_t index, std::index_sequence<Is...>) {
+    return { row(mats[Is],index)... };
+}
+}
+template<typename T, size_t N>
+std::array<DynRow<T>,N> make_rows( std::array<DynMatrix<T>,N>& mats, size_t index) {
+    using Indices = std::make_index_sequence<N>;
+    return detail::make_rows_impl(mats, index, Indices{});
+}
 #endif

@@ -5,6 +5,11 @@ add_executable(
 
 target_compile_definitions(test_linear_algebra_exe PRIVATE ${LINALG_DEFINITION})
 
+add_test(
+  Unit_linear_algebra
+  test_linear_algebra_exe
+)
+
 #[[target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
 target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
 

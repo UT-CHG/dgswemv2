@@ -22,9 +22,6 @@ constexpr bool RowMajor    = blaze::rowMajor;
 
 constexpr int hyb_mat_buff_size = 16;
 
-template <typename Matrix>
-using Column = decltype(blaze::column(std::declval<Matrix>(), std::declval<int>()));
-
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;
 template <typename T, uint m, uint n>
@@ -38,6 +35,15 @@ template <typename T>
 using DynMatrix = blaze::DynamicMatrix<T>;
 template <typename T, uint m>
 using HybMatrix = blaze::HybridMatrix<T, m, hyb_mat_buff_size>;
+
+template <typename Matrix>
+using Column = decltype(blaze::column(std::declval<Matrix>(), std::declval<int>()));
+
+template <typename Matrix>
+using Row = decltype(blaze::row(std::declval<Matrix>(), std::declval<int>()));
+
+template <typename T>
+using DynRow = Row<DynMatrix<T>>;
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;

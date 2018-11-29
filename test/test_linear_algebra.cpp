@@ -1,13 +1,6 @@
 #include "general_definitions.hpp"
 //#include <petscksp.h>
 
-/*
-
-THIS TEST DOES NOT TEST ANYTHING
-ITS HERE JUST TO CHECK FUNCTIONALITIES OF LINEAR ALGEBRA PACKAGES
-
-*/
-
 int main(int argc, char* args[]) {
 #ifdef USE_BLAZE
     DynVector<double> a(9);
@@ -29,6 +22,31 @@ int main(int argc, char* args[]) {
     std::cout << a << '\n' << A << "\nworks\n";
 #endif
 
+    bool error_found{false};
+    { // check make rows functionality
+        std::array<DynMatrix<double>,2> As{A,A};
+        std::array<DynRow<double>,2> Arows = make_rows(As,2);
+
+        for ( uint i = 0; i < A.cols(); ++i ) {
+            if ( Arows[0][i] != Arows[1][i] ) {
+                error_found = true;
+                std::cout << "At row 2, index " << i << '\n'
+                          << " Arows[0][i] = " << Arows[0][i] << '\n'
+                          << " Arows[1][i] = " << Arows[1][i] << '\n';
+            }
+        }
+    }
+
+    { //check that row functionality works properly
+        DynRow<double> r = row(A,2);
+        A(2,2) = 600;
+        if ( A(2,2) != r[2] ) {
+            error_found = true;
+            std::cout << "row not holding reference to A's data\n"
+                      << " row(A,2)[2] = " << r[2] << "(should be " << A(2,2) << ")\n";
+        }
+
+    }
     /*PetscInitialize(&argc, &args, (char*)0, NULL);
 
     int rank;
@@ -107,4 +125,6 @@ int main(int argc, char* args[]) {
     VecView(sol, PETSC_VIEWER_STDOUT_WORLD);
 
     PetscFinalize();*/
+
+    return error_found;
 }
