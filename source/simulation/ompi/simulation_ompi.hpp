@@ -107,7 +107,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (locality_id == 0) {
-        std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(global_l2) << std::endl;
+        std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(global_l2) << std::endl;
     }
 }
 

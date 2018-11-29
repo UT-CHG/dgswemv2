@@ -2,6 +2,7 @@
 #define RKDG_SWE_PROC_HPX_STAGE_HPP
 
 #include "rkdg_swe_kernels_processor.hpp"
+#include "problem/SWE/problem_slope_limiter/swe_CS_slope_limiter.hpp"
 
 namespace SWE {
 namespace RKDG {
@@ -93,10 +94,10 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             }
 
             sim_unit->discretization.mesh.CallForEachElement(
-                [sim_unit](auto& elt) { Problem::slope_limiting_prepare_element_kernel(sim_unit->stepper, elt); });
+                [sim_unit](auto& elt) { slope_limiting_prepare_element_kernel(sim_unit->stepper, elt); });
 
             sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
-                Problem::slope_limiting_distributed_boundary_send_kernel(sim_unit->stepper, dbound);
+                slope_limiting_distributed_boundary_send_kernel(sim_unit->stepper, dbound, CommTypes::baryctr_state);
             });
         }
 
@@ -108,11 +109,11 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
 
         if (SWE::PostProcessing::slope_limiting) {
             sim_unit->discretization.mesh.CallForEachInterface([sim_unit](auto& intface) {
-                Problem::slope_limiting_prepare_interface_kernel(sim_unit->stepper, intface);
+                slope_limiting_prepare_interface_kernel(sim_unit->stepper, intface);
             });
 
             sim_unit->discretization.mesh.CallForEachBoundary(
-                [sim_unit](auto& bound) { Problem::slope_limiting_prepare_boundary_kernel(sim_unit->stepper, bound); });
+                [sim_unit](auto& bound) { slope_limiting_prepare_boundary_kernel(sim_unit->stepper, bound); });
         }
 
         if (sim_unit->writer.WritingVerboseLog()) {
@@ -129,11 +130,11 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
 
             if (SWE::PostProcessing::slope_limiting) {
                 sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
-                    Problem::slope_limiting_prepare_distributed_boundary_kernel(sim_unit->stepper, dbound);
+                    slope_limiting_prepare_distributed_boundary_kernel(sim_unit->stepper, dbound, CommTypes::baryctr_state);
                 });
 
                 sim_unit->discretization.mesh.CallForEachElement(
-                    [sim_unit](auto& elt) { Problem::slope_limiting_kernel(sim_unit->stepper, elt); });
+                    [sim_unit](auto& elt) { slope_limiting_kernel(sim_unit->stepper, elt); });
             }
 
             if (SWE::PostProcessing::wetting_drying) {

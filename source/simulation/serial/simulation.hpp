@@ -94,7 +94,7 @@ void Simulation<ProblemType>::ComputeL2Residual() {
     this->discretization.mesh.CallForEachElement(
         [this, &residual_L2](auto& elt) { residual_L2 += ProblemType::compute_residual_L2(this->stepper, elt); });
 
-    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
+    std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(residual_L2) << std::endl;
 }
 
 template <typename ProblemType>

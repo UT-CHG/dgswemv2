@@ -140,26 +140,6 @@ struct Problem {
     template <typename ElementType>
     static void wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
-    template <typename ElementType>
-    static void slope_limiting_prepare_element_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename InterfaceType>
-    static void slope_limiting_prepare_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface);
-
-    template <typename BoundaryType>
-    static void slope_limiting_prepare_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound);
-
-    template <typename DistributedBoundaryType>
-    static void slope_limiting_distributed_boundary_send_kernel(const ProblemStepperType& stepper,
-                                                                DistributedBoundaryType& dbound);
-
-    template <typename DistributedBoundaryType>
-    static void slope_limiting_prepare_distributed_boundary_kernel(const ProblemStepperType& stepper,
-                                                                   DistributedBoundaryType& dbound);
-
-    template <typename ElementType>
-    static void slope_limiting_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
     // postprocessor kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
         SWE::write_VTK_data(mesh, raw_data_file);

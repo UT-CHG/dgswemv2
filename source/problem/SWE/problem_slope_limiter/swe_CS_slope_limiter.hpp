@@ -1,12 +1,11 @@
-#ifndef RKDG_SWE_PROC_SLOPE_LIMIT_HPP
-#define RKDG_SWE_PROC_SLOPE_LIMIT_HPP
+#ifndef SWE_CS_SL_HPP
+#define SWE_CS_SL_HPP
 
-#include "utilities/almost_equal.hpp"
+// Implementation of Cockburn-Shu slope limiter
 
 namespace SWE {
-namespace RKDG {
-template <typename ElementType>
-void Problem::slope_limiting_prepare_element_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void slope_limiting_prepare_element_kernel(const StepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
@@ -21,8 +20,8 @@ void Problem::slope_limiting_prepare_element_kernel(const ProblemStepperType& st
     }
 }
 
-template <typename InterfaceType>
-void Problem::slope_limiting_prepare_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
+template <typename StepperType, typename InterfaceType>
+void slope_limiting_prepare_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
@@ -38,8 +37,8 @@ void Problem::slope_limiting_prepare_interface_kernel(const ProblemStepperType& 
     }
 }
 
-template <typename BoundaryType>
-void Problem::slope_limiting_prepare_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void slope_limiting_prepare_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
     auto& wd_state = bound.data.wet_dry_state;
     auto& sl_state = bound.data.slope_limit_state;
 
@@ -50,9 +49,8 @@ void Problem::slope_limiting_prepare_boundary_kernel(const ProblemStepperType& s
     }
 }
 
-template <typename DistributedBoundaryType>
-void Problem::slope_limiting_distributed_boundary_send_kernel(const ProblemStepperType& stepper,
-                                                              DistributedBoundaryType& dbound) {
+template <typename StepperType, typename DistributedBoundaryType>
+void slope_limiting_distributed_boundary_send_kernel(const StepperType& stepper, DistributedBoundaryType& dbound, uint comm_type) {
     auto& wd_state = dbound.data.wet_dry_state;
 
     // Construct message to exterior state
@@ -71,19 +69,18 @@ void Problem::slope_limiting_distributed_boundary_send_kernel(const ProblemStepp
     }
 
     // Set message to send buffer
-    dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::baryctr_state, message);
+    dbound.boundary_condition.exchanger.SetToSendBuffer(comm_type, message);
 }
 
-template <typename DistributedBoundaryType>
-void Problem::slope_limiting_prepare_distributed_boundary_kernel(const ProblemStepperType& stepper,
-                                                                 DistributedBoundaryType& dbound) {
+template <typename StepperType, typename DistributedBoundaryType>
+void slope_limiting_prepare_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound, uint comm_type) {
     auto& sl_state = dbound.data.slope_limit_state;
 
     std::vector<double> message;
 
     message.resize(1 + SWE::n_variables);
 
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_state, message);
+    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(comm_type, message);
 
     sl_state.wet_neigh[dbound.bound_id] = message[0];
 
@@ -92,8 +89,8 @@ void Problem::slope_limiting_prepare_distributed_boundary_kernel(const ProblemSt
     }
 }
 
-template <typename ElementType>
-void Problem::slope_limiting_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
@@ -216,7 +213,6 @@ void Problem::slope_limiting_kernel(const ProblemStepperType& stepper, ElementTy
             state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), sl_state.q_at_vrtx);
         }
     }
-}
 }
 }
 

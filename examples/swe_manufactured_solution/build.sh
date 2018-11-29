@@ -71,7 +71,7 @@ make_swe_manufactured_solution() {
 	elif [ "${TARGET}" == "hpx" ]; then
 	    sed -i.tmp '/    return hpx::finalize();/i\
                 hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);\
-                std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;\
+                std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(globalResidualL2.get()) << std::endl;\
                 ' ${MAIN_DIR}/dgswemv2-hpx.cpp
 	fi
 

@@ -2,6 +2,7 @@
 #define RKDG_SWE_PROC_SERIAL_STEP_HPP
 
 #include "rkdg_swe_kernels_processor.hpp"
+#include "problem/SWE/problem_slope_limiter/swe_CS_slope_limiter.hpp"
 
 namespace SWE {
 namespace RKDG {
@@ -53,15 +54,15 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
 
     if (SWE::PostProcessing::slope_limiting) {
         discretization.mesh.CallForEachElement(
-            [&stepper](auto& elt) { Problem::slope_limiting_prepare_element_kernel(stepper, elt); });
+            [&stepper](auto& elt) { slope_limiting_prepare_element_kernel(stepper, elt); });
 
         discretization.mesh.CallForEachInterface(
-            [&stepper](auto& intface) { Problem::slope_limiting_prepare_interface_kernel(stepper, intface); });
+            [&stepper](auto& intface) { slope_limiting_prepare_interface_kernel(stepper, intface); });
 
         discretization.mesh.CallForEachBoundary(
-            [&stepper](auto& bound) { Problem::slope_limiting_prepare_boundary_kernel(stepper, bound); });
+            [&stepper](auto& bound) { slope_limiting_prepare_boundary_kernel(stepper, bound); });
 
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::slope_limiting_kernel(stepper, elt); });
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { slope_limiting_kernel(stepper, elt); });
     }
 
     ++stepper;
