@@ -12,6 +12,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         // Initialize delta_local and rhs_local containers
         internal.delta_local.resize(SWE::n_variables * elt.data.get_ndof(), SWE::n_variables * elt.data.get_ndof());
         internal.rhs_local.resize(SWE::n_variables * elt.data.get_ndof());
+        internal.rhs_prev.resize(SWE::n_variables * elt.data.get_ndof());
     });
 
     discretization.mesh_skeleton.CallForEachEdgeInterface([&global_dof_offset](auto& edge_int) {

@@ -273,13 +273,6 @@ class Stepper {
      * This operation will update all of the internal states of the stepper by one stage.
      */
     virtual Stepper& operator++() = 0;
-
-    // The following member method has to be defined (cannot define templated member methods as virual)
-    /**
-     * This operation will do one time stage update for an element
-     */
-    // template <typename ElementType>
-    // void UpdateState(ElementType& elt) const;
 };
 
 #define PI 3.14159265359

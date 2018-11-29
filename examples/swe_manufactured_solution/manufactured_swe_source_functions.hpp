@@ -3,6 +3,9 @@
 
 namespace SWE {
 inline StatVector<double, SWE::n_variables> source_q(const double t, const Point<2>& pt) {
+    const double x = pt[GlobalCoord::x];
+    const double y = pt[GlobalCoord::y];
+
     /*constexpr double x1 = -PI;
     constexpr double x2 = PI;
     constexpr double y1 = -PI;
@@ -13,9 +16,6 @@ inline StatVector<double, SWE::n_variables> source_q(const double t, const Point
 
     constexpr double w   = 1;
     constexpr double tau = 0;
-
-    const double x = pt[GlobalCoord::x];
-    const double y = pt[GlobalCoord::y];
 
     double source_ze = 0.0;
 
@@ -75,44 +75,28 @@ inline StatVector<double, SWE::n_variables> source_q(const double t, const Point
                          (1. / cos(w * (-y1 + y2))),
                 2);*/
 
-    double source_ze = -3 * exp(-sin(3 * t) + sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])) * cos(3 * t) +
-                       cos(4 * t + pt[GlobalCoord::y]) + sin(4 * t - pt[GlobalCoord::x]);
+    double source_ze = -3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * cos(3 * t) + cos(4 * t + y) + sin(4 * t - x);
 
     double source_qx =
-        (-3 * exp(3 * sin(3 * t) + sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])) *
-             pow(cos(4 * t - pt[GlobalCoord::x]), 2) * cos(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]) +
-         (2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) *
-             (exp(3 * sin(3 * t)) * sin(8 * t - 2 * pt[GlobalCoord::x]) -
-              (2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) *
-                  (4 * exp(2 * sin(3 * t)) * sin(4 * t - pt[GlobalCoord::x]) -
-                   3 * exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])) *
-                       (2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) *
-                       cos(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) +
-         exp(3 * sin(3 * t)) * cos(4 * t - pt[GlobalCoord::x]) *
-             ((2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) *
-                  cos(4 * t + pt[GlobalCoord::y]) -
-              3 * exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])) * cos(3 * pt[GlobalCoord::y]) *
-                  sin(3 * pt[GlobalCoord::x]) * sin(4 * t + pt[GlobalCoord::y]))) /
-        (exp(2 * sin(3 * t)) *
-         pow(2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])), 2));
+        (cos(4 * t - x) * cos(4 * t + y)) / (2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y))) - 4 * sin(4 * t - x) +
+        (2 * cos(4 * t - x) * sin(4 * t - x)) / (2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y))) +
+        3. * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * (2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y))) *
+            cos(3 * x) * sin(3 * y) -
+        (3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * pow(cos(4 * t - x), 2) * cos(3 * x) * sin(3 * y)) /
+            pow(2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)), 2) -
+        (3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * cos(4 * t - x) * cos(3 * y) * sin(3 * x) * sin(4 * t + y)) /
+            pow(2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)), 2);
 
     double source_qy =
-        (4 * exp(2 * sin(3 * t)) *
-             pow(2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])), 2) *
-             cos(4 * t + pt[GlobalCoord::y]) +
-         3 * exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])) * cos(3 * pt[GlobalCoord::y]) *
-             sin(3 * pt[GlobalCoord::x]) *
-             (pow(2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])), 3) -
-              exp(3 * sin(3 * t)) * pow(sin(4 * t + pt[GlobalCoord::y]), 2)) +
-         exp(3 * sin(3 * t)) *
-             ((2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) *
-                  sin(4 * t - pt[GlobalCoord::x]) * sin(4 * t + pt[GlobalCoord::y]) -
-              3 * exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])) * cos(4 * t - pt[GlobalCoord::x]) *
-                  cos(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]) * sin(4 * t + pt[GlobalCoord::y]) +
-              (2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y]))) *
-                  sin(2 * (4 * t + pt[GlobalCoord::y])))) /
-        (exp(2 * sin(3 * t)) *
-         pow(2 * exp(sin(3 * t)) + exp(sin(3 * pt[GlobalCoord::x]) * sin(3 * pt[GlobalCoord::y])), 2));
+        4 * cos(4 * t + y) +
+        3. * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * (2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y))) *
+            cos(3 * y) * sin(3 * x) +
+        (2 * cos(4 * t + y) * sin(4 * t + y)) / (2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y))) +
+        (sin(4 * t - x) * sin(4 * t + y)) / (2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y))) -
+        (3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * cos(4 * t - x) * cos(3 * x) * sin(3 * y) * sin(4 * t + y)) /
+            pow(2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)), 2) -
+        (3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * cos(3 * y) * sin(3 * x) * pow(sin(4 * t + y), 2)) /
+            pow(2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)), 2);
 
     StatVector<double, SWE::n_variables> source_q{source_ze, source_qx, source_qy};
 

@@ -2,6 +2,7 @@
 #define IHDG_SWE_PROC_SERIAL_STEP_HPP
 
 #include "ihdg_swe_kernels_processor.hpp"
+#include "ihdg_swe_proc_init_iter.hpp"
 #include "ihdg_swe_proc_serial_sol_glob_prob.hpp"
 
 namespace SWE {
@@ -23,17 +24,7 @@ void Problem::step_serial(SerialSimType* sim) {
 
 template <typename StepperType, typename ProblemType>
 void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
-    discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
-        const uint stage = stepper.GetStage();
-
-        auto& state      = elt.data.state[stage + 1];
-        auto& state_prev = elt.data.state[stage];
-        auto& internal   = elt.data.internal;
-
-        state.q = state_prev.q;
-
-        internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
-    });
+    Problem::init_iteration(stepper, discretization);
 
     uint iter = 0;
     while (true) {

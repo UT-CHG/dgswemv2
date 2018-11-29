@@ -5,7 +5,7 @@
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/discretization_RKDG/numerical_fluxes/rkdg_swe_numerical_fluxes.hpp"
 
-#include "simulation/stepper/explicit_ssp_rk_stepper.hpp"
+#include "simulation/stepper/implicit_stepper.hpp"
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
@@ -32,7 +32,7 @@ namespace SWE {
 namespace IHDG {
 struct Problem {
     using ProblemInputType   = SWE::Inputs;
-    using ProblemStepperType = ESSPRKStepper;
+    using ProblemStepperType = ImplicitStepper;
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
@@ -161,6 +161,37 @@ struct Problem {
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                            uint begin_sim_id,
                            uint end_sim_id);
+
+    /* init interation begin */
+
+    template <typename StepperType, typename ProblemType>
+    static void init_iteration(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+
+    template <typename StepperType, typename ElementType>
+    static void init_volume_kernel(const StepperType& stepper, ElementType& elt);
+
+    template <typename StepperType, typename ElementType>
+    static void init_source_kernel(const StepperType& stepper, ElementType& elt);
+
+    template <typename StepperType, typename InterfaceType>
+    static void init_interface_kernel(const StepperType& stepper, InterfaceType& intface);
+
+    template <typename StepperType, typename BoundaryType>
+    static void init_boundary_kernel(const StepperType& stepper, BoundaryType& bound);
+
+    template <typename StepperType, typename DistributedBoundaryType>
+    static void init_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound);
+
+    template <typename StepperType, typename EdgeInterfaceType>
+    static void init_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int);
+
+    template <typename StepperType, typename EdgeBoundaryType>
+    static void init_edge_boundary_kernel(const StepperType& stepper, EdgeBoundaryType& edge_bound);
+
+    template <typename StepperType, typename EdgeDistributedType>
+    static void init_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound);
+
+    /* init interation end */
 
     /* local step begin */
 

@@ -163,13 +163,15 @@ int main(int argc, const char* argv[]) {
         file << '\n';
     }
 
-    uint n_land = 0;
-    uint n_tide = 0;
-    uint n_flow = 0;
+    uint n_land     = 0;
+    uint n_tide     = 0;
+    uint n_flow     = 0;
+    uint n_function = 0;
 
-    uint n_land_node = 0;
-    uint n_tide_node = 0;
-    uint n_flow_node = 0;
+    uint n_land_node     = 0;
+    uint n_tide_node     = 0;
+    uint n_flow_node     = 0;
+    uint n_function_node = 0;
 
     for (uint n_bound = 0; n_bound < 4; ++n_bound) {
         if (boundaries[n_bound].type == 0) {
@@ -181,6 +183,9 @@ int main(int argc, const char* argv[]) {
         } else if (boundaries[n_bound].type == 2) {
             n_flow++;
             n_flow_node += boundaries[n_bound].nodes.size();
+        } else if (boundaries[n_bound].type == 3) {
+            n_function++;
+            n_function_node += boundaries[n_bound].nodes.size();
         }
     }
 
@@ -200,8 +205,8 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    file << n_land + n_flow << " = Number of land boundaries\n";
-    file << n_land_node + n_flow_node << " = Total number of land boundary nodes\n";
+    file << n_land + n_flow + n_function << " = Number of land boundaries\n";
+    file << n_land_node + n_flow_node + n_function_node << " = Total number of land boundary nodes\n";
 
     i = 1;
     for (uint n_bound = 0; n_bound < 4; ++n_bound) {

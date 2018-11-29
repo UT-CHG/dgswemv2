@@ -24,7 +24,7 @@ void Problem::global_edge_boundary_kernel(const StepperType& stepper, EdgeBounda
 
         double delta_hat_norm = norm(edge_internal.rhs_global) / edge_internal.rhs_global.size();
 
-        if (delta_hat_norm < 1.0e-8) {
+        if (delta_hat_norm < 1.0e-12) {
             break;
         }
     }

@@ -59,7 +59,7 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
     get_dAminus_dqx(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqx);
     get_dAminus_dqy(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqy);
 
-    double t    = stepper.GetTimeAtCurrentStage();
+    double t    = stepper.GetTimeAtCurrentStage() + stepper.GetDT();
     auto q_func = [t](Point<2>& pt) { return SWE::ic_q(t, pt); };
 
     HybMatrix<double, SWE::n_variables> q_ex = edge_bound.boundary.ComputeFgp(q_func);
