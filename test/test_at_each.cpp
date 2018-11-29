@@ -4,6 +4,7 @@
 #include <vector>
 
 struct Accessor {
+    Accessor()=delete;
     int& x;
     int& y;
 };
@@ -45,7 +46,7 @@ int main() {
 
         std::vector<Accessor> v_acsr = Utilities::at_each(v_aos,2);
 
-        std::cout << "v_aos\n"
+        std::cout << "vector of AoS\n"
                   << " Computed    |   Expected\n"
                   << "---------------------------------------------\n"
                   << ' ' << v_acsr[0].x << "  |  " << 2 << '\n'
@@ -70,6 +71,27 @@ int main() {
         error_found |= !( (v_ref[0] == 5) &&
                           (v_ref[1] == 3) &&
                           (v_ref[2] == 7) );
+    }
+
+    { //check whether it works with an array of AoS
+        std::array<AoS,3> ar_aos { AoS(10,0), AoS(10,1), AoS(10,2) };
+
+        std::array<Accessor,3> ar_acsr = Utilities::at_each(ar_aos,2);
+
+        std::cout << "array of AoS\n"
+                  << " Computed    |   Expected\n"
+                  << "---------------------------------------------\n"
+                  << ' ' << ar_acsr[0].x << "  |  " << 2 << '\n'
+                  << ' ' << ar_acsr[1].x << "  |  " << 3 << '\n'
+                  << ' ' << ar_acsr[2].x << "  |  " << 4 << '\n'
+                  << ar_acsr[0].y << "  |  " << 12<< '\n'
+                  << ar_acsr[1].y << "  |  " << 13<< '\n'
+                  << ar_acsr[2].y << "  |  " << 14<< '\n';
+
+        error_found |= !( (ar_acsr[0].x == 2) && (ar_acsr[0].y == 12 ) &&
+                          (ar_acsr[1].x == 3) && (ar_acsr[1].y == 13 ) &&
+                          (ar_acsr[2].x == 4) && (ar_acsr[2].y == 14 ) );
+
     }
 
     return error_found;
