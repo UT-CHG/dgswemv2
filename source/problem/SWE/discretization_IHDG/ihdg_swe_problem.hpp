@@ -123,12 +123,6 @@ struct Problem {
                                   uint begin_sim_id,
                                   uint end_sim_id);
 
-    template <typename MeshType>
-    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
-
-    template <typename MeshType>
-    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
-
     template <typename ProblemType>
     static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
                                                  uint& global_dof_offset);

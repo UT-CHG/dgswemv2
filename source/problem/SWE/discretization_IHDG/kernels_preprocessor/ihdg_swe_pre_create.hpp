@@ -13,9 +13,13 @@ namespace IHDG {
 std::vector<uint> Problem::comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
     std::vector<uint> offset(SWE::IHDG::n_communications);
 
+    offset[CommTypes::baryctr_coord]   = begin_index[CommTypes::baryctr_coord];
     offset[CommTypes::global_dof_indx] = begin_index[CommTypes::global_dof_indx];
+    offset[CommTypes::baryctr_state]   = begin_index[CommTypes::baryctr_state];
 
+    begin_index[CommTypes::baryctr_coord] += 2;
     begin_index[CommTypes::global_dof_indx] += 1;
+    begin_index[CommTypes::baryctr_state] += SWE::n_variables;
 
     return offset;
 }

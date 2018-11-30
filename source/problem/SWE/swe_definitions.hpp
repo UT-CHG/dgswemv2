@@ -66,13 +66,13 @@ enum CommTypes : uchar { baryctr_coord = 0, bound_state = 1, baryctr_state = 2 }
 }
 
 namespace EHDG {
-constexpr uint n_communications = 1;
-enum CommTypes : uchar { bound_state = 0 };
+constexpr uint n_communications = 3;
+enum CommTypes : uchar { baryctr_coord = 0, bound_state = 1, baryctr_state = 2 };
 }
 
 namespace IHDG {
-constexpr uint n_communications = 1;
-enum CommTypes : uchar { global_dof_indx = 0 };
+constexpr uint n_communications = 3;
+enum CommTypes : uchar { baryctr_coord = 0, global_dof_indx = 1, baryctr_state = 2 };
 }
 
 enum class SphericalProjectionType { None, Enable };

@@ -6,6 +6,7 @@
 #include "ehdg_swe_data_boundary.hpp"
 #include "ehdg_swe_data_source.hpp"
 #include "ehdg_swe_data_wet_dry.hpp"
+#include "ehdg_swe_data_slope_limit.hpp"
 
 namespace SWE {
 namespace EHDG {
@@ -16,6 +17,7 @@ struct Data {
 
     Source source;
     WetDry wet_dry_state;
+    SlopeLimit slope_limit_state;
 
     void initialize() {
         this->state.emplace_back(this->ndof);

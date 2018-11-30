@@ -95,13 +95,6 @@ struct Problem {
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
-    static void initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
-
-    static void initialize_data_parallel_pre_send(ProblemMeshType& mesh,
-                                                  const ProblemInputType& problem_specific_input);
-
-    static void initialize_data_parallel_post_receive(ProblemMeshType& mesh);
-
     // processor kernels
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
