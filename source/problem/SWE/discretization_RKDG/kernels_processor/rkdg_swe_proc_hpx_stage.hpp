@@ -2,7 +2,7 @@
 #define RKDG_SWE_PROC_HPX_STAGE_HPP
 
 #include "rkdg_swe_kernels_processor.hpp"
-#include "problem/SWE/problem_slope_limiter/swe_CS_slope_limiter.hpp"
+#include "problem/SWE/problem_slope_limiter/swe_CS_sl_hpx.hpp"
 
 namespace SWE {
 namespace RKDG {
@@ -73,6 +73,11 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
                     hpx::terminate();
             });
 
+            if (SWE::PostProcessing::wetting_drying) {
+                sim_unit->discretization.mesh.CallForEachElement(
+                    [sim_unit](auto& elt) { Problem::wetting_drying_kernel(sim_unit->stepper, elt); });
+            }
+
             if (sim_unit->writer.WritingVerboseLog()) {
                 sim_unit->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
             }
@@ -80,74 +85,17 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
     });
 
     return solve_future.then([sim_unit](auto&& f) {
-        if (sim_unit->writer.WritingVerboseLog()) {
-            sim_unit->writer.GetLogFile() << "Exchanging postprocessor data" << std::endl;
-        }
+        f.get();  // check for exceptions
 
-        hpx::future<void> receive_future =
-            sim_unit->communicator.ReceiveAll(CommTypes::baryctr_state, sim_unit->stepper.GetTimestamp());
+        hpx::future<void> ready_future = hpx::make_ready_future();
 
         if (SWE::PostProcessing::slope_limiting) {
-            if (SWE::PostProcessing::wetting_drying) {
-                sim_unit->discretization.mesh.CallForEachElement(
-                    [sim_unit](auto& elt) { Problem::wetting_drying_kernel(sim_unit->stepper, elt); });
-            }
-
-            sim_unit->discretization.mesh.CallForEachElement(
-                [sim_unit](auto& elt) { slope_limiting_prepare_element_kernel(sim_unit->stepper, elt); });
-
-            sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
-                slope_limiting_distributed_boundary_send_kernel(sim_unit->stepper, dbound, CommTypes::baryctr_state);
-            });
+            ready_future = CS_slope_limiter_hpx(sim_unit, CommTypes::baryctr_state);
         }
 
-        sim_unit->communicator.SendAll(CommTypes::baryctr_state, sim_unit->stepper.GetTimestamp());
+        ++(sim_unit->stepper);
 
-        if (sim_unit->writer.WritingVerboseLog()) {
-            sim_unit->writer.GetLogFile() << "Starting postprocessor work before receive" << std::endl;
-        }
-
-        if (SWE::PostProcessing::slope_limiting) {
-            sim_unit->discretization.mesh.CallForEachInterface(
-                [sim_unit](auto& intface) { slope_limiting_prepare_interface_kernel(sim_unit->stepper, intface); });
-
-            sim_unit->discretization.mesh.CallForEachBoundary(
-                [sim_unit](auto& bound) { slope_limiting_prepare_boundary_kernel(sim_unit->stepper, bound); });
-        }
-
-        if (sim_unit->writer.WritingVerboseLog()) {
-            sim_unit->writer.GetLogFile()
-                << "Finished postprocessor work before receive" << std::endl
-                << "Starting to wait on postprocessor receive with timestamp: " << sim_unit->stepper.GetTimestamp()
-                << std::endl;
-        }
-
-        return receive_future.then([sim_unit](auto&&) {
-            if (sim_unit->writer.WritingVerboseLog()) {
-                sim_unit->writer.GetLogFile() << "Starting postprocessor work after receive" << std::endl;
-            }
-
-            if (SWE::PostProcessing::slope_limiting) {
-                sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
-                    slope_limiting_prepare_distributed_boundary_kernel(
-                        sim_unit->stepper, dbound, CommTypes::baryctr_state);
-                });
-
-                sim_unit->discretization.mesh.CallForEachElement(
-                    [sim_unit](auto& elt) { slope_limiting_kernel(sim_unit->stepper, elt); });
-            }
-
-            if (SWE::PostProcessing::wetting_drying) {
-                sim_unit->discretization.mesh.CallForEachElement(
-                    [sim_unit](auto& elt) { Problem::wetting_drying_kernel(sim_unit->stepper, elt); });
-            }
-
-            ++(sim_unit->stepper);
-
-            if (sim_unit->writer.WritingVerboseLog()) {
-                sim_unit->writer.GetLogFile() << "Finished postprocessor work after receive" << std::endl << std::endl;
-            }
-        });
+        return ready_future;
     });
 }
 }
