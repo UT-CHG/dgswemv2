@@ -90,7 +90,11 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         hpx::future<void> ready_future = hpx::make_ready_future();
 
         if (SWE::PostProcessing::slope_limiting) {
-            ready_future = CS_slope_limiter_hpx(sim_unit, CommTypes::baryctr_state);
+            ready_future = ready_future.then([sim_unit](auto&& f) {
+                f.get();  // check for exceptions
+        
+                return CS_slope_limiter_hpx(sim_unit, CommTypes::baryctr_state);
+            });
         }
 
         ++(sim_unit->stepper);
