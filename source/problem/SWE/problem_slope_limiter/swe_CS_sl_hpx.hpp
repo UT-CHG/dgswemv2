@@ -38,7 +38,7 @@ auto CS_slope_limiter_hpx(HPXSimUnitType* sim_unit, uint comm_type) {
                                       << sim_unit->stepper.GetTimestamp() << std::endl;
     }
 
-    return receive_future.then([sim_unit](auto&&) {
+    return receive_future.then([sim_unit, comm_type](auto&&) {
         if (sim_unit->writer.WritingVerboseLog()) {
             sim_unit->writer.GetLogFile() << "Starting slope limiting work after receive" << std::endl;
         }
