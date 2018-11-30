@@ -108,9 +108,8 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         }
 
         if (SWE::PostProcessing::slope_limiting) {
-            sim_unit->discretization.mesh.CallForEachInterface([sim_unit](auto& intface) {
-                slope_limiting_prepare_interface_kernel(sim_unit->stepper, intface);
-            });
+            sim_unit->discretization.mesh.CallForEachInterface(
+                [sim_unit](auto& intface) { slope_limiting_prepare_interface_kernel(sim_unit->stepper, intface); });
 
             sim_unit->discretization.mesh.CallForEachBoundary(
                 [sim_unit](auto& bound) { slope_limiting_prepare_boundary_kernel(sim_unit->stepper, bound); });
@@ -130,7 +129,8 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
 
             if (SWE::PostProcessing::slope_limiting) {
                 sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit](auto& dbound) {
-                    slope_limiting_prepare_distributed_boundary_kernel(sim_unit->stepper, dbound, CommTypes::baryctr_state);
+                    slope_limiting_prepare_distributed_boundary_kernel(
+                        sim_unit->stepper, dbound, CommTypes::baryctr_state);
                 });
 
                 sim_unit->discretization.mesh.CallForEachElement(

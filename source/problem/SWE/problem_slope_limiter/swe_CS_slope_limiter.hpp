@@ -50,7 +50,9 @@ void slope_limiting_prepare_boundary_kernel(const StepperType& stepper, Boundary
 }
 
 template <typename StepperType, typename DistributedBoundaryType>
-void slope_limiting_distributed_boundary_send_kernel(const StepperType& stepper, DistributedBoundaryType& dbound, uint comm_type) {
+void slope_limiting_distributed_boundary_send_kernel(const StepperType& stepper,
+                                                     DistributedBoundaryType& dbound,
+                                                     uint comm_type) {
     auto& wd_state = dbound.data.wet_dry_state;
 
     // Construct message to exterior state
@@ -73,7 +75,9 @@ void slope_limiting_distributed_boundary_send_kernel(const StepperType& stepper,
 }
 
 template <typename StepperType, typename DistributedBoundaryType>
-void slope_limiting_prepare_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound, uint comm_type) {
+void slope_limiting_prepare_distributed_boundary_kernel(const StepperType& stepper,
+                                                        DistributedBoundaryType& dbound,
+                                                        uint comm_type) {
     auto& sl_state = dbound.data.slope_limit_state;
 
     std::vector<double> message;
