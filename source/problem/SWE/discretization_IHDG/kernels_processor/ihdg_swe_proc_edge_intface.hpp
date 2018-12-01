@@ -23,7 +23,7 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
         // Add tau * del_q terms to F_hat
         add_F_hat_tau_terms_intface_LF(edge_int);
 
-        double theta = 0.5;
+        double theta = stepper.GetTheta();
 
         for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); ++dof_i) {
             subvector(internal_in.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=

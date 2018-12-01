@@ -97,7 +97,7 @@ void Problem::init_source_kernel(const StepperType& stepper, ElementType& elt) {
             }
         }*/
 
-        double theta = 0.5;
+        double theta = stepper.GetTheta();
 
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             subvector(internal.rhs_prev, SWE::n_variables * dof, SWE::n_variables) +=

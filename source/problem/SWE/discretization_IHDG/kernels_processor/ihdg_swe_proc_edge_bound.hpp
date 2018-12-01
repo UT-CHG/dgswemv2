@@ -20,7 +20,7 @@ void Problem::init_edge_boundary_kernel(const StepperType& stepper, EdgeBoundary
         // Add tau * del_q terms to F_hat
         add_F_hat_tau_terms_bound_LF(edge_bound);
 
-        double theta = 0.5;
+        double theta = stepper.GetTheta();
 
         for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
             subvector(internal.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=
