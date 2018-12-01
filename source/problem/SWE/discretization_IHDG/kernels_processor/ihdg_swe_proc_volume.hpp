@@ -129,14 +129,14 @@ void Problem::local_volume_kernel(const StepperType& stepper, ElementType& elt) 
                       SWE::n_variables) =
                 reshape<double, SWE::n_variables>(
                     elt.IntegrationPhiPhi(dof_j, dof_i, internal.kronecker_DT_at_gp) -
-                    (1.0 - theta) * (elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, internal.dFx_dq_at_gp) -
-                                     elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp)));
+                    (1.0 - theta) * elt.IntegrationPhiDPhi(dof_j, GlobalCoord::x, dof_i, internal.dFx_dq_at_gp) -
+                    (1.0 - theta) * elt.IntegrationPhiDPhi(dof_j, GlobalCoord::y, dof_i, internal.dFy_dq_at_gp));
         }
 
         subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) =
             -elt.IntegrationPhi(dof_i, internal.del_q_DT_at_gp) +
-            (1.0 - theta) * (elt.IntegrationDPhi(GlobalCoord::x, dof_i, internal.Fx_at_gp) +
-                             elt.IntegrationDPhi(GlobalCoord::y, dof_i, internal.Fy_at_gp));
+            (1.0 - theta) * elt.IntegrationDPhi(GlobalCoord::x, dof_i, internal.Fx_at_gp) +
+            (1.0 - theta) * elt.IntegrationDPhi(GlobalCoord::y, dof_i, internal.Fy_at_gp);
     }
 
     internal.rhs_local += theta * internal.rhs_prev;
