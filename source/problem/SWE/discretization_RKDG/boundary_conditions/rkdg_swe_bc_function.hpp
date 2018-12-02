@@ -28,10 +28,24 @@ template <typename StepperType, typename BoundaryType>
 void Function::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
 
-    double t    = stepper.GetTimeAtCurrentStage();
-    auto q_func = [t](Point<2>& pt) { return SWE::ic_q(t, pt); };
+    double t = stepper.GetTimeAtCurrentStage();
 
-    this->q_ex = bound.ComputeFgp(q_func);
+    this->q_ex = bound.ComputeFgp([t](Point<2>& pt) {
+        double ze = 0.0;
+        double qx = 0.0;
+        double qy = 0.0;
+
+        if (t <= 3.0) {
+            ze = cos(PI * t) - 1.0;
+        } else {
+            ze = -2.0;
+        }
+
+        // StatVector<double, SWE::n_variables> q{ze, qx, qy};
+        StatVector<double, SWE::n_variables> q(SWE::ic_q(t, pt));
+
+        return q;
+    });
 
     for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
         LLF_flux(Global::g,

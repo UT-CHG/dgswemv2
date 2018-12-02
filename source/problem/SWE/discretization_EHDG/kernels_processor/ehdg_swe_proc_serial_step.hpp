@@ -58,10 +58,16 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = SWE::scrutinize_solution(stepper, elt);
 
-        if (nan_found)
+        if (nan_found) {
+            std::cerr << "Fatal Error: NaN found at element " << elt.GetID() << std::endl;
             abort();
+        }
     });
     /* Local Step */
+
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_serial(stepper, discretization);
+    }
 
     ++stepper;
 }

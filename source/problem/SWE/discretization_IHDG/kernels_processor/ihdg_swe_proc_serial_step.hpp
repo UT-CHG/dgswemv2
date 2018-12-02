@@ -83,6 +83,10 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
             abort();
     });
 
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_serial(stepper, discretization);
+    }
+
     ++stepper;
 }
 }

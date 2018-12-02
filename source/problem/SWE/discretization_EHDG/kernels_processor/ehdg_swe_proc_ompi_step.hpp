@@ -130,8 +130,6 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         });
         /* Local Post Receive Step */
 
-        ++(sim_units[su_id]->stepper);
-
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
         }
@@ -139,6 +137,14 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
+    }
+
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_ompi(sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        ++(sim_units[su_id]->stepper);
     }
 }
 }

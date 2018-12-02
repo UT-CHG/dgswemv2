@@ -19,7 +19,7 @@ std::vector<uint> Problem::comm_buffer_offsets(std::vector<uint>& begin_index, u
 
     begin_index[CommTypes::baryctr_coord] += 2;
     begin_index[CommTypes::global_dof_indx] += 1;
-    begin_index[CommTypes::baryctr_state] += SWE::n_variables;
+    begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;  // + w/d state
 
     return offset;
 }

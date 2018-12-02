@@ -2,6 +2,7 @@
 #define IHDG_SWE_PROC_OMPI_STEP_HPP
 
 #include "ihdg_swe_kernels_processor.hpp"
+#include "ihdg_swe_proc_init_iter.hpp"
 #include "ihdg_swe_proc_ompi_sol_glob_prob.hpp"
 
 namespace SWE {
@@ -30,17 +31,7 @@ void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
 template <typename OMPISimUnitType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, uint begin_sim_id, uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
-
-            auto& state      = elt.data.state[stage + 1];
-            auto& state_prev = elt.data.state[stage];
-            auto& internal   = elt.data.internal;
-
-            state.q = state_prev.q;
-
-            internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
-        });
+        Problem::init_iteration(sim_units[su_id]->stepper, sim_units[su_id]->discretization);
     }
 
     uint iter = 0;
@@ -126,7 +117,13 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             if (nan_found)
                 MPI_Abort(MPI_COMM_WORLD, 0);
         });
+    }
 
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_ompi(sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
         ++(sim_units[su_id]->stepper);
     }
 }
