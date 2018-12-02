@@ -6,6 +6,7 @@
 #include "ehdg_gn_data_boundary.hpp"
 #include "ehdg_gn_data_source.hpp"
 #include "ehdg_gn_data_wet_dry.hpp"
+#include "ehdg_gn_data_slope_limit.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -16,6 +17,7 @@ struct Data {
 
     Source source;
     WetDry wet_dry_state;
+    SlopeLimit slope_limit_state;
 
     void initialize() {
         this->state.emplace_back(this->ndof);
@@ -27,6 +29,10 @@ struct Data {
         }
 
         this->source = Source(this->nnode);
+
+        this->wet_dry_state = WetDry(this->nvrtx);
+
+        this->slope_limit_state = SlopeLimit(this->nvrtx, this->nbound);
     }
 
     void resize(const uint nstate) {

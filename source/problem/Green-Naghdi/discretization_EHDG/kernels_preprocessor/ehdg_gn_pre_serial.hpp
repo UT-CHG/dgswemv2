@@ -9,8 +9,6 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
                                   const ProblemInputType& problem_specific_input) {
     SWE_SIM::Problem::preprocessor_serial(discretization, problem_specific_input);
 
-    Problem::initialize_dc_data_serial(discretization.mesh, problem_specific_input);
-
     uint dc_global_dof_offset = 0;
 
     Problem::initialize_global_dc_problem_serial(discretization, dc_global_dof_offset);

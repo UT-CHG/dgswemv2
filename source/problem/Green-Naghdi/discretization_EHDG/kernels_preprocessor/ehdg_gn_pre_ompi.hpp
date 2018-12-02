@@ -19,9 +19,6 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         std::vector<uint> dc_global_dof_offsets;
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            Problem::initialize_dc_data_parallel(sim_units[su_id]->discretization.mesh,
-                                                 sim_units[su_id]->problem_input);
-
             uint dc_global_dof_offset = 0;
 
             Problem::initialize_global_dc_problem_parallel_pre_send(

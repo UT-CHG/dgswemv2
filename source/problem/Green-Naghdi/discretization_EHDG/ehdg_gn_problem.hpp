@@ -122,10 +122,6 @@ struct Problem {
                                   uint begin_sim_id,
                                   uint end_sim_id);
 
-    static void initialize_dc_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
-
-    static void initialize_dc_data_parallel(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input);
-
     static void initialize_global_dc_problem_serial(ProblemDiscretizationType& discretization,
                                                     uint& dc_global_dof_offset);
 
