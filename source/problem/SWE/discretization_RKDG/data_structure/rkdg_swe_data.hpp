@@ -10,7 +10,7 @@
 
 namespace SWE {
 namespace RKDG {
-struct Data {
+struct Accessor {
     AlignedVector<State> state;
     Internal internal;
     AlignedVector<Boundary> boundary;

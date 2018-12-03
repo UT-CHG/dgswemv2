@@ -8,6 +8,8 @@
 #include <blaze/math/Row.h>
 #include <blaze/util/AlignedAllocator.h>
 
+#include <map>
+
 #ifdef HAS_HPX
 #include "serialization/blaze_vector.hpp"
 #include "serialization/blaze_matrix.hpp"

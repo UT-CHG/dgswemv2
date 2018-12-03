@@ -34,7 +34,7 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
     MeshMetaData& mesh_data = input.mesh_input.mesh_data;
 
     using ElementType =
-        typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemDataType>>::type;
+        typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemAccessorType>>::type;
 
     for (auto& element_meta : mesh_data.elements) {
         uint elt_id = element_meta.first;
@@ -58,7 +58,7 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
                                            typename ProblemType::ProblemInputType& problem_input,
                                            Communicator& communicator,
                                            typename ProblemType::ProblemWriterType& writer) {
-    using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemDataType>;
+    using RawBoundaryType = Geometry::RawBoundary<1, typename ProblemType::ProblemAccessorType>;
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundaries;
 

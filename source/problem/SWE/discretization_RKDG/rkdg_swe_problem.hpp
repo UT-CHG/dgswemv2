@@ -31,14 +31,15 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
-    using ProblemDataType = Data;
+    using ProblemAccessorType = Accessor;
+    //using ProblemSoAType  = SoAContainer
 
-    using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
-    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function>;
+    using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Accessor, ISP::Internal, ISP::Levee>;
+    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function>;
     using ProblemDistributedBoundaryTypes =
-        Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
+        Geometry::DistributedBoundaryTypeTuple<Accessor, DBC::Distributed, DBC::DistributedLevee>;
 
-    using ProblemMeshType = Geometry::MeshType<Data,
+    using ProblemMeshType = Geometry::MeshType<Accessor,
                                                std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;

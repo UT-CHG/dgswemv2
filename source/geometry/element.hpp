@@ -4,10 +4,10 @@
 #include "general_definitions.hpp"
 
 namespace Geometry {
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 class Element {
   public:
-    DataType data;
+    AccessorType data;
 
   private:
     uint ID;
@@ -57,7 +57,7 @@ class Element {
     void SetMaster(MasterType& master) { this->master = &master; };
 
     void Initialize();
-    void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
+    void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, AccessorType>>>&
                                  pre_specialized_interfaces);
 
     template <typename F>
@@ -138,8 +138,8 @@ class Element {
 #endif
 };
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
+Element<dimension, MasterType, ShapeType, AccessorType>::Element(const uint ID,
                                                              MasterType& master,
                                                              std::vector<Point<3>>&& nodal_coordinates,
                                                              std::vector<uint>&& node_ID,
@@ -154,8 +154,8 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
     this->Initialize();
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
+void Element<dimension, MasterType, ShapeType, AccessorType>::Initialize() {
     // GLOBAL COORDINATES OF GPS
     this->gp_global_coordinates = this->shape.LocalToGlobalCoordinates(this->master->integration_rule.second);
 
@@ -254,9 +254,9 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
     this->data.set_ngp_internal(this->master->ngp);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
-    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>& raw_boundaries) {
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
+void Element<dimension, MasterType, ShapeType, AccessorType>::CreateRawBoundaries(
+    std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, AccessorType>>>& raw_boundaries) {
     // *** //
     Basis::Basis<dimension>* my_basis    = (Basis::Basis<dimension>*)(&this->master->basis);
     Master::Master<dimension>* my_master = (Master::Master<dimension>*)(this->master);
@@ -268,37 +268,37 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
         if (is_internal(this->boundary_type[bound_id])) {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, this->neighbor_ID[bound_id]},
-                RawBoundary<dimension - 1, DataType>(
+                RawBoundary<dimension - 1, AccessorType>(
                     this->master->p, bound_id, std::move(bound_node_ID), this->data, *my_basis, *my_master, *my_shape));
         } else {
             raw_boundaries[this->boundary_type[bound_id]].emplace(
                 std::pair<uint, uint>{this->ID, bound_id},
-                RawBoundary<dimension - 1, DataType>(
+                RawBoundary<dimension - 1, AccessorType>(
                     this->master->p, bound_id, std::move(bound_node_ID), this->data, *my_basis, *my_master, *my_shape));
         }
     }
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename F>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
     DynMatrix<double> projection = this->ComputeFgp(f) * this->int_phi_fact * this->m_inv;
 
     return projection;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionNode(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
     // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
     return nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::ProjectBasisToLinear(
     const InputArrayType& u) {
     if (const_J) {
         return this->master->basis.ProjectBasisToLinear(u);
@@ -308,9 +308,9 @@ inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::Pr
     }
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::ProjectLinearToBasis(
     const uint ndof,
     const InputArrayType& u_lin) {
     if (const_J) {
@@ -321,9 +321,9 @@ inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::Pr
     }
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename F>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
+inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
@@ -336,101 +336,101 @@ inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::Co
     return f_vals;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeUgp(const InputArrayType& u) {
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeUgp(const InputArrayType& u) {
     // u_gp(q, gp) = u(q, dof) * phi_gp(dof, gp)
     return u * this->master->phi_gp;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeDUgp(const uint dir,
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeDUgp(const uint dir,
                                                                                        const InputArrayType& u) {
     // du_gp(q, gp) = u(q, dof) * dphi_gp[dir](dof, gp)
     return u * this->dphi_gp[dir];
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUgp(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeLinearUgp(
     const InputArrayType& u_lin) {
     // u_lin_gp(q, gp) = u_lin(q, dof) * chi_gp(dof, gp)
     return u_lin * this->master->chi_gp;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeLinearDUgp(
     const uint dir,
     const InputArrayType& u_lin) {
     // du_lin_gp(q, gp) = du(q, dof) * chi_gp[dir](dof, gp)
     return u_lin * this->dchi_gp[dir];
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUbaryctr(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeLinearUbaryctr(
     const InputArrayType& u_lin) {
     return this->master->ComputeLinearUbaryctr(u_lin);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUmidpts(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeLinearUmidpts(
     const InputArrayType& u_lin) {
     return this->master->ComputeLinearUmidpts(u_lin);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUvrtx(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeLinearUvrtx(
     const InputArrayType& u_lin) {
     return this->master->ComputeLinearUvrtx(u_lin);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalUgp(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeNodalUgp(
     const InputArrayType& u_nodal) {
     // u_nodal_gp(q, gp) = u_nodal(q, dof) * psi_gp(dof, gp)
     return u_nodal * this->shape.psi_gp;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeNodalDUgp(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ComputeNodalDUgp(
     const uint dir,
     const InputArrayType& u_nodal) {
     // du_nodal_gp(q, gp) = u_nodal(q, dof) * dpsi_gp[dir](dof, gp)
     return u_nodal * this->shape.dpsi_gp[dir];
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integration(const InputArrayType& u_gp) {
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::Integration(const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_fact[gp]
     return u_gp * this->int_fact;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const uint dof,
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhi(const uint dof,
                                                                                           const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_fact(gp, dof)
     return u_gp * column(this->int_phi_fact, dof);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhi(const InputArrayType& u_gp) {
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhi(const InputArrayType& u_gp) {
     // integral(q, dof) = u_gp(q, gp) * this->int_phi_fact(gp, dof)
     return u_gp * this->int_phi_fact;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiPhi(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhiPhi(
     const uint dof_i,
     const uint dof_j,
     const InputArrayType& u_gp) {
@@ -440,26 +440,26 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integ
     return u_gp * column(this->int_phi_phi_fact, lookup);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationDPhi(const uint dir,
                                                                                            const uint dof,
                                                                                            const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * this->int_dphi_fact[dir](gp. dof)
     return u_gp * column(this->int_dphi_fact[dir], dof);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationDPhi(const uint dir,
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationDPhi(const uint dir,
                                                                                            const InputArrayType& u_gp) {
     // integral(q, dof) =  u_gp(q, gp) * this->int_dphi_fact[dir](gp. dof)
     return u_gp * this->int_dphi_fact[dir];
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::IntegrationPhiDPhi(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhiDPhi(
     const uint dof_i,
     const uint dir_j,
     const uint dof_j,
@@ -470,22 +470,22 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integ
     return u_gp * column(this->int_phi_dphi_fact[dir_j], lookup);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
-inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ApplyMinv(const InputArrayType& rhs) {
+inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ApplyMinv(const InputArrayType& rhs) {
     // solution(q, dof) = rhs(q, dof) * this->m_inv(dof, dof)
     return rhs * this->m_inv;
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vector<Point<3>>& points,
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
+void Element<dimension, MasterType, ShapeType, AccessorType>::InitializeVTK(std::vector<Point<3>>& points,
                                                                         Array2D<uint>& cells) {
     this->shape.GetVTK(points, cells);
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType, typename OutputArrayType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(
+inline void Element<dimension, MasterType, ShapeType, AccessorType>::WriteCellDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& cell_data) {
     // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
@@ -498,9 +498,9 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVT
     }
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType, typename OutputArrayType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(
+inline void Element<dimension, MasterType, ShapeType, AccessorType>::WritePointDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& point_data) {
     // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)
@@ -513,9 +513,9 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataV
     }
 }
 
-template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename F, typename InputArrayType>
-double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
+double Element<dimension, MasterType, ShapeType, AccessorType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
     // At this point we use maximum possible p for Dunavant integration
     std::pair<DynVector<double>, std::vector<Point<2>>> rule = this->master->integration.GetRule(20);
 
