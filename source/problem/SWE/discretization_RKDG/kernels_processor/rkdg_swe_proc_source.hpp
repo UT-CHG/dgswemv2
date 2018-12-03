@@ -104,8 +104,9 @@ void Problem::source_kernel(const ProblemStepperType& stepper, ElementType& elt)
                     source.coriolis_f * internal.q_at_gp(SWE::Variables::qx, gp);
             }
         }*/
-
-        state.rhs += elt.IntegrationPhi(internal.source_at_gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            state.rhs[var] += elt.IntegrationPhi(row(internal.source_at_gp,var));
+        }
     }
 }
 }

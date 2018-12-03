@@ -25,6 +25,7 @@ int main() {
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
+    SWE::RKDG::SoAContainer data_holder(1 /*stage*/,1 /*element*/,/*polynomial order*/ 10);
     MasterType master(10);
     ShapeType shape(std::move(vrtxs));
 
@@ -35,6 +36,7 @@ int main() {
 
     ElementType triangle(0,
                          master,
+                         std::move(data_holder.at(0)),
                          std::move(vrtxs),
                          std::move(std::vector<uint>(3, 0)),
                          std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),

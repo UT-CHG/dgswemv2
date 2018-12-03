@@ -19,6 +19,8 @@ constexpr int RowMajor    = Eigen::StorageOptions::RowMajor;
 
 template <typename T, uint m>
 using StatVector = Eigen::Matrix<T, m, 1>;
+template <typename T, uint m>
+using StatRowVector = Eigen::Matrix<T,1,m>;
 template <typename T, uint m, uint n>
 using StatMatrix = Eigen::Matrix<T, m, n>;
 

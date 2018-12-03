@@ -10,7 +10,11 @@ double compute_residual_L2(const StepperType& stepper, ElementType& elt) {
 
     auto true_q = [t](Point<2>& pt) { return SWE::true_q(t, pt); };
 
-    return elt.ComputeResidualL2(true_q, elt.data.state[0].q);
+    DynMatrix<double> tmp(SWE::n_variables, columns(elt.data.state[0].q[0]));
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        row(tmp,var) = elt.data.state[0].q[var];
+    }
+    return elt.ComputeResidualL2(true_q, tmp);
 }
 }
 

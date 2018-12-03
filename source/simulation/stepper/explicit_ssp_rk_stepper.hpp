@@ -69,14 +69,16 @@ class ESSPRKStepper : public Stepper {
         auto& state      = elt.data.state;
         auto& next_state = elt.data.state[this->stage + 1];
 
-        set_constant(next_state.q, 0.0);
+        for ( uint var = 0; var < elt.data.state.size(); ++var ) {
+            set_constant(next_state.q[var], 0.0);
 
-        for (uint s = 0; s <= this->stage; ++s) {
-            next_state.q += this->ark[stage][s] * state[s].q + this->dt * this->brk[stage][s] * state[s].solution;
+            for (uint s = 0; s <= this->stage; ++s) {
+                next_state.q[var] += this->ark[stage][s] * state[s].q[var] + this->dt * this->brk[stage][s] * state[s].solution[var];
+            }
+
+            if (this->stage + 1 == this->nstages)
+                std::swap(state[0].q, state[this->nstages].q);
         }
-
-        if (this->stage + 1 == this->nstages)
-            std::swap(state[0].q, state[this->nstages].q);
     }
 
 #ifdef HAS_HPX

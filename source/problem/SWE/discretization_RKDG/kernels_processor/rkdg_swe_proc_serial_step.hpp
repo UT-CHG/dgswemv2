@@ -33,7 +33,9 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         auto& state = elt.data.state[stepper.GetStage()];
 
-        state.solution = elt.ApplyMinv(state.rhs);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            state.solution[var] = elt.ApplyMinv(state.rhs[var]);
+        }
 
         stepper.UpdateState(elt);
     });

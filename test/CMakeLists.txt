@@ -235,7 +235,7 @@ add_test(
   test_boundary_interface_exe
 )
 
-add_executable(
+#[[add_executable(
   test_edges_exe
   test_edges.cpp
   ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
@@ -253,7 +253,7 @@ target_link_libraries(test_edges_exe ${YAML_CPP_LIBRARIES})
 add_test(
   Unit_edges
   test_edges_exe
-)
+)]]
 
 add_executable(
   test_rk_stepper_exe

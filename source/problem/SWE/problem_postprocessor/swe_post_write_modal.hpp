@@ -4,8 +4,8 @@
 namespace SWE {
 template <typename StepperType, typename MeshType>
 void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::string& output_path) {
-    std::vector<std::pair<uint, HybMatrix<double, SWE::n_variables>>> modal_q;
-    std::vector<std::pair<uint, HybMatrix<double, 1>>> modal_aux;
+    std::vector<std::pair<uint, std::array<DynRow<double>, SWE::n_variables>>> modal_q;
+    std::vector<std::pair<uint, DynRow<double>>> modal_aux;
 
     mesh.CallForEachElement([&modal_q, &modal_aux](auto& elt) {
         modal_q.push_back(std::make_pair(elt.GetID(), elt.data.state[0].q));
@@ -23,10 +23,10 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
-        uint ndof = columns((*it).second);
+        uint ndof = columns((*it).second[SWE::Variables::ze]);
 
         for (uint dof = 0; dof < ndof; ++dof) {
-            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Variables::ze, dof) << std::endl;
+            file << (*it).first << ' ' << std::scientific << (*it).second[SWE::Variables::ze][dof] << std::endl;
         }
     }
 
@@ -41,10 +41,10 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
-        uint ndof = columns((*it).second);
+        uint ndof = columns((*it).second[SWE::Variables::qx]);
 
         for (uint dof = 0; dof < ndof; ++dof) {
-            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Variables::qx, dof) << std::endl;
+            file << (*it).first << ' ' << std::scientific << (*it).second[SWE::Variables::qx][dof] << std::endl;
         }
     }
 
@@ -59,10 +59,10 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
-        uint ndof = columns((*it).second);
+        uint ndof = columns((*it).second[SWE::Variables::qy]);
 
         for (uint dof = 0; dof < ndof; ++dof) {
-            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Variables::qy, dof) << std::endl;
+            file << (*it).first << ' ' << std::scientific << (*it).second[SWE::Variables::qy][dof] << std::endl;
         }
     }
 
@@ -80,7 +80,7 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
         uint ndof = columns((*it).second);
 
         for (uint dof = 0; dof < ndof; ++dof) {
-            file << (*it).first << ' ' << std::scientific << (*it).second(SWE::Auxiliaries::bath, dof) << std::endl;
+            file << (*it).first << ' ' << std::scientific << (*it).second[dof] << std::endl;
         }
     }
 

@@ -10,12 +10,16 @@ void Problem::volume_kernel(const ProblemStepperType& stepper, ElementType& elt)
     auto& wd_state = elt.data.wet_dry_state;
     auto& state    = elt.data.state[stage];
 
-    set_constant(state.rhs, 0.0);
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        set_constant(state.rhs[var], 0.0);
+    }
 
     if (wd_state.wet) {
         auto& internal = elt.data.internal;
 
-        internal.q_at_gp = elt.ComputeUgp(state.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            row(internal.q_at_gp,var) = elt.ComputeUgp(state.q[var]);
+        }
 
         row(internal.aux_at_gp, SWE::Auxiliaries::h) =
             row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
@@ -41,8 +45,10 @@ void Problem::volume_kernel(const ProblemStepperType& stepper, ElementType& elt)
         row(internal.Fy_at_gp, SWE::Variables::qx) = uvh;
         row(internal.Fy_at_gp, SWE::Variables::qy) = vvh + pe;
 
-        state.rhs = elt.IntegrationDPhi(GlobalCoord::x, internal.Fx_at_gp) +
-                    elt.IntegrationDPhi(GlobalCoord::y, internal.Fy_at_gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            state.rhs[var] = elt.IntegrationDPhi(GlobalCoord::x, row(internal.Fx_at_gp,var)) +
+                elt.IntegrationDPhi(GlobalCoord::y, row(internal.Fy_at_gp,var));
+        }
     }
 }
 }

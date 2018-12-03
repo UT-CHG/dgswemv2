@@ -13,7 +13,10 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
     wd_state.went_completely_dry = false;
 
     // fixme: think about higher degree polynomials here (c.f. issue #107)
-    wd_state.q_lin     = elt.ProjectBasisToLinear(state.q);
+    row(wd_state.q_lin, SWE::Variables::ze) = elt.ProjectBasisToLinear(state.q[SWE::Variables::ze]);
+    row(wd_state.q_lin, SWE::Variables::qx) = elt.ProjectBasisToLinear(state.q[SWE::Variables::qx]);
+    row(wd_state.q_lin, SWE::Variables::qy) = elt.ProjectBasisToLinear(state.q[SWE::Variables::qy]);
+
     wd_state.q_at_vrtx = elt.ComputeLinearUvrtx(wd_state.q_lin);
 
     for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
@@ -48,9 +51,10 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
 
         wd_state.wet = false;
 
-        state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
-
-        set_constant(state.rhs, 0.0);
+        for ( uint var = 0; var < 3; ++var ) {
+            state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
+            set_constant(state.rhs[var], 0.0);
+        }
 
         return;
     } else {
@@ -111,7 +115,9 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             }
         }
 
-        state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
+        for ( uint var = 0; var < 3; ++var ) {
+            state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
+        }
 
         check_element = true;
     }
@@ -137,9 +143,11 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
         }
 
-        state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
+        for ( uint var = 0; var < 3; ++var ) {
+            state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
+            set_constant(state.rhs[var], 0.0);
+        }
 
-        set_constant(state.rhs, 0.0);
     } else if (set_wet_element) {
         wd_state.wet = true;
     }

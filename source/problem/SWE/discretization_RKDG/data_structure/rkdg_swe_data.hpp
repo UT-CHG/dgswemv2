@@ -8,10 +8,12 @@
 #include "rkdg_swe_data_wet_dry.hpp"
 #include "rkdg_swe_data_slope_limit.hpp"
 
+#include "utilities/at_each.hpp"
+
 namespace SWE {
 namespace RKDG {
 struct Accessor {
-    AlignedVector<State> state;
+    AlignedVector<StateAccessor> state;
     Internal internal;
     AlignedVector<Boundary> boundary;
 
@@ -20,8 +22,6 @@ struct Accessor {
     SlopeLimit slope_limit_state;
 
     void initialize() {
-        this->state.emplace_back(this->ndof);
-
         this->internal = Internal(this->ngp_internal);
 
         for (uint bound_id = 0; bound_id < this->nbound; ++bound_id) {
@@ -29,18 +29,9 @@ struct Accessor {
         }
 
         this->source = Source(this->nnode);
-
         this->wet_dry_state = WetDry(this->nvrtx);
 
         this->slope_limit_state = SlopeLimit(this->nvrtx, this->nbound);
-    }
-
-    void resize(const uint nstate) {
-        if (this->state.size() < nstate) {
-            this->state.insert(this->state.end(), nstate - this->state.size(), State(ndof));
-        } else if (this->state.size() > nstate) {
-            this->state.erase(this->state.end() - (this->state.size() - nstate), this->state.end());
-        }
     }
 
     uint get_nnode() const { return this->nnode; }
@@ -89,6 +80,39 @@ struct Accessor {
     }
 #endif
 };
+
+struct SoAContainer {
+public:
+    using AccessorType = Accessor;
+
+    SoAContainer()=default;
+    SoAContainer(uint nstages,
+                 uint nelements,
+                 uint p);
+
+    Accessor at(const size_t index);
+private:
+    AlignedVector<StateData> state;
+
+};
+
+SoAContainer::SoAContainer(uint nstages,
+                           uint nelements,
+                           uint p) {
+    uint ndofs     = (p+1)*(p+2)/2;
+
+    this->state.reserve(nstages+1);
+    for ( uint i = 0; i < nstages+1; ++i ) {
+        this->state.emplace_back(nelements, ndofs);
+    }
+}
+
+Accessor SoAContainer::at(const size_t index) {
+    Accessor acc;
+    acc.state = Utilities::at_each(this->state, index);
+    return acc;
+}
+
 }
 }
 

@@ -11,7 +11,7 @@ bool scrutinize_solution(const StepperType& stepper, ElementType& elt) {
     uint ndof = elt.data.get_ndof();
 
     for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.q(SWE::Variables::ze, dof))) {
+        if (std::isnan(state.q[SWE::Variables::ze][dof])) {
             std::cerr << "Error: found isnan ze at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -20,7 +20,7 @@ bool scrutinize_solution(const StepperType& stepper, ElementType& elt) {
     }
 
     for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.q(SWE::Variables::qx, dof))) {
+        if (std::isnan(state.q[SWE::Variables::qx][dof])) {
             std::cerr << "Error: found isnan qx at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 
@@ -29,7 +29,7 @@ bool scrutinize_solution(const StepperType& stepper, ElementType& elt) {
     }
 
     for (uint dof = 0; dof < ndof; ++dof) {
-        if (std::isnan(state.q(SWE::Variables::qy, dof))) {
+        if (std::isnan(state.q[SWE::Variables::qy][dof])) {
             std::cerr << "Error: found isnan qy at Element " << elt.GetID();
             std::cerr << "       At stage: " << stage << "\n";
 

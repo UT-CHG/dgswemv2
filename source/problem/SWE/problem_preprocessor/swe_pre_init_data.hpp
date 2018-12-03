@@ -25,7 +25,7 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        row(state.aux, SWE::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
+        state.aux = elt.L2ProjectionNode(bathymetry);
 
         row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeNodalUgp(bathymetry);
         row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
@@ -58,19 +58,22 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Default) {
             uint nnode = elt.GetShape().nodal_coordinates.size();
 
-            HybMatrix<double, SWE::n_variables> u_node(SWE::n_variables, nnode);
+            DynRowVector<double> u_node(nnode);
 
-            for (uint node_id = 0; node_id < nnode; ++node_id) {
-                u_node(SWE::Variables::ze, node_id) = problem_specific_input.initial_conditions.ze_initial;
-                u_node(SWE::Variables::qx, node_id) = problem_specific_input.initial_conditions.qx_initial;
-                u_node(SWE::Variables::qy, node_id) = problem_specific_input.initial_conditions.qy_initial;
-            }
+            set_constant(u_node, problem_specific_input.initial_conditions.ze_initial);
+            state.q[SWE::Variables::ze] = elt.L2ProjectionNode(u_node);
 
-            state.q = elt.L2ProjectionNode(u_node);
+            set_constant(u_node, problem_specific_input.initial_conditions.qx_initial);
+            state.q[SWE::Variables::qx] = elt.L2ProjectionNode(u_node);
+
+            set_constant(u_node, problem_specific_input.initial_conditions.qy_initial);
+            state.q[SWE::Variables::qy] = elt.L2ProjectionNode(u_node);
+
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
-            auto q_init = [](Point<2>& pt) { return SWE::ic_q(0, pt); };
-
-            state.q = elt.L2ProjectionF(q_init);
+            DynMatrix<double> tmp = elt.L2ProjectionF([](Point<2>& pt) { return SWE::ic_q(0, pt); });
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                state.q[var] = row(tmp,var);
+            }
         }
     });
 

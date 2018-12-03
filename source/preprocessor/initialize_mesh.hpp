@@ -6,6 +6,7 @@
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
+                              typename ProblemType::ProblemSoAContainerType& data,
                               InputParameters<typename ProblemType::ProblemInputType>& input,
                               typename ProblemType::ProblemWriterType& writer);
 
@@ -17,18 +18,20 @@ void initialize_mesh_interfaces_boundaries(typename ProblemType::ProblemMeshType
 
 template <typename ProblemType, typename Communicator>
 void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
+                     typename ProblemType::ProblemSoAContainerType& data,
                      InputParameters<typename ProblemType::ProblemInputType>& input,
                      Communicator& communicator,
                      typename ProblemType::ProblemWriterType& writer) {
     mesh.SetMeshName(input.mesh_input.mesh_data.mesh_name);
 
-    initialize_mesh_elements<ProblemType>(mesh, input, writer);
+    initialize_mesh_elements<ProblemType>(mesh, data, input, writer);
 
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, input.problem_input, communicator, writer);
 }
 
 template <typename ProblemType>
 void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
+                              typename ProblemType::ProblemSoAContainerType& data,
                               InputParameters<typename ProblemType::ProblemInputType>& input,
                               typename ProblemType::ProblemWriterType& writer) {
     MeshMetaData& mesh_data = input.mesh_input.mesh_data;
@@ -36,12 +39,14 @@ void initialize_mesh_elements(typename ProblemType::ProblemMeshType& mesh,
     using ElementType =
         typename std::tuple_element<0, Geometry::ElementTypeTuple<typename ProblemType::ProblemAccessorType>>::type;
 
+    uint counter = 0;
     for (auto& element_meta : mesh_data.elements) {
         uint elt_id = element_meta.first;
 
         auto nodal_coordinates = mesh_data.get_nodal_coordinates(elt_id);
 
         mesh.template CreateElement<ElementType>(elt_id,
+                                                 std::move(data.at(counter++)),
                                                  std::move(nodal_coordinates),
                                                  std::move(element_meta.second.node_ID),
                                                  std::move(element_meta.second.neighbor_ID),

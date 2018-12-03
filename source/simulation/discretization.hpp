@@ -7,26 +7,36 @@
 
 template <typename ProblemType>
 struct DGDiscretization {
-    typename ProblemType::ProblemMeshType mesh;
+    using SoAContainer = typename ProblemType::ProblemSoAContainerType;
+    using MeshType     = typename ProblemType::ProblemMeshType;
+
+    MeshType mesh;
+    SoAContainer  data;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
-                    typename ProblemType::ProblemWriterType& writer) {
+                    typename ProblemType::ProblemWriterType& writer,
+                    typename ProblemType::ProblemStepperType& stepper) {
         std::tuple<> empty_comm;
 
-        initialize_mesh<ProblemType>(this->mesh, input, empty_comm, writer);
+        this->initialize(input, empty_comm, writer, stepper);
     }
 
     template <typename CommunicatorType>
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
                     CommunicatorType& communicator,
-                    typename ProblemType::ProblemWriterType& writer) {
-        initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
+                    typename ProblemType::ProblemWriterType& writer,
+                    typename ProblemType::ProblemStepperType& stepper) {
+        this->data = SoAContainer(input.stepper_input.nstages,
+                                  input.mesh_input.mesh_data.elements.size(),
+                                  input.polynomial_order);
+        initialize_mesh<ProblemType>(this->mesh, this->data, input, communicator, writer);
     }
 
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-        ar& mesh;
+        ar & mesh
+           & data;
     }
 #endif
 };

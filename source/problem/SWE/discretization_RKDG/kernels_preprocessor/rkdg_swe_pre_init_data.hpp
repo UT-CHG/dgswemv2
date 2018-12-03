@@ -5,7 +5,8 @@
 
 namespace SWE {
 namespace RKDG {
-void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputType& problem_specific_input) {
+void Problem::initialize_data_serial(ProblemMeshType& mesh,
+                                     const ProblemInputType& problem_specific_input) {
     SWE::initialize_data(mesh, problem_specific_input);
 
     // WETTING-DRYING INITIALIZE
@@ -21,7 +22,9 @@ void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputTy
 
         wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
 
-        wd_state.q_lin = elt.ProjectBasisToLinear(state.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            row(wd_state.q_lin,var) = elt.ProjectBasisToLinear(state.q[var]);
+        }
 
         wd_state.q_at_vrtx = elt.ComputeLinearUvrtx(wd_state.q_lin);
 
@@ -49,17 +52,19 @@ void Problem::initialize_data_serial(ProblemMeshType& mesh, const ProblemInputTy
                 wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
             }
 
-            state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
 
-            set_constant(state.rhs, 0.0);
+                set_constant(state.rhs[var], 0.0);
+            }
         }
     });
 
     // SLOPE LIMIT INITIALIZE
     mesh.CallForEachElement([](auto& elt) {
-        auto& shape = elt.GetShape();
+       auto& shape = elt.GetShape();
 
-        auto& sl_state = elt.data.slope_limit_state;
+       auto& sl_state = elt.data.slope_limit_state;
 
         DynRowVector<double> bath_lin(elt.data.get_nvrtx());
 

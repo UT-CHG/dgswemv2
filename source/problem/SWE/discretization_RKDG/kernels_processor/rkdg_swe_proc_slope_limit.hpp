@@ -15,7 +15,9 @@ void Problem::slope_limiting_prepare_element_kernel(const ProblemStepperType& st
 
         auto& state = elt.data.state[stage + 1];
 
-        sl_state.q_lin        = elt.ProjectBasisToLinear(state.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            row(sl_state.q_lin,var) = elt.ProjectBasisToLinear(state.q[var]);
+        }
         sl_state.q_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.q_lin);
         sl_state.q_at_midpts  = elt.ComputeLinearUmidpts(sl_state.q_lin);
     }
@@ -213,7 +215,9 @@ void Problem::slope_limiting_kernel(const ProblemStepperType& stepper, ElementTy
         }
 
         if (limit) {
-            state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), sl_state.q_at_vrtx);
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(sl_state.q_at_vrtx, var));
+            }
         }
     }
 }

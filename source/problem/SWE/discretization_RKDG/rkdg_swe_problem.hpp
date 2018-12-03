@@ -32,7 +32,7 @@ struct Problem {
     using ProblemParserType  = SWE::Parser;
 
     using ProblemAccessorType = Accessor;
-    //using ProblemSoAType  = SoAContainer
+    using ProblemSoAContainerType  = SoAContainer;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Accessor, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function>;

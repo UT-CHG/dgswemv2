@@ -43,6 +43,7 @@ class Element {
     Element() = default;
     Element(const uint ID,
             MasterType& master,
+            AccessorType&& data,
             std::vector<Point<3>>&& nodal_coordinates,
             std::vector<uint>&& node_ID,
             std::vector<uint>&& neighbor_ID,
@@ -127,7 +128,7 @@ class Element {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & data  
+        ar  & data
             & ID
             & shape
             & node_ID
@@ -140,12 +141,14 @@ class Element {
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 Element<dimension, MasterType, ShapeType, AccessorType>::Element(const uint ID,
-                                                             MasterType& master,
-                                                             std::vector<Point<3>>&& nodal_coordinates,
-                                                             std::vector<uint>&& node_ID,
-                                                             std::vector<uint>&& neighbor_ID,
-                                                             std::vector<uchar>&& boundary_type)
-    : ID(ID),
+                                                                 MasterType& master,
+                                                                 AccessorType&& data,
+                                                                 std::vector<Point<3>>&& nodal_coordinates,
+                                                                 std::vector<uint>&& node_ID,
+                                                                 std::vector<uint>&& neighbor_ID,
+                                                                 std::vector<uchar>&& boundary_type)
+    : data(std::move(data)),
+      ID(ID),
       master(&master),
       shape(ShapeType(std::move(nodal_coordinates))),
       node_ID(std::move(node_ID)),

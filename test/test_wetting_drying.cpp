@@ -29,17 +29,19 @@ int main() {
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
+    SWE::RKDG::SoAContainer data_holder(1 /*stage*/,1 /*element*/,/*polynomial order*/ 1);
+
     MasterType master(1);
 
     ElementType triangle(0,
                          master,
+                         std::move(data_holder.at(0)),
                          std::move(vrtxs),
                          std::move(std::vector<uint>(0)),
                          std::move(std::vector<uint>(0)),
                          std::move(std::vector<unsigned char>(0)));
 
     triangle.data.initialize();
-    triangle.data.resize(2);
 
     StepperInput stepper_input;
 
@@ -71,11 +73,16 @@ int main() {
     wd_state.q_at_vrtx(SWE::Variables::qy, 1) = -2.;
     wd_state.q_at_vrtx(SWE::Variables::qy, 2) = -3.;
 
-    state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
+    state.q[SWE::Variables::ze] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::ze));
+    state.q[SWE::Variables::qx] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qx));
+    state.q[SWE::Variables::qy] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qy));
 
     SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
-    wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
+    row(wd_state.q_lin, SWE::Variables::ze) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::ze]);
+    row(wd_state.q_lin, SWE::Variables::qx) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qx]);
+    row(wd_state.q_lin, SWE::Variables::qy) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qy]);
+
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
 
     if (wd_state.wet) {
@@ -123,11 +130,16 @@ int main() {
     wd_state.q_at_vrtx(SWE::Variables::qy, 1) = -2.;
     wd_state.q_at_vrtx(SWE::Variables::qy, 2) = -3.;
 
-    state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
+    state.q[SWE::Variables::ze] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::ze));
+    state.q[SWE::Variables::qx] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qx));
+    state.q[SWE::Variables::qy] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qy));
 
     SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
-    wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
+    row(wd_state.q_lin, SWE::Variables::ze) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::ze]);
+    row(wd_state.q_lin, SWE::Variables::qx) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qx]);
+    row(wd_state.q_lin, SWE::Variables::qy) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qy]);
+
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
 
     if (!wd_state.wet) {
@@ -172,11 +184,15 @@ int main() {
     wd_state.q_at_vrtx(SWE::Variables::qy, 1) = -2.;
     wd_state.q_at_vrtx(SWE::Variables::qy, 2) = -3.;
 
-    state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
+    state.q[SWE::Variables::ze] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::ze));
+    state.q[SWE::Variables::qx] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qx));
+    state.q[SWE::Variables::qy] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qy));
 
     SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
-    wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
+    row(wd_state.q_lin, SWE::Variables::ze) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::ze]);
+    row(wd_state.q_lin, SWE::Variables::qx) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qx]);
+    row(wd_state.q_lin, SWE::Variables::qy) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qy]);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
 
     if (wd_state.wet) {
@@ -225,11 +241,15 @@ int main() {
     wd_state.q_at_vrtx(SWE::Variables::qy, 1) = -2.;
     wd_state.q_at_vrtx(SWE::Variables::qy, 2) = -3.;
 
-    state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
+    state.q[SWE::Variables::ze] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::ze));
+    state.q[SWE::Variables::qx] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qx));
+    state.q[SWE::Variables::qy] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qy));
 
     SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
-    wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
+    row(wd_state.q_lin, SWE::Variables::ze) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::ze]);
+    row(wd_state.q_lin, SWE::Variables::qx) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qx]);
+    row(wd_state.q_lin, SWE::Variables::qy) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qy]);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
 
     if (wd_state.wet) {
@@ -295,11 +315,16 @@ int main() {
     wd_state.q_at_vrtx(SWE::Variables::qy, 1) = -2.;
     wd_state.q_at_vrtx(SWE::Variables::qy, 2) = -3.;
 
-    state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
+    state.q[SWE::Variables::ze] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::ze));
+    state.q[SWE::Variables::qx] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qx));
+    state.q[SWE::Variables::qy] = triangle.L2ProjectionNode(row(wd_state.q_at_vrtx,SWE::Variables::qy));
 
     SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
 
-    wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
+    row(wd_state.q_lin, SWE::Variables::ze) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::ze]);
+    row(wd_state.q_lin, SWE::Variables::qx) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qx]);
+    row(wd_state.q_lin, SWE::Variables::qy) = triangle.ProjectBasisToLinear(state.q[SWE::Variables::qy]);
+
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
 
     if (!wd_state.wet) {
