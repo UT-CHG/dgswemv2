@@ -23,7 +23,7 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
-        uint ndof = columns((*it).second[SWE::Variables::ze]);
+        uint ndof = (*it).second[SWE::Variables::ze].size();
 
         for (uint dof = 0; dof < ndof; ++dof) {
             file << (*it).first << ' ' << std::scientific << (*it).second[SWE::Variables::ze][dof] << std::endl;
@@ -41,7 +41,7 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
-        uint ndof = columns((*it).second[SWE::Variables::qx]);
+        uint ndof = (*it).second[SWE::Variables::qx].size();
 
         for (uint dof = 0; dof < ndof; ++dof) {
             file << (*it).first << ' ' << std::scientific << (*it).second[SWE::Variables::qx][dof] << std::endl;
@@ -59,7 +59,7 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_q.begin(); it != modal_q.end(); ++it) {
-        uint ndof = columns((*it).second[SWE::Variables::qy]);
+        uint ndof = (*it).second[SWE::Variables::qy].size();
 
         for (uint dof = 0; dof < ndof; ++dof) {
             file << (*it).first << ' ' << std::scientific << (*it).second[SWE::Variables::qy][dof] << std::endl;
@@ -77,7 +77,7 @@ void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::str
 
     file << std::to_string(stepper.GetTimeAtCurrentStage()) << std::endl;
     for (auto it = modal_aux.begin(); it != modal_aux.end(); ++it) {
-        uint ndof = columns((*it).second);
+        uint ndof = (*it).second.size();
 
         for (uint dof = 0; dof < ndof; ++dof) {
             file << (*it).first << ' ' << std::scientific << (*it).second[dof] << std::endl;

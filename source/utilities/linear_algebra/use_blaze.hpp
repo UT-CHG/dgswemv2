@@ -45,6 +45,12 @@ using Row = decltype(blaze::row(std::declval<Matrix>(), std::declval<int>()));
 template <typename T>
 using DynRow = Row<DynMatrix<T>>;
 
+template <typename Matrix>
+using View = Row<Matrix>;
+
+template <typename T>
+using DynView = View<DynMatrix<T>>;
+
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;
 template <typename T>
@@ -183,6 +189,11 @@ decltype(auto) row(MatrixType&& matrix, const uint row) {
 template <typename MatrixType>
 decltype(auto) column(MatrixType&& matrix, const uint col) {
     return blaze::column(std::forward<MatrixType>(matrix), col);
+}
+
+template <typename MatrixType>
+decltype(auto) row_as_view(MatrixType&& matrix, const uint row) {
+    return blaze::row(std::forward<MatrixType>(matrix), row);
 }
 
 template <typename MatrixType>
