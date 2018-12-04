@@ -210,6 +210,27 @@ std::array<double, 2> Dubiner_2D::ComputeSingularDPhiDZ2(const uint q) {
     return dphi_data;
 }
 
+inline DynRowVector<double> Dubiner_2D::ProjectBasisToLinear(const DynRowVector<double>& u) {
+    DynRowVector<double> u_lin(3);
+
+    u_lin[0] = u[0] - u[1] - u[2];
+    u_lin[1] = u[0] - u[1] + u[2];
+    u_lin[2] = u[0] + 2.0 * u[1];
+
+    return u_lin;
+}
+
+inline DynRowVector<double> Dubiner_2D::ProjectLinearToBasis(const uint ndof, const DynRowVector<double>& u_lin) {
+    DynRowVector<double> u(ndof);
+
+    set_constant(u, 0.0);
+
+    u[0] = (u_lin[0] + u_lin[1] + u_lin[2]) / 3.0;
+    u[1] = (-u_lin[0] - u_lin[1] + 2.0 * u_lin[2]) / 6.0;
+    u[2] = (-u_lin[0] + u_lin[1]) / 2.0;
+    return u;
+}
+
 inline DynMatrix<double> Dubiner_2D::ProjectBasisToLinear(const DynMatrix<double>& u) {
     uint nvar = rows(u);
 
