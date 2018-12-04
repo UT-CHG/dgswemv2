@@ -28,13 +28,13 @@ using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<const Ke
 
 namespace detail {
 template<typename T, size_t... Is>
-std::array<DynRow<T>,sizeof...(Is)> make_rows_impl( std::array<DynMatrix<T>,sizeof...(Is)>& mats, size_t index, std::index_sequence<Is...>) {
-    return { row(mats[Is],index)... };
+std::array<DynView<T>,sizeof...(Is)> make_rows_as_views_impl( std::array<DynMatrix<T>,sizeof...(Is)>& mats, size_t index, std::index_sequence<Is...>) {
+    return { row_as_view(mats[Is],index)... };
 }
 }
 template<typename T, size_t N>
-std::array<DynRow<T>,N> make_rows( std::array<DynMatrix<T>,N>& mats, size_t index) {
+std::array<DynView<T>,N> make_rows_as_views( std::array<DynMatrix<T>,N>& mats, size_t index) {
     using Indices = std::make_index_sequence<N>;
-    return detail::make_rows_impl(mats, index, Indices{});
+    return detail::make_rows_as_views_impl(mats, index, Indices{});
 }
 #endif

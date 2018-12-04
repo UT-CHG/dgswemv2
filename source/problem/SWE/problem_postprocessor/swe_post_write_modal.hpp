@@ -4,8 +4,8 @@
 namespace SWE {
 template <typename StepperType, typename MeshType>
 void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::string& output_path) {
-    std::vector<std::pair<uint, std::array<DynRow<double>, SWE::n_variables>>> modal_q;
-    std::vector<std::pair<uint, DynRow<double>>> modal_aux;
+    std::vector<std::pair<uint, std::array<DynView<double>, SWE::n_variables>>> modal_q;
+    std::vector<std::pair<uint, DynView<double>>> modal_aux;
 
     mesh.CallForEachElement([&modal_q, &modal_aux](auto& elt) {
         modal_q.push_back(std::make_pair(elt.GetID(), elt.data.state[0].q));
