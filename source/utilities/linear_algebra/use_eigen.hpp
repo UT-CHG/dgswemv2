@@ -21,17 +21,17 @@ template <typename T, uint m>
 using StatVector = Eigen::Matrix<T, m, 1>;
 template <typename T, uint m>
 using StatRowVector = Eigen::Matrix<T,1,m>;
-template <typename T, uint m, uint n>
-using StatMatrix = Eigen::Matrix<T, m, n>;
+template <typename T, uint m, uint n, int SO = SO::RowMajor>
+using StatMatrix = Eigen::Matrix<T, m, n, SO>;
 
 template <typename T>
 using DynVector = Eigen::Matrix<T, Eigen::Dynamic, 1>;
 template <typename T>
 using DynRowVector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
-template <typename T>
-using DynMatrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
-template <typename T, uint m>
-using HybMatrix = Eigen::Matrix<T, m, Eigen::Dynamic>;
+template <typename T, int SO = SO::RowMajor>
+using DynMatrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, SO>;
+template <typename T, uint m, int SO = SO::RowMajor>
+using HybMatrix = Eigen::Matrix<T, m, Eigen::Dynamic, SO>;
 
 template <typename Matrix>
 using Column = typename Eigen::DenseBase<Matrix>::ColXpr;
