@@ -42,6 +42,12 @@ using Row = typename Eigen::DenseBase<Matrix>::RowXpr;
 template <typename T>
 using DynRow = Row<DynMatrix<T>>;
 
+template <typename Vector>
+using View = typename Eigen::Map<Vector>;
+
+template <typename T>
+using DynView = typename Eigen::Map<DynRowVector<T>>;
+
 template <typename T>
 using SparseVector = Eigen::SparseVector<T>;
 template <typename T>
@@ -49,6 +55,7 @@ using SparseMatrix = Eigen::SparseMatrix<T>;
 
 template <typename EigenType>
 using AlignedAllocator = Eigen::aligned_allocator<EigenType>;
+
 
 template <typename T>
 DynMatrix<T> IdentityMatrix(const uint size) {
@@ -168,6 +175,11 @@ decltype(auto) row(MatrixType&& matrix, const uint row) {
 template <typename MatrixType>
 decltype(auto) column(MatrixType&& matrix, const uint col) {
     return matrix.col(col);
+}
+
+template <typename T>
+DynView<T> row_as_view(DynMatrix<T>& matrix, const uint row) {
+    return DynView<T>(&matrix(row,0), matrix.cols());
 }
 
 template <typename MatrixType>

@@ -4,11 +4,11 @@
 namespace SWE {
 namespace RKDG {
 struct StateAccessor {
-    std::array<DynRow<double>,SWE::n_variables> q;
-    DynRow<double> aux;
+    std::array<DynView<double>,SWE::n_variables> q;
+    DynView<double> aux;
 
-    std::array<DynRow<double>,SWE::n_variables> rhs;
-    std::array<DynRow<double>,SWE::n_variables> solution;
+    std::array<DynView<double>,SWE::n_variables> rhs;
+    std::array<DynView<double>,SWE::n_variables> solution;
 };
 
 struct StateData {
@@ -29,10 +29,10 @@ struct StateData {
     std::array<DynMatrix<double>, SWE::n_variables> solution;
 
     AccessorType at(const uint index) {
-        return AccessorType{make_rows(q,index),
-                row(aux,index),
-                make_rows(rhs,index),
-                make_rows(solution,index)};
+        return AccessorType{make_rows_as_views(q,index),
+                row_as_view(aux,index),
+                make_rows_as_views(rhs,index),
+                make_rows_as_views(solution,index)};
     }
 
 #ifdef HAS_HPX
