@@ -1,4 +1,6 @@
-#include "general_definitions.hpp"
+#include "utilities/linear_algebra.hpp"
+
+#include <iostream>
 //#include <petscksp.h>
 
 int main(int argc, char* args[]) {
@@ -25,9 +27,9 @@ int main(int argc, char* args[]) {
     bool error_found{false};
     { // check make rows functionality
         std::array<DynMatrix<double>,2> As{A,A};
-        std::array<DynRow<double>,2> Arows = make_rows(As,2);
+        std::array<DynView<double>,2> Arows = make_rows_as_views(As,2);
 
-        for ( uint i = 0; i < A.cols(); ++i ) {
+        for ( uint i = 0; i < columns(A); ++i ) {
             if ( Arows[0][i] != Arows[1][i] ) {
                 error_found = true;
                 std::cout << "At row 2, index " << i << '\n'
