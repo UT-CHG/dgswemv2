@@ -18,12 +18,12 @@ struct make_master_type<std::tuple<E, Es...>> {
                                            typename make_master_type<std::tuple<Es...>>::type>::type type;
 };
 
-template <typename... Ms>
-struct master_maker;
+template <typename ContainerTuple>
+struct container_maker;
 
-template <typename... Ms>
-struct master_maker<std::tuple<Ms...>> {
-    static std::tuple<Ms...> construct_masters(uint p) { return std::make_tuple(Ms(p)...); };
+template <typename... Cs>
+struct container_maker<std::tuple<Cs...>> {
+    static std::tuple<Cs...> construct_containers(uint p) { return std::make_tuple(Cs(p)...); };
 };
 }
 

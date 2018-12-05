@@ -5,6 +5,8 @@
 #include "utilities/heterogeneous_containers.hpp"
 #include "mesh_utilities.hpp"
 
+#include "geometry/element_container.hpp"
+
 namespace Geometry {
 // Since elements types already come in a tuple. We can use specialization
 // to get easy access to the parameter packs for the element and edge types.
@@ -20,8 +22,7 @@ class Mesh<std::tuple<Elements...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>> {
   public:
-    using MasterElementTypes           = typename make_master_type<std::tuple<Elements...>>::type;
-    using ElementContainer             = Utilities::HeterogeneousMap<Elements...>;
+    using ElementContainers            = std::tuple<ElementContainer<Elements>...>;
     using InterfaceContainer           = Utilities::HeterogeneousVector<Interfaces...>;
     using BoundaryContainer            = Utilities::HeterogeneousVector<Boundaries...>;
     using DistributedBoundaryContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
@@ -29,8 +30,7 @@ class Mesh<std::tuple<Elements...>,
   private:
     uint p;
 
-    MasterElementTypes masters;
-    ElementContainer elements;
+    ElementContainers elements;
     InterfaceContainer interfaces;
     BoundaryContainer boundaries;
     DistributedBoundaryContainer distributed_boundaries;
@@ -39,7 +39,7 @@ class Mesh<std::tuple<Elements...>,
 
   public:
     Mesh() = default;
-    Mesh(const uint p) : p(p), masters(master_maker<MasterElementTypes>::construct_masters(p)) {}
+    Mesh(const uint p) : p(p), elements(container_maker<ElementContainers>::construct_containers(p)) {}
 
     Mesh& operator=(const Mesh&) = delete;
     Mesh(Mesh&)                  = delete;
@@ -49,10 +49,13 @@ class Mesh<std::tuple<Elements...>,
     std::string GetMeshName() { return this->mesh_name; }
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
 
-    MasterElementTypes& GetMasters() { return this->masters; }
-    void SetMasters() { this->masters = master_maker<MasterElementTypes>::construct_masters(p); }
-
-    uint GetNumberElements() { return this->elements.size(); }
+    uint GetNumberElements() {
+        size_t sz = 0U;
+        Utilities::for_each_in_tuple(elements, [&sz](auto& elt_container) {
+                sz += elt_container.size();
+            });
+        return sz;
+    }
     uint GetNumberInterfaces() { return this->interfaces.size(); }
     uint GetNumberBoundaries() { return this->boundaries.size(); }
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
@@ -102,11 +105,11 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>>::CreateElement(const uint ID, Args&&... args) {
-    using MasterType = typename ElementType::ElementMasterType;
+    using ElementContainerType = ElementContainer<ElementType>;
 
-    MasterType& master_elt = std::get<Utilities::index<MasterType, MasterElementTypes>::value>(this->masters);
+    ElementContainerType& elt_container = std::get<Utilities::index<ElementContainerType, ElementContainers>::value>(this->elements);
 
-    this->elements.template emplace<ElementType>(ID, ElementType(ID, master_elt, std::forward<Args>(args)...));
+    elt_container.CreateElement(ID, std::forward<Args>(args)...);
 }
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>
@@ -142,8 +145,8 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>>::CallForEachElement(const F& f) {
-    Utilities::for_each_in_tuple(this->elements.data, [&f](auto& element_map) {
-        std::for_each(element_map.begin(), element_map.end(), [&f](auto& pair) { f(pair.second); });
+    Utilities::for_each_in_tuple(this->elements, [&f](auto& element_container) {
+            element_container.CallForEachElement([&f](auto& elt) { f(elt); });
     });
 }
 
@@ -186,10 +189,10 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>>::CallForEachElementOfType(const F& f) {
-    auto& el_container =
-        std::get<Utilities::index<ElementType, typename ElementContainer::TupleType>::value>(this->elements.data);
+    auto& elt_container =
+        std::get<Utilities::index<ElementType, ElementContainers>::value>(this->elements.data);
 
-    std::for_each(el_container.begin(), el_container.end(), f);
+    elt_container.CallForEachElement(f);
 }
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>

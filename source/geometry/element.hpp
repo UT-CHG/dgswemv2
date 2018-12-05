@@ -3,6 +3,8 @@
 
 #include "general_definitions.hpp"
 
+#include "raw_boundary.hpp"
+
 namespace Geometry {
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 class Element {
@@ -25,7 +27,7 @@ class Element {
 
     /* psi_gp stored in shape */   // nodal basis, i.e. shape functions
     /* chi_gp stored in master */  // linear basis
-    /* phi_gp stroed in master */  // modal basis
+    /* phi_gp stored in master */  // modal basis
 
     /* dpsi_gp stored in shape */                      // nodal basis, i.e. shape functions
     std::array<DynMatrix<double>, dimension> dchi_gp;  // linear basis
