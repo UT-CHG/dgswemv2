@@ -7,11 +7,9 @@
 
 template <typename ProblemType>
 struct DGDiscretization {
-    using SoAContainer = typename ProblemType::ProblemSoAContainerType;
     using MeshType     = typename ProblemType::ProblemMeshType;
 
     MeshType mesh;
-    SoAContainer  data;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
                     typename ProblemType::ProblemWriterType& writer,
@@ -26,17 +24,15 @@ struct DGDiscretization {
                     CommunicatorType& communicator,
                     typename ProblemType::ProblemWriterType& writer,
                     typename ProblemType::ProblemStepperType& stepper) {
-        this->data = SoAContainer(input.stepper_input.nstages,
-                                  input.mesh_input.mesh_data.elements.size(),
-                                  input.polynomial_order);
-        initialize_mesh<ProblemType>(this->mesh, this->data, input, communicator, writer);
+        mesh.reserve(input.stepper_input.nstages,
+                     {static_cast<uint>(input.mesh_input.mesh_data.elements.size())});
+        initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
     }
 
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
-        ar & mesh
-           & data;
+        ar & mesh;
     }
 #endif
 };

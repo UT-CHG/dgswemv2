@@ -96,11 +96,9 @@ private:
 
 };
 
-SoAContainer::SoAContainer(uint nstages,
-                           uint nelements,
-                           uint p) {
-    uint ndofs     = (p+1)*(p+2)/2;
-
+SoAContainer::SoAContainer(uint ndofs,
+                           uint nstages,
+                           uint nelements) {
     this->state.reserve(nstages+1);
     for ( uint i = 0; i < nstages+1; ++i ) {
         this->state.emplace_back(nelements, ndofs);

@@ -40,6 +40,7 @@ struct Problem {
         Geometry::DistributedBoundaryTypeTuple<Accessor, DBC::Distributed, DBC::DistributedLevee>;
 
     using ProblemMeshType = Geometry::MeshType<Accessor,
+                                               SoAContainer,
                                                std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;

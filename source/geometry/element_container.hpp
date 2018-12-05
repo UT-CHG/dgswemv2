@@ -8,21 +8,34 @@
 
 namespace Geometry {
 
-template <typename Element>
+template <typename Element, typename DataSoAType>
 class ElementContainer;
 
-template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
-class ElementContainer<Element<dimension,MasterType,ShapeType, AccessorType>> {
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType, typename DataSoAType>
+class ElementContainer<Element<dimension,MasterType,ShapeType, AccessorType>, DataSoAType> {
 public:
     using ElementType = Element<dimension,MasterType,ShapeType,AccessorType>;
 
     ElementContainer() = default;
     ElementContainer(uint p) : master_element(p), size_(0u), capacity(0u) {}
 
+    void reserve(uint nstages, uint nelements) {
+        this->capacity = nelements;
+
+        element_accessors.reserve(nelements);
+        element_data.reserve(master_element.ndof, nstages, nelements);
+    }
+
     template <typename...Args>
     void CreateElement(const uint ID, Args&&... args) {
-        ++size_;
-        element_accessors.emplace_back(ID, master_element, std::forward<Args>(args)...);
+        if ( size_ == capacity ) {
+            throw std::runtime_error{"Not enough elements reserved. Emplacing new elements will cause accessors to be invalidated\n"};
+        }
+
+        element_accessors.emplace_back(ID,
+                                       master_element,
+                                       std::move(element_data.at(size_++)),
+                                       std::forward<Args>(args)...);
     }
 
     template <typename F>
@@ -36,7 +49,7 @@ private:
     MasterType master_element;
 
     AlignedVector<ElementType> element_accessors;
-    ElementSoA<ElementType> element_data;
+    ElementSoA<ElementType, DataSoAType> element_data;
 
     size_t size_;
     size_t capacity;
