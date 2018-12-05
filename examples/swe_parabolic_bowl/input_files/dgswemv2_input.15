@@ -1,0 +1,34 @@
+###############################################################################
+#
+#  DGSWEMv2 input file
+#
+###############################################################################
+
+mesh:
+  format: Adcirc
+  file_name: parabowl_040.14
+  coordinate_system: cartesian
+
+timestepping:
+  start_time: 15-11-1987 12:00              #dd-mm-yyyy hh:mm
+  end_time: 15-11-1987 13:00                #dd-mm-yyyy hh:mm
+  dt: 1                           #in seconds
+  order: 2
+  nstages: 2
+
+polynomial_order: 1
+
+problem:
+  name: rkdg_swe
+  gravity: 9.81
+  density_air: 1.225
+  density_water: 1000.0
+  wetting_drying:
+    h_o: 0.01
+  initial_conditions:
+    type: Function
+
+output:
+  path: output
+  vtu:
+    frequency: 60
