@@ -43,13 +43,7 @@ struct SlopeLimit {
     std::vector<bool> wet_neigh;
     AlignedVector<StatVector<double, SWE::n_variables>> q_at_baryctr_neigh;
 
-    StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
-    StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
-
-    StatVector<double, SWE::n_variables> w_midpt_char;
-    StatMatrix<double, SWE::n_variables, SWE::n_variables> w_baryctr_char;
-
-    StatVector<double, SWE::n_variables> delta_char;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> delta_char;
     StatMatrix<double, SWE::n_variables, SWE::n_variables> delta;
 
 #ifdef HAS_HPX
@@ -72,10 +66,6 @@ struct SlopeLimit {
             & bath_at_midpts
             & wet_neigh
             & q_at_baryctr_neigh
-            & L
-            & R
-            & w_midpt_char
-            & w_baryctr_char
             & delta_char
             & delta;
         // clang-format on
