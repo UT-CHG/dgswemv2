@@ -129,6 +129,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
             double ny = sl_state.surface_normal[bound][GlobalCoord::y];
 
             L = SWE::L(h, u, v, nx, ny);
+            R = SWE::R(h, u, v, nx, ny);
 
             w_midpt_char     = L * column(sl_state.q_at_midpts, bound);
             w_baryctr_char_0 = L * sl_state.q_at_baryctr;
@@ -146,13 +147,12 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
                     delta_char[var] = w_tilda[var];
                 } else if (std::signbit(w_tilda[var]) == std::signbit(w_delta[var])) {
                     delta_char[var] = std::copysign(1.0, w_tilda[var]) *
-                                               std::min(std::abs(w_tilda[var]), std::abs(PostProcessing::nu * w_delta[var]));
+                                      std::min(std::abs(w_tilda[var]), std::abs(PostProcessing::nu * w_delta[var]));
                 } else {
                     delta_char[var] = 0.0;
                 }
             }
 
-            R = SWE::R(h, u, v, nx, ny);
             column(sl_state.delta, bound) = R * delta_char;
         }
 

@@ -4,6 +4,6 @@
 double bathymetry_function(double x, double y) {
     constexpr double alpha = 1.e-7;
 
-    return -alpha * (x*x + y*y);
+    return -alpha * (x * x + y * y);
 }
 #endif
