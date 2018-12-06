@@ -115,6 +115,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
 
         StatVector<double, SWE::n_variables> w_tilda;
         StatVector<double, SWE::n_variables> w_delta;
+        StatVector<double, SWE::n_variables> delta_char;
 
         double h = sl_state.q_at_baryctr[SWE::Variables::ze] + sl_state.bath_at_baryctr;
         double u = sl_state.q_at_baryctr[SWE::Variables::qx] / h;
@@ -142,22 +143,24 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
             for (uint var = 0; var < SWE::n_variables; ++var) {
                 // TVB modified minmod
                 if (std::abs(w_tilda[var]) <= PostProcessing::M * sl_state.r_sq[bound]) {
-                    sl_state.delta_char(var, bound) = w_tilda[var];
+                    delta_char[var] = w_tilda[var];
                 } else if (std::signbit(w_tilda[var]) == std::signbit(w_delta[var])) {
-                    sl_state.delta_char(var, bound) =
-                        std::pow(-1.0, w_tilda[var]) *
-                        std::min(std::abs(w_tilda[var]), std::abs(PostProcessing::nu * w_delta[var]));
+                    delta_char[var] = std::copysign(1.0, w_tilda[var]) *
+                                               std::min(std::abs(w_tilda[var]), std::abs(PostProcessing::nu * w_delta[var]));
                 } else {
-                    sl_state.delta_char(var, bound) = 0.0;
+                    delta_char[var] = 0.0;
                 }
             }
+
+            R = SWE::R(h, u, v, nx, ny);
+            column(sl_state.delta, bound) = R * delta_char;
         }
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
             double delta_sum = 0.0;
 
             for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-                delta_sum += sl_state.delta_char(var, bound);
+                delta_sum += sl_state.delta(var, bound);
             }
 
             if (delta_sum != 0.0) {
@@ -165,27 +168,18 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
                 double negative = 0.0;
 
                 for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-                    positive += std::max(0.0, sl_state.delta_char(var, bound));
-                    negative += std::max(0.0, -sl_state.delta_char(var, bound));
+                    positive += std::max(0.0, sl_state.delta(var, bound));
+                    negative += std::max(0.0, -sl_state.delta(var, bound));
                 }
 
                 double theta_positive = std::min(1.0, negative / positive);
                 double theta_negative = std::min(1.0, positive / negative);
 
                 for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-                    sl_state.delta_char(var, bound) = theta_positive * std::max(0.0, sl_state.delta_char(var, bound)) -
-                                                      theta_negative * std::max(0.0, -sl_state.delta_char(var, bound));
+                    sl_state.delta(var, bound) = theta_positive * std::max(0.0, sl_state.delta(var, bound)) -
+                                                 theta_negative * std::max(0.0, -sl_state.delta(var, bound));
                 }
             }
-        }
-
-        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            double nx = sl_state.surface_normal[bound][GlobalCoord::x];
-            double ny = sl_state.surface_normal[bound][GlobalCoord::y];
-
-            R = SWE::R(h, u, v, nx, ny);
-
-            column(sl_state.delta, bound) = R * column(sl_state.delta_char, bound);
         }
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
@@ -198,14 +192,14 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
         T(1, 1) = -1.0;
         T(2, 2) = -1.0;
 
-        sl_state.q_at_vrtx = sl_state.delta * T;
+        sl_state.q_at_vrtx += sl_state.delta * T;
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
             double del_q_norm = norm(row(sl_state.q_at_vrtx, var) - row(sl_state.q_lin, var));
             double q_norm     = norm(row(sl_state.q_lin, var));
 
-            if (del_q_norm / q_norm > 1.0e-6) {
-                //row(state.q, var) = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(sl_state.q_at_vrtx, var));
+            if (del_q_norm / q_norm > 1.0e-12) {
+                row(state.q, var) = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(sl_state.q_at_vrtx, var));
             }
         }
     }
