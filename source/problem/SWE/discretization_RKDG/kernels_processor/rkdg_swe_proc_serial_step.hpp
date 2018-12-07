@@ -39,14 +39,7 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
         stepper.UpdateState(elt);
     });
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        bool nan_found = SWE::scrutinize_solution(stepper, elt);
-
-        if (nan_found) {
-            std::cerr << "Fatal Error: NaN found at element " << elt.GetID() << std::endl;
-            abort();
-        }
-    });
+    ++stepper;
 
     if (SWE::PostProcessing::wetting_drying) {
         discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); });
@@ -56,7 +49,14 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
         CS_slope_limiter_serial(stepper, discretization);
     }
 
-    ++stepper;
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+        bool nan_found = SWE::scrutinize_solution(stepper, elt);
+
+        if (nan_found) {
+            std::cerr << "Fatal Error: NaN found at element " << elt.GetID() << std::endl;
+            abort();
+        }
+    });
 }
 }
 }

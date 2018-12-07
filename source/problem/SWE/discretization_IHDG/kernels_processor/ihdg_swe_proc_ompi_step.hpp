@@ -103,19 +103,14 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        ++(sim_units[su_id]->stepper);
+
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             uint n_stages = sim_units[su_id]->stepper.GetNumStages();
 
             auto& state = elt.data.state;
 
             std::swap(state[0].q, state[n_stages].q);
-        });
-
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
-
-            if (nan_found)
-                MPI_Abort(MPI_COMM_WORLD, 0);
         });
     }
 
@@ -124,7 +119,12 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        ++(sim_units[su_id]->stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
+
+            if (nan_found)
+                MPI_Abort(MPI_COMM_WORLD, 0);
+        });
     }
 }
 }

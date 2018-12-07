@@ -13,7 +13,7 @@ void slope_limiting_prepare_element_kernel(const StepperType& stepper, ElementTy
     if (wd_state.wet) {
         const uint stage = stepper.GetStage();
 
-        auto& state = elt.data.state[stage + 1];
+        auto& state = elt.data.state[stage];
 
         sl_state.q_lin        = elt.ProjectBasisToLinear(state.q);
         sl_state.q_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.q_lin);
@@ -103,7 +103,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
         std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()) {
         const uint stage = stepper.GetStage();
 
-        auto& state = elt.data.state[stage + 1];
+        auto& state = elt.data.state[stage];
 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
         StatMatrix<double, SWE::n_variables, SWE::n_variables> invR;

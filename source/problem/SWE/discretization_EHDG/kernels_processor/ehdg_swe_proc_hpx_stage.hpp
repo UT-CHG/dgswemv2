@@ -82,12 +82,7 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             sim_unit->stepper.UpdateState(elt);
         });
 
-        sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
-            bool nan_found = SWE::scrutinize_solution(sim_unit->stepper, elt);
-
-            if (nan_found)
-                hpx::terminate();
-        });
+        ++(sim_unit->stepper);
         /* Local Post Receive Step */
 
         if (sim_unit->writer.WritingVerboseLog()) {
@@ -106,7 +101,12 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
     return stage_future.then([sim_unit](auto&& f) {
         f.get();  // check for exceptions
 
-        ++(sim_unit->stepper);
+        sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
+            bool nan_found = SWE::scrutinize_solution(sim_unit->stepper, elt);
+
+            if (nan_found)
+                hpx::terminate();
+        });
     });
 }
 }

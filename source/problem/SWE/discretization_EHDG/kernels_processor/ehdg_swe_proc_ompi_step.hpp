@@ -122,12 +122,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             sim_units[su_id]->stepper.UpdateState(elt);
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
-
-            if (nan_found)
-                MPI_Abort(MPI_COMM_WORLD, 0);
-        });
+        ++(sim_units[su_id]->stepper);
         /* Local Post Receive Step */
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
@@ -135,16 +130,21 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
-    }
-
     if (SWE::PostProcessing::slope_limiting) {
         CS_slope_limiter_ompi(sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        ++(sim_units[su_id]->stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
+
+            if (nan_found)
+                MPI_Abort(MPI_COMM_WORLD, 0);
+        });
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 }
 }

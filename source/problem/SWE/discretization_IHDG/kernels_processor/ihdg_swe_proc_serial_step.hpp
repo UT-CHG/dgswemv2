@@ -68,6 +68,8 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
         }
     }
 
+    ++stepper;
+
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         uint n_stages = stepper.GetNumStages();
 
@@ -76,18 +78,16 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
         std::swap(state[0].q, state[n_stages].q);
     });
 
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_serial(stepper, discretization);
+    }
+
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = SWE::scrutinize_solution(stepper, elt);
 
         if (nan_found)
             abort();
     });
-
-    if (SWE::PostProcessing::slope_limiting) {
-        CS_slope_limiter_serial(stepper, discretization);
-    }
-
-    ++stepper;
 }
 }
 }

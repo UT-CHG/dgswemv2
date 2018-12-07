@@ -33,22 +33,22 @@ void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "SCALARS ze_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_cell_data.begin(); it != q_cell_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Variables::ze] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Variables::ze] << std::endl;
 
     raw_data_file << "SCALARS qx_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_cell_data.begin(); it != q_cell_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Variables::qx] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Variables::qx] << std::endl;
 
     raw_data_file << "SCALARS qy_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_cell_data.begin(); it != q_cell_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Variables::qy] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Variables::qy] << std::endl;
 
     raw_data_file << "SCALARS bath_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = aux_cell_data.begin(); it != aux_cell_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Auxiliaries::bath] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Auxiliaries::bath] << std::endl;
 
     raw_data_file << "SCALARS ID unsigned_int 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
@@ -70,22 +70,22 @@ void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "SCALARS ze_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_point_data.begin(); it != q_point_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Variables::ze] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Variables::ze] << std::endl;
 
     raw_data_file << "SCALARS qx_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_point_data.begin(); it != q_point_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Variables::qx] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Variables::qx] << std::endl;
 
     raw_data_file << "SCALARS qy_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = q_point_data.begin(); it != q_point_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Variables::qy] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Variables::qy] << std::endl;
 
     raw_data_file << "SCALARS bath_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto it = aux_point_data.begin(); it != aux_point_data.end(); ++it)
-        raw_data_file << (*it)[SWE::Auxiliaries::bath] << std::endl;
+        raw_data_file << (float)(*it)[SWE::Auxiliaries::bath] << std::endl;
 }
 }
 

@@ -96,25 +96,18 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             sim_units[su_id]->stepper.UpdateState(elt);
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
-
-            if (nan_found)
-                MPI_Abort(MPI_COMM_WORLD, 0);
-        });
-
-        if (SWE::PostProcessing::wetting_drying) {
-            sim_units[su_id]->discretization.mesh.CallForEachElement(
-                [&sim_units, su_id](auto& elt) { Problem::wetting_drying_kernel(sim_units[su_id]->stepper, elt); });
-        }
+        ++(sim_units[su_id]->stepper);
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
+    if (SWE::PostProcessing::wetting_drying) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+            sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [&sim_units, su_id](auto& elt) { Problem::wetting_drying_kernel(sim_units[su_id]->stepper, elt); });
+        }
     }
 
     if (SWE::PostProcessing::slope_limiting) {
@@ -122,7 +115,16 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        ++(sim_units[su_id]->stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
+            bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
+
+            if (nan_found)
+                MPI_Abort(MPI_COMM_WORLD, 0);
+        });
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 }
 }

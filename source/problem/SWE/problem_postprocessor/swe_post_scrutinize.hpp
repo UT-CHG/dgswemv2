@@ -6,7 +6,7 @@ template <typename StepperType, typename ElementType>
 bool scrutinize_solution(const StepperType& stepper, ElementType& elt) {
     uint stage = stepper.GetStage();
 
-    auto& state = elt.data.state[stage + 1];
+    auto& state = elt.data.state[stage];
 
     uint ndof = elt.data.get_ndof();
 
