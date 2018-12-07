@@ -153,7 +153,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
                 }
             }
 
-            column(sl_state.delta, bound) = delta_char;
+            column(sl_state.delta, bound) = R * delta_char;
         }
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
@@ -180,15 +180,6 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
                                                  theta_negative * std::max(0.0, -sl_state.delta(var, bound));
                 }
             }
-        }
-
-        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            double nx = sl_state.surface_normal[bound][GlobalCoord::x];
-            double ny = sl_state.surface_normal[bound][GlobalCoord::y];
-
-            R = SWE::R(h, u, v, nx, ny);
-
-            column(sl_state.delta, bound) = R * column(sl_state.delta, bound);
         }
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
