@@ -50,7 +50,7 @@ int main() {
     ESSPRKStepper stepper(stepper_input);
 
     auto& wd_state = triangle.data.wet_dry_state;
-    auto& state    = triangle.data.state[1];
+    auto& state    = triangle.data.state[0];
 
     wd_state.bath_at_vrtx[0] = 1.;
     wd_state.bath_at_vrtx[1] = 2.;
