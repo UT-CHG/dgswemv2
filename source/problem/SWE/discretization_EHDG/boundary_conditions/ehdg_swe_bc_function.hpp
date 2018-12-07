@@ -8,15 +8,15 @@ namespace EHDG {
 namespace BC {
 class Function {
   private:
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> Aplus;
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> dAplus_dze;
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> dAplus_dqx;
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> dAplus_dqy;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> Aplus;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dze;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dqx;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dqy;
 
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> Aminus;
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> dAminus_dze;
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> dAminus_dqx;
-    HybMatrix<double, SWE::n_variables * SWE::n_variables> dAminus_dqy;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> Aminus;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAminus_dze;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAminus_dqx;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAminus_dqy;
 
   public:
     template <typename BoundaryType>
@@ -33,15 +33,15 @@ template <typename BoundaryType>
 void Function::Initialize(BoundaryType& bound) {
     uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
 
-    this->Aplus.resize(SWE::n_variables * SWE::n_variables, ngp);
-    this->dAplus_dze.resize(SWE::n_variables * SWE::n_variables, ngp);
-    this->dAplus_dqx.resize(SWE::n_variables * SWE::n_variables, ngp);
-    this->dAplus_dqy.resize(SWE::n_variables * SWE::n_variables, ngp);
+    this->Aplus.resize(ngp);
+    this->dAplus_dze.resize(ngp);
+    this->dAplus_dqx.resize(ngp);
+    this->dAplus_dqy.resize(ngp);
 
-    this->Aminus.resize(SWE::n_variables * SWE::n_variables, ngp);
-    this->dAminus_dze.resize(SWE::n_variables * SWE::n_variables, ngp);
-    this->dAminus_dqx.resize(SWE::n_variables * SWE::n_variables, ngp);
-    this->dAminus_dqy.resize(SWE::n_variables * SWE::n_variables, ngp);
+    this->Aminus.resize(ngp);
+    this->dAminus_dze.resize(ngp);
+    this->dAminus_dqx.resize(ngp);
+    this->dAminus_dqy.resize(ngp);
 }
 
 template <typename StepperType, typename EdgeBoundaryType>
@@ -83,31 +83,23 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
         return q;
     });
 
-    using AMatrix = StatMatrix<double, SWE::n_variables, SWE::n_variables>;
-
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        AMatrix A_plus      = reshape<double, SWE::n_variables>(column(Aplus, gp));
-        AMatrix dA_plus_dze = reshape<double, SWE::n_variables>(column(dAplus_dze, gp));
-        AMatrix dA_plus_dqx = reshape<double, SWE::n_variables>(column(dAplus_dqx, gp));
-        AMatrix dA_plus_dqy = reshape<double, SWE::n_variables>(column(dAplus_dqy, gp));
-
-        AMatrix A_minus      = reshape<double, SWE::n_variables>(column(Aminus, gp));
-        AMatrix dA_minus_dze = reshape<double, SWE::n_variables>(column(dAminus_dze, gp));
-        AMatrix dA_minus_dqx = reshape<double, SWE::n_variables>(column(dAminus_dqx, gp));
-        AMatrix dA_minus_dqy = reshape<double, SWE::n_variables>(column(dAminus_dqy, gp));
-
         auto q     = column(boundary.q_at_gp, gp);
         auto q_hat = column(edge_internal.q_hat_at_gp, gp);
         auto q_inf = column(q_ex, gp);
 
-        AMatrix dB_dq_hat = A_minus - A_plus;
+        StatMatrix<double, SWE::n_variables, SWE::n_variables> dB_dq_hat = this->Aminus[gp] - this->Aplus[gp];
 
-        column(dB_dq_hat, SWE::Variables::ze) += dA_plus_dze * (q - q_hat) - dA_minus_dze * (q_inf - q_hat);
-        column(dB_dq_hat, SWE::Variables::qx) += dA_plus_dqx * (q - q_hat) - dA_minus_dqx * (q_inf - q_hat);
-        column(dB_dq_hat, SWE::Variables::qy) += dA_plus_dqy * (q - q_hat) - dA_minus_dqy * (q_inf - q_hat);
+        column(dB_dq_hat, SWE::Variables::ze) +=
+            this->dAplus_dze[gp] * (q - q_hat) - this->dAminus_dze[gp] * (q_inf - q_hat);
+        column(dB_dq_hat, SWE::Variables::qx) +=
+            this->dAplus_dqx[gp] * (q - q_hat) - this->dAminus_dqx[gp] * (q_inf - q_hat);
+        column(dB_dq_hat, SWE::Variables::qy) +=
+            this->dAplus_dqy[gp] * (q - q_hat) - this->dAminus_dqy[gp] * (q_inf - q_hat);
 
         column(edge_internal.delta_hat_global_kernel_at_gp, gp) = flatten<double>(dB_dq_hat);
-        column(edge_internal.rhs_global_kernel_at_gp, gp)       = A_plus * (q - q_hat) - A_minus * (q_inf - q_hat);
+        column(edge_internal.rhs_global_kernel_at_gp, gp) =
+            this->Aplus[gp] * (q - q_hat) - this->Aminus[gp] * (q_inf - q_hat);
     }
 }
 
