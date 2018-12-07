@@ -41,8 +41,8 @@ void Function::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
             ze = -2.0;
         }
 
-        // StatVector<double, SWE::n_variables> q{ze, qx, qy};
-        StatVector<double, SWE::n_variables> q(SWE::ic_q(t, pt));
+        StatVector<double, SWE::n_variables> q{ze, qx, qy};
+        // StatVector<double, SWE::n_variables> q(SWE::ic_q(t, pt));
 
         return q;
     });
