@@ -105,8 +105,8 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
 
         auto& state = elt.data.state[stage + 1];
 
-        StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
         StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
+        StatMatrix<double, SWE::n_variables, SWE::n_variables> invR;
 
         StatVector<double, SWE::n_variables> w_midpt_char;
         StatVector<double, SWE::n_variables> w_baryctr_char_0;
@@ -128,13 +128,13 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
             double nx = sl_state.surface_normal[bound][GlobalCoord::x];
             double ny = sl_state.surface_normal[bound][GlobalCoord::y];
 
-            L = SWE::L(h, u, v, nx, ny);
-            R = SWE::R(h, u, v, nx, ny);
+            R    = SWE::R(h, u, v, nx, ny);
+            invR = SWE::invR(h, u, v, nx, ny);
 
-            w_midpt_char     = L * column(sl_state.q_at_midpts, bound);
-            w_baryctr_char_0 = L * sl_state.q_at_baryctr;
-            w_baryctr_char_1 = L * sl_state.q_at_baryctr_neigh[element_1];
-            w_baryctr_char_2 = L * sl_state.q_at_baryctr_neigh[element_2];
+            w_midpt_char     = invR * column(sl_state.q_at_midpts, bound);
+            w_baryctr_char_0 = invR * sl_state.q_at_baryctr;
+            w_baryctr_char_1 = invR * sl_state.q_at_baryctr_neigh[element_1];
+            w_baryctr_char_2 = invR * sl_state.q_at_baryctr_neigh[element_2];
 
             w_tilda = w_midpt_char - w_baryctr_char_0;
 
@@ -153,7 +153,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
                 }
             }
 
-            column(sl_state.delta, bound) = R * delta_char;
+            column(sl_state.delta, bound) = delta_char;
         }
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
@@ -180,6 +180,15 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
                                                  theta_negative * std::max(0.0, -sl_state.delta(var, bound));
                 }
             }
+        }
+
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            double nx = sl_state.surface_normal[bound][GlobalCoord::x];
+            double ny = sl_state.surface_normal[bound][GlobalCoord::y];
+
+            R = SWE::R(h, u, v, nx, ny);
+
+            column(sl_state.delta, bound) = R * column(sl_state.delta, bound);
         }
 
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
