@@ -91,6 +91,7 @@ int main() {
 
     DynMatrix<double> F_vals_bound(2, triangle.data.get_ngp_boundary(0));
     DynMatrix<double> Fn_vals_bound(3, triangle.data.get_ngp_boundary(0));
+    DynMatrix<double> Fn_vals_bound_ex(3,triangle.data.get_ngp_boundary(0));
 
     for (uint n_bound = 0; n_bound < 3; ++n_bound) {
         gp_bound = master.BoundaryToMasterCoordinates(n_bound, gp_1D);
@@ -257,8 +258,9 @@ int main() {
                 std::cerr << "Error found in interface in IntegrationPhiIN" << std::endl;
             }
 
+            DynRowVector<double> tmp_Fn_vals = row(Fn_vals_bound, n_intface);
             if (!almost_equal(boundaries[n_intface].IntegrationPhi(dof, row(Fn_vals_bound, n_intface)),
-                              interfaces[n_intface].IntegrationPhiEX(dof, row(Fn_vals_bound, n_intface)))) {
+                              interfaces[n_intface].IntegrationPhiEX(dof, reverse(tmp_Fn_vals)))) {
                 error_found = true;
 
                 std::cerr << "Error found in interface in IntegrationPhiEX" << std::endl;
@@ -344,7 +346,7 @@ int main() {
         nodal_vals_gp_comp = interfaces[n_intface].ComputeNodalUgpEX(nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); ++gp) {
-            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp_1D.size() - 1 - gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeNodalUgpEX" << std::endl;
@@ -361,7 +363,7 @@ int main() {
         nodal_vals_gp_comp = interfaces[n_intface].ComputeBoundaryNodalUgpEX(bound_nodal_vals);
 
         for (uint gp = 0; gp < gp_1D.size(); ++gp) {
-            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp))) {
+            if (!almost_equal(nodal_vals_gp(0, gp), nodal_vals_gp_comp(0, gp_1D.size() - 1 - gp))) {
                 error_found = true;
 
                 std::cerr << "Error found in boundary in ComputeBoundaryNodalUgpEX" << std::endl;

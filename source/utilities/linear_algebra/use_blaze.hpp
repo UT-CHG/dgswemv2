@@ -161,6 +161,15 @@ blaze::DynamicMatrix<T, SO> reshape(const DynVector<T>& vector, const int m, con
     return blaze::DynamicMatrix<T, SO>(m, n, vector.data());
 }
 
+template <typename InputArrayType>
+decltype(auto) reverse(InputArrayType& vector) {
+    std::vector<size_t> reversed_indices(vector.size());
+    for ( uint i= 0; i < vector.size(); ++i ) {
+        reversed_indices[i] = vector.size()-1 - i;
+    }
+    return blaze::elements(vector, reversed_indices);
+}
+
 /* Matrix Operations */
 template <typename MatrixType>
 uint rows(const MatrixType& matrix) {
@@ -230,6 +239,26 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
     DynVector<T> ret(m * n);
     blaze::CustomMatrix<T, blaze::unaligned, blaze::unpadded, SO>(ret.data(), m, n) = matrix;
     return ret;
+}
+
+template <typename VT, bool SO>
+decltype(auto) reverse_rows(const blaze::Matrix<VT,SO>& matrix) {
+    size_t n_rows = blaze::rows((~matrix));
+    std::vector<size_t> reversed_indices(n_rows);
+    for ( uint i = 0; i < n_rows; ++i ) {
+        reversed_indices[i] = n_rows - 1 - i;
+    }
+    return blaze::rows((~matrix),reversed_indices);
+}
+
+template <typename VT, bool SO>
+decltype(auto) reverse_columns(const blaze::Matrix<VT,SO>& matrix) {
+    size_t n_rows = blaze::columns((~matrix));
+    std::vector<size_t> reversed_indices(n_rows);
+    for ( uint i = 0; i < n_rows; ++i ) {
+        reversed_indices[i] = n_rows - 1 - i;
+    }
+    return blaze::columns((~matrix),reversed_indices);
 }
 
 /* Solving Linear System */

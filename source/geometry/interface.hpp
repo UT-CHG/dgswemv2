@@ -140,20 +140,20 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->master_ex.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
 
     // Compute factors to expand nodal values ex
-    this->psi_gp_ex = this->shape_ex.GetPsi(z_master_ex);
+    this->psi_gp_ex = reverse_columns(this->shape_ex.GetPsi(z_master_ex));
 
     // Compute factors to expand boundary nodal values ex
-    this->psi_bound_gp_ex = this->shape_ex.GetBoundaryPsi(this->bound_id_ex, integration_rule.second);
+    this->psi_bound_gp_ex = reverse_columns(this->shape_ex.GetBoundaryPsi(this->bound_id_ex, integration_rule.second));
 
     // Compute factors to expand modal values ex
-    this->phi_gp_ex = raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master_ex);
+    this->phi_gp_ex = reverse_columns(raw_boundary_ex.basis.GetPhi(raw_boundary_ex.p, z_master_ex));
 
     DynVector<double> surface_J = this->shape_in.GetSurfaceJ(this->bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
         this->int_fact_in = integration_rule.first * surface_J[0];
 
-        this->int_fact_ex = integration_rule.first * surface_J[0];
+        this->int_fact_ex = reverse(integration_rule.first * surface_J[0]);
 
         this->int_phi_fact_in = transpose(this->phi_gp_in);
         for (uint dof = 0; dof < this->master_in.ndof; ++dof) {
@@ -165,7 +165,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
         this->int_phi_fact_ex = transpose(this->phi_gp_ex);
         for (uint dof = 0; dof < this->master_ex.ndof; ++dof) {
             for (uint gp = 0; gp < ngp; ++gp) {
-                this->int_phi_fact_ex(gp, dof) *= integration_rule.first[gp] * surface_J[0];
+                this->int_phi_fact_ex(ngp-1 - gp, dof) *= integration_rule.first[gp] * surface_J[0];
             }
         }
 

@@ -13,6 +13,18 @@ int main(int argc, char* args[]) {
     DynVector<double> b = flatten<double>(A);
 
     std::cout << A << a << b << "works\n";
+
+
+    DynVector<double> c(4);
+    c = { 1,2,3,4};
+    std::cout << "         b: " << c << std::endl;
+    std::cout << "reverse(b): " << reverse(c) << std::endl;
+
+    DynVector<double> d(4);
+    d = {2,1,2,1};
+    std::cout << " d: " << d << std::endl;
+    std::cout << " d + reverse(c): " << d + reverse(c) << std::endl;
+    std::cout << " reverse(c + d): " << reverse(c+d) << std::endl;
 #endif
 
 #ifdef USE_EIGEN
