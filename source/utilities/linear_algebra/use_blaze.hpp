@@ -62,6 +62,11 @@ using IdentityMatrix = blaze::IdentityMatrix<T>;
 template <typename BlazeType>
 using AlignedAllocator = blaze::AlignedAllocator<BlazeType>;
 
+template <typename ArrayType>
+struct Result {
+    using type = typename ArrayType::ResultType;
+};
+
 template <typename T>
 DynVector<T> IdentityVector(const uint size) {
     DynVector<T> I_vector(size * size, 0.0);
@@ -120,9 +125,29 @@ double norm(const ArrayType& array) {
     return blaze::norm(array);
 }
 
-template <typename ArrayType>
-decltype(auto) power(const ArrayType& array, const double exp) {
+template <typename ArrayType, typename Number>
+decltype(auto) pow_vec(const ArrayType& array, const Number exp) {
     return blaze::pow(array, exp);
+}
+
+template <typename ArrayType>
+decltype(auto) sqrt_vec(const ArrayType& array) {
+    return blaze::sqrt(array);
+}
+
+template <typename ArrayType>
+decltype(auto) abs_vec(const ArrayType& array) {
+    return blaze::abs(array);
+}
+
+template <typename ArrayType>
+decltype(auto) cos_vec(const ArrayType& array) {
+    return blaze::cos(array);
+}
+
+template <typename... ArrayTypes>
+decltype(auto) max_vec(const ArrayTypes& ...arrays) {
+    return blaze::max(arrays...);
 }
 
 /* Vector Operations */

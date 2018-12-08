@@ -4,9 +4,11 @@
 //#include <petscksp.h>
 
 int main(int argc, char* args[]) {
-#ifdef USE_BLAZE
     DynVector<double> a(9);
-    a = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    DynVector<double> a2(9);
+#ifdef USE_BLAZE
+    a  = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    a2 = {5, 5, 5, 5, 5, 5, 5, 5, 5};
 
     DynMatrix<double> A = reshape<double, SO::ColumnMajor>(a, 3, 3);
 
@@ -25,12 +27,14 @@ int main(int argc, char* args[]) {
     std::cout << " d: " << d << std::endl;
     std::cout << " d + reverse(c): " << d + reverse(c) << std::endl;
     std::cout << " reverse(c + d): " << reverse(c+d) << std::endl;
+
+    auto e = c + d;
+    static_assert( std::is_same<decltype(e)::ResultType, DynVector<double>>::value);
 #endif
 
 #ifdef USE_EIGEN
-    DynVector<double> a(9);
-    a << 1, 2, 3, 4, 5, 6, 7, 8, 9;
-
+    a  << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+    a2 << 5, 5, 5, 5, 5, 5, 5, 5, 5;
     DynMatrix<double> A = reshape<double, 3>(a);
 
     std::cout << a << '\n' << A << "\nworks\n";
@@ -60,6 +64,23 @@ int main(int argc, char* args[]) {
                       << " row(A,2)[2] = " << r[2] << "(should be " << A(2,2) << ")\n";
         }
 
+    }
+
+    { //check max_vec works properly
+        DynVector<double> a_max = max_vec(a,a2);
+        for ( uint i = 0; i < a_max.size(); ++i) {
+            if ( a_max[i] < std::max(a[i], a2[i]) ) {
+                error_found = true;
+                std::cout << "Error found in max_vec with 2 arguments\n"
+                          << "  " << a_max[i] << " < max( " << a[i] << ", " << a2[i] << ")\n";
+            }
+        }
+
+        double a_maxval = max_vec(a);
+        if ( a_maxval != 9 ) {
+            error_found = true;
+            std::cout << "Error: max value in a is 9, not " << a_maxval << std::endl;
+        }
     }
     /*PetscInitialize(&argc, &args, (char*)0, NULL);
 

@@ -11,6 +11,11 @@
 #include "utilities/linear_algebra/use_eigen.hpp"
 #endif
 
+template <>
+struct Result<double> {
+    using type = double;
+};
+
 // The following are STL containers with aligned allocators.
 // These should be used whenever the template parameter is
 // a static or Hybrid vector type or contains is a class

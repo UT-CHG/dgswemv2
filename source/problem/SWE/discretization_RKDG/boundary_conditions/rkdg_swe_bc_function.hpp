@@ -28,18 +28,35 @@ template <typename StepperType, typename BoundaryType>
 void Function::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
 
+    uint ngp = boundary.F_hat_at_gp[0].size();
     double t    = stepper.GetTimeAtCurrentStage();
     auto q_func = [t](Point<2>& pt) { return SWE::ic_q(t, pt); };
 
     this->q_ex = bound.ComputeFgp(q_func);
 
-    for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
+    auto n_x = row(bound.surface_normal, GlobalCoord::x);
+    auto n_y = row(bound.surface_normal, GlobalCoord::y);
+
+    for (uint gp = 0; gp < ngp; ++gp) {
+
+        std::array<double,SWE::n_variables> F_hat_tmp;
+
         LLF_flux(Global::g,
-                 column(boundary.q_at_gp, gp),
-                 column(this->q_ex, gp),
-                 column(boundary.aux_at_gp, gp),
-                 column(bound.surface_normal, gp),
-                 column(boundary.F_hat_at_gp, gp));
+                 boundary.q_at_gp[SWE::Variables::ze][gp],
+                 boundary.q_at_gp[SWE::Variables::qx][gp],
+                 boundary.q_at_gp[SWE::Variables::qy][gp],
+                 this->q_ex(SWE::Variables::ze,gp),
+                 this->q_ex(SWE::Variables::qx,gp),
+                 this->q_ex(SWE::Variables::qy,gp),
+                 std::array<double,SWE::n_auxiliaries>{boundary.aux_at_gp[SWE::Auxiliaries::bath][gp],
+                         boundary.aux_at_gp[SWE::Auxiliaries::h][gp],
+                         boundary.aux_at_gp[SWE::Auxiliaries::sp][gp]},
+                 std::array<double,SWE::n_dimensions>{n_x[gp],n_y[gp]},
+                 F_hat_tmp
+            );
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            boundary.F_hat_at_gp[var][gp] = F_hat_tmp[var];
+        }
     }
 }
 }

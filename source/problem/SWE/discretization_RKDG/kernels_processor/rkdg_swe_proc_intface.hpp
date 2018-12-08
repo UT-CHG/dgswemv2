@@ -18,16 +18,16 @@ void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType&
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
         for ( uint var = 0; var < SWE::n_variables; ++var) {
-            row(boundary_in.q_at_gp,var) = intface.ComputeUgpIN(state_in.q[var]);
-            row(boundary_ex.q_at_gp,var) = intface.ComputeUgpEX(state_ex.q[var]);
+            boundary_in.q_at_gp[var] = intface.ComputeUgpIN(state_in.q[var]);
+            boundary_ex.q_at_gp[var] = intface.ComputeUgpEX(state_ex.q[var]);
         }
         intface.specialization.ComputeFlux(intface);
 
         // now compute contributions to the righthand side
         for ( uint var = 0; var < SWE::n_variables; ++var) {
-            state_in.rhs[var] -= intface.IntegrationPhiIN(row(boundary_in.F_hat_at_gp,var));
+            state_in.rhs[var] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[var]);
 
-            state_ex.rhs[var] -= intface.IntegrationPhiEX(row(boundary_ex.F_hat_at_gp,var));
+            state_ex.rhs[var] -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp[var]);
         }
     }
 }

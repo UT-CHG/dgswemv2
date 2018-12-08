@@ -60,7 +60,7 @@ void Levee::Initialize(InterfaceType& intface) {
 
 template <typename InterfaceType>
 void Levee::ComputeFlux(InterfaceType& intface) {
-    bool wet_in = intface.data_in.wet_dry_state.wet;
+    /*bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
@@ -72,9 +72,7 @@ void Levee::ComputeFlux(InterfaceType& intface) {
     double h_above_levee_in, h_above_levee_ex;
     double gravity_in, gravity_ex;
 
-    uint gp_ex;
     for (uint gp = 0; gp < ngp; ++gp) {
-        gp_ex = ngp - gp - 1;
 
         H_levee     = this->H_bar_gp[gp];
         C_subcrit   = this->C_subcrit_gp[gp];
@@ -83,8 +81,8 @@ void Levee::ComputeFlux(InterfaceType& intface) {
         gravity_in = Global::g;
         gravity_ex = Global::g;
 
-        h_above_levee_in = boundary_in.q_at_gp(SWE::Variables::ze, gp) - H_levee;
-        h_above_levee_ex = boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex) - H_levee;
+        h_above_levee_in = boundary_in.q_at_gp[SWE::Variables::ze][gp] - H_levee;
+        h_above_levee_ex = boundary_ex.q_at_gp[SWE::Variables::ze][gp] - H_levee;
 
         if ((h_above_levee_in <= H_tolerance && h_above_levee_ex <= H_tolerance) ||  // both side below or
             std::abs(h_above_levee_in - h_above_levee_ex) <= H_tolerance) {          // equal within tolerance
@@ -170,10 +168,10 @@ void Levee::ComputeFlux(InterfaceType& intface) {
                  column(boundary_ex.aux_at_gp, gp_ex),
                  column(intface.surface_normal_ex, gp_ex),
                  column(boundary_ex.F_hat_at_gp, gp_ex));
+                 }*/
+}
+}
+}
     }
-}
-}
-}
-}
 
 #endif

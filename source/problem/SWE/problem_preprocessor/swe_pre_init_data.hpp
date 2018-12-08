@@ -93,14 +93,14 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             bathymetry[node_id] = shape_in.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
+        boundary_in.aux_at_gp[SWE::Auxiliaries::bath] = intface.ComputeNodalUgpIN(bathymetry);
 
         // bathymetry is not necessarily continuous across weir nodes
         for (uint node_id = 0; node_id < nnode; ++node_id) {
             bathymetry[node_id] = shape_ex.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpEX(bathymetry);
+        boundary_ex.aux_at_gp[SWE::Auxiliaries::bath] = intface.ComputeNodalUgpEX(bathymetry);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -116,21 +116,16 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             double R         = problem_specific_input.spherical_projection.R;
 
-            uint gp_ex;
-            for (uint gp = 0; gp < ngp; ++gp) {
-                gp_ex = ngp - gp - 1;
-
-                boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = cos_phi_o / std::cos(y_at_gp[gp] / R);
-                boundary_ex.aux_at_gp(SWE::Auxiliaries::sp, gp_ex) = cos_phi_o / std::cos(y_at_gp[gp] / R);
+            for ( uint gp = 0; gp < ngp; ++gp ) {
+                boundary_in.aux_at_gp[SWE::Auxiliaries::sp][gp] = cos_phi_o / cos_vec(y_at_gp[gp] / R);
+                boundary_ex.aux_at_gp[SWE::Auxiliaries::sp][gp] = cos_phi_o / cos_vec(y_at_gp[gp] / R);
             }
+
         } else {
-            uint gp_ex;
-            for (uint gp = 0; gp < ngp; ++gp) {
-                gp_ex = ngp - gp - 1;
 
-                boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = 1.0;
-                boundary_ex.aux_at_gp(SWE::Auxiliaries::sp, gp_ex) = 1.0;
-            }
+            set_constant(boundary_in.aux_at_gp[SWE::Auxiliaries::sp], 1.0);
+            set_constant(boundary_ex.aux_at_gp[SWE::Auxiliaries::sp], 1.0);
+
         }
     });
 
@@ -148,7 +143,7 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = bound.ComputeNodalUgp(bathymetry);
+        boundary.aux_at_gp[SWE::Auxiliaries::bath] = bound.ComputeNodalUgp(bathymetry);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -165,11 +160,11 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < ngp; ++gp) {
-                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
+                boundary.aux_at_gp[SWE::Auxiliaries::sp][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
             for (uint gp = 0; gp < ngp; ++gp) {
-                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
+                boundary.aux_at_gp[SWE::Auxiliaries::sp][gp] = 1.0;
             }
         }
     });
@@ -188,7 +183,7 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
         }
 
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeNodalUgp(bathymetry);
+        boundary.aux_at_gp[SWE::Auxiliaries::bath] = dbound.ComputeNodalUgp(bathymetry);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -205,11 +200,11 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < ngp; ++gp) {
-                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
+                boundary.aux_at_gp[SWE::Auxiliaries::sp][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
             for (uint gp = 0; gp < ngp; ++gp) {
-                boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
+                boundary.aux_at_gp[SWE::Auxiliaries::sp][gp] = 1.0;
             }
         }
     });

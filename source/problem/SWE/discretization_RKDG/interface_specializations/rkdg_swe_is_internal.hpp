@@ -32,16 +32,31 @@ void Internal::ComputeFlux(InterfaceType& intface) {
     // assemble numerical fluxes
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
 
+        std::array<double,SWE::n_variables> F_hat_tmp{boundary_in.F_hat_at_gp[SWE::Variables::ze][gp],
+                boundary_in.F_hat_at_gp[SWE::Variables::qx][gp],
+                boundary_in.F_hat_at_gp[SWE::Variables::qy][gp]};
+
+
         LLF_flux(Global::g,
-                 column(boundary_in.q_at_gp, gp),
-                 column(boundary_ex.q_at_gp, gp),
-                 column(boundary_in.aux_at_gp, gp),
-                 column(intface.surface_normal_in, gp),
-                 column(boundary_in.F_hat_at_gp, gp));
+                 boundary_in.q_at_gp[SWE::Variables::ze][gp],
+                 boundary_in.q_at_gp[SWE::Variables::qx][gp],
+                 boundary_in.q_at_gp[SWE::Variables::qy][gp],
+                 boundary_ex.q_at_gp[SWE::Variables::ze][gp],
+                 boundary_ex.q_at_gp[SWE::Variables::qx][gp],
+                 boundary_ex.q_at_gp[SWE::Variables::qy][gp],
+                 std::array<double,SWE::n_auxiliaries>{boundary_in.aux_at_gp[SWE::Auxiliaries::bath][gp],
+                         boundary_in.aux_at_gp[SWE::Auxiliaries::h][gp],
+                         boundary_in.aux_at_gp[SWE::Auxiliaries::sp][gp]},
+                 std::array<double,SWE::n_dimensions>{intface.surface_normal_in(GlobalCoord::x,gp),
+                         intface.surface_normal_in(GlobalCoord::y,gp)},
+                 F_hat_tmp
+            );
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            boundary_in.F_hat_at_gp[var][gp] = F_hat_tmp[var];
+            boundary_ex.F_hat_at_gp[var][gp] = -boundary_in.F_hat_at_gp[var][gp];
+    }
 
-        column(boundary_ex.F_hat_at_gp, gp) = -column(boundary_in.F_hat_at_gp, gp);
-
-        if (boundary_in.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
+        /*if (boundary_in.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
                 // Zero flux on IN element side
                 set_constant(column(boundary_in.F_hat_at_gp, gp), 0.0);
@@ -84,9 +99,9 @@ void Internal::ComputeFlux(InterfaceType& intface) {
 
                 boundary_in.F_hat_at_gp(Variables::ze, gp) = -boundary_ex.F_hat_at_gp(Variables::ze, gp);
             }
-        }
+            }*/
 
-        assert(!std::isnan(boundary_in.F_hat_at_gp(Variables::ze, gp)));
+        assert(!std::isnan(boundary_in.F_hat_at_gp[Variables::ze][gp]));
     }
 }
 }

@@ -4,59 +4,63 @@
 namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
+template <typename InputArrayType>
 inline void LLF_flux(const double gravity,
-                     const Column<HybMatrix<double, SWE::n_variables>>& q_in,
-                     const Column<HybMatrix<double, SWE::n_variables>>& q_ex,
-                     const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
-                     const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
-                     Column<HybMatrix<double, SWE::n_variables>>&& F_hat) {
-    double bath = aux[SWE::Auxiliaries::bath];
-    double sp   = aux[SWE::Auxiliaries::sp];
+                     const InputArrayType& ze_in,
+                     const InputArrayType& qx_in,
+                     const InputArrayType& qy_in,
+                     const InputArrayType& ze_ex,
+                     const InputArrayType& qx_ex,
+                     const InputArrayType& qy_ex,
+                     const std::array<InputArrayType, SWE::n_auxiliaries>& aux,
+                     const std::array<InputArrayType, SWE::n_dimensions>& surface_normal,
+                     std::array<typename Result<InputArrayType>::type, SWE::n_variables>& Flux) {
+    auto& bath = aux[SWE::Auxiliaries::bath];
+    auto& sp   = aux[SWE::Auxiliaries::sp];
 
-    double h_in = q_in[SWE::Variables::ze] + bath;
-    double u_in = q_in[SWE::Variables::qx] / h_in;
-    double v_in = q_in[SWE::Variables::qy] / h_in;
+    auto h_in = ze_in + bath;
+    auto u_in = qx_in / h_in;
+    auto v_in = qy_in / h_in;
 
-    double h_ex = q_ex[SWE::Variables::ze] + bath;
-    double u_ex = q_ex[SWE::Variables::qx] / h_ex;
-    double v_ex = q_ex[SWE::Variables::qy] / h_ex;
+    auto h_ex = ze_ex + bath;
+    auto u_ex = qx_ex / h_ex;
+    auto v_ex = qy_ex / h_ex;
 
-    double un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
-    double un_ex = u_ex * surface_normal[GlobalCoord::x] + v_ex * surface_normal[GlobalCoord::y];
+    auto un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
+    auto un_ex = u_ex * surface_normal[GlobalCoord::x] + v_ex * surface_normal[GlobalCoord::y];
 
-    double sp_correction =
-        std::pow(surface_normal[GlobalCoord::x] * sp, 2) + std::pow(surface_normal[GlobalCoord::y], 2);
+    auto sp_correction =
+        pow_vec(surface_normal[GlobalCoord::x] * sp, 2) + pow_vec(surface_normal[GlobalCoord::y], 2);
 
-    double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(gravity * h_in * sp_correction),
-                                     std::abs(un_ex) + std::sqrt(gravity * h_ex * sp_correction));
+    auto max_eigenvalue = max_vec(abs_vec(un_in) + sqrt_vec(gravity * h_in * sp_correction),
+                                  abs_vec(un_ex) + sqrt_vec(gravity * h_ex * sp_correction));
 
-    StatVector<double, SWE::n_variables> Fn_in;
-    StatVector<double, SWE::n_variables> Fn_ex;
-
-    double nx = surface_normal[GlobalCoord::x];
-    double ny = surface_normal[GlobalCoord::y];
+    auto& nx = surface_normal[GlobalCoord::x];
+    auto& ny = surface_normal[GlobalCoord::y];
 
     // compute internal flux matrix
-    double uuh_in = u_in * q_in[SWE::Variables::qx];
-    double vvh_in = v_in * q_in[SWE::Variables::qy];
-    double uvh_in = u_in * q_in[SWE::Variables::qy];
-    double pe_in  = gravity * (std::pow(q_in[SWE::Variables::ze], 2) / 2 + q_in[SWE::Variables::ze] * bath);
+    auto uuh_in = u_in * qx_in;
+    auto vvh_in = v_in * qy_in;
+    auto uvh_in = u_in * qy_in;
+    auto pe_in  = gravity * (ze_in * ze_in / 2 + ze_in * bath);
 
-    Fn_in[SWE::Variables::ze] = sp * q_in[SWE::Variables::qx] * nx + q_in[SWE::Variables::qy] * ny;
-    Fn_in[SWE::Variables::qx] = sp * (uuh_in + pe_in) * nx + uvh_in * ny;
-    Fn_in[SWE::Variables::qy] = sp * uvh_in * nx + (vvh_in + pe_in) * ny;
+    auto Fn_ze_in = sp * qx_in * nx + qy_in * ny;
+    auto Fn_qx_in = sp * (uuh_in + pe_in) * nx + uvh_in * ny;
+    auto Fn_qy_in = sp * uvh_in * nx + (vvh_in + pe_in) * ny;
 
     // compute external flux matrix
-    double uuh_ex = u_ex * q_ex[SWE::Variables::qx];
-    double vvh_ex = v_ex * q_ex[SWE::Variables::qy];
-    double uvh_ex = u_ex * q_ex[SWE::Variables::qy];
-    double pe_ex  = gravity * (std::pow(q_ex[SWE::Variables::ze], 2) / 2 + q_ex[SWE::Variables::ze] * bath);
+    auto uuh_ex = u_ex * qx_ex;
+    auto vvh_ex = v_ex * qy_ex;
+    auto uvh_ex = u_ex * qy_ex;
+    auto pe_ex  = gravity * (pow_vec(ze_ex, 2) / 2 + ze_ex * bath);
 
-    Fn_ex[SWE::Variables::ze] = q_ex[SWE::Variables::qx] * nx + q_ex[SWE::Variables::qy] * ny;
-    Fn_ex[SWE::Variables::qx] = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
-    Fn_ex[SWE::Variables::qy] = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
+    auto Fn_ze_ex = qx_ex * nx + qy_ex * ny;
+    auto Fn_qx_ex = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
+    auto Fn_qy_ex = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
 
-    F_hat = 0.5 * (Fn_in + Fn_ex + max_eigenvalue * (q_in - q_ex));
+    Flux[0] = 0.5 * (Fn_ze_in + Fn_ze_ex + max_eigenvalue * (ze_in - ze_ex));
+    Flux[1] = 0.5 * (Fn_qx_in + Fn_qx_ex + max_eigenvalue * (qx_in - qx_ex));
+    Flux[2] = 0.5 * (Fn_qy_in + Fn_qy_ex + max_eigenvalue * (qy_in - qy_ex));
 }
 }
 }
