@@ -74,8 +74,8 @@ void Tide::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
 
     uint ngp = boundary.F_hat_at_gp[0].size();
 
-    auto n_x = row(bound.surface_normal, GlobalCoord::x);
-    auto n_y = row(bound.surface_normal, GlobalCoord::y);
+    auto& n_x = bound.surface_normal[GlobalCoord::x];
+    auto& n_y = bound.surface_normal[GlobalCoord::y];
 
     set_constant(this->q_ex, 0.0);
 

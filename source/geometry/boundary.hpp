@@ -13,7 +13,7 @@ class Boundary {
 
     uint bound_id;
 
-    HybMatrix<double, dimension + 1> surface_normal;
+    std::array<DynRowVector<double>, dimension + 1> surface_normal;
 
   private:
     Master::Master<dimension + 1>& master;
@@ -124,10 +124,11 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
 
         StatVector<double, dimension + 1> normal = this->shape.GetSurfaceNormal(this->bound_id, z_master)[0];
 
-        this->surface_normal.resize(dimension + 1, ngp);
+        this->surface_normal.fill(DynRowVector<double>(ngp));
 
         for (uint gp = 0; gp < ngp; ++gp) {
-            column(this->surface_normal, gp) = normal;
+            this->surface_normal[GlobalCoord::x][gp] = normal[GlobalCoord::x];
+            this->surface_normal[GlobalCoord::y][gp] = normal[GlobalCoord::y];
         }
     }
 

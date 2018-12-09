@@ -110,10 +110,6 @@ void HPXSimulationUnit<ProblemType>::Launch() {
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->discretization.mesh);
     }
-
-    uint n_stages = this->stepper.GetNumStages();
-
-    this->discretization.mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 }
 
 template <typename ProblemType>

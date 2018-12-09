@@ -34,8 +34,8 @@ void Function::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
 
     this->q_ex = bound.ComputeFgp(q_func);
 
-    auto n_x = row(bound.surface_normal, GlobalCoord::x);
-    auto n_y = row(bound.surface_normal, GlobalCoord::y);
+    auto& n_x = bound.surface_normal[GlobalCoord::x];
+    auto& n_y = bound.surface_normal[GlobalCoord::y];
 
     for (uint gp = 0; gp < ngp; ++gp) {
 

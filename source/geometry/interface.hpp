@@ -15,8 +15,8 @@ class Interface {
     uint bound_id_in;
     uint bound_id_ex;
 
-    HybMatrix<double, dimension + 1> surface_normal_in;
-    HybMatrix<double, dimension + 1> surface_normal_ex;
+    std::array<DynRowVector<double>, dimension +1> surface_normal_in;
+    std::array<DynRowVector<double>, dimension +1> surface_normal_ex;
 
   private:
     Master::Master<dimension + 1>& master_in;
@@ -193,15 +193,15 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
 
         StatVector<double, dimension + 1> normal = this->shape_in.GetSurfaceNormal(this->bound_id_in, z_master_in)[0];
 
-        this->surface_normal_in.resize(dimension + 1, ngp);
-        this->surface_normal_ex.resize(dimension + 1, ngp);
+        this->surface_normal_in.fill(DynRowVector<double>(ngp));
+        this->surface_normal_ex.fill(DynRowVector<double>(ngp));
 
-        uint gp_ex;
         for (uint gp = 0; gp < ngp; ++gp) {
-            gp_ex = ngp - gp - 1;
+            this->surface_normal_in[GlobalCoord::x][gp]    = normal[GlobalCoord::x];
+            this->surface_normal_in[GlobalCoord::y][gp]    = normal[GlobalCoord::y];
 
-            column(this->surface_normal_in, gp)    = normal;
-            column(this->surface_normal_ex, gp_ex) = -normal;
+            this->surface_normal_ex[GlobalCoord::x][gp] = -normal[GlobalCoord::x];
+            this->surface_normal_ex[GlobalCoord::y][gp] = -normal[GlobalCoord::y];
         }
     }
 

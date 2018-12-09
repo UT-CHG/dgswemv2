@@ -29,9 +29,6 @@ void Internal::ComputeFlux(InterfaceType& intface) {
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-    std::array<DynRowVector<double>,SWE::n_dimensions> normals{ row(intface.surface_normal_in,GlobalCoord::x),
-            row(intface.surface_normal_in,GlobalCoord::y)};
-
     // assemble numerical fluxes
     LLF_flux(Global::g,
              boundary_in.q_at_gp[SWE::Variables::ze],
@@ -41,7 +38,7 @@ void Internal::ComputeFlux(InterfaceType& intface) {
              boundary_ex.q_at_gp[SWE::Variables::qx],
              boundary_ex.q_at_gp[SWE::Variables::qy],
              boundary_in.aux_at_gp,
-             normals,
+             intface.surface_normal_in,
              boundary_in.F_hat_at_gp
         );
 
@@ -94,8 +91,8 @@ void Internal::ComputeFlux(InterfaceType& intface) {
             }
             }*/
 
-        assert(!std::isnan(boundary_in.F_hat_at_gp[Variables::ze][gp]));
-    }
+//        assert(!std::isnan(boundary_in.F_hat_at_gp[Variables::ze][gp]));
+    //   }
 }
 }
 }

@@ -42,10 +42,10 @@ void Land::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     auto& boundary = bound.data.boundary[bound.bound_id];
 
     uint ngp = boundary.F_hat_at_gp[0].size();
-    auto n_x = row(bound.surface_normal, GlobalCoord::x);
-    auto n_y = row(bound.surface_normal, GlobalCoord::y);
-    auto t_x = -n_y;
-    auto t_y = n_x;
+    auto& n_x = bound.surface_normal[GlobalCoord::x];
+    auto& n_y = bound.surface_normal[GlobalCoord::y];
+    auto& t_x = -n_y;
+    auto& t_y = n_x;
 
     auto qn_ex = -(vec_cw_mult(boundary.q_at_gp[SWE::Variables::qx], n_x) +
                    vec_cw_mult(boundary.q_at_gp[SWE::Variables::qy], n_y));

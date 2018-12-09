@@ -85,8 +85,8 @@ void Flow::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
         }
     }
 
-    auto n_x = row(bound.surface_normal, GlobalCoord::x);
-    auto n_y = row(bound.surface_normal, GlobalCoord::y);
+    auto& n_x = bound.surface_normal[GlobalCoord::x];
+    auto& n_y = bound.surface_normal[GlobalCoord::y];
 
     row(this->q_ex, SWE::Variables::ze) = boundary.q_at_gp[SWE::Variables::ze];
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn, n_x);
