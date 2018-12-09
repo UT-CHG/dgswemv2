@@ -29,32 +29,25 @@ void Internal::ComputeFlux(InterfaceType& intface) {
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
+    std::array<DynRowVector<double>,SWE::n_dimensions> normals{ row(intface.surface_normal_in,GlobalCoord::x),
+            row(intface.surface_normal_in,GlobalCoord::y)};
+
     // assemble numerical fluxes
-    for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
+    LLF_flux(Global::g,
+             boundary_in.q_at_gp[SWE::Variables::ze],
+             boundary_in.q_at_gp[SWE::Variables::qx],
+             boundary_in.q_at_gp[SWE::Variables::qy],
+             boundary_ex.q_at_gp[SWE::Variables::ze],
+             boundary_ex.q_at_gp[SWE::Variables::qx],
+             boundary_ex.q_at_gp[SWE::Variables::qy],
+             boundary_in.aux_at_gp,
+             normals,
+             boundary_in.F_hat_at_gp
+        );
 
-        std::array<double,SWE::n_variables> F_hat_tmp{boundary_in.F_hat_at_gp[SWE::Variables::ze][gp],
-                boundary_in.F_hat_at_gp[SWE::Variables::qx][gp],
-                boundary_in.F_hat_at_gp[SWE::Variables::qy][gp]};
-
-
-        LLF_flux(Global::g,
-                 boundary_in.q_at_gp[SWE::Variables::ze][gp],
-                 boundary_in.q_at_gp[SWE::Variables::qx][gp],
-                 boundary_in.q_at_gp[SWE::Variables::qy][gp],
-                 boundary_ex.q_at_gp[SWE::Variables::ze][gp],
-                 boundary_ex.q_at_gp[SWE::Variables::qx][gp],
-                 boundary_ex.q_at_gp[SWE::Variables::qy][gp],
-                 std::array<double,SWE::n_auxiliaries>{boundary_in.aux_at_gp[SWE::Auxiliaries::bath][gp],
-                         boundary_in.aux_at_gp[SWE::Auxiliaries::h][gp],
-                         boundary_in.aux_at_gp[SWE::Auxiliaries::sp][gp]},
-                 std::array<double,SWE::n_dimensions>{intface.surface_normal_in(GlobalCoord::x,gp),
-                         intface.surface_normal_in(GlobalCoord::y,gp)},
-                 F_hat_tmp
-            );
-        for ( uint var = 0; var < SWE::n_variables; ++var ) {
-            boundary_in.F_hat_at_gp[var][gp] = F_hat_tmp[var];
-            boundary_ex.F_hat_at_gp[var][gp] = -boundary_in.F_hat_at_gp[var][gp];
-    }
+    boundary_ex.F_hat_at_gp[SWE::Variables::ze] = -boundary_in.F_hat_at_gp[SWE::Variables::ze];
+    boundary_ex.F_hat_at_gp[SWE::Variables::qx] = -boundary_in.F_hat_at_gp[SWE::Variables::qx];
+    boundary_ex.F_hat_at_gp[SWE::Variables::qy] = -boundary_in.F_hat_at_gp[SWE::Variables::qy];
 
         /*if (boundary_in.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
