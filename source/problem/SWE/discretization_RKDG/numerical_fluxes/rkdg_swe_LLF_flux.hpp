@@ -19,11 +19,11 @@ inline void LLF_flux(const double gravity,
     auto& sp   = aux[SWE::Auxiliaries::sp];
 
     auto h_in = ze_in + bath;
-    auto u_in = qx_in / h_in;
+    thread_local auto u_in = blaze::evaluate(qx_in / h_in);
     auto v_in = qy_in / h_in;
 
     auto h_ex = ze_ex + bath;
-    auto u_ex = qx_ex / h_ex;
+    thread_local auto u_ex = blaze::evaluate(qx_ex / h_ex);
     auto v_ex = qy_ex / h_ex;
 
     auto un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
@@ -42,7 +42,7 @@ inline void LLF_flux(const double gravity,
     auto uuh_in = u_in * qx_in;
     auto vvh_in = v_in * qy_in;
     auto uvh_in = u_in * qy_in;
-    auto pe_in  = gravity * (ze_in * ze_in / 2 + ze_in * bath);
+    auto pe_in  = gravity * ze_in *( ze_in / 2 + bath);
 
     auto Fn_ze_in = sp * qx_in * nx + qy_in * ny;
     auto Fn_qx_in = sp * (uuh_in + pe_in) * nx + uvh_in * ny;
@@ -52,7 +52,7 @@ inline void LLF_flux(const double gravity,
     auto uuh_ex = u_ex * qx_ex;
     auto vvh_ex = v_ex * qy_ex;
     auto uvh_ex = u_ex * qy_ex;
-    auto pe_ex  = gravity * (pow_vec(ze_ex, 2) / 2 + ze_ex * bath);
+    auto pe_ex  = gravity * ze_ex * (ze_ex / 2 + bath);
 
     auto Fn_ze_ex = qx_ex * nx + qy_ex * ny;
     auto Fn_qx_ex = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
