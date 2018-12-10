@@ -103,6 +103,16 @@ add_test(
 )
 
 add_executable(
+  test_is_vectorized_exe
+  test_is_vectorized.cpp
+)
+
+add_test(
+  Unit_is_vectorized
+  test_is_vectorized_exe
+)
+
+add_executable(
   test_at_each_exe
   test_at_each.cpp
 )
