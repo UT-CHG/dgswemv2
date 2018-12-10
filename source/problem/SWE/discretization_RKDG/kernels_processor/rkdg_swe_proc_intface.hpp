@@ -17,18 +17,25 @@ void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType&
         auto& state_ex    = intface.data_ex.state[stage];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        for ( uint var = 0; var < SWE::n_variables; ++var) {
-            boundary_in.q_at_gp[var] = intface.ComputeUgpIN(state_in.q[var]);
-            boundary_ex.q_at_gp[var] = intface.ComputeUgpEX(state_ex.q[var]);
-        }
+        boundary_in.q_at_gp[SWE::Variables::ze] = intface.ComputeUgpIN(state_in.q[SWE::Variables::ze]);
+        boundary_in.q_at_gp[SWE::Variables::qx] = intface.ComputeUgpIN(state_in.q[SWE::Variables::qx]);
+        boundary_in.q_at_gp[SWE::Variables::qy] = intface.ComputeUgpIN(state_in.q[SWE::Variables::qy]);
+
+        boundary_ex.q_at_gp[SWE::Variables::ze] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::ze]);
+        boundary_ex.q_at_gp[SWE::Variables::qx] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::qx]);
+        boundary_ex.q_at_gp[SWE::Variables::qy] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::qy]);
+
         intface.specialization.ComputeFlux(intface);
 
         // now compute contributions to the righthand side
-        for ( uint var = 0; var < SWE::n_variables; ++var) {
-            state_in.rhs[var] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[var]);
+        state_in.rhs[SWE::Variables::ze] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[SWE::Variables::ze]);
+        state_in.rhs[SWE::Variables::qx] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[SWE::Variables::qx]);
+        state_in.rhs[SWE::Variables::qy] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[SWE::Variables::qy]);
 
-            state_ex.rhs[var] -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp[var]);
-        }
+        state_ex.rhs[SWE::Variables::ze] -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp[SWE::Variables::ze]);
+        state_ex.rhs[SWE::Variables::qx] -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp[SWE::Variables::qx]);
+        state_ex.rhs[SWE::Variables::qy] -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp[SWE::Variables::qy]);
+
     }
 }
 }
