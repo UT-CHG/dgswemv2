@@ -62,6 +62,64 @@ inline void LLF_flux(const double gravity,
     Flux[1] = 0.5 * (Fn_qx_in + Fn_qx_ex + max_eigenvalue * (qx_in - qx_ex));
     Flux[2] = 0.5 * (Fn_qy_in + Fn_qy_ex + max_eigenvalue * (qy_in - qy_ex));
 }
+
+inline void LLF_flux(const double gravity,
+                     const double ze_in,
+                     const double qx_in,
+                     const double qy_in,
+                     const double ze_ex,
+                     const double qx_ex,
+                     const double qy_ex,
+                     const std::array<double, SWE::n_auxiliaries>& aux,
+                     const std::array<double, SWE::n_dimensions>& surface_normal,
+                     std::array<double, SWE::n_variables>& Flux) {
+    const double& bath = aux[SWE::Auxiliaries::bath];
+    const double& sp   = aux[SWE::Auxiliaries::sp];
+
+    double h_in = ze_in + bath;
+    double u_in = qx_in / h_in;
+    double v_in = qy_in / h_in;
+
+    double h_ex = ze_ex + bath;
+    double u_ex = qx_ex / h_ex;
+    double v_ex = qy_ex / h_ex;
+
+    double un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
+    double un_ex = u_ex * surface_normal[GlobalCoord::x] + v_ex * surface_normal[GlobalCoord::y];
+
+    double sp_correction =
+        std::pow(surface_normal[GlobalCoord::x] * sp, 2) + std::pow(surface_normal[GlobalCoord::y], 2);
+
+    double max_eigenvalue = std::max(std::abs(un_in) + std::sqrt(gravity * h_in * sp_correction),
+                                     std::abs(un_ex) + std::sqrt(gravity * h_ex * sp_correction));
+
+    const double& nx = surface_normal[GlobalCoord::x];
+    const double& ny = surface_normal[GlobalCoord::y];
+
+    // compute internal flux matrix
+    double uuh_in = u_in * qx_in;
+    double vvh_in = v_in * qy_in;
+    double uvh_in = u_in * qy_in;
+    double pe_in  = gravity * ze_in *( ze_in / 2 + bath);
+
+    double Fn_ze_in = sp * qx_in * nx + qy_in * ny;
+    double Fn_qx_in = sp * (uuh_in + pe_in) * nx + uvh_in * ny;
+    double Fn_qy_in = sp * uvh_in * nx + (vvh_in + pe_in) * ny;
+
+    // compute external flux matrix
+    double uuh_ex = u_ex * qx_ex;
+    double vvh_ex = v_ex * qy_ex;
+    double uvh_ex = u_ex * qy_ex;
+    double pe_ex  = gravity * (pow_vec(ze_ex, 2) / 2 + ze_ex * bath);
+
+    double Fn_ze_ex = qx_ex * nx + qy_ex * ny;
+    double Fn_qx_ex = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
+    double Fn_qy_ex = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
+
+    Flux[0] = 0.5 * (Fn_ze_in + Fn_ze_ex + max_eigenvalue * (ze_in - ze_ex));
+    Flux[1] = 0.5 * (Fn_qx_in + Fn_qx_ex + max_eigenvalue * (qx_in - qx_ex));
+    Flux[2] = 0.5 * (Fn_qy_in + Fn_qy_ex + max_eigenvalue * (qy_in - qy_ex));
+}
 }
 }
 
