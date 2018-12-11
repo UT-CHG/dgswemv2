@@ -1,10 +1,8 @@
-#ifndef GN_TRUE_SOLUTION_FUNCTIONS_HPP
-#define GN_TRUE_SOLUTION_FUNCTIONS_HPP
-
 #include "utilities/ignore.hpp"
+#include "problem/SWE/problem_function/files/fwd.hpp"
 
 namespace SWE {
-inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2>& pt) {
+StatVector<double, SWE::n_variables> true_q(const double t, const Point<2>& pt) {
     constexpr double g = 9.81;
 
     constexpr double ao = 0.05;
@@ -25,5 +23,3 @@ inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2
     return true_q;
 }
 }
-
-#endif

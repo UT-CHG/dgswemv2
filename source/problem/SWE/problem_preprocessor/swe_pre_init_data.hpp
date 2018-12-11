@@ -2,7 +2,7 @@
 #define SWE_PRE_INIT_DATA_HPP
 
 #include "utilities/file_exists.hpp"
-#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
+#include "problem/SWE/problem_function_files/fwd.hpp"
 
 namespace SWE {
 template <typename MeshType, typename ProblemSpecificInputType>

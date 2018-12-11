@@ -217,6 +217,10 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
   ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
   ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
+
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_function_files/swe_initial_condition_functions.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_function_files/swe_source_functions.cpp
+  ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_function_files/swe_true_solution_functions.cpp
 )
 
 target_include_directories(test_edges_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})

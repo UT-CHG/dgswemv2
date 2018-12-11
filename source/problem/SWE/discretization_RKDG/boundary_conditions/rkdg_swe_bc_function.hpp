@@ -1,7 +1,7 @@
 #ifndef RKDG_SWE_BC_FUNCTION_HPP
 #define RKDG_SWE_BC_FUNCTION_HPP
 
-#include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
+#include "problem/SWE/problem_function_files/fwd.hpp"
 
 namespace SWE {
 namespace RKDG {

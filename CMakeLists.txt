@@ -108,6 +108,9 @@ endif()
 if (SWE)
   list(APPEND SOURCES
     ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_input/swe_inputs.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_function_files/swe_initial_condition_functions.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_function_files/swe_source_functions.cpp
+    ${PROJECT_SOURCE_DIR}/source/problem/SWE/problem_function_files/swe_true_solution_functions.cpp
   )
   list( APPEND PROBLEM_DEFINITIONS SWE_SUPPORT )
 endif()

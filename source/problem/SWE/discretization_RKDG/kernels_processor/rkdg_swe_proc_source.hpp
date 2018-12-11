@@ -1,7 +1,7 @@
 #ifndef RKDG_SWE_PROC_SOURCE_HPP
 #define RKDG_SWE_PROC_SOURCE_HPP
 
-#include "problem/SWE/problem_function_files/swe_source_functions.hpp"
+#include "problem/SWE/problem_function_files/fwd.hpp"
 
 namespace SWE {
 namespace RKDG {

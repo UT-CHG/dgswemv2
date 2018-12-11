@@ -1,10 +1,8 @@
-#ifndef SWE_TRUE_SOLUTION_FUNCTIONS_HPP
-#define SWE_TRUE_SOLUTION_FUNCTIONS_HPP
-
 #include "utilities/ignore.hpp"
+#include "problem/SWE/problem_function_files/fwd.hpp"
 
 namespace SWE {
-inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2>& pt) {
+StatVector<double, SWE::n_variables> true_q(const double t, const Point<2>& pt) {
     const double x = pt[GlobalCoord::x];
     const double y = pt[GlobalCoord::y];
 

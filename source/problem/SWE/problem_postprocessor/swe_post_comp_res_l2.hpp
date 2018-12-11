@@ -1,7 +1,7 @@
 #ifndef SWE_POST_COMP_RES_L2_HPP
 #define SWE_POST_COMP_RES_L2_HPP
 
-#include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
+#include "problem/SWE/problem_function_files/fwd.hpp"
 
 namespace SWE {
 template <typename StepperType, typename ElementType>

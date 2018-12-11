@@ -1,8 +1,7 @@
-#ifndef SWE_SOURCE_FUNCTIONS_HPP
-#define SWE_SOURCE_FUNCTIONS_HPP
+#include "problem/SWE/problem_function_files/fwd.hpp"
 
 namespace SWE {
-inline StatVector<double, SWE::n_variables> source_q(const double t, const Point<2>& pt) {
+StatVector<double, SWE::n_variables> source_q(const double t, const Point<2>& pt) {
     double source_ze = 0.0;
     double source_qx = 0.0;
     double source_qy = 0.0;
@@ -12,5 +11,3 @@ inline StatVector<double, SWE::n_variables> source_q(const double t, const Point
     return source_q;
 }
 }
-
-#endif

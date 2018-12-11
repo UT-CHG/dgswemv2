@@ -51,13 +51,13 @@ make_gn_analytic_solution() {
 	GN_ANA_DIR=${DGSWEMV2_DIR}/examples/gn_analytical_solution
 	SWE_DIR=${DGSWEMV2_DIR}/source/problem/SWE/problem_function_files
 
-	cp ${SWE_DIR}/swe_initial_condition_functions.hpp ${SWE_DIR}/swe_initial_condition_functions.hpp.tmp
-	cp ${SWE_DIR}/swe_true_solution_functions.hpp ${SWE_DIR}/swe_true_solution_functions.hpp.tmp
-	cp ${SWE_DIR}/swe_source_functions.hpp ${SWE_DIR}/swe_source_functions.hpp.tmp
+	cp ${SWE_DIR}/swe_initial_condition_functions.cpp ${SWE_DIR}/swe_initial_condition_functions.cpp.tmp
+	cp ${SWE_DIR}/swe_true_solution_functions.cpp ${SWE_DIR}/swe_true_solution_functions.cpp.tmp
+	cp ${SWE_DIR}/swe_source_functions.cpp ${SWE_DIR}/swe_source_functions.cpp.tmp
 
-	cp ${GN_ANA_DIR}/analytical_gn_initial_condition_functions.hpp ${SWE_DIR}/swe_initial_condition_functions.hpp
-	cp ${GN_ANA_DIR}/analytical_gn_true_solution_functions.hpp ${SWE_DIR}/swe_true_solution_functions.hpp
-	cp ${GN_ANA_DIR}/analytical_gn_source_functions.hpp ${SWE_DIR}/swe_source_functions.hpp
+	cp ${GN_ANA_DIR}/analytical_gn_initial_condition_functions.cpp ${SWE_DIR}/swe_initial_condition_functions.cpp
+	cp ${GN_ANA_DIR}/analytical_gn_true_solution_functions.cpp ${SWE_DIR}/swe_true_solution_functions.cpp
+	cp ${GN_ANA_DIR}/analytical_gn_source_functions.cpp ${SWE_DIR}/swe_source_functions.cpp
 
 	MAIN_DIR="${DGSWEMV2_DIR}/source/"
 
@@ -77,9 +77,9 @@ make_gn_analytic_solution() {
 	cd $old_dir
 
 	#cleaning up
-	mv ${SWE_DIR}/swe_initial_condition_functions.hpp.tmp ${SWE_DIR}/swe_initial_condition_functions.hpp
-	mv ${SWE_DIR}/swe_true_solution_functions.hpp.tmp ${SWE_DIR}/swe_true_solution_functions.hpp
-	mv ${SWE_DIR}/swe_source_functions.hpp.tmp ${SWE_DIR}/swe_source_functions.hpp
+	mv ${SWE_DIR}/swe_initial_condition_functions.cpp.tmp ${SWE_DIR}/swe_initial_condition_functions.cpp
+	mv ${SWE_DIR}/swe_true_solution_functions.cpp.tmp ${SWE_DIR}/swe_true_solution_functions.cpp
+	mv ${SWE_DIR}/swe_source_functions.cpp.tmp ${SWE_DIR}/swe_source_functions.cpp
 	mv ${MAIN_DIR}/dgswemv2-${TARGET}.cpp.tmp ${MAIN_DIR}/dgswemv2-${TARGET}.cpp
 
 	return ${status}
