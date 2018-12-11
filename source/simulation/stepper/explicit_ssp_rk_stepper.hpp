@@ -75,9 +75,10 @@ class ESSPRKStepper : public Stepper {
             for (uint s = 0; s <= this->stage; ++s) {
                 next_state.q[var] += this->ark[stage][s] * state[s].q[var] + this->dt * this->brk[stage][s] * state[s].solution[var];
             }
+        }
 
-            if (this->stage + 1 == this->nstages)
-                std::swap(state[0].q, state[this->nstages].q);
+        if (this->stage + 1 == this->nstages) {
+            std::swap(state[0].q, state[this->nstages].q);
         }
     }
 

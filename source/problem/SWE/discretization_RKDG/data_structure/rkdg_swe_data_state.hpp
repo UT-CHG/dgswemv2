@@ -20,6 +20,13 @@ struct StateData {
         aux = DynMatrix<double>(nelements, ndof); /* only bath */
         rhs.fill(DynMatrix<double>(nelements, ndof));
         solution.fill(DynMatrix<double>(nelements, ndof));
+
+        set_constant(aux, 0.0);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            set_constant(q[var], 0.0);
+            set_constant(rhs[var], 0.0);
+            set_constant(solution[var], 0.0);
+        }
     }
 
     std::array<DynMatrix<double>, SWE::n_variables> q;
