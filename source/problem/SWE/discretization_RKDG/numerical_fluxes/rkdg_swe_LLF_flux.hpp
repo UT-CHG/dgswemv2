@@ -17,16 +17,22 @@ inline void LLF_flux(const double gravity,
                      std::array<typename Result<InputArrayType>::type, SWE::n_variables>& Flux) {
     using result_t = typename Result<InputArrayType>::type;
 
+    thread_local result_t u_in(qx_in.size());
+    thread_local result_t v_in(qy_in.size());
+    thread_local result_t u_ex(qx_ex.size());
+    thread_local result_t v_ex(qy_ex.size());
+    thread_local result_t max_eigenvalue(ze_in.size());
+
     auto& bath = aux[SWE::Auxiliaries::bath];
     auto& sp   = aux[SWE::Auxiliaries::sp];
 
     auto h_in = ze_in + bath;
-    result_t u_in = blaze::evaluate(qx_in / h_in);
-    auto v_in = qy_in / h_in;
+    u_in = qx_in / h_in;
+    v_in = qy_in / h_in;
 
     auto h_ex = ze_ex + bath;
-    result_t u_ex = blaze::evaluate(qx_ex / h_ex);
-    auto v_ex = qy_ex / h_ex;
+    u_ex = qx_ex / h_ex;
+    v_ex = qy_ex / h_ex;
 
     auto un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
     auto un_ex = u_ex * surface_normal[GlobalCoord::x] + v_ex * surface_normal[GlobalCoord::y];
@@ -34,8 +40,8 @@ inline void LLF_flux(const double gravity,
     auto sp_correction =
         pow_vec(surface_normal[GlobalCoord::x] * sp, 2) + pow_vec(surface_normal[GlobalCoord::y], 2);
 
-    result_t max_eigenvalue = blaze::evaluate(max_vec(abs_vec(un_in) + sqrt_vec(gravity * h_in * sp_correction),
-                                                      abs_vec(un_ex) + sqrt_vec(gravity * h_ex * sp_correction)));
+    max_eigenvalue = max_vec(abs_vec(un_in) + sqrt_vec(gravity * h_in * sp_correction),
+                             abs_vec(un_ex) + sqrt_vec(gravity * h_ex * sp_correction));
 
     auto& nx = surface_normal[GlobalCoord::x];
     auto& ny = surface_normal[GlobalCoord::y];
