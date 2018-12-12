@@ -31,14 +31,13 @@ inline void LLF_flux(const double gravity,
     auto un_in = u_in * surface_normal[GlobalCoord::x] + v_in * surface_normal[GlobalCoord::y];
     auto un_ex = u_ex * surface_normal[GlobalCoord::x] + v_ex * surface_normal[GlobalCoord::y];
 
-    auto sp_correction =
-        pow_vec(surface_normal[GlobalCoord::x] * sp, 2) + pow_vec(surface_normal[GlobalCoord::y], 2);
+    auto& nx = surface_normal[GlobalCoord::x];
+    auto& ny = surface_normal[GlobalCoord::y];
+
+    auto sp_correction = (nx * sp ) * (nx * sp) + (ny * ny);
 
     result_t max_eigenvalue = blaze::evaluate(max_vec(abs_vec(un_in) + sqrt_vec(gravity * h_in * sp_correction),
                                                       abs_vec(un_ex) + sqrt_vec(gravity * h_ex * sp_correction)));
-
-    auto& nx = surface_normal[GlobalCoord::x];
-    auto& ny = surface_normal[GlobalCoord::y];
 
     // compute internal flux matrix
     auto uuh_in = u_in * qx_in;

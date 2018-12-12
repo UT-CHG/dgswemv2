@@ -24,6 +24,7 @@ class Element {
     std::vector<Point<dimension>> gp_global_coordinates;
 
     bool const_J;
+    double* abs_J = nullptr;
 
     /* psi_gp stored in shape */   // nodal basis, i.e. shape functions
     /* chi_gp stored in master */  // linear basis
@@ -39,13 +40,12 @@ class Element {
     std::array<DynMatrix<double>, dimension> int_dphi_fact;
     std::array<DynMatrix<double>, dimension> int_phi_dphi_fact;
 
-    DynMatrix<double> m_inv;
-
   public:
     Element() = default;
     Element(const uint ID,
             MasterType& master,
             AccessorType&& data,
+            double& abs_J_,
             std::vector<Point<3>>&& nodal_coordinates,
             std::vector<uint>&& node_ID,
             std::vector<uint>&& neighbor_ID,
@@ -145,6 +145,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 Element<dimension, MasterType, ShapeType, AccessorType>::Element(const uint ID,
                                                                  MasterType& master,
                                                                  AccessorType&& data,
+                                                                 double& abs_J_,
                                                                  std::vector<Point<3>>&& nodal_coordinates,
                                                                  std::vector<uint>&& node_ID,
                                                                  std::vector<uint>&& neighbor_ID,
@@ -155,7 +156,8 @@ Element<dimension, MasterType, ShapeType, AccessorType>::Element(const uint ID,
       shape(ShapeType(std::move(nodal_coordinates))),
       node_ID(std::move(node_ID)),
       neighbor_ID(std::move(neighbor_ID)),
-      boundary_type(std::move(boundary_type)) {
+      boundary_type(std::move(boundary_type)),
+      abs_J(&abs_J_) {
     this->Initialize();
 }
 
@@ -170,6 +172,8 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::Initialize() {
         this->shape.GetJinv(this->master->integration_rule.second);
 
     this->const_J = (det_J.size() == 1);
+    assert(this->abs_J);
+    *this->abs_J = std::abs(det_J[0]);
 
     // Compute factors to expand nodal values and derivatives of nodal values
     this->shape.psi_gp  = this->shape.GetPsi(this->master->integration_rule.second);
@@ -204,9 +208,9 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::Initialize() {
         }
 
         // INTEGRATION OVER ELEMENT FACTORS
-        this->int_fact = this->master->integration_rule.first * std::abs(det_J[0]);
+        this->int_fact = this->master->integration_rule.first * (*this->abs_J);
 
-        this->int_phi_fact = this->master->int_phi_fact * std::abs(det_J[0]);
+        this->int_phi_fact = this->master->int_phi_fact * (*this->abs_J);
 
         this->int_phi_phi_fact.resize(this->master->ngp, std::pow(this->master->ndof, 2));
         for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
@@ -246,8 +250,6 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::Initialize() {
             }
         }
 
-        // MASS MATRIX
-        this->m_inv = this->master->m_inv / std::abs(det_J[0]);
     } else {
         // Placeholder for nonconstant Jacobian
     }
@@ -288,7 +290,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 template <typename F>
 inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    DynMatrix<double> projection = this->ComputeFgp(f) * this->int_phi_fact * this->m_inv;
+    DynMatrix<double> projection = (this->ComputeFgp(f) * this->int_phi_fact * this->master->m_inv) / (*this->abs_J);
 
     return projection;
 }
@@ -298,7 +300,7 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
     // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    return nodal_values * this->shape.psi_gp * this->int_phi_fact * this->m_inv;
+    return (nodal_values * this->shape.psi_gp * this->int_phi_fact * this->master->m_inv) / (*this->abs_J);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -481,7 +483,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ApplyMinv(const InputArrayType& rhs) {
     // solution(q, dof) = rhs(q, dof) * this->m_inv(dof, dof)
-    return rhs * this->m_inv;
+    return (rhs * this->master->m_inv) / (*this->abs_J);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>

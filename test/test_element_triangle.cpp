@@ -9,11 +9,13 @@ int main() {
 
     SWE::RKDG::SoAContainer data_holder(3 /*ndofs*/, 1 /*stage*/, 1 /*element*/);
 
+    double abs_J;
     MasterType master(10);
 
     ElementType triangle(0,
                          master,
                          std::move(data_holder.at(0)),
+                         abs_J,
                          std::move(vrtxs),
                          std::move(std::vector<uint>(0)),
                          std::move(std::vector<uint>(0)),

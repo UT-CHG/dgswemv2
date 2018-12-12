@@ -38,7 +38,7 @@ struct StepperInput {
     uint nstages;
     uint order;
 
-    double ramp_duration;
+    double ramp_duration = 0; //default is no ramp
 };
 
 struct WriterInput {
