@@ -13,9 +13,7 @@ class Internal {
     void Initialize(InterfaceType& intface);
 
     template <typename InterfaceType>
-    void ComputeFlux(InterfaceType& intface,
-                     const std::array<DynRowVector<double>, SWE::n_variables>& q_in_at_gp,
-                     const std::array<DynRowVector<double>, SWE::n_variables>& q_ex_at_gp );
+    void ComputeFlux(InterfaceType& intface);
 };
 
 template <typename InterfaceType>
@@ -24,9 +22,7 @@ void Internal::Initialize(InterfaceType& intface) {
 }
 
 template <typename InterfaceType>
-void Internal::ComputeFlux(InterfaceType& intface,
-                           const std::array<DynRowVector<double>, SWE::n_variables>& q_in_at_gp,
-                           const std::array<DynRowVector<double>, SWE::n_variables>& q_ex_at_gp ) {
+void Internal::ComputeFlux(InterfaceType& intface) {
     bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
@@ -35,12 +31,12 @@ void Internal::ComputeFlux(InterfaceType& intface,
 
     // assemble numerical fluxes
     LLF_flux(Global::g,
-             q_in_at_gp[SWE::Variables::ze],
-             q_in_at_gp[SWE::Variables::qx],
-             q_in_at_gp[SWE::Variables::qy],
-             q_ex_at_gp[SWE::Variables::ze],
-             q_ex_at_gp[SWE::Variables::qx],
-             q_ex_at_gp[SWE::Variables::qy],
+             boundary_in.q_at_gp[SWE::Variables::ze],
+             boundary_in.q_at_gp[SWE::Variables::qx],
+             boundary_in.q_at_gp[SWE::Variables::qy],
+             boundary_ex.q_at_gp[SWE::Variables::ze],
+             boundary_ex.q_at_gp[SWE::Variables::qx],
+             boundary_ex.q_at_gp[SWE::Variables::qy],
              boundary_in.aux_at_gp,
              intface.surface_normal_in,
              boundary_in.F_hat_at_gp
