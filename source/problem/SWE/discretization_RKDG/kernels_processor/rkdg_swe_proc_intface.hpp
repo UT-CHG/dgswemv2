@@ -5,6 +5,9 @@ namespace SWE {
 namespace RKDG {
 template <typename InterfaceType>
 void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
+    thread_local std::array<DynRowVector<double>, SWE::n_variables> q_in_at_gp;
+    thread_local std::array<DynRowVector<double>, SWE::n_variables> q_ex_at_gp;
+
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
@@ -17,15 +20,17 @@ void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType&
         auto& state_ex    = intface.data_ex.state[stage];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        boundary_in.q_at_gp[SWE::Variables::ze] = intface.ComputeUgpIN(state_in.q[SWE::Variables::ze]);
-        boundary_in.q_at_gp[SWE::Variables::qx] = intface.ComputeUgpIN(state_in.q[SWE::Variables::qx]);
-        boundary_in.q_at_gp[SWE::Variables::qy] = intface.ComputeUgpIN(state_in.q[SWE::Variables::qy]);
+        q_in_at_gp[SWE::Variables::ze] = intface.ComputeUgpIN(state_in.q[SWE::Variables::ze]);
+        q_in_at_gp[SWE::Variables::qx] = intface.ComputeUgpIN(state_in.q[SWE::Variables::qx]);
+        q_in_at_gp[SWE::Variables::qy] = intface.ComputeUgpIN(state_in.q[SWE::Variables::qy]);
 
-        boundary_ex.q_at_gp[SWE::Variables::ze] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::ze]);
-        boundary_ex.q_at_gp[SWE::Variables::qx] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::qx]);
-        boundary_ex.q_at_gp[SWE::Variables::qy] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::qy]);
+        q_ex_at_gp[SWE::Variables::ze] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::ze]);
+        q_ex_at_gp[SWE::Variables::qx] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::qx]);
+        q_ex_at_gp[SWE::Variables::qy] = intface.ComputeUgpEX(state_ex.q[SWE::Variables::qy]);
 
-        intface.specialization.ComputeFlux(intface);
+        intface.specialization.ComputeFlux(intface,
+                                           q_in_at_gp,
+                                           q_ex_at_gp);
 
         // now compute contributions to the righthand side
         state_in.rhs[SWE::Variables::ze] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[SWE::Variables::ze]);

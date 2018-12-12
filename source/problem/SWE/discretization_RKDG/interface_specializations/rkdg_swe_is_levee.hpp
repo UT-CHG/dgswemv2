@@ -29,7 +29,9 @@ class Levee {
     void Initialize(InterfaceType& intface);
 
     template <typename InterfaceType>
-    void ComputeFlux(InterfaceType& intface);
+    void ComputeFlux(InterfaceType& intface,
+                     const std::array<DynRowVector<double>, SWE::n_variables>& q_in_at_gp,
+                     const std::array<DynRowVector<double>, SWE::n_variables>& q_ex_at_gp );
 };
 
 Levee::Levee(const std::vector<LeveeInput>& levee_input) {
@@ -59,7 +61,9 @@ void Levee::Initialize(InterfaceType& intface) {
 }
 
 template <typename InterfaceType>
-void Levee::ComputeFlux(InterfaceType& intface) {
+void Levee::ComputeFlux(InterfaceType& intface,
+                        const std::array<DynRowVector<double>, SWE::n_variables>& q_in_at_gp,
+                        const std::array<DynRowVector<double>, SWE::n_variables>& q_ex_at_gp ) {
     /*bool wet_in = intface.data_in.wet_dry_state.wet;
     bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
