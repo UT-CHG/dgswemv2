@@ -6,10 +6,6 @@ namespace EHDG {
 namespace BC {
 class Flow {
   private:
-    HybMatrix<double, SWE::n_variables> q_ex;
-    DynRowVector<double> qn;
-
-  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
@@ -58,11 +54,7 @@ Flow::Flow(const std::vector<FlowNode>& flow_input) {
 
 template <typename BoundaryType>
 void Flow::Initialize(BoundaryType& bound) {
-    uint ngp           = bound.data.get_ngp_boundary(bound.bound_id);
     uint n_contituents = this->frequency.size();
-
-    this->q_ex.resize(SWE::n_variables, ngp);
-    this->qn.resize(ngp);
 
     this->amplitude_gp.resize(n_contituents);
     this->phase_gp.resize(n_contituents);
@@ -77,13 +69,7 @@ template <typename StepperType, typename EdgeBoundaryType>
 void Flow::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
 
 template <typename EdgeBoundaryType>
-void Flow::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-    boundary.F_hat_at_gp = boundary.Fn_at_gp;
-
-    add_F_hat_tau_terms_bound_LF(edge_bound);
-}
+void Flow::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
 }
 }
 }

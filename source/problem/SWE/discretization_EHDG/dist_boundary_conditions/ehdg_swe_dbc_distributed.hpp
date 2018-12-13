@@ -13,6 +13,8 @@ class Distributed {
     HybMatrix<double, SWE::n_variables> q_ex;
     HybMatrix<double, SWE::n_variables> Fn_ex;
 
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> tau;
+
   public:
     Distributed() = default;
     Distributed(const DBDataExchanger& exchanger);
@@ -32,8 +34,11 @@ Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger
 template <typename DistributedBoundaryType>
 void Distributed::Initialize(DistributedBoundaryType& dbound) {
     uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+
     this->q_ex.resize(SWE::n_variables, ngp);
     this->Fn_ex.resize(SWE::n_variables, ngp);
+
+    this->tau.resize(ngp);
 }
 
 template <typename EdgeDistributedType>
@@ -68,12 +73,18 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
 
 template <typename EdgeDistributedType>
 void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
+    auto& edge_internal = edge_dbound.edge_data.edge_internal;
+
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+
+    get_tau_LF(edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->tau);
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
-    // Add tau terms
-    add_F_hat_tau_terms_bound_LF(edge_dbound);
+    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
+        column(boundary.F_hat_at_gp, gp) +=
+            this->tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    }
 }
 }
 }

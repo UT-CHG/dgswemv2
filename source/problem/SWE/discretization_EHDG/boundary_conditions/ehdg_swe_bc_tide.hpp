@@ -10,11 +10,11 @@ class Tide {
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
 
-    Array2D<double> amplitude;
-    Array2D<double> phase;
+    std::vector<DynRowVector<double>> amplitude;
+    std::vector<DynRowVector<double>> phase;
 
-    Array2D<double> amplitude_gp;
-    Array2D<double> phase_gp;
+    std::vector<DynRowVector<double>> amplitude_gp;
+    std::vector<DynRowVector<double>> phase_gp;
 
   public:
     Tide() = default;
@@ -24,10 +24,10 @@ class Tide {
     void Initialize(BoundaryType& bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeBoundaryType>
-    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
+    void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 };
 
 Tide::Tide(const std::vector<TideNode>& tide_input) {
@@ -60,13 +60,16 @@ void Tide::Initialize(BoundaryType& bound) {
     this->phase_gp.resize(n_contituents);
 
     for (uint con = 0; con < n_contituents; ++con) {
-        this->amplitude_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-        this->phase_gp[con].resize(bound.data.get_ngp_boundary(bound.bound_id));
-
-        // bound.ComputeBoundaryNodalUgp(this->amplitude[con], this->amplitude_gp[con]);
-        // bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
+        this->amplitude_gp[con] = bound.ComputeBoundaryNodalUgp(this->amplitude[con]);
+        this->phase_gp[con]     = bound.ComputeBoundaryNodalUgp(this->phase[con]);
     }
 }
+
+template <typename StepperType, typename EdgeBoundaryType>
+void Tide::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
+
+template <typename EdgeBoundaryType>
+void Tide::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
 }
 }
 }

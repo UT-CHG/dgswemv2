@@ -8,6 +8,8 @@ namespace EHDG {
 namespace BC {
 class Function {
   private:
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> tau;
+
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> Aplus;
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dze;
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dqx;
@@ -32,6 +34,8 @@ class Function {
 template <typename BoundaryType>
 void Function::Initialize(BoundaryType& bound) {
     uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
+
+    this->tau.resize(ngp);
 
     this->Aplus.resize(ngp);
     this->dAplus_dze.resize(ngp);
@@ -77,8 +81,8 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
             ze = -2.0;
         }
 
-        StatVector<double, SWE::n_variables> q{ze, qx, qy};
-        // StatVector<double, SWE::n_variables> q(SWE::ic_q(t, pt));
+        // StatVector<double, SWE::n_variables> q{ze, qx, qy};
+        StatVector<double, SWE::n_variables> q(SWE::ic_q(t, pt));
 
         return q;
     });
@@ -105,11 +109,18 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
 
 template <typename EdgeBoundaryType>
 void Function::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    get_tau_LF(edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, this->tau);
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
-    add_F_hat_tau_terms_bound_LF(edge_bound);
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        column(boundary.F_hat_at_gp, gp) +=
+            this->tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    }
 }
 }
 }

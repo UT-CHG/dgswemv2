@@ -5,9 +5,12 @@ namespace SWE {
 namespace EHDG {
 namespace BC {
 class Land {
+  private:
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> tau;
+
   public:
     template <typename BoundaryType>
-    void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
+    void Initialize(BoundaryType& bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -15,6 +18,13 @@ class Land {
     template <typename EdgeBoundaryType>
     void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 };
+
+template <typename BoundaryType>
+void Land::Initialize(BoundaryType& bound) {
+    uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
+
+    this->tau.resize(ngp);
+}
 
 template <typename StepperType, typename EdgeBoundaryType>
 void Land::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
@@ -44,11 +54,18 @@ void Land::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& ed
 
 template <typename EdgeBoundaryType>
 void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    get_tau_LF(edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, this->tau);
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
-    add_F_hat_tau_terms_bound_LF(edge_bound);
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        column(boundary.F_hat_at_gp, gp) +=
+            this->tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    }
 }
 }
 }

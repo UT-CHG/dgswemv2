@@ -8,7 +8,6 @@ class Tide {
   private:
     HybMatrix<double, SWE::n_variables> q_ex;
 
-  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
