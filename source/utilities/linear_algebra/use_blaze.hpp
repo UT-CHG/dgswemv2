@@ -59,6 +59,9 @@ using SparseMatrix = blaze::CompressedMatrix<T>;
 template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
+template <typename T>
+using DiagonalMatrix = blaze::DiagonalMatrix<blaze::DynamicMatrix<T>>;
+
 template <typename BlazeType>
 using AlignedAllocator = blaze::AlignedAllocator<BlazeType>;
 

@@ -69,14 +69,17 @@ class ESSPRKStepper : public Stepper {
         auto& state      = elt.data.state;
         auto& next_state = elt.data.state[this->stage + 1];
 
-        for ( uint var = 0; var < elt.data.state.size(); ++var ) {
-            set_constant(next_state.q[var], 0.0);
+        for ( uint var = 0; var < elt.data.state[0].q.size(); ++var ) {
+            next_state.q[var] = this->ark[stage][0] * state[0].q[var] + (this->dt * this->brk[stage][0]) * state[0].solution[var];
 
-            for (uint s = 0; s <= this->stage; ++s) {
-                next_state.q[var] += this->ark[stage][s] * state[s].q[var] + this->dt * this->brk[stage][s] * state[s].solution[var];
+            for (uint s = 1; s <= this->stage; ++s) {
+                next_state.q[var] += this->ark[stage][s] * state[s].q[var] + (this->dt * this->brk[stage][s]) * state[s].solution[var];
             }
         }
 
+        //This swap can be slightly nuanced. For elements, we are swapping rows, therefore essentially flipping
+        // pointers and no data is moved. In the SoA case, the data is flipped, however the pointers should remain
+        // valid and point to the correct data.
         if (this->stage + 1 == this->nstages) {
             std::swap(state[0].q, state[this->nstages].q);
         }

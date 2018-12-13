@@ -30,15 +30,8 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
 
     discretization.mesh.CallForEachBoundary([&stepper](auto& bound) { Problem::boundary_kernel(stepper, bound); });
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        auto& state = elt.data.state[stepper.GetStage()];
-
-        for ( uint var = 0; var < SWE::n_variables; ++var ) {
-            state.solution[var] = elt.ApplyMinv(state.rhs[var]);
-        }
-
-        stepper.UpdateState(elt);
-    });
+    UpdateKernel update_kernel(stepper);
+    discretization.mesh.CallForEachElement(update_kernel);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = SWE::scrutinize_solution(stepper, elt);

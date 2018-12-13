@@ -3,6 +3,7 @@
 
 #include "general_definitions.hpp"
 #include "utilities/heterogeneous_containers.hpp"
+#include "utilities/is_vectorized.hpp"
 #include "mesh_utilities.hpp"
 
 #include "geometry/element_container.hpp"
@@ -68,6 +69,12 @@ class Mesh<std::tuple<Elements...>,
                 using ContainerType = typename std::remove_reference<decltype(element_container)>::type;
                 uint index_of_type = Utilities::index<ContainerType,ElementContainers>::value;
                 element_container.reserve(nstages, n_elements[index_of_type]);
+            });
+    }
+
+    void finalize_initialization() {
+        Utilities::for_each_in_tuple(elements, [](auto& element_container) {
+                element_container.finalize_initialization();
             });
     }
 
@@ -162,7 +169,7 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<DistributedBoundaries...>,
           DataSoAType>::CallForEachElement(const F& f) {
     Utilities::for_each_in_tuple(this->elements, [&f](auto& element_container) {
-            element_container.CallForEachElement([&f](auto& elt) { f(elt); });
+            element_container.CallForEachElement(f, Utilities::is_vectorized<F>{});
     });
 }
 
@@ -212,7 +219,7 @@ void Mesh<std::tuple<Elements...>,
     auto& elt_container =
         std::get<Utilities::index<ElementType, ElementContainers>::value>(this->elements.data);
 
-    elt_container.CallForEachElement(f);
+    elt_container.CallForEachElement(f, Utilities::is_vectorized<F>{});
 }
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>

@@ -29,14 +29,19 @@ int main() {
     B b;
     using C = std::tuple<>;
     C c;
-
+    auto d = [](auto& var) {};
 
     std::cout << std::boolalpha << "is_vectorized<A>::value: " << Utilities::is_vectorized<A>::value << '\n'
               << "is_vectorized<B>::value: " << Utilities::is_vectorized<B>::value << '\n'
-              << "is_vectorized<C>::value: " << Utilities::is_vectorized<C>::value << '\n';
+              << "is_vectorized<C>::value: " << Utilities::is_vectorized<C>::value << '\n'
+              << "is_vectorized<decltype(d)>::value: " << Utilities::is_vectorized<decltype(d)>::value << '\n';
+
     function(a);
     function(b);
     function(c);
+    function(d);
 
-    return 0;
+    return ( Utilities::is_vectorized<A>::value != true ) ||
+        (Utilities::is_vectorized<B>::value != false ) ||
+        (Utilities::is_vectorized<C>::value != false);
 }

@@ -25,6 +25,8 @@ void initialize_mesh(typename ProblemType::ProblemMeshType& mesh,
     initialize_mesh_elements<ProblemType>(mesh, input, writer);
 
     initialize_mesh_interfaces_boundaries<ProblemType, Communicator>(mesh, input.problem_input, communicator, writer);
+
+    mesh.finalize_initialization();
 }
 
 template <typename ProblemType>

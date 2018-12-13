@@ -21,9 +21,6 @@ public:
 
     void reserve(uint nstages, uint nelements) {
 
-        std::cout << "master address in element ctor " << &master_element << std::endl
-                  << " nvrtxs: " << master_element.nvrtx << std::endl;
-
         this->capacity = nelements;
 
         //Element data gets constructed here since we seem to create to copy the values in construct_containers(p)
@@ -32,6 +29,12 @@ public:
 
         element_accessors.reserve(nelements);
         element_data.reserve(master_element.ndof, nstages, nelements);
+    }
+
+    void finalize_initialization() {
+        for ( uint elt_id = 0; elt_id < element_accessors.size(); ++elt_id ) {
+            element_data.set_abs_J(elt_id, element_accessors.at(elt_id).GetAbsJ());
+        }
     }
 
     template <typename...Args>
@@ -45,17 +48,15 @@ public:
                                                                  std::forward<Args>(args)...)));
     }
 
-    template <typename F>/*,
-                           typename = std::enable_if<!Utilities::is_vectorized<F>::value>::type>*/
-    void CallForEachElement(const F& f) {
+    template <typename F>
+    void CallForEachElement(const F& f, std::false_type /*is not vectorized*/) {
         std::for_each(element_accessors.begin(), element_accessors.end(), [&f](ElementType& elt) { f(elt); });
     }
 
-/*    template <typename F,
-              typename = std::enable_if<Utilities::is_vectorized<F>::value>::type>
-    void CallForEachElement(const F& f) {
+    template <typename F>
+    void CallForEachElement(const F& f, std::true_type /*is vectorized*/) {
         f(element_data);
-        }*/
+    }
 
     size_t size() { return size_; }
 

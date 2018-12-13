@@ -82,7 +82,6 @@ struct Accessor {
 };
 
 struct SoAContainer {
-public:
     using AccessorType = Accessor;
 
     SoAContainer()=default;
@@ -91,9 +90,8 @@ public:
                  uint p);
 
     Accessor at(const size_t index);
-private:
-    AlignedVector<StateData> state;
 
+    AlignedVector<StateData> state;
 };
 
 SoAContainer::SoAContainer(uint ndofs,
