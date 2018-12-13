@@ -289,6 +289,12 @@ decltype(auto) reverse_columns(const blaze::Matrix<VT,SO>& matrix) {
     return blaze::columns((~matrix),reversed_indices);
 }
 
+template <typename LeftMatrixType, typename RightMatrixType>
+decltype(auto) mat_cw_div(const LeftMatrixType& matrix_left, const RightMatrixType& matrix_right) {
+    return blaze::map( matrix_left, matrix_right, blaze::Div{} );
+}
+
+
 /* Solving Linear System */
 template <typename MatrixType, typename ArrayType>
 void solve_sle(MatrixType& A, ArrayType& B) {

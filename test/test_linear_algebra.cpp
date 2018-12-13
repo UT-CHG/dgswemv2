@@ -82,6 +82,11 @@ int main(int argc, char* args[]) {
             std::cout << "Error: max value in a is 9, not " << a_maxval << std::endl;
         }
     }
+
+    { //check for component-wise matrix division
+        DynMatrix<double> A2 = reshape<double, SO::ColumnMajor>(a2, 3, 3);
+        std::cout << " a/a2 = " << mat_cw_div(A,A2) << std::endl;
+    }
     /*PetscInitialize(&argc, &args, (char*)0, NULL);
 
     int rank;
