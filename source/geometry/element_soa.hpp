@@ -5,6 +5,8 @@ namespace Geometry {
 
 template <typename ElementType, typename ProblemSoA>
 class ElementSoA {
+public:
+    using AccessorType = ElementType;
 private:
     using MasterType = typename ElementType::ElementMasterType;
 public:
@@ -25,14 +27,12 @@ public:
 
     //fixme: this signature needs to change down the road to an element accessor type (which is element)
     template <typename... Args>
-    ElementType at(const size_t index,
-                   const uint ID,
+    AccessorType at(const size_t index,
                    Args&&... args) {
         assert(this->master);
-        return ElementType(ID,
-                           *master,
-                           this->data.at(index),
-                           std::forward<Args>(args)...);
+        return AccessorType(*master,
+                            this->data.at(index),
+                            std::forward<Args>(args)...);
     }
 
     ProblemSoA data;

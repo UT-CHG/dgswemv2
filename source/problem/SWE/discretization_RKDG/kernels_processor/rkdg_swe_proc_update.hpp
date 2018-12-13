@@ -16,6 +16,9 @@ public:
 
     template <typename SoA>
     void operator() (SoA& soa) const {
+        static_assert(Utilities::is_SoA<SoA>::value,
+                      "Vectorized call must be passed a struct of arrays argument\n");
+
         auto& state = soa.data.state[stepper.GetStage()];
 
         state.solution[SWE::Variables::ze] = soa.ApplyMinv(state.rhs[SWE::Variables::ze]);

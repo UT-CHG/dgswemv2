@@ -26,7 +26,6 @@ int main() {
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
     SWE::RKDG::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/, 1 /*stage*/, 1 /*element*/);
-    double abs_J;
     MasterType master(10);
     ShapeType shape(std::move(vrtxs));
 
@@ -35,15 +34,14 @@ int main() {
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
-    ElementType triangle(0,
-                         master,
+    ElementType triangle(master,
                          std::move(data_holder.at(0)),
-                         abs_J,
+                         0u,
                          std::move(vrtxs),
                          std::move(std::vector<uint>(3, 0)),
                          std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
                          std::move(std::vector<unsigned char>{
-                             SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
+                                 SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 

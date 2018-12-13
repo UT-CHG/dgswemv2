@@ -42,9 +42,9 @@ class Element {
 
   public:
     Element() = default;
-    Element(const uint ID,
-            MasterType& master,
+    Element(MasterType& master,
             AccessorType&& data,
+            const uint ID,
             std::vector<Point<3>>&& nodal_coordinates,
             std::vector<uint>&& node_ID,
             std::vector<uint>&& neighbor_ID,
@@ -142,16 +142,16 @@ class Element {
 };
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
-Element<dimension, MasterType, ShapeType, AccessorType>::Element(const uint ID,
-                                                                 MasterType& master,
+Element<dimension, MasterType, ShapeType, AccessorType>::Element(MasterType& master,
                                                                  AccessorType&& data,
+                                                                 const uint ID,
                                                                  std::vector<Point<3>>&& nodal_coordinates,
                                                                  std::vector<uint>&& node_ID,
                                                                  std::vector<uint>&& neighbor_ID,
                                                                  std::vector<uchar>&& boundary_type)
-    : data(std::move(data)),
+    : master(&master),
+      data(std::move(data)),
       ID(ID),
-      master(&master),
       shape(ShapeType(std::move(nodal_coordinates))),
       node_ID(std::move(node_ID)),
       neighbor_ID(std::move(neighbor_ID)),
