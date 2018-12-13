@@ -20,11 +20,11 @@ DynMatrix<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>&
     return phi;
 }
 
-std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
+StatVector<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
     uint ndof = p + 1;
     uint npt  = points.size();
 
-    std::array<DynMatrix<double>, 1> dphi;
+    StatVector<DynMatrix<double>, 1> dphi;
 
     DynMatrix<double> dphi_dl1(ndof, npt);
 

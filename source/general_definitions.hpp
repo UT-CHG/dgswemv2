@@ -74,7 +74,7 @@ class Basis {
      * @return 3-dimensional array indexed as [dof][point][coordinate] where coordinate
      *         corresponds to the dimension in which the derivative is taken.
      */
-    virtual std::array<DynMatrix<double>, dimension> GetDPhi(const uint p,
+    virtual StatVector<DynMatrix<double>, dimension> GetDPhi(const uint p,
                                                              const std::vector<Point<dimension>>& points) = 0;
 
     /**
@@ -143,7 +143,7 @@ class Master {
     DynMatrix<double> phi_gp;
 
     std::array<DynMatrix<double>, dimension> dchi_gp;
-    std::array<DynMatrix<double>, dimension> dphi_gp;
+    StatVector<DynMatrix<double>, dimension> dphi_gp;
 
     DynMatrix<double> int_phi_fact;
     std::array<DynMatrix<double>, dimension> int_dphi_fact;

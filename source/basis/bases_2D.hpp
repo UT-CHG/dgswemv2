@@ -13,7 +13,7 @@ namespace Basis {
 class Dubiner_2D : Basis<2> {
   public:
     DynMatrix<double> GetPhi(const uint p, const std::vector<Point<2>>& points);
-    std::array<DynMatrix<double>, 2> GetDPhi(const uint p, const std::vector<Point<2>>& points);
+    StatVector<DynMatrix<double>, 2> GetDPhi(const uint p, const std::vector<Point<2>>& points);
 
     DynMatrix<double> GetMinv(const uint p);
 

@@ -8,7 +8,7 @@ namespace Basis {
 class Legendre_1D : Basis<1> {
   public:
     DynMatrix<double> GetPhi(const uint p, const std::vector<Point<1>>& points);
-    std::array<DynMatrix<double>, 1> GetDPhi(const uint p, const std::vector<Point<1>>& points);
+    StatVector<DynMatrix<double>, 1> GetDPhi(const uint p, const std::vector<Point<1>>& points);
 
     DynMatrix<double> GetMinv(const uint p);
 

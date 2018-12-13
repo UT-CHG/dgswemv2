@@ -126,7 +126,7 @@ int main() {
     bool error_found = false;
 
     DynMatrix<double> my_evals                 = basis.GetPhi(10, points);
-    std::array<DynMatrix<double>, 1> my_Devals = basis.GetDPhi(10, points);
+    StatVector<DynMatrix<double>, 1> my_Devals = basis.GetDPhi(10, points);
 
     for (uint dof = 0; dof < 11; ++dof) {
         // Check the evaluations of the Legendre polynomials

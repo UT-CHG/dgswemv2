@@ -28,11 +28,11 @@ DynMatrix<double> Dubiner_2D::GetPhi(const uint p, const std::vector<Point<2>>& 
     return phi;
 }
 
-std::array<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const std::vector<Point<2>>& points) {
+StatVector<DynMatrix<double>, 2> Dubiner_2D::GetDPhi(const uint p, const std::vector<Point<2>>& points) {
     uint ndof = (p + 1) * (p + 2) / 2;
     uint npt  = points.size();
 
-    std::array<DynMatrix<double>, 2> dphi;
+    StatVector<DynMatrix<double>, 2> dphi;
 
     DynMatrix<double> dphi_dz1(ndof, npt);
     DynMatrix<double> dphi_dz2(ndof, npt);

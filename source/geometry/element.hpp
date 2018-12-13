@@ -32,7 +32,7 @@ class Element {
 
     /* dpsi_gp stored in shape */                      // nodal basis, i.e. shape functions
     std::array<DynMatrix<double>, dimension> dchi_gp;  // linear basis
-    std::array<DynMatrix<double>, dimension> dphi_gp;  // modal basis
+    StatVector<DynMatrix<double>, dimension> dphi_gp;  // modal basis
 
     DynVector<double> int_fact;
     DynMatrix<double> int_phi_fact;
@@ -149,9 +149,9 @@ Element<dimension, MasterType, ShapeType, AccessorType>::Element(MasterType& mas
                                                                  std::vector<uint>&& node_ID,
                                                                  std::vector<uint>&& neighbor_ID,
                                                                  std::vector<uchar>&& boundary_type)
-    : master(&master),
-      data(std::move(data)),
+    : data(std::move(data)),
       ID(ID),
+      master(&master),
       shape(ShapeType(std::move(nodal_coordinates))),
       node_ID(std::move(node_ID)),
       neighbor_ID(std::move(neighbor_ID)),
