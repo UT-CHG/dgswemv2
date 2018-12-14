@@ -1,6 +1,8 @@
 #ifndef EHDG_SWE_STAB_PARAM_LF_HPP
 #define EHDG_SWE_STAB_PARAM_LF_HPP
 
+#include "utilities/sign.hpp"
+
 namespace SWE {
 namespace EHDG {
 void get_tau_LF(const HybMatrix<double, SWE::n_variables>& q,
@@ -35,10 +37,10 @@ void get_dtau_dze_LF(const HybMatrix<double, SWE::n_variables>& q,
         double ny = surface_normal(GlobalCoord::y, gp);
 
         double un      = u * nx + v * ny;
-        double dc_dze  = std::sqrt(Global::g * h);
+        double dc_dze  = std::sqrt(Global::g / h) / 2.0;
         double dun_dze = -un / h;
 
-        dtau_dze[gp] = (dc_dze + dun_dze * std::pow(-1.0, std::signbit(un))) * IdentityMatrix<double>(3);
+        dtau_dze[gp] = (dc_dze + dun_dze * Utilities::sign(un)) * IdentityMatrix<double>(3);
     }
 }
 
@@ -57,7 +59,7 @@ void get_dtau_dqx_LF(const HybMatrix<double, SWE::n_variables>& q,
         double un      = u * nx + v * ny;
         double dun_dqx = nx / h;
 
-        dtau_dqx[gp] = dun_dqx * std::pow(-1.0, std::signbit(un)) * IdentityMatrix<double>(3);
+        dtau_dqx[gp] = dun_dqx * Utilities::sign(un) * IdentityMatrix<double>(3);
     }
 }
 
@@ -76,7 +78,7 @@ void get_dtau_dqy_LF(const HybMatrix<double, SWE::n_variables>& q,
         double un      = u * nx + v * ny;
         double dun_dqy = ny / h;
 
-        dtau_dqy[gp] = dun_dqy * std::pow(-1.0, std::signbit(un)) * IdentityMatrix<double>(3);
+        dtau_dqy[gp] = dun_dqy * Utilities::sign(un) * IdentityMatrix<double>(3);
     }
 }
 

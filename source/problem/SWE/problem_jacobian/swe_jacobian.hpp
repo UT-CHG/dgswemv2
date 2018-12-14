@@ -1,6 +1,8 @@
 #ifndef SWE_JACOBIAN_HPP
 #define SWE_JACOBIAN_HPP
 
+#include "utilities/sign.hpp"
+
 namespace SWE {
 StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, double v, double nx, double ny);
 StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u, double v, double nx, double ny);
@@ -392,9 +394,9 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h, doubl
 
     set_constant(dabsL_dze, 0.0);
 
-    dabsL_dze(SWE::Variables::ze, SWE::Variables::ze) = (dun_dze - dc_dze) * std::pow(-1.0, std::signbit(un - c));
-    dabsL_dze(SWE::Variables::qx, SWE::Variables::qx) = dun_dze * std::pow(-1.0, std::signbit(un));
-    dabsL_dze(SWE::Variables::qy, SWE::Variables::qy) = (dun_dze + dc_dze) * std::pow(-1.0, std::signbit(un + c));
+    dabsL_dze(SWE::Variables::ze, SWE::Variables::ze) = (dun_dze - dc_dze) * Utilities::sign(un - c);
+    dabsL_dze(SWE::Variables::qx, SWE::Variables::qx) = dun_dze * Utilities::sign(un);
+    dabsL_dze(SWE::Variables::qy, SWE::Variables::qy) = (dun_dze + dc_dze) * Utilities::sign(un + c);
 
     return dabsL_dze;
 }
@@ -409,9 +411,9 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h, doubl
 
     set_constant(dabsL_dqx, 0.0);
 
-    dabsL_dqx(SWE::Variables::ze, SWE::Variables::ze) = dun_dqx * std::pow(-1.0, std::signbit(un - c));
-    dabsL_dqx(SWE::Variables::qx, SWE::Variables::qx) = dun_dqx * std::pow(-1.0, std::signbit(un));
-    dabsL_dqx(SWE::Variables::qy, SWE::Variables::qy) = dun_dqx * std::pow(-1.0, std::signbit(un + c));
+    dabsL_dqx(SWE::Variables::ze, SWE::Variables::ze) = dun_dqx * Utilities::sign(un - c);
+    dabsL_dqx(SWE::Variables::qx, SWE::Variables::qx) = dun_dqx * Utilities::sign(un);
+    dabsL_dqx(SWE::Variables::qy, SWE::Variables::qy) = dun_dqx * Utilities::sign(un + c);
 
     return dabsL_dqx;
 }
@@ -426,9 +428,9 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h, doubl
 
     set_constant(dabsL_dqy, 0.0);
 
-    dabsL_dqy(SWE::Variables::ze, SWE::Variables::ze) = dun_dqy * std::pow(-1.0, std::signbit(un - c));
-    dabsL_dqy(SWE::Variables::qx, SWE::Variables::qx) = dun_dqy * std::pow(-1.0, std::signbit(un));
-    dabsL_dqy(SWE::Variables::qy, SWE::Variables::qy) = dun_dqy * std::pow(-1.0, std::signbit(un + c));
+    dabsL_dqy(SWE::Variables::ze, SWE::Variables::ze) = dun_dqy * Utilities::sign(un - c);
+    dabsL_dqy(SWE::Variables::qx, SWE::Variables::qx) = dun_dqy * Utilities::sign(un);
+    dabsL_dqy(SWE::Variables::qy, SWE::Variables::qy) = dun_dqy * Utilities::sign(un + c);
 
     return dabsL_dqy;
 }
