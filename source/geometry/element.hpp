@@ -56,6 +56,7 @@ class Element {
     std::vector<uint>& GetNodeID() { return this->node_ID; }
     std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
     double GetAbsJ() const { return abs_J; }
+    StatMatrix<double, dimension, dimension> GetJinv(){ return this->shape.GetJinv(master->integration_rule.second)[0]; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
 

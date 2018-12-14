@@ -25,8 +25,8 @@ int main() {
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
-    SWE::RKDG::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/, 1 /*stage*/, 1 /*element*/);
     MasterType master(10);
+    SWE::RKDG::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/, master.ngp, 1 /*stage*/, 1 /*element*/);
     ShapeType shape(std::move(vrtxs));
 
     vrtxs.resize(3);

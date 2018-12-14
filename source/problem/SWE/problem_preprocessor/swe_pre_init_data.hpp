@@ -27,7 +27,7 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
 
         state.aux = elt.L2ProjectionNode(bathymetry);
 
-        row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeNodalUgp(bathymetry);
+        internal.aux_at_gp[SWE::Auxiliaries::bath] = elt.ComputeNodalUgp(bathymetry);
         row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
         row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
 
@@ -46,11 +46,11 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
             double R         = problem_specific_input.spherical_projection.R;
 
             for (uint gp = 0; gp < ngp; ++gp) {
-                internal.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
+                internal.aux_at_gp[SWE::Auxiliaries::sp][gp] = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
             for (uint gp = 0; gp < ngp; ++gp) {
-                internal.aux_at_gp(SWE::Auxiliaries::sp, gp) = 1.0;
+                internal.aux_at_gp[SWE::Auxiliaries::sp][gp] = 1.0;
             }
         }
 

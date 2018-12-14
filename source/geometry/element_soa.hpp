@@ -18,11 +18,20 @@ public:
         this->inv_abs_J(index,index) = 1/abs_J_;
     }
 
+    void set_J_inv(uint index, const StatMatrix<double,2,2>& J_inv_) {
+        for ( uint x = 0; x < 2; ++x ) {
+            for ( uint y = 0; y < 2; ++y ) {
+                this->J_inv(y,x)(index,index) = J_inv_(x,y);
+            }
+        }
+    }
+
     void reserve(uint ndof, uint nstages , uint nelements) {
         std::cout << "Reserving " << nelements << " in element_soa.hpp\n";
-        this->data = ProblemSoA(ndof,nstages,nelements);
+        this->data = ProblemSoA(ndof, master->ngp, nstages, nelements);
         this->abs_J = DiagonalMatrix<double>(nelements);
         this->inv_abs_J = DiagonalMatrix<double>(nelements);
+        this->J_inv = DiagonalMatrix<double>(nelements);
     }
 
     //fixme: this signature needs to change down the road to an element accessor type (which is element)
@@ -37,6 +46,14 @@ public:
 
     ProblemSoA data;
 
+    template <typename ArrayType>
+    decltype(auto) ComputeUgp(const ArrayType& u) {
+        return u * this->master->phi_gp;
+    }
+
+    decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double>,2>& u_gp) {
+        return  (this->J_inv * u_gp) * this->master->int_dphi_fact;
+    }
 
     template <typename ArrayType>
     decltype(auto) ApplyMinv(const ArrayType& rhs) {
@@ -46,6 +63,7 @@ public:
 private:
     MasterType* master = nullptr;
 
+    StatMatrix<DiagonalMatrix<double>,2,2> J_inv;
     DiagonalMatrix<double> abs_J;
     DiagonalMatrix<double> inv_abs_J;
 };

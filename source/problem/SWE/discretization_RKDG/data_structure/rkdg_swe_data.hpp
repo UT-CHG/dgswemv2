@@ -13,8 +13,13 @@
 namespace SWE {
 namespace RKDG {
 struct Accessor {
+    Accessor(AlignedVector<StateAccessor>&& state_,
+             InternalAccessor&& internal_ )
+        : state(state_), internal(internal_)
+    {}
+
     AlignedVector<StateAccessor> state;
-    Internal internal;
+    InternalAccessor internal;
     AlignedVector<Boundary> boundary;
 
     Source source;
@@ -22,8 +27,6 @@ struct Accessor {
     SlopeLimit slope_limit_state;
 
     void initialize() {
-        this->internal = Internal(this->ngp_internal);
-
         for (uint bound_id = 0; bound_id < this->nbound; ++bound_id) {
             this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
         }
@@ -85,18 +88,22 @@ struct SoAContainer {
     using AccessorType = Accessor;
 
     SoAContainer()=default;
-    SoAContainer(uint nstages,
-                 uint nelements,
-                 uint p);
+    SoAContainer(uint ndofs,
+                 uint ngp_internal,
+                 uint nstages,
+                 uint nelements);
 
     Accessor at(const size_t index);
 
     AlignedVector<StateData> state;
+    InternalData internal;
 };
 
 SoAContainer::SoAContainer(uint ndofs,
+                           uint ngp_internal,
                            uint nstages,
-                           uint nelements) {
+                           uint nelements)
+    : internal(nelements, ngp_internal) {
     this->state.reserve(nstages+1);
     for ( uint i = 0; i < nstages+1; ++i ) {
         this->state.emplace_back(nelements, ndofs);
@@ -104,9 +111,8 @@ SoAContainer::SoAContainer(uint ndofs,
 }
 
 Accessor SoAContainer::at(const size_t index) {
-    Accessor acc;
-    acc.state = Utilities::at_each(this->state, index);
-    return acc;
+    return Accessor(std::move(Utilities::at_each(this->state, index)),
+                    std::move(this->internal.at(index)));
 }
 
 }

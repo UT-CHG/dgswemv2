@@ -34,6 +34,7 @@ public:
     void finalize_initialization() {
         for ( uint elt_id = 0; elt_id < element_accessors.size(); ++elt_id ) {
             element_data.set_abs_J(elt_id, element_accessors.at(elt_id).GetAbsJ());
+            element_data.set_J_inv(elt_id, element_accessors.at(elt_id).GetJinv());
         }
     }
 
