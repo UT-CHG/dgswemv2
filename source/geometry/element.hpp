@@ -37,7 +37,7 @@ class Element {
     DynVector<double> int_fact;
     DynMatrix<double> int_phi_fact;
     DynMatrix<double> int_phi_phi_fact;
-    std::array<DynMatrix<double>, dimension> int_dphi_fact;
+    StatVector<DynMatrix<double>, dimension> int_dphi_fact;
     std::array<DynMatrix<double>, dimension> int_phi_dphi_fact;
 
   public:

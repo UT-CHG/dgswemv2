@@ -40,10 +40,12 @@ struct InternalData {
     InternalData(const uint nelements, const uint ngp) {
         q_at_gp.fill(DynMatrix<double>(nelements,ngp));
         aux_at_gp.fill(DynMatrix<double>(nelements,ngp));
+        F_at_gp = DynMatrix<double>(nelements,ngp);
     }
 
     std::array<DynMatrix<double>, SWE::n_variables> q_at_gp;
     std::array<DynMatrix<double>, SWE::n_auxiliaries> aux_at_gp;
+    StatVector<DynMatrix<double>, SWE::n_dimensions> F_at_gp;
 
     AccessorType at(const uint index) {
         return AccessorType( make_rows_as_views(q_at_gp, index),

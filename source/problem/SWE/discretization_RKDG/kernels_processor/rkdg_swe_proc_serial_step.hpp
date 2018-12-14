@@ -21,7 +21,8 @@ void Problem::step_serial(SerialSimType* sim) {
 }
 
 void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::volume_kernel(stepper, elt); });
+    VolumeKernel volume_kernel(stepper);
+    discretization.mesh.CallForEachElement(volume_kernel);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::source_kernel(stepper, elt); });
 

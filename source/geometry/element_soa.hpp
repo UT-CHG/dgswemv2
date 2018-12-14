@@ -21,7 +21,7 @@ public:
     void set_J_inv(uint index, const StatMatrix<double,2,2>& J_inv_) {
         for ( uint x = 0; x < 2; ++x ) {
             for ( uint y = 0; y < 2; ++y ) {
-                this->J_inv(y,x)(index,index) = J_inv_(x,y);
+                this->J_inv(x,y)(index,index) = J_inv_(x,y);
             }
         }
     }
@@ -52,7 +52,11 @@ public:
     }
 
     decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double>,2>& u_gp) {
-        return  (this->J_inv * u_gp) * this->master->int_dphi_fact;
+//        DynMatrix<double> temp2 =  blaze::evaluate(
+//            ;
+//        auto temp3 = blaze::evaluate( * temp2);
+        
+        return blaze::evaluate(abs_J* (transpose(this->J_inv * u_gp) * this->master->int_dphi_fact));
     }
 
     template <typename ArrayType>

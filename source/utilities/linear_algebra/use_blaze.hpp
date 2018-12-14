@@ -289,6 +289,13 @@ decltype(auto) reverse_columns(const blaze::Matrix<VT,SO>& matrix) {
     return blaze::columns((~matrix),reversed_indices);
 }
 
+
+template <typename LeftMatrixType, typename RightMatrixType>
+decltype(auto) mat_cw_mult(const LeftMatrixType& matrix_left, const RightMatrixType& matrix_right) {
+    return matrix_left % matrix_right;
+}
+
+
 template <typename LeftMatrixType, typename RightMatrixType>
 decltype(auto) mat_cw_div(const LeftMatrixType& matrix_left, const RightMatrixType& matrix_right) {
     return blaze::map( matrix_left, matrix_right, blaze::Div{} );

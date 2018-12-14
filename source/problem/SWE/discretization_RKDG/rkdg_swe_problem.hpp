@@ -122,9 +122,6 @@ struct Problem {
     static auto stage_hpx(HPXSimUnitType* sim_unit);
 
     template <typename ElementType>
-    static void volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
-    template <typename ElementType>
     static void source_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
     template <typename InterfaceType>

@@ -1,56 +1,85 @@
 #ifndef RKDG_SWE_PROC_VOLUME_HPP
 #define RKDG_SWE_PROC_VOLUME_HPP
 
+#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
+
 namespace SWE {
 namespace RKDG {
-template <typename ElementType>
-void Problem::volume_kernel(const ProblemStepperType& stepper, ElementType& elt) {
-    const uint stage = stepper.GetStage();
+class VolumeKernel {
+private:
+    using StepperType = typename Problem::ProblemStepperType;
 
-    auto& wd_state = elt.data.wet_dry_state;
-    auto& state    = elt.data.state[stage];
+public:
+    constexpr static bool is_vectorized = true;
 
-    for ( uint var = 0; var < SWE::n_variables; ++var ) {
-        set_constant(state.rhs[var], 0.0);
+    VolumeKernel(const StepperType& stepper_) : stepper(stepper_) {}
+
+    template <typename SoA>
+    void operator() (SoA& soa) const {
+        const uint stage = stepper.GetStage();
+
+//    auto& wd_state = elt.data.wet_dry_state;
+        auto& state    = soa.data.state[stage];
+
+//    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+//        set_constant(state.rhs[var], 0.0);
+//    }
+
+//    if (wd_state.wet) {
+        auto& internal = soa.data.internal;
+
+        internal.q_at_gp[SWE::Variables::ze] = soa.ComputeUgp(state.q[SWE::Variables::ze]);
+        internal.q_at_gp[SWE::Variables::qx] = soa.ComputeUgp(state.q[SWE::Variables::qx]);
+        internal.q_at_gp[SWE::Variables::qy] = soa.ComputeUgp(state.q[SWE::Variables::qy]);
+
+        auto& ze   = internal.q_at_gp[SWE::Variables::ze];
+        auto& qx   = internal.q_at_gp[SWE::Variables::qx];
+        auto& qy   = internal.q_at_gp[SWE::Variables::qy];
+        auto&  h   = internal.aux_at_gp[SWE::Auxiliaries::h];
+        auto& bath = internal.aux_at_gp[SWE::Auxiliaries::bath];
+        h = ze + bath;
+
+        auto u = mat_cw_div(qx, h);
+        auto v = mat_cw_div(qy, h);
+
+        auto uuh = mat_cw_mult(u, qx);
+        auto vvh = mat_cw_mult(v, qy);
+        auto uvh = mat_cw_mult(u, qy);
+        auto pe  = Global::g * mat_cw_mult(ze, 0.5 * ze + bath);
+
+        //F_at_gp is a temporary variable. Since we're only integrating one coordinate at a time,
+        //we simply reuse F_at_gp
+        //compute ze terms
+        internal.F_at_gp[GlobalCoord::x] =
+            mat_cw_mult(internal.aux_at_gp[SWE::Auxiliaries::sp], qx);
+        internal.F_at_gp[GlobalCoord::y] = qy;
+
+        state.rhs[SWE::Variables::ze] = soa.IntegrationDPhi( internal.F_at_gp );
+
+        //compute qx terms
+        internal.F_at_gp[GlobalCoord::x] =
+            mat_cw_mult(internal.aux_at_gp[SWE::Auxiliaries::sp], uuh + pe);
+
+        internal.F_at_gp[GlobalCoord::y] = uvh;
+
+        state.rhs[SWE::Variables::qx] = soa.IntegrationDPhi( internal.F_at_gp );
+
+        //compute qy terms
+
+        //Save one expression template evaluation by using the symmetric nature of the flux
+        auto& uvh_ = internal.F_at_gp[GlobalCoord::y];
+        internal.F_at_gp[GlobalCoord::x] =
+            mat_cw_mult(internal.aux_at_gp[SWE::Auxiliaries::sp], uvh_ );
+
+        internal.F_at_gp[GlobalCoord::y] = vvh + pe;
+
+        state.rhs[SWE::Variables::qy] = soa.IntegrationDPhi( internal.F_at_gp );
+//    }
     }
 
-    if (wd_state.wet) {
-        auto& internal = elt.data.internal;
-
-        for ( uint var = 0; var < SWE::n_variables; ++var ) {
-            internal.q_at_gp[var] = elt.ComputeUgp(state.q[var]);
-        }
-
-        internal.aux_at_gp[SWE::Auxiliaries::h] =
-            internal.q_at_gp[SWE::Variables::ze] + internal.aux_at_gp[SWE::Auxiliaries::bath];
-
-        auto u = vec_cw_div(internal.q_at_gp[SWE::Variables::qx], internal.aux_at_gp[SWE::Auxiliaries::h]);
-        auto v = vec_cw_div(internal.q_at_gp[SWE::Variables::qy], internal.aux_at_gp[SWE::Auxiliaries::h]);
-
-        auto uuh = vec_cw_mult(u, internal.q_at_gp[SWE::Variables::qx]);
-        auto vvh = vec_cw_mult(v, internal.q_at_gp[SWE::Variables::qy]);
-        auto uvh = vec_cw_mult(u, internal.q_at_gp[SWE::Variables::qy]);
-        auto pe =
-            Global::g *
-            (0.5 * vec_cw_mult(internal.q_at_gp[SWE::Variables::ze], internal.q_at_gp[SWE::Variables::ze]) +
-             vec_cw_mult(internal.q_at_gp[SWE::Variables::ze], internal.aux_at_gp[SWE::Auxiliaries::bath]));
-
-        row(internal.Fx_at_gp, SWE::Variables::ze) =
-            vec_cw_mult(internal.aux_at_gp[SWE::Auxiliaries::sp], internal.q_at_gp[SWE::Variables::qx]);
-        row(internal.Fx_at_gp, SWE::Variables::qx) =
-            vec_cw_mult(internal.aux_at_gp[SWE::Auxiliaries::sp], uuh + pe);
-        row(internal.Fx_at_gp, SWE::Variables::qy) = vec_cw_mult(internal.aux_at_gp[SWE::Auxiliaries::sp], uvh);
-
-        row(internal.Fy_at_gp, SWE::Variables::ze) = internal.q_at_gp[SWE::Variables::qy];
-        row(internal.Fy_at_gp, SWE::Variables::qx) = uvh;
-        row(internal.Fy_at_gp, SWE::Variables::qy) = vvh + pe;
-
-        for ( uint var = 0; var < SWE::n_variables; ++var ) {
-            state.rhs[var] = elt.IntegrationDPhi(GlobalCoord::x, row(internal.Fx_at_gp,var)) +
-                elt.IntegrationDPhi(GlobalCoord::y, row(internal.Fy_at_gp,var));
-        }
-    }
-}
+private:
+    const StepperType& stepper;
+};
 }
 }
 
