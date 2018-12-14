@@ -14,6 +14,9 @@ class Distributed {
     HybMatrix<double, SWE::n_variables> Fn_ex;
 
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> tau;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dze;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dqx;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dqy;
 
   public:
     Distributed() = default;
@@ -39,6 +42,9 @@ void Distributed::Initialize(DistributedBoundaryType& dbound) {
     this->Fn_ex.resize(SWE::n_variables, ngp);
 
     this->tau.resize(ngp);
+    this->dtau_dze.resize(ngp);
+    this->dtau_dqx.resize(ngp);
+    this->dtau_dqy.resize(ngp);
 }
 
 template <typename EdgeDistributedType>
@@ -46,6 +52,14 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+
+    get_tau_LF(edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->tau);
+    get_dtau_dze_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->dtau_dze);
+    get_dtau_dqx_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->dtau_dqx);
+    get_dtau_dqy_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->dtau_dqy);
 
     std::vector<double> message;
 
@@ -65,10 +79,21 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
         }
     }
 
-    edge_internal.rhs_global_kernel_at_gp = boundary.Fn_at_gp + this->Fn_ex;
+    StatVector<double, SWE::n_variables> del_q;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq;
 
-    // Add tau terms
-    add_kernel_tau_terms_dbound_LF(edge_dbound);
+    for (uint gp = 0; gp < ngp; ++gp) {
+        del_q = column(boundary.q_at_gp, gp) + column(this->q_ex, gp_ex) - 2.0 * column(edge_internal.q_hat_at_gp, gp);
+
+        column(dtau_delq, SWE::Variables::ze) = this->dtau_dze[gp] * del_q;
+        column(dtau_delq, SWE::Variables::qx) = this->dtau_dqx[gp] * del_q;
+        column(dtau_delq, SWE::Variables::qy) = this->dtau_dqy[gp] * del_q;
+
+        column(edge_internal.rhs_global_kernel_at_gp, gp) =
+            column(boundary.Fn_at_gp, gp) + column(this->Fn_ex, gp) + this->tau[gp] * del_q;
+
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = flatten<double>(dtau_delq - 2.0 * this->tau[gp]);
+    }
 }
 
 template <typename EdgeDistributedType>
