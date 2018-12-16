@@ -1,10 +1,9 @@
-#ifndef EHDG_SWE_STAB_PARAM_LF_HPP
-#define EHDG_SWE_STAB_PARAM_LF_HPP
+#ifndef SWE_STAB_PARAM_LF_HPP
+#define SWE_STAB_PARAM_LF_HPP
 
 #include "utilities/sign.hpp"
 
 namespace SWE {
-namespace EHDG {
 void get_tau_LF(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
@@ -80,7 +79,6 @@ void get_dtau_dqy_LF(const HybMatrix<double, SWE::n_variables>& q,
 
         dtau_dqy[gp] = dun_dqy * Utilities::sign(un) * IdentityMatrix<double>(3);
     }
-}
 }
 }
 

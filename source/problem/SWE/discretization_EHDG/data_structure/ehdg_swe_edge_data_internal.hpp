@@ -9,12 +9,21 @@ struct EdgeInternal {
         : q_hat_at_gp(SWE::n_variables, ngp),
           aux_hat_at_gp(SWE::n_auxiliaries, ngp),
           q_init_at_gp(SWE::n_variables, ngp),
+          tau(ngp),
+          dtau_dze(ngp),
+          dtau_dqx(ngp),
+          dtau_dqy(ngp),
           delta_hat_global_kernel_at_gp(SWE::n_variables * SWE::n_variables, ngp),
           rhs_global_kernel_at_gp(SWE::n_variables, ngp) {}
 
     HybMatrix<double, SWE::n_variables> q_hat_at_gp;
     HybMatrix<double, SWE::n_auxiliaries> aux_hat_at_gp;
     HybMatrix<double, SWE::n_variables> q_init_at_gp;
+
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> tau;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dze;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dqx;
+    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dqy;
 
     HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_hat_global_kernel_at_gp;
     HybMatrix<double, SWE::n_variables> rhs_global_kernel_at_gp;

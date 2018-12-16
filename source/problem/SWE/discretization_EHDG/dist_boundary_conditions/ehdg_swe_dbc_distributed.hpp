@@ -13,11 +13,6 @@ class Distributed {
     HybMatrix<double, SWE::n_variables> q_ex;
     HybMatrix<double, SWE::n_variables> Fn_ex;
 
-    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> tau;
-    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dze;
-    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dqx;
-    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dtau_dqy;
-
   public:
     Distributed() = default;
     Distributed(const DBDataExchanger& exchanger);
@@ -40,11 +35,6 @@ void Distributed::Initialize(DistributedBoundaryType& dbound) {
 
     this->q_ex.resize(SWE::n_variables, ngp);
     this->Fn_ex.resize(SWE::n_variables, ngp);
-
-    this->tau.resize(ngp);
-    this->dtau_dze.resize(ngp);
-    this->dtau_dqx.resize(ngp);
-    this->dtau_dqy.resize(ngp);
 }
 
 template <typename EdgeDistributedType>
@@ -53,13 +43,20 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    get_tau_LF(edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->tau);
-    get_dtau_dze_LF(
-        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->dtau_dze);
-    get_dtau_dqx_LF(
-        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->dtau_dqx);
-    get_dtau_dqy_LF(
-        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->dtau_dqy);
+    SWE::get_tau_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, edge_internal.tau);
+    SWE::get_dtau_dze_LF(edge_internal.q_hat_at_gp,
+                         edge_internal.aux_hat_at_gp,
+                         edge_dbound.boundary.surface_normal,
+                         edge_internal.dtau_dze);
+    SWE::get_dtau_dqx_LF(edge_internal.q_hat_at_gp,
+                         edge_internal.aux_hat_at_gp,
+                         edge_dbound.boundary.surface_normal,
+                         edge_internal.dtau_dqx);
+    SWE::get_dtau_dqy_LF(edge_internal.q_hat_at_gp,
+                         edge_internal.aux_hat_at_gp,
+                         edge_dbound.boundary.surface_normal,
+                         edge_internal.dtau_dqy);
 
     std::vector<double> message;
 
@@ -85,14 +82,15 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     for (uint gp = 0; gp < ngp; ++gp) {
         del_q = column(boundary.q_at_gp, gp) + column(this->q_ex, gp) - 2.0 * column(edge_internal.q_hat_at_gp, gp);
 
-        column(dtau_delq, SWE::Variables::ze) = this->dtau_dze[gp] * del_q;
-        column(dtau_delq, SWE::Variables::qx) = this->dtau_dqx[gp] * del_q;
-        column(dtau_delq, SWE::Variables::qy) = this->dtau_dqy[gp] * del_q;
+        column(dtau_delq, SWE::Variables::ze) = edge_internal.dtau_dze[gp] * del_q;
+        column(dtau_delq, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q;
+        column(dtau_delq, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q;
 
         column(edge_internal.rhs_global_kernel_at_gp, gp) =
-            column(boundary.Fn_at_gp, gp) + column(this->Fn_ex, gp) + this->tau[gp] * del_q;
+            column(boundary.Fn_at_gp, gp) + column(this->Fn_ex, gp) + edge_internal.tau[gp] * del_q;
 
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) = flatten<double>(dtau_delq - 2.0 * this->tau[gp]);
+        column(edge_internal.delta_hat_global_kernel_at_gp, gp) =
+            flatten<double>(dtau_delq - 2.0 * edge_internal.tau[gp]);
     }
 }
 
@@ -102,13 +100,14 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    get_tau_LF(edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, this->tau);
+    SWE::get_tau_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, edge_internal.tau);
 
     boundary.F_hat_at_gp = boundary.Fn_at_gp;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         column(boundary.F_hat_at_gp, gp) +=
-            this->tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
     }
 }
 }
