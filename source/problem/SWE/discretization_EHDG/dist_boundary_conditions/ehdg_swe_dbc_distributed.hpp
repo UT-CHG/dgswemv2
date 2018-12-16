@@ -83,7 +83,7 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq;
 
     for (uint gp = 0; gp < ngp; ++gp) {
-        del_q = column(boundary.q_at_gp, gp) + column(this->q_ex, gp_ex) - 2.0 * column(edge_internal.q_hat_at_gp, gp);
+        del_q = column(boundary.q_at_gp, gp) + column(this->q_ex, gp) - 2.0 * column(edge_internal.q_hat_at_gp, gp);
 
         column(dtau_delq, SWE::Variables::ze) = this->dtau_dze[gp] * del_q;
         column(dtau_delq, SWE::Variables::qx) = this->dtau_dqx[gp] * del_q;
