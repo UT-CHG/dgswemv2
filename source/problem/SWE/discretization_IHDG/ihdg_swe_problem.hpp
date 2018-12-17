@@ -10,7 +10,6 @@
 #include "simulation/discretization.hpp"
 
 #include "problem/SWE/problem_stabilization_parameters/swe_stabilization_params.hpp"
-#include "problem/SWE/discretization_IHDG/stabilization_parameters/ihdg_swe_stabilization_params.hpp"
 
 #include "boundary_conditions/ihdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ihdg_swe_distributed_boundary_conditions.hpp"

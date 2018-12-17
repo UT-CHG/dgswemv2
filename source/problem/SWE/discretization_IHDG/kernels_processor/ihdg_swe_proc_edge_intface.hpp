@@ -20,8 +20,20 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
             row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
-        // Add tau * del_q terms to F_hat
-        add_F_hat_tau_terms_intface_LF(edge_int);
+        SWE::get_tau_LF(edge_internal.q_hat_at_gp,
+                        edge_internal.aux_hat_at_gp,
+                        edge_int.interface.surface_normal_in,
+                        edge_internal.tau);
+
+        uint gp_ex;
+        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+            gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+            column(boundary_in.F_hat_at_gp, gp) +=
+                edge_internal.tau[gp] * (column(boundary_in.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+            column(boundary_ex.F_hat_at_gp, gp_ex) +=
+                edge_internal.tau[gp] * (column(boundary_ex.q_at_gp, gp_ex) - column(edge_internal.q_hat_at_gp, gp));
+        }
 
         double theta = stepper.GetTheta();
 
@@ -53,12 +65,52 @@ void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterf
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
-    // Add tau * del_q terms to F_hat
-    add_F_hat_tau_terms_intface_LF(edge_int);
+    SWE::get_tau_LF(edge_internal.q_hat_at_gp,
+                    edge_internal.aux_hat_at_gp,
+                    edge_int.interface.surface_normal_in,
+                    edge_internal.tau);
+    SWE::get_dtau_dze_LF(edge_internal.q_hat_at_gp,
+                         edge_internal.aux_hat_at_gp,
+                         edge_int.interface.surface_normal_in,
+                         edge_internal.dtau_dze);
+    SWE::get_dtau_dqx_LF(edge_internal.q_hat_at_gp,
+                         edge_internal.aux_hat_at_gp,
+                         edge_int.interface.surface_normal_in,
+                         edge_internal.dtau_dqx);
+    SWE::get_dtau_dqy_LF(edge_internal.q_hat_at_gp,
+                         edge_internal.aux_hat_at_gp,
+                         edge_int.interface.surface_normal_in,
+                         edge_internal.dtau_dqy);
 
-    // Add (dtau/dq_hat * del_q - tau * del_q) term to dF_hat_dq_hat
-    // and tau term to dF_hat_dq
-    add_dF_hat_tau_terms_intface_LF(edge_int);
+    StatVector<double, SWE::n_variables> del_q_in;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq_in;
+
+    StatVector<double, SWE::n_variables> del_q_ex;
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq_ex;
+
+    uint gp_ex;
+    for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+        gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+        del_q_in = column(boundary_in.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp);
+        del_q_ex = column(boundary_ex.q_at_gp, gp_ex) - column(edge_internal.q_hat_at_gp, gp);
+
+        column(dtau_delq_in, SWE::Variables::ze) = edge_internal.dtau_dze[gp] * del_q_in;
+        column(dtau_delq_in, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q_in;
+        column(dtau_delq_in, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q_in;
+
+        column(dtau_delq_ex, SWE::Variables::ze) = edge_internal.dtau_dze[gp] * del_q_ex;
+        column(dtau_delq_ex, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q_ex;
+        column(dtau_delq_ex, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q_ex;
+
+        column(boundary_in.F_hat_at_gp, gp) += edge_internal.tau[gp] * del_q_in;
+        column(boundary_in.dF_hat_dq_at_gp, gp) += flatten<double>(edge_internal.tau[gp]);
+        column(boundary_in.dF_hat_dq_hat_at_gp, gp) = flatten<double>(dtau_delq_in - edge_internal.tau[gp]);
+
+        column(boundary_ex.F_hat_at_gp, gp_ex) += edge_internal.tau[gp] * del_q_ex;
+        column(boundary_ex.dF_hat_dq_at_gp, gp_ex) += flatten<double>(edge_internal.tau[gp]);
+        column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex) = flatten<double>(dtau_delq_ex - edge_internal.tau[gp]);
+    }
 
     double theta = stepper.GetTheta();
 
