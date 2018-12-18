@@ -13,6 +13,19 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
     using BoundaryTypeFlow     = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
     using BoundaryTypeFunction = typename std::tuple_element<3, typename ProblemType::ProblemBoundaryTypes>::type;
 
+    //reserve boundaries
+    for ( auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it ) {
+        if ( it->first == SWE::BoundaryTypes::land ) {
+            mesh.template reserve_boundaries<BoundaryTypeLand>(it->second.size());
+        } else if ( it->first == SWE::BoundaryTypes::tide ) {
+            mesh.template reserve_boundaries<BoundaryTypeTide>(it->second.size());
+        } else if ( it->first == SWE::BoundaryTypes::flow ) {
+            mesh.template reserve_boundaries<BoundaryTypeFlow>(it->second.size());
+        } else if ( it->first == SWE::BoundaryTypes::function ) {
+            mesh.template reserve_boundaries<BoundaryTypeFunction>(it->second.size());
+        }
+    }
+
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::land) {
             uint n_bound_old_land = mesh.GetNumberBoundaries();

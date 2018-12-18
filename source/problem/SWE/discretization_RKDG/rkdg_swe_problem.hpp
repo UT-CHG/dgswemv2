@@ -41,6 +41,7 @@ struct Problem {
 
     using ProblemMeshType = Geometry::MeshType<Accessor,
                                                SoAContainer,
+                                               std::tuple<>,
                                                std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;

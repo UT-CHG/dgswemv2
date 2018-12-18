@@ -7,6 +7,8 @@
 #include "mesh_utilities.hpp"
 
 #include "geometry/element_container.hpp"
+#include "geometry/interface_container.hpp"
+#include "geometry/boundary_container.hpp"
 
 namespace Geometry {
 // Since elements types already come in a tuple. We can use specialization
@@ -15,28 +17,30 @@ template <typename ElementTypeTuple,
           typename InterfaceTypeTuple,
           typename BoundaryTypeTuple,
           typename DistributedBoundaryTypeTuple,
-          typename DataSoAType
+          typename DataSoAType,
+          typename BoundarySoAType
  >
 class Mesh;
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 class Mesh<std::tuple<Elements...>,
            std::tuple<Interfaces...>,
            std::tuple<Boundaries...>,
            std::tuple<DistributedBoundaries...>,
-           DataSoAType> {
+           DataSoAType,
+           BoundarySoAType> {
   public:
     using ElementContainers            = std::tuple<ElementContainer<Elements,DataSoAType>...>;
-    using InterfaceContainer           = Utilities::HeterogeneousVector<Interfaces...>;
-    using BoundaryContainer            = Utilities::HeterogeneousVector<Boundaries...>;
+    using InterfaceContainers          = std::tuple<InterfaceContainer<Interfaces,BoundarySoAType>...>;
+    using BoundaryContainers           = std::tuple<BoundaryContainer<Boundaries,BoundarySoAType>...>;
     using DistributedBoundaryContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
   private:
     uint p;
 
     ElementContainers elements;
-    InterfaceContainer interfaces;
-    BoundaryContainer boundaries;
+    InterfaceContainers interfaces;
+    BoundaryContainers boundaries;
     DistributedBoundaryContainer distributed_boundaries;
 
     std::string mesh_name;
@@ -60,8 +64,23 @@ class Mesh<std::tuple<Elements...>,
             });
         return sz;
     }
-    uint GetNumberInterfaces() { return this->interfaces.size(); }
-    uint GetNumberBoundaries() { return this->boundaries.size(); }
+
+    uint GetNumberInterfaces() {
+        size_t sz = 0U;
+        Utilities::for_each_in_tuple(interfaces, [&sz](auto& intfc_container) {
+                sz += intfc_container.size();
+            });
+        return sz;
+    }
+
+    uint GetNumberBoundaries() {
+        size_t sz = 0U;
+        Utilities::for_each_in_tuple(boundaries, [&sz](auto& bdry_container) {
+                sz += bdry_container.size();
+            });
+        return sz;
+    }
+
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
     void reserve(uint nstages, const std::array<uint,sizeof...(Elements)>& n_elements) {
@@ -70,6 +89,26 @@ class Mesh<std::tuple<Elements...>,
                 uint index_of_type = Utilities::index<ContainerType,ElementContainers>::value;
                 element_container.reserve(nstages, n_elements[index_of_type]);
             });
+    }
+
+    template <typename InterfaceType>
+    void reserve_interfaces(size_t n_interfaces) {
+        using InterfaceContainerType = InterfaceContainer<InterfaceType, BoundarySoAType>;
+
+        auto& intface_container =
+            std::get<Utilities::index<InterfaceContainerType, InterfaceContainers>::value>(this->interfaces);
+
+        intface_container.reserve(n_interfaces);
+    }
+
+    template <typename BoundaryType>
+    void reserve_boundaries(size_t n_boundaries) {
+        using BoundaryContainerType = BoundaryContainer<BoundaryType, BoundarySoAType>;
+
+        auto& bdry_container =
+            std::get<Utilities::index<BoundaryContainerType, BoundaryContainers>::value>(this->boundaries);
+
+        bdry_container.reserve(n_boundaries);
     }
 
     void finalize_initialization() {
@@ -117,13 +156,14 @@ class Mesh<std::tuple<Elements...>,
 #endif
 };
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename ElementType, typename... Args>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CreateElement(const uint ID, Args&&... args) {
+          DataSoAType,
+          BoundarySoAType>::CreateElement(const uint ID, Args&&... args) {
     using ElementContainerType = ElementContainer<ElementType, DataSoAType>;
 
     ElementContainerType& elt_container = std::get<Utilities::index<ElementContainerType, ElementContainers>::value>(this->elements);
@@ -131,130 +171,149 @@ void Mesh<std::tuple<Elements...>,
     elt_container.CreateElement(ID, std::forward<Args>(args)...);
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename InterfaceType, typename... Args>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CreateInterface(Args&&... args) {
-    this->interfaces.template emplace_back<InterfaceType>(std::forward<Args>(args)...);
+          DataSoAType,
+          BoundarySoAType>::CreateInterface(Args&&... args) {
+    using InterfaceContainerType = InterfaceContainer<InterfaceType, BoundarySoAType>;
+
+    InterfaceContainerType& intfc_container = std::get<Utilities::index<InterfaceContainerType, InterfaceContainers>::value>(this->interfaces);
+
+    intfc_container.CreateInterface(std::forward<Args>(args)...);
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename BoundaryType, typename... Args>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CreateBoundary(Args&&... args) {
-    this->boundaries.template emplace_back<BoundaryType>(std::forward<Args>(args)...);
+          DataSoAType,
+          BoundarySoAType>::CreateBoundary(Args&&... args) {
+    using BoundaryContainerType = BoundaryContainer<BoundaryType, BoundarySoAType>;
+
+    BoundaryContainerType& bdry_container = std::get<Utilities::index<BoundaryContainerType, BoundaryContainers>::value>(this->boundaries);
+
+    bdry_container.CreateBoundary(std::forward<Args>(args)...);
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename DistributedBoundaryType, typename... Args>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CreateDistributedBoundary(Args&&... args) {
+          DataSoAType,
+          BoundarySoAType>::CreateDistributedBoundary(Args&&... args) {
     this->distributed_boundaries.template emplace_back<DistributedBoundaryType>(std::forward<Args>(args)...);
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachElement(const F& f) {
+          DataSoAType,
+          BoundarySoAType>::CallForEachElement(const F& f) {
     Utilities::for_each_in_tuple(this->elements, [&f](auto& element_container) {
             element_container.CallForEachElement(f, Utilities::is_vectorized<F>{});
     });
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachInterface(const F& f) {
-    Utilities::for_each_in_tuple(this->interfaces.data, [&f](auto& interface_vector) {
-        std::for_each(interface_vector.begin(), interface_vector.end(), f);
+          DataSoAType,
+          BoundarySoAType>::CallForEachInterface(const F& f) {
+    Utilities::for_each_in_tuple(this->interfaces, [&f](auto& interface_container) {
+            interface_container.CallForEachInterface(f, Utilities::is_vectorized<F>{});
     });
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachBoundary(const F& f) {
-    Utilities::for_each_in_tuple(this->boundaries.data, [&f](auto& boundary_vector) {
-        std::for_each(boundary_vector.begin(), boundary_vector.end(), f);
+          DataSoAType,
+          BoundarySoAType>::CallForEachBoundary(const F& f) {
+    Utilities::for_each_in_tuple(this->boundaries, [&f](auto& boundary_container) {
+            boundary_container.CallForEachBoundary(f, Utilities::is_vectorized<F>{});
     });
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachDistributedBoundary(const F& f) {
+          DataSoAType,
+          BoundarySoAType>::CallForEachDistributedBoundary(const F& f) {
     Utilities::for_each_in_tuple(this->distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
         std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
     });
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename ElementType, typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachElementOfType(const F& f) {
+          DataSoAType,
+          BoundarySoAType>::CallForEachElementOfType(const F& f) {
     auto& elt_container =
-        std::get<Utilities::index<ElementType, ElementContainers>::value>(this->elements.data);
+        std::get<Utilities::index<ElementType, ElementContainers>::value>(this->elements);
 
     elt_container.CallForEachElement(f, Utilities::is_vectorized<F>{});
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename InterfaceType, typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachInterfaceOfType(const F& f) {
+          DataSoAType,
+          BoundarySoAType>::CallForEachInterfaceOfType(const F& f) {
     auto& intface_container =
-        std::get<Utilities::index<InterfaceType, typename InterfaceContainer::TupleType>::value>(this->interfaces.data);
+        std::get<Utilities::index<InterfaceType, InterfaceContainers>::value>(this->interfaces);
 
-    std::for_each(intface_container.begin(), intface_container.end(), f);
+    intface_container.CallForEachInterface(f, Utilities::is_vectorized<F>{});
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename BoundaryType, typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachBoundaryOfType(const F& f) {
-    auto& bound_container =
-        std::get<Utilities::index<BoundaryType, typename BoundaryContainer::TupleType>::value>(this->boundaries.data);
+          DataSoAType,
+          BoundarySoAType>::CallForEachBoundaryOfType(const F& f) {
+    auto& bdry_container =
+        std::get<Utilities::index<BoundaryType, BoundaryContainers>::value>(this->boundaries);
 
-    std::for_each(bound_container.begin(), bound_container.end(), f);
+    bdry_container.CallForEachBoundary(f, Utilities::is_vectorized<F>{});
 }
 
-template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType>
+template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
 template <typename DistributedBoundaryType, typename F>
 void Mesh<std::tuple<Elements...>,
           std::tuple<Interfaces...>,
           std::tuple<Boundaries...>,
           std::tuple<DistributedBoundaries...>,
-          DataSoAType>::CallForEachDistributedBoundaryOfType(const F& f) {
+          DataSoAType,
+          BoundarySoAType>::CallForEachDistributedBoundaryOfType(const F& f) {
     auto& dbound_container =
         std::get<Utilities::index<DistributedBoundaryType, typename DistributedBoundaryContainer::TupleType>::value>(
             this->distributed_boundaries.data);

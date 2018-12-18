@@ -52,10 +52,6 @@ public:
     }
 
   decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double, SO::ColumnMajor>,2>& u_gp) {
-//        DynMatrix<double> temp2 =  blaze::evaluate(
-//            ;
-//        auto temp3 = blaze::evaluate( * temp2);
-        
         return blaze::evaluate(abs_J* (transpose(this->J_inv * u_gp) * this->master->int_dphi_fact));
     }
 

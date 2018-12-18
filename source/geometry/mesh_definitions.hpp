@@ -29,16 +29,17 @@ using BoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, 
 template <typename Data, typename... DBCs>
 using DistributedBoundaryTypeTuple = std::tuple<Boundary<1, Integration::GaussLegendre_1D, Data, DBCs>...>;
 
-template <typename Data, typename DataSoA, typename ISP, typename BC, typename DBC>
+template <typename Data, typename DataSoA, typename BoundarySoAType, typename ISP, typename BC, typename DBC>
 struct MeshType;
 
-template <typename Data, typename DataSoA, typename... ISPs, typename... BCs, typename... DBCs>
-struct MeshType<Data, DataSoA, std::tuple<ISPs...>, std::tuple<BCs...>, std::tuple<DBCs...>> {
+template <typename Data, typename DataSoA, typename BoundarySoAType, typename... ISPs, typename... BCs, typename... DBCs>
+struct MeshType<Data, DataSoA, BoundarySoAType, std::tuple<ISPs...>, std::tuple<BCs...>, std::tuple<DBCs...>> {
     using Type = Mesh<ElementTypeTuple<Data>,
                       InterfaceTypeTuple<Data, ISPs...>,
                       BoundaryTypeTuple<Data, BCs...>,
                       DistributedBoundaryTypeTuple<Data, DBCs...>,
-                      DataSoA>;
+                      DataSoA,
+                      BoundarySoAType>;
 };
 }
 

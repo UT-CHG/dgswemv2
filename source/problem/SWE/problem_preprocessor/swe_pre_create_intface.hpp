@@ -11,6 +11,18 @@ void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
     using InterfaceTypeInternal = typename std::tuple_element<0, typename ProblemType::ProblemInterfaceTypes>::type;
     using InterfaceTypeLevee    = typename std::tuple_element<1, typename ProblemType::ProblemInterfaceTypes>::type;
 
+    for ( auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it ) {
+        if ( it->first == SWE::BoundaryTypes::internal ) {
+            size_t n_internal = it->second.size();
+            assert(n_internal % 2 == 0 );
+            mesh.template reserve_interfaces<InterfaceTypeInternal>(n_internal/2);
+        } else if ( it->first == SWE::BoundaryTypes::levee ) {
+            size_t n_levee = it->second.size();
+            assert(n_levee % 2 == 0 );
+            mesh.template reserve_interfaces<InterfaceTypeLevee>(n_levee/2);
+        }
+    }
+
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::internal) {
             uint n_intface_old_internal = mesh.GetNumberInterfaces();
