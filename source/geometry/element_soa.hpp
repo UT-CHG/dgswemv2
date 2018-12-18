@@ -31,7 +31,7 @@ public:
         this->data = ProblemSoA(ndof, master->ngp, nstages, nelements);
         this->abs_J = DiagonalMatrix<double>(nelements);
         this->inv_abs_J = DiagonalMatrix<double>(nelements);
-        this->J_inv = DiagonalMatrix<double>(nelements);
+        this->J_inv = DiagonalMatrix<double, SO::ColumnMajor>(nelements);
     }
 
     //fixme: this signature needs to change down the road to an element accessor type (which is element)
@@ -51,7 +51,7 @@ public:
         return u * this->master->phi_gp;
     }
 
-    decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double>,2>& u_gp) {
+  decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double, SO::ColumnMajor>,2>& u_gp) {
 //        DynMatrix<double> temp2 =  blaze::evaluate(
 //            ;
 //        auto temp3 = blaze::evaluate( * temp2);
@@ -67,7 +67,7 @@ public:
 private:
     MasterType* master = nullptr;
 
-    StatMatrix<DiagonalMatrix<double>,2,2> J_inv;
+    StatMatrix<DiagonalMatrix<double, SO::ColumnMajor>,2,2> J_inv;
     DiagonalMatrix<double> abs_J;
     DiagonalMatrix<double> inv_abs_J;
 };

@@ -75,7 +75,7 @@ class Basis {
      *         corresponds to the dimension in which the derivative is taken.
      */
     virtual StatVector<DynMatrix<double>, dimension> GetDPhi(const uint p,
-                                                             const std::vector<Point<dimension>>& points) = 0;
+							     const std::vector<Point<dimension>>& points) = 0;
 
     /**
      * Obtain the inverted mass matrix of basis functions of polynomial order p.
@@ -140,7 +140,7 @@ class Master {
     DynMatrix<double> chi_midpts;
 
     DynMatrix<double> chi_gp;
-    DynMatrix<double> phi_gp;
+    DynMatrix<double, SO::ColumnMajor> phi_gp;
 
     std::array<DynMatrix<double>, dimension> dchi_gp;
     StatVector<DynMatrix<double>, dimension> dphi_gp;
@@ -148,7 +148,7 @@ class Master {
     DynMatrix<double> int_phi_fact;
     StatVector<DynMatrix<double>, dimension> int_dphi_fact;
 
-    DynMatrix<double> m_inv;
+    DynMatrix<double, SO::ColumnMajor> m_inv;
 
     DynMatrix<double> phi_postprocessor_cell;
     DynMatrix<double> phi_postprocessor_point;

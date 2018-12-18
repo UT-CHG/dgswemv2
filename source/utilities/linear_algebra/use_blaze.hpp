@@ -31,8 +31,8 @@ template <typename T>
 using DynVector = blaze::DynamicVector<T>;
 template <typename T>
 using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
-template <typename T>
-using DynMatrix = blaze::DynamicMatrix<T>;
+template <typename T, bool SO = blaze::rowMajor>
+using DynMatrix = blaze::DynamicMatrix<T,SO>;
 template <typename T, uint m>
 using HybMatrix = blaze::HybridMatrix<T, m, hyb_mat_buff_size>;
 
@@ -48,8 +48,8 @@ using DynRow = Row<DynMatrix<T>>;
 template <typename Matrix>
 using View = Row<Matrix>;
 
-template <typename T>
-using DynView = View<DynMatrix<T>>;
+template <typename T, bool SO = blaze::rowMajor>
+using DynView = View<DynMatrix<T, SO>>;
 
 template <typename T>
 using SparseVector = blaze::CompressedVector<T>;
@@ -59,8 +59,8 @@ using SparseMatrix = blaze::CompressedMatrix<T>;
 template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
-template <typename T>
-using DiagonalMatrix = blaze::DiagonalMatrix<blaze::DynamicMatrix<T>>;
+template <typename T, bool SO = blaze::rowMajor>
+using DiagonalMatrix = blaze::DiagonalMatrix<blaze::DynamicMatrix<T, SO>>;
 
 template <typename BlazeType>
 using AlignedAllocator = blaze::AlignedAllocator<BlazeType>;

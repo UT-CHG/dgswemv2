@@ -5,8 +5,8 @@ namespace SWE {
 namespace RKDG {
 struct InternalAccessor {
     InternalAccessor() = default;
-    InternalAccessor(std::array<DynView<double>, SWE::n_variables> q_at_gp_,
-                     std::array<DynView<double>, SWE::n_auxiliaries> aux_at_gp_)
+    InternalAccessor(std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> q_at_gp_,
+                     std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries> aux_at_gp_)
         : q_at_gp(std::move(q_at_gp_)), aux_at_gp(std::move(aux_at_gp_)) {
 
         uint ngp     = q_at_gp[0].size();
@@ -20,8 +20,8 @@ struct InternalAccessor {
 
     }
 
-    std::array<DynView<double>, SWE::n_variables> q_at_gp;
-    std::array<DynView<double>, SWE::n_auxiliaries> aux_at_gp;
+    std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> q_at_gp;
+    std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries> aux_at_gp;
 
     HybMatrix<double, SWE::n_variables> Fx_at_gp;
     HybMatrix<double, SWE::n_variables> Fy_at_gp;
@@ -38,14 +38,14 @@ struct InternalData {
 
     InternalData() = default;
     InternalData(const uint nelements, const uint ngp) {
-        q_at_gp.fill(DynMatrix<double>(nelements,ngp));
-        aux_at_gp.fill(DynMatrix<double>(nelements,ngp));
-        F_at_gp = DynMatrix<double>(nelements,ngp);
+        q_at_gp.fill(DynMatrix<double, SO::ColumnMajor>(nelements,ngp));
+        aux_at_gp.fill(DynMatrix<double, SO::ColumnMajor>(nelements,ngp));
+        F_at_gp = DynMatrix<double, SO::ColumnMajor>(nelements,ngp);
     }
 
-    std::array<DynMatrix<double>, SWE::n_variables> q_at_gp;
-    std::array<DynMatrix<double>, SWE::n_auxiliaries> aux_at_gp;
-    StatVector<DynMatrix<double>, SWE::n_dimensions> F_at_gp;
+    std::array<DynMatrix<double, SO::ColumnMajor>, SWE::n_variables> q_at_gp;
+    std::array<DynMatrix<double, SO::ColumnMajor>, SWE::n_auxiliaries> aux_at_gp;
+    StatVector<DynMatrix<double, SO::ColumnMajor>, SWE::n_dimensions> F_at_gp;
 
     AccessorType at(const uint index) {
         return AccessorType( make_rows_as_views(q_at_gp, index),

@@ -4,11 +4,11 @@
 namespace SWE {
 namespace RKDG {
 struct StateAccessor {
-    std::array<DynView<double>,SWE::n_variables> q;
-    DynView<double> aux;
+    std::array<DynView<double, SO::ColumnMajor>,SWE::n_variables> q;
+    DynView<double, SO::ColumnMajor> aux;
 
-    std::array<DynView<double>,SWE::n_variables> rhs;
-    std::array<DynView<double>,SWE::n_variables> solution;
+    std::array<DynView<double, SO::ColumnMajor>,SWE::n_variables> rhs;
+    std::array<DynView<double, SO::ColumnMajor>,SWE::n_variables> solution;
 };
 
 struct StateData {
@@ -29,11 +29,11 @@ struct StateData {
         }
     }
 
-    std::array<DynMatrix<double>, SWE::n_variables> q;
-    DynMatrix<double> aux;
+    std::array<DynMatrix<double, SO::ColumnMajor>, SWE::n_variables> q;
+    DynMatrix<double, SO::ColumnMajor> aux;
 
-    std::array<DynMatrix<double>, SWE::n_variables> rhs;
-    std::array<DynMatrix<double>, SWE::n_variables> solution;
+    std::array<DynMatrix<double, SO::ColumnMajor>, SWE::n_variables> rhs;
+    std::array<DynMatrix<double, SO::ColumnMajor>, SWE::n_variables> solution;
 
     AccessorType at(const uint index) {
         return AccessorType{make_rows_as_views(q,index),
