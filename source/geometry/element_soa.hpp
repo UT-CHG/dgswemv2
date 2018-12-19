@@ -26,15 +26,14 @@ public:
         }
     }
 
-    void reserve(uint ndof, uint nstages , uint nelements) {
+    void reserve(uint nstages , uint nelements, uint ngp_edge) {
         std::cout << "Reserving " << nelements << " in element_soa.hpp\n";
-        this->data = ProblemSoA(ndof, master->ngp, nstages, nelements);
+        this->data = ProblemSoA(master->ndof, master->ngp, ngp_edge, nstages, nelements, master->nbound);
         this->abs_J = DiagonalMatrix<double>(nelements);
         this->inv_abs_J = DiagonalMatrix<double>(nelements);
         this->J_inv = DiagonalMatrix<double, SO::ColumnMajor>(nelements);
     }
 
-    //fixme: this signature needs to change down the road to an element accessor type (which is element)
     template <typename... Args>
     AccessorType at(const size_t index,
                    Args&&... args) {

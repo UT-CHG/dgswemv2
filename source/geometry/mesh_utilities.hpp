@@ -23,7 +23,10 @@ struct container_maker;
 
 template <typename... Cs>
 struct container_maker<std::tuple<Cs...>> {
-    static std::tuple<Cs...> construct_containers(uint p) { return std::make_tuple(Cs(p)...); };
+    template <typename... Args>
+    static std::tuple<Cs...> construct_containers(Args&&... args) {
+        return std::make_tuple(Cs(std::forward<Args>(args)...)...);
+    }
 };
 }
 

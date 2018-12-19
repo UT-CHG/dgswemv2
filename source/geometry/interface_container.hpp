@@ -2,23 +2,30 @@
 #define INTERFACE_CONTAINER_HPP
 
 #include "geometry/interface.hpp"
+#include "geometry/interface_soa.hpp"
 
 namespace Geometry {
 
-template <typename Interface, typename BoundarySoAType>
+template <typename Interface, typename ElementContainers>
 class InterfaceContainer;
 
-template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType, typename BoundarySoAType>
-class InterfaceContainer<Interface<dimension, IntegrationType, DataType, SpecializationType>, BoundarySoAType> {
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType,
+          typename... ElementContainer>
+class InterfaceContainer<Interface<dimension, IntegrationType, DataType, SpecializationType>,
+                         std::tuple<ElementContainer...> > {
 public:
+    using ElementContainers = std::tuple<ElementContainer...>;
     using InterfaceType = Interface<dimension, IntegrationType, DataType, SpecializationType>;
 
-    InterfaceContainer() : capacity(0UL), size_(0UL) {}
+    InterfaceContainer() = default;
+    InterfaceContainer(ElementContainers& elt_data_) : capacity(0UL), size_(0UL),  interface_data(elt_data_) {}
 
     void reserve(uint ninterfaces) {
         this->capacity = ninterfaces;
 
         interface_accessors.reserve(ninterfaces);
+
+//        interface_data.reserve(ninterfaces, ngp);
     }
 
     template <typename... Args>
@@ -39,8 +46,10 @@ public:
 
     size_t size() const { return size_; }
 private:
+
+
     AlignedVector<InterfaceType> interface_accessors;
-    //InterfaceSoA<InterfaceType, BoundarySoAType> interface_data;
+    InterfaceSoA<InterfaceType, ElementContainers> interface_data;
 
     size_t capacity;
     size_t size_;

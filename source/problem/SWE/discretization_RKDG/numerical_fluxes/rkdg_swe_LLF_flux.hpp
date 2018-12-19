@@ -4,15 +4,15 @@
 namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
-template <typename InputArrayType>
+template <typename InputViewType, typename InputArrayType>
 inline void LLF_flux(const double gravity,
-                     const InputArrayType& ze_in,
-                     const InputArrayType& qx_in,
-                     const InputArrayType& qy_in,
-                     const InputArrayType& ze_ex,
-                     const InputArrayType& qx_ex,
-                     const InputArrayType& qy_ex,
-                     const std::array<InputArrayType, SWE::n_auxiliaries>& aux,
+                     const InputViewType& ze_in,
+                     const InputViewType& qx_in,
+                     const InputViewType& qy_in,
+                     const InputViewType& ze_ex,
+                     const InputViewType& qx_ex,
+                     const InputViewType& qy_ex,
+                     const std::array<InputViewType, SWE::n_auxiliaries>& aux,
                      const std::array<InputArrayType, SWE::n_dimensions>& surface_normal,
                      std::array<typename Result<InputArrayType>::type, SWE::n_variables>& Flux) {
     using result_t = typename Result<InputArrayType>::type;

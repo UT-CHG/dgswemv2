@@ -25,8 +25,14 @@ int main() {
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
 
+    uint n_edge_gp = Integration::GaussLegendre_1D{}.GetNumGP(2*10 + 1);
     MasterType master(10);
-    SWE::RKDG::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/, master.ngp, 1 /*stage*/, 1 /*element*/);
+    SWE::RKDG::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/,
+                                        master.ngp,
+                                        n_edge_gp,
+                                        1 /*stage*/,
+                                        1 /*element*/,
+                                        master.nbound);
     ShapeType shape(std::move(vrtxs));
 
     vrtxs.resize(3);

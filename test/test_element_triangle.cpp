@@ -9,7 +9,12 @@ int main() {
 
     MasterType master(10);
 
-    SWE::RKDG::SoAContainer data_holder(3 /*ndofs*/, master.ngp, 1 /*stage*/, 1 /*element*/);
+    SWE::RKDG::SoAContainer data_holder(3 /*ndofs*/,
+                                        master.ngp,
+                                        2, /*n edge gps -- unused here*/
+                                        1 /*stage*/,
+                                        1 /*element*/,
+                                        master.nbound);
 
     ElementType triangle(master,
                          std::move(data_holder.at(0)),

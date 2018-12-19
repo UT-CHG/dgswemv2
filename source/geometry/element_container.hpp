@@ -19,7 +19,7 @@ public:
     ElementContainer() = default;
     ElementContainer(uint p) : master_element(p), size_(0u), capacity(0u) {}
 
-    void reserve(uint nstages, uint nelements) {
+    void reserve(uint nstages, uint nelements, uint ngp_edge) {
 
         this->capacity = nelements;
 
@@ -28,7 +28,7 @@ public:
         element_data = ElementSoA<ElementType, DataSoAType>(this->master_element);
 
         element_accessors.reserve(nelements);
-        element_data.reserve(master_element.ndof, nstages, nelements);
+        element_data.reserve(nstages, nelements, ngp_edge);
     }
 
     void finalize_initialization() {

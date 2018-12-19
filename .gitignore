@@ -25,3 +25,16 @@ documentation/latex
 examples/files_for_manufactured_solution/dgswemv2_input*
 examples/files_for_manufactured_solution/rectangular_mesh*
 
+#Emacs related
+*~
+*/*~
+*/*/*~
+*/*/*/*~
+*/*/*/*/*~
+*/*/*/*/*/*~
+
+*/#*
+*/*/#*
+*/*/*/#*
+*/*/*/*/#*
+*/*/*/*/*/#*

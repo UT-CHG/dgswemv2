@@ -14,23 +14,20 @@ namespace SWE {
 namespace RKDG {
 struct Accessor {
     Accessor(AlignedVector<StateAccessor>&& state_,
-             InternalAccessor&& internal_ )
-        : state(state_), internal(internal_)
+             InternalAccessor&& internal_,
+             AlignedVector<BoundaryAccessor>&& boundary_)
+        : state(state_), internal(internal_), boundary(boundary_)
     {}
 
     AlignedVector<StateAccessor> state;
     InternalAccessor internal;
-    AlignedVector<Boundary> boundary;
+    AlignedVector<BoundaryAccessor> boundary;
 
     Source source;
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 
     void initialize() {
-        for (uint bound_id = 0; bound_id < this->nbound; ++bound_id) {
-            this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
-        }
-
         this->source = Source(this->nnode);
         this->wet_dry_state = WetDry(this->nvrtx);
 
@@ -90,29 +87,40 @@ struct SoAContainer {
     SoAContainer()=default;
     SoAContainer(uint ndofs,
                  uint ngp_internal,
+                 uint ngp_edge,
                  uint nstages,
-                 uint nelements);
+                 uint nelements,
+                 uint nsides);
 
     Accessor at(const size_t index);
 
     AlignedVector<StateData> state;
     InternalData internal;
+    AlignedVector<BoundaryData> boundary;
 };
 
 SoAContainer::SoAContainer(uint ndofs,
                            uint ngp_internal,
+                           uint ngp_edge,
                            uint nstages,
-                           uint nelements)
+                           uint nelements,
+                           uint nsides)
     : internal(nelements, ngp_internal) {
     this->state.reserve(nstages+1);
     for ( uint i = 0; i < nstages+1; ++i ) {
         this->state.emplace_back(nelements, ndofs);
     }
+
+    for ( uint side = 0; side < nsides; ++side ) {
+        this->boundary.emplace_back(nelements, ngp_edge);
+    }
 }
 
 Accessor SoAContainer::at(const size_t index) {
     return Accessor(std::move(Utilities::at_each(this->state, index)),
-                    std::move(this->internal.at(index)));
+                    std::move(this->internal.at(index)),
+                    std::move(Utilities::at_each(this->boundary,index))
+                   );
 }
 
 }

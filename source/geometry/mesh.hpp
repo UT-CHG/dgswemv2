@@ -47,8 +47,9 @@ class Mesh<std::tuple<Elements...>,
 
   public:
     Mesh() = default;
-    Mesh(const uint p) : p(p), elements(container_maker<ElementContainers>::construct_containers(p)) {}
-
+    Mesh(const uint p) : p(p), elements(container_maker<ElementContainers>::construct_containers(p)) {
+        
+    }
     Mesh& operator=(const Mesh&) = delete;
     Mesh(Mesh&)                  = delete;
     Mesh& operator=(Mesh&&) = default;
@@ -84,10 +85,19 @@ class Mesh<std::tuple<Elements...>,
     uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
 
     void reserve(uint nstages, const std::array<uint,sizeof...(Elements)>& n_elements) {
-        Utilities::for_each_in_tuple(elements, [nstages, &n_elements](auto& element_container) {
+        uint max_edge_gp = 0u;
+        Utilities::for_each_in_tuple(interfaces, [this, &max_edge_gp](auto& interface_container) {
+                using intfc_container_t = typename std::decay<decltype(interface_container)>::type;
+                using integration_t = typename intfc_container_t::InterfaceType::InterfaceIntegrationType;
+
+                integration_t rule;
+                max_edge_gp = std::max(max_edge_gp, rule.GetNumGP(2 * p + 1));
+            });
+
+        Utilities::for_each_in_tuple(elements, [nstages, &n_elements, max_edge_gp](auto& element_container) {
                 using ContainerType = typename std::remove_reference<decltype(element_container)>::type;
                 uint index_of_type = Utilities::index<ContainerType,ElementContainers>::value;
-                element_container.reserve(nstages, n_elements[index_of_type]);
+                element_container.reserve(nstages, n_elements[index_of_type], max_edge_gp);
             });
     }
 
