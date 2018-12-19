@@ -10,7 +10,8 @@ class UpdateKernel {
 private:
     using StepperType = typename Problem::ProblemStepperType;
 public:
-    constexpr static bool is_vectorized = true;
+    template <typename ElementType>
+    constexpr static bool is_vectorized() { return true; }
 
     UpdateKernel(StepperType& stepper_) : stepper(stepper_) {}
 

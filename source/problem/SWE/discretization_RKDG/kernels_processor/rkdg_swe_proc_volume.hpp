@@ -10,7 +10,8 @@ private:
     using StepperType = typename Problem::ProblemStepperType;
 
 public:
-    constexpr static bool is_vectorized = true;
+    template <typename ElementType>
+    constexpr static bool is_vectorized() { return true; }
 
     VolumeKernel(const StepperType& stepper_) : stepper(stepper_) {}
 

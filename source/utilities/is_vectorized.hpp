@@ -5,15 +5,16 @@
 
 namespace Utilities {
 
-template <typename T, typename = int>
+template <typename T, typename AccessorType = void, typename = void>
 struct is_vectorized : std::false_type {};
 
-template <typename T>
+template <typename T, typename AccessorType>
 struct is_vectorized<
-    T,
-    decltype( (void) T::is_vectorized, 0)
-    >
-    : std::integral_constant<bool, T::is_vectorized> {};
+    T, AccessorType,
+    typename std::enable_if<
+        T::template is_vectorized<AccessorType>()
+        >::type
+    > : std::integral_constant<bool, T::template is_vectorized<AccessorType>()> {};
 
 }
 

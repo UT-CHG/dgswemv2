@@ -231,7 +231,9 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           BoundarySoAType>::CallForEachElement(const F& f) {
     Utilities::for_each_in_tuple(this->elements, [&f](auto& element_container) {
-            element_container.CallForEachElement(f, Utilities::is_vectorized<F>{});
+            using element_t = typename std::decay<decltype(element_container)>::type::ElementType;
+
+            element_container.CallForEachElement(f, Utilities::is_vectorized<F, element_t>{});
     });
 }
 
@@ -285,7 +287,9 @@ void Mesh<std::tuple<Elements...>,
     auto& elt_container =
         std::get<Utilities::index<ElementType, ElementContainers>::value>(this->elements);
 
-    elt_container.CallForEachElement(f, Utilities::is_vectorized<F>{});
+    using element_t = typename std::decay<decltype(elt_container)>::type::ElementType;
+
+    elt_container.CallForEachElement(f, Utilities::is_vectorized<F, element_t>{});
 }
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename BoundarySoAType>
