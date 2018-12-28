@@ -57,10 +57,10 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
     while (iter != 100) {
         ++iter;
 
-        q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
+        edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
-        row(aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         get_Aplus(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->Aplus);
         get_dAplus_dze(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAplus_dze);
@@ -93,7 +93,7 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
 
         for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
             auto q     = column(boundary.q_at_gp, gp);
-            auto q_hat = column(q_hat_at_gp, gp);
+            auto q_hat = column(edge_internal.q_hat_at_gp, gp);
             auto q_inf = column(q_ex, gp);
 
             StatMatrix<double, SWE::n_variables, SWE::n_variables> dB_dq_hat = this->Aminus[gp] - this->Aplus[gp];
@@ -164,6 +164,8 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
         double ze = 0.0;
         double qx = 0.0;
         double qy = 0.0;
+
+        Utilities::ignore(ze, qx, qy);
 
         if (t <= 3.0) {
             ze = cos(PI * t) - 1.0;

@@ -71,6 +71,8 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
         double qx = 0.0;
         double qy = 0.0;
 
+        Utilities::ignore(ze, qx, qy);
+
         if (t <= 3.0) {
             ze = cos(PI * t) - 1.0;
         } else {

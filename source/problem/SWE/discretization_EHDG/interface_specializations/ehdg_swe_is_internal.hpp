@@ -26,22 +26,14 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-    SWE::get_tau_LF(edge_internal.q_hat_at_gp,
-                    edge_internal.aux_hat_at_gp,
-                    edge_int.interface.surface_normal_in,
-                    edge_internal.tau);
-    SWE::get_dtau_dze_LF(edge_internal.q_hat_at_gp,
-                         edge_internal.aux_hat_at_gp,
-                         edge_int.interface.surface_normal_in,
-                         edge_internal.dtau_dze);
-    SWE::get_dtau_dqx_LF(edge_internal.q_hat_at_gp,
-                         edge_internal.aux_hat_at_gp,
-                         edge_int.interface.surface_normal_in,
-                         edge_internal.dtau_dqx);
-    SWE::get_dtau_dqy_LF(edge_internal.q_hat_at_gp,
-                         edge_internal.aux_hat_at_gp,
-                         edge_int.interface.surface_normal_in,
-                         edge_internal.dtau_dqy);
+    auto& q_hat_at_gp    = edge_internal.q_hat_at_gp;
+    auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
+    auto& surface_normal = edge_int.interface.surface_normal_in;
+
+    SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
+    SWE::get_dtau_dze_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dze);
+    SWE::get_dtau_dqx_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dqx);
+    SWE::get_dtau_dqy_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dqy);
 
     StatVector<double, SWE::n_variables> del_q;
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq;

@@ -23,18 +23,14 @@ void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    auto& q_hat_at_gp    = edge_internal.q_hat_at_gp;
-    auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
-    auto& surface_normal = edge_bound.boundary.surface_normal;
-
     uint iter = 0;
     while (iter != 100) {
         ++iter;
 
-        q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
+        edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
-        row(aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         double qn;
         double nx, ny;
