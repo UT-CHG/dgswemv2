@@ -60,7 +60,7 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         row(aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(q_hat_at_gp, SWE::Variables::ze) + row(aux_hat_at_gp, SWE::Auxiliaries::bath);
+            row(q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         get_Aplus(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->Aplus);
         get_dAplus_dze(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAplus_dze);
