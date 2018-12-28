@@ -26,7 +26,7 @@ void Problem::init_edge_boundary_kernel(const StepperType& stepper, EdgeBoundary
             column(boundary.F_hat_at_gp, gp) +=
                 edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
         }
-        
+
         double theta = stepper.GetTheta();
 
         for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {

@@ -13,14 +13,10 @@ void Problem::global_edge_distributed_kernel(const StepperType& stepper, EdgeDis
     /* Newton-Raphson iterator */
 
     uint iter = 0;
-    while (true) {
-        iter++;
+    while (iter != 100) {
+        ++iter;
 
         Problem::global_edge_distributed_iteration(stepper, edge_dbound);
-
-        if (iter == 100) {
-            break;
-        }
 
         double delta_hat_norm = norm(edge_internal.rhs_global) / edge_internal.rhs_global.size();
 

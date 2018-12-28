@@ -35,8 +35,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     }
 
     uint iter = 0;
-    while (true) {
-        iter++;
+    while (iter != 100) {
+        ++iter;
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
             /* Local Step */
@@ -94,10 +94,6 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         bool converged = ompi_solve_global_problem(sim_units, begin_sim_id, end_sim_id);
 
         if (converged) {
-            break;
-        }
-
-        if (iter == 100) {
             break;
         }
     }

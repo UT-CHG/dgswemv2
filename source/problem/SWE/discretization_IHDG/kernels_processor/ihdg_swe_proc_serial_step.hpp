@@ -27,8 +27,8 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
     Problem::init_iteration(stepper, discretization);
 
     uint iter = 0;
-    while (true) {
-        iter++;
+    while (iter != 100) {
+        ++iter;
 
         /* Local Step */
         discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_volume_kernel(stepper, elt); });
@@ -60,10 +60,6 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
         bool converged = Problem::serial_solve_global_problem(stepper, discretization);
 
         if (converged) {
-            break;
-        }
-
-        if (iter == 100) {
             break;
         }
     }
