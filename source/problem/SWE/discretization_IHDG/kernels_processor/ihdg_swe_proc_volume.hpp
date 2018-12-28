@@ -41,12 +41,10 @@ void Problem::init_volume_kernel(const StepperType& stepper, ElementType& elt) {
         row(internal.Fy_at_gp, SWE::Variables::qx) = uvh;
         row(internal.Fy_at_gp, SWE::Variables::qy) = vvh + pe;
 
-        double theta = stepper.GetTheta();
-
         for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
             subvector(internal.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) =
-                theta * elt.IntegrationDPhi(GlobalCoord::x, dof_i, internal.Fx_at_gp) +
-                theta * elt.IntegrationDPhi(GlobalCoord::y, dof_i, internal.Fy_at_gp);
+                elt.IntegrationDPhi(GlobalCoord::x, dof_i, internal.Fx_at_gp) +
+                elt.IntegrationDPhi(GlobalCoord::y, dof_i, internal.Fy_at_gp);
         }
     }
 }

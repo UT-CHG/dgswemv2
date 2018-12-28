@@ -27,11 +27,9 @@ void Problem::init_edge_boundary_kernel(const StepperType& stepper, EdgeBoundary
                 edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
         }
 
-        double theta = stepper.GetTheta();
-
         for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
             subvector(internal.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=
-                -theta * edge_bound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
+                -edge_bound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
         }
     }
 }

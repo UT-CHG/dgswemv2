@@ -35,16 +35,14 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
                 edge_internal.tau[gp] * (column(boundary_ex.q_at_gp, gp_ex) - column(edge_internal.q_hat_at_gp, gp));
         }
 
-        double theta = stepper.GetTheta();
-
         for (uint dof_i = 0; dof_i < edge_int.interface.data_in.get_ndof(); ++dof_i) {
             subvector(internal_in.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=
-                -theta * edge_int.interface.IntegrationPhiIN(dof_i, boundary_in.F_hat_at_gp);
+                -edge_int.interface.IntegrationPhiIN(dof_i, boundary_in.F_hat_at_gp);
         }
 
         for (uint dof_i = 0; dof_i < edge_int.interface.data_ex.get_ndof(); ++dof_i) {
             subvector(internal_ex.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=
-                -theta * edge_int.interface.IntegrationPhiEX(dof_i, boundary_ex.F_hat_at_gp);
+                -edge_int.interface.IntegrationPhiEX(dof_i, boundary_ex.F_hat_at_gp);
         }
     }
 }

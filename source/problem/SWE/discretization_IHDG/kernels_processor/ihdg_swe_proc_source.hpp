@@ -97,11 +97,9 @@ void Problem::init_source_kernel(const StepperType& stepper, ElementType& elt) {
             }
         }*/
 
-        double theta = stepper.GetTheta();
-
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
             subvector(internal.rhs_prev, SWE::n_variables * dof, SWE::n_variables) +=
-                theta * elt.IntegrationPhi(dof, internal.source_at_gp);
+                elt.IntegrationPhi(dof, internal.source_at_gp);
         }
     }
 }
