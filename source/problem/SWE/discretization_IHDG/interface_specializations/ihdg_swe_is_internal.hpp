@@ -88,7 +88,7 @@ void Internal::ComputeInitTrace(EdgeInterfaceType& edge_int) {
     while (iter != 100) {
         ++iter;
 
-        q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
+        edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
             row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);

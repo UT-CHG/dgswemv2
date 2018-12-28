@@ -79,6 +79,8 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
             double qx = 0.0;
             double qy = 0.0;
 
+            Utilities::ignore(ze, qx, qy);
+
             if (t <= 3.0) {
                 ze = cos(PI * t) - 1.0;
             } else {

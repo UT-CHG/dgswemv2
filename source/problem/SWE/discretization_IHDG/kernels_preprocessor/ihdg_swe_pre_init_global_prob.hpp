@@ -23,8 +23,6 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
 
         uint ndof_global = edge_int.edge_data.get_ndof();
 
-        set_constant(edge_int.edge_data.edge_state.q_hat, 0.0);
-
         // Set indexes for global matrix construction
         edge_internal.global_dof_indx.resize(ndof_global * SWE::n_variables);
 
@@ -53,6 +51,8 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
                                         SWE::n_variables * edge_int.interface.data_in.get_ndof());
         boundary_ex.delta_global.resize(SWE::n_variables * edge_int.edge_data.get_ndof(),
                                         SWE::n_variables * edge_int.interface.data_ex.get_ndof());
+
+        edge_int.interface.specialization.ComputeInitTrace(edge_int);
     });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
@@ -61,8 +61,6 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
         uint ndof_global = edge_bound.edge_data.get_ndof();
-
-        set_constant(edge_bound.edge_data.edge_state.q_hat, 0.0);
 
         // Set indexes for global matrix construction
         edge_internal.global_dof_indx.resize(ndof_global * SWE::n_variables);
@@ -87,6 +85,8 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         // Initialize delta_global container
         boundary.delta_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
+
+        edge_bound.boundary.boundary_condition.ComputeInitTrace(edge_bound);
     });
 }
 

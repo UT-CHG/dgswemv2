@@ -29,6 +29,9 @@ class Levee {
     void Initialize(InterfaceType& intface);
 
     template <typename EdgeInterfaceType>
+    void ComputeInitTrace(EdgeInterfaceType& edge_int);
+
+    template <typename EdgeInterfaceType>
     void ComputeGlobalKernels(EdgeInterfaceType& edge_int);
 };
 
@@ -56,6 +59,11 @@ void Levee::Initialize(InterfaceType& intface) {
     this->H_bar_gp       = intface.ComputeBoundaryNodalUgpIN(this->H_barrier);
     this->C_subcrit_gp   = intface.ComputeBoundaryNodalUgpIN(this->C_subcritical);
     this->C_supercrit_gp = intface.ComputeBoundaryNodalUgpIN(this->C_supercritical);
+}
+
+template <typename EdgeInterfaceType>
+void Levee::ComputeInitTrace(EdgeInterfaceType& edge_int) {
+    // Something to implement in the future
 }
 
 template <typename EdgeInterfaceType>
