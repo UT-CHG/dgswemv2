@@ -84,6 +84,8 @@ void Internal::ComputeInitTrace(EdgeInterfaceType& edge_int) {
     row(boundary_ex.Fn_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh_ex + pe_ex, nx_ex) + vec_cw_mult(uvh_ex, ny_ex);
     row(boundary_ex.Fn_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh_ex, nx_ex) + vec_cw_mult(vvh_ex + pe_ex, ny_ex);
 
+    set_constant(edge_state.q_hat, 0.0);
+
     uint iter = 0;
     while (iter != 100) {
         ++iter;

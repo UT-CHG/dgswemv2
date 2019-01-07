@@ -58,6 +58,8 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
 
     boundary.q_at_gp = bound.ComputeUgp(state.q);
 
+    set_constant(edge_state.q_hat, 0.0);
+
     uint iter = 0;
     while (iter != 100) {
         ++iter;
