@@ -18,7 +18,15 @@ struct SlopeLimit {
           bath_at_midpts(nbound),
           wet_neigh(nbound),
           q_at_baryctr_neigh(nbound),
-          delta(SWE::n_variables, nbound) {}
+          delta(SWE::n_variables, nbound) {
+        // *** //
+        set_constant(this->T, 1.0);
+        this->T(0, 0) = -1.0;
+        this->T(1, 1) = -1.0;
+        this->T(2, 2) = -1.0;
+    }
+
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
 
     Point<2> baryctr_coord;
     std::vector<Point<2>> midpts_coord;

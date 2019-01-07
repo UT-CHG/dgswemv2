@@ -186,13 +186,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
             column(sl_state.q_at_vrtx, vrtx) = sl_state.q_at_baryctr;
         }
 
-        StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
-        set_constant(T, 1.0);
-        T(0, 0) = -1.0;
-        T(1, 1) = -1.0;
-        T(2, 2) = -1.0;
-
-        sl_state.q_at_vrtx += sl_state.delta * T;
+        sl_state.q_at_vrtx += sl_state.delta * sl_state.T;
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
             double del_q_norm = norm(row(sl_state.q_at_vrtx, var) - row(sl_state.q_lin, var));

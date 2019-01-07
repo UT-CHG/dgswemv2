@@ -18,7 +18,15 @@ struct SlopeLimit {
           bath_at_midpts(nbound),
           wet_neigh(nbound),
           q_at_baryctr_neigh(nbound),
-          delta(SWE::n_variables, nbound) {}
+          delta(SWE::n_variables, nbound) {
+        // *** //
+        set_constant(this->T, 1.0);
+        this->T(0, 0) = -1.0;
+        this->T(1, 1) = -1.0;
+        this->T(2, 2) = -1.0;
+    }
+
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
 
     Point<2> baryctr_coord;
     std::vector<Point<2>> midpts_coord;
@@ -47,12 +55,12 @@ struct SlopeLimit {
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
         // clang-format off
-        ar  & surface_normal
+        ar  & T
             & baryctr_coord
             & midpts_coord
             & baryctr_coord_neigh
-            & alpha_1
-            & alpha_2
+            & median
+            & alpha
             & r_sq
             & q_lin
             & q_at_baryctr
