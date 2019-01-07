@@ -17,6 +17,8 @@ void Problem::init_volume_kernel(const StepperType& stepper, ElementType& elt) {
     internal.q_at_gp      = elt.ComputeUgp(state_prev.q);
     internal.q_prev_at_gp = internal.q_at_gp;
 
+    set_constant(internal.rhs_prev, 0.0);
+
     if (stepper.GetOrder() == 2) {
         row(internal.aux_at_gp, SWE::Auxiliaries::h) =
             row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
