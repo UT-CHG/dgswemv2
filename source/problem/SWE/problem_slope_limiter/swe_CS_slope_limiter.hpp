@@ -125,11 +125,11 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
             uint element_1 = bound;
             uint element_2 = (bound + 1) % 3;
 
-            double nx = sl_state.surface_normal[bound][GlobalCoord::x];
-            double ny = sl_state.surface_normal[bound][GlobalCoord::y];
+            double mx = sl_state.median[bound][GlobalCoord::x];
+            double my = sl_state.median[bound][GlobalCoord::y];
 
-            R    = SWE::R(h, u, v, nx, ny);
-            invR = SWE::invR(h, u, v, nx, ny);
+            R    = SWE::R(h, u, v, mx, my);
+            invR = SWE::invR(h, u, v, mx, my);
 
             w_midpt_char     = invR * column(sl_state.q_at_midpts, bound);
             w_baryctr_char_0 = invR * sl_state.q_at_baryctr;
@@ -138,8 +138,8 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
 
             w_tilda = w_midpt_char - w_baryctr_char_0;
 
-            w_delta = sl_state.alpha_1[bound] * (w_baryctr_char_1 - w_baryctr_char_0) +
-                      sl_state.alpha_2[bound] * (w_baryctr_char_2 - w_baryctr_char_0);
+            w_delta = sl_state.alpha[bound][0] * (w_baryctr_char_1 - w_baryctr_char_0) +
+                      sl_state.alpha[bound][1] * (w_baryctr_char_2 - w_baryctr_char_0);
 
             for (uint var = 0; var < SWE::n_variables; ++var) {
                 // TVB modified minmod

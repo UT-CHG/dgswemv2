@@ -6,11 +6,10 @@ namespace RKDG {
 struct SlopeLimit {
     SlopeLimit() = default;
     SlopeLimit(const uint nvrtx, const uint nbound)
-        : surface_normal(nbound),
-          midpts_coord(nbound),
+        : midpts_coord(nbound),
           baryctr_coord_neigh(nbound),
-          alpha_1(nbound),
-          alpha_2(nbound),
+          median(nbound),
+          alpha(nbound),
           r_sq(nbound),
           q_lin(SWE::n_variables, nvrtx),
           q_at_vrtx(SWE::n_variables, nvrtx),
@@ -21,14 +20,12 @@ struct SlopeLimit {
           q_at_baryctr_neigh(nbound),
           delta(SWE::n_variables, nbound) {}
 
-    AlignedVector<StatVector<double, SWE::n_dimensions>> surface_normal;
-
     Point<2> baryctr_coord;
     std::vector<Point<2>> midpts_coord;
     std::vector<Point<2>> baryctr_coord_neigh;
 
-    std::vector<double> alpha_1;
-    std::vector<double> alpha_2;
+    AlignedVector<StatVector<double, SWE::n_dimensions>> median;
+    AlignedVector<StatVector<double, SWE::n_dimensions>> alpha;
     std::vector<double> r_sq;
 
     HybMatrix<double, SWE::n_variables> q_lin;

@@ -29,12 +29,12 @@ using uchar = unsigned char;
 
 template <uint dimension>
 using Point = std::array<double, dimension>;
-template <typename type>
-using Array2D = std::vector<std::vector<type>>;
-template <typename type>
-using Array3D = std::vector<std::vector<std::vector<type>>>;
-template <typename type>
-using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
+template <typename T>
+using Array2D = std::vector<std::vector<T>>;
+template <typename T>
+using Array3D = std::vector<std::vector<std::vector<T>>>;
+template <typename T>
+using Array4D = std::vector<std::vector<std::vector<std::vector<T>>>>;
 
 #include "utilities/linear_algebra.hpp"
 #include "utilities/edge_types.hpp"

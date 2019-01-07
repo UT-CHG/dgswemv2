@@ -333,8 +333,15 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         sl_state.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
 
+        StatVector<double, SWE::n_dimensions> median;
+
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            sl_state.surface_normal[bound] = elt.GetShape().GetSurfaceNormal(bound, std::vector<Point<2>>(0))[0];
+            median[GlobalCoord::x] =
+                sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
+            median[GlobalCoord::y] =
+                sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+
+            sl_state.median[bound] = median / norm(median);
         }
     });
 
@@ -358,8 +365,8 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     mesh.CallForEachElement([](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
-        std::vector<double> b(2);
+        StatMatrix<double, 2, 2> A;
+        StatVector<double, 2> b;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             uint element_1 = bound;
@@ -367,24 +374,20 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
             if (!is_distributed(elt.GetBoundaryType()[element_1]) &&
                 !is_distributed(elt.GetBoundaryType()[element_2])) {
-                A[0][0] =
+                A(0, 0) =
                     sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][0] =
+                A(1, 0) =
                     sl_state.baryctr_coord_neigh[element_1][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
-                A[0][1] =
+                A(0, 1) =
                     sl_state.baryctr_coord_neigh[element_2][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][1] =
+                A(1, 1) =
                     sl_state.baryctr_coord_neigh[element_2][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
 
                 b[0] = sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 b[1] = sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
 
-                double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
-
-                sl_state.alpha_1[bound] = (A[1][1] * b[0] - A[0][1] * b[1]) / det;
-                sl_state.alpha_2[bound] = (-A[1][0] * b[0] + A[0][0] * b[1]) / det;
-
-                sl_state.r_sq[bound] = std::pow(b[0], 2.0) + std::pow(b[1], 2.0);
+                sl_state.alpha[bound] = inverse(A) * b;
+                sl_state.r_sq[bound]  = sq_norm(b);
             }
         }
     });
@@ -432,32 +435,28 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
     mesh.CallForEachElement([](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
 
-        Array2D<double> A = Array2D<double>(2, std::vector<double>(2));
-        std::vector<double> b(2);
+        StatMatrix<double, 2, 2> A;
+        StatVector<double, 2> b;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             uint element_1 = bound;
             uint element_2 = (bound + 1) % elt.data.get_nbound();
 
             if (is_distributed(elt.GetBoundaryType()[element_1]) || is_distributed(elt.GetBoundaryType()[element_2])) {
-                A[0][0] =
+                A(0, 0) =
                     sl_state.baryctr_coord_neigh[element_1][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][0] =
+                A(1, 0) =
                     sl_state.baryctr_coord_neigh[element_1][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
-                A[0][1] =
+                A(0, 1) =
                     sl_state.baryctr_coord_neigh[element_2][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                A[1][1] =
+                A(1, 1) =
                     sl_state.baryctr_coord_neigh[element_2][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
 
                 b[0] = sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 b[1] = sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
 
-                double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
-
-                sl_state.alpha_1[bound] = (A[1][1] * b[0] - A[0][1] * b[1]) / det;
-                sl_state.alpha_2[bound] = (-A[1][0] * b[0] + A[0][0] * b[1]) / det;
-
-                sl_state.r_sq[bound] = std::pow(b[0], 2.0) + std::pow(b[1], 2.0);
+                sl_state.alpha[bound] = inverse(A) * b;
+                sl_state.r_sq[bound]  = sq_norm(b);
             }
         }
     });
