@@ -18,10 +18,15 @@ class Land {
 
 template <typename EdgeBoundaryType>
 void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+    auto& bound = edge_bound.boundary;
+
+    auto& state    = bound.data.state[0];
+    auto& boundary = bound.data.boundary[bound.bound_id];
+
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+    boundary.q_at_gp = bound.ComputeUgp(state.q);
 
     uint iter = 0;
     while (iter != 100) {
