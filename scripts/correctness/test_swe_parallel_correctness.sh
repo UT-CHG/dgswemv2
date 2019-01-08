@@ -34,7 +34,7 @@ EOL
 echo ""
 echo "Compiling code (if necessary)..."
 cd $DGSWEMV2_ROOT_/build
-make rectangular_mesh_generator
+make quad_mesh_generator
 make partitioner
 make_swe_manufactured_solution ${DGSWEMV2_ROOT_} serial
 make_swe_manufactured_solution ${DGSWEMV2_ROOT_} ompi
@@ -47,7 +47,7 @@ cp -r $DGSWEMV2_ROOT_/examples/swe_manufactured_solution/input_files/* dgswemv2_
 
 cd dgswemv2_test
 sed -i "s/  name: rkdg_swe/  name: ${PROBLEM}/g" dgswemv2_input.15
-$DGSWEMV2_ROOT_/build/mesh_generators/rectangular_mesh_generator mesh_generator_input.yml
+$DGSWEMV2_ROOT_/build/mesh_generators/quad_mesh_generator mesh_generator_input.yml
 
 echo "Running Serial Test case..."
 rm -f serial.out
@@ -59,7 +59,7 @@ $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 2 1
 $DGSWEMV2_ROOT_/build/source/manufactured-solution-swe-hpx dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
 
 echo "Running MPI Test case..."
-rm rectangular_mesh_*
+rm quad_mesh_*
 rm -f ompi.out
 $DGSWEMV2_ROOT_/build/partitioner/partitioner dgswemv2_input.15 2 1 2
 #Since OpenMPI does not by default support MPI_THREAD_MULTIPLE

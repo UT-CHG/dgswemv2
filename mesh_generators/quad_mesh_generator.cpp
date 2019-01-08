@@ -1,3 +1,4 @@
+#include <array>
 #include <yaml-cpp/yaml.h>
 
 #include "problem/SWE/swe_definitions.hpp"
@@ -54,10 +55,17 @@ std::ostream& operator<<(std::ostream& os, const Boundary& bd) {
 struct MeshGeneratorInput {
     std::string mesh_name;
 
-    double x1;
-    double x2;
-    double y1;
-    double y2;
+    /*
+        p4-------p3
+         |        |
+         |        |
+        p1-------p2
+    */
+
+    Point<2> p1;
+    Point<2> p2;
+    Point<2> p3;
+    Point<2> p4;
 
     uint num_x_subdivisions;
     uint num_y_subdivisions;
@@ -80,29 +88,37 @@ void WriteBCISFile(const std::string& mesh_name, const std::vector<Boundary>& bo
 int main(int argc, const char* argv[]) {
     if (argc != 2) {
         std::cout << "Usage:\n"
-                  << "    rectangular_mesh_generator <input file>\n";
+                  << "    quad_mesh_generator <input file>\n";
         exit(1);
     }
 
     const MeshGeneratorInput input(std::string{argv[1]});
 
-    double L = input.x2 - input.x1;
-    double W = input.y2 - input.y1;
-
     uint m = input.num_x_subdivisions;
     uint n = input.num_y_subdivisions;
 
-    double dx = L / m;
-    double dy = W / n;
+    double dxi  = 2.0 / m;
+    double deta = 2.0 / n;
+
+    double N1, N2, N3, N4;
+    double xi, eta;
 
     std::vector<Node> nodes((m + 1) * (n + 1));
 
     for (uint i = 0; i <= m; ++i) {
         for (uint j = 0; j <= n; ++j) {
+            xi  = -1.0 + dxi * i;
+            eta = -1.0 + deta * j;
+
+            N1 = (1.0 - xi) * (1.0 - eta) / 4.0;
+            N2 = (1.0 + xi) * (1.0 - eta) / 4.0;
+            N3 = (1.0 + xi) * (1.0 + eta) / 4.0;
+            N4 = (1.0 - xi) * (1.0 + eta) / 4.0;
+
             nodes[j * (m + 1) + i].ID = j * (m + 1) + i;
 
-            nodes[j * (m + 1) + i].coord[0] = input.x1 + dx * i;
-            nodes[j * (m + 1) + i].coord[1] = input.y1 + dy * j;
+            nodes[j * (m + 1) + i].coord[0] = input.p1[0] * N1 + input.p2[0] * N2 + input.p3[0] * N3 + input.p4[0] * N4;
+            nodes[j * (m + 1) + i].coord[1] = input.p1[1] * N1 + input.p2[1] * N2 + input.p3[1] * N3 + input.p4[1] * N4;
             nodes[j * (m + 1) + i].coord[2] =
                 bathymetry_function(nodes[j * (m + 1) + i].coord[0], nodes[j * (m + 1) + i].coord[1]);
             ;
@@ -273,27 +289,51 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) : bounda
     };
 
     if (yaml_input["x1"]) {
-        this->x1 = yaml_input["x1"].as<double>();
+        this->p1[0] = yaml_input["x1"].as<double>();
     } else {
         throw_missing_node("x1");
     }
 
-    if (yaml_input["x2"]) {
-        this->x2 = yaml_input["x2"].as<double>();
-    } else {
-        throw_missing_node("x2");
-    }
-
     if (yaml_input["y1"]) {
-        this->y1 = yaml_input["y1"].as<double>();
+        this->p1[1] = yaml_input["y1"].as<double>();
     } else {
         throw_missing_node("y1");
     }
 
+    if (yaml_input["x2"]) {
+        this->p2[0] = yaml_input["x2"].as<double>();
+    } else {
+        throw_missing_node("x2");
+    }
+
     if (yaml_input["y2"]) {
-        this->y2 = yaml_input["y2"].as<double>();
+        this->p2[1] = yaml_input["y2"].as<double>();
     } else {
         throw_missing_node("y2");
+    }
+
+    if (yaml_input["x3"]) {
+        this->p3[0] = yaml_input["x3"].as<double>();
+    } else {
+        throw_missing_node("x3");
+    }
+
+    if (yaml_input["y3"]) {
+        this->p3[1] = yaml_input["y3"].as<double>();
+    } else {
+        throw_missing_node("y3");
+    }
+
+    if (yaml_input["x4"]) {
+        this->p4[0] = yaml_input["x4"].as<double>();
+    } else {
+        throw_missing_node("x4");
+    }
+
+    if (yaml_input["y4"]) {
+        this->p4[1] = yaml_input["y4"].as<double>();
+    } else {
+        throw_missing_node("y4");
     }
 
     if (yaml_input["num_x_subdivisions"]) {
@@ -362,17 +402,21 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) : bounda
         throw_missing_node("boundary");
     }
 
-    this->mesh_name = yaml_input["mesh_name"] ? yaml_input["mesh_name"].as<std::string>() : "rectangular_mesh";
+    this->mesh_name = yaml_input["mesh_name"] ? yaml_input["mesh_name"].as<std::string>() : "quad_mesh";
 
     this->Summarize();
 }
 
 void MeshGeneratorInput::Summarize() {
     std::cout << "MeshGenerator Input\n"
-              << "  x1: " << this->x1 << '\n'
-              << "  x2: " << this->x2 << '\n'
-              << "  y1: " << this->y1 << '\n'
-              << "  y2: " << this->y2 << '\n'
+              << "  x1: " << this->p1[0] << '\n'
+              << "  y1: " << this->p1[1] << '\n'
+              << "  x2: " << this->p2[0] << '\n'
+              << "  y2: " << this->p2[1] << '\n'
+              << "  x3: " << this->p3[0] << '\n'
+              << "  y3: " << this->p3[1] << '\n'
+              << "  x4: " << this->p4[0] << '\n'
+              << "  y4: " << this->p4[1] << '\n'
               << '\n'
               << "  num_x_subdivisions: " << num_x_subdivisions << '\n'
               << "  num_y_subdivisions: " << num_y_subdivisions << "\n\n";

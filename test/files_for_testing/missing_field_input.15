@@ -6,7 +6,7 @@
 
 mesh:
   format: Adcirc
-  file_name: rectangular_mesh.14
+  file_name: quad_mesh.14
 
 timestepping:
   dt: 1                           #in seconds

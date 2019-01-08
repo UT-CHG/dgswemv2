@@ -1,6 +1,6 @@
 #############################################################################
 #
-# Input for generating rectangular meshes
+# Input for generating quad meshes
 #
 #############################################################################
 # This input file can be used to reproduce the manufactured solutions and
@@ -13,7 +13,13 @@ x1: -1
 y1: -1
 
 x2: 1
-y2: 1
+y2: -1
+
+x3: 1
+y3: 1
+
+x4: -1
+y4: 1
 
 # We then determine the number of element edges along each edge
 

@@ -46,10 +46,10 @@ ${DGSWEMV2_EXAMPLES}/manufactured_solution/input_files/mesh_generator_input.yml
 We have provided comments for the individual variables in the yaml files. One key aspect for improving the accuracy of the solution is the mesh resolution. To modulate these, \lstinline{num_x_subdivisions} and \lstinline{num_y_subdivisions} allows one to refine or coarsen the mesh appropriately. However, for now we leave them at their defaults. To generate the mesh, run the following commands
 \begin{lstlisting}[language=bash]
 cd ${DGSWEMV2_EXAMPLES}/manufactured_solution/input_files/
-${DGSWEMV2_BUILD}/mesh_generators/rectangular_mesh_generator \
+${DGSWEMV2_BUILD}/mesh_generators/quad_mesh_generator \
     mesh_generator_input.yml
 \end{lstlisting}
-This will generate a \lstinline{rectangular_mesh.14} file in the current directory. This is an ADCIRC-formatted meshfile.
+This will generate a \lstinline{quad_mesh.14} file in the current directory. This is an ADCIRC-formatted meshfile.
 
 \subsection{Partitioning the mesh (optional)}
 Note that this section is only necessary if you are attempting to run the simulation in a distributed manner, i.e. using the OMPI or HPX executable. If you are only trying to run the simulation in serial, skip to the next subsection.

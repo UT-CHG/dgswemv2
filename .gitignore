@@ -13,8 +13,8 @@ test/files_for_testing/correct_input.15
 test/files_for_testing/correct_input.15.emitted
 test/files_for_testing/correct_input_no_output.15
 test/files_for_testing/correct_input_no_output.15.emitted
-test/files_for_testing/weir/rectangular_mesh.14.out
-test/files_for_testing/weir/rectangular_mesh.14.meta.out
+test/files_for_testing/weir/quad_mesh.14.out
+test/files_for_testing/weir/quad_mesh.14.meta.out
 
 scripts/build/config-kazbek.txt
 documentation/html
@@ -23,6 +23,6 @@ documentation/latex
 
 #Ignore files generated building examples
 examples/files_for_manufactured_solution/dgswemv2_input*
-examples/files_for_manufactured_solution/rectangular_mesh*
+examples/files_for_manufactured_solution/quad_mesh*
 examples/swe_parabolic_bowl/input_files/parabowl_040.*
 examples/swe_parabolic_bowl/input_files/output/*

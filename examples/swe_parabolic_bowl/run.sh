@@ -48,7 +48,7 @@ echo "Entering Mesh Generation"
 ###################################################################################
 
 #To begin, we need to generate the desired mesh with the appropriate bathymetry.
-#We will use the rectangular_mesh_generator target. This file uses bathymetry.hpp
+#We will use the quad_mesh_generator target. This file uses bathymetry.hpp
 #to generate the necessary bathymetry evaluations.
 cd $DGSWEMV2_ROOT_/mesh_generators
 if [[ -f bathymetry.hpp ]]; then
@@ -56,13 +56,13 @@ if [[ -f bathymetry.hpp ]]; then
 fi
 cp $PARABOLIC_BOWL_DIR/parabolic_bowl_bathymetry.hpp bathymetry.hpp
 
-#Recompile the rectangular mesh generator with the new bathymetry
+#Recompile the quad mesh generator with the new bathymetry
 cd $DGSWEMV2_BUILD_DIR_
-make rectangular_mesh_generator
+make quad_mesh_generator
 
 #and then generate the mesh as an input file
 cd $PARABOLIC_BOWL_DIR/input_files/
-$DGSWEMV2_BUILD_DIR_/mesh_generators/rectangular_mesh_generator mesh_generator_input.yml
+$DGSWEMV2_BUILD_DIR_/mesh_generators/quad_mesh_generator mesh_generator_input.yml
 
 #This will generate 2 files in the input_files directory:
 # 1.) An ADCIRC-formatted fort.14 file called parabowl_040.14
