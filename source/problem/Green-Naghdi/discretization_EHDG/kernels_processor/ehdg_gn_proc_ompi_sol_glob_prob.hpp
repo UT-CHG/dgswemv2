@@ -7,7 +7,7 @@ template <typename OMPISimUnitType>
 void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                            uint begin_sim_id,
                                            uint end_sim_id) {
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
 
@@ -330,7 +330,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
     }
 #pragma omp barrier
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&global_data](auto& edge_int) {
             auto& edge_internal = edge_int.edge_data.edge_internal;
 

@@ -210,7 +210,7 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
         }
     }
 
-    for (uint segment_id = 0; segment_id < this->NBOU; segment_id++) {
+    for (uint segment_id = 0; segment_id < this->NBOU; ++segment_id) {
         if (this->IBTYPE[segment_id] % 10 == 0) {
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
                 return SWE::BoundaryTypes::land;

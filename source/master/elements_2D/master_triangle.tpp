@@ -66,7 +66,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
         }
     }
 
-    for (uint dir = 0; dir < 2; dir++) {
+    for (uint dir = 0; dir < 2; ++dir) {
         this->int_dphi_fact[dir] = transpose(this->dphi_gp[dir]);
         for (uint dof = 0; dof < this->ndof; ++dof) {
             for (uint gp = 0; gp < this->ngp; ++gp) {

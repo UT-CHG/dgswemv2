@@ -10,7 +10,7 @@ void CS_slope_limiter_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_un
                            uint begin_sim_id,
                            uint end_sim_id,
                            uint comm_type) {
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Exchanging slope limiting data" << std::endl;
         }
@@ -28,7 +28,7 @@ void CS_slope_limiter_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_un
         sim_units[su_id]->communicator.SendAll(comm_type, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Starting slope limiting work before receive" << std::endl;
         }
@@ -46,7 +46,7 @@ void CS_slope_limiter_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_un
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Starting to wait on slope limiting receive with timestamp: "
                                                   << sim_units[su_id]->stepper.GetTimestamp() << std::endl;
@@ -72,7 +72,7 @@ void CS_slope_limiter_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_un
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(comm_type, sim_units[su_id]->stepper.GetTimestamp());
     }
 }

@@ -22,7 +22,7 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     std::vector<std::array<bool, 2>> wd_data;
 
     mesh.CallForEachElement([&elt_id_data, &wd_data](auto& elt) {
-        for (uint cell = 0; cell < N_DIV * N_DIV; cell++) {
+        for (uint cell = 0; cell < N_DIV * N_DIV; ++cell) {
             elt_id_data.push_back(elt.GetID());
             wd_data.push_back({elt.data.wet_dry_state.wet, elt.data.wet_dry_state.went_completely_dry});
         }

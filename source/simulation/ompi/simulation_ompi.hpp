@@ -65,7 +65,7 @@ void OMPISimulation<ProblemType>::Run() {
 
         ProblemType::preprocessor_ompi(this->sim_units, begin_sim_id, end_sim_id);
 
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (this->sim_units[su_id]->writer.WritingLog()) {
                 this->sim_units[su_id]->writer.GetLogFile() << std::endl
                                                             << "Launching Simulation!" << std::endl
@@ -83,7 +83,7 @@ void OMPISimulation<ProblemType>::Run() {
                 [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
         }
 
-        for (uint step = 1; step <= this->n_steps; step++) {
+        for (uint step = 1; step <= this->n_steps; ++step) {
             ProblemType::step_ompi(this, begin_sim_id, end_sim_id);
         }
     }  // close omp parallel region

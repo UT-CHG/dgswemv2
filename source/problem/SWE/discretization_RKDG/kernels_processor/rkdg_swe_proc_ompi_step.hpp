@@ -30,7 +30,7 @@ void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
 
 template <typename OMPISimUnitType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, uint begin_sim_id, uint end_sim_id) {
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile()
                 << "Current (time, stage): (" << sim_units[su_id]->stepper.GetTimeAtCurrentStage() << ','
@@ -48,7 +48,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         sim_units[su_id]->communicator.SendAll(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Starting work before receive" << std::endl;
         }
@@ -70,7 +70,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile()
                 << "Starting to wait on receive with timestamp: " << sim_units[su_id]->stepper.GetTimestamp()
@@ -104,7 +104,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     }
 
     if (SWE::PostProcessing::wetting_drying) {
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             sim_units[su_id]->discretization.mesh.CallForEachElement(
                 [&sim_units, su_id](auto& elt) { Problem::wetting_drying_kernel(sim_units[su_id]->stepper, elt); });
         }
@@ -114,7 +114,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         CS_slope_limiter_ompi(sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
 
@@ -123,7 +123,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, sim_units[su_id]->stepper.GetTimestamp());
     }
 }

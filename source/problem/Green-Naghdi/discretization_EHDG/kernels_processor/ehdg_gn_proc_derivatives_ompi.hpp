@@ -8,7 +8,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
                                        uint begin_sim_id,
                                        uint end_sim_id) {
     /* First derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
@@ -47,7 +47,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         sim_units[su_id]->communicator.SendAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             const uint stage = sim_units[su_id]->stepper.GetStage();
 
@@ -173,7 +173,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
@@ -225,13 +225,13 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
     }
     /* First derivatives end */
 
     /* Second derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
@@ -260,7 +260,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         sim_units[su_id]->communicator.SendAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             const uint stage = sim_units[su_id]->stepper.GetStage();
 
@@ -329,7 +329,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives,
                                                        sim_units[su_id]->stepper.GetTimestamp());
 
@@ -377,7 +377,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
     }
     /* Second derivatives end */

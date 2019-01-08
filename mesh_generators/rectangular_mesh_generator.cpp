@@ -154,7 +154,7 @@ int main(int argc, const char* argv[]) {
         file << '\n';
     }
 
-    for (uint element = 0; element < elements.size(); element++) {
+    for (uint element = 0; element < elements.size(); ++element) {
         file << elements[element].ID << ' ';
         file << elements[element].type << ' ';
         file << elements[element].nodes[0] << ' ';

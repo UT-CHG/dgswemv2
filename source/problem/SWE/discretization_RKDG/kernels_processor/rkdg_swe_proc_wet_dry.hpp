@@ -40,7 +40,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             check_element = true;
         }
     } else if (number_of_dry_nodes == wd_state.h_at_vrtx.size()) {
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
             wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
             wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
@@ -55,7 +55,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
         return;
     } else {
         if (h_avg <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
                 wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0;
                 wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0;
@@ -87,7 +87,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             double del_qy = 0;
 
             uint n_dry_vrtx = 0;
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     n_dry_vrtx++;
 
@@ -101,7 +101,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
 
             assert(n_dry_vrtx < 3);
 
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
                 if (wd_state.h_at_vrtx[vrtx] > PostProcessing::h_o + PostProcessing::h_o_threshold) {

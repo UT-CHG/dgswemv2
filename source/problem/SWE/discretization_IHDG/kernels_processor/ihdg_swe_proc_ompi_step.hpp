@@ -30,7 +30,7 @@ void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
 
 template <typename OMPISimUnitType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, uint begin_sim_id, uint end_sim_id) {
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         Problem::init_iteration(sim_units[su_id]->stepper, sim_units[su_id]->discretization);
     }
 
@@ -38,7 +38,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
     while (iter != 100) {
         ++iter;
 
-        for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             /* Local Step */
             sim_units[su_id]->discretization.mesh.CallForEachElement(
                 [&sim_units, su_id](auto& elt) { Problem::local_volume_kernel(sim_units[su_id]->stepper, elt); });
@@ -98,7 +98,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         }
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         ++(sim_units[su_id]->stepper);
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
@@ -114,7 +114,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         CS_slope_limiter_ompi(sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);
 

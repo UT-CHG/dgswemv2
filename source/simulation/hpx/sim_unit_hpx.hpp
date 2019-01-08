@@ -120,7 +120,7 @@ template <typename ProblemType>
 hpx::future<void> HPXSimulationUnit<ProblemType>::Step() {
     hpx::future<void> step_future = hpx::make_ready_future();
 
-    for (uint stage = 0; stage < this->stepper.GetNumStages(); stage++) {
+    for (uint stage = 0; stage < this->stepper.GetNumStages(); ++stage) {
         step_future = step_future.then([this](auto&& f) {
             f.get();
             if (this->parser.ParsingInput()) {

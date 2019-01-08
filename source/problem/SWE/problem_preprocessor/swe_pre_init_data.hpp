@@ -33,7 +33,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
 
-            for (uint node_id = 0; node_id < nnode; node_id++) {
+            for (uint node_id = 0; node_id < nnode; ++node_id) {
                 y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
 
@@ -101,7 +101,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
 
-            for (uint node_id = 0; node_id < intface.data_in.get_nnode(); node_id++) {
+            for (uint node_id = 0; node_id < intface.data_in.get_nnode(); ++node_id) {
                 y_node[node_id] = shape_in.nodal_coordinates[node_id][GlobalCoord::y];
             }
 
@@ -149,7 +149,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
 
-            for (uint node_id = 0; node_id < bound.data.get_nnode(); node_id++) {
+            for (uint node_id = 0; node_id < bound.data.get_nnode(); ++node_id) {
                 y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
 
@@ -189,7 +189,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
 
-            for (uint node_id = 0; node_id < dbound.data.get_nnode(); node_id++) {
+            for (uint node_id = 0; node_id < dbound.data.get_nnode(); ++node_id) {
                 y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
 

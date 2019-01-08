@@ -56,7 +56,7 @@ void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnit
                                          uint end_sim_id) {
     Problem::compute_derivatives_ompi(sim_units, begin_sim_id, end_sim_id);
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement(
             [&sim_units, su_id](auto& elt) { Problem::local_dc_volume_kernel(sim_units[su_id]->stepper, elt); });
 
@@ -92,7 +92,7 @@ void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnit
 
     Problem::ompi_solve_global_dc_problem(sim_units, begin_sim_id, end_sim_id);
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             Problem::dispersive_correction_kernel(sim_units[su_id]->stepper, elt);
 

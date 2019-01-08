@@ -142,7 +142,7 @@ int main() {
         edge_interfaces.emplace_back(EdgeInterfaceType(intface));
     }
 
-    for (uint n_int = 0; n_int < 3; n_int++) {
+    for (uint n_int = 0; n_int < 3; ++n_int) {
         u_proj_gp  = edge_interfaces[n_int].ComputeUgp(u_proj);
         u_proj_res = edge_interfaces[n_int].L2Projection(u_proj_gp);
 
@@ -159,7 +159,7 @@ int main() {
         set_constant(u, 0.0);
         row(u, 0)[dof] = 1.0;
 
-        for (uint n_int = 0; n_int < 3; n_int++) {
+        for (uint n_int = 0; n_int < 3; ++n_int) {
             // just checking orthogonality of Legendre 1D poly
             u_gp = edge_interfaces[n_int].ComputeUgp(u);
 
@@ -213,7 +213,7 @@ int main() {
         }
     }
 
-    for (uint n_int = 0; n_int < 3; n_int++) {
+    for (uint n_int = 0; n_int < 3; ++n_int) {
         for (uint dof = 0; dof < 66; ++dof) {
             set_constant(u_phi, 0.0);
             row(u_phi, 0)[dof] = 1.0;
