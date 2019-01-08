@@ -106,6 +106,12 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
                 }
+            } else if (this->IBTYPE[bdry] == 88) {  // outflow
+                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                for (uint n = 0; n < n_nodes_bdry; ++n) {
+                    ifs >> this->NBVV[bdry][n];
+                    ifs.ignore(1000, '\n');
+                }
             } else {
                 throw std::logic_error("Fatal Error: undefined boundary type in ADCIRC mesh: " +
                                        std::to_string(this->IBTYPE[bdry]) + "!\n");
@@ -189,6 +195,8 @@ void AdcircFormat::write_to(const char* out_name) const {
                      << this->BARINCFSB.at(n)[i] << ' ' << this->BARINCFSP.at(n)[i] << '\n';
             } else if (this->IBTYPE[n] == 77) {  // function
                 file << this->NBVV[n][i] << '\n';
+            } else if (this->IBTYPE[n] == 88) {  // outflow
+                file << this->NBVV[n][i] << '\n';
             }
         }
     }
@@ -228,6 +236,10 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
             if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
                 return SWE::BoundaryTypes::function;
             }
+        } else if (this->IBTYPE[segment_id] == 88) {
+            if (has_edge(this->NBVV[segment_id].cbegin(), this->NBVV[segment_id].cend(), node_pair)) {
+                return SWE::BoundaryTypes::outflow;
+            }
         }
     }
 
@@ -237,7 +249,7 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
         }
     }
 
-    return SWE::BoundaryTypes::land;  // default to land boundary
+    // return SWE::BoundaryTypes::land;  // default to land boundary
 
     throw std::logic_error("Fatal Error: boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
                            std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")!\n");

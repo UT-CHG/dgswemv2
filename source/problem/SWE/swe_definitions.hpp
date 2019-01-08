@@ -58,7 +58,7 @@ enum JacobianVariables : uint {
     qy_qy = 8
 };
 
-enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, function = 3, internal = INTERNAL, levee = INTERNAL + 1 };
+enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, function = 3, outflow = 4, internal = INTERNAL, levee = INTERNAL + 1 };
 
 namespace RKDG {
 constexpr uint n_communications = 3;

@@ -42,6 +42,9 @@ std::ostream& operator<<(std::ostream& os, const Boundary& bd) {
         case SWE::BoundaryTypes::function:
             os << "    type: function\n";
             break;
+        case SWE::BoundaryTypes::outflow:
+            os << "    type: outflow\n";
+            break;
     }
 
     if (bd.type == SWE::BoundaryTypes::tide || bd.type == SWE::BoundaryTypes::flow) {
@@ -253,6 +256,15 @@ int main(int argc, const char* argv[]) {
 
             i++;
         }
+        if (boundaries[n_bound].type == SWE::BoundaryTypes::outflow) {
+            file << boundaries[n_bound].nodes.size() << " 88 = Number of nodes for land boundary " << i << '\n';
+
+            std::for_each(boundaries[n_bound].nodes.begin(), boundaries[n_bound].nodes.end(), [&file](uint val) {
+                file << val << '\n';
+            });
+
+            i++;
+        }
     }
 
     file << "0 = Number of generic boundaries\n";
@@ -380,6 +392,8 @@ MeshGeneratorInput::MeshGeneratorInput(const std::string& input_string) : bounda
                 bd.type = SWE::BoundaryTypes::flow;
             } else if (type_str == "function") {
                 bd.type = SWE::BoundaryTypes::function;
+            } else if (type_str == "outflow") {
+                bd.type = SWE::BoundaryTypes::outflow;
             } else {
                 std::string err_msg{"Error: Boundary type: " + type_str + " undefined"};
                 throw std::logic_error(err_msg);
