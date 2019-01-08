@@ -1,13 +1,12 @@
 #############################################################################
 #
-# Input for generating quad meshes
+# Input for generating quadrilateral meshes
 #
 #############################################################################
 # This input file can be used to reproduce the manufactured solutions and
 # verify program correctness.
 #
-# This input file is used to generate rectangle with diagonally opposite
-# vertices (x1,y1) and (x2,y2)
+# This input file is used to generate quadrilateral
 
 x1: -1
 y1: -1

@@ -56,7 +56,7 @@ if [[ -f bathymetry.hpp ]]; then
 fi
 cp $PARABOLIC_BOWL_DIR/parabolic_bowl_bathymetry.hpp bathymetry.hpp
 
-#Recompile the quad mesh generator with the new bathymetry
+#Recompile the quadrilateral mesh generator with the new bathymetry
 cd $DGSWEMV2_BUILD_DIR_
 make quad_mesh_generator
 

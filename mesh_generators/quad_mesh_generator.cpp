@@ -159,7 +159,7 @@ int main(int argc, const char* argv[]) {
     std::ofstream file(std::string{input.mesh_name + ".14"});
 
     file << std::fixed << std::setprecision(12);
-    file << "rectangle\n";
+    file << "quadrilateral\n";
     file << 2 * m * n << "    " << (m + 1) * (n + 1) << '\n';
 
     for (uint node = 0; node < nodes.size(); ++node) {
