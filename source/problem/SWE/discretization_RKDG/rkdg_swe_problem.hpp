@@ -34,13 +34,14 @@ struct Problem {
     using ProblemDataType = Data;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
-    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function>;
+    using ProblemBoundaryTypes =
+        Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>;
     using ProblemDistributedBoundaryTypes =
         Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
 
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<ISP::Internal, ISP::Levee>,
-                                               std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
+                                               std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemDiscretizationType = DGDiscretization<Problem>;

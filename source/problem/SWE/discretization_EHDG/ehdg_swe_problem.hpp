@@ -41,7 +41,8 @@ struct Problem {
     using ProblemGlobalDataType = std::tuple<>;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
-    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function>;
+    using ProblemBoundaryTypes =
+        Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>;
     using ProblemDistributedBoundaryTypes =
         Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>;
 
@@ -52,13 +53,13 @@ struct Problem {
 
     using ProblemMeshType = Geometry::MeshType<Data,
                                                std::tuple<ISP::Internal, ISP::Levee>,
-                                               std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
+                                               std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemMeshSkeletonType = Geometry::MeshSkeletonType<
         EdgeData,
         Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>,
-        Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function>,
+        Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
         Geometry::DistributedBoundaryTypeTuple<Data, DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemDiscretizationType = HDGDiscretization<Problem>;
