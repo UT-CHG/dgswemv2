@@ -239,7 +239,7 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
             message.push_back((double)edge_internal.global_dof_indx[0]);
         }
 
-        edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(CommTypes::global_dof_indx, message);
+        edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(CommTypes::init_global_prob, message);
     });
 }
 
@@ -285,7 +285,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         message.resize(1 + 2 * SWE::n_variables * ngp);
 
-        edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::global_dof_indx, message);
+        edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::init_global_prob, message);
 
         uint gp_ex;
         for (uint gp = 0; gp < ngp; ++gp) {
