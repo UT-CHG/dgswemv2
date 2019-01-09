@@ -18,7 +18,7 @@ template <typename ElementTypeTuple,
           typename BoundaryTypeTuple,
           typename DistributedBoundaryTypeTuple,
           typename DataSoAType,
-          typename BoundarySoAType
+          typename InterfaceSoAType
  >
 class Mesh;
 
@@ -31,8 +31,8 @@ class Mesh<std::tuple<Elements...>,
            BoundarySoAType> {
   public:
     using ElementContainers            = std::tuple<ElementContainer<Elements,DataSoAType>...>;
-    using InterfaceContainers          = std::tuple<InterfaceContainer<Interfaces,BoundarySoAType>...>;
-    using BoundaryContainers           = std::tuple<BoundaryContainer<Boundaries,BoundarySoAType>...>;
+    using InterfaceContainers          = std::tuple<InterfaceContainer<Interfaces,ElementContainers>...>;
+    using BoundaryContainers           = std::tuple<BoundaryContainer<Boundaries>...>;
     using DistributedBoundaryContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
 
   private:
@@ -48,7 +48,7 @@ class Mesh<std::tuple<Elements...>,
   public:
     Mesh() = default;
     Mesh(const uint p) : p(p), elements(container_maker<ElementContainers>::construct_containers(p)) {
-        
+        this->interfaces = container_maker<InterfaceContainers>::construct_containers(this->elements);
     }
     Mesh& operator=(const Mesh&) = delete;
     Mesh(Mesh&)                  = delete;
@@ -103,7 +103,7 @@ class Mesh<std::tuple<Elements...>,
 
     template <typename InterfaceType>
     void reserve_interfaces(size_t n_interfaces) {
-        using InterfaceContainerType = InterfaceContainer<InterfaceType, BoundarySoAType>;
+        using InterfaceContainerType = InterfaceContainer<InterfaceType, ElementContainers>;
 
         auto& intface_container =
             std::get<Utilities::index<InterfaceContainerType, InterfaceContainers>::value>(this->interfaces);
@@ -113,7 +113,7 @@ class Mesh<std::tuple<Elements...>,
 
     template <typename BoundaryType>
     void reserve_boundaries(size_t n_boundaries) {
-        using BoundaryContainerType = BoundaryContainer<BoundaryType, BoundarySoAType>;
+        using BoundaryContainerType = BoundaryContainer<BoundaryType>;
 
         auto& bdry_container =
             std::get<Utilities::index<BoundaryContainerType, BoundaryContainers>::value>(this->boundaries);
@@ -124,6 +124,10 @@ class Mesh<std::tuple<Elements...>,
     void finalize_initialization() {
         Utilities::for_each_in_tuple(elements, [](auto& element_container) {
                 element_container.finalize_initialization();
+            });
+
+        Utilities::for_each_in_tuple(interfaces, [](auto& interface_container) {
+                interface_container.finalize_initialization();
             });
     }
 
@@ -189,7 +193,7 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<DistributedBoundaries...>,
           DataSoAType,
           BoundarySoAType>::CreateInterface(Args&&... args) {
-    using InterfaceContainerType = InterfaceContainer<InterfaceType, BoundarySoAType>;
+    using InterfaceContainerType = InterfaceContainer<InterfaceType, ElementContainers>;
 
     InterfaceContainerType& intfc_container = std::get<Utilities::index<InterfaceContainerType, InterfaceContainers>::value>(this->interfaces);
 
@@ -204,7 +208,7 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<DistributedBoundaries...>,
           DataSoAType,
           BoundarySoAType>::CreateBoundary(Args&&... args) {
-    using BoundaryContainerType = BoundaryContainer<BoundaryType, BoundarySoAType>;
+    using BoundaryContainerType = BoundaryContainer<BoundaryType>;
 
     BoundaryContainerType& bdry_container = std::get<Utilities::index<BoundaryContainerType, BoundaryContainers>::value>(this->boundaries);
 
@@ -246,7 +250,9 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           BoundarySoAType>::CallForEachInterface(const F& f) {
     Utilities::for_each_in_tuple(this->interfaces, [&f](auto& interface_container) {
-            interface_container.CallForEachInterface(f, Utilities::is_vectorized<F>{});
+            using interface_t = typename std::decay<decltype(interface_container)>::type::InterfaceType;
+
+            interface_container.CallForEachInterface(f, Utilities::is_vectorized<F,interface_t>{});
     });
 }
 

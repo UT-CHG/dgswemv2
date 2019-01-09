@@ -49,6 +49,16 @@ public:
                                                                  std::forward<Args>(args)...)));
     }
 
+    ptrdiff_t GetLocalIndex(const AccessorType& acc) const {
+        const AccessorType* problem_data_start = &element_accessors.front().data;
+
+        ptrdiff_t  indx = ( &acc - problem_data_start ) / sizeof(AccessorType);
+
+        //return a negative number if the accessor is not contained in this element container
+        return indx < 0                                        ? indx :
+               (unsigned long) indx < element_accessors.size() ? indx : -1L;
+    }
+
     template <typename F>
     void CallForEachElement(const F& f, std::false_type /*is not vectorized*/) {
         std::for_each(element_accessors.begin(), element_accessors.end(), [&f](ElementType& elt) { f(elt); });
@@ -60,6 +70,10 @@ public:
     }
 
     size_t size() { return size_; }
+
+    const MasterType& GetMaster() const {
+        return master_element;
+    }
 
 private:
     MasterType master_element;

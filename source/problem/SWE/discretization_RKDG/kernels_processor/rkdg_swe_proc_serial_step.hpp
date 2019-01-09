@@ -26,8 +26,8 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::source_kernel(stepper, elt); });
 
-    discretization.mesh.CallForEachInterface(
-        [&stepper](auto& intface) { Problem::interface_kernel(stepper, intface); });
+    InterfaceKernel interface_kernel(stepper);
+    discretization.mesh.CallForEachInterface(interface_kernel);
 
     discretization.mesh.CallForEachBoundary([&stepper](auto& bound) { Problem::boundary_kernel(stepper, bound); });
 

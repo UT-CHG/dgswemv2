@@ -7,7 +7,6 @@ template <typename ElementType, typename ProblemSoA>
 class ElementSoA {
 public:
     using AccessorType = ElementType;
-private:
     using MasterType = typename ElementType::ElementMasterType;
 public:
     ElementSoA()=default;
@@ -50,7 +49,7 @@ public:
         return u * this->master->phi_gp;
     }
 
-  decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double, SO::ColumnMajor>,2>& u_gp) {
+    decltype(auto) IntegrationDPhi(const StatVector<DynMatrix<double, SO::ColumnMajor>,2>& u_gp) {
         return blaze::evaluate(abs_J* (transpose(this->J_inv * u_gp) * this->master->int_dphi_fact));
     }
 

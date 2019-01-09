@@ -25,16 +25,26 @@ public:
 
         interface_accessors.reserve(ninterfaces);
 
-//        interface_data.reserve(ninterfaces, ngp);
+        interface_data.reserve(ninterfaces);
+    }
+
+    void finalize_initialization() {
+        interface_data.finalize_initialization();
     }
 
     template <typename... Args>
-    void CreateInterface(Args&&... args) {
-        if ( size_++ >= capacity ) {
+    void CreateInterface(
+        RawBoundary<dimension, DataType>&& raw_boundary_in,
+        RawBoundary<dimension, DataType>&& raw_boundary_ex,
+        Args&&... args) {
+        if ( size_ >= capacity ) {
             throw std::runtime_error{"Not enough interfaces reserved. Emplacing new interfaces will cause accessors to be invalidated\n"};
         }
 
-        interface_accessors.emplace_back(std::forward<Args>(args)...);
+        interface_accessors.emplace_back(std::move(interface_data.at(size_++,
+                                                                     raw_boundary_in,
+                                                                     raw_boundary_ex,
+                                                                     std::forward<Args>(args)...)));
     }
 
     template <typename F>
@@ -46,7 +56,7 @@ public:
 
     size_t size() const { return size_; }
 private:
-
+    constexpr static size_t n_element_types = sizeof...(ElementContainer);
 
     AlignedVector<InterfaceType> interface_accessors;
     InterfaceSoA<InterfaceType, ElementContainers> interface_data;

@@ -5,11 +5,11 @@
 
 namespace Geometry {
 
-template <typename Boundary, typename BoundarySoAType>
+template <typename Boundary>
 class BoundaryContainer;
 
-template <uint dimension, typename IntegrationType, typename DataType, typename ConditionType, typename BoundarySoAType>
-class BoundaryContainer<Boundary<dimension, IntegrationType, DataType, ConditionType>, BoundarySoAType> {
+template <uint dimension, typename IntegrationType, typename DataType, typename ConditionType>
+class BoundaryContainer<Boundary<dimension, IntegrationType, DataType, ConditionType>> {
 public:
     using BoundaryType = Boundary<dimension, IntegrationType, DataType, ConditionType>;
 
@@ -19,11 +19,6 @@ public:
         this->capacity = nboundaries;
 
         boundary_accessors.reserve(nboundaries);
-    }
-
-    template <typename... Args>
-    void CreateInterface(Args&&... args) {
-
     }
 
     template <typename... Args>

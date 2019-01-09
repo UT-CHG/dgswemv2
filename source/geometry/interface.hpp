@@ -4,8 +4,13 @@
 #include "general_definitions.hpp"
 
 namespace Geometry {
-template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <uint dim, typename IntegrationType, typename DataType, typename SpecializationType>
 class Interface {
+  public:
+    constexpr static uint dimension = dim;
+    using specialization_t = SpecializationType;
+    using InterfaceIntegrationType = IntegrationType;
+
   public:
     SpecializationType specialization;
 
@@ -87,9 +92,6 @@ class Interface {
     decltype(auto) IntegrationPhiPhiIN(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
     template <typename InputArrayType>
     decltype(auto) IntegrationPhiPhiEX(const uint dof_i, const uint dof_j, const InputArrayType& u_gp);
-
-  public:
-    using InterfaceIntegrationType = IntegrationType;
 
   private:
     template <uint d, typename BT, typename EDT, typename InT>
