@@ -15,13 +15,26 @@ class Distributed {
     Distributed(const DBDataExchanger& exchanger);
 
     template <typename DistributedBoundaryType>
-    void Initialize(DistributedBoundaryType& dbound) {} /*nothing to initialize*/
+    void Initialize(DistributedBoundaryType& dbound);
+
+    template <typename EdgeDistributedType>
+    void ComputeInitTrace(EdgeDistributedType& edge_dbound,
+                          const HybMatrix<double, SWE::n_variables>& q_ex,
+                          const HybMatrix<double, SWE::n_variables>& Fn_ex);
 
     template <typename EdgeDistributedType>
     void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
 };
 
 Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
+
+template <typename DistributedBoundaryType>
+void Distributed::Initialize(DistributedBoundaryType& dbound) {}
+
+template <typename EdgeDistributedType>
+void Distributed::ComputeInitTrace(EdgeDistributedType& edge_dbound,
+                                   const HybMatrix<double, SWE::n_variables>& q_ex,
+                                   const HybMatrix<double, SWE::n_variables>& Fn_ex) {}
 
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {

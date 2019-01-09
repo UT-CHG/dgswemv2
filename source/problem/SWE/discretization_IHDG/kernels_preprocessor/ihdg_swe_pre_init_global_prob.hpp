@@ -103,8 +103,6 @@ void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<Prob
 
         uint ndof_global = edge_dbound.edge_data.get_ndof();
 
-        set_constant(edge_dbound.edge_data.edge_state.q_hat, 0.0);
-
         uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
         uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
         uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
@@ -264,6 +262,9 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         global_dof_indx.insert(
             global_dof_indx.end(), edge_internal.global_dof_indx.begin(), edge_internal.global_dof_indx.end());
+
+        edge_dbound.boundary.boundary_condition.ComputeInitTrace(
+            edge_dbound, HybMatrix<double, SWE::n_variables>(), HybMatrix<double, SWE::n_variables>());
     });
 }
 }

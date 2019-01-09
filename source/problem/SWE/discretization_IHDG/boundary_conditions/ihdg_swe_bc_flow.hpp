@@ -24,10 +24,10 @@ class Flow {
     void Initialize(BoundaryType& bound);
 
     template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound) {}
+    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 };
 
 Flow::Flow(const std::vector<FlowNode>& flow_input) {
@@ -67,6 +67,16 @@ void Flow::Initialize(BoundaryType& bound) {
         // bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
     }
 }
+template <typename EdgeBoundaryType>
+void Flow::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+    // Something to implement in the future
+}
+
+template <typename StepperType, typename EdgeBoundaryType>
+void Flow::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
+    // Something to implement in the future
+}
+
 }
 }
 }

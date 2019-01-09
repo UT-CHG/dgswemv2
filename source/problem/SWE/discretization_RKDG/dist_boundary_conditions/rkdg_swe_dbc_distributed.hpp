@@ -7,13 +7,13 @@ namespace SWE {
 namespace RKDG {
 namespace DBC {
 class Distributed {
+  public:
+    DBDataExchanger exchanger;
+
   private:
     HybMatrix<double, SWE::n_variables> q_ex;
 
     BC::Land land_boundary;
-
-  public:
-    DBDataExchanger exchanger;
 
   public:
     Distributed() = default;

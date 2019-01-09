@@ -67,7 +67,7 @@ make_swe_manufactured_solution() {
 	    simulation->ComputeL2Residual();' ${MAIN_DIR}/dgswemv2-serial.cpp
 	elif [ "${TARGET}" == "ompi" ]; then
 	    sed -i.tmp '/        MPI_Finalize();/i\
-                simulation->ComputeL2Residual();\' ${MAIN_DIR}/dgswemv2-ompi.cpp
+                simulation->ComputeL2Residual();' ${MAIN_DIR}/dgswemv2-ompi.cpp
 	elif [ "${TARGET}" == "hpx" ]; then
 	    sed -i.tmp '/    return hpx::finalize();/i\
                 hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);\

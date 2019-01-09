@@ -66,10 +66,15 @@ void Tide::Initialize(BoundaryType& bound) {
 }
 
 template <typename StepperType, typename EdgeBoundaryType>
-void Tide::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
+void Tide::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
+    // Something to implement in the future
+}
 
 template <typename EdgeBoundaryType>
-void Tide::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {}
+void Tide::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
+    // Something to implement in the future
+}
+
 }
 }
 }

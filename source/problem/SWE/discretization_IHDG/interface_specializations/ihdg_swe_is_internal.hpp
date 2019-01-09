@@ -7,7 +7,7 @@ namespace ISP {
 class Internal {
   public:
     template <typename InterfaceType>
-    void Initialize(InterfaceType& intface) {} /*nothing to initialize*/
+    void Initialize(InterfaceType& intface);
 
     template <typename EdgeInterfaceType>
     void ComputeInitTrace(EdgeInterfaceType& edge_int);
@@ -15,6 +15,9 @@ class Internal {
     template <typename EdgeInterfaceType>
     void ComputeGlobalKernels(EdgeInterfaceType& edge_int);
 };
+
+template <typename InterfaceType>
+void Internal::Initialize(InterfaceType& intface) {} /*nothing to initialize*/
 
 template <typename EdgeInterfaceType>
 void Internal::ComputeInitTrace(EdgeInterfaceType& edge_int) {

@@ -7,7 +7,7 @@ namespace BC {
 class Land {
   public:
     template <typename BoundaryType>
-    void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
+    void Initialize(BoundaryType& bound);
 
     template <typename EdgeBoundaryType>
     void ComputeInitTrace(EdgeBoundaryType& edge_bound);
@@ -15,6 +15,9 @@ class Land {
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 };
+
+template <typename BoundaryType>
+void Land::Initialize(BoundaryType& bound) {}
 
 template <typename EdgeBoundaryType>
 void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {

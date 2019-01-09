@@ -10,6 +10,7 @@ class Distributed {
   public:
     DBDataExchanger exchanger;
 
+  private:
     HybMatrix<double, SWE::n_variables> q_ex;
     HybMatrix<double, SWE::n_variables> Fn_ex;
 

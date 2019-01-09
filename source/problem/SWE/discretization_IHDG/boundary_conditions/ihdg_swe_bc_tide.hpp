@@ -24,10 +24,10 @@ class Tide {
     void Initialize(BoundaryType& bound);
 
     template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound) {}
+    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
-    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {}
+    void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 };
 
 Tide::Tide(const std::vector<TideNode>& tide_input) {
@@ -67,6 +67,17 @@ void Tide::Initialize(BoundaryType& bound) {
         // bound.ComputeBoundaryNodalUgp(this->phase[con], this->phase_gp[con]);
     }
 }
+
+template <typename EdgeBoundaryType>
+void Tide::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+    // Something to implement in the future
+}
+
+template <typename StepperType, typename EdgeBoundaryType>
+void Tide::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
+    // Something to implement in the future
+}
+
 }
 }
 }

@@ -8,9 +8,6 @@ class Levee {
   private:
     double H_tolerance = 0.01;
 
-    HybMatrix<double, SWE::n_variables> q_in_ex;
-    HybMatrix<double, SWE::n_variables> q_ex_ex;
-
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
     DynRowVector<double> C_supercritical;
@@ -51,11 +48,6 @@ Levee::Levee(const std::vector<LeveeInput>& levee_input) {
 
 template <typename InterfaceType>
 void Levee::Initialize(InterfaceType& intface) {
-    uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
-
-    this->q_in_ex.resize(SWE::n_variables, ngp);
-    this->q_ex_ex.resize(SWE::n_variables, ngp);
-
     this->H_bar_gp       = intface.ComputeBoundaryNodalUgpIN(this->H_barrier);
     this->C_subcrit_gp   = intface.ComputeBoundaryNodalUgpIN(this->C_subcritical);
     this->C_supercrit_gp = intface.ComputeBoundaryNodalUgpIN(this->C_supercritical);
