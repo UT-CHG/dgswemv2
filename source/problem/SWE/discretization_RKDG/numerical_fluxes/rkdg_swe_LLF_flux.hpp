@@ -127,6 +127,15 @@ inline void LLF_flux(const double gravity,
 
 #ifdef USE_BLAZE
 namespace blaze {
+
+namespace workaround {
+template <typename T>
+BLAZE_ALWAYS_INLINE const SIMDdouble abs( const SIMDf64<T>& a ) noexcept {
+  const SIMDdouble minus_one = blaze::set(-1.);
+  return max(a, minus_one*a);
+}
+}
+
 template <typename Datapar>
 BLAZE_STRONG_INLINE void LLF_flux(const Datapar& gravity,
                                  const Datapar& ze_in,
@@ -162,8 +171,8 @@ BLAZE_STRONG_INLINE void LLF_flux(const Datapar& gravity,
     Datapar nx_sp = nx * sp;
     Datapar sp_correction = nx_sp * nx_sp + ny * ny;
 
-    Datapar max_eigenvalue = max(abs(un_in) + sqrt(gravity * h_in * sp_correction),
-                                 abs(un_ex) + sqrt(gravity * h_ex * sp_correction));
+    Datapar max_eigenvalue = max(workaround::abs(un_in) + sqrt(gravity * h_in * sp_correction),
+                                 workaround::abs(un_ex) + sqrt(gravity * h_ex * sp_correction));
 
     // compute internal flux matrix
     Datapar uuh_in = u_in * qx_in;
