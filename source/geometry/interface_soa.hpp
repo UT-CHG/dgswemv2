@@ -13,8 +13,8 @@ struct InterfaceSoAHelper {
     // n_dof x ngp
     StatVector<DynMatrix<double>,3> phi_gp_bdry;
 
-    //n_interfaces x n_dimensions
-    DynMatrix<double> surface_normal;
+    StatVector<DynMatrix<double>,3> int_phi_fact;
+    StatVector<DiagonalMatrix<double>,3> abs_J;
 
     StatVector<SparseMatrix<double>, 3> scatter_in;
     StatVector<SparseMatrix<double>, 3> scatter_ex;
@@ -27,25 +27,35 @@ struct InterfaceSoAHelper {
         return u * phi_gp_bdry[bdry_id];
     }
 
+    template <typename ArrayType>
+    decltype(auto) IntegratePhiBdry(const ArrayType& u, uint bdry_id) {
+        return (abs_J[bdry_id] * u) * int_phi_fact[bdry_id];
+    }
+
     InterfaceSoAHelper() = default;
 
     template <typename ElementContainer>
-    InterfaceSoAHelper(uint p, const ElementContainer& elt_container) {
+    InterfaceSoAHelper(uint p, ElementContainer& elt_container) {
 
-        { //assemble phi_gp
+        //Get **interface** integration rule
+        typename InterfaceType::InterfaceIntegrationType integration;
 
-            //Get **interface** integration rule
-            typename InterfaceType::InterfaceIntegrationType integration;
+        std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule
+            = integration.GetRule(2 * p + 1);
 
-            std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule
-                = integration.GetRule(2 * p + 1);
+        uint ngp = integration_rule.second.size();
+        auto& master = elt_container.GetMaster();
+        for ( uint side = 0; side < 3; ++side ) {
+            std::vector<Point<dimension + 1>> z_master =
+                master.BoundaryToMasterCoordinates(side, integration_rule.second);
 
-            const auto& master = elt_container.GetMaster();
-            for ( uint side = 0; side < 3; ++side ) {
-                std::vector<Point<dimension + 1>> z_master =
-                    master.BoundaryToMasterCoordinates(side, integration_rule.second);
+            this->phi_gp_bdry[side] = master.basis.GetPhi(p, z_master);
 
-                this->phi_gp_bdry[side] = master.basis.GetPhi(p, z_master);
+            this->int_phi_fact[side] = transpose(this->phi_gp_bdry[side]);
+            for (uint dof = 0; dof < master.ndof; ++dof) {
+                for (uint gp = 0; gp < ngp; ++gp) {
+                    this->int_phi_fact[side](gp, dof) *= integration_rule.first[gp];
+                }
             }
         }
     }
@@ -64,35 +74,50 @@ struct InterfaceSoAHelper {
             gather_ex[side].resize(nelements, ninterfaces);
             gather_ex[side].reserve(nelements);
 
+            abs_J[side] = DiagonalMatrix<double>(nelements);
+            for ( uint i = 0; i < nelements; ++i ) {
+                abs_J[side](i,i) = 0.;
+            }
         }
     }
 
     void finalize_initialization() {
+        /* fixme: shrinkToFit() causes memory leaks
         for ( uint side = 0; side < 3; ++side ) {
             scatter_in[side].shrinkToFit();
             scatter_ex[side].shrinkToFit();
 
             gather_in[side].shrinkToFit();
             gather_ex[side].shrinkToFit();
-        }
+            }*/
     }
 };
 
 }
 
-template <typename InterfaceType, typename ElementContainers>
+template <typename InterfaceType, typename InterfaceDataSoAType, typename ElementContainers>
 class InterfaceSoA;
 
-template <typename InterfaceType, typename... ElementContainer>
+template <typename InterfaceType, typename InterfaceDataSoAType, typename... ElementContainer>
 class InterfaceSoA<InterfaceType,
+                   InterfaceDataSoAType,
                    std::tuple<ElementContainer...>> {
 public:
     using AccessorType = InterfaceType;
+    using specialization_t = typename InterfaceType::specialization_t;
     using ElementContainers = std::tuple<ElementContainer...>;
+
     constexpr static uint dimension = AccessorType::dimension;
+    InterfaceDataSoAType data;
+    StatVector<DynMatrix<double>,dimension+1> surface_normal;
 
     InterfaceSoA() = default;
-    InterfaceSoA(ElementContainers& element_data_) : element_data(&element_data_) {}
+    InterfaceSoA(const uint p, ElementContainers& element_data_) : element_data(&element_data_) {
+        uint helper_index = 0;
+        Utilities::for_each_in_tuple( *element_data, [this, p, &helper_index](auto& elt_container) {
+                this->helpers[helper_index++] = detail::InterfaceSoAHelper<InterfaceType>(p, elt_container);
+            });
+    }
 
     void reserve(uint ninterfaces) {
         assert(element_data);
@@ -101,6 +126,12 @@ public:
         Utilities::for_each_in_tuple( *element_data, [this, &helper_index, ninterfaces](auto& elt_container) {
                 this->helpers[helper_index++].reserve(ninterfaces, elt_container.size());
             });
+
+        data = InterfaceDataSoAType(ninterfaces,this->Getngp());
+
+        surface_normal[GlobalCoord::x].resize(ninterfaces,this->Getngp());
+        surface_normal[GlobalCoord::y].resize(ninterfaces,this->Getngp());
+
     }
 
     void finalize_initialization() {
@@ -112,56 +143,105 @@ public:
             });
     }
 
-    template <typename RawBoundary, typename... Args>
+    template <typename... Args>
     AccessorType at(uint intfc_index,
-                    RawBoundary&& raw_boundary_in,
-                    RawBoundary&& raw_boundary_ex,
                     Args&&... args) {
         uint helper_index = 0u;
 
+        AccessorType intfc(std::forward<Args>(args)...);
+
         assert(element_data);
         //GetLocalIndex returns a negative number if pointer is not found
-        Utilities::for_each_in_tuple( *element_data, [this, intfc_index, &helper_index,
-                                                      &raw_boundary_in, &raw_boundary_ex] (auto& elt_container) {
+        Utilities::for_each_in_tuple( *element_data, [this, intfc_index, &helper_index, &intfc] (auto& elt_container) {
                                           auto& helper = this->helpers[helper_index++];
 
-                                          ptrdiff_t elt_indx_in = elt_container.GetLocalIndex(raw_boundary_in.data);
+                                          uint elt_indx_in = elt_container.GetLocalIndex(intfc.data_in);
                                           if ( elt_indx_in >= 0 ) {
-                                              helper.scatter_in[raw_boundary_in.bound_id].insert(intfc_index,
-                                                                                                 elt_indx_in, 1.);
+                                              helper.scatter_in[intfc.bound_id_in].insert(intfc_index,
+                                                                                          elt_indx_in, 1.);
 
-                                              helper.gather_in[raw_boundary_in.bound_id].insert(elt_indx_in,
-                                                                                                intfc_index, 1.);
+                                              helper.gather_in[intfc.bound_id_in].insert(elt_indx_in,
+                                                                                         intfc_index, 1.);
+
+                                              helper.abs_J[intfc.bound_id_in](elt_indx_in, elt_indx_in) =
+                                                  intfc.GetAbsJ();
                                           }
 
-                                          ptrdiff_t elt_indx_ex = elt_container.GetLocalIndex(raw_boundary_ex.data);
+                                          uint elt_indx_ex = elt_container.GetLocalIndex(intfc.data_ex);
                                           if ( elt_indx_ex >= 0 ) {
-                                              helper.scatter_ex[raw_boundary_ex.bound_id].insert(intfc_index,
-                                                                                                 elt_indx_ex, 1.);
+                                              helper.scatter_ex[intfc.bound_id_ex].insert(intfc_index,
+                                                                                          elt_indx_ex, 1.);
 
-                                              helper.gather_ex[raw_boundary_ex.bound_id].insert(elt_indx_ex,
-                                                                                                intfc_index, 1.);
+                                              helper.gather_ex[intfc.bound_id_ex].insert(elt_indx_ex,
+                                                                                         intfc_index, 1.);
+
+                                              helper.abs_J[intfc.bound_id_ex](elt_indx_ex, elt_indx_ex) =
+                                                  intfc.GetAbsJ();
                                           }
             });
 
-        return AccessorType(std::move(raw_boundary_in), std::move(raw_boundary_ex), std::forward<Args>(args)...);
+        return intfc;
     }
 
-    ElementContainers& GetElementData(uint var) {
+    void SetNormal(uint index, const std::array<DynRowVector<double>,dimension+1>& surface_normal_) {
+        assert(surface_normal_[0].size() == this->Getngp());
+        for ( uint dim = 0; dim < dimension+1; ++dim ) {
+            for ( uint gp = 0; gp < this->Getngp(); ++gp ) {
+                this->surface_normal[dim](index,gp) = surface_normal_[dim][gp];
+            }
+        }
+    }
+
+    void SetElementData(ElementContainers& element_data_) {
+        this->element_data = &element_data_;
+    }
+
+    ElementContainers& GetElementData() {
         assert(element_data);
         return *element_data;
     }
 
-    template <typename ElementContainerType, typename ArrayType>
-    decltype(auto) ComputeUgpBdry(const ArrayType& u, uint bdry_id) {
-        constexpr int indx = Utilities::index<ElementContainerType, ElementContainers>::value;
-
-        return helpers[indx].ComputeUgpBdry(u, bdry_id);
+    template <typename ArrayType>
+    decltype(auto) ComputeUgpBdry(const ArrayType& u, uint bdry_id, const uint element_type_index) {
+        return helpers[element_type_index].ComputeUgpBdry(u, bdry_id);
     }
 
+    template <typename ArrayType>
+    decltype(auto) IntegratePhiBdry(const ArrayType& u, uint bdry_id, const uint element_type_index) {
+        return helpers[element_type_index].IntegratePhiBdry(u, bdry_id);
+    }
+
+    template <typename ArrayType>
+    decltype(auto) GatherIn(uint element_type_index, uint side, const ArrayType& array) {
+        return this->helpers[element_type_index].gather_in[side] * array;
+    }
+
+    template <typename ArrayType>
+    decltype(auto) GatherEx(uint element_type_index, uint side, const ArrayType& array) {
+        return reverse_columns(this->helpers[element_type_index].gather_ex[side] * array);
+    }
+
+    template <typename ArrayType>
+    decltype(auto) ScatterIn(uint element_type_index, uint side, const ArrayType& array) {
+        return this->helpers[element_type_index].scatter_in[side] * array;
+    }
+
+    template <typename ArrayType>
+    decltype(auto) ScatterEx(uint element_type_index, uint side, const ArrayType& array) {
+        return reverse_columns(this->helpers[element_type_index].scatter_ex[side] * array);
+    }
+
+    uint Getninterfaces() const {
+        return rows(surface_normal[0]);
+    }
+
+    uint Getngp() const {
+        return columns(helpers[0].phi_gp_bdry[0]);
+    }
 private:
     constexpr static size_t n_element_types = sizeof...(ElementContainer);
 
+    //n_interfaces x n_dimensions
     std::tuple<ElementContainer...> * element_data = nullptr;
     std::array<detail::InterfaceSoAHelper<AccessorType>, n_element_types> helpers;
 };

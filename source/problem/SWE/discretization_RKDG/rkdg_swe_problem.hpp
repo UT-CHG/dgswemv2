@@ -14,6 +14,7 @@
 #include "interface_specializations/rkdg_swe_interface_specializations.hpp"
 
 #include "data_structure/rkdg_swe_data.hpp"
+#include "data_structure/rkdg_swe_data_interface.hpp"
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
@@ -34,6 +35,8 @@ struct Problem {
     using ProblemAccessorType = Accessor;
     using ProblemSoAContainerType  = SoAContainer;
 
+    using ProblemInterfaceSoAType = InterfaceData;
+
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Accessor, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function>;
     using ProblemDistributedBoundaryTypes =
@@ -41,7 +44,7 @@ struct Problem {
 
     using ProblemMeshType = Geometry::MeshType<Accessor,
                                                SoAContainer,
-                                               std::tuple<>,
+                                               ProblemInterfaceSoAType,
                                                std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;

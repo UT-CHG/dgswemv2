@@ -6,19 +6,20 @@
 
 namespace Geometry {
 
-template <typename Interface, typename ElementContainers>
+template <typename Interface, typename InterfaceDataSoAType, typename ElementContainers>
 class InterfaceContainer;
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType,
-          typename... ElementContainer>
+          typename InterfaceDataSoAType, typename... ElementContainer>
 class InterfaceContainer<Interface<dimension, IntegrationType, DataType, SpecializationType>,
+                         InterfaceDataSoAType,
                          std::tuple<ElementContainer...> > {
 public:
     using ElementContainers = std::tuple<ElementContainer...>;
     using InterfaceType = Interface<dimension, IntegrationType, DataType, SpecializationType>;
 
     InterfaceContainer() = default;
-    InterfaceContainer(ElementContainers& elt_data_) : capacity(0UL), size_(0UL),  interface_data(elt_data_) {}
+    InterfaceContainer(uint p, ElementContainers& elt_data_) : capacity(0UL), size_(0UL),  interface_data(p, elt_data_) {}
 
     void reserve(uint ninterfaces) {
         this->capacity = ninterfaces;
@@ -30,20 +31,23 @@ public:
 
     void finalize_initialization() {
         interface_data.finalize_initialization();
+
+        for ( uint index = 0; index < interface_accessors.size(); ++index ) {
+            interface_data.SetNormal(index, interface_accessors[index].surface_normal_in);
+        }
+    }
+
+    void SetElementData(ElementContainers& element_data_) {
+        this->interface_data.SetElementData(element_data_);
     }
 
     template <typename... Args>
-    void CreateInterface(
-        RawBoundary<dimension, DataType>&& raw_boundary_in,
-        RawBoundary<dimension, DataType>&& raw_boundary_ex,
-        Args&&... args) {
+    void CreateInterface(Args&&... args) {
         if ( size_ >= capacity ) {
             throw std::runtime_error{"Not enough interfaces reserved. Emplacing new interfaces will cause accessors to be invalidated\n"};
         }
 
         interface_accessors.emplace_back(std::move(interface_data.at(size_++,
-                                                                     raw_boundary_in,
-                                                                     raw_boundary_ex,
                                                                      std::forward<Args>(args)...)));
     }
 
@@ -54,15 +58,19 @@ public:
             });
     }
 
+    template <typename F>
+    void CallForEachInterface(const F& f, std::true_type /*is vectorized*/) {
+        f(interface_data);
+    }
+
     size_t size() const { return size_; }
 private:
     constexpr static size_t n_element_types = sizeof...(ElementContainer);
-
-    AlignedVector<InterfaceType> interface_accessors;
-    InterfaceSoA<InterfaceType, ElementContainers> interface_data;
-
     size_t capacity;
     size_t size_;
+
+    AlignedVector<InterfaceType> interface_accessors;
+    InterfaceSoA<InterfaceType, InterfaceDataSoAType, ElementContainers> interface_data;
 };
 
 

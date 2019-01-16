@@ -33,6 +33,7 @@ class Interface {
     std::vector<uint> node_ID_in;
     std::vector<uint> node_ID_ex;
 
+    double abs_J;
     DynMatrix<double> psi_gp_in;
     DynMatrix<double> psi_gp_ex;
     DynMatrix<double> psi_bound_gp_in;
@@ -61,6 +62,8 @@ class Interface {
 
     std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
     std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
+
+    double GetAbsJ() { return this->abs_J; }
 
     template <typename InputArrayType>
     decltype(auto) ComputeUgpIN(const InputArrayType& u);
@@ -153,6 +156,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     DynVector<double> surface_J = this->shape_in.GetSurfaceJ(this->bound_id_in, z_master_in);
 
     if (surface_J.size() == 1) {  // constant Jacobian
+        this->abs_J = surface_J[0];
         this->int_fact_in = integration_rule.first * surface_J[0];
 
         this->int_fact_ex = reverse(integration_rule.first * surface_J[0]);

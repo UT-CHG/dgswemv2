@@ -49,14 +49,14 @@ public:
                                                                  std::forward<Args>(args)...)));
     }
 
-    ptrdiff_t GetLocalIndex(const AccessorType& acc) const {
-        const AccessorType* problem_data_start = &element_accessors.front().data;
-
-        ptrdiff_t  indx = ( &acc - problem_data_start ) / sizeof(AccessorType);
-
-        //return a negative number if the accessor is not contained in this element container
-        return indx < 0                                        ? indx :
-               (unsigned long) indx < element_accessors.size() ? indx : -1L;
+    ptrdiff_t GetLocalIndex(const AccessorType& target_acc) const {
+        const AccessorType* target_addr = &target_acc;
+        auto acc_iter = std::find_if(element_accessors.begin(), element_accessors.end(),
+                                     [target_addr](const ElementType& elt) {
+                                         return &elt.data == target_addr;
+                                     });
+        return acc_iter != element_accessors.end() ? std::distance(element_accessors.begin(), acc_iter)
+                                                   : -1;
     }
 
     template <typename F>
@@ -71,7 +71,7 @@ public:
 
     size_t size() { return size_; }
 
-    const MasterType& GetMaster() const {
+    MasterType& GetMaster() {
         return master_element;
     }
 

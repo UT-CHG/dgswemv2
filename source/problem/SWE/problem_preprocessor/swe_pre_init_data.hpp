@@ -6,6 +6,58 @@
 #include "problem/SWE/problem_function_files/swe_initial_condition_functions.hpp"
 
 namespace SWE {
+namespace detail {
+
+template <typename IntfaceSoA>
+struct AuxAssembler {
+    template <typename AccessorType>
+    constexpr static bool is_vectorized() { return true; }
+
+    AuxAssembler(uint element_type_index_, IntfaceSoA& interface_soa_)
+        : element_type_index(element_type_index_), interface_soa(interface_soa_)
+    {}
+
+    template <typename ElementSoA>
+    void operator() (ElementSoA& soa) const {
+        for ( uint var = 0; var < SWE::n_auxiliaries; ++var ) {
+
+            set_constant(interface_soa.data.aux_at_gp[var], 0.0);
+
+            for (uint side = 0; side < 3; ++side ) {
+                const auto& aux = soa.data.boundary[side].aux_at_gp[var];
+                interface_soa.data.aux_at_gp[var] += interface_soa.ScatterIn(element_type_index, side, aux );
+            }
+        }
+    }
+
+private:
+    uint element_type_index;
+    IntfaceSoA& interface_soa;
+};
+
+struct InitializeInterfaceSoA {
+    template <typename AccessorType>
+    constexpr static bool is_vectorized() { return true; }
+
+    template <typename SoA>
+    void operator() (SoA& soa) const {
+        static_assert(Utilities::is_SoA<SoA>::value);
+
+        if ( soa.Getninterfaces() == 0 ) return;
+
+        uint element_type_index = 0u;
+        Utilities::for_each_in_tuple(soa.GetElementData(), [&soa, &element_type_index](auto& elt_container) {
+                AuxAssembler<SoA> aux_assembler(element_type_index++, soa);
+
+                using is_vectorized_t = std::true_type;
+                elt_container.CallForEachElement(aux_assembler, is_vectorized_t{} );
+            });
+
+    }
+
+};
+}
+
 template <typename MeshType>
 void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) {
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
@@ -128,6 +180,8 @@ void initialize_data(MeshType& mesh, const SWE::Inputs& problem_specific_input) 
 
         }
     });
+
+    mesh.CallForEachInterface( detail::InitializeInterfaceSoA{} );
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
         auto& shape = bound.GetShape();

@@ -106,6 +106,65 @@ bool test_configuration_vectorized(const DynRowVector<double>& ze_in,
 
 }
 
+#ifdef USE_BLAZE
+bool test_configuration_blaze_intrinsics(const int configuration,
+                                         const double ze_in,
+                                         const double ze_ex,
+                                         const double qx_in,
+                                         const double qx_ex,
+                                         const double qy_in,
+                                         const double qy_ex,
+                                         const double bath,
+                                         const double sp,
+                                         const StatVector<double, 2>& normal,
+                                         const double true_ze_flux,
+                                         const double true_qx_flux,
+                                         const double true_qy_flux) {
+    using simd_t = DynMatrix<double>::SIMDType;
+    const size_t SIMDSIZE = simd_t::size;
+
+    const simd_t g_vec = blaze::set(SWE::Global::g);
+    const simd_t ze_in_vec = blaze::set(ze_in);
+    const simd_t ze_ex_vec = blaze::set(ze_ex);
+    const simd_t qx_in_vec = blaze::set(qx_in);
+    const simd_t qx_ex_vec = blaze::set(qx_ex);
+    const simd_t qy_in_vec = blaze::set(qy_in);
+    const simd_t qy_ex_vec = blaze::set(qy_ex);
+    const simd_t bath_vec  = blaze::set(bath);
+    const simd_t sp_vec    = blaze::set(sp);
+    const simd_t nx_vec    = blaze::set(normal[0]);
+    const simd_t ny_vec    = blaze::set(normal[1]);
+
+    StatVector<DynVector<double>,3> F_hat;
+    F_hat[0].resize(SIMDSIZE);
+    F_hat[1].resize(SIMDSIZE);
+    F_hat[2].resize(SIMDSIZE);
+
+    blaze::LLF_flux(g_vec,
+                    ze_in_vec,
+                    qx_in_vec,
+                    qy_in_vec,
+                    ze_ex_vec,
+                    qx_ex_vec,
+                    qy_ex_vec,
+                    bath_vec,
+                    sp_vec,
+                    nx_vec,
+                    ny_vec,
+                    F_hat[0].data(),
+                    F_hat[1].data(),
+                    F_hat[2].data());
+
+    bool error_found = false;
+    for ( uint i = 0; i < SIMDSIZE; ++i ) {
+        error_found |= !Utilities::almost_equal( F_hat[0][i], true_ze_flux);
+        error_found |= !Utilities::almost_equal( F_hat[1][i], true_qx_flux);
+        error_found |= !Utilities::almost_equal( F_hat[2][i], true_qy_flux);
+    }
+    return error_found;
+}
+#endif
+
 
 int main() {
     using Utilities::almost_equal;
@@ -193,6 +252,25 @@ int main() {
                                true_qy_flux[config_id])) {
             error_found = true;
         }
+
+#ifdef USE_BLAZE
+        if (test_configuration_blaze_intrinsics(config_id,
+                                                ze_in[config_id],
+                                                ze_ex[config_id],
+                                                qx_in[config_id],
+                                                qx_ex[config_id],
+                                                qy_in[config_id],
+                                                qy_ex[config_id],
+                                                aux[SWE::Auxiliaries::bath][config_id],
+                                                aux[SWE::Auxiliaries::sp][config_id],
+                                                normal,
+                                                true_ze_flux[config_id],
+                                                true_qx_flux[config_id],
+                                                true_qy_flux[config_id])) {
+            error_found = true;
+        }
+#endif
+
     }
 
     // Test all configurations at once

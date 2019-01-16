@@ -9,28 +9,64 @@ template <typename IntfaceSoA>
 struct ComputeUgpBdryHelper {
     constexpr bool is_vectorized() { return true; }
 
-    ComputeUgpBdryHelper(uint stage_, const IntfaceSoA& interface_soa_, uint element_type_index_)
-        : stage(stage_), interface_soa(interface_soa_) , element_type_index(element_type_index_)
+    ComputeUgpBdryHelper(uint stage_, uint element_type_index_, IntfaceSoA& interface_soa_)
+        : stage(stage_), element_type_index(element_type_index_), interface_soa(interface_soa_)
     {}
 
     template <typename ElementSoA>
     void operator() (ElementSoA& soa) const {
-        const auto& state = soa.data.state[stage].q;
+        const auto& q = soa.data.state[stage].q;
 
         for ( uint side = 0; side < 3; ++side ) {
-            const DynMatrix<double>& phi_gp_bdry = interface_soa.GetPhiGPBdry(element_type_index, side);
-
             for ( uint var =0; var < SWE::n_variables; ++var ) {
-                soa.data.boundary[side].q_at_gp = soa.data.state[stage].q * phi_gp_bdry;
+                auto& q_at_gp = soa.data.boundary[side].q_at_gp[var];
+
+                q_at_gp = interface_soa.ComputeUgpBdry(q[var], side, element_type_index);
+                interface_soa.data.q_in_at_gp[var] += interface_soa.ScatterIn(element_type_index, side, q_at_gp);
+                interface_soa.data.q_ex_at_gp[var] += interface_soa.ScatterEx(element_type_index, side, q_at_gp);
             }
         }
     }
 
 private:
     const uint stage;
-
     const uint element_type_index;
-    const IntfaceSoA& interface_soa;
+
+    IntfaceSoA& interface_soa;
+};
+
+template <typename IntfaceSoA>
+struct IntegratePhiBdryHelper {
+    constexpr bool is_vectorized() { return true; }
+
+    IntegratePhiBdryHelper(uint stage_, uint element_type_index_, IntfaceSoA& interface_soa_)
+        : stage(stage_), element_type_index(element_type_index_), interface_soa(interface_soa_)
+    {}
+
+    template <typename ElementSoA>
+    void operator() (ElementSoA& soa) const {
+        auto& state = soa.data.state[stage];
+
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            for ( uint side = 0; side < 3; ++side ) {
+                soa.data.boundary[side].F_hat_at_gp[var] =
+                    interface_soa.GatherIn(element_type_index, side, interface_soa.data.F_hat_at_gp[var]) -
+                    interface_soa.GatherEx(element_type_index, side, interface_soa.data.F_hat_at_gp[var]);
+
+                //Not every interface will contribute to this integral, however, the jacobians for these
+                //interfaces are set to zero. Therefore, we will effectively mask these contributions to
+                //the rhs.
+                state.rhs[var] -= interface_soa.IntegratePhiBdry(soa.data.boundary[side].F_hat_at_gp[var],
+                                                   side, element_type_index);
+            }
+        }
+    }
+
+private:
+    const uint stage;
+    const uint element_type_index;
+
+    IntfaceSoA& interface_soa;
 };
 }
 
@@ -43,9 +79,8 @@ public:
 
     template <typename InterfaceType>
     constexpr static bool is_vectorized() {
-        return false;
-//        return std::is_same<typename InterfaceType::specialization_t,
-        //                          typename ISP::Internal>::value;
+        return std::is_same<typename InterfaceType::specialization_t,
+                            typename ISP::Internal>::value;
     }
 
     template <typename InterfaceType>
@@ -90,49 +125,38 @@ public:
         using ElementContainers = typename InterfaceType::ElementContainers;
         ElementContainers& elt_data = soa.GetElementData();
 
-        set_constant(soa.data.Ugp_in, 0.0);
-        set_constant(soa.data.Ugp_ex, 0.0);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            set_constant(soa.data.q_in_at_gp[var], 0.0);
+            set_constant(soa.data.q_ex_at_gp[var], 0.0);
+        }
 
-        uint element_type_index = 0u;
-        Utilities::for_each_in_tuple(elt_data,[stage, &soa, &element_type_index](auto& elt_container) {
+        Utilities::for_each_in_tuple(elt_data,[stage, &soa](auto& elt_container) {
+                constexpr uint element_type_index = Utilities::index<typename std::decay<decltype(elt_container)>::type,
+                                                                     ElementContainers>::value;
+
                 //fixme
                 //only compute boundary values once
-                if ( std::is_same<typename InterfaceType::specialization_t, typename ISP::Internal>::value ) {
-                    detail::ComputeUgpBdryHelper<InterfaceType> compute_ugp_bdry_fctor(stage, soa, element_type_index);
+                //if ( std::is_same<typename InterfaceType::specialization_t, typename ISP::Internal>::value ) {
+                detail::ComputeUgpBdryHelper<InterfaceType> compute_ugp_bdry_fctor(stage, element_type_index, soa);
 
-                    using is_vectorized_t = std::true_type;
-                    elt_container.CallForEachElement(compute_ugp_bdry_fctor, is_vectorized_t{} );
-                }
-
-                //Assemble values at GP
-                soa.data.Ugp_in += soa.gather_in(element_type_index);
-                //flip gp order
-                soa.data.Ugp_ex += soa.gather_ex(element_type_index);
-
-                ++element_type_index;
+                using is_vectorized_t = std::true_type;
+                elt_container.CallForEachElement(compute_ugp_bdry_fctor, is_vectorized_t{} );
+                //}
             });
 
-        //soa.specialization.ComputeFlux(soa);
+        typename InterfaceType::specialization_t spec{};
+        spec.ComputeFlux(soa);
 
-        element_type_index = 0;
-        Utilities::for_each_in_tuple(elt_data,[stage, &soa, &element_type_index](auto& elt_container) {
-                auto& state = elt_container.data.state[stage];
+        Utilities::for_each_in_tuple(elt_data,[stage, &soa, this](auto& elt_container) {
+                constexpr uint element_type_index = Utilities::index<typename std::decay<decltype(elt_container)>::type,
+                                                                     ElementContainers>::value;
 
-                auto F_hat_ze_in = soa.scatter_in(element_type_index);
-                auto F_hat_qx_in = soa.scatter_in(element_type_index);
-                auto F_hat_qy_in = soa.scatter_in(element_type_index);
-
-                state.rhs[SWE::Variables::ze] -= soa.IntegrationPhiIN(F_hat_ze_in);
-                state.rhs[SWE::Variables::qx] -= soa.IntegrationPhiIN(F_hat_qx_in);
-                state.rhs[SWE::Variables::qy] -= soa.IntegrationPhiIN(F_hat_qy_in);
-
-                auto F_hat_ze_ex = soa.scatter_ex(element_type_index);
-                auto F_hat_qx_ex = soa.scatter_ex(element_type_index);
-                auto F_hat_qy_ex = soa.scatter_ex(element_type_index);
-
-                state.rhs[SWE::Variables::ze] -= soa.IntegrationPhiEX(F_hat_ze_ex);
-                state.rhs[SWE::Variables::qx] -= soa.IntegrationPhiEX(F_hat_qx_ex);
-                state.rhs[SWE::Variables::qy] -= soa.IntegrationPhiEX(F_hat_qy_ex);
+                detail::IntegratePhiBdryHelper<InterfaceType> integrate_phi_bdry_fctor(stage, element_type_index, soa);
+                //fixme
+                //Same thing, once you have F_hat_at_gp only compute integrals once at the very end of the vectorized
+                //interfaces
+                using is_vectorized_t = std::true_type;
+                elt_container.CallForEachElement(integrate_phi_bdry_fctor, is_vectorized_t{} );
             });
     }
 

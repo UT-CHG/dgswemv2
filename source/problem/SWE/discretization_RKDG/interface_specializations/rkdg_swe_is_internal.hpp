@@ -1,6 +1,8 @@
 #ifndef RKDG_SWE_IS_INTERNAL_HPP
 #define RKDG_SWE_IS_INTERNAL_HPP
 
+#include "utilities/is_soa.hpp"
+
 namespace SWE {
 namespace RKDG {
 namespace ISP {
@@ -10,41 +12,34 @@ class Internal {
 
   public:
     template <typename InterfaceType>
-    void Initialize(InterfaceType& intface);
+    void Initialize(InterfaceType& intface) {
+        land_boundary.Initialize(1);
+    }
 
     template <typename InterfaceType>
-    void ComputeFlux(InterfaceType& intface);
-};
+    typename std::enable_if<!Utilities::is_SoA<InterfaceType>::value>::type ComputeFlux(InterfaceType& intface) {
+        //bool wet_in = intface.data_in.wet_dry_state.wet;
+        //bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
-template <typename InterfaceType>
-void Internal::Initialize(InterfaceType& intface) {
-    land_boundary.Initialize(1);
-}
+        auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
+        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-template <typename InterfaceType>
-void Internal::ComputeFlux(InterfaceType& intface) {
-    bool wet_in = intface.data_in.wet_dry_state.wet;
-    bool wet_ex = intface.data_ex.wet_dry_state.wet;
+        // assemble numerical fluxes
+        LLF_flux(Global::g,
+                 boundary_in.q_at_gp[SWE::Variables::ze],
+                 boundary_in.q_at_gp[SWE::Variables::qx],
+                 boundary_in.q_at_gp[SWE::Variables::qy],
+                 boundary_ex.q_at_gp[SWE::Variables::ze],
+                 boundary_ex.q_at_gp[SWE::Variables::qx],
+                 boundary_ex.q_at_gp[SWE::Variables::qy],
+                 boundary_in.aux_at_gp,
+                 intface.surface_normal_in,
+                 boundary_in.F_hat_at_gp
+            );
 
-    auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-    auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
-
-    // assemble numerical fluxes
-    LLF_flux(Global::g,
-             boundary_in.q_at_gp[SWE::Variables::ze],
-             boundary_in.q_at_gp[SWE::Variables::qx],
-             boundary_in.q_at_gp[SWE::Variables::qy],
-             boundary_ex.q_at_gp[SWE::Variables::ze],
-             boundary_ex.q_at_gp[SWE::Variables::qx],
-             boundary_ex.q_at_gp[SWE::Variables::qy],
-             boundary_in.aux_at_gp,
-             intface.surface_normal_in,
-             boundary_in.F_hat_at_gp
-        );
-
-    boundary_ex.F_hat_at_gp[SWE::Variables::ze] = -boundary_in.F_hat_at_gp[SWE::Variables::ze];
-    boundary_ex.F_hat_at_gp[SWE::Variables::qx] = -boundary_in.F_hat_at_gp[SWE::Variables::qx];
-    boundary_ex.F_hat_at_gp[SWE::Variables::qy] = -boundary_in.F_hat_at_gp[SWE::Variables::qy];
+        boundary_ex.F_hat_at_gp[SWE::Variables::ze] = -boundary_in.F_hat_at_gp[SWE::Variables::ze];
+        boundary_ex.F_hat_at_gp[SWE::Variables::qx] = -boundary_in.F_hat_at_gp[SWE::Variables::qx];
+        boundary_ex.F_hat_at_gp[SWE::Variables::qy] = -boundary_in.F_hat_at_gp[SWE::Variables::qy];
 
         /*if (boundary_in.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
@@ -93,7 +88,58 @@ void Internal::ComputeFlux(InterfaceType& intface) {
 
 //        assert(!std::isnan(boundary_in.F_hat_at_gp[Variables::ze][gp]));
     //   }
-}
+    }
+
+    template <typename SoAType>
+    typename std::enable_if<Utilities::is_SoA<SoAType>::value>::type ComputeFlux(SoAType& soa) {
+        //matrix typedefs
+        using matrix_t = typename std::decay<decltype(soa.data.q_in_at_gp[0])>::type;
+        using simd_t = typename matrix_t::SIMDType;
+        const size_t SIMDSIZE = simd_t::size;
+        const simd_t g_vec = blaze::set(Global::g);
+        //check all matrices are the same size
+        static_assert(matrix_t::simdEnabled && blaze::usePadding);
+
+        size_t rows_ = rows(soa.data.q_in_at_gp[0]);
+        size_t columns_ = columns(soa.data.q_in_at_gp[0]);
+
+        const DynMatrix<double>& ze_in = soa.data.q_in_at_gp[SWE::Variables::ze];
+        const DynMatrix<double>& qx_in = soa.data.q_in_at_gp[SWE::Variables::qx];
+        const DynMatrix<double>& qy_in = soa.data.q_in_at_gp[SWE::Variables::qy];
+        const DynMatrix<double>& ze_ex = soa.data.q_ex_at_gp[SWE::Variables::ze];
+        const DynMatrix<double>& qx_ex = soa.data.q_ex_at_gp[SWE::Variables::qx];
+        const DynMatrix<double>& qy_ex = soa.data.q_ex_at_gp[SWE::Variables::qy];
+        const DynMatrix<double>& bath  = soa.data.aux_at_gp[SWE::Auxiliaries::bath];
+        const DynMatrix<double>& sp    = soa.data.aux_at_gp[SWE::Auxiliaries::sp];
+        const DynMatrix<double>& nx    = soa.surface_normal[GlobalCoord::x];
+        const DynMatrix<double>& ny    = soa.surface_normal[GlobalCoord::y];
+        DynMatrix<double>& flux_ze     = soa.data.F_hat_at_gp[SWE::Variables::ze];
+        DynMatrix<double>& flux_qx     = soa.data.F_hat_at_gp[SWE::Variables::qx];
+        DynMatrix<double>& flux_qy     = soa.data.F_hat_at_gp[SWE::Variables::qy];
+
+
+        for ( size_t i=0UL; i < rows_; ++i ) {
+
+            for ( size_t j = 0UL; j < columns_; j+= SIMDSIZE) {
+
+                blaze::LLF_flux(g_vec,
+                                ze_in.load(i,j),
+                                qx_in.load(i,j),
+                                qy_in.load(i,j),
+                                ze_ex.load(i,j),
+                                qx_ex.load(i,j),
+                                qy_ex.load(i,j),
+                                bath.load(i,j),
+                                sp.load(i,j),
+                                nx.load(i,j),
+                                ny.load(i,j),
+                                flux_ze.data(i) + j,
+                                flux_qx.data(i) + j,
+                                flux_qy.data(i) + j);
+            }
+        }
+    }
+};
 }
 }
 }
