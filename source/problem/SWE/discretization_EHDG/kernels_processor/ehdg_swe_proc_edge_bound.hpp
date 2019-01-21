@@ -5,11 +5,6 @@ namespace SWE {
 namespace EHDG {
 template <typename StepperType, typename EdgeBoundaryType>
 void Problem::global_edge_boundary_kernel(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
-    auto& edge_state    = edge_bound.edge_data.edge_state;
-    auto& edge_internal = edge_bound.edge_data.edge_internal;
-
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
     /* Newton-Raphson iterator */
 
     uint iter = 0;
@@ -18,7 +13,8 @@ void Problem::global_edge_boundary_kernel(const StepperType& stepper, EdgeBounda
 
         Problem::global_edge_boundary_iteration(stepper, edge_bound);
 
-        double delta_hat_norm = norm(edge_internal.rhs_global) / edge_internal.rhs_global.size();
+        double delta_hat_norm =
+            norm(edge_bound.edge_data.edge_internal.rhs_global) / edge_bound.edge_data.edge_internal.rhs_global.size();
 
         if (delta_hat_norm < 1.0e-12) {
             break;
@@ -27,11 +23,6 @@ void Problem::global_edge_boundary_kernel(const StepperType& stepper, EdgeBounda
 
     /* Compute Numerical Flux */
 
-    edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
-
     edge_bound.boundary.boundary_condition.ComputeNumericalFlux(edge_bound);
 }
 
@@ -39,13 +30,6 @@ template <typename StepperType, typename EdgeBoundaryType>
 void Problem::global_edge_boundary_iteration(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
-
-    auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
-
-    edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Assemble global kernels */
 
