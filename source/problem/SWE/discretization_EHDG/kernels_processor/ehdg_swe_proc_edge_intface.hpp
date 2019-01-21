@@ -13,8 +13,7 @@ void Problem::global_edge_interface_kernel(const StepperType& stepper, EdgeInter
 
         Problem::global_edge_interface_iteration(stepper, edge_int);
 
-        double delta_hat_norm =
-            norm(edge_int.edge_data.edge_internal.rhs_global) / edge_int.edge_data.edge_internal.rhs_global.size();
+        double delta_hat_norm = norm(edge_int.edge_data.edge_internal.rhs_global);
 
         if (delta_hat_norm < 1.0e-12) {
             break;
