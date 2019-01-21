@@ -181,43 +181,14 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
         boundary.q_at_gp = dbound.ComputeUgp(state.q);
 
-        row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
-            row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
-
-        /* Compute fluxes at boundary state */
-        auto nx = row(dbound.surface_normal, GlobalCoord::x);
-        auto ny = row(dbound.surface_normal, GlobalCoord::y);
-
-        auto u = vec_cw_div(row(boundary.q_at_gp, SWE::Variables::qx), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
-        auto v = vec_cw_div(row(boundary.q_at_gp, SWE::Variables::qy), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
-
-        auto uuh = vec_cw_mult(u, row(boundary.q_at_gp, SWE::Variables::qx));
-        auto vvh = vec_cw_mult(v, row(boundary.q_at_gp, SWE::Variables::qy));
-        auto uvh = vec_cw_mult(u, row(boundary.q_at_gp, SWE::Variables::qy));
-        auto pe =
-            Global::g *
-            (0.5 * vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::ze), row(boundary.q_at_gp, SWE::Variables::ze)) +
-             vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::ze), row(boundary.aux_at_gp, SWE::Auxiliaries::bath)));
-
-        row(boundary.Fn_at_gp, SWE::Variables::ze) = vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), nx) +
-                                                     vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), ny);
-        row(boundary.Fn_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh + pe, nx) + vec_cw_mult(uvh, ny);
-        row(boundary.Fn_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
-
         // Construct message to exterior state
         std::vector<double> message;
 
-        message.reserve(1 + 2 * SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
+        message.reserve(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
 
         for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
             for (uint var = 0; var < SWE::n_variables; ++var) {
                 message.push_back(boundary.q_at_gp(var, gp));
-            }
-        }
-
-        for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-            for (uint var = 0; var < SWE::n_variables; ++var) {
-                message.push_back(boundary.Fn_at_gp(var, gp));
             }
         }
 
@@ -281,9 +252,8 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         std::vector<double> message;
         HybMatrix<double, SWE::n_variables> q_ex(SWE::n_variables, ngp);
-        HybMatrix<double, SWE::n_variables> Fn_ex(SWE::n_variables, ngp);
 
-        message.resize(1 + 2 * SWE::n_variables * ngp);
+        message.resize(1 + SWE::n_variables * ngp);
 
         edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::init_global_prob, message);
 
@@ -292,8 +262,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
             gp_ex = ngp - gp - 1;
 
             for (uint var = 0; var < SWE::n_variables; ++var) {
-                q_ex(var, gp_ex)  = message[SWE::n_variables * gp + var];
-                Fn_ex(var, gp_ex) = message[SWE::n_variables * ngp + SWE::n_variables * gp + var];
+                q_ex(var, gp_ex) = message[SWE::n_variables * gp + var];
             }
         }
 
@@ -324,7 +293,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
         global_dof_indx.insert(
             global_dof_indx.end(), edge_internal.global_dof_indx.begin(), edge_internal.global_dof_indx.end());
 
-        edge_dbound.boundary.boundary_condition.ComputeInitTrace(edge_dbound, q_ex, Fn_ex);
+        edge_dbound.boundary.boundary_condition.ComputeInitTrace(edge_dbound, q_ex);
     });
 }
 }

@@ -39,54 +39,6 @@ void Internal::ComputeInitTrace(EdgeInterfaceType& edge_int) {
     boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
     boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 
-    row(boundary_in.aux_at_gp, SWE::Auxiliaries::h) =
-        row(boundary_in.q_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
-
-    row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h) =
-        row(boundary_ex.q_at_gp, SWE::Variables::ze) + row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath);
-
-    auto nx_in = row(intface.surface_normal_in, GlobalCoord::x);
-    auto ny_in = row(intface.surface_normal_in, GlobalCoord::y);
-
-    auto u_in =
-        vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qx), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
-    auto v_in =
-        vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qy), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
-
-    auto uuh_in = vec_cw_mult(u_in, row(boundary_in.q_at_gp, SWE::Variables::qx));
-    auto vvh_in = vec_cw_mult(v_in, row(boundary_in.q_at_gp, SWE::Variables::qy));
-    auto uvh_in = vec_cw_mult(u_in, row(boundary_in.q_at_gp, SWE::Variables::qy));
-    auto pe_in =
-        Global::g *
-        (0.5 * vec_cw_mult(row(boundary_in.q_at_gp, SWE::Variables::ze), row(boundary_in.q_at_gp, SWE::Variables::ze)) +
-         vec_cw_mult(row(boundary_in.q_at_gp, SWE::Variables::ze), row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
-
-    row(boundary_in.Fn_at_gp, SWE::Variables::ze) = vec_cw_mult(row(boundary_in.q_at_gp, SWE::Variables::qx), nx_in) +
-                                                    vec_cw_mult(row(boundary_in.q_at_gp, SWE::Variables::qy), ny_in);
-    row(boundary_in.Fn_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh_in + pe_in, nx_in) + vec_cw_mult(uvh_in, ny_in);
-    row(boundary_in.Fn_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh_in, nx_in) + vec_cw_mult(vvh_in + pe_in, ny_in);
-
-    auto nx_ex = row(intface.surface_normal_ex, GlobalCoord::x);
-    auto ny_ex = row(intface.surface_normal_ex, GlobalCoord::y);
-
-    auto u_ex =
-        vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qx), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
-    auto v_ex =
-        vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qy), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
-
-    auto uuh_ex = vec_cw_mult(u_ex, row(boundary_ex.q_at_gp, SWE::Variables::qx));
-    auto vvh_ex = vec_cw_mult(v_ex, row(boundary_ex.q_at_gp, SWE::Variables::qy));
-    auto uvh_ex = vec_cw_mult(u_ex, row(boundary_ex.q_at_gp, SWE::Variables::qy));
-    auto pe_ex =
-        Global::g *
-        (0.5 * vec_cw_mult(row(boundary_ex.q_at_gp, SWE::Variables::ze), row(boundary_ex.q_at_gp, SWE::Variables::ze)) +
-         vec_cw_mult(row(boundary_ex.q_at_gp, SWE::Variables::ze), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath)));
-
-    row(boundary_ex.Fn_at_gp, SWE::Variables::ze) = vec_cw_mult(row(boundary_ex.q_at_gp, SWE::Variables::qx), nx_ex) +
-                                                    vec_cw_mult(row(boundary_ex.q_at_gp, SWE::Variables::qy), ny_ex);
-    row(boundary_ex.Fn_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh_ex + pe_ex, nx_ex) + vec_cw_mult(uvh_ex, ny_ex);
-    row(boundary_ex.Fn_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh_ex, nx_ex) + vec_cw_mult(vvh_ex + pe_ex, ny_ex);
-
     set_constant(edge_state.q_hat, 0.0);
 
     uint iter = 0;
@@ -117,8 +69,7 @@ void Internal::ComputeInitTrace(EdgeInterfaceType& edge_int) {
             column(dtau_delq, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q;
             column(dtau_delq, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q;
 
-            column(edge_internal.rhs_global_kernel_at_gp, gp) =
-                column(boundary_in.Fn_at_gp, gp) + column(boundary_ex.Fn_at_gp, gp_ex) + edge_internal.tau[gp] * del_q;
+            column(edge_internal.rhs_global_kernel_at_gp, gp) = edge_internal.tau[gp] * del_q;
 
             column(edge_internal.delta_hat_global_kernel_at_gp, gp) =
                 flatten<double>(dtau_delq - 2.0 * edge_internal.tau[gp]);

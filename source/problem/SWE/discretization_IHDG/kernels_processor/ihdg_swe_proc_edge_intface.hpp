@@ -15,19 +15,46 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
+        auto& q_hat_at_gp    = edge_internal.q_hat_at_gp;
+        auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
+        auto& surface_normal = edge_int.interface.surface_normal_in;
+
         edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
             row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
-        SWE::get_tau_LF(edge_internal.q_hat_at_gp,
-                        edge_internal.aux_hat_at_gp,
-                        edge_int.interface.surface_normal_in,
-                        edge_internal.tau);
+        /* Compute fluxes at boundary states */
+
+        auto nx = row(surface_normal, GlobalCoord::x);
+        auto ny = row(surface_normal, GlobalCoord::y);
+
+        auto u = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qx), row(aux_hat_at_gp, SWE::Auxiliaries::h));
+        auto v = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qy), row(aux_hat_at_gp, SWE::Auxiliaries::h));
+
+        auto uuh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qx));
+        auto vvh = vec_cw_mult(v, row(q_hat_at_gp, SWE::Variables::qy));
+        auto uvh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qy));
+        auto pe =
+            Global::g *
+            (0.5 * vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(q_hat_at_gp, SWE::Variables::ze)) +
+             vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
+
+        // Fn terms
+        row(boundary_in.F_hat_at_gp, SWE::Variables::ze) = vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qx), nx) +
+                                                           vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qy), ny);
+        row(boundary_in.F_hat_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh + pe, nx) + vec_cw_mult(uvh, ny);
+        row(boundary_in.F_hat_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
+
+        /* Add stabilization parameter terms */
+
+        SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
 
         uint gp_ex;
         for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
             gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+            column(boundary_ex.F_hat_at_gp, gp_ex) = -column(boundary_in.F_hat_at_gp, gp);
 
             column(boundary_in.F_hat_at_gp, gp) +=
                 edge_internal.tau[gp] * (column(boundary_in.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
@@ -58,27 +85,59 @@ void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterf
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
     auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
+    auto& q_hat_at_gp    = edge_internal.q_hat_at_gp;
+    auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
+    auto& surface_normal = edge_int.interface.surface_normal_in;
+
     edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
-    SWE::get_tau_LF(edge_internal.q_hat_at_gp,
-                    edge_internal.aux_hat_at_gp,
-                    edge_int.interface.surface_normal_in,
-                    edge_internal.tau);
-    SWE::get_dtau_dze_LF(edge_internal.q_hat_at_gp,
-                         edge_internal.aux_hat_at_gp,
-                         edge_int.interface.surface_normal_in,
-                         edge_internal.dtau_dze);
-    SWE::get_dtau_dqx_LF(edge_internal.q_hat_at_gp,
-                         edge_internal.aux_hat_at_gp,
-                         edge_int.interface.surface_normal_in,
-                         edge_internal.dtau_dqx);
-    SWE::get_dtau_dqy_LF(edge_internal.q_hat_at_gp,
-                         edge_internal.aux_hat_at_gp,
-                         edge_int.interface.surface_normal_in,
-                         edge_internal.dtau_dqy);
+    /* Compute fluxes at boundary states */
+
+    auto nx = row(surface_normal, GlobalCoord::x);
+    auto ny = row(surface_normal, GlobalCoord::y);
+
+    auto u = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qx), row(aux_hat_at_gp, SWE::Auxiliaries::h));
+    auto v = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qy), row(aux_hat_at_gp, SWE::Auxiliaries::h));
+
+    auto uuh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qx));
+    auto vvh = vec_cw_mult(v, row(q_hat_at_gp, SWE::Variables::qy));
+    auto uvh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qy));
+    auto pe  = Global::g *
+              (0.5 * vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(q_hat_at_gp, SWE::Variables::ze)) +
+               vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
+
+    // Fn terms
+    row(boundary_in.F_hat_at_gp, SWE::Variables::ze) =
+        vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qx), nx) + vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qy), ny);
+    row(boundary_in.F_hat_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh + pe, nx) + vec_cw_mult(uvh, ny);
+    row(boundary_in.F_hat_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
+
+    // dFn/dq_hat terms
+    set_constant(row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::ze_ze), 0.0);
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::ze_qx) = nx;
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::ze_qy) = ny;
+
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qx_ze) =
+        vec_cw_mult(-vec_cw_mult(u, u) + Global::g * row(aux_hat_at_gp, SWE::Auxiliaries::h), nx) -
+        vec_cw_mult(vec_cw_mult(u, v), ny);
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qx_qx) = 2.0 * vec_cw_mult(u, nx) + vec_cw_mult(v, ny);
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qx_qy) = vec_cw_mult(u, ny);
+
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qy_ze) =
+        -vec_cw_mult(vec_cw_mult(u, v), nx) +
+        vec_cw_mult(-vec_cw_mult(v, v) + Global::g * row(aux_hat_at_gp, SWE::Auxiliaries::h), ny);
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qy_qx) = vec_cw_mult(v, nx);
+    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qy_qy) = vec_cw_mult(u, nx) + 2.0 * vec_cw_mult(v, ny);
+
+    /* Add stabilization parameter terms */
+
+    SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
+    SWE::get_dtau_dze_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dze);
+    SWE::get_dtau_dqx_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dqx);
+    SWE::get_dtau_dqy_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dqy);
 
     StatVector<double, SWE::n_variables> del_q_in;
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq_in;
@@ -101,13 +160,16 @@ void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterf
         column(dtau_delq_ex, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q_ex;
         column(dtau_delq_ex, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q_ex;
 
+        column(boundary_ex.F_hat_at_gp, gp_ex)         = -column(boundary_in.F_hat_at_gp, gp);
+        column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex) = -column(boundary_in.dF_hat_dq_hat_at_gp, gp);
+
         column(boundary_in.F_hat_at_gp, gp) += edge_internal.tau[gp] * del_q_in;
-        column(boundary_in.dF_hat_dq_at_gp, gp) += flatten<double>(edge_internal.tau[gp]);
-        column(boundary_in.dF_hat_dq_hat_at_gp, gp) = flatten<double>(dtau_delq_in - edge_internal.tau[gp]);
+        column(boundary_in.dF_hat_dq_at_gp, gp) = flatten<double>(edge_internal.tau[gp]);
+        column(boundary_in.dF_hat_dq_hat_at_gp, gp) += flatten<double>(dtau_delq_in - edge_internal.tau[gp]);
 
         column(boundary_ex.F_hat_at_gp, gp_ex) += edge_internal.tau[gp] * del_q_ex;
-        column(boundary_ex.dF_hat_dq_at_gp, gp_ex) += flatten<double>(edge_internal.tau[gp]);
-        column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex) = flatten<double>(dtau_delq_ex - edge_internal.tau[gp]);
+        column(boundary_ex.dF_hat_dq_at_gp, gp_ex) = flatten<double>(edge_internal.tau[gp]);
+        column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex) += flatten<double>(dtau_delq_ex - edge_internal.tau[gp]);
     }
 
     double theta = stepper.GetTheta();

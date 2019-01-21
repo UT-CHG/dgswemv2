@@ -18,9 +18,7 @@ class Distributed {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    void ComputeInitTrace(EdgeDistributedType& edge_dbound,
-                          const HybMatrix<double, SWE::n_variables>& q_ex,
-                          const HybMatrix<double, SWE::n_variables>& Fn_ex);
+    void ComputeInitTrace(EdgeDistributedType& edge_dbound, const HybMatrix<double, SWE::n_variables>& q_ex);
 
     template <typename EdgeDistributedType>
     void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
@@ -32,9 +30,7 @@ template <typename DistributedBoundaryType>
 void Distributed::Initialize(DistributedBoundaryType& dbound) {}
 
 template <typename EdgeDistributedType>
-void Distributed::ComputeInitTrace(EdgeDistributedType& edge_dbound,
-                                   const HybMatrix<double, SWE::n_variables>& q_ex,
-                                   const HybMatrix<double, SWE::n_variables>& Fn_ex) {
+void Distributed::ComputeInitTrace(EdgeDistributedType& edge_dbound, const HybMatrix<double, SWE::n_variables>& q_ex) {
     auto& dbound = edge_dbound.boundary;
 
     auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -72,8 +68,7 @@ void Distributed::ComputeInitTrace(EdgeDistributedType& edge_dbound,
             column(dtau_delq, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q;
             column(dtau_delq, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q;
 
-            column(edge_internal.rhs_global_kernel_at_gp, gp) =
-                column(boundary.Fn_at_gp, gp) + column(Fn_ex, gp) + edge_internal.tau[gp] * del_q;
+            column(edge_internal.rhs_global_kernel_at_gp, gp) = edge_internal.tau[gp] * del_q;
 
             column(edge_internal.delta_hat_global_kernel_at_gp, gp) =
                 flatten<double>(dtau_delq - 2.0 * edge_internal.tau[gp]);

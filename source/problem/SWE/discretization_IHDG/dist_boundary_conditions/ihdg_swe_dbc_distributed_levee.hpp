@@ -31,9 +31,7 @@ class DistributedLevee {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    void ComputeInitTrace(EdgeDistributedType& edge_dbound,
-                          const HybMatrix<double, SWE::n_variables>& q_ex,
-                          const HybMatrix<double, SWE::n_variables>& Fn_ex);
+    void ComputeInitTrace(EdgeDistributedType& edge_dbound, const HybMatrix<double, SWE::n_variables>& q_ex);
 
     template <typename EdgeDistributedType>
     void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
@@ -63,8 +61,7 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 
 template <typename EdgeDistributedType>
 void DistributedLevee::ComputeInitTrace(EdgeDistributedType& edge_dbound,
-                                        const HybMatrix<double, SWE::n_variables>& q_ex,
-                                        const HybMatrix<double, SWE::n_variables>& Fn_ex) {
+                                        const HybMatrix<double, SWE::n_variables>& q_ex) {
     // Something to implement in the future
 }
 
