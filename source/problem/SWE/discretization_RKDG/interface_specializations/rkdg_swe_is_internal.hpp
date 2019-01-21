@@ -103,24 +103,26 @@ class Internal {
         size_t rows_ = rows(soa.data.q_in_at_gp[0]);
         size_t columns_ = columns(soa.data.q_in_at_gp[0]);
 
-        const DynMatrix<double>& ze_in = soa.data.q_in_at_gp[SWE::Variables::ze];
-        const DynMatrix<double>& qx_in = soa.data.q_in_at_gp[SWE::Variables::qx];
-        const DynMatrix<double>& qy_in = soa.data.q_in_at_gp[SWE::Variables::qy];
-        const DynMatrix<double>& ze_ex = soa.data.q_ex_at_gp[SWE::Variables::ze];
-        const DynMatrix<double>& qx_ex = soa.data.q_ex_at_gp[SWE::Variables::qx];
-        const DynMatrix<double>& qy_ex = soa.data.q_ex_at_gp[SWE::Variables::qy];
-        const DynMatrix<double>& bath  = soa.data.aux_at_gp[SWE::Auxiliaries::bath];
-        const DynMatrix<double>& sp    = soa.data.aux_at_gp[SWE::Auxiliaries::sp];
-        const DynMatrix<double>& nx    = soa.surface_normal[GlobalCoord::x];
-        const DynMatrix<double>& ny    = soa.surface_normal[GlobalCoord::y];
-        DynMatrix<double>& flux_ze     = soa.data.F_hat_at_gp[SWE::Variables::ze];
-        DynMatrix<double>& flux_qx     = soa.data.F_hat_at_gp[SWE::Variables::qx];
-        DynMatrix<double>& flux_qy     = soa.data.F_hat_at_gp[SWE::Variables::qy];
+	//Note that this is not optional. Converting to a row major matrix requires inverting the loops
+	constexpr auto SO = SO::ColumnMajor;
 
+        const DynMatrix<double, SO>& ze_in = soa.data.q_in_at_gp[SWE::Variables::ze];
+        const DynMatrix<double, SO>& qx_in = soa.data.q_in_at_gp[SWE::Variables::qx];
+        const DynMatrix<double, SO>& qy_in = soa.data.q_in_at_gp[SWE::Variables::qy];
+        const DynMatrix<double, SO>& ze_ex = soa.data.q_ex_at_gp[SWE::Variables::ze];
+        const DynMatrix<double, SO>& qx_ex = soa.data.q_ex_at_gp[SWE::Variables::qx];
+        const DynMatrix<double, SO>& qy_ex = soa.data.q_ex_at_gp[SWE::Variables::qy];
+        const DynMatrix<double, SO>& bath  = soa.data.aux_at_gp[SWE::Auxiliaries::bath];
+        const DynMatrix<double, SO>& sp    = soa.data.aux_at_gp[SWE::Auxiliaries::sp];
+        const DynMatrix<double, SO>& nx    = soa.surface_normal[GlobalCoord::x];
+        const DynMatrix<double, SO>& ny    = soa.surface_normal[GlobalCoord::y];
+        DynMatrix<double, SO>& flux_ze     = soa.data.F_hat_at_gp[SWE::Variables::ze];
+        DynMatrix<double, SO>& flux_qx     = soa.data.F_hat_at_gp[SWE::Variables::qx];
+        DynMatrix<double, SO>& flux_qy     = soa.data.F_hat_at_gp[SWE::Variables::qy];
 
-        for ( size_t i=0UL; i < rows_; ++i ) {
+        for ( size_t j=0UL; j < columns_; ++j ) {
 
-            for ( size_t j = 0UL; j < columns_; j+= SIMDSIZE) {
+            for ( size_t i = 0UL; i < rows_; i += SIMDSIZE) {
 
                 blaze::LLF_flux(g_vec,
                                 ze_in.load(i,j),
@@ -133,9 +135,9 @@ class Internal {
                                 sp.load(i,j),
                                 nx.load(i,j),
                                 ny.load(i,j),
-                                flux_ze.data(i) + j,
-                                flux_qx.data(i) + j,
-                                flux_qy.data(i) + j);
+                                flux_ze.data(j) + i,
+                                flux_qx.data(j) + i,
+                                flux_qy.data(j) + i);
             }
         }
     }

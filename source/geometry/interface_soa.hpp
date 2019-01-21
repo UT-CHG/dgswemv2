@@ -109,7 +109,7 @@ public:
 
     constexpr static uint dimension = AccessorType::dimension;
     InterfaceDataSoAType data;
-    StatVector<DynMatrix<double>,dimension+1> surface_normal;
+    StatVector<DynMatrix<double, SO::ColumnMajor>,dimension+1> surface_normal;
 
     InterfaceSoA() = default;
     InterfaceSoA(const uint p, ElementContainers& element_data_) : element_data(&element_data_) {
