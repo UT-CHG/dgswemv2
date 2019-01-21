@@ -38,6 +38,7 @@ void Distributed::Initialize(DistributedBoundaryType& dbound) {
 
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
+    auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
@@ -45,6 +46,8 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     auto& q_hat_at_gp    = edge_internal.q_hat_at_gp;
     auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
     auto& surface_normal = edge_dbound.boundary.surface_normal;
+
+    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
 
     SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
     SWE::get_dtau_dze_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dze);
