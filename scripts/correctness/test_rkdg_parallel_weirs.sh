@@ -7,6 +7,9 @@ else
 fi
 DGSWEMV2_TEST="${HOME}/dgswemv2_parallel_weirs_test"
 
+#exit the script if any command returns with non-zero status
+set -e
+
 echo "Running test to check that distributed weirs are correctly parallelized"
 echo "Compiling code (if necessary)..."
 cd $DGSWEMV2_ROOT_/build

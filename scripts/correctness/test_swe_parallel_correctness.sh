@@ -18,6 +18,9 @@ else
     PROBLEM="rkdg_swe"
 fi
 
+#exit the script if any command returns with non-zero status
+set -e
+
 source ${DGSWEMV2_ROOT_}/examples/swe_manufactured_solution/build.sh
 
 echo "Building mesh for manufactured solution..."
