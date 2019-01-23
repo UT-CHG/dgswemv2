@@ -10,7 +10,9 @@ void Problem::distributed_boundary_send_kernel(const ProblemStepperType& stepper
     auto& state    = dbound.data.state[stage];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    boundary.q_at_gp = dbound.ComputeUgp(state.q);
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+      boundary.q_at_gp[var] = dbound.ComputeUgp(state.q[var]);
+    }
 
     // Construct message to exterior state
     std::vector<double> message;
@@ -21,7 +23,7 @@ void Problem::distributed_boundary_send_kernel(const ProblemStepperType& stepper
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
         for (uint var = 0; var < SWE::n_variables; ++var) {
-            message.push_back(boundary.q_at_gp(var, gp));
+            message.push_back(boundary.q_at_gp[var][gp]);
         }
     }
 
@@ -51,7 +53,9 @@ void Problem::distributed_boundary_kernel(const ProblemStepperType& stepper, Dis
         dbound.boundary_condition.ComputeFlux(dbound);
 
         // now compute contributions to the righthand side
-        state.rhs -= dbound.IntegrationPhi(boundary.F_hat_at_gp);
+	for ( uint var = 0; var < SWE::n_variables; ++var) {
+	  state.rhs[var] -= dbound.IntegrationPhi(boundary.F_hat_at_gp[var]);
+	}
     }
 }
 }

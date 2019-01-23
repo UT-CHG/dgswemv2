@@ -1,6 +1,9 @@
 #ifndef SIMULATION_OMPI_HPP
 #define SIMULATION_OMPI_HPP
 
+#include <mpi.h>
+#include <omp.h>
+
 #include "general_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 #include "utilities/file_exists.hpp"
@@ -76,11 +79,6 @@ void OMPISimulation<ProblemType>::Run() {
                 this->sim_units[su_id]->writer.WriteFirstStep(this->sim_units[su_id]->stepper,
                                                               this->sim_units[su_id]->discretization.mesh);
             }
-
-            uint n_stages = this->sim_units[su_id]->stepper.GetNumStages();
-
-            this->sim_units[su_id]->discretization.mesh.CallForEachElement(
-                [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
         }
 
         for (uint step = 1; step <= this->n_steps; step++) {

@@ -64,7 +64,7 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::ComputeFlux(DistributedBoundaryType& dbound) {
-    std::vector<double> message;
+  /*    std::vector<double> message;
 
     message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
 
@@ -157,10 +157,9 @@ void DistributedLevee::ComputeFlux(DistributedBoundaryType& dbound) {
                  column(boundary.aux_at_gp, gp),
                  column(dbound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
-    }
+  */
 }
 }
 }
 }
-
 #endif

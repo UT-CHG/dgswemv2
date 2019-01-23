@@ -17,6 +17,9 @@ void create_distributed_boundaries(std::map<uchar, std::map<std::pair<uint, uint
     auto& raw_bound_distributed = raw_boundaries[distributed(SWE::BoundaryTypes::internal)];
     auto& raw_bound_distr_levee = raw_boundaries[distributed(SWE::BoundaryTypes::levee)];
 
+    mesh.template reserve_distributed_boundaries<DBTypeDistributed>(raw_bound_distributed.size());
+    mesh.template reserve_distributed_boundaries<DBTypeDistributedLevee>(raw_bound_distr_levee.size());
+
     uint n_distributed = 0;
     uint n_distr_levee = 0;
 

@@ -52,14 +52,14 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             sim_units[su_id]->writer.GetLogFile() << "Starting work before receive" << std::endl;
         }
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement(
-            [&sim_units, su_id](auto& elt) { Problem::volume_kernel(sim_units[su_id]->stepper, elt); });
+	VolumeKernel volume_kernel(sim_units[su_id]->stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement(volume_kernel);
 
         sim_units[su_id]->discretization.mesh.CallForEachElement(
             [&sim_units, su_id](auto& elt) { Problem::source_kernel(sim_units[su_id]->stepper, elt); });
 
-        sim_units[su_id]->discretization.mesh.CallForEachInterface(
-            [&sim_units, su_id](auto& intface) { Problem::interface_kernel(sim_units[su_id]->stepper, intface); });
+	InterfaceKernel interface_kernel(sim_units[su_id]->stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachInterface(interface_kernel);
 
         sim_units[su_id]->discretization.mesh.CallForEachBoundary(
             [&sim_units, su_id](auto& bound) { Problem::boundary_kernel(sim_units[su_id]->stepper, bound); });
@@ -87,13 +87,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             Problem::distributed_boundary_kernel(sim_units[su_id]->stepper, dbound);
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            auto& state = elt.data.state[sim_units[su_id]->stepper.GetStage()];
-
-            state.solution = elt.ApplyMinv(state.rhs);
-
-            sim_units[su_id]->stepper.UpdateState(elt);
-        });
+	UpdateKernel update_kernel(sim_units[su_id]->stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement(update_kernel);
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
             bool nan_found = SWE::scrutinize_solution(sim_units[su_id]->stepper, elt);

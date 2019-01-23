@@ -30,10 +30,10 @@ class Mesh<std::tuple<Elements...>,
            DataSoAType,
            InterfaceDataSoAType> {
   public:
-    using ElementContainers            = std::tuple<ElementContainer<Elements,DataSoAType>...>;
-    using InterfaceContainers          = std::tuple<InterfaceContainer<Interfaces,InterfaceDataSoAType,ElementContainers>...>;
-    using BoundaryContainers           = std::tuple<BoundaryContainer<Boundaries>...>;
-    using DistributedBoundaryContainer = Utilities::HeterogeneousVector<DistributedBoundaries...>;
+    using ElementContainers             = std::tuple<ElementContainer<Elements,DataSoAType>...>;
+    using InterfaceContainers           = std::tuple<InterfaceContainer<Interfaces,InterfaceDataSoAType,ElementContainers>...>;
+    using BoundaryContainers            = std::tuple<BoundaryContainer<Boundaries>...>;
+    using DistributedBoundaryContainers = std::tuple<BoundaryContainer<DistributedBoundaries>...>;
 
   private:
     uint p;
@@ -41,7 +41,7 @@ class Mesh<std::tuple<Elements...>,
     ElementContainers elements;
     InterfaceContainers interfaces;
     BoundaryContainers boundaries;
-    DistributedBoundaryContainer distributed_boundaries;
+    DistributedBoundaryContainers distributed_boundaries;
 
     std::string mesh_name;
 
@@ -82,7 +82,13 @@ class Mesh<std::tuple<Elements...>,
         return sz;
     }
 
-    uint GetNumberDistributedBoundaries() { return this->distributed_boundaries.size(); }
+    uint GetNumberDistributedBoundaries() {
+      size_t sz = 0U;
+      Utilities::for_each_in_tuple(distributed_boundaries, [&sz](auto& distr_bdry_container) {
+	  sz += distr_bdry_container.size();
+	});
+      return sz;
+    }
 
     void reserve(uint nstages, const std::array<uint,sizeof...(Elements)>& n_elements) {
         uint max_edge_gp = 0u;
@@ -121,6 +127,15 @@ class Mesh<std::tuple<Elements...>,
 
         bdry_container.reserve(n_boundaries);
     }
+
+  template <typename DBType>
+  void reserve_distributed_boundaries(size_t n_distributed_boundaries) {
+    using DistributedBoundaryContainerType = BoundaryContainer<DBType>;
+    auto& dbdry_container =
+      std::get<Utilities::index<DistributedBoundaryContainerType, DistributedBoundaryContainers>::value>(this->distributed_boundaries);
+
+    dbdry_container.reserve(n_distributed_boundaries);
+  }
 
     void finalize_initialization() {
         Utilities::for_each_in_tuple(elements, [](auto& element_container) {
@@ -224,7 +239,11 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<DistributedBoundaries...>,
           DataSoAType,
           InterfaceDataSoAType>::CreateDistributedBoundary(Args&&... args) {
-    this->distributed_boundaries.template emplace_back<DistributedBoundaryType>(std::forward<Args>(args)...);
+    using DistributedBoundaryContainerType = BoundaryContainer<DistributedBoundaryType>;
+
+    DistributedBoundaryContainerType& distr_bdry_container =
+      std::get<Utilities::index<DistributedBoundaryContainerType, DistributedBoundaryContainers>::value>(distributed_boundaries);
+    distr_bdry_container.CreateBoundary(std::forward<Args>(args)...);
 }
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries, typename DataSoAType, typename InterfaceDataSoAType>
@@ -278,8 +297,8 @@ void Mesh<std::tuple<Elements...>,
           std::tuple<DistributedBoundaries...>,
           DataSoAType,
           InterfaceDataSoAType>::CallForEachDistributedBoundary(const F& f) {
-    Utilities::for_each_in_tuple(this->distributed_boundaries.data, [&f](auto& distributed_boundaries_vector) {
-        std::for_each(distributed_boundaries_vector.begin(), distributed_boundaries_vector.end(), f);
+    Utilities::for_each_in_tuple(this->distributed_boundaries, [&f](auto& distributed_boundary_container) {
+	distributed_boundary_container.CallForEachBoundary(f, Utilities::is_vectorized<F>{});
     });
 }
 
@@ -336,10 +355,10 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           InterfaceDataSoAType>::CallForEachDistributedBoundaryOfType(const F& f) {
     auto& dbound_container =
-        std::get<Utilities::index<DistributedBoundaryType, typename DistributedBoundaryContainer::TupleType>::value>(
-            this->distributed_boundaries.data);
+        std::get<Utilities::index<DistributedBoundaryType, DistributedBoundaryContainers>::value>(
+            this->distributed_boundaries);
 
-    std::for_each(dbound_container.begin(), dbound_container.end(), f);
+    dbound_container.CallForEachBoundry(f, Utilities::is_vectorized<F>{});
 }
 }
 

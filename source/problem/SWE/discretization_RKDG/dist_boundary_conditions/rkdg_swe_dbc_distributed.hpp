@@ -8,7 +8,7 @@ namespace RKDG {
 namespace DBC {
 class Distributed {
   private:
-    HybMatrix<double, SWE::n_variables> q_ex;
+    std::array<DynRowVector<double>, SWE::n_variables> q_ex;
 
     BC::Land land_boundary;
 
@@ -31,7 +31,7 @@ Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger
 template <typename DistributedBoundaryType>
 void Distributed::Initialize(DistributedBoundaryType& dbound) {
     uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-    this->q_ex.resize(SWE::n_variables, ngp);
+    this->q_ex.fill(DynRowVector<double>(ngp));
 
     this->land_boundary.Initialize(1);
 }
@@ -51,7 +51,7 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
         gp_ex = dbound.data.get_ngp_boundary(dbound.bound_id) - gp - 1;
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
-            this->q_ex(var, gp_ex) = message[1 + SWE::n_variables * gp + var];
+            this->q_ex[var][gp_ex] = message[1 + SWE::n_variables * gp + var];
         }
     }
 
@@ -60,14 +60,28 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
     for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        LLF_flux(Global::g,
-                 column(boundary.q_at_gp, gp),
-                 column(this->q_ex, gp),
-                 column(boundary.aux_at_gp, gp),
-                 column(dbound.surface_normal, gp),
-                 column(boundary.F_hat_at_gp, gp));
+        std::array<double, SWE::n_variables> F_hat_tmp;
 
-        if (boundary.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
+        LLF_flux(Global::g,
+                 boundary.q_at_gp[SWE::Variables::ze][gp],
+                 boundary.q_at_gp[SWE::Variables::qx][gp],
+                 boundary.q_at_gp[SWE::Variables::qy][gp],
+                 this->q_ex[SWE::Variables::ze][gp],
+                 this->q_ex[SWE::Variables::qx][gp],
+                 this->q_ex[SWE::Variables::qy][gp],
+                 std::array<double,SWE::n_auxiliaries>{boundary.aux_at_gp[SWE::Auxiliaries::bath][gp],
+                         boundary.aux_at_gp[SWE::Auxiliaries::h][gp],
+                         boundary.aux_at_gp[SWE::Auxiliaries::sp][gp]},
+                 std::array<double,SWE::n_dimensions>{dbound.surface_normal[GlobalCoord::x][gp],
+		     dbound.surface_normal[GlobalCoord::y][gp]},
+                 F_hat_tmp
+            );
+
+	for ( uint i = 0; i < SWE::n_variables; ++i ) {
+            boundary.F_hat_at_gp[i][gp] = F_hat_tmp[i];
+        }
+
+        /*if (boundary.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
                 // Zero flux on IN element side
                 set_constant(column(boundary.F_hat_at_gp, gp), 0.0);
@@ -92,9 +106,9 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
                 // Only remove gravity contributions for the momentum fluxes
                 boundary.F_hat_at_gp(Variables::ze, gp) = temp_flux_ze;
             }
-        }
+	    }
 
-        assert(!std::isnan(boundary.F_hat_at_gp(Variables::ze, gp)));
+	    assert(!std::isnan(boundary.F_hat_at_gp(Variables::ze, gp)));*/
     }
 }
 }
