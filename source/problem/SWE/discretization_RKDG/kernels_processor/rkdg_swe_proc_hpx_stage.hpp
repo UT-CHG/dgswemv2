@@ -29,14 +29,14 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             sim_unit->writer.GetLogFile() << "Starting work before receive" << std::endl;
         }
 
-        sim_unit->discretization.mesh.CallForEachElement(
-            [sim_unit](auto& elt) { Problem::volume_kernel(sim_unit->stepper, elt); });
+	VolumeKernel volume_kernel(sim_unit->stepper);
+        sim_unit->discretization.mesh.CallForEachElement(volume_kernel);
 
         sim_unit->discretization.mesh.CallForEachElement(
             [sim_unit](auto& elt) { Problem::source_kernel(sim_unit->stepper, elt); });
 
-        sim_unit->discretization.mesh.CallForEachInterface(
-            [sim_unit](auto& intface) { Problem::interface_kernel(sim_unit->stepper, intface); });
+	InterfaceKernel interface_kernel(sim_unit->stepper);
+        sim_unit->discretization.mesh.CallForEachInterface(interface_kernel);
 
         sim_unit->discretization.mesh.CallForEachBoundary(
             [sim_unit](auto& bound) { Problem::boundary_kernel(sim_unit->stepper, bound); });
@@ -57,13 +57,8 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             sim_unit->discretization.mesh.CallForEachDistributedBoundary(
                 [sim_unit](auto& dbound) { Problem::distributed_boundary_kernel(sim_unit->stepper, dbound); });
 
-            sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
-                auto& state = elt.data.state[sim_unit->stepper.GetStage()];
-
-                state.solution = elt.ApplyMinv(state.rhs);
-
-                sim_unit->stepper.UpdateState(elt);
-            });
+	    UpdateKernel update_kernel(sim_unit->stepper);
+            sim_unit->discretization.mesh.CallForEachElement(update_kernel);
 
             sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
                 bool nan_found = SWE::scrutinize_solution(sim_unit->stepper, elt);

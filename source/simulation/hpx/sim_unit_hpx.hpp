@@ -93,7 +93,7 @@ HPXSimulationUnit<ProblemType>::HPXSimulationUnit(const std::string& input_strin
                                   << std::endl;
     }
 
-    this->discretization.initialize(input, this->communicator, this->writer);
+    this->discretization.initialize(input, this->communicator, this->writer, this->stepper);
 }
 
 template <typename ProblemType>

@@ -54,7 +54,7 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
                                   << std::endl;
     }
 
-    this->discretization.initialize(input, this->communicator, this->writer);
+    this->discretization.initialize(input, this->communicator, this->writer, this->stepper);
 
     this->communicator.InitializeCommunication();
 }

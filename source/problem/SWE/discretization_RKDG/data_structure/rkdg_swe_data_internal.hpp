@@ -55,6 +55,7 @@ struct InternalData {
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
+      /*
         // clang-format off
         ar  & q_at_gp
             & aux_at_gp
@@ -66,6 +67,7 @@ struct InternalData {
             & dp_atm_at_gp
             & dtide_pot_at_gp;
         // clang-format on
+	*/
     }
 #endif
 };

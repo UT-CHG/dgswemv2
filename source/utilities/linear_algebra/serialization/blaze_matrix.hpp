@@ -38,6 +38,8 @@
 #ifndef SERIALIZATION_BLAZE_MATRIX_HPP
 #define SERIALIZATION_BLAZE_MATRIX_HPP
 
+#include <hpx/include/serialization.hpp>
+
 #include <blaze/math/serialization/MatrixSerializer.h>
 
 namespace hpx {

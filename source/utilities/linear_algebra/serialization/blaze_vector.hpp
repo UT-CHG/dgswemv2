@@ -38,6 +38,8 @@
 #ifndef SERIALIZATION_BLAZE_VECTOR_HPP
 #define SERIALIZATION_BLAZE_VECTOR_HPP
 
+#include <hpx/include/serialization.hpp>
+
 #include <blaze/math/serialization/VectorSerializer.h>
 
 namespace hpx {
