@@ -22,7 +22,8 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
         edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) +
+            row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
         /* Compute fluxes at boundary states */
 
@@ -92,7 +93,7 @@ void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterf
     edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute fluxes at boundary states */
 

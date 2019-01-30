@@ -34,7 +34,7 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
     edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
     SWE::get_dtau_dze_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dze);
@@ -75,7 +75,7 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
     edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute trace flux for in side */
 

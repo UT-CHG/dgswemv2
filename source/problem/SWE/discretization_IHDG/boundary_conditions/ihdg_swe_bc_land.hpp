@@ -40,7 +40,8 @@ void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) +
+            row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
         double qn;
         double nx, ny;
