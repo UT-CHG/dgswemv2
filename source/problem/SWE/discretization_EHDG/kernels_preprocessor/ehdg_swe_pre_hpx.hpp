@@ -7,7 +7,7 @@ namespace SWE {
 namespace EHDG {
 template <typename HPXSimUnitType>
 auto Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
-    Problem::initialize_data_parallel_pre_send(
+    initialize_data_parallel_pre_send(
         sim_unit->discretization.mesh, sim_unit->problem_input, CommTypes::baryctr_coord);
 
     hpx::future<void> future =
@@ -16,7 +16,7 @@ auto Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
     sim_unit->communicator.SendAll(CommTypes::baryctr_coord, sim_unit->stepper.GetTimestamp());
 
     future = future.then([sim_unit](auto&&) {
-        Problem::initialize_data_parallel_post_receive(sim_unit->discretization.mesh, CommTypes::baryctr_coord);
+        initialize_data_parallel_post_receive(sim_unit->discretization.mesh, CommTypes::baryctr_coord);
 
         Problem::initialize_global_problem_parallel_pre_send(sim_unit->discretization);
 
