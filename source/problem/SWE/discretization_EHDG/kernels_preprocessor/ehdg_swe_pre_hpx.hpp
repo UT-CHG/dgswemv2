@@ -7,18 +7,26 @@ namespace SWE {
 namespace EHDG {
 template <typename HPXSimUnitType>
 auto Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
-    initialize_data_parallel_pre_send(sim_unit->discretization.mesh, sim_unit->problem_input, CommTypes::baryctr_coord);
+    Problem::initialize_data_parallel_pre_send(
+        sim_unit->discretization.mesh, sim_unit->problem_input, CommTypes::baryctr_coord);
 
-    hpx::future<void> receive_future =
+    hpx::future<void> future =
         sim_unit->communicator.ReceiveAll(CommTypes::baryctr_coord, sim_unit->stepper.GetTimestamp());
 
     sim_unit->communicator.SendAll(CommTypes::baryctr_coord, sim_unit->stepper.GetTimestamp());
 
-    return receive_future.then([sim_unit](auto&&) {
-        initialize_data_parallel_post_receive(sim_unit->discretization.mesh, CommTypes::baryctr_coord);
+    future = future.then([sim_unit](auto&&) {
+        Problem::initialize_data_parallel_post_receive(sim_unit->discretization.mesh, CommTypes::baryctr_coord);
 
-        Problem::initialize_global_problem(sim_unit->discretization);
+        Problem::initialize_global_problem_parallel_pre_send(sim_unit->discretization);
+
+        sim_unit->communicator.SendAll(CommTypes::init_global_prob, sim_unit->stepper.GetTimestamp());
+
+        return sim_unit->communicator.ReceiveAll(CommTypes::init_global_prob, sim_unit->stepper.GetTimestamp());
     });
+
+    return future.then(
+        [sim_unit](auto&&) { Problem::initialize_global_problem_parallel_post_receive(sim_unit->discretization); });
 }
 }
 }
