@@ -74,8 +74,8 @@ enum CommTypes : uchar { baryctr_coord = 0, bound_state = 1, baryctr_state = 2 }
 }
 
 namespace EHDG {
-constexpr uint n_communications = 3;
-enum CommTypes : uchar { baryctr_coord = 0, bound_state = 1, baryctr_state = 2 };
+constexpr uint n_communications = 4;
+enum CommTypes : uchar { baryctr_coord = 0, init_global_prob = 1, bound_state = 2, baryctr_state = 3 };
 }
 
 namespace IHDG {

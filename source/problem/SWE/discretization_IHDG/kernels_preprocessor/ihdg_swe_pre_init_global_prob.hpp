@@ -90,9 +90,8 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
     });
 }
 
-template <typename ProblemType, typename Communicator>
+template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
-                                                          Communicator& communicator,
                                                           uint& global_dof_offset) {
     Problem::initialize_global_problem_serial(discretization, global_dof_offset);
 
@@ -214,9 +213,8 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
     });
 }
 
-template <typename ProblemType, typename Communicator>
+template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization,
-                                                              Communicator& communicator,
                                                               std::vector<uint>& global_dof_indx) {
     discretization.mesh_skeleton.CallForEachEdgeInterface([&global_dof_indx](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;

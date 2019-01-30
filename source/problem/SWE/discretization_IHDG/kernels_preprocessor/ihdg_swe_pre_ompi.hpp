@@ -43,8 +43,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             uint global_dof_offset = 0;
 
-            Problem::initialize_global_problem_parallel_pre_send(
-                sim_units[su_id]->discretization, sim_units[su_id]->communicator, global_dof_offset);
+            Problem::initialize_global_problem_parallel_pre_send(sim_units[su_id]->discretization, global_dof_offset);
 
             global_dof_offsets.push_back(global_dof_offset);
         }
@@ -142,8 +141,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             sim_units[su_id]->communicator.WaitAllReceives(CommTypes::init_global_prob,
                                                            sim_units[su_id]->stepper.GetTimestamp());
 
-            Problem::initialize_global_problem_parallel_post_receive(
-                sim_units[su_id]->discretization, sim_units[su_id]->communicator, global_dof_indx);
+            Problem::initialize_global_problem_parallel_post_receive(sim_units[su_id]->discretization, global_dof_indx);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {

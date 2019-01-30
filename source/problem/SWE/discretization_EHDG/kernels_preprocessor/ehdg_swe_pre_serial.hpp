@@ -10,7 +10,7 @@ void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization
                                   const ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
 
-    Problem::initialize_global_problem(discretization);
+    Problem::initialize_global_problem_serial(discretization);
 }
 }
 }

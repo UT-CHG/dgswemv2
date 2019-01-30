@@ -13,11 +13,13 @@ namespace EHDG {
 std::vector<uint> Problem::comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
     std::vector<uint> offset(SWE::EHDG::n_communications);
 
-    offset[CommTypes::baryctr_coord] = begin_index[CommTypes::baryctr_coord];
-    offset[CommTypes::bound_state]   = begin_index[CommTypes::bound_state];
-    offset[CommTypes::baryctr_state] = begin_index[CommTypes::baryctr_state];
+    offset[CommTypes::baryctr_coord]    = begin_index[CommTypes::baryctr_coord];
+    offset[CommTypes::init_global_prob] = begin_index[CommTypes::init_global_prob];
+    offset[CommTypes::bound_state]      = begin_index[CommTypes::bound_state];
+    offset[CommTypes::baryctr_state]    = begin_index[CommTypes::baryctr_state];
 
     begin_index[CommTypes::baryctr_coord] += 2;
+    begin_index[CommTypes::init_global_prob] += ngp;  // bath_at_gp
     begin_index[CommTypes::bound_state] += SWE::n_variables * ngp;
     begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;  // + w/d state
 

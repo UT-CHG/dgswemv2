@@ -128,18 +128,16 @@ struct Problem {
     static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
                                                  uint& global_dof_offset);
 
-    template <typename ProblemType, typename Communicator>
+    template <typename ProblemType>
     static void initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
-                                                            Communicator& communicator,
                                                             uint& global_dof_offset);
 
     template <typename ProblemType>
     static void initialize_global_problem_parallel_finalize_pre_send(HDGDiscretization<ProblemType>& discretization,
                                                                      uint global_dof_offset);
 
-    template <typename ProblemType, typename Communicator>
+    template <typename ProblemType>
     static void initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization,
-                                                                Communicator& communicator,
                                                                 std::vector<uint>& global_dof_indx);
 
     // processor kernels

@@ -128,7 +128,13 @@ struct Problem {
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
     template <typename ProblemType>
-    static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
+    static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization);
+
+    template <typename ProblemType>
+    static void initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization);
+
+    template <typename ProblemType>
+    static void initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization);
 
     // processor kernels
     template <typename SerialSimType>
