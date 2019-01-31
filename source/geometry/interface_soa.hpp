@@ -74,7 +74,7 @@ struct InterfaceSoAHelper {
             gather_ex[side].resize(nelements, ninterfaces);
             gather_ex[side].reserve(nelements);
 
-            abs_J[side] = DiagonalMatrix<double>(nelements);
+            abs_J[side] = DiagonalMatrix<double>(nelements,nelements);
             for ( uint i = 0; i < nelements; ++i ) {
                 abs_J[side](i,i) = 0.;
             }

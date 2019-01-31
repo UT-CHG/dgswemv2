@@ -60,7 +60,7 @@ template <typename T>
 using IdentityMatrix = blaze::IdentityMatrix<T>;
 
 template <typename T, bool SO = blaze::rowMajor>
-using DiagonalMatrix = blaze::DiagonalMatrix<blaze::DynamicMatrix<T, SO>>;
+using DiagonalMatrix = blaze::DiagonalMatrix<blaze::CompressedMatrix<T, SO>>;
 
 template <typename BlazeType>
 using AlignedAllocator = blaze::AlignedAllocator<BlazeType>;

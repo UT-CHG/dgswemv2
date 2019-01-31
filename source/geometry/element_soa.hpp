@@ -28,9 +28,9 @@ public:
     void reserve(uint nstages , uint nelements, uint ngp_edge) {
         std::cout << "Reserving " << nelements << " in element_soa.hpp\n";
         this->data = ProblemSoA(master->ndof, master->ngp, ngp_edge, nstages, nelements, master->nbound);
-        this->abs_J = DiagonalMatrix<double>(nelements);
-        this->inv_abs_J = DiagonalMatrix<double>(nelements);
-        this->J_inv = DiagonalMatrix<double, SO::ColumnMajor>(nelements);
+        this->abs_J = DiagonalMatrix<double>(nelements,nelements);
+        this->inv_abs_J = DiagonalMatrix<double>(nelements,nelements);
+        this->J_inv = DiagonalMatrix<double, SO::ColumnMajor>(nelements,nelements);
     }
 
     template <typename... Args>
