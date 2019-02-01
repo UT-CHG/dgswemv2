@@ -231,7 +231,9 @@ struct Problem {
     template <typename SimType>
     static void finalize_simulation(SimType* sim) {
 #ifdef HAS_PETSC
-        sim->sim_units[0]->discretization.global_data.destroy();
+        // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
+        // This is of course not always true   
+        if (!sim->sim_units.empty()) sim->sim_units[0]->discretization.global_data.destroy();
 #endif
     }
 };

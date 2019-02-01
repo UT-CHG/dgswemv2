@@ -9,6 +9,8 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimType>
 void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
+    // This is of course not always true   
     for (uint stage = 0; stage < sim->sim_units[0]->stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim->sim_units[su_id]->parser.ParsingInput()) {
@@ -20,6 +22,8 @@ void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
         SWE_SIM::Problem::stage_ompi(sim->sim_units, begin_sim_id, end_sim_id);
     }
 
+    // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
+    // This is of course not always true   
     for (uint stage = 0; stage < sim->sim_units[0]->stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim->sim_units[su_id]->parser.ParsingInput()) {
@@ -31,6 +35,8 @@ void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
         Problem::dispersive_correction_ompi(sim->sim_units, begin_sim_id, end_sim_id);
     }
 
+    // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
+    // This is of course not always true   
     for (uint stage = 0; stage < sim->sim_units[0]->stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim->sim_units[su_id]->parser.ParsingInput()) {
