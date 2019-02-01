@@ -145,8 +145,8 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
         });
     }
 
-    // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
-    // This is of course not always true   
+    // Here one assumes that there is at lease one sim unit present
+    // This is of course not always true
     auto& global_data = sim_units[0]->discretization.global_data;
 
     Mat& w1_hat_w1_hat = global_data.w1_hat_w1_hat;

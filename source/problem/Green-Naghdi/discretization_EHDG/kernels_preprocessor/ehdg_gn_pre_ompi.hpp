@@ -14,8 +14,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 #pragma omp barrier
 #pragma omp master
     {
-        // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
-        // This is of course not always true   
+        // Here one assumes that there is at lease one sim unit present
+        // This is of course not always true
         auto& global_data = sim_units[0]->discretization.global_data;
 
         std::vector<uint> dc_global_dof_offsets;

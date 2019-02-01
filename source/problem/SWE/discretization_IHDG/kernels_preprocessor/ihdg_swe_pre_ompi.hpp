@@ -32,8 +32,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 #pragma omp barrier
 #pragma omp master
     {
-        // Here one assumes that there is at lease one sim unit present                                                                                                                                                                      
-        // This is of course not always true   
+        // Here one assumes that there is at lease one sim unit present
+        // This is of course not always true
         auto& global_data = sim_units[0]->discretization.global_data;
 
         std::vector<uint> global_dof_offsets;
@@ -96,7 +96,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-    	MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
+        MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
         MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
         MatSetUp(global_data.delta_hat_global);
 

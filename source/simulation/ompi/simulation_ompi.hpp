@@ -53,7 +53,7 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
-    if ( this->sim_units.size() ==0 ) {
+    if (this->sim_units.empty()) {
         int locality_id;
         MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 

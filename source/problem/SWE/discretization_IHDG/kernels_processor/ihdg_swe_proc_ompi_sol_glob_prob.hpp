@@ -124,8 +124,8 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
         });
     }
 
-    // Here one assumes that there is at lease one sim unit present                                                                                                                                                                          
-    // This is of course not always true   
+    // Here one assumes that there is at lease one sim unit present
+    // This is of course not always true
     auto& global_data = sim_units[0]->discretization.global_data;
 
     Mat& delta_hat_global = global_data.delta_hat_global;
