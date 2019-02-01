@@ -1,6 +1,8 @@
 #ifndef SIMULATION_OMPI_HPP
 #define SIMULATION_OMPI_HPP
 
+#include <omp.h>
+
 #include "general_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 #include "utilities/file_exists.hpp"
@@ -51,6 +53,16 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
+    if ( this->sim_units.size() ==0 ) {
+        int locality_id;
+        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+
+        std::cerr << "Warning: MPI Rank " << locality_id << " has not been assigned any work. This may inidicate\n"
+                  << "         poor partitioning and imply degraded performance." << std::endl;
+
+        return;
+    }
+
 #pragma omp parallel
     {
         uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
