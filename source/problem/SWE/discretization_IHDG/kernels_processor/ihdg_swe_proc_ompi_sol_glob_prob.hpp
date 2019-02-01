@@ -124,7 +124,7 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
         });
     }
 
-    auto& global_data = sim_units[0]->discretization.global_data;
+    /*auto& global_data = sim_units[0]->discretization.global_data;
 
     Mat& delta_hat_global = global_data.delta_hat_global;
     Vec& rhs_global       = global_data.rhs_global;
@@ -392,7 +392,9 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
         });
     }
 
-    return global_data.converged;
+    return global_data.converged;*/
+
+    return true;
 }
 }
 }

@@ -32,7 +32,9 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 #pragma omp barrier
 #pragma omp master
     {
-        auto& global_data = sim_units[0]->discretization.global_data;
+        // Here one assumes that there is at lease one sim unit present                                                                                                                                                                      
+        // This is of course not always true   
+        //auto& global_data = sim_units[0]->discretization.global_data;
 
         std::vector<uint> global_dof_offsets;
 
@@ -47,9 +49,9 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         uint total_global_dof_offset = std::accumulate(global_dof_offsets.begin(), global_dof_offsets.end(), 0);
 
         // exclusive scan
-        std::rotate(global_dof_offsets.begin(), global_dof_offsets.end() - 1, global_dof_offsets.end());
+        // std::rotate(global_dof_offsets.begin(), global_dof_offsets.end() - 1, global_dof_offsets.end());
 
-        global_dof_offsets.front() = 0;
+        // global_dof_offsets.front() = 0;
 
         for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
             global_dof_offsets[su_id] += global_dof_offsets[su_id - 1];
@@ -94,7 +96,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-        MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
+        /*
+	MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
         MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
         MatSetUp(global_data.delta_hat_global);
 
@@ -105,6 +108,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         KSPGetPC(global_data.ksp, &(global_data.pc));
         PCSetType(global_data.pc, PCLU);
+	*/
 
         MPI_Scatter(&total_global_dof_offsets.front(),
                     1,
@@ -141,6 +145,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                                                         sim_units[su_id]->stepper.GetTimestamp());
         }
 
+	/*
         VecCreateSeq(MPI_COMM_SELF, global_dof_indx.size(), &(global_data.sol));
 
         ISCreateGeneral(MPI_COMM_SELF,
@@ -152,6 +157,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         VecScatterCreate(
             global_data.rhs_global, global_data.from, global_data.sol, global_data.to, &(global_data.scatter));
+	*/
     }
 #pragma omp barrier
 }
