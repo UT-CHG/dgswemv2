@@ -57,22 +57,16 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 
     if (this->sim_units.empty()) {
         // Split into comm world that has partitions to work on
-        int locality_id;
-        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
-
         MPI_Comm_split(MPI_COMM_WORLD, 0, locality_id, &(this->global_comm));
+
+        std::cerr << "Warning: MPI Rank " << locality_id << " has not been assigned any work. This may inidicate\n"
+                  << "         poor partitioning and imply degraded performance." << std::endl;
     }
 }
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
     if (this->sim_units.empty()) {
-        int locality_id;
-        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
-
-        std::cerr << "Warning: MPI Rank " << locality_id << " has not been assigned any work. This may inidicate\n"
-                  << "         poor partitioning and imply degraded performance." << std::endl;
-
         return;
     }
 
@@ -116,11 +110,14 @@ void OMPISimulation<ProblemType>::Run() {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::ComputeL2Residual() {
+    if (this->sim_units.empty()) {
+        return;
+    }
+
     int locality_id;
-    MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+    MPI_Comm_rank(this->global_comm, &locality_id);
 
     double global_l2{0};
-
     double residual_l2{0};
 
     for (auto& sim_unit : this->sim_units) {
@@ -129,7 +126,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
         });
     }
 
-    MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, this->global_comm);
 
     if (locality_id == 0) {
         std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(global_l2) << std::endl;
@@ -138,6 +135,10 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Finalize() {
+    if (this->sim_units.empty()) {
+        return;
+    }
+
     ProblemType::finalize_simulation(this);
 }
 

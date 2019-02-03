@@ -255,8 +255,7 @@ struct Problem {
 #ifdef HAS_PETSC
         // Here one assumes that there is at lease one sim unit present
         // This is of course not always true
-        if (!sim->sim_units.empty())
-            sim->sim_units[0]->discretization.global_data.destroy();
+        sim->sim_units[0]->discretization.global_data.destroy();
 #endif
     }
 };
