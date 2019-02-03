@@ -58,6 +58,9 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
     if (this->sim_units.empty()) {
         std::cerr << "Warning: MPI Rank " << locality_id << " has not been assigned any work. This may inidicate\n"
                   << "         poor partitioning and imply degraded performance." << std::endl;
+
+        // Split into comm world that has partitions to work on
+        MPI_Comm_split(MPI_COMM_WORLD, MPI_UNDEFINED, locality_id, &(this->global_comm));
     } else {
         // Split into comm world that has partitions to work on
         MPI_Comm_split(MPI_COMM_WORLD, 0, locality_id, &(this->global_comm));
