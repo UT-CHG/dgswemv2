@@ -57,11 +57,18 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             global_dof_offsets[su_id] += global_dof_offsets[su_id - 1];
         }
 
+        int global_id;
+        MPI_Comm_rank(MPI_COMM_WORLD, &global_id);
+
+        MPI_Comm igp_comm;
+
+        MPI_Comm_split(MPI_COMM_WORLD, 0, global_id, &igp_comm);
+
         int n_localities;
         int locality_id;
 
-        MPI_Comm_size(MPI_COMM_WORLD, &n_localities);
-        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+        MPI_Comm_size(igp_comm, &n_localities);
+        MPI_Comm_rank(igp_comm, &locality_id);
 
         std::vector<uint> total_global_dof_offsets;
 
@@ -76,7 +83,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                    1,
                    MPI_UNSIGNED,
                    0,
-                   MPI_COMM_WORLD);
+                   igp_comm);
 
         uint n_global_dofs;
 
@@ -94,7 +101,16 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             }
         }
 
-        MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, igp_comm);
+
+        MPI_Scatter(&total_global_dof_offsets.front(),
+                    1,
+                    MPI_UNSIGNED,
+                    &total_global_dof_offset,
+                    1,
+                    MPI_UNSIGNED,
+                    0,
+                    igp_comm);
 
         MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
         MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
@@ -107,15 +123,6 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         KSPGetPC(global_data.ksp, &(global_data.pc));
         PCSetType(global_data.pc, PCLU);
-
-        MPI_Scatter(&total_global_dof_offsets.front(),
-                    1,
-                    MPI_UNSIGNED,
-                    &total_global_dof_offset,
-                    1,
-                    MPI_UNSIGNED,
-                    0,
-                    MPI_COMM_WORLD);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             sim_units[su_id]->communicator.ReceiveAll(CommTypes::init_global_prob,
