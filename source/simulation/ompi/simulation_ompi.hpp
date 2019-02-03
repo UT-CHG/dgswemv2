@@ -10,10 +10,15 @@
 
 template <typename ProblemType>
 class OMPISimulation : public OMPISimulationBase {
-  private:
-    uint n_steps;
+    /* Need to find a way to make this private */
+    /* Cannot make it private for GC problem */
+  public:
+    MPI_Comm global_comm;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> sim_units;
+
+  private:
+    uint n_steps;
 
   public:
     OMPISimulation() = default;
@@ -49,6 +54,14 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 
         ++submesh_id;
     }
+
+    if (this->sim_units.empty()) {
+        // Split into comm world that has partitions to work on
+        int locality_id;
+        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+
+        MPI_Comm_split(MPI_COMM_WORLD, 0, locality_id, &(this->global_comm));
+    }
 }
 
 template <typename ProblemType>
@@ -75,7 +88,7 @@ void OMPISimulation<ProblemType>::Run() {
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        ProblemType::preprocessor_ompi(this->sim_units, begin_sim_id, end_sim_id);
+        ProblemType::preprocessor_ompi(this, begin_sim_id, end_sim_id);
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (this->sim_units[su_id]->writer.WritingLog()) {

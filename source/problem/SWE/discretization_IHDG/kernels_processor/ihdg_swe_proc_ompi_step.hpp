@@ -9,29 +9,30 @@ namespace SWE {
 namespace IHDG {
 template <typename OMPISimType>
 void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    auto& sim_units = sim->sim_units;
     // Here one assumes that there is at lease one sim unit present
     // This is of course not always true
-    for (uint stage = 0; stage < sim->sim_units[0]->stepper.GetNumStages(); ++stage) {
+    for (uint stage = 0; stage < sim_units[0]->stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-            if (sim->sim_units[su_id]->parser.ParsingInput()) {
-                sim->sim_units[su_id]->parser.ParseInput(sim->sim_units[su_id]->stepper,
-                                                         sim->sim_units[su_id]->discretization.mesh);
+            if (sim_units[su_id]->parser.ParsingInput()) {
+                sim_units[su_id]->parser.ParseInput(sim_units[su_id]->stepper, sim_units[su_id]->discretization.mesh);
             }
         }
 
-        Problem::stage_ompi(sim->sim_units, begin_sim_id, end_sim_id);
+        Problem::stage_ompi(sim, begin_sim_id, end_sim_id);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        if (sim->sim_units[su_id]->writer.WritingOutput()) {
-            sim->sim_units[su_id]->writer.WriteOutput(sim->sim_units[su_id]->stepper,
-                                                      sim->sim_units[su_id]->discretization.mesh);
+        if (sim_units[su_id]->writer.WritingOutput()) {
+            sim_units[su_id]->writer.WriteOutput(sim_units[su_id]->stepper, sim_units[su_id]->discretization.mesh);
         }
     }
 }
 
-template <typename OMPISimUnitType>
-void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, uint begin_sim_id, uint end_sim_id) {
+template <typename OMPISimType>
+void Problem::stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    auto& sim_units = sim->sim_units;
+
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         Problem::init_iteration(sim_units[su_id]->stepper, sim_units[su_id]->discretization);
     }
@@ -93,7 +94,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
             /* Global Step */
         }
 
-        bool converged = ompi_solve_global_problem(sim_units, begin_sim_id, end_sim_id);
+        bool converged = ompi_solve_global_problem(sim, begin_sim_id, end_sim_id);
 
         if (converged) {
             break;
