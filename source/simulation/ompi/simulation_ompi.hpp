@@ -18,6 +18,8 @@ class OMPISimulation : public OMPISimulationBase {
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> sim_units;
     typename ProblemType::ProblemGlobalDataType global_data;
 
+    typename ProblemType::ProblemStepperType stepper;
+
   private:
     uint n_steps;
 
@@ -41,6 +43,8 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
     InputParameters<typename ProblemType::ProblemInputType> input(input_string);
 
     this->n_steps = (uint)std::ceil(input.stepper_input.run_time / input.stepper_input.dt);
+
+    this->stepper = typename ProblemType::ProblemStepperType(input.stepper_input);
 
     std::string submesh_file_prefix =
         input.mesh_input.mesh_file_name.substr(0, input.mesh_input.mesh_file_name.find_last_of('.')) + "_" +
@@ -96,11 +100,11 @@ void OMPISimulation<ProblemType>::Run() {
             }
 
             if (this->sim_units[su_id]->writer.WritingOutput()) {
-                this->sim_units[su_id]->writer.WriteFirstStep(this->sim_units[su_id]->stepper,
+                this->sim_units[su_id]->writer.WriteFirstStep(this->stepper,
                                                               this->sim_units[su_id]->discretization.mesh);
             }
 
-            uint n_stages = this->sim_units[su_id]->stepper.GetNumStages();
+            uint n_stages = this->stepper.GetNumStages();
 
             this->sim_units[su_id]->discretization.mesh.CallForEachElement(
                 [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
@@ -125,8 +129,8 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     double residual_l2{0};
 
     for (auto& sim_unit : this->sim_units) {
-        sim_unit->discretization.mesh.CallForEachElement([&sim_unit, &residual_l2](auto& elt) {
-            residual_l2 += ProblemType::compute_residual_L2(sim_unit->stepper, elt);
+        sim_unit->discretization.mesh.CallForEachElement([this, &sim_unit, &residual_l2](auto& elt) {
+            residual_l2 += ProblemType::compute_residual_L2(this->stepper, elt);
         });
     }
 

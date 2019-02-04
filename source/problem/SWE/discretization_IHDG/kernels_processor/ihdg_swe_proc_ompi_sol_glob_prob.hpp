@@ -381,8 +381,8 @@ bool Problem::ompi_solve_global_problem(OMPISimType* sim, uint begin_sim_id, uin
                 reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_dbound.edge_data.get_ndof());
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([sim](auto& elt) {
+            const uint stage = sim->stepper.GetStage();
 
             auto& state = elt.data.state[stage + 1];
 

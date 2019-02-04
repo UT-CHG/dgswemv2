@@ -15,22 +15,21 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord,
-                                                       sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
 
         initialize_data_parallel_post_receive(sim_units[su_id]->discretization.mesh, CommTypes::baryctr_coord);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
     }
 }
 }

@@ -14,7 +14,6 @@ struct OMPISimulationUnit {
     typename ProblemType::ProblemDiscretizationType discretization;
 
     OMPICommunicator communicator;
-    typename ProblemType::ProblemStepperType stepper;
     typename ProblemType::ProblemWriterType writer;
     typename ProblemType::ProblemParserType parser;
 
@@ -40,7 +39,6 @@ OMPISimulationUnit<ProblemType>::OMPISimulationUnit(const std::string& input_str
 
     this->discretization.mesh = typename ProblemType::ProblemMeshType(input.polynomial_order);
     this->communicator        = OMPICommunicator(input.mesh_input.dbmd_data);
-    this->stepper             = typename ProblemType::ProblemStepperType(input.stepper_input);
     this->writer              = typename ProblemType::ProblemWriterType(input.writer_input, locality_id, submesh_id);
     this->parser              = typename ProblemType::ProblemParserType(input, locality_id, submesh_id);
 

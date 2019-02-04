@@ -10,44 +10,40 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
     auto& sim_units = sim->sim_units;
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
 
         initialize_data_parallel_pre_send(
             sim_units[su_id]->discretization.mesh, sim_units[su_id]->problem_input, CommTypes::baryctr_coord);
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord,
-                                                       sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
 
         initialize_data_parallel_post_receive(sim_units[su_id]->discretization.mesh, CommTypes::baryctr_coord);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::init_global_prob,
-                                                  sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
 
         Problem::initialize_global_problem_parallel_pre_send(sim_units[su_id]->discretization);
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::init_global_prob, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::init_global_prob,
-                                                       sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
 
         Problem::initialize_global_problem_parallel_post_receive(sim_units[su_id]->discretization);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::init_global_prob,
-                                                    sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
     }
 }
 }
