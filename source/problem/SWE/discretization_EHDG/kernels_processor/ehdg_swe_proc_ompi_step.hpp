@@ -123,7 +123,12 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         }
     }
 
+#pragma omp barrier
+#pragma omp master
+    {
     ++(stepper);
+    }
+#pragma omp barrier
 
     if (SWE::PostProcessing::slope_limiting) {
         CS_slope_limiter_ompi(stepper, sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);

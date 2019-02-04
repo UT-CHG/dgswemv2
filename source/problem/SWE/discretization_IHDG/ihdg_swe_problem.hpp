@@ -277,8 +277,6 @@ struct Problem {
     template <typename GlobalDataType>
     static void finalize_simulation(GlobalDataType& global_data) {
 #ifdef HAS_PETSC
-        // Here one assumes that there is at lease one sim unit present
-        // This is of course not always true
         global_data.destroy();
 #endif
     }

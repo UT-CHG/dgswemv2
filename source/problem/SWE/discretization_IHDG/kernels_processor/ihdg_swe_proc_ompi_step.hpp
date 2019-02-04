@@ -90,7 +90,12 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         }
     }
 
+#pragma omp barrier
+#pragma omp master
+    {
     ++(stepper);
+    }
+#pragma omp barrier
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {

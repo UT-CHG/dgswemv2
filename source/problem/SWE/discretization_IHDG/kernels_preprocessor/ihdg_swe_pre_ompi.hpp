@@ -32,8 +32,6 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<Prob
 #pragma omp barrier
 #pragma omp master
     {
-        // Here one assumes that there is at lease one sim unit present
-        // This is of course not always true
         std::vector<uint> global_dof_offsets;
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
