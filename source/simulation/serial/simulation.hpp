@@ -97,7 +97,7 @@ void Simulation<ProblemType>::ComputeL2Residual() {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Finalize() {
-    ProblemType::finalize_simulation(this);
+    ProblemType::finalize_simulation(this->global_data);
 }
 }
 #endif
