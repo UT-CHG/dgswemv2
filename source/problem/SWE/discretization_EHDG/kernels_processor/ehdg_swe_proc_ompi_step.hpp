@@ -125,9 +125,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
 
 #pragma omp barrier
 #pragma omp master
-    {
-    ++(stepper);
-    }
+    { ++(stepper); }
 #pragma omp barrier
 
     if (SWE::PostProcessing::slope_limiting) {

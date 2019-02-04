@@ -103,9 +103,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
 
 #pragma omp barrier
 #pragma omp master
-    {
-    ++(stepper);
-    }
+    { ++(stepper); }
 #pragma omp barrier
 
     if (SWE::PostProcessing::wetting_drying) {
