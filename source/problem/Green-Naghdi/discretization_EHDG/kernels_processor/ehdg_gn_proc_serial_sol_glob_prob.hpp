@@ -3,10 +3,9 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::serial_solve_global_dc_problem(const ProblemStepperType& stepper,
-                                             ProblemDiscretizationType& discretization) {
-    auto& global_data = discretization.global_data;
-
+void Problem::serial_solve_global_dc_problem(ProblemDiscretizationType& discretization,
+                                             ProblemGlobalDataType& global_data,
+                                             const ProblemStepperType& stepper) {
     SparseMatrix<double>& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
     DynVector<double>& w1_hat_rhs       = global_data.w1_hat_rhs;
 

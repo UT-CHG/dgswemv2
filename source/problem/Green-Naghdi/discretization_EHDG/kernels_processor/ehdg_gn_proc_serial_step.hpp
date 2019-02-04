@@ -7,40 +7,45 @@
 
 namespace GN {
 namespace EHDG {
-template <typename SerialSimType>
-void Problem::step_serial(SerialSimType* sim) {
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+void Problem::step_serial(ProblemDiscretizationType& discretization,
+                          ProblemGlobalDataType& global_data,
+                          ProblemStepperType& stepper,
+                          ProblemWriterType& writer,
+                          ProblemParserType& parser) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        SWE_SIM::Problem::stage_serial(sim->stepper, sim->discretization);
+        SWE_SIM::Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        Problem::dispersive_correction_serial(sim->stepper, sim->discretization);
+        Problem::dispersive_correction_serial(discretization, global_data, stepper);
     }
 
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        SWE_SIM::Problem::stage_serial(sim->stepper, sim->discretization);
+        SWE_SIM::Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (sim->writer.WritingOutput()) {
-        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    if (writer.WritingOutput()) {
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 
-void Problem::dispersive_correction_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
+void Problem::dispersive_correction_serial(ProblemDiscretizationType& discretization,
+                                           ProblemGlobalDataType& global_data,
+                                           ProblemStepperType& stepper) {
     // Compute du, ddu
-    Problem::compute_derivatives_serial(stepper, discretization);
+    Problem::compute_derivatives_serial(discretization, stepper);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_volume_kernel(stepper, elt); });
 
@@ -58,7 +63,7 @@ void Problem::dispersive_correction_serial(ProblemStepperType& stepper, ProblemD
     discretization.mesh_skeleton.CallForEachEdgeBoundary(
         [&stepper](auto& edge_bound) { Problem::global_dc_edge_boundary_kernel(stepper, edge_bound); });
 
-    Problem::serial_solve_global_dc_problem(stepper, discretization);
+    Problem::serial_solve_global_dc_problem(discretization, global_data, stepper);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         Problem::dispersive_correction_kernel(stepper, elt);

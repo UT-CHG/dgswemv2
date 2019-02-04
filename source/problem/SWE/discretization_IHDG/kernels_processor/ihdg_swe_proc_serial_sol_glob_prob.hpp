@@ -6,7 +6,7 @@ namespace IHDG {
 template <typename ProblemType>
 bool Problem::serial_solve_global_problem(HDGDiscretization<ProblemType>& discretization,
                                           typename ProblemType::ProblemGlobalDataType& global_data,
-                                          typename ProblemType::ProblemStepperType& stepper) {
+                                          const typename ProblemType::ProblemStepperType& stepper) {
     SparseMatrix<double>& delta_hat_global = global_data.delta_hat_global;
     DynVector<double>& rhs_global          = global_data.rhs_global;
 

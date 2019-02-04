@@ -115,10 +115,14 @@ struct Problem {
                                          ProblemWriterType& writer);
 
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
+                                    ProblemGlobalDataType& global_data,
                                     const ProblemInputType& problem_specific_input);
 
-    template <typename OMPISimType>
-    static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                  ProblemGlobalDataType& global_data,
+                                  uint begin_sim_id,
+                                  uint end_sim_id);
 
     static void initialize_global_dc_problem_serial(ProblemDiscretizationType& discretization,
                                                     uint& dc_global_dof_offset);
@@ -138,28 +142,46 @@ struct Problem {
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization);
 
-    template <typename OMPISimType>
-    static void compute_bathymetry_derivatives_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                                    uint begin_sim_id,
+                                                    uint end_sim_id);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    static void step_serial(ProblemDiscretizationType& discretization,
+                            ProblemGlobalDataType& global_data,
+                            ProblemStepperType& stepper,
+                            ProblemWriterType& writer,
+                            ProblemParserType& parser);
 
-    template <typename OMPISimType>
-    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                          ProblemGlobalDataType& global_data,
+                          ProblemStepperType& stepper,
+                          uint begin_sim_id,
+                          uint end_sim_id);
 
     /* Dispersive correction part */
 
-    static void dispersive_correction_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
+    static void dispersive_correction_serial(ProblemDiscretizationType& discretization,
+                                             ProblemGlobalDataType& global_data,
+                                             ProblemStepperType& stepper);
 
-    static void compute_derivatives_serial(const ProblemStepperType& stepper,
-                                           ProblemDiscretizationType& discretization);
+    static void compute_derivatives_serial(ProblemDiscretizationType& discretization,
+                                           const ProblemStepperType& stepper);
 
-    template <typename OMPISimType>
-    static void dispersive_correction_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                           ProblemGlobalDataType& global_data,
+                                           ProblemStepperType& stepper,
+                                           uint begin_sim_id,
+                                           uint end_sim_id);
 
-    template <typename OMPISimType>
-    static void compute_derivatives_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                         const ProblemStepperType& stepper,
+                                         uint begin_sim_id,
+                                         uint end_sim_id);
 
     /* local step */
 
@@ -189,11 +211,16 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
 
-    static void serial_solve_global_dc_problem(const ProblemStepperType& stepper,
-                                               ProblemDiscretizationType& discretization);
+    static void serial_solve_global_dc_problem(ProblemDiscretizationType& discretization,
+                                               ProblemGlobalDataType& global_data,
+                                               const ProblemStepperType& stepper);
 
-    template <typename OMPISimType>
-    static void ompi_solve_global_dc_problem(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                             ProblemGlobalDataType& global_data,
+                                             const ProblemStepperType& stepper,
+                                             uint begin_sim_id,
+                                             uint end_sim_id);
 
     template <typename ElementType>
     static void dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt);
@@ -218,12 +245,10 @@ struct Problem {
         return SWE::compute_residual_L2(stepper, elt);
     }
 
-    template <typename SimType>
-    static void finalize_simulation(SimType* sim) {
+    template <typename GlobalDataType>
+    static void finalize_simulation(GlobalDataType& global_data) {
 #ifdef HAS_PETSC
-        // Here one assumes that there is at lease one sim unit present
-        // This is of course not always true
-        sim->sim_units[0]->discretization.global_data.destroy();
+        global_data.destroy();
 #endif
     }
 };

@@ -242,12 +242,12 @@ struct Problem {
     template <typename ProblemType>
     static bool serial_solve_global_problem(HDGDiscretization<ProblemType>& discretization,
                                             typename ProblemType::ProblemGlobalDataType& global_data,
-                                            typename ProblemType::ProblemStepperType& stepper);
+                                            const typename ProblemType::ProblemStepperType& stepper);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                           typename ProblemType::ProblemGlobalDataType& global_data,
-                                          typename ProblemType::ProblemStepperType& stepper,
+                                          const typename ProblemType::ProblemStepperType& stepper,
                                           uint begin_sim_id,
                                           uint end_sim_id);
 

@@ -5,19 +5,16 @@
 
 namespace GN {
 namespace EHDG {
-template <typename OMPISimType>
-void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
-    auto& sim_units = sim->sim_units;
-
-    SWE_SIM::Problem::preprocessor_ompi(sim, begin_sim_id, end_sim_id);
+template <typename OMPISimUnitType>
+void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                ProblemGlobalDataType& global_data,
+                                uint begin_sim_id,
+                                uint end_sim_id) {
+    SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, begin_sim_id, end_sim_id);
 
 #pragma omp barrier
 #pragma omp master
     {
-        // Here one assumes that there is at lease one sim unit present
-        // This is of course not always true
-        auto& global_data = sim_units[0]->discretization.global_data;
-
         std::vector<uint> dc_global_dof_offsets;
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
@@ -111,27 +108,23 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.ReceiveAll(CommTypes::dc_global_dof_indx,
-                                                      sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.ReceiveAll(CommTypes::dc_global_dof_indx, 0);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.SendAll(CommTypes::dc_global_dof_indx,
-                                                   sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.SendAll(CommTypes::dc_global_dof_indx, 0);
         }
 
         std::vector<uint> dc_global_dof_indx;
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dc_global_dof_indx,
-                                                           sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dc_global_dof_indx, 0);
 
             Problem::initialize_global_dc_problem_parallel_post_receive(
                 sim_units[su_id]->discretization, sim_units[su_id]->communicator, dc_global_dof_indx);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.WaitAllSends(CommTypes::dc_global_dof_indx,
-                                                        sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.WaitAllSends(CommTypes::dc_global_dof_indx, 0);
         }
 
         VecCreateSeq(MPI_COMM_SELF, dc_global_dof_indx.size(), &(global_data.dc_sol));
@@ -151,7 +144,7 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
     }
 #pragma omp barrier
 
-    Problem::compute_bathymetry_derivatives_ompi(sim, begin_sim_id, end_sim_id);
+    Problem::compute_bathymetry_derivatives_ompi(sim_units, begin_sim_id, end_sim_id);
 }
 }
 }

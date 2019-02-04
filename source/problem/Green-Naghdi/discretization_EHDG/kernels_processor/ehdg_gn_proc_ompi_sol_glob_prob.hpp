@@ -3,10 +3,12 @@
 
 namespace GN {
 namespace EHDG {
-template <typename OMPISimType>
-void Problem::ompi_solve_global_dc_problem(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
-    auto& sim_units = sim->sim_units;
-
+template <typename OMPISimUnitType>
+void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                           ProblemGlobalDataType& global_data,
+                                           const ProblemStepperType& stepper,
+                                           uint begin_sim_id,
+                                           uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
@@ -144,10 +146,6 @@ void Problem::ompi_solve_global_dc_problem(OMPISimType* sim, uint begin_sim_id, 
             }
         });
     }
-
-    // Here one assumes that there is at lease one sim unit present
-    // This is of course not always true
-    auto& global_data = sim_units[0]->discretization.global_data;
 
     Mat& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
     Vec& w1_hat_rhs    = global_data.w1_hat_rhs;
@@ -376,8 +374,8 @@ void Problem::ompi_solve_global_dc_problem(OMPISimType* sim, uint begin_sim_id, 
             internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = elt.data.state[stage];
             auto& internal = elt.data.internal;
