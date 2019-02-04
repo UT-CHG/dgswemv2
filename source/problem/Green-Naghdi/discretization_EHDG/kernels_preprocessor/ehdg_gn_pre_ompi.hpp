@@ -44,8 +44,8 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
         int n_localities;
         int locality_id;
 
-        MPI_Comm_size(sim->global_comm, &n_localities);
-        MPI_Comm_rank(sim->global_comm, &locality_id);
+        MPI_Comm_size(MPI_COMM_WORLD, &n_localities);
+        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
         std::vector<uint> total_dc_global_dof_offsets;
 
@@ -60,7 +60,7 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
                    1,
                    MPI_UNSIGNED,
                    0,
-                   sim->global_comm);
+                   MPI_COMM_WORLD);
 
         uint n_dc_global_dofs;
 
@@ -80,15 +80,15 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
             }
         }
 
-        MPI_Bcast(&n_dc_global_dofs, 1, MPI_UNSIGNED, 0, sim->global_comm);
+        MPI_Bcast(&n_dc_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-        MatCreate(sim->global_comm, &(global_data.w1_hat_w1_hat));
+        MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
         MatSetSizes(global_data.w1_hat_w1_hat, PETSC_DECIDE, PETSC_DECIDE, n_dc_global_dofs, n_dc_global_dofs);
         MatSetUp(global_data.w1_hat_w1_hat);
 
-        VecCreateMPI(sim->global_comm, PETSC_DECIDE, n_dc_global_dofs, &(global_data.w1_hat_rhs));
+        VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_dc_global_dofs, &(global_data.w1_hat_rhs));
 
-        KSPCreate(sim->global_comm, &(global_data.dc_ksp));
+        KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
 
         KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
@@ -101,7 +101,7 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
                     1,
                     MPI_UNSIGNED,
                     0,
-                    sim->global_comm);
+                    MPI_COMM_WORLD);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             dc_global_dof_offsets[su_id] += total_dc_global_dof_offset;

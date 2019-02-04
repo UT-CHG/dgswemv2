@@ -120,8 +120,11 @@ struct Problem {
                                     typename ProblemType::ProblemGlobalDataType& global_data,
                                     const typename ProblemType::ProblemInputType& problem_specific_input);
 
-    template <typename OMPISimType>
-    static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                                  typename ProblemType::ProblemGlobalDataType& global_data,
+                                  uint begin_sim_id,
+                                  uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
@@ -148,11 +151,19 @@ struct Problem {
                              typename ProblemType::ProblemGlobalDataType& global_data,
                              typename ProblemType::ProblemStepperType& stepper);
 
-    template <typename OMPISimType>
-    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                          typename ProblemType::ProblemGlobalDataType& global_data,
+                          typename ProblemType::ProblemStepperType& stepper,
+                          uint begin_sim_id,
+                          uint end_sim_id);
 
-    template <typename OMPISimType>
-    static void stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                           typename ProblemType::ProblemGlobalDataType& global_data,
+                           typename ProblemType::ProblemStepperType& stepper,
+                           uint begin_sim_id,
+                           uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto stage_hpx(HPXSimUnitType* sim_unit);
@@ -228,8 +239,8 @@ struct Problem {
         return SWE::compute_residual_L2(stepper, elt);
     }
 
-    template <typename SimType>
-    static void finalize_simulation(SimType* sim) {}
+    template <typename GlobalDataType>
+    static void finalize_simulation(GlobalDataType& global_data) {}
 };
 }
 }

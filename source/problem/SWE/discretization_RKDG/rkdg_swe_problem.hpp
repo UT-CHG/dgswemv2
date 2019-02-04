@@ -90,8 +90,11 @@ struct Problem {
                                     ProblemGlobalDataType& global_data,
                                     const ProblemInputType& problem_specific_input);
 
-    template <typename OMPISimType>
-    static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                  ProblemGlobalDataType& global_data,
+                                  uint begin_sim_id,
+                                  uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
@@ -107,11 +110,19 @@ struct Problem {
                              ProblemGlobalDataType& global_data,
                              ProblemStepperType& stepper);
 
-    template <typename OMPISimType>
-    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                          ProblemGlobalDataType& global_data,
+                          ProblemStepperType& stepper,
+                          uint begin_sim_id,
+                          uint end_sim_id);
 
-    template <typename OMPISimType>
-    static void stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                           ProblemGlobalDataType& global_data,
+                           ProblemStepperType& stepper,
+                           uint begin_sim_id,
+                           uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto stage_hpx(HPXSimUnitType* sim_unit);
@@ -157,8 +168,7 @@ struct Problem {
         return SWE::compute_residual_L2(stepper, elt);
     }
 
-    template <typename SimType>
-    static void finalize_simulation(SimType* sim) {}
+    static void finalize_simulation(ProblemGlobalDataType& global_data) {}
 };
 }
 }

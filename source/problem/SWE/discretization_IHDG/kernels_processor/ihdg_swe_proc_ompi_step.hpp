@@ -7,34 +7,37 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename OMPISimType>
-void Problem::step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
-    auto& sim_units = sim->sim_units;
-    // Here one assumes that there is at lease one sim unit present
-    // This is of course not always true
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
+template <template <typename> typename OMPISimUnitType, typename ProblemType>
+void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                        typename ProblemType::ProblemGlobalDataType& global_data,
+                        typename ProblemType::ProblemStepperType& stepper,
+                        uint begin_sim_id,
+                        uint end_sim_id) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
-                sim_units[su_id]->parser.ParseInput(sim->stepper, sim_units[su_id]->discretization.mesh);
+                sim_units[su_id]->parser.ParseInput(stepper, sim_units[su_id]->discretization.mesh);
             }
         }
 
-        Problem::stage_ompi(sim, begin_sim_id, end_sim_id);
+        Problem::stage_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingOutput()) {
-            sim_units[su_id]->writer.WriteOutput(sim->stepper, sim_units[su_id]->discretization.mesh);
+            sim_units[su_id]->writer.WriteOutput(stepper, sim_units[su_id]->discretization.mesh);
         }
     }
 }
 
-template <typename OMPISimType>
-void Problem::stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
-    auto& sim_units = sim->sim_units;
-
+template <template <typename> typename OMPISimUnitType, typename ProblemType>
+void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                         typename ProblemType::ProblemGlobalDataType& global_data,
+                         typename ProblemType::ProblemStepperType& stepper,
+                         uint begin_sim_id,
+                         uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        Problem::init_iteration(sim->stepper, sim_units[su_id]->discretization);
+        Problem::init_iteration(stepper, sim_units[su_id]->discretization);
     }
 
     uint iter = 0;
@@ -44,54 +47,54 @@ void Problem::stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             /* Local Step */
             sim_units[su_id]->discretization.mesh.CallForEachElement(
-                [sim](auto& elt) { Problem::local_volume_kernel(sim->stepper, elt); });
+                [&stepper](auto& elt) { Problem::local_volume_kernel(stepper, elt); });
 
             sim_units[su_id]->discretization.mesh.CallForEachElement(
-                [sim](auto& elt) { Problem::local_source_kernel(sim->stepper, elt); });
+                [&stepper](auto& elt) { Problem::local_source_kernel(stepper, elt); });
 
             sim_units[su_id]->discretization.mesh.CallForEachInterface(
-                [sim](auto& intface) { Problem::local_interface_kernel(sim->stepper, intface); });
+                [&stepper](auto& intface) { Problem::local_interface_kernel(stepper, intface); });
 
             sim_units[su_id]->discretization.mesh.CallForEachBoundary(
-                [sim](auto& bound) { Problem::local_boundary_kernel(sim->stepper, bound); });
+                [&stepper](auto& bound) { Problem::local_boundary_kernel(stepper, bound); });
 
             sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary(
-                [sim](auto& dbound) { Problem::local_distributed_boundary_kernel(sim->stepper, dbound); });
+                [&stepper](auto& dbound) { Problem::local_distributed_boundary_kernel(stepper, dbound); });
 
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
-                [sim](auto& edge_int) { Problem::local_edge_interface_kernel(sim->stepper, edge_int); });
+                [&stepper](auto& edge_int) { Problem::local_edge_interface_kernel(stepper, edge_int); });
 
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary(
-                [sim](auto& edge_bound) { Problem::local_edge_boundary_kernel(sim->stepper, edge_bound); });
+                [&stepper](auto& edge_bound) { Problem::local_edge_boundary_kernel(stepper, edge_bound); });
 
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
-                [sim](auto& edge_dbound) { Problem::local_edge_distributed_kernel(sim->stepper, edge_dbound); });
+                [&stepper](auto& edge_dbound) { Problem::local_edge_distributed_kernel(stepper, edge_dbound); });
             /* Local Step */
 
             /* Global Step */
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
-                [sim](auto& edge_int) { Problem::global_edge_interface_kernel(sim->stepper, edge_int); });
+                [&stepper](auto& edge_int) { Problem::global_edge_interface_kernel(stepper, edge_int); });
 
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary(
-                [sim](auto& edge_bound) { Problem::global_edge_boundary_kernel(sim->stepper, edge_bound); });
+                [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
 
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
-                [sim](auto& edge_dbound) { Problem::global_edge_distributed_kernel(sim->stepper, edge_dbound); });
+                [&stepper](auto& edge_dbound) { Problem::global_edge_distributed_kernel(stepper, edge_dbound); });
             /* Global Step */
         }
 
-        bool converged = ompi_solve_global_problem(sim, begin_sim_id, end_sim_id);
+        bool converged = ompi_solve_global_problem(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
 
         if (converged) {
             break;
         }
     }
 
-    ++(sim->stepper);
+    ++(stepper);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement([sim](auto& elt) {
-            uint n_stages = sim->stepper.GetNumStages();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            uint n_stages = stepper.GetNumStages();
 
             auto& state = elt.data.state;
 
@@ -100,12 +103,12 @@ void Problem::stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
     }
 
     if (SWE::PostProcessing::slope_limiting) {
-        CS_slope_limiter_ompi(sim->stepper, sim->sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
+        CS_slope_limiter_ompi(stepper, sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement([sim](auto& elt) {
-            bool nan_found = SWE::scrutinize_solution(sim->stepper, elt);
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            bool nan_found = SWE::scrutinize_solution(stepper, elt);
 
             if (nan_found)
                 MPI_Abort(MPI_COMM_WORLD, 0);

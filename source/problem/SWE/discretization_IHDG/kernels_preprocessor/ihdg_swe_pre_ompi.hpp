@@ -5,27 +5,28 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename OMPISimType>
-void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
-    auto& sim_units = sim->sim_units;
-
+template <template <typename> typename OMPISimUnitType, typename ProblemType>
+void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                                typename ProblemType::ProblemGlobalDataType& global_data,
+                                uint begin_sim_id,
+                                uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, 0);
 
         initialize_data_parallel_pre_send(
             sim_units[su_id]->discretization.mesh, sim_units[su_id]->problem_input, CommTypes::baryctr_coord);
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_coord, 0);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_coord, 0);
 
         initialize_data_parallel_post_receive(sim_units[su_id]->discretization.mesh, CommTypes::baryctr_coord);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, sim->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, 0);
     }
 
 #pragma omp barrier
@@ -33,8 +34,6 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
     {
         // Here one assumes that there is at lease one sim unit present
         // This is of course not always true
-        auto& global_data = sim->global_data;
-
         std::vector<uint> global_dof_offsets;
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
@@ -59,8 +58,8 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
         int n_localities;
         int locality_id;
 
-        MPI_Comm_size(sim->global_comm, &n_localities);
-        MPI_Comm_rank(sim->global_comm, &locality_id);
+        MPI_Comm_size(MPI_COMM_WORLD, &n_localities);
+        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
         std::vector<uint> total_global_dof_offsets;
 
@@ -75,7 +74,7 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
                    1,
                    MPI_UNSIGNED,
                    0,
-                   sim->global_comm);
+                   MPI_COMM_WORLD);
 
         uint n_global_dofs;
 
@@ -93,7 +92,7 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
             }
         }
 
-        MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, sim->global_comm);
+        MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
         MPI_Scatter(&total_global_dof_offsets.front(),
                     1,
@@ -102,40 +101,40 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
                     1,
                     MPI_UNSIGNED,
                     0,
-                    sim->global_comm);
+                    MPI_COMM_WORLD);
 
-        MatCreate(sim->global_comm, &(global_data.delta_hat_global));
+        MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
         MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
         MatSetUp(global_data.delta_hat_global);
 
-        VecCreateMPI(sim->global_comm, PETSC_DECIDE, n_global_dofs, &(global_data.rhs_global));
+        VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_global_dofs, &(global_data.rhs_global));
 
-        KSPCreate(sim->global_comm, &(global_data.ksp));
+        KSPCreate(MPI_COMM_WORLD, &(global_data.ksp));
         KSPSetOperators(global_data.ksp, global_data.delta_hat_global, global_data.delta_hat_global);
 
         KSPGetPC(global_data.ksp, &(global_data.pc));
         PCSetType(global_data.pc, PCLU);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.ReceiveAll(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.ReceiveAll(CommTypes::init_global_prob, 0);
 
             global_dof_offsets[su_id] += total_global_dof_offset;
 
             Problem::initialize_global_problem_parallel_finalize_pre_send(sim_units[su_id]->discretization,
                                                                           global_dof_offsets[su_id]);
 
-            sim_units[su_id]->communicator.SendAll(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.SendAll(CommTypes::init_global_prob, 0);
         }
 
         std::vector<uint> global_dof_indx;
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::init_global_prob, 0);
 
             Problem::initialize_global_problem_parallel_post_receive(sim_units[su_id]->discretization, global_dof_indx);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.WaitAllSends(CommTypes::init_global_prob, sim->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.WaitAllSends(CommTypes::init_global_prob, 0);
         }
 
         VecCreateSeq(MPI_COMM_SELF, global_dof_indx.size(), &(global_data.sol));

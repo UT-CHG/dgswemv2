@@ -10,18 +10,13 @@
 
 template <typename ProblemType>
 class OMPISimulation : public OMPISimulationBase {
-    /* Need to find a way to make this private */
-    /* Cannot make it private for GC problem */
-  public:
-    MPI_Comm global_comm;
+  private:
+    uint n_steps;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> sim_units;
     typename ProblemType::ProblemGlobalDataType global_data;
 
     typename ProblemType::ProblemStepperType stepper;
-
-  private:
-    uint n_steps;
 
   public:
     OMPISimulation() = default;
@@ -30,9 +25,6 @@ class OMPISimulation : public OMPISimulationBase {
     void Run();
     void ComputeL2Residual();
     void Finalize();
-
-  private:
-    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -63,21 +55,11 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
     if (this->sim_units.empty()) {
         std::cerr << "Warning: MPI Rank " << locality_id << " has not been assigned any work. This may inidicate\n"
                   << "         poor partitioning and imply degraded performance." << std::endl;
-
-        // Split into comm world that has partitions to work on
-        MPI_Comm_split(MPI_COMM_WORLD, MPI_UNDEFINED, locality_id, &(this->global_comm));
-    } else {
-        // Split into comm world that has partitions to work on
-        MPI_Comm_split(MPI_COMM_WORLD, 0, locality_id, &(this->global_comm));
     }
 }
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Run() {
-    if (this->sim_units.empty()) {
-        return;
-    }
-
 #pragma omp parallel
     {
         uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
@@ -90,7 +72,7 @@ void OMPISimulation<ProblemType>::Run() {
         begin_sim_id = sim_per_thread * thread_id;
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
-        ProblemType::preprocessor_ompi(this, begin_sim_id, end_sim_id);
+        ProblemType::preprocessor_ompi(this->sim_units, this->global_data, begin_sim_id, end_sim_id);
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (this->sim_units[su_id]->writer.WritingLog()) {
@@ -111,19 +93,15 @@ void OMPISimulation<ProblemType>::Run() {
         }
 
         for (uint step = 1; step <= this->n_steps; ++step) {
-            ProblemType::step_ompi(this, begin_sim_id, end_sim_id);
+            ProblemType::step_ompi(this->sim_units, this->global_data, this->stepper, begin_sim_id, end_sim_id);
         }
     }  // close omp parallel region
 }
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::ComputeL2Residual() {
-    if (this->sim_units.empty()) {
-        return;
-    }
-
     int locality_id;
-    MPI_Comm_rank(this->global_comm, &locality_id);
+    MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
 
     double global_l2{0};
     double residual_l2{0};
@@ -134,7 +112,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
         });
     }
 
-    MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, this->global_comm);
+    MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (locality_id == 0) {
         std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(global_l2) << std::endl;
@@ -143,11 +121,7 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
 
 template <typename ProblemType>
 void OMPISimulation<ProblemType>::Finalize() {
-    if (this->sim_units.empty()) {
-        return;
-    }
-
-    ProblemType::finalize_simulation(this);
+    ProblemType::finalize_simulation(this->global_data);
 }
 
 #endif
