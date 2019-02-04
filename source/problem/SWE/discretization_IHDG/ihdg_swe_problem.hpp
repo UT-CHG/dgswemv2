@@ -115,8 +115,10 @@ struct Problem {
                                          ProblemMeshSkeletonType& mesh_skeleton,
                                          ProblemWriterType& writer);
 
-    template <typename SerialSimType>
-    static void preprocessor_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
+                                    typename ProblemType::ProblemGlobalDataType& global_data,
+                                    const typename ProblemType::ProblemInputType& problem_specific_input);
 
     template <typename OMPISimType>
     static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -138,11 +140,17 @@ struct Problem {
                                                                 std::vector<uint>& global_dof_indx);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void step_serial(HDGDiscretization<ProblemType>& discretization,
+                            typename ProblemType::ProblemGlobalDataType& global_data,
+                            typename ProblemType::ProblemStepperType& stepper,
+                            typename ProblemType::ProblemWriterType& writer,
+                            typename ProblemType::ProblemParserType& parser);
 
-    template <typename SerialSimType>
-    static void stage_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void stage_serial(HDGDiscretization<ProblemType>& discretization,
+                             typename ProblemType::ProblemGlobalDataType& global_data,
+                             typename ProblemType::ProblemStepperType& stepper);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -220,8 +228,10 @@ struct Problem {
     template <typename StepperType, typename EdgeDistributedType>
     static void global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_bound);
 
-    template <typename SerialSimType>
-    static bool serial_solve_global_problem(SerialSimType* sim);
+    template <typename ProblemType>
+    static bool serial_solve_global_problem(HDGDiscretization<ProblemType>& discretization,
+                                            typename ProblemType::ProblemGlobalDataType& global_data,
+                                            typename ProblemType::ProblemStepperType& stepper);
 
     template <typename OMPISimType>
     static bool ompi_solve_global_problem(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);

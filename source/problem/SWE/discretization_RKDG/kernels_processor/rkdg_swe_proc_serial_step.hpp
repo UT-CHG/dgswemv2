@@ -6,26 +6,27 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename SerialSimType>
-void Problem::step_serial(SerialSimType* sim) {
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+void Problem::step_serial(ProblemDiscretizationType& discretization,
+                          ProblemGlobalDataType& global_data,
+                          ProblemStepperType& stepper,
+                          ProblemWriterType& writer,
+                          ProblemParserType& parser) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        Problem::stage_serial(sim);
+        Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (sim->writer.WritingOutput()) {
-        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    if (writer.WritingOutput()) {
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 
-template <typename SerialSimType>
-void Problem::stage_serial(SerialSimType* sim) {
-    auto& stepper        = sim->stepper;
-    auto& discretization = sim->discretization;
-
+void Problem::stage_serial(ProblemDiscretizationType& discretization,
+                           ProblemGlobalDataType& global_data,
+                           ProblemStepperType& stepper) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::volume_kernel(stepper, elt); });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::source_kernel(stepper, elt); });

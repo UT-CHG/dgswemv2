@@ -115,8 +115,10 @@ struct Problem {
                                          ProblemMeshSkeletonType& mesh_skeleton,
                                          ProblemWriterType& writer);
 
-    template <typename SerialSimType>
-    static void preprocessor_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
+                                    typename ProblemType::ProblemGlobalDataType& global_data,
+                                    const typename ProblemType::ProblemInputType& problem_specific_input);
 
     template <typename OMPISimType>
     static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -134,11 +136,17 @@ struct Problem {
     static void initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void step_serial(HDGDiscretization<ProblemType>& discretization,
+                            typename ProblemType::ProblemGlobalDataType& global_data,
+                            typename ProblemType::ProblemStepperType& stepper,
+                            typename ProblemType::ProblemWriterType& writer,
+                            typename ProblemType::ProblemParserType& parser);
 
-    template <typename SerialSimType>
-    static void stage_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void stage_serial(HDGDiscretization<ProblemType>& discretization,
+                             typename ProblemType::ProblemGlobalDataType& global_data,
+                             typename ProblemType::ProblemStepperType& stepper);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);

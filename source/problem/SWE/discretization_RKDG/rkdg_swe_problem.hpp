@@ -86,8 +86,9 @@ struct Problem {
     static constexpr uint n_communications = SWE::RKDG::n_communications;
     static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
 
-    template <typename SerialSimType>
-    static void preprocessor_serial(SerialSimType* sim);
+    static void preprocessor_serial(ProblemDiscretizationType& discretization,
+                                    ProblemGlobalDataType& global_data,
+                                    const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimType>
     static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -96,11 +97,15 @@ struct Problem {
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    static void step_serial(ProblemDiscretizationType& discretization,
+                            ProblemGlobalDataType& global_data,
+                            ProblemStepperType& stepper,
+                            ProblemWriterType& writer,
+                            ProblemParserType& parser);
 
-    template <typename SerialSimType>
-    static void stage_serial(SerialSimType* sim);
+    static void stage_serial(ProblemDiscretizationType& discretization,
+                             ProblemGlobalDataType& global_data,
+                             ProblemStepperType& stepper);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);

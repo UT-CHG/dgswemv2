@@ -5,11 +5,9 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename SerialSimType>
-void Problem::preprocessor_serial(SerialSimType* sim) {
-    auto& discretization         = sim->discretization;
-    auto& problem_specific_input = sim->problem_input;
-
+void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
+                                  ProblemGlobalDataType& global_data,
+                                  const ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
 }
 }

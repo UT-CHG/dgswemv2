@@ -7,26 +7,29 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename SerialSimType>
-void Problem::step_serial(SerialSimType* sim) {
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+template <typename ProblemType>
+void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
+                          typename ProblemType::ProblemGlobalDataType& global_data,
+                          typename ProblemType::ProblemStepperType& stepper,
+                          typename ProblemType::ProblemWriterType& writer,
+                          typename ProblemType::ProblemParserType& parser) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        Problem::stage_serial(sim);
+        Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (sim->writer.WritingOutput()) {
-        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    if (writer.WritingOutput()) {
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 
-template <typename SerialSimType>
-void Problem::stage_serial(SerialSimType* sim) {
-    auto& stepper        = sim->stepper;
-    auto& discretization = sim->discretization;
-
+template <typename ProblemType>
+void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
+                           typename ProblemType::ProblemGlobalDataType& global_data,
+                           typename ProblemType::ProblemStepperType& stepper) {
     Problem::init_iteration(stepper, discretization);
 
     uint iter = 0;
@@ -60,7 +63,7 @@ void Problem::stage_serial(SerialSimType* sim) {
             [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
         /* Global Step */
 
-        bool converged = Problem::serial_solve_global_problem(sim);
+        bool converged = Problem::serial_solve_global_problem(discretization, global_data, stepper);
 
         if (converged) {
             break;

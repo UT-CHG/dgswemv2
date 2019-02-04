@@ -5,12 +5,10 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename SerialSimType>
-void Problem::preprocessor_serial(SerialSimType* sim) {
-    auto& discretization         = sim->discretization;
-    auto& global_data            = sim->global_data;
-    auto& problem_specific_input = sim->problem_input;
-
+template <typename ProblemType>
+void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
+                                  typename ProblemType::ProblemGlobalDataType& global_data,
+                                  const typename ProblemType::ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
 
     uint global_dof_offset = 0;
