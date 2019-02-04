@@ -5,10 +5,10 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename OMPISimUnitType>
-void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
+template <typename OMPISimType>
+void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    auto& sim_units = sim->sim_units;
+
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         initialize_data_parallel_pre_send(
             sim_units[su_id]->discretization.mesh, sim_units[su_id]->problem_input, CommTypes::baryctr_coord);

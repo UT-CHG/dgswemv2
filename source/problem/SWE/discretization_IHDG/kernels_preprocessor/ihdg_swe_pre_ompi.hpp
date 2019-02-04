@@ -5,10 +5,10 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename OMPISimUnitType>
-void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
+template <typename OMPISimType>
+void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id) {
+    auto& sim_units = sim->sim_units;
+
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, sim_units[su_id]->stepper.GetTimestamp());
 
@@ -60,8 +60,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         int n_localities;
         int locality_id;
 
-        MPI_Comm_size(MPI_COMM_WORLD, &n_localities);
-        MPI_Comm_rank(MPI_COMM_WORLD, &locality_id);
+        MPI_Comm_size(sim->global_comm, &n_localities);
+        MPI_Comm_rank(sim->global_comm, &locality_id);
 
         std::vector<uint> total_global_dof_offsets;
 
@@ -76,7 +76,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                    1,
                    MPI_UNSIGNED,
                    0,
-                   MPI_COMM_WORLD);
+                   sim->global_comm);
 
         uint n_global_dofs;
 
@@ -94,19 +94,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             }
         }
 
-        MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
-
-        MatCreate(MPI_COMM_WORLD, &(global_data.delta_hat_global));
-        MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
-        MatSetUp(global_data.delta_hat_global);
-
-        VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_global_dofs, &(global_data.rhs_global));
-
-        KSPCreate(MPI_COMM_WORLD, &(global_data.ksp));
-        KSPSetOperators(global_data.ksp, global_data.delta_hat_global, global_data.delta_hat_global);
-
-        KSPGetPC(global_data.ksp, &(global_data.pc));
-        PCSetType(global_data.pc, PCLU);
+        MPI_Bcast(&n_global_dofs, 1, MPI_UNSIGNED, 0, sim->global_comm);
 
         MPI_Scatter(&total_global_dof_offsets.front(),
                     1,
@@ -115,7 +103,19 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                     1,
                     MPI_UNSIGNED,
                     0,
-                    MPI_COMM_WORLD);
+                    sim->global_comm);
+
+        MatCreate(sim->global_comm, &(global_data.delta_hat_global));
+        MatSetSizes(global_data.delta_hat_global, PETSC_DECIDE, PETSC_DECIDE, n_global_dofs, n_global_dofs);
+        MatSetUp(global_data.delta_hat_global);
+
+        VecCreateMPI(sim->global_comm, PETSC_DECIDE, n_global_dofs, &(global_data.rhs_global));
+
+        KSPCreate(sim->global_comm, &(global_data.ksp));
+        KSPSetOperators(global_data.ksp, global_data.delta_hat_global, global_data.delta_hat_global);
+
+        KSPGetPC(global_data.ksp, &(global_data.pc));
+        PCSetType(global_data.pc, PCLU);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             sim_units[su_id]->communicator.ReceiveAll(CommTypes::init_global_prob,

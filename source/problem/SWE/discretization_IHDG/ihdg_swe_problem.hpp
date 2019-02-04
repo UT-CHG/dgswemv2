@@ -119,10 +119,8 @@ struct Problem {
     static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                     const ProblemInputType& problem_specific_input);
 
-    template <typename OMPISimUnitType>
-    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                  uint begin_sim_id,
-                                  uint end_sim_id);
+    template <typename OMPISimType>
+    static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
 
     template <typename ProblemType>
     static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
@@ -150,10 +148,8 @@ struct Problem {
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
 
-    template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                           uint begin_sim_id,
-                           uint end_sim_id);
+    template <typename OMPISimType>
+    static void stage_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
 
     /* init interation begin */
 
@@ -228,10 +224,8 @@ struct Problem {
     template <typename StepperType, typename ProblemType>
     static bool serial_solve_global_problem(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
 
-    template <typename OMPISimUnitType>
-    static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                          uint begin_sim_id,
-                                          uint end_sim_id);
+    template <typename OMPISimType>
+    static bool ompi_solve_global_problem(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
 
     /* global step end */
 
@@ -261,8 +255,7 @@ struct Problem {
 #ifdef HAS_PETSC
         // Here one assumes that there is at lease one sim unit present
         // This is of course not always true
-        if (!sim->sim_units.empty())
-            sim->sim_units[0]->discretization.global_data.destroy();
+        sim->sim_units[0]->discretization.global_data.destroy();
 #endif
     }
 };
