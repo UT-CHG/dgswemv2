@@ -26,16 +26,19 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             dc_global_dof_offsets.push_back(dc_global_dof_offset);
         }
 
-        uint total_dc_global_dof_offset =
-            std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
+        uint total_dc_global_dof_offset = 0;
 
-        // exclusive scan
-        std::rotate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end() - 1, dc_global_dof_offsets.end());
+        if (!dc_global_dof_offsets.empty()) {
+            total_dc_global_dof_offset = std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
 
-        dc_global_dof_offsets.front() = 0;
+            // exclusive scan
+            std::rotate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end() - 1, dc_global_dof_offsets.end());
 
-        for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
-            dc_global_dof_offsets[su_id] += dc_global_dof_offsets[su_id - 1];
+            dc_global_dof_offsets.front() = 0;
+
+            for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
+                dc_global_dof_offsets[su_id] += dc_global_dof_offsets[su_id - 1];
+            }
         }
 
         int n_localities;

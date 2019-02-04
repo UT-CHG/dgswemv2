@@ -42,15 +42,19 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<Prob
             global_dof_offsets.push_back(global_dof_offset);
         }
 
-        uint total_global_dof_offset = std::accumulate(global_dof_offsets.begin(), global_dof_offsets.end(), 0);
+        uint total_global_dof_offset = 0;
 
-        // exclusive scan
-        std::rotate(global_dof_offsets.begin(), global_dof_offsets.end() - 1, global_dof_offsets.end());
+        if (!global_dof_offsets.empty()) {
+            total_global_dof_offset = std::accumulate(global_dof_offsets.begin(), global_dof_offsets.end(), 0);
 
-        global_dof_offsets.front() = 0;
+            // exclusive scan
+            std::rotate(global_dof_offsets.begin(), global_dof_offsets.end() - 1, global_dof_offsets.end());
 
-        for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
-            global_dof_offsets[su_id] += global_dof_offsets[su_id - 1];
+            global_dof_offsets.front() = 0;
+
+            for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
+                global_dof_offsets[su_id] += global_dof_offsets[su_id - 1];
+            }
         }
 
         int n_localities;
