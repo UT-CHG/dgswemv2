@@ -5,9 +5,11 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename ProblemType>
-void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
-                                  const ProblemInputType& problem_specific_input) {
+template <typename SerialSimType>
+void Problem::preprocessor_serial(SerialSimType* sim) {
+    auto& discretization         = sim->discretization;
+    auto& problem_specific_input = sim->problem_input;
+
     initialize_data_serial(discretization.mesh, problem_specific_input);
 
     Problem::initialize_global_problem_serial(discretization);

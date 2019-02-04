@@ -16,6 +16,7 @@ class Simulation : public SimulationBase {
     uint n_steps;
 
     typename ProblemType::ProblemDiscretizationType discretization;
+    typename ProblemType::ProblemGlobalDataType global_data;
 
     typename ProblemType::ProblemStepperType stepper;
     typename ProblemType::ProblemWriterType writer;
@@ -68,7 +69,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    ProblemType::preprocessor_serial(this->discretization, this->problem_input);
+    ProblemType::preprocessor_serial(this);
 
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;

@@ -31,7 +31,8 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
-    using ProblemDataType = Data;
+    using ProblemDataType       = Data;
+    using ProblemGlobalDataType = std::tuple<>;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes =
@@ -85,8 +86,8 @@ struct Problem {
     static constexpr uint n_communications = SWE::RKDG::n_communications;
     static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
 
-    static void preprocessor_serial(ProblemDiscretizationType& discretization,
-                                    const ProblemInputType& problem_specific_input);
+    template <typename SerialSimType>
+    static void preprocessor_serial(SerialSimType* sim);
 
     template <typename OMPISimType>
     static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -98,7 +99,8 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    static void stage_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
+    template <typename SerialSimType>
+    static void stage_serial(SerialSimType* sim);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);

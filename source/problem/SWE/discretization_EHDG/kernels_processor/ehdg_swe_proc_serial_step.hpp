@@ -12,7 +12,7 @@ void Problem::step_serial(SerialSimType* sim) {
             sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
         }
 
-        Problem::stage_serial(sim->stepper, sim->discretization);
+        Problem::stage_serial(sim);
     }
 
     if (sim->writer.WritingOutput()) {
@@ -20,8 +20,11 @@ void Problem::step_serial(SerialSimType* sim) {
     }
 }
 
-template <typename StepperType, typename ProblemType>
-void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
+template <typename SerialSimType>
+void Problem::stage_serial(SerialSimType* sim) {
+    auto& stepper        = sim->stepper;
+    auto& discretization = sim->discretization;
+
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_interface_kernel(stepper, intface); });

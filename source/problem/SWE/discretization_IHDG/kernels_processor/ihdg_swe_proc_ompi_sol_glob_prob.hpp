@@ -126,7 +126,7 @@ bool Problem::ompi_solve_global_problem(OMPISimType* sim, uint begin_sim_id, uin
 
     // Here one assumes that there is at lease one sim unit present
     // This is of course not always true
-    auto& global_data = sim_units[0]->discretization.global_data;
+    auto& global_data = sim->global_data;
 
     Mat& delta_hat_global = global_data.delta_hat_global;
     Vec& rhs_global       = global_data.rhs_global;

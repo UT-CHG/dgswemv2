@@ -34,7 +34,7 @@ void Problem::preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_si
     {
         // Here one assumes that there is at lease one sim unit present
         // This is of course not always true
-        auto& global_data = sim_units[0]->discretization.global_data;
+        auto& global_data = sim->global_data;
 
         std::vector<uint> global_dof_offsets;
 

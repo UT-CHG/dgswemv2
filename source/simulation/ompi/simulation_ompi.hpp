@@ -16,6 +16,7 @@ class OMPISimulation : public OMPISimulationBase {
     MPI_Comm global_comm;
 
     std::vector<std::unique_ptr<OMPISimulationUnit<ProblemType>>> sim_units;
+    typename ProblemType::ProblemGlobalDataType global_data;
 
   private:
     uint n_steps;

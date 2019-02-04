@@ -35,7 +35,6 @@ template <typename ProblemType>
 struct HDGDiscretization {
     typename ProblemType::ProblemMeshType mesh;
     typename ProblemType::ProblemMeshSkeletonType mesh_skeleton;
-    typename ProblemType::ProblemGlobalDataType global_data;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
                     typename ProblemType::ProblemWriterType& writer) {

@@ -3,9 +3,11 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename ProblemType>
-bool Problem::serial_solve_global_problem(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
-    auto& global_data = discretization.global_data;
+template <typename SerialSimType>
+bool Problem::serial_solve_global_problem(SerialSimType* sim) {
+    auto& stepper        = sim->stepper;
+    auto& discretization = sim->discretization;
+    auto& global_data    = sim->global_data;
 
     SparseMatrix<double>& delta_hat_global = global_data.delta_hat_global;
     DynVector<double>& rhs_global          = global_data.rhs_global;

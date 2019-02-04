@@ -115,9 +115,8 @@ struct Problem {
                                          ProblemMeshSkeletonType& mesh_skeleton,
                                          ProblemWriterType& writer);
 
-    template <typename ProblemType>
-    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
-                                    const ProblemInputType& problem_specific_input);
+    template <typename SerialSimType>
+    static void preprocessor_serial(SerialSimType* sim);
 
     template <typename OMPISimType>
     static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -138,8 +137,8 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    template <typename StepperType, typename ProblemType>
-    static void stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+    template <typename SerialSimType>
+    static void stage_serial(SerialSimType* sim);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);

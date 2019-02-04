@@ -115,9 +115,8 @@ struct Problem {
                                          ProblemMeshSkeletonType& mesh_skeleton,
                                          ProblemWriterType& writer);
 
-    template <typename ProblemType>
-    static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
-                                    const ProblemInputType& problem_specific_input);
+    template <typename SerialSimType>
+    static void preprocessor_serial(SerialSimType* sim);
 
     template <typename OMPISimType>
     static void preprocessor_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -142,8 +141,8 @@ struct Problem {
     template <typename SerialSimType>
     static void step_serial(SerialSimType* sim);
 
-    template <typename StepperType, typename ProblemType>
-    static void stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+    template <typename SerialSimType>
+    static void stage_serial(SerialSimType* sim);
 
     template <typename OMPISimType>
     static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -221,8 +220,8 @@ struct Problem {
     template <typename StepperType, typename EdgeDistributedType>
     static void global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_bound);
 
-    template <typename StepperType, typename ProblemType>
-    static bool serial_solve_global_problem(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+    template <typename SerialSimType>
+    static bool serial_solve_global_problem(SerialSimType* sim);
 
     template <typename OMPISimType>
     static bool ompi_solve_global_problem(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
@@ -255,7 +254,7 @@ struct Problem {
 #ifdef HAS_PETSC
         // Here one assumes that there is at lease one sim unit present
         // This is of course not always true
-        sim->sim_units[0]->discretization.global_data.destroy();
+        sim->global_data.destroy();
 #endif
     }
 };
