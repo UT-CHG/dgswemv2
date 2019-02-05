@@ -23,14 +23,14 @@ struct InternalAccessor {
     std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> q_at_gp;
     std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries> aux_at_gp;
 
-    HybMatrix<double, SWE::n_variables> Fx_at_gp;
-    HybMatrix<double, SWE::n_variables> Fy_at_gp;
+    DynMatrix<double, SWE::n_variables> Fx_at_gp;
+    DynMatrix<double, SWE::n_variables> Fy_at_gp;
 
-    HybMatrix<double, SWE::n_variables> source_at_gp;
-    HybMatrix<double, SWE::n_dimensions> dbath_at_gp;
-    HybMatrix<double, SWE::n_dimensions> tau_s_at_gp;
-    HybMatrix<double, SWE::n_dimensions> dp_atm_at_gp;
-    HybMatrix<double, SWE::n_dimensions> dtide_pot_at_gp;
+    DynMatrix<double, SWE::n_variables> source_at_gp;
+    DynMatrix<double, SWE::n_dimensions> dbath_at_gp;
+    DynMatrix<double, SWE::n_dimensions> tau_s_at_gp;
+    DynMatrix<double, SWE::n_dimensions> dp_atm_at_gp;
+    DynMatrix<double, SWE::n_dimensions> dtide_pot_at_gp;
 };
 
 struct InternalData {
