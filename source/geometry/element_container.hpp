@@ -44,19 +44,17 @@ public:
             throw std::runtime_error{"Not enough elements reserved. Emplacing new elements will cause accessors to be invalidated\n"};
         }
 
-        element_accessors.emplace_back(std::move(element_data.at(size_++,
+        element_accessors.emplace_back(std::move(element_data.at(size_,
                                                                  ID,
                                                                  std::forward<Args>(args)...)));
+
+	accessor2local_index.insert({&element_accessors.back().data, size_++});
+
     }
 
-    ptrdiff_t GetLocalIndex(const AccessorType& target_acc) const {
-        const AccessorType* target_addr = &target_acc;
-        auto acc_iter = std::find_if(element_accessors.begin(), element_accessors.end(),
-                                     [target_addr](const ElementType& elt) {
-                                         return &elt.data == target_addr;
-                                     });
-        return acc_iter != element_accessors.end() ? std::distance(element_accessors.begin(), acc_iter)
-                                                   : -1;
+    uint GetLocalIndex(const AccessorType& target_acc) const {
+        return accessor2local_index.count(&target_acc) > 0 ? accessor2local_index.at(&target_acc)
+                                                           : -1;
     }
 
     template <typename F>
@@ -80,6 +78,8 @@ private:
 
     AlignedVector<ElementType> element_accessors;
     ElementSoA<ElementType, DataSoAType> element_data;
+
+    std::unordered_map<const AccessorType*, uint> accessor2local_index;
 
     size_t size_;
     size_t capacity;
