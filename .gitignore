@@ -4,6 +4,7 @@
 
 build/*
 build_debug/*
+build-old/*
 settings.json
 
 #Ignore files generated running tests
