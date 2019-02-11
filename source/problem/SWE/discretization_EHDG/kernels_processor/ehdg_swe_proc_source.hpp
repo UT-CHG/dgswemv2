@@ -11,7 +11,7 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
 
     auto& state    = elt.data.state[stage];
     auto& internal = elt.data.internal;
-    // auto& source   = elt.data.source;
+    auto& source   = elt.data.source;
 
     double t = stepper.GetTimeAtCurrentStage();
 
@@ -31,7 +31,7 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
         internal.source_at_gp += elt.ComputeFgp(source_q);
     }
 
-    /*if (SWE::SourceTerms::bottom_friction) {
+    if (SWE::SourceTerms::bottom_friction) {
         double Cf = SWE::SourceTerms::Cf;
 
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
@@ -55,7 +55,7 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
         }
     }
 
-    if (SWE::SourceTerms::meteo_forcing) {
+    /*if (SWE::SourceTerms::meteo_forcing) {
         // elt.ComputeNodalUgp(source.tau_s, internal.tau_s_at_gp);
         // elt.ComputeNodalDUgp(source.p_atm, internal.dp_atm_at_gp);
 
