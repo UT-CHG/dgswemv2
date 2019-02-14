@@ -4,6 +4,7 @@
 #include <hpx/include/iostreams.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
+#include <hpx/include/runtime.hpp>
 
 #include "general_definitions.hpp"
 
@@ -26,11 +27,18 @@ int hpx_main(int argc, char* argv[]) {
 
     std::vector<HPXSimulationClient> simulation_clients;
     simulation_clients.reserve(localities.size());
-
-    auto t1 = std::chrono::high_resolution_clock::now();
     for (hpx::naming::id_type const& locality : localities) {
         simulation_clients.emplace_back(hpx::new_<HPXSimulation>(locality, input_string));
     }
+
+    std::vector<hpx::future<void>> initialization_futures;
+    initialization_futures.reserve(localities.size());
+    for (auto& sim_client : simulation_clients) {
+      initialization_futures.push_back(sim_client.Initialize());
+    }
+    hpx::wait_all(initialization_futures);
+    hpx::reset_active_counters();
+    auto t1 = std::chrono::high_resolution_clock::now();
 
     std::vector<hpx::future<void>> run_futures;
     run_futures.reserve(simulation_clients.size());

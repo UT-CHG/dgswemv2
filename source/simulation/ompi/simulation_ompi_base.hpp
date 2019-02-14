@@ -8,6 +8,7 @@ class OMPISimulationBase {
   public:
     virtual ~OMPISimulationBase() = default;
 
+    virtual void Initialize()        = 0;
     virtual void Run()               = 0;
     virtual void ComputeL2Residual() = 0;
     virtual void Finalize()          = 0;

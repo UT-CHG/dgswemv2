@@ -20,6 +20,7 @@ class OMPISimulation : public OMPISimulationBase {
     OMPISimulation() = default;
     OMPISimulation(const std::string& input_string);
 
+    void Initialize();
     void Run();
     void ComputeL2Residual();
     void Finalize();
@@ -53,7 +54,9 @@ OMPISimulation<ProblemType>::OMPISimulation(const std::string& input_string) {
 }
 
 template <typename ProblemType>
-void OMPISimulation<ProblemType>::Run() {
+void OMPISimulation<ProblemType>::Initialize() {
+  if ( this->sim_units.empty() ) { return; }
+
 #pragma omp parallel
     {
         uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
@@ -67,6 +70,24 @@ void OMPISimulation<ProblemType>::Run() {
         end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
         ProblemType::preprocessor_ompi(this->sim_units, begin_sim_id, end_sim_id);
+    }
+}
+
+template <typename ProblemType>
+void OMPISimulation<ProblemType>::Run() {
+  if ( this->sim_units.empty() ) { return; }
+
+#pragma omp parallel
+    {
+        uint n_threads, thread_id, sim_per_thread, begin_sim_id, end_sim_id;
+
+        n_threads = (uint)omp_get_num_threads();
+        thread_id = (uint)omp_get_thread_num();
+
+        sim_per_thread = (this->sim_units.size() + n_threads - 1) / n_threads;
+
+        begin_sim_id = sim_per_thread * thread_id;
+        end_sim_id   = std::min(sim_per_thread * (thread_id + 1), (uint)this->sim_units.size());
 
         for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
             if (this->sim_units[su_id]->writer.WritingLog()) {

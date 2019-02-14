@@ -14,7 +14,6 @@ int main(int argc, char* argv[]) {
                   << "    /path/to/dgswemv2-ompi input_file\n";
         return 1;
     } else {
-        auto t1 = std::chrono::high_resolution_clock::now();
         int provided;
         MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
@@ -37,6 +36,10 @@ int main(int argc, char* argv[]) {
         std::string input_string = std::string(argv[1]);
 
         std::unique_ptr<OMPISimulationBase> simulation = OMPISimulationFactory::Create(input_string);
+
+	simulation->Initialize();
+	MPI_Barrier(MPI_COMM_WORLD);
+	auto t1 = std::chrono::high_resolution_clock::now();
 
         simulation->Run();
 

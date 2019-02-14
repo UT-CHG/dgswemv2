@@ -27,6 +27,7 @@ class Simulation : public SimulationBase {
     Simulation() = default;
     Simulation(const std::string& input_string);
 
+    void Initialize();
     void Run();
     void ComputeL2Residual();
     void Finalize();
@@ -67,9 +68,12 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 }
 
 template <typename ProblemType>
-void Simulation<ProblemType>::Run() {
+void Simulation<ProblemType>::Initialize() {
     ProblemType::preprocessor_serial(this->discretization, this->problem_input);
+}
 
+template <typename ProblemType>
+void Simulation<ProblemType>::Run() {
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }

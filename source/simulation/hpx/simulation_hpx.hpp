@@ -40,6 +40,9 @@ class HPXSimulation : public hpx::components::component_base<HPXSimulation> {
     HPXSimulation() = default;
     HPXSimulation(const std::string& input_string);
 
+    hpx::future<void> Initialize();
+    HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Initialize, InitializeAction);
+
     hpx::future<void> Run();
     HPX_DEFINE_COMPONENT_ACTION(HPXSimulation, Run, RunAction);
 
@@ -83,11 +86,21 @@ HPXSimulation::HPXSimulation(const std::string& input_string) {
     lb_future.get();
 }
 
-hpx::future<void> HPXSimulation::Run() {
+hpx::future<void> HPXSimulation::Initialize() {
     std::vector<hpx::future<void>> simulation_futures;
 
     for (auto& sim_unit_client : this->simulation_unit_clients) {
         simulation_futures.push_back(sim_unit_client.Preprocessor());
+    }
+
+    return hpx::when_all(simulation_futures);
+}
+
+hpx::future<void> HPXSimulation::Run() {
+    std::vector<hpx::future<void>> simulation_futures;
+    simulation_futures.reserve(this->simulation_unit_clients.size());
+    for ( uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+      simulation_futures.push_back(hpx::make_ready_future());
     }
 
     for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
@@ -120,6 +133,11 @@ class HPXSimulationClient : hpx::components::client_base<HPXSimulationClient, HP
   public:
     HPXSimulationClient(hpx::future<hpx::id_type>&& id) : BaseType(std::move(id)) {}
     HPXSimulationClient(hpx::id_type&& id) : BaseType(std::move(id)) {}
+
+    hpx::future<void> Initialize() {
+        using ActionType = typename HPXSimulation::InitializeAction;
+	return hpx::async<ActionType>(this->get_id());
+    }
 
     hpx::future<void> Run() {
         using ActionType = typename HPXSimulation::RunAction;

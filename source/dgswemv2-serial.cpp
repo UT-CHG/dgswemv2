@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
         std::string input_string = std::string(argv[1]);
 
         std::unique_ptr<Serial::SimulationBase> simulation = Serial::SimulationFactory::Create(input_string);
+	simulation->Initialize();
 
         auto t1 = std::chrono::high_resolution_clock::now();
         simulation->Run();
