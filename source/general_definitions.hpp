@@ -146,6 +146,7 @@ class Master {
     StatVector<DynMatrix<double>, dimension> dphi_gp;
 
     DynMatrix<double> int_phi_fact;
+    DynMatrix<double> int_phi_phi_fact;
     StatVector<DynMatrix<double>, dimension> int_dphi_fact;
 
     DynMatrix<double, SO::ColumnMajor> m_inv;

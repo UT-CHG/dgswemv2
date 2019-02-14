@@ -66,6 +66,18 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
         }
     }
 
+    this->int_phi_phi_fact.resize(this->ngp, std::pow(this->ndof, 2));
+    for (uint dof_i = 0; dof_i < this->ndof; ++dof_i) {
+        for (uint dof_j = 0; dof_j < this->ndof; ++dof_j) {
+  	    uint lookup = this->ndof * dof_i + dof_j;
+	    for (uint gp = 0; gp < this->ngp; ++gp) {
+	        this->int_phi_phi_fact(gp, lookup) =
+		    this->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
+	  }
+       }
+    }
+
+
     for (uint dir = 0; dir < 2; dir++) {
         this->int_dphi_fact[dir] = transpose(this->dphi_gp[dir]);
         for (uint dof = 0; dof < this->ndof; ++dof) {

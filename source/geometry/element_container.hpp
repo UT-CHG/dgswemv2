@@ -29,6 +29,8 @@ public:
 
         element_accessors.reserve(nelements);
         element_data.reserve(nstages, nelements, ngp_edge);
+
+	accessor2local_index.reserve(nelements);
     }
 
     void finalize_initialization() {

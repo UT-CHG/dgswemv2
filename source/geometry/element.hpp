@@ -34,11 +34,7 @@ class Element {
     std::array<DynMatrix<double>, dimension> dchi_gp;  // linear basis
     StatVector<DynMatrix<double>, dimension> dphi_gp;  // modal basis
 
-    DynVector<double> int_fact;
-    DynMatrix<double> int_phi_fact;
-    DynMatrix<double> int_phi_phi_fact;
     StatVector<DynMatrix<double>, dimension> int_dphi_fact;
-    std::array<DynMatrix<double>, dimension> int_phi_dphi_fact;
 
   public:
     Element() = default;
@@ -206,20 +202,6 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::Initialize() {
         }
 
         // INTEGRATION OVER ELEMENT FACTORS
-        this->int_fact = this->master->integration_rule.first * this->abs_J;
-
-        this->int_phi_fact = this->master->int_phi_fact * this->abs_J;
-
-        this->int_phi_phi_fact.resize(this->master->ngp, std::pow(this->master->ndof, 2));
-        for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
-            for (uint dof_j = 0; dof_j < this->master->ndof; ++dof_j) {
-                uint lookup = this->master->ndof * dof_i + dof_j;
-                for (uint gp = 0; gp < this->master->ngp; ++gp) {
-                    this->int_phi_phi_fact(gp, lookup) =
-                        this->master->phi_gp(dof_i, gp) * this->int_phi_fact(gp, dof_j);
-                }
-            }
-        }
 
         this->int_dphi_fact = this->master->int_dphi_fact;
         for (uint dir = 0; dir < dimension; ++dir) {
@@ -231,19 +213,6 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::Initialize() {
                     }
                     int_dphi *= std::abs(det_J[0]);
                     this->int_dphi_fact[dir](gp, dof) = int_dphi;
-                }
-            }
-        }
-
-        for (uint dir = 0; dir < dimension; ++dir) {
-            this->int_phi_dphi_fact[dir].resize(this->master->ngp, std::pow(this->master->ndof, 2));
-            for (uint dof_i = 0; dof_i < this->master->ndof; ++dof_i) {
-                for (uint dof_j = 0; dof_j < this->master->ndof; ++dof_j) {
-                    uint lookup = this->master->ndof * dof_i + dof_j;
-                    for (uint gp = 0; gp < this->master->ngp; ++gp) {
-                        this->int_phi_dphi_fact[dir](gp, lookup) =
-                            this->master->phi_gp(dof_i, gp) * this->int_dphi_fact[dir](gp, dof_j);
-                    }
                 }
             }
         }
@@ -288,7 +257,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 template <typename F>
 inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    DynMatrix<double> projection = (this->ComputeFgp(f) * this->int_phi_fact * this->master->m_inv) / this->abs_J;
+    DynMatrix<double> projection = this->ComputeFgp(f) * this->master->int_phi_fact * this->master->m_inv;
 
     return projection;
 }
@@ -298,7 +267,7 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionNode(
     const InputArrayType& nodal_values) {
     // projection(q, dof) = nodal_values(q, node) * psi_gp(node, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
-    return (nodal_values * this->shape.psi_gp * this->int_phi_fact * this->master->m_inv) / this->abs_J;
+    return nodal_values * this->shape.psi_gp *  this->master->int_phi_fact * this->master->m_inv;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -417,7 +386,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::Integration(const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_fact[gp]
-    return u_gp * this->int_fact;
+    return (u_gp * this->master->integration_rule.first) * this->abs_J;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -425,14 +394,14 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhi(const uint dof,
                                                                                           const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_fact(gp, dof)
-    return u_gp * column(this->int_phi_fact, dof);
+    return u_gp * column(this->master->int_phi_fact, dof) * this->abs_J;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhi(const InputArrayType& u_gp) {
     // integral(q, dof) = u_gp(q, gp) * this->int_phi_fact(gp, dof)
-    return u_gp * this->int_phi_fact;
+    return (u_gp * this->master->int_phi_fact) * this->abs_J;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -444,7 +413,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::I
     // integral[q] = u_gp(q, gp) * this->int_phi_phi_fact(gp, lookup)
     uint lookup = this->master->ndof * dof_i + dof_j;
 
-    return u_gp * column(this->int_phi_phi_fact, lookup);
+    return (u_gp * column(this->master->int_phi_phi_fact, lookup)) * this->abs_J;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -472,9 +441,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::I
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_dphi_fact[dir_j](lookup, gp)
-    uint lookup = this->master->ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_dphi_fact[dir_j], lookup);
+    return (u_gp * row(this->master->phi_gp, dof_i)) * column(this->int_dphi_fact[dir_j], dof_j);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
