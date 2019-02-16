@@ -199,6 +199,17 @@ decltype(auto) reverse(InputArrayType& vector) {
 }
 
 /* Matrix Operations */
+template <typename T, bool SO = blaze::rowMajor>
+blaze::DiagonalMatrix<blaze::CompressedMatrix<T, SO>> initialize_as_constant(size_t rows, T value) {
+    //note that a diagonal matrix is always square
+    blaze::DiagonalMatrix<blaze::CompressedMatrix<T, SO>> diag(rows, rows);
+    for ( size_t i = 0UL; i < rows; ++i ) {
+        diag.append(i, i, value);
+        diag.finalize(i);
+    }
+    return diag;
+}
+
 template <typename MatrixType>
 uint rows(const MatrixType& matrix) {
     return blaze::rows(matrix);

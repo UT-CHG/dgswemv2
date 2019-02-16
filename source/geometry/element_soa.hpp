@@ -27,10 +27,14 @@ public:
 
     void reserve(uint nstages , uint nelements, uint ngp_edge) {
         std::cout << "Reserving " << nelements << " in element_soa.hpp\n";
+
+        DiagonalMatrix<double, SO::RowMajor> zero_diagonal_matrix_rm    = initialize_as_constant(nelements, 0.0);
+        DiagonalMatrix<double, SO::ColumnMajor> zero_diagonal_matrix_cm = initialize_as_constant(nelements, 0.0);
+
         this->data = ProblemSoA(master->ndof, master->ngp, ngp_edge, nstages, nelements, master->nbound);
-        this->abs_J = DiagonalMatrix<double>(nelements,nelements);
-        this->inv_abs_J = DiagonalMatrix<double>(nelements,nelements);
-        this->J_inv = DiagonalMatrix<double, SO::ColumnMajor>(nelements,nelements);
+        this->abs_J     = zero_diagonal_matrix_rm;
+        this->inv_abs_J = zero_diagonal_matrix_rm;
+        this->J_inv     = zero_diagonal_matrix_cm;
     }
 
     template <typename... Args>

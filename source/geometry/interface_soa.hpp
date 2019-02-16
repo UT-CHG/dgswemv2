@@ -22,6 +22,10 @@ struct InterfaceSoAHelper {
     StatVector<SparseMatrix<double>, 3> gather_in;
     StatVector<SparseMatrix<double>, 3> gather_ex;
 
+    //indices used for initializing sparse matrices
+    std::array<size_t,3> intfc_index_in;
+    std::array<size_t,3> intfc_index_ex;
+
     template <typename ArrayType>
     decltype(auto) ComputeUgpBdry(const ArrayType& u, uint bdry_id) {
         return u * phi_gp_bdry[bdry_id];
@@ -36,6 +40,8 @@ struct InterfaceSoAHelper {
 
     template <typename ElementContainer>
     InterfaceSoAHelper(uint p, ElementContainer& elt_container) {
+        intfc_index_in.fill(0UL);
+	intfc_index_ex.fill(0UL);
 
         //Get **interface** integration rule
         typename InterfaceType::InterfaceIntegrationType integration;
@@ -74,22 +80,49 @@ struct InterfaceSoAHelper {
             gather_ex[side].resize(nelements, ninterfaces);
             gather_ex[side].reserve(nelements);
 
-            abs_J[side] = DiagonalMatrix<double>(nelements,nelements);
-            for ( uint i = 0; i < nelements; ++i ) {
-                abs_J[side](i,i) = 0.;
-            }
+            abs_J[side] = initialize_as_constant(nelements, 0.0);
         }
     }
 
+    void insert_edge_in(uint side, uint intfc_index, uint elt_index) {
+        while( intfc_index_in[side] < intfc_index ) {
+            scatter_in[side].finalize(intfc_index_in[side]++);
+        }
+
+        scatter_in[side].append(intfc_index, elt_index, 1.);
+    }
+
+    void insert_edge_ex(uint side, uint intfc_index, uint elt_index) {
+        while( intfc_index_ex[side] < intfc_index ) {
+            scatter_ex[side].finalize(intfc_index_ex[side]++);
+        }
+
+        scatter_ex[side].append(intfc_index, elt_index, 1.);
+    }
+
     void finalize_initialization() {
-        /* fixme: shrinkToFit() causes memory leaks
+        size_t n_intfcs = rows( gather_in[0] );
+
         for ( uint side = 0; side < 3; ++side ) {
+            while( intfc_index_in[side] < n_intfcs ) {
+                scatter_in[side].finalize( intfc_index_in[side]++ );
+            }
+
+            while( intfc_index_ex[side] < n_intfcs ) {
+                scatter_ex[side].finalize( intfc_index_ex[side]++ );
+            }
+
+	    gather_in[side] = transpose( scatter_in[side] );
+	    gather_ex[side] = transpose( scatter_ex[side] );
+        /* fixme: shrinkToFit() causes memory leaks
+
             scatter_in[side].shrinkToFit();
             scatter_ex[side].shrinkToFit();
 
             gather_in[side].shrinkToFit();
             gather_ex[side].shrinkToFit();
-            }*/
+	*/
+	}
     }
 };
 
@@ -157,11 +190,7 @@ public:
 
                                           uint elt_indx_in = elt_container.GetLocalIndex(intfc.data_in);
                                           if ( elt_indx_in >= 0 ) {
-                                              helper.scatter_in[intfc.bound_id_in].insert(intfc_index,
-                                                                                          elt_indx_in, 1.);
-
-                                              helper.gather_in[intfc.bound_id_in].insert(elt_indx_in,
-                                                                                         intfc_index, 1.);
+                                              helper.insert_edge_in(intfc.bound_id_in, intfc_index, elt_indx_in);
 
                                               helper.abs_J[intfc.bound_id_in](elt_indx_in, elt_indx_in) =
                                                   intfc.GetAbsJ();
@@ -169,11 +198,7 @@ public:
 
                                           uint elt_indx_ex = elt_container.GetLocalIndex(intfc.data_ex);
                                           if ( elt_indx_ex >= 0 ) {
-                                              helper.scatter_ex[intfc.bound_id_ex].insert(intfc_index,
-                                                                                          elt_indx_ex, 1.);
-
-                                              helper.gather_ex[intfc.bound_id_ex].insert(elt_indx_ex,
-                                                                                         intfc_index, 1.);
+                                              helper.insert_edge_ex(intfc.bound_id_ex, intfc_index, elt_indx_ex);
 
                                               helper.abs_J[intfc.bound_id_ex](elt_indx_ex, elt_indx_ex) =
                                                   intfc.GetAbsJ();
