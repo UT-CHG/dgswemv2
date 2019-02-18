@@ -3,9 +3,9 @@
 
 namespace GN {
 namespace EHDG {
-struct SlopeLimit : SWE_SIM::SlopeLimit {
+struct SlopeLimit : SWE::SlopeLimit {
     SlopeLimit() = default;
-    SlopeLimit(const uint nvrtx, const uint nbound) : SWE_SIM::SlopeLimit(nvrtx, nbound) {}
+    SlopeLimit(const uint nvrtx, const uint nbound) : SWE::SlopeLimit(nvrtx, nbound) {}
 };
 }
 }

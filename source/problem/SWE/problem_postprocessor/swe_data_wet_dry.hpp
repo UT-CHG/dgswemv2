@@ -1,8 +1,7 @@
-#ifndef RKDG_SWE_DATA_WET_DRY_HPP
-#define RKDG_SWE_DATA_WET_DRY_HPP
+#ifndef SWE_DATA_WET_DRY_HPP
+#define SWE_DATA_WET_DRY_HPP
 
 namespace SWE {
-namespace RKDG {
 struct WetDry {
     WetDry() = default;
     WetDry(const uint nvrtx)
@@ -40,7 +39,6 @@ struct WetDry {
     }
 #endif
 };
-}
 }
 
 #endif

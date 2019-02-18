@@ -3,9 +3,9 @@
 
 namespace GN {
 namespace EHDG {
-struct WetDry : SWE_SIM::WetDry {
+struct WetDry : SWE::WetDry {
     WetDry() = default;
-    WetDry(const uint nvrtx) : SWE_SIM::WetDry(nvrtx) {}
+    WetDry(const uint nvrtx) : SWE::WetDry(nvrtx) {}
 };
 }
 }

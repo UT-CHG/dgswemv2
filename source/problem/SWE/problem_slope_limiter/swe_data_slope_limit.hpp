@@ -1,8 +1,7 @@
-#ifndef RKDG_SWE_DATA_SLOPE_LIMIT_HPP
-#define RKDG_SWE_DATA_SLOPE_LIMIT_HPP
+#ifndef SWE_DATA_SLOPE_LIMIT_HPP
+#define SWE_DATA_SLOPE_LIMIT_HPP
 
 namespace SWE {
-namespace RKDG {
 struct SlopeLimit {
     SlopeLimit() = default;
     SlopeLimit(const uint nvrtx, const uint nbound)
@@ -76,7 +75,6 @@ struct SlopeLimit {
     }
 #endif
 };
-}
 }
 
 #endif

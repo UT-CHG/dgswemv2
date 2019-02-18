@@ -1,7 +1,7 @@
 #ifndef EHDG_SWE_PROC_SOURCE_HPP
 #define EHDG_SWE_PROC_SOURCE_HPP
 
-#include "problem/SWE/problem_souce/swe_source.hpp"
+#include "problem/SWE/problem_source/swe_source.hpp"
 
 namespace SWE {
 namespace EHDG {
