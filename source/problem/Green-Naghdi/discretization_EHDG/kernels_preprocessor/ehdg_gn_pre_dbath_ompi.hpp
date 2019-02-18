@@ -154,12 +154,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
 
-            internal.dbath_at_gp = elt.ComputeUgp(state.dbath);
+            submatrix(
+                internal.aux_at_gp, SWE::Auxiliaries::dbath_dx, 0, GN::n_dimensions, columns(internal.aux_at_gp)) =
+                elt.ComputeUgp(state.dbath);
 
             for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
                 for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                     row(state.ddbath, GN::n_dimensions * dbath + dir) =
-                        -elt.IntegrationDPhi(dir, row(internal.dbath_at_gp, dbath));
+                        -elt.IntegrationDPhi(dir, row(internal.aux_at_gp, SWE::Auxiliaries::dbath_dx + dbath));
                 }
             }
         });

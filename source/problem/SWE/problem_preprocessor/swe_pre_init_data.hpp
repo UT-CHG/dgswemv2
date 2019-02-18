@@ -26,9 +26,9 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
         row(state.aux, SWE::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
 
-        row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeNodalUgp(bathymetry);
-        row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
-        row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
+        row(internal.aux_at_gp, SWE::Auxiliaries::bath)     = elt.ComputeNodalUgp(bathymetry);
+        row(internal.aux_at_gp, SWE::Auxiliaries::dbath_dx) = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
+        row(internal.aux_at_gp, SWE::Auxiliaries::dbath_dy) = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);

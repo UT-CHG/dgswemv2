@@ -42,9 +42,9 @@ const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o,
 constexpr uint n_dimensions = 2;
 
 constexpr uint n_variables   = 3;
-constexpr uint n_auxiliaries = 3;
+constexpr uint n_auxiliaries = 5;
 enum Variables : uint { ze = 0, qx = 1, qy = 2 };
-enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
+enum Auxiliaries : uint { bath = 0, h = 1, sp = 2, dbath_dx = 3, dbath_dy = 4 };
 
 enum JacobianVariables : uint {
     ze_ze = 0,

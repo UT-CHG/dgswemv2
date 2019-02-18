@@ -4,9 +4,10 @@
 #include "rkdg_swe_data_state.hpp"
 #include "rkdg_swe_data_internal.hpp"
 #include "rkdg_swe_data_boundary.hpp"
-#include "rkdg_swe_data_source.hpp"
 #include "rkdg_swe_data_wet_dry.hpp"
 #include "rkdg_swe_data_slope_limit.hpp"
+
+#include "problem/SWE/problem_souce/swe_data_source.hpp"
 
 namespace SWE {
 namespace RKDG {
@@ -15,7 +16,7 @@ struct Data {
     Internal internal;
     AlignedVector<Boundary> boundary;
 
-    Source source;
+    SWE::Source source;
     WetDry wet_dry_state;
     SlopeLimit slope_limit_state;
 

@@ -1,8 +1,7 @@
-#ifndef IHDG_SWE_DATA_SOURCE_HPP
-#define IHDG_SWE_DATA_SOURCE_HPP
+#ifndef SWE_DATA_SOURCE_HPP
+#define SWE_DATA_SOURCE_HPP
 
 namespace SWE {
-namespace IHDG {
 struct Source {
     Source() = default;
     Source(const uint nnode)
@@ -21,7 +20,6 @@ struct Source {
     std::vector<double> tide_pot;
     std::vector<double> manning_n;
 };
-}
 }
 
 #endif
