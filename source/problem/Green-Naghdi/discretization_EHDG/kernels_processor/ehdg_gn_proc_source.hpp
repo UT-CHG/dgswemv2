@@ -17,8 +17,8 @@ void Problem::local_dc_source_kernel(const ProblemStepperType& stepper, ElementT
     auto h2 = vec_cw_mult(h, h);
     auto h3 = vec_cw_mult(h2, h);
 
-    auto bx = row(internal.aux_at_gp, SWE::Auxiliaries::dbath_dx);
-    auto by = row(internal.aux_at_gp, SWE::Auxiliaries::dbath_dy);
+    auto bx = row(internal.dbath_at_gp, GlobalCoord::x);
+    auto by = row(internal.dbath_at_gp, GlobalCoord::y);
 
     auto zex = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
     auto zey = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
