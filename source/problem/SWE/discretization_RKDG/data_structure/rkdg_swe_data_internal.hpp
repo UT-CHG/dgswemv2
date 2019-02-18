@@ -35,7 +35,6 @@ struct Internal {
             & Fx_at_gp
             & Fy_at_gp
             & source_at_gp
-            & dbath_at_gp
             & tau_s_at_gp
             & dp_atm_at_gp
             & dtide_pot_at_gp;

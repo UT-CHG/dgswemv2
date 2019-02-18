@@ -19,6 +19,21 @@ struct Source {
 
     std::vector<double> tide_pot;
     std::vector<double> manning_n;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & coriolis_f
+            & manning
+            & g_manning_n_sq
+            & tau_s
+            & p_atm
+            & tide_pot
+            & manning_n;
+        // clang-format on
+    }
+#endif
 };
 }
 
