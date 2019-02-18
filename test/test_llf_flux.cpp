@@ -21,23 +21,23 @@ bool test_configuration(const int configuration,
                         const double true_qy_flux) {
     bool error_found = false;
 
-    HybMatrix<double, 3> q_in(3, 1);
+    HybMatrix<double, 3> q_in(SWE::n_variables, 1);
     q_in(0, 0) = ze_in;
     q_in(1, 0) = qx_in;
     q_in(2, 0) = qy_in;
-    HybMatrix<double, 3> q_ex(3, 1);
+    HybMatrix<double, 3> q_ex(SWE::n_variables, 1);
     q_ex(0, 0) = ze_ex;
     q_ex(1, 0) = qx_ex;
     q_ex(2, 0) = qy_ex;
-    HybMatrix<double, 3> aux_in(3, 1);
+    HybMatrix<double, 5> aux_in(SWE::n_auxiliaries, 1);
     aux_in(0, 0) = bath;
     aux_in(1, 0) = ze_in + bath;
     aux_in(2, 0) = sp;
-    HybMatrix<double, 2> norm(2, 1);
+    HybMatrix<double, 2> norm(SWE::n_dimensions, 1);
     norm(0, 0) = normal[0];
     norm(1, 0) = normal[1];
 
-    HybMatrix<double, 3> F_hat(3, 1);
+    HybMatrix<double, 3> F_hat(SWE::n_variables, 1);
 
     SWE::RKDG::LLF_flux(
         SWE::Global::g, column(q_in, 0), column(q_ex, 0), column(aux_in, 0), column(norm, 0), column(F_hat, 0));
