@@ -5,8 +5,8 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                                  uint begin_sim_id,
-                                                  uint end_sim_id) {
+                                                  const uint begin_sim_id,
+                                                  const uint end_sim_id) {
     /* First derivatives begin */
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);

@@ -7,6 +7,7 @@ namespace SWE {
 namespace RKDG {
 void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
                                   ProblemGlobalDataType& global_data,
+                                  const ProblemStepperType& stepper,
                                   const ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
 }

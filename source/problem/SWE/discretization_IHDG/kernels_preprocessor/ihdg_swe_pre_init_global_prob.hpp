@@ -5,6 +5,7 @@ namespace SWE {
 namespace IHDG {
 template <typename ProblemType>
 void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
+                                               const typename ProblemType::ProblemStepperType& stepper,
                                                uint& global_dof_offset) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
@@ -65,7 +66,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         edge_int.interface.specialization.ComputeInitTrace(edge_int);
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper, &global_dof_offset](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
@@ -98,14 +99,15 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         boundary.delta_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
 
-        edge_bound.boundary.boundary_condition.ComputeInitTrace(edge_bound);
+        edge_bound.boundary.boundary_condition.ComputeInitTrace(stepper, edge_bound);
     });
 }
 
 template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
+                                                          const typename ProblemType::ProblemStepperType& stepper,
                                                           uint& global_dof_offset) {
-    Problem::initialize_global_problem_serial(discretization, global_dof_offset);
+    Problem::initialize_global_problem_serial(discretization, stepper, global_dof_offset);
 
     discretization.mesh_skeleton.CallForEachEdgeDistributed([&global_dof_offset](auto& edge_dbound) {
         auto& edge_internal = edge_dbound.edge_data.edge_internal;

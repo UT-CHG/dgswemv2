@@ -118,13 +118,15 @@ struct Problem {
     template <typename ProblemType>
     static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                     typename ProblemType::ProblemGlobalDataType& global_data,
+                                    const typename ProblemType::ProblemStepperType& stepper,
                                     const typename ProblemType::ProblemInputType& problem_specific_input);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
-                                  uint begin_sim_id,
-                                  uint end_sim_id);
+                                  const typename ProblemType::ProblemStepperType& stepper,
+                                  const uint begin_sim_id,
+                                  const uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
@@ -155,15 +157,15 @@ struct Problem {
     static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                           typename ProblemType::ProblemGlobalDataType& global_data,
                           typename ProblemType::ProblemStepperType& stepper,
-                          uint begin_sim_id,
-                          uint end_sim_id);
+                          const uint begin_sim_id,
+                          const uint end_sim_id);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                            typename ProblemType::ProblemGlobalDataType& global_data,
                            typename ProblemType::ProblemStepperType& stepper,
-                           uint begin_sim_id,
-                           uint end_sim_id);
+                           const uint begin_sim_id,
+                           const uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto stage_hpx(HPXSimUnitType* sim_unit);

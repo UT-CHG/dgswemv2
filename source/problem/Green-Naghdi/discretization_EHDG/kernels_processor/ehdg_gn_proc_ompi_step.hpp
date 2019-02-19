@@ -11,8 +11,8 @@ template <typename OMPISimUnitType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                         ProblemGlobalDataType& global_data,
                         ProblemStepperType& stepper,
-                        uint begin_sim_id,
-                        uint end_sim_id) {
+                        const uint begin_sim_id,
+                        const uint end_sim_id) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
@@ -54,8 +54,8 @@ template <typename OMPISimUnitType>
 void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                          ProblemGlobalDataType& global_data,
                                          ProblemStepperType& stepper,
-                                         uint begin_sim_id,
-                                         uint end_sim_id) {
+                                         const uint begin_sim_id,
+                                         const uint end_sim_id) {
     Problem::compute_derivatives_ompi(sim_units, stepper, begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {

@@ -23,8 +23,8 @@ class Tide {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -68,8 +68,8 @@ void Tide::Initialize(BoundaryType& bound) {
     }
 }
 
-template <typename EdgeBoundaryType>
-void Tide::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Tide::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     // Something to implement in the future
 }
 

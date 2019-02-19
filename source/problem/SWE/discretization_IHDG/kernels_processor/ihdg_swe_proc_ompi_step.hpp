@@ -11,8 +11,8 @@ template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                         typename ProblemType::ProblemGlobalDataType& global_data,
                         typename ProblemType::ProblemStepperType& stepper,
-                        uint begin_sim_id,
-                        uint end_sim_id) {
+                        const uint begin_sim_id,
+                        const uint end_sim_id) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
@@ -34,8 +34,8 @@ template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                          typename ProblemType::ProblemGlobalDataType& global_data,
                          typename ProblemType::ProblemStepperType& stepper,
-                         uint begin_sim_id,
-                         uint end_sim_id) {
+                         const uint begin_sim_id,
+                         const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         Problem::init_iteration(stepper, sim_units[su_id]->discretization);
     }

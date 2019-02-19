@@ -9,8 +9,8 @@ class Land {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -19,8 +19,8 @@ class Land {
 template <typename BoundaryType>
 void Land::Initialize(BoundaryType& bound) {}
 
-template <typename EdgeBoundaryType>
-void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Land::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& bound = edge_bound.boundary;
 
     auto& state    = bound.data.state[0];

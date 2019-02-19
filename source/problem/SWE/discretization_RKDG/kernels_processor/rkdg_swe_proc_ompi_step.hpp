@@ -10,8 +10,8 @@ template <typename OMPISimUnitType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                         ProblemGlobalDataType& global_data,
                         ProblemStepperType& stepper,
-                        uint begin_sim_id,
-                        uint end_sim_id) {
+                        const uint begin_sim_id,
+                        const uint end_sim_id) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
@@ -33,8 +33,8 @@ template <typename OMPISimUnitType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                          ProblemGlobalDataType& global_data,
                          ProblemStepperType& stepper,
-                         uint begin_sim_id,
-                         uint end_sim_id) {
+                         const uint begin_sim_id,
+                         const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {
             sim_units[su_id]->writer.GetLogFile() << "Current (time, stage): (" << stepper.GetTimeAtCurrentStage()

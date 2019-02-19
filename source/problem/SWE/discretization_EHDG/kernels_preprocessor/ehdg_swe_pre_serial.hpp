@@ -8,6 +8,7 @@ namespace EHDG {
 template <typename ProblemType>
 void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
+                                  const typename ProblemType::ProblemStepperType& stepper,
                                   const typename ProblemType::ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
 

@@ -66,7 +66,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    ProblemType::preprocessor_serial(this->discretization, this->global_data, this->problem_input);
+    ProblemType::preprocessor_serial(this->discretization, this->global_data, this->stepper, this->problem_input);
 
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;

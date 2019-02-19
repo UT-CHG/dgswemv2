@@ -8,9 +8,10 @@ namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                 ProblemGlobalDataType& global_data,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
-    SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, begin_sim_id, end_sim_id);
+                                const ProblemStepperType& stepper,
+                                const uint begin_sim_id,
+                                const uint end_sim_id) {
+    SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
 
 #pragma omp barrier
 #pragma omp master

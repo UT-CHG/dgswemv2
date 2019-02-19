@@ -8,8 +8,9 @@ namespace IHDG {
 template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                 typename ProblemType::ProblemGlobalDataType& global_data,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
+                                const typename ProblemType::ProblemStepperType& stepper,
+                                const uint begin_sim_id,
+                                const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, 0);
 
@@ -37,7 +38,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<Prob
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             uint global_dof_offset = 0;
 
-            Problem::initialize_global_problem_parallel_pre_send(sim_units[su_id]->discretization, global_dof_offset);
+            Problem::initialize_global_problem_parallel_pre_send(
+                sim_units[su_id]->discretization, stepper, global_dof_offset);
 
             global_dof_offsets.push_back(global_dof_offset);
         }

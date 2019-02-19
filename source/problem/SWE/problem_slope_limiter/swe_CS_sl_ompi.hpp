@@ -8,8 +8,8 @@ namespace SWE {
 template <typename StepperType, typename OMPISimUnitType>
 void CS_slope_limiter_ompi(StepperType& stepper,
                            std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                           uint begin_sim_id,
-                           uint end_sim_id,
+                           const uint begin_sim_id,
+                           const uint end_sim_id,
                            uint comm_type) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingVerboseLog()) {

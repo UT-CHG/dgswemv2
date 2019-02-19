@@ -20,8 +20,8 @@ class Outflow {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -42,8 +42,8 @@ void Outflow::Initialize(BoundaryType& bound) {
     this->dAminus_dqy.resize(ngp);
 }
 
-template <typename EdgeBoundaryType>
-void Outflow::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Outflow::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& bound = edge_bound.boundary;
 
     auto& state    = bound.data.state[0];

@@ -8,8 +8,9 @@ namespace RKDG {
 template <typename OMPISimUnitType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                 ProblemGlobalDataType& global_data,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
+                                const ProblemStepperType& stepper,
+                                const uint begin_sim_id,
+                                const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         initialize_data_parallel_pre_send(
             sim_units[su_id]->discretization.mesh, sim_units[su_id]->problem_input, CommTypes::baryctr_coord);

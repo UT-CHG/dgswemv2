@@ -19,7 +19,8 @@ struct Internal {
           del_q_DT_at_gp(SWE::n_variables, ngp),
           kronecker_DT_at_gp(SWE::n_variables * SWE::n_variables, ngp),
           dFx_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp),
-          dFy_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp) {}
+          dFy_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp),
+          dsource_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp) {}
 
     HybMatrix<double, SWE::n_variables> q_at_gp;
     HybMatrix<double, SWE::n_auxiliaries> aux_at_gp;
@@ -38,6 +39,7 @@ struct Internal {
     HybMatrix<double, SWE::n_variables * SWE::n_variables> kronecker_DT_at_gp;
     HybMatrix<double, SWE::n_variables * SWE::n_variables> dFx_dq_at_gp;
     HybMatrix<double, SWE::n_variables * SWE::n_variables> dFy_dq_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dsource_dq_at_gp;
 
     DynMatrix<double> delta_local_inv;
     DynMatrix<double> delta_local;

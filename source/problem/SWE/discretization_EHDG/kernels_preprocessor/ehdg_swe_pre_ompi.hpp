@@ -8,8 +8,9 @@ namespace EHDG {
 template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                 typename ProblemType::ProblemGlobalDataType& global_data,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
+                                const typename ProblemType::ProblemStepperType& stepper,
+                                const uint begin_sim_id,
+                                const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_coord, 0);
 

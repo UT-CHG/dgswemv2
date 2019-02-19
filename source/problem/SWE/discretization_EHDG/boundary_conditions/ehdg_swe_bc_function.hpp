@@ -8,6 +8,8 @@ namespace EHDG {
 namespace BC {
 class Function {
   private:
+    HybMatrix<double, SWE::n_variables> q_ex;
+
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> Aplus;
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dze;
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dqx;
@@ -32,6 +34,8 @@ class Function {
 template <typename BoundaryType>
 void Function::Initialize(BoundaryType& bound) {
     uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
+
+    this->q_ex.resize(SWE::n_variables, ngp);
 
     this->Aplus.resize(ngp);
     this->dAplus_dze.resize(ngp);
@@ -72,7 +76,7 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
 
     double t = stepper.GetTimeAtCurrentStage();
 
-    HybMatrix<double, SWE::n_variables> q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
+    this->q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
         double ze = 0.0;
         double qx = 0.0;
         double qy = 0.0;
@@ -94,7 +98,7 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         auto q     = column(boundary.q_at_gp, gp);
         auto q_hat = column(edge_internal.q_hat_at_gp, gp);
-        auto q_inf = column(q_ex, gp);
+        auto q_inf = column(this->q_ex, gp);
 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> dB_dq_hat = this->Aminus[gp] - this->Aplus[gp];
 
