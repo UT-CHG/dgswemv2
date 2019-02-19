@@ -12,9 +12,9 @@ void Problem::init_source_kernel(const StepperType& stepper, ElementType& elt) {
 
         SWE::get_source(stepper.GetTimeAtCurrentStage(), elt);
 
-        for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
-            subvector(internal.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=
-                elt.IntegrationPhi(dof_i, internal.source_at_gp);
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
+            subvector(internal.rhs_prev, SWE::n_variables * dof, SWE::n_variables) +=
+                elt.IntegrationPhi(dof, internal.source_at_gp);
         }
     }
 }
@@ -75,7 +75,7 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
                       SWE::n_variables) +=
-                reshape<double, SWE::n_variables>((1.0 - theta) *
+                reshape<double, SWE::n_variables>(-(1.0 - theta) *
                                                   elt.IntegrationPhiPhi(dof_j, dof_i, internal.dsource_dq_at_gp));
         }
 
