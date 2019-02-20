@@ -48,17 +48,15 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
             }
 
             double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
-            double C                      = Cf / std::hypot(u, v) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
+            double C                      = Cf / (std::hypot(u, v) * internal.aux_at_gp(SWE::Auxiliaries::h, gp));
 
-            internal.dsource_dq_at_gp(JacobianVariables::qx_ze, gp) -=
-                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qx, gp) -
-                2 * bottom_friction_stress * u;
+            internal.dsource_dq_at_gp(JacobianVariables::qx_ze, gp) -= -2.0 * bottom_friction_stress * u;
+            //+dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qx, gp);
             internal.dsource_dq_at_gp(JacobianVariables::qx_qx, gp) -= bottom_friction_stress + C * u * u;
             internal.dsource_dq_at_gp(JacobianVariables::qx_qy, gp) -= C * u * v;
 
-            internal.dsource_dq_at_gp(JacobianVariables::qy_ze, gp) -=
-                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qy, gp) -
-                2 * bottom_friction_stress * v;
+            internal.dsource_dq_at_gp(JacobianVariables::qy_ze, gp) -= -2.0 * bottom_friction_stress * v;
+            //+dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qy, gp);
             internal.dsource_dq_at_gp(JacobianVariables::qy_qx, gp) -= C * u * v;
             internal.dsource_dq_at_gp(JacobianVariables::qy_qy, gp) -= bottom_friction_stress + C * v * v;
         }
@@ -74,8 +72,8 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
                       SWE::n_variables * dof_i,
                       SWE::n_variables * dof_j,
                       SWE::n_variables,
-                      SWE::n_variables) +=
-                reshape<double, SWE::n_variables>(-(1.0 - theta) *
+                      SWE::n_variables) -=
+                reshape<double, SWE::n_variables>((1.0 - theta) *
                                                   elt.IntegrationPhiPhi(dof_j, dof_i, internal.dsource_dq_at_gp));
         }
 

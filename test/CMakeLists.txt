@@ -8,6 +8,8 @@ target_compile_definitions(test_linear_algebra_exe PRIVATE ${LINALG_DEFINITION})
 #[[target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
 target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
 
+#]]
+
 add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
@@ -15,15 +17,16 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_jacobians_ehdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_jacobians_ehdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_jacobians_ehdg
   test_jacobians_ehdg_exe
 )
 
-add_executable(
+#[[add_executable(
   test_jacobians_ihdg_exe
   test_jacobians_ihdg.cpp
   ${SOURCES}
