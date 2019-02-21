@@ -1,3 +1,4 @@
+if (EHDG)
 add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
@@ -13,7 +14,9 @@ add_test(
   Unit_test_jacobians_ehdg
   test_jacobians_ehdg_exe
 )
+endif()
 
+if (IHDG)
 add_executable(
   test_jacobians_ihdg_exe
   test_jacobians_ihdg.cpp
@@ -45,6 +48,7 @@ add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
 )
+endif()
 
 add_executable(
   test_tuple_helpers_exe
