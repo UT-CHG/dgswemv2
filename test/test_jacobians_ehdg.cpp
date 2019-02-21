@@ -51,10 +51,11 @@ int main(int argc, char* argv[]) {
         const uint stage = stepper.GetStage();
         auto& state      = elt.data.state[stage];
 
+        // randomly assign q
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-            state.q(SWE::Variables::ze, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q(SWE::Variables::qx, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
-            state.q(SWE::Variables::qy, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            for (uint var = 0; var < SWE::n_variables; ++var) {
+                state.q(var, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+            }
         }
     });
 

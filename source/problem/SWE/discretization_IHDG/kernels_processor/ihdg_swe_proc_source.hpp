@@ -50,13 +50,15 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
             double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
             double C                      = Cf / (std::hypot(u, v) * internal.aux_at_gp(SWE::Auxiliaries::h, gp));
 
-            internal.dsource_dq_at_gp(JacobianVariables::qx_ze, gp) -= -2.0 * bottom_friction_stress * u;
-            //+dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qx, gp);
+            internal.dsource_dq_at_gp(JacobianVariables::qx_ze, gp) -=
+                -2.0 * bottom_friction_stress * u +
+                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qx, gp);
             internal.dsource_dq_at_gp(JacobianVariables::qx_qx, gp) -= bottom_friction_stress + C * u * u;
             internal.dsource_dq_at_gp(JacobianVariables::qx_qy, gp) -= C * u * v;
 
-            internal.dsource_dq_at_gp(JacobianVariables::qy_ze, gp) -= -2.0 * bottom_friction_stress * v;
-            //+dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qy, gp);
+            internal.dsource_dq_at_gp(JacobianVariables::qy_ze, gp) -=
+                -2.0 * bottom_friction_stress * v +
+                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qy, gp);
             internal.dsource_dq_at_gp(JacobianVariables::qy_qx, gp) -= C * u * v;
             internal.dsource_dq_at_gp(JacobianVariables::qy_qy, gp) -= bottom_friction_stress + C * v * v;
         }

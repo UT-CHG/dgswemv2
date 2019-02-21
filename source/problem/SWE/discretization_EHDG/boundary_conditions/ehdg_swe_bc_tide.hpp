@@ -1,6 +1,8 @@
 #ifndef EHDG_SWE_BC_TIDE_HPP
 #define EHDG_SWE_BC_TIDE_HPP
 
+#include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
+
 namespace SWE {
 namespace EHDG {
 namespace BC {
