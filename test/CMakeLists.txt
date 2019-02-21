@@ -30,20 +30,21 @@ add_test(
   test_jacobians_ihdg_exe
 )
 
-#[[add_executable(
+add_executable(
   test_global_jacobian_ihdg_exe
   test_global_jacobian_ihdg.cpp
   ${SOURCES}
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_global_jacobian_ihdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_global_jacobian_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
-)]]
+)
 
 add_executable(
   test_tuple_helpers_exe
