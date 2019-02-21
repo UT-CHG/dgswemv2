@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
         // randomly assign q
         const uint stage = stepper.GetStage();
-        auto& state      = elt.data.state[stage + 1];
+        auto& state      = elt.data.state[stage];
 
         dof_local += elt.data.get_ndof() * SWE::n_variables;
 
@@ -92,8 +92,13 @@ int main(int argc, char* argv[]) {
         }
     });
 
+    SWE::IHDG::Problem::init_iteration(stepper, discretization);
+
     // do one pass to compute all jacobians and rhs
-    discretization.mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&](auto& elt) {
+        SWE::IHDG::Problem::local_volume_kernel(stepper, elt);
+        SWE::IHDG::Problem::local_source_kernel(stepper, elt);
+    });
 
     discretization.mesh.CallForEachInterface(
         [&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
@@ -302,7 +307,10 @@ int main(int argc, char* argv[]) {
     });
 
     // do one pass to compute all jacobians and rhs
-    discretization.mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&](auto& elt) {
+        SWE::IHDG::Problem::local_volume_kernel(stepper, elt);
+        SWE::IHDG::Problem::local_source_kernel(stepper, elt);
+    });
 
     discretization.mesh.CallForEachInterface(
         [&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });

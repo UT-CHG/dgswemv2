@@ -343,7 +343,10 @@ int main(int argc, char* argv[]) {
     });
 
     // do one pass to compute next rhs
-    discretization.mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&](auto& elt) {
+        SWE::IHDG::Problem::local_volume_kernel(stepper, elt);
+        SWE::IHDG::Problem::local_source_kernel(stepper, elt);
+    });
 
     discretization.mesh.CallForEachInterface(
         [&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
