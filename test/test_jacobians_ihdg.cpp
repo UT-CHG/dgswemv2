@@ -51,9 +51,8 @@ int main(int argc, char* argv[]) {
     discretization.mesh.CallForEachElement([&](auto& elt) {
         elt.data.resize(2);
 
-        // randomly assign q
         const uint stage = stepper.GetStage();
-        auto& state      = elt.data.state[stage + 1];
+        auto& state      = elt.data.state[stage];
 
         // randomly assign q
         for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
@@ -84,6 +83,8 @@ int main(int argc, char* argv[]) {
             }
         }
     });
+
+    SWE::IHDG::Problem::init_iteration(stepper, discretization);
 
     // do one pass to compute all jacobians and rhs
     discretization.mesh.CallForEachElement([&](auto& elt) {
@@ -157,7 +158,7 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint edge_ID = edge_internal.global_dof_indx[0] / edge_int.edge_data.get_ndof();
+        uint edge_ID = edge_internal.global_dof_indx[0] / edge_int.edge_data.get_ndof() / SWE::n_variables;
 
         // store rhs_global for future comparison
         delta_hat_diff[edge_ID] = edge_internal.rhs_global;
@@ -175,7 +176,7 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint edge_ID = edge_internal.global_dof_indx[0] / edge_bound.edge_data.get_ndof();
+        uint edge_ID = edge_internal.global_dof_indx[0] / edge_bound.edge_data.get_ndof() / SWE::n_variables;
 
         // store rhs_global for future comparison
         delta_hat_diff[edge_ID] = edge_internal.rhs_global;
@@ -183,11 +184,13 @@ int main(int argc, char* argv[]) {
         // difference estimate
         delta_hat_diff_est[edge_ID] =
             boundary.delta_global * flatten<double, SWE::n_variables, SO::ColumnMajor>(state.q);
-        ;
     });
 
     // do one pass to compute next rhs
-    discretization.mesh.CallForEachElement([&](auto& elt) { SWE::IHDG::Problem::local_volume_kernel(stepper, elt); });
+    discretization.mesh.CallForEachElement([&](auto& elt) {
+        SWE::IHDG::Problem::local_volume_kernel(stepper, elt);
+        SWE::IHDG::Problem::local_source_kernel(stepper, elt);
+    });
 
     discretization.mesh.CallForEachInterface(
         [&](auto& intface) { SWE::IHDG::Problem::local_interface_kernel(stepper, intface); });
@@ -243,7 +246,7 @@ int main(int argc, char* argv[]) {
         auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        uint edge_ID = edge_internal.global_dof_indx[0] / edge_int.edge_data.get_ndof();
+        uint edge_ID = edge_internal.global_dof_indx[0] / edge_int.edge_data.get_ndof() / SWE::n_variables;
 
         // subtract to find diff true
         delta_hat_diff[edge_ID] -= edge_internal.rhs_global;
@@ -294,7 +297,7 @@ int main(int argc, char* argv[]) {
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        uint edge_ID = edge_internal.global_dof_indx[0] / edge_bound.edge_data.get_ndof();
+        uint edge_ID = edge_internal.global_dof_indx[0] / edge_bound.edge_data.get_ndof() / SWE::n_variables;
 
         // subtract to find diff true
         delta_hat_diff[edge_ID] -= edge_internal.rhs_global;
@@ -384,7 +387,7 @@ int main(int argc, char* argv[]) {
     discretization.mesh_skeleton.CallForEachEdgeInterface([&](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
 
-        uint edge_ID = edge_internal.global_dof_indx[0] / edge_int.edge_data.get_ndof();
+        uint edge_ID = edge_internal.global_dof_indx[0] / edge_int.edge_data.get_ndof() / SWE::n_variables;
 
         // subtract to find diff true
         delta_hat_diff[edge_ID] -= edge_internal.rhs_global;
@@ -408,7 +411,7 @@ int main(int argc, char* argv[]) {
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
-        uint edge_ID = edge_internal.global_dof_indx[0] / edge_bound.edge_data.get_ndof();
+        uint edge_ID = edge_internal.global_dof_indx[0] / edge_bound.edge_data.get_ndof() / SWE::n_variables;
 
         // subtract to find diff true
         delta_hat_diff[edge_ID] -= edge_internal.rhs_global;

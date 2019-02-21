@@ -37,9 +37,8 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
         ++iter;
 
         /* Local Step */
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_volume_kernel(stepper, elt); });
-
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_source_kernel(stepper, elt); });
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_volume_kernel(stepper, elt); 
+                                                                       Problem::local_source_kernel(stepper, elt); });
 
         discretization.mesh.CallForEachInterface(
             [&stepper](auto& intface) { Problem::local_interface_kernel(stepper, intface); });
