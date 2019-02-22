@@ -1,20 +1,19 @@
-#ifndef EHDG_SWE_DATA_HPP
-#define EHDG_SWE_DATA_HPP
+#ifndef SWE_DATA_HPP
+#define SWE_DATA_HPP
 
-#include "ehdg_swe_data_state.hpp"
-#include "ehdg_swe_data_internal.hpp"
-#include "ehdg_swe_data_boundary.hpp"
+#include "swe_data_state.hpp"
+#include "swe_data_internal.hpp"
+#include "swe_data_boundary.hpp"
 
-#include "problem/SWE/problem_source/swe_data_source.hpp"
-#include "problem/SWE/problem_postprocessor/swe_data_wet_dry.hpp"
-#include "problem/SWE/problem_slope_limiter/swe_data_slope_limit.hpp"
+#include "swe_data_source.hpp"
+#include "swe_data_wet_dry.hpp"
+#include "swe_data_slope_limit.hpp"
 
 namespace SWE {
-namespace EHDG {
 struct Data {
-    AlignedVector<State> state;
-    Internal internal;
-    AlignedVector<Boundary> boundary;
+    AlignedVector<SWE::State> state;
+    SWE::Internal internal;
+    AlignedVector<SWE::Boundary> boundary;
 
     SWE::Source source;
     SWE::WetDry wet_dry_state;
@@ -23,17 +22,17 @@ struct Data {
     void initialize() {
         this->state.emplace_back(this->ndof);
 
-        this->internal = Internal(this->ngp_internal);
+        this->internal = SWE::Internal(this->ngp_internal);
 
         for (uint bound_id = 0; bound_id < this->nbound; ++bound_id) {
-            this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
+            this->boundary.push_back(SWE::Boundary(this->ngp_boundary[bound_id]));
         }
 
-        this->source = Source(this->nnode);
+        this->source = SWE::Source(this->nnode);
 
-        this->wet_dry_state = WetDry(this->nvrtx);
+        this->wet_dry_state = SWE::WetDry(this->nvrtx);
 
-        this->slope_limit_state = SlopeLimit(this->nvrtx, this->nbound);
+        this->slope_limit_state = SWE::SlopeLimit(this->nvrtx, this->nbound);
     }
 
     void resize(const uint nstate) {
@@ -69,7 +68,6 @@ struct Data {
     uint ngp_internal;
     std::vector<uint> ngp_boundary;
 };
-}
 }
 
 #endif

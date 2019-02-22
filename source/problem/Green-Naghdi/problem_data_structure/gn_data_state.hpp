@@ -1,12 +1,11 @@
-#ifndef EHDG_GN_DATA_STATE_HPP
-#define EHDG_GN_DATA_STATE_HPP
+#ifndef GN_DATA_STATE_HPP
+#define GN_DATA_STATE_HPP
 
 namespace GN {
-namespace EHDG {
-struct State : SWE_SIM::State {
+struct State : SWE::State {
     State() = default;
     State(const uint ndof)
-        : SWE_SIM::State(ndof),
+        : SWE::State(ndof),
 #ifdef IHDG_SWE
           rhs(SWE::n_variables, ndof),
           solution(SWE::n_variables, ndof),
@@ -37,7 +36,6 @@ struct State : SWE_SIM::State {
 
     HybMatrix<double, GN::n_dimensions> w1;
 };
-}
 }
 
 #endif

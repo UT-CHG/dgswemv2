@@ -13,7 +13,9 @@
 #include "dist_boundary_conditions/rkdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/rkdg_swe_interface_specializations.hpp"
 
-#include "data_structure/rkdg_swe_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_edge_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_global_data.hpp"
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
@@ -35,8 +37,9 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
-    using ProblemDataType       = Data;
-    using ProblemGlobalDataType = std::tuple<>;
+    using ProblemDataType       = SWE::Data;
+    using ProblemEdgeDataType   = SWE::EdgeData;
+    using ProblemGlobalDataType = SWE::GlobalData;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes =

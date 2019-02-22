@@ -1,8 +1,7 @@
-#ifndef IHDG_SWE_DATA_INTERNAL_HPP
-#define IHDG_SWE_DATA_INTERNAL_HPP
+#ifndef SWE_DATA_INTERNAL_HPP
+#define SWE_DATA_INTERNAL_HPP
 
 namespace SWE {
-namespace IHDG {
 struct Internal {
     Internal() = default;
     Internal(const uint ngp)
@@ -45,8 +44,24 @@ struct Internal {
     DynMatrix<double> delta_local;
     DynVector<double> rhs_local;
     DynVector<double> rhs_prev;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & q_at_gp
+            & aux_at_gp
+            & Fx_at_gp
+            & Fy_at_gp
+            & source_at_gp
+            & dbath_at_gp
+            & tau_s_at_gp
+            & dp_atm_at_gp
+            & dtide_pot_at_gp;
+        // clang-format on
+    }
+#endif
 };
-}
 }
 
 #endif

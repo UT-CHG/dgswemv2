@@ -1,12 +1,11 @@
-#ifndef EHDG_GN_DATA_INTERNAL_HPP
-#define EHDG_GN_DATA_INTERNAL_HPP
+#ifndef GN_DATA_INTERNAL_HPP
+#define GN_DATA_INTERNAL_HPP
 
 namespace GN {
-namespace EHDG {
-struct Internal : SWE_SIM::Internal {
+struct Internal : SWE::Internal {
     Internal() = default;
     Internal(const uint ngp)
-        : SWE_SIM::Internal(ngp),
+        : SWE::Internal(ngp),
           u_at_gp(GN::n_dimensions, ngp),
           du_at_gp(GN::n_du_terms, ngp),
           ddu_at_gp(GN::n_ddu_terms, ngp),
@@ -41,7 +40,6 @@ struct Internal : SWE_SIM::Internal {
     DynMatrix<double> w2_w2_inv;
     /* rhs_w2 = 0 */
 };
-}
 }
 
 #endif

@@ -13,9 +13,9 @@
 #include "dist_boundary_conditions/ehdg_gn_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ehdg_gn_interface_specializations.hpp"
 
-#include "data_structure/ehdg_gn_data.hpp"
-#include "data_structure/ehdg_gn_edge_data.hpp"
-#include "data_structure/ehdg_gn_global_data.hpp"
+#include "problem/Green-Naghdi/problem_data_structure/gn_data.hpp"
+#include "problem/Green-Naghdi/problem_data_structure/gn_edge_data.hpp"
+#include "problem/Green-Naghdi/problem_data_structure/gn_global_data.hpp"
 
 #include "problem/Green-Naghdi/problem_input/gn_inputs.hpp"
 #include "problem/Green-Naghdi/problem_parser/gn_parser.hpp"
@@ -23,6 +23,13 @@
 #include "geometry/mesh_definitions.hpp"
 #include "geometry/mesh_skeleton_definitions.hpp"
 #include "preprocessor/mesh_metadata.hpp"
+
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_intface.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_bound.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_dbound.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_edge_intface.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_edge_bound.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_edge_dbound.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -32,9 +39,9 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = GN::Parser;
 
-    using ProblemDataType       = Data;
-    using ProblemEdgeDataType   = EdgeData;
-    using ProblemGlobalDataType = GlobalData;
+    using ProblemDataType       = GN::Data;
+    using ProblemEdgeDataType   = GN::EdgeData;
+    using ProblemGlobalDataType = GN::GlobalData;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
@@ -70,17 +77,40 @@ struct Problem {
 
     static void preprocess_mesh_data(InputParameters<ProblemInputType>& input) { SWE::preprocess_mesh_data(input); }
 
+    // helpers to create communication
+    static constexpr uint n_communications = GN::EHDG::n_communications;
+
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
+        std::vector<uint> offset = SWE_SIM::Problem::comm_buffer_offsets(begin_index, ngp);
+
+        offset.resize(Problem::n_communications);
+
+        offset[CommTypes::dc_global_dof_indx] = begin_index[CommTypes::dc_global_dof_indx];
+        offset[CommTypes::dbath]              = begin_index[CommTypes::dbath];
+        offset[CommTypes::derivatives]        = begin_index[CommTypes::derivatives];
+
+        begin_index[CommTypes::dc_global_dof_indx] += 1;
+        begin_index[CommTypes::dbath] += GN::n_ddbath_terms * ngp;
+        begin_index[CommTypes::derivatives] += GN::n_du_terms * ngp;
+
+        return offset;
+    }
+
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
-                                  ProblemInputType& problem_input,
-                                  ProblemWriterType& writer);
+                                  ProblemInputType& input,
+                                  ProblemWriterType& writer) {
+        GN::create_interfaces<GN::EHDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
-                                  ProblemInputType& problem_input,
-                                  ProblemWriterType& writer);
+                                  ProblemInputType& input,
+                                  ProblemWriterType& writer) {
+        GN::create_boundaries<GN::EHDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
@@ -96,24 +126,28 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        ProblemWriterType& writer);
-
-    // helpers to create communication
-    static constexpr uint n_communications = GN::EHDG::n_communications;
-    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
+        ProblemWriterType& writer) {
+        // *** //
+        GN::create_distributed_boundaries<GN::EHDG::Problem>(raw_boundaries, mesh, input, communicator, writer);
+    }
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       ProblemWriterType& writer);
+                                       ProblemWriterType& writer) {
+        GN::create_edge_interfaces<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     static void create_edge_boundaries(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       ProblemWriterType& writer);
+                                       ProblemWriterType& writer) {
+        GN::create_edge_boundaries<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     static void create_edge_distributeds(ProblemMeshType& mesh,
                                          ProblemMeshSkeletonType& mesh_skeleton,
-                                         ProblemWriterType& writer);
-
+                                         ProblemWriterType& writer) {
+        GN::create_edge_distributeds<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     ProblemGlobalDataType& global_data,
                                     const ProblemStepperType& stepper,

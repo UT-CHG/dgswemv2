@@ -1,8 +1,7 @@
-#ifndef EHDG_SWE_DATA_STATE_HPP
-#define EHDG_SWE_DATA_STATE_HPP
+#ifndef SWE_DATA_STATE_HPP
+#define SWE_DATA_STATE_HPP
 
 namespace SWE {
-namespace EHDG {
 struct State {
     State() = default;
     State(const uint ndof)
@@ -16,8 +15,19 @@ struct State {
 
     HybMatrix<double, SWE::n_variables> rhs;
     HybMatrix<double, SWE::n_variables> solution;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & q
+            & aux
+            & rhs
+            & solution;
+        // clang-format on
+    }
+#endif
 };
-}
 }
 
 #endif

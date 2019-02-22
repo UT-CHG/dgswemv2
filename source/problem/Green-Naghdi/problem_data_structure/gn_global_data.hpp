@@ -1,9 +1,8 @@
-#ifndef EHDG_GN_GLOBAL_DATA_HPP
-#define EHDG_GN_GLOBAL_DATA_HPP
+#ifndef GN_GLOBAL_DATA_HPP
+#define GN_GLOBAL_DATA_HPP
 
 namespace GN {
-namespace EHDG {
-struct GlobalData : SWE_SIM::GlobalData {
+struct GlobalData : SWE::GlobalData {
 #ifndef HAS_PETSC
     SparseMatrix<double> w1_hat_w1_hat;
     DynVector<double> w1_hat_rhs;
@@ -22,7 +21,7 @@ struct GlobalData : SWE_SIM::GlobalData {
     DynVector<double> dc_solution;
 
     void destroy() {
-        SWE_SIM::GlobalData::destroy();
+        SWE::GlobalData::destroy();
 
         MatDestroy(&w1_hat_w1_hat);
         VecDestroy(&w1_hat_rhs);
@@ -35,7 +34,6 @@ struct GlobalData : SWE_SIM::GlobalData {
     }
 #endif
 };
-}
 }
 
 #endif

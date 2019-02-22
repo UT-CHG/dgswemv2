@@ -1,8 +1,7 @@
-#ifndef EHDG_SWE_EDGE_DATA_INTERNAL_HPP
-#define EHDG_SWE_EDGE_DATA_INTERNAL_HPP
+#ifndef SWE_EDGE_DATA_INTERNAL_HPP
+#define SWE_EDGE_DATA_INTERNAL_HPP
 
 namespace SWE {
-namespace EHDG {
 struct EdgeInternal {
     EdgeInternal() = default;
     EdgeInternal(const uint ngp)
@@ -30,8 +29,13 @@ struct EdgeInternal {
 
     DynMatrix<double> delta_hat_global;
     DynVector<double> rhs_global;
+
+    DynVector<double> delta_hat_global_flat;
+    std::vector<DynVector<double>> delta_hat_global_con_flat;
+
+    std::vector<uint> global_dof_indx;
+    uint sol_offset;
 };
-}
 }
 
 #endif

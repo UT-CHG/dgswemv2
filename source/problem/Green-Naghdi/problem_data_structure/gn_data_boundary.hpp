@@ -1,12 +1,11 @@
-#ifndef EHDG_GN_DATA_BOUNDARY_HPP
-#define EHDG_GN_DATA_BOUNDARY_HPP
+#ifndef GN_DATA_BOUNDARY_HPP
+#define GN_DATA_BOUNDARY_HPP
 
 namespace GN {
-namespace EHDG {
-struct Boundary : SWE_SIM::Boundary {
+struct Boundary : SWE::Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
-        : SWE_SIM::Boundary(ngp),
+        : SWE::Boundary(ngp),
           ze_hat_at_gp(ngp),
           bath_hat_at_gp(ngp),
           dbath_hat_at_gp(GN::n_dimensions, ngp),
@@ -44,7 +43,6 @@ struct Boundary : SWE_SIM::Boundary {
 
     std::vector<uint> dc_global_dof_indx;
 };
-}
 }
 
 #endif

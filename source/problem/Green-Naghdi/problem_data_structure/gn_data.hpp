@@ -1,38 +1,38 @@
-#ifndef EHDG_GN_DATA_HPP
-#define EHDG_GN_DATA_HPP
+#ifndef GN_DATA_HPP
+#define GN_DATA_HPP
 
-#include "ehdg_gn_data_state.hpp"
-#include "ehdg_gn_data_internal.hpp"
-#include "ehdg_gn_data_boundary.hpp"
-#include "ehdg_gn_data_source.hpp"
-#include "ehdg_gn_data_wet_dry.hpp"
-#include "ehdg_gn_data_slope_limit.hpp"
+#include "gn_data_state.hpp"
+#include "gn_data_internal.hpp"
+#include "gn_data_boundary.hpp"
+
+#include "gn_data_source.hpp"
+#include "gn_data_wet_dry.hpp"
+#include "gn_data_slope_limit.hpp"
 
 namespace GN {
-namespace EHDG {
 struct Data {
-    AlignedVector<State> state;
-    Internal internal;
-    AlignedVector<Boundary> boundary;
+    AlignedVector<GN::State> state;
+    GN::Internal internal;
+    AlignedVector<GN::Boundary> boundary;
 
-    Source source;
-    WetDry wet_dry_state;
-    SlopeLimit slope_limit_state;
+    GN::Source source;
+    GN::WetDry wet_dry_state;
+    GN::SlopeLimit slope_limit_state;
 
     void initialize() {
         this->state.emplace_back(this->ndof);
 
-        this->internal = Internal(this->ngp_internal);
+        this->internal = GN::Internal(this->ngp_internal);
 
         for (uint bound_id = 0; bound_id < this->nbound; ++bound_id) {
-            this->boundary.push_back(Boundary(this->ngp_boundary[bound_id]));
+            this->boundary.push_back(GN::Boundary(this->ngp_boundary[bound_id]));
         }
 
-        this->source = Source(this->nnode);
+        this->source = GN::Source(this->nnode);
 
-        this->wet_dry_state = WetDry(this->nvrtx);
+        this->wet_dry_state = GN::WetDry(this->nvrtx);
 
-        this->slope_limit_state = SlopeLimit(this->nvrtx, this->nbound);
+        this->slope_limit_state = GN::SlopeLimit(this->nvrtx, this->nbound);
     }
 
     void resize(const uint nstate) {
@@ -68,7 +68,6 @@ struct Data {
     uint ngp_internal;
     std::vector<uint> ngp_boundary;
 };
-}
 }
 
 #endif

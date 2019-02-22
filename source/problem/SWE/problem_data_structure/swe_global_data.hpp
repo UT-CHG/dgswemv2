@@ -1,12 +1,11 @@
-#ifndef IHDG_SWE_GLOBAL_DATA_HPP
-#define IHDG_SWE_GLOBAL_DATA_HPP
+#ifndef SWE_GLOBAL_DATA_HPP
+#define SWE_GLOBAL_DATA_HPP
 
 #ifdef HAS_PETSC
 #include <petscksp.h>
 #endif
 
 namespace SWE {
-namespace IHDG {
 struct GlobalData {
 #ifndef HAS_PETSC
     SparseMatrix<double> delta_hat_global;
@@ -38,7 +37,6 @@ struct GlobalData {
     }
 #endif
 };
-}
 }
 
 #endif

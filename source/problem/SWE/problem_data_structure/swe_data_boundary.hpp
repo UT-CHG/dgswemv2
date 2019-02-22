@@ -1,8 +1,7 @@
-#ifndef IHDG_SWE_DATA_BOUNDARY_HPP
-#define IHDG_SWE_DATA_BOUNDARY_HPP
+#ifndef SWE_DATA_BOUNDARY_HPP
+#define SWE_DATA_BOUNDARY_HPP
 
 namespace SWE {
-namespace IHDG {
 struct Boundary {
     Boundary() = default;
     Boundary(const uint ngp)
@@ -25,8 +24,18 @@ struct Boundary {
     DynMatrix<double> delta_hat_local;
 
     std::vector<uint> global_dof_indx;
+
+#ifdef HAS_HPX
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned) {
+        // clang-format off
+        ar  & q_at_gp
+            & aux_at_gp
+            & F_hat_at_gp;
+        // clang-format on
+    }
+#endif
 };
-}
 }
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef SWE_SOURCE_HPP
 #define SWE_SOURCE_HPP
 
-#include "swe_data_source.hpp"
+#include "problem/SWE/problem_data_structure/swe_data_source.hpp"
 #include "problem/SWE/problem_function_files/swe_source_functions.hpp"
 
 namespace SWE {
