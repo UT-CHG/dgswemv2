@@ -30,15 +30,16 @@ std::vector<std::vector<MeshMetaData>> partition(const MeshMetaData& mesh_meta,
 
     CSRMat mesh_graph(rank_balanced ? problem_weights : element_weights, edge_weights);
 
-    std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, 1.05);
-
     std::unordered_map<int, int64_t> elt2partition;
-    const std::vector<int>& elts_sorted = mesh_graph.node_ID();
-    for (uint i = 0; i < elts_sorted.size(); ++i) {
-        elt2partition.insert({elts_sorted.at(i), mesh_part.at(i)});
-    }
-
     {
+        std::vector<int64_t> mesh_part = metis_part(mesh_graph, num_partitions, 1.05);
+        const std::vector<int>& elts_sorted = mesh_graph.node_ID();
+
+	elt2partition.reserve(elts_sorted.size());
+        for (uint i = 0; i < elts_sorted.size(); ++i) {
+            elt2partition.insert({elts_sorted.at(i), mesh_part.at(i)});
+	}
+
         double inter_submesh_edge_cuts(0);
         for (const auto& edg : edge_weights) {
             if (elt2partition.at(edg.first.first) != elt2partition.at(edg.first.second)) {

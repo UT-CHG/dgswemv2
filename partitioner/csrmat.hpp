@@ -236,6 +236,13 @@ std::vector<int64_t> metis_part(const CSRMat& mat, int64_t nparts, const double 
         return std::vector<int64_t>(nvtxs, 0);
     }
 
+    // other easy case
+    if ( nparts == nvtxs) {
+      std::vector<int64_t>part(nvtxs);
+      std::iota(part.begin(), part.end(), 0);
+      return part;
+    }
+
     // set up metis parameters
     int64_t ncon = static_cast<int64_t>(mat.constraint_number());
     int64_t objval;
