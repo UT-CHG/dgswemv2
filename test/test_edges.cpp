@@ -15,21 +15,20 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::EHDG::Data>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
-    using RawBoundaryType = Geometry::RawBoundary<1, SWE::EHDG::Data>;
-    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::BC::Land>;
-    using InterfaceType =
-        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::EHDG::Data, SWE::EHDG::ISP::Internal>;
+    using RawBoundaryType = Geometry::RawBoundary<1, SWE::Data>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Data, SWE::EHDG::BC::Land>;
+    using InterfaceType   = Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Data, SWE::EHDG::ISP::Internal>;
 
     using EdgeBoundaryTypes =
-        Geometry::EdgeBoundaryTypeTuple<SWE::EHDG::EdgeData,
-                                        Geometry::BoundaryTypeTuple<SWE::EHDG::Data, SWE::EHDG::BC::Land>>::Type;
+        Geometry::EdgeBoundaryTypeTuple<SWE::EdgeData,
+                                        Geometry::BoundaryTypeTuple<SWE::Data, SWE::EHDG::BC::Land>>::Type;
     using EdgeBoundaryType = typename std::tuple_element<0, EdgeBoundaryTypes>::type;
 
     using EdgeInterfaceTypes =
-        Geometry::EdgeInterfaceTypeTuple<SWE::EHDG::EdgeData,
-                                         Geometry::InterfaceTypeTuple<SWE::EHDG::Data, SWE::EHDG::ISP::Internal>>::Type;
+        Geometry::EdgeInterfaceTypeTuple<SWE::EdgeData,
+                                         Geometry::InterfaceTypeTuple<SWE::Data, SWE::EHDG::ISP::Internal>>::Type;
     using EdgeInterfaceType = typename std::tuple_element<0, EdgeInterfaceTypes>::type;
 
     // make an equilateral triangle

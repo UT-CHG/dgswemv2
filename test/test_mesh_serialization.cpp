@@ -11,14 +11,14 @@
 #include "utilities/almost_equal.hpp"
 
 using InputType = InputParameters<SWE::Inputs>;
-using MeshType  = Geometry::MeshType<SWE::RKDG::Data,
+using MeshType  = Geometry::MeshType<SWE::Data,
                                     std::tuple<SWE::RKDG::ISP::Internal, SWE::RKDG::ISP::Levee>,
                                     std::tuple<SWE::RKDG::BC::Land, SWE::RKDG::BC::Tide, SWE::RKDG::BC::Flow>,
                                     std::tuple<SWE::RKDG::DBC::Distributed, SWE::RKDG::DBC::DistributedLevee>>::Type;
 
 struct DummyProblem {
     using ProblemInputType = SWE::Inputs;
-    using ProblemDataType  = SWE::RKDG::Data;
+    using ProblemDataType  = SWE::Data;
     using ProblemMeshType  = MeshType;
 };
 
