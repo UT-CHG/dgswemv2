@@ -19,7 +19,10 @@ timestepping:
 polynomial_order: 3
 
 problem:
-  name: ehdg_swe
+  name: rkdg_swe
   gravity: 9.81
   density_air: 1.225
-  density_water: 1000.0
+  density_water: 1000.0  
+  bottom_friction:
+    type: Chezy
+    coefficient: 0.003
