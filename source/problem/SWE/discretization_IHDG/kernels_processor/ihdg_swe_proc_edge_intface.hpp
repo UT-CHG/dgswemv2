@@ -1,6 +1,8 @@
 #ifndef IHDG_SWE_PROC_EDGE_INTFACE_HPP
 #define IHDG_SWE_PROC_EDGE_INTFACE_HPP
 
+#include "problem/SWE/problem_flux/swe_flux.hpp"
+
 namespace SWE {
 namespace IHDG {
 template <typename StepperType, typename EdgeInterfaceType>
@@ -27,25 +29,7 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
 
         /* Compute fluxes at boundary states */
 
-        auto nx = row(surface_normal, GlobalCoord::x);
-        auto ny = row(surface_normal, GlobalCoord::y);
-
-        auto u = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qx), row(aux_hat_at_gp, SWE::Auxiliaries::h));
-        auto v = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qy), row(aux_hat_at_gp, SWE::Auxiliaries::h));
-
-        auto uuh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qx));
-        auto vvh = vec_cw_mult(v, row(q_hat_at_gp, SWE::Variables::qy));
-        auto uvh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qy));
-        auto pe =
-            Global::g *
-            (0.5 * vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(q_hat_at_gp, SWE::Variables::ze)) +
-             vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
-
-        // Fn terms
-        row(boundary_in.F_hat_at_gp, SWE::Variables::ze) = vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qx), nx) +
-                                                           vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qy), ny);
-        row(boundary_in.F_hat_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh + pe, nx) + vec_cw_mult(uvh, ny);
-        row(boundary_in.F_hat_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
+        SWE::get_Fn(q_hat_at_gp, aux_hat_at_gp, surface_normal, boundary_in.F_hat_at_gp);
 
         /* Add stabilization parameter terms */
 
@@ -97,41 +81,9 @@ void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterf
 
     /* Compute fluxes at boundary states */
 
-    auto nx = row(surface_normal, GlobalCoord::x);
-    auto ny = row(surface_normal, GlobalCoord::y);
+    SWE::get_Fn(q_hat_at_gp, aux_hat_at_gp, surface_normal, boundary_in.F_hat_at_gp);
 
-    auto u = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qx), row(aux_hat_at_gp, SWE::Auxiliaries::h));
-    auto v = vec_cw_div(row(q_hat_at_gp, SWE::Variables::qy), row(aux_hat_at_gp, SWE::Auxiliaries::h));
-
-    auto uuh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qx));
-    auto vvh = vec_cw_mult(v, row(q_hat_at_gp, SWE::Variables::qy));
-    auto uvh = vec_cw_mult(u, row(q_hat_at_gp, SWE::Variables::qy));
-    auto pe  = Global::g *
-              (0.5 * vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(q_hat_at_gp, SWE::Variables::ze)) +
-               vec_cw_mult(row(q_hat_at_gp, SWE::Variables::ze), row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath)));
-
-    // Fn terms
-    row(boundary_in.F_hat_at_gp, SWE::Variables::ze) =
-        vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qx), nx) + vec_cw_mult(row(q_hat_at_gp, SWE::Variables::qy), ny);
-    row(boundary_in.F_hat_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh + pe, nx) + vec_cw_mult(uvh, ny);
-    row(boundary_in.F_hat_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
-
-    // dFn/dq_hat terms
-    set_constant(row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::ze_ze), 0.0);
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::ze_qx) = nx;
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::ze_qy) = ny;
-
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qx_ze) =
-        vec_cw_mult(-vec_cw_mult(u, u) + Global::g * row(aux_hat_at_gp, SWE::Auxiliaries::h), nx) -
-        vec_cw_mult(vec_cw_mult(u, v), ny);
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qx_qx) = 2.0 * vec_cw_mult(u, nx) + vec_cw_mult(v, ny);
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qx_qy) = vec_cw_mult(u, ny);
-
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qy_ze) =
-        -vec_cw_mult(vec_cw_mult(u, v), nx) +
-        vec_cw_mult(-vec_cw_mult(v, v) + Global::g * row(aux_hat_at_gp, SWE::Auxiliaries::h), ny);
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qy_qx) = vec_cw_mult(v, nx);
-    row(boundary_in.dF_hat_dq_hat_at_gp, JacobianVariables::qy_qy) = vec_cw_mult(u, nx) + 2.0 * vec_cw_mult(v, ny);
+    SWE::get_dFn_dq(q_hat_at_gp, aux_hat_at_gp, surface_normal, boundary_in.dF_hat_dq_hat_at_gp);
 
     /* Add stabilization parameter terms */
 

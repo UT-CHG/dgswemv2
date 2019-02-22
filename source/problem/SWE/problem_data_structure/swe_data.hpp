@@ -68,7 +68,7 @@ struct Data {
     uint ngp_internal;
     std::vector<uint> ngp_boundary;
 
-public:
+  public:
 #ifdef HAS_HPX
     template <typename Archive>
     void serialize(Archive& ar, unsigned) {
