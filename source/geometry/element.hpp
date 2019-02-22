@@ -10,7 +10,7 @@ class Element {
     DataType data;
 
   private:
-    uint ID;
+    const uint ID;
 
     MasterType* master = nullptr;
     ShapeType shape;
