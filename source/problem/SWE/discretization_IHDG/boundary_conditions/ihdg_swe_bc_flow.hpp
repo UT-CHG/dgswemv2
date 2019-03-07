@@ -136,7 +136,7 @@ void Flow::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_b
 
         for (uint con = 0; con < this->frequency.size(); ++con) {
             for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
-                this->qn[gp] += stepper.GetRampPrev() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
+                this->qn[gp] += stepper.GetRamp() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
                                 cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() + this->equilib_arg[con] -
                                     this->phase_gp[con][gp]);
             }
@@ -220,8 +220,8 @@ void Flow::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& ed
 
     for (uint con = 0; con < this->frequency.size(); ++con) {
         for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
-            this->qn[gp] += stepper.GetRamp() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
-                            cos(this->frequency[con] * (stepper.GetTimeAtCurrentStage() + stepper.GetDT()) +
+            this->qn[gp] += stepper.GetRampNext() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
+                            cos(this->frequency[con] * stepper.GetTimeAtNextStage() +
                                 this->equilib_arg[con] - this->phase_gp[con][gp]);
         }
     }

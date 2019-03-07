@@ -23,7 +23,7 @@ class ImplicitStepper : public Stepper {
     double t;
     double ramp_duration;
     double ramp;
-    double ramp_prev;
+    double ramp_next;
 
   public:
     ImplicitStepper() = default;
@@ -36,9 +36,9 @@ class ImplicitStepper : public Stepper {
           timestamp(0),
           t(0.),
           ramp_duration(stepper_input.ramp_duration),
-          ramp(Utilities::almost_equal(ramp_duration, 0) ? 1.
-                                                         : std::tanh(2 * (this->dt / 86400) / this->ramp_duration)),
-          ramp_prev(Utilities::almost_equal(ramp_duration, 0) ? 1. : 0.) {
+          ramp(Utilities::almost_equal(ramp_duration, 0) ? 1. : 0.),
+          ramp_next(Utilities::almost_equal(ramp_duration, 0) ? 1.
+                                                         : std::tanh(2 * (this->dt / 86400) / this->ramp_duration)) {
         if (this->order == 1 && this->nstages == 1) {
             this->theta = 0.0;
         } else if (this->order == 2 && this->nstages == 1) {
@@ -64,8 +64,9 @@ class ImplicitStepper : public Stepper {
     uint GetTimestamp() const { return this->timestamp; }
 
     double GetTimeAtCurrentStage() const { return this->t; }
+    double GetTimeAtNextStage() const { return this->t + this->dt; }
     double GetRamp() const { return this->ramp; }
-    double GetRampPrev() const { return this->ramp_prev; }
+    double GetRampNext() const { return this->ramp_next; }
 
     ImplicitStepper& operator++() {
         ++(this->stage);
@@ -79,8 +80,8 @@ class ImplicitStepper : public Stepper {
         }
 
         if (!Utilities::almost_equal(this->ramp_duration, 0)) {
-            this->ramp_prev = this->ramp;
-            this->ramp      = std::tanh(2 * ((this->GetTimeAtCurrentStage() + this->dt) / 86400) / this->ramp_duration);
+            this->ramp      = this->ramp_next;
+            this->ramp_next = std::tanh(2 * (this->GetTimeAtNextStage() / 86400) / this->ramp_duration);
         }
 
         return *this;

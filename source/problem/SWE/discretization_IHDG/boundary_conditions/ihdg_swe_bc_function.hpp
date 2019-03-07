@@ -174,7 +174,7 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
     get_dAminus_dqx(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqx);
     get_dAminus_dqy(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqy);
 
-    double t = stepper.GetTimeAtCurrentStage() + stepper.GetDT();
+    double t = stepper.GetTimeAtNextStage();
 
     this->q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
         double ze = 0.0;

@@ -24,7 +24,7 @@ void Problem::volume_kernel(const ProblemStepperType& stepper, ElementType& elt)
 
         SWE::get_F(internal.q_at_gp, internal.aux_at_gp, internal.Fx_at_gp, internal.Fy_at_gp);
 
-        // Sphertical projection
+        // Spherical projection
         row(internal.Fx_at_gp, SWE::Variables::ze) =
             vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::sp), row(internal.Fx_at_gp, SWE::Variables::ze));
         row(internal.Fx_at_gp, SWE::Variables::qx) =

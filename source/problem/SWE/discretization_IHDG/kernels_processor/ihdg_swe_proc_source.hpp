@@ -64,7 +64,7 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
         }
     }
 
-    SWE::get_source(stepper.GetTimeAtCurrentStage() + stepper.GetDT(), elt);
+    SWE::get_source(stepper.GetTimeAtNextStage(), elt);
 
     double theta = stepper.GetTheta();
 
