@@ -81,7 +81,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
 template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
     const uint bound_id,
-    const std::vector<Point<1>>& z_boundary) {
+    const std::vector<Point<1>>& z_boundary) const {
     // *** //
     uint ngp = z_boundary.size();
 
@@ -115,24 +115,24 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
-inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const InputArrayType& u_lin) {
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const InputArrayType& u_lin) const {
     return u_lin * this->chi_baryctr;
 }
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
-inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const InputArrayType& u_lin) {
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const InputArrayType& u_lin) const {
     return u_lin * this->chi_midpts;
 }
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
-inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const InputArrayType& u_lin) {
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const InputArrayType& u_lin) const {
     return u_lin;
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() const {
     std::vector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
 
     double dz = 2.0 / N_DIV;
@@ -157,7 +157,7 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() {
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() const {
     std::vector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
 
     double dz = 2.0 / N_DIV;

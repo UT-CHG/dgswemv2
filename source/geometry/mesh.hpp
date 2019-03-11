@@ -49,7 +49,7 @@ class Mesh<std::tuple<Elements...>,
     std::string GetMeshName() { return this->mesh_name; }
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
 
-    MasterElementTypes& GetMasters() { return this->masters; }
+    const MasterElementTypes& GetMasters() { return this->masters; }
     void SetMasters() { this->masters = master_maker<MasterElementTypes>::construct_masters(p); }
 
     uint GetNumberElements() { return this->elements.size(); }
