@@ -37,8 +37,9 @@ class ImplicitStepper : public Stepper {
           t(0.),
           ramp_duration(stepper_input.ramp_duration),
           ramp(Utilities::almost_equal(ramp_duration, 0) ? 1. : 0.),
-          ramp_next(Utilities::almost_equal(ramp_duration, 0) ? 1.
-                                                         : std::tanh(2 * (this->dt / 86400) / this->ramp_duration)) {
+          ramp_next(Utilities::almost_equal(ramp_duration, 0)
+                        ? 1.
+                        : std::tanh(2 * (this->dt / 86400) / this->ramp_duration)) {
         if (this->order == 1 && this->nstages == 1) {
             this->theta = 0.0;
         } else if (this->order == 2 && this->nstages == 1) {

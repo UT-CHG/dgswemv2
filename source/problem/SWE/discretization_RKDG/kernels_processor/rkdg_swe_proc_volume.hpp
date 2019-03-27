@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename ElementType>
-void Problem::volume_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::volume_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& wd_state = elt.data.wet_dry_state;
