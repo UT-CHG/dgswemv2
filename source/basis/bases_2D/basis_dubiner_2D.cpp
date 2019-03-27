@@ -210,7 +210,7 @@ std::array<double, 2> Dubiner_2D::ComputeSingularDPhiDZ2(const uint q) {
     return dphi_data;
 }
 
-inline DynMatrix<double> Dubiner_2D::ProjectBasisToLinear(const DynMatrix<double>& u) {
+DynMatrix<double> Dubiner_2D::ProjectBasisToLinear(const DynMatrix<double>& u) {
     uint nvar = rows(u);
 
     DynMatrix<double> u_lin(nvar, 3);
@@ -222,7 +222,7 @@ inline DynMatrix<double> Dubiner_2D::ProjectBasisToLinear(const DynMatrix<double
     return u_lin;
 }
 
-inline DynMatrix<double> Dubiner_2D::ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) {
+DynMatrix<double> Dubiner_2D::ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) {
     uint nvar = rows(u_lin);
 
     DynMatrix<double> u(nvar, ndof);

@@ -4,7 +4,7 @@
 namespace SWE {
 namespace RKDG {
 // The normal points form the interior side (in) to the exterior side (ex)
-inline void LLF_flux(const double gravity,
+void LLF_flux(const double gravity,
                      const Column<HybMatrix<double, SWE::n_variables>>& q_in,
                      const Column<HybMatrix<double, SWE::n_variables>>& q_ex,
                      const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,

@@ -13,7 +13,7 @@ namespace Utilities {
  * @param file_name name of file
  * @return Whether or not the file exists
  */
-inline bool file_exists(const std::string& file_name) {
+bool file_exists(const std::string& file_name) {
     if (FILE* file = fopen(file_name.c_str(), "r")) {
         fclose(file);
         return true;

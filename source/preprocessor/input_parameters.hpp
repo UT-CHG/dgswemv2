@@ -392,7 +392,7 @@ void InputParameters<ProblemInput>::write_to(const std::string& output_filename)
 }
 
 template <>
-inline YamlNodeWrapper InputParameters<YamlNodeWrapper>::problem_specific_ctor_helper(const YAML::Node& input_file) {
+YamlNodeWrapper InputParameters<YamlNodeWrapper>::problem_specific_ctor_helper(const YAML::Node& input_file) {
     YamlNodeWrapper temp;
 
     temp.node = input_file["problem"];
@@ -401,7 +401,7 @@ inline YamlNodeWrapper InputParameters<YamlNodeWrapper>::problem_specific_ctor_h
 }
 
 template <>
-inline SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
+SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
     if (input_file["problem"]) {
         YAML::Node swe_node = input_file["problem"];
 
@@ -419,7 +419,7 @@ inline SWE::Inputs InputParameters<typename SWE::Inputs>::problem_specific_ctor_
 }
 
 template <>
-inline GN::Inputs InputParameters<typename GN::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
+GN::Inputs InputParameters<typename GN::Inputs>::problem_specific_ctor_helper(const YAML::Node& input_file) {
     if (input_file["problem"]) {
         YAML::Node gn_node = input_file["problem"];
         if (gn_node["name"].as<std::string>() == "ehdg_gn" || gn_node["name"].as<std::string>() == "ihdg_gn") {
