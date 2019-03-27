@@ -40,7 +40,7 @@ class HPXCommunicator {
     HPXCommunicator(const DistributedBoundaryMetaData& db_data);
 
     uint GetRankBoundaryNumber() { return this->rank_boundaries.size(); }
-    uint GetNCommunications() {
+    uint GetNumberOfCommunications() {
         return this->GetRankBoundaryNumber() > 0 ? this->rank_boundaries.front().send_buffer.size() : 0u;
     }
     HPXRankBoundary& GetRankBoundary(const uint rank_boundary_id) { return this->rank_boundaries.at(rank_boundary_id); }
