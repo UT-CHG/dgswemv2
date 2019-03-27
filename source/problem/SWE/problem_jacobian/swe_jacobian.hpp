@@ -310,7 +310,7 @@ void get_dAminus_dqy(const HybMatrix<double, SWE::n_variables>& q,
     }
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
 
     double c  = std::sqrt(Global::g * h);
@@ -325,7 +325,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, dou
     return L;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze;
 
     double dc_dze  = std::sqrt(Global::g / h) / 2.0;
@@ -340,7 +340,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u
     return dL_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx;
 
     double dun_dqx = nx / h;
@@ -354,7 +354,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(double h, double u
     return dL_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy;
 
     double dun_dqy = ny / h;
@@ -368,7 +368,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(double h, double u
     return dL_dqy;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> absL;
 
     double c  = std::sqrt(Global::g * h);
@@ -383,7 +383,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(double h, double u, 
     return absL;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze;
 
     double c  = std::sqrt(Global::g * h);
@@ -401,7 +401,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h, doubl
     return dabsL_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx;
 
     double c  = std::sqrt(Global::g * h);
@@ -418,7 +418,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h, doubl
     return dabsL_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy;
 
     double c  = std::sqrt(Global::g * h);
@@ -435,7 +435,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h, doubl
     return dabsL_dqy;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> R(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> R(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
 
     double c = std::sqrt(Global::g * h);
@@ -455,7 +455,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> R(double h, double u, dou
     return R;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze;
 
     double dc_dze = std::sqrt(Global::g / h) / 2.0;
@@ -470,7 +470,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(double h, double u
     return dR_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx;
 
     set_constant(dR_dqx, 0.0);
@@ -481,7 +481,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(double h, double u
     return dR_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy;
 
     set_constant(dR_dqy, 0.0);
@@ -492,7 +492,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(double h, double u
     return dR_dqy;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> invR;
 
     double c  = std::sqrt(Global::g * h);
@@ -513,7 +513,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(double h, double u, 
     return invR;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze;
 
     double c    = std::sqrt(Global::g * h);
@@ -537,7 +537,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(double h, doubl
     return dinvR_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx;
 
     double c = std::sqrt(Global::g * h);
@@ -551,7 +551,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(double h, doubl
     return dinvR_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy;
 
     double c = std::sqrt(Global::g * h);
