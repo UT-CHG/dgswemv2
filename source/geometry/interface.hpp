@@ -263,9 +263,7 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master_in.ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact_in, lookup);
+    return u_gp * column(this->int_phi_phi_fact_in, this->master_in.ndof * dof_i + dof_j);
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
@@ -324,9 +322,7 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master_ex.ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact_ex, lookup);
+    return u_gp * column(this->int_phi_phi_fact_ex, this->master_ex.ndof * dof_i + dof_j);
 }
 }
 

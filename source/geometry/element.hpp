@@ -281,7 +281,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
+DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
     DynMatrix<double> projection = this->ComputeFgp(f) * this->int_phi_fact * this->m_inv;
 
@@ -298,7 +298,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2Pro
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
+DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
     const InputArrayType& u) {
     if (const_J) {
         return this->master->basis.ProjectBasisToLinear(u);
@@ -310,7 +310,7 @@ inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::Pr
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
+DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
     const uint ndof,
     const InputArrayType& u_lin) {
     if (const_J) {
@@ -323,7 +323,7 @@ inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::Pr
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
+DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
@@ -435,9 +435,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integ
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master->ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact, lookup);
+    return u_gp * column(this->int_phi_phi_fact, this->master->ndof * dof_i + dof_j);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -465,9 +463,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Integ
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_dphi_fact[dir_j](lookup, gp)
-    uint lookup = this->master->ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_dphi_fact[dir_j], lookup);
+    return u_gp * column(this->int_phi_dphi_fact[dir_j], this->master->ndof * dof_i + dof_j);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -485,7 +481,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vec
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType, typename OutputArrayType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(
+void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& cell_data) {
     // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
@@ -500,7 +496,7 @@ inline void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVT
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType, typename OutputArrayType>
-inline void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(
+void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& point_data) {
     // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)

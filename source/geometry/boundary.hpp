@@ -135,7 +135,7 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
 template <typename F>
-inline DynMatrix<double> Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeFgp(const F& f) {
+DynMatrix<double> Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
@@ -204,9 +204,7 @@ inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonTyp
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master.ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact, lookup);
+    return u_gp * column(this->int_phi_phi_fact, this->master.ndof * dof_i + dof_j);
 }
 }
 
