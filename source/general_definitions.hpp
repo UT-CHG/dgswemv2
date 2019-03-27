@@ -169,7 +169,7 @@ class Master {
     // decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 
   private:
-    virtual std::vector<Point<2>> VTKPostCell() const = 0;
+    virtual std::vector<Point<2>> VTKPostCell() const  = 0;
     virtual std::vector<Point<2>> VTKPostPoint() const = 0;
 };
 }

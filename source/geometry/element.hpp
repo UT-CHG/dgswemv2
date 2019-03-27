@@ -298,8 +298,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2Pro
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
-    const InputArrayType& u) {
+DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const InputArrayType& u) {
     if (const_J) {
         return this->master->basis.ProjectBasisToLinear(u);
     } else {
@@ -481,9 +480,8 @@ void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vec
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType, typename OutputArrayType>
-void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(
-    const InputArrayType& u,
-    AlignedVector<OutputArrayType>& cell_data) {
+void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(const InputArrayType& u,
+                                                                           AlignedVector<OutputArrayType>& cell_data) {
     // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
     OutputArrayType temp;
 
