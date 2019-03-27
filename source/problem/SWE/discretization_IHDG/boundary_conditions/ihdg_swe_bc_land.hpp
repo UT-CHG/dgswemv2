@@ -1,6 +1,8 @@
 #ifndef IHDG_SWE_BC_LAND_HPP
 #define IHDG_SWE_BC_LAND_HPP
 
+#include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
+
 namespace SWE {
 namespace IHDG {
 namespace BC {
@@ -9,8 +11,8 @@ class Land {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -19,8 +21,8 @@ class Land {
 template <typename BoundaryType>
 void Land::Initialize(BoundaryType& bound) {}
 
-template <typename EdgeBoundaryType>
-void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Land::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& bound = edge_bound.boundary;
 
     auto& state    = bound.data.state[0];
@@ -40,7 +42,8 @@ void Land::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) +
+            row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
         double qn;
         double nx, ny;

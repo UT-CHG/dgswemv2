@@ -3,6 +3,8 @@
 
 #include "communication/db_data_exchanger.hpp"
 
+#include "problem/SWE/problem_flux/swe_flux.hpp"
+
 namespace SWE {
 namespace EHDG {
 namespace DBC {
@@ -50,7 +52,7 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
     edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
     SWE::get_dtau_dze_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dze);
@@ -105,31 +107,14 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute trace flux */
 
-    auto nx = row(edge_dbound.boundary.surface_normal, GlobalCoord::x);
-    auto ny = row(edge_dbound.boundary.surface_normal, GlobalCoord::y);
-
-    auto u = vec_cw_div(row(edge_internal.q_hat_at_gp, SWE::Variables::qx),
-                        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
-    auto v = vec_cw_div(row(edge_internal.q_hat_at_gp, SWE::Variables::qy),
-                        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h));
-
-    auto uuh = vec_cw_mult(u, row(edge_internal.q_hat_at_gp, SWE::Variables::qx));
-    auto vvh = vec_cw_mult(v, row(edge_internal.q_hat_at_gp, SWE::Variables::qy));
-    auto uvh = vec_cw_mult(u, row(edge_internal.q_hat_at_gp, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * vec_cw_mult(row(edge_internal.q_hat_at_gp, SWE::Variables::ze),
-                                             row(edge_internal.q_hat_at_gp, SWE::Variables::ze)) +
-                           vec_cw_mult(row(edge_internal.q_hat_at_gp, SWE::Variables::ze),
-                                       row(boundary.aux_at_gp, SWE::Auxiliaries::bath)));
-
-    row(boundary.F_hat_at_gp, SWE::Variables::ze) =
-        vec_cw_mult(row(edge_internal.q_hat_at_gp, SWE::Variables::qx), nx) +
-        vec_cw_mult(row(edge_internal.q_hat_at_gp, SWE::Variables::qy), ny);
-    row(boundary.F_hat_at_gp, SWE::Variables::qx) = vec_cw_mult(uuh + pe, nx) + vec_cw_mult(uvh, ny);
-    row(boundary.F_hat_at_gp, SWE::Variables::qy) = vec_cw_mult(uvh, nx) + vec_cw_mult(vvh + pe, ny);
+    SWE::get_Fn(edge_internal.q_hat_at_gp,
+                edge_internal.aux_hat_at_gp,
+                edge_dbound.boundary.surface_normal,
+                boundary.F_hat_at_gp);
 
     /* Add stabilization parameter terms */
 

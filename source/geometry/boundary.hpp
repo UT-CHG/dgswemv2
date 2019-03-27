@@ -35,10 +35,9 @@ class Boundary {
     template <typename... Args>
     Boundary(RawBoundary<dimension, DataType>&& raw_boundary, Args&&... args);
 
-    Master::Master<dimension + 1>& GetMaster() { return this->master; }
-    Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
-
-    std::vector<uint>& GetNodeID() { return this->node_ID; }
+    const Master::Master<dimension + 1>& GetMaster() { return this->master; }
+    const Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
+    const std::vector<uint>& GetNodeID() { return this->node_ID; }
 
     template <typename F>
     DynMatrix<double> ComputeFgp(const F& f);

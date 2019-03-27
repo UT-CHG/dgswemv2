@@ -5,23 +5,29 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename SerialSimType>
-void Problem::step_serial(SerialSimType* sim) {
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+template <typename ProblemType>
+void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
+                          typename ProblemType::ProblemGlobalDataType& global_data,
+                          typename ProblemType::ProblemStepperType& stepper,
+                          typename ProblemType::ProblemWriterType& writer,
+                          typename ProblemType::ProblemParserType& parser) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        Problem::stage_serial(sim->stepper, sim->discretization);
+        Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (sim->writer.WritingOutput()) {
-        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    if (writer.WritingOutput()) {
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 
-template <typename StepperType, typename ProblemType>
-void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
+template <typename ProblemType>
+void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
+                           typename ProblemType::ProblemGlobalDataType& global_data,
+                           typename ProblemType::ProblemStepperType& stepper) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_interface_kernel(stepper, intface); });

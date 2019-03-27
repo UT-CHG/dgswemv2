@@ -3,10 +3,12 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename OMPISimUnitType>
-bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                        uint begin_sim_id,
-                                        uint end_sim_id) {
+template <template <typename> typename OMPISimUnitType, typename ProblemType>
+bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                                        typename ProblemType::ProblemGlobalDataType& global_data,
+                                        const typename ProblemType::ProblemStepperType& stepper,
+                                        const uint begin_sim_id,
+                                        const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
@@ -123,8 +125,6 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
             }
         });
     }
-
-    auto& global_data = sim_units[0]->discretization.global_data;
 
     Mat& delta_hat_global = global_data.delta_hat_global;
     Vec& rhs_global       = global_data.rhs_global;
@@ -379,8 +379,8 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
                 reshape<double, SWE::n_variables, SO::ColumnMajor>(del_q_hat, edge_dbound.edge_data.get_ndof());
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state = elt.data.state[stage + 1];
 

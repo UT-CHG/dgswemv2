@@ -7,15 +7,15 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                uint begin_sim_id,
-                                uint end_sim_id) {
-    SWE_SIM::Problem::preprocessor_ompi(sim_units, begin_sim_id, end_sim_id);
+                                ProblemGlobalDataType& global_data,
+                                const ProblemStepperType& stepper,
+                                const uint begin_sim_id,
+                                const uint end_sim_id) {
+    SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
 
 #pragma omp barrier
 #pragma omp master
     {
-        auto& global_data = sim_units[0]->discretization.global_data;
-
         std::vector<uint> dc_global_dof_offsets;
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
@@ -27,16 +27,19 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             dc_global_dof_offsets.push_back(dc_global_dof_offset);
         }
 
-        uint total_dc_global_dof_offset =
-            std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
+        uint total_dc_global_dof_offset = 0;
 
-        // exclusive scan
-        std::rotate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end() - 1, dc_global_dof_offsets.end());
+        if (!dc_global_dof_offsets.empty()) {
+            total_dc_global_dof_offset = std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
 
-        dc_global_dof_offsets.front() = 0;
+            // exclusive scan
+            std::rotate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end() - 1, dc_global_dof_offsets.end());
 
-        for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
-            dc_global_dof_offsets[su_id] += dc_global_dof_offsets[su_id - 1];
+            dc_global_dof_offsets.front() = 0;
+
+            for (uint su_id = 1; su_id < sim_units.size(); ++su_id) {
+                dc_global_dof_offsets[su_id] += dc_global_dof_offsets[su_id - 1];
+            }
         }
 
         int n_localities;
@@ -109,27 +112,23 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.ReceiveAll(CommTypes::dc_global_dof_indx,
-                                                      sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.ReceiveAll(CommTypes::dc_global_dof_indx, 0);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.SendAll(CommTypes::dc_global_dof_indx,
-                                                   sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.SendAll(CommTypes::dc_global_dof_indx, 0);
         }
 
         std::vector<uint> dc_global_dof_indx;
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dc_global_dof_indx,
-                                                           sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dc_global_dof_indx, 0);
 
             Problem::initialize_global_dc_problem_parallel_post_receive(
                 sim_units[su_id]->discretization, sim_units[su_id]->communicator, dc_global_dof_indx);
         }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->communicator.WaitAllSends(CommTypes::dc_global_dof_indx,
-                                                        sim_units[su_id]->stepper.GetTimestamp());
+            sim_units[su_id]->communicator.WaitAllSends(CommTypes::dc_global_dof_indx, 0);
         }
 
         VecCreateSeq(MPI_COMM_SELF, dc_global_dof_indx.size(), &(global_data.dc_sol));

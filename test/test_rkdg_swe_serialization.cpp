@@ -466,8 +466,8 @@ bool test_rkdg_swe_wet_dry() {
     return check_equality(o_wd, i_wd);
 }
 
-SWE::RKDG::Data build_data() {
-    SWE::RKDG::Data data;
+SWE::Data build_data() {
+    SWE::Data data;
 
     uint nvrtx{3};
     uint nbound{3};
@@ -509,7 +509,7 @@ SWE::RKDG::Data build_data() {
     return data;
 }
 
-bool check_equality(const SWE::RKDG::Data& o_data, const SWE::RKDG::Data& i_data) {
+bool check_equality(const SWE::Data& o_data, const SWE::Data& i_data) {
     bool is_equal{true};
     for (uint i = 0; i < o_data.state.size(); ++i) {
         is_equal &= check_equality(o_data.state.at(i), i_data.state.at(i));
@@ -536,14 +536,14 @@ bool check_equality(const SWE::RKDG::Data& o_data, const SWE::RKDG::Data& i_data
 }
 
 bool test_rkdg_swe_data() {
-    SWE::RKDG::Data o_data = build_data();
+    SWE::Data o_data = build_data();
 
     std::vector<char> buffer;
     hpx::serialization::output_archive o_archive(buffer);
     o_archive << o_data;
 
     hpx::serialization::input_archive i_archive(buffer);
-    SWE::RKDG::Data i_data;
+    SWE::Data i_data;
     i_archive >> i_data;
 
     return check_equality(o_data, i_data);

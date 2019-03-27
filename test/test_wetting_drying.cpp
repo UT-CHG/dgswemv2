@@ -18,7 +18,7 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Data>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Data>;
 
     // the whole test is designed for h_0 = 0.01
     SWE::PostProcessing::h_o = 0.01;

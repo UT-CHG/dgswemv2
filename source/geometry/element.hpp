@@ -49,10 +49,10 @@ class Element {
             std::vector<uchar>&& boundary_type);
 
     uint GetID() { return this->ID; }
-    MasterType& GetMaster() { return *this->master; }
-    ShapeType& GetShape() { return this->shape; }
-    std::vector<uint>& GetNodeID() { return this->node_ID; }
-    std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
+    const MasterType& GetMaster() { return *this->master; }
+    const ShapeType& GetShape() { return this->shape; }
+    const std::vector<uint>& GetNodeID() { return this->node_ID; }
+    const std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
 

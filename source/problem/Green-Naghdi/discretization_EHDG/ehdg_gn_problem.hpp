@@ -13,9 +13,9 @@
 #include "dist_boundary_conditions/ehdg_gn_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ehdg_gn_interface_specializations.hpp"
 
-#include "data_structure/ehdg_gn_data.hpp"
-#include "data_structure/ehdg_gn_edge_data.hpp"
-#include "data_structure/ehdg_gn_global_data.hpp"
+#include "problem/Green-Naghdi/problem_data_structure/gn_data.hpp"
+#include "problem/Green-Naghdi/problem_data_structure/gn_edge_data.hpp"
+#include "problem/Green-Naghdi/problem_data_structure/gn_global_data.hpp"
 
 #include "problem/Green-Naghdi/problem_input/gn_inputs.hpp"
 #include "problem/Green-Naghdi/problem_parser/gn_parser.hpp"
@@ -23,6 +23,13 @@
 #include "geometry/mesh_definitions.hpp"
 #include "geometry/mesh_skeleton_definitions.hpp"
 #include "preprocessor/mesh_metadata.hpp"
+
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_intface.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_bound.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_dbound.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_edge_intface.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_edge_bound.hpp"
+#include "problem/Green-Naghdi/problem_preprocessor/gn_pre_create_edge_dbound.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -32,9 +39,9 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = GN::Parser;
 
-    using ProblemDataType       = Data;
-    using ProblemEdgeDataType   = EdgeData;
-    using ProblemGlobalDataType = GlobalData;
+    using ProblemDataType       = GN::Data;
+    using ProblemEdgeDataType   = GN::EdgeData;
+    using ProblemGlobalDataType = GN::GlobalData;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Data, BC::Land, BC::Tide, BC::Flow>;
@@ -70,17 +77,40 @@ struct Problem {
 
     static void preprocess_mesh_data(InputParameters<ProblemInputType>& input) { SWE::preprocess_mesh_data(input); }
 
+    // helpers to create communication
+    static constexpr uint n_communications = GN::EHDG::n_communications;
+
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
+        std::vector<uint> offset = SWE_SIM::Problem::comm_buffer_offsets(begin_index, ngp);
+
+        offset.resize(Problem::n_communications);
+
+        offset[CommTypes::dc_global_dof_indx] = begin_index[CommTypes::dc_global_dof_indx];
+        offset[CommTypes::dbath]              = begin_index[CommTypes::dbath];
+        offset[CommTypes::derivatives]        = begin_index[CommTypes::derivatives];
+
+        begin_index[CommTypes::dc_global_dof_indx] += 1;
+        begin_index[CommTypes::dbath] += GN::n_ddbath_terms * ngp;
+        begin_index[CommTypes::derivatives] += GN::n_du_terms * ngp;
+
+        return offset;
+    }
+
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
-                                  ProblemInputType& problem_input,
-                                  ProblemWriterType& writer);
+                                  ProblemInputType& input,
+                                  ProblemWriterType& writer) {
+        GN::create_interfaces<GN::EHDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
-                                  ProblemInputType& problem_input,
-                                  ProblemWriterType& writer);
+                                  ProblemInputType& input,
+                                  ProblemWriterType& writer) {
+        GN::create_boundaries<GN::EHDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
@@ -96,31 +126,39 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        ProblemWriterType& writer);
-
-    // helpers to create communication
-    static constexpr uint n_communications = GN::EHDG::n_communications;
-    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
+        ProblemWriterType& writer) {
+        // *** //
+        GN::create_distributed_boundaries<GN::EHDG::Problem>(raw_boundaries, mesh, input, communicator, writer);
+    }
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       ProblemWriterType& writer);
+                                       ProblemWriterType& writer) {
+        GN::create_edge_interfaces<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     static void create_edge_boundaries(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       ProblemWriterType& writer);
+                                       ProblemWriterType& writer) {
+        GN::create_edge_boundaries<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     static void create_edge_distributeds(ProblemMeshType& mesh,
                                          ProblemMeshSkeletonType& mesh_skeleton,
-                                         ProblemWriterType& writer);
-
+                                         ProblemWriterType& writer) {
+        GN::create_edge_distributeds<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
+                                    ProblemGlobalDataType& global_data,
+                                    const ProblemStepperType& stepper,
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                  uint begin_sim_id,
-                                  uint end_sim_id);
+                                  ProblemGlobalDataType& global_data,
+                                  const ProblemStepperType& stepper,
+                                  const uint begin_sim_id,
+                                  const uint end_sim_id);
 
     static void initialize_global_dc_problem_serial(ProblemDiscretizationType& discretization,
                                                     uint& dc_global_dof_offset);
@@ -142,32 +180,44 @@ struct Problem {
 
     template <typename OMPISimUnitType>
     static void compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                                    uint begin_sim_id,
-                                                    uint end_sim_id);
+                                                    const uint begin_sim_id,
+                                                    const uint end_sim_id);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    static void step_serial(ProblemDiscretizationType& discretization,
+                            ProblemGlobalDataType& global_data,
+                            ProblemStepperType& stepper,
+                            ProblemWriterType& writer,
+                            ProblemParserType& parser);
 
-    template <typename OMPISimType>
-    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                          ProblemGlobalDataType& global_data,
+                          ProblemStepperType& stepper,
+                          const uint begin_sim_id,
+                          const uint end_sim_id);
 
     /* Dispersive correction part */
 
-    static void dispersive_correction_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
+    static void dispersive_correction_serial(ProblemDiscretizationType& discretization,
+                                             ProblemGlobalDataType& global_data,
+                                             ProblemStepperType& stepper);
 
-    static void compute_derivatives_serial(const ProblemStepperType& stepper,
-                                           ProblemDiscretizationType& discretization);
+    static void compute_derivatives_serial(ProblemDiscretizationType& discretization,
+                                           const ProblemStepperType& stepper);
 
     template <typename OMPISimUnitType>
     static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                           uint begin_sim_id,
-                                           uint end_sim_id);
+                                           ProblemGlobalDataType& global_data,
+                                           ProblemStepperType& stepper,
+                                           const uint begin_sim_id,
+                                           const uint end_sim_id);
 
     template <typename OMPISimUnitType>
     static void compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                         uint begin_sim_id,
-                                         uint end_sim_id);
+                                         const ProblemStepperType& stepper,
+                                         const uint begin_sim_id,
+                                         const uint end_sim_id);
 
     /* local step */
 
@@ -197,13 +247,16 @@ struct Problem {
     template <typename EdgeDistributedType>
     static void global_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
 
-    static void serial_solve_global_dc_problem(const ProblemStepperType& stepper,
-                                               ProblemDiscretizationType& discretization);
+    static void serial_solve_global_dc_problem(ProblemDiscretizationType& discretization,
+                                               ProblemGlobalDataType& global_data,
+                                               const ProblemStepperType& stepper);
 
     template <typename OMPISimUnitType>
     static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                             uint begin_sim_id,
-                                             uint end_sim_id);
+                                             ProblemGlobalDataType& global_data,
+                                             const ProblemStepperType& stepper,
+                                             const uint begin_sim_id,
+                                             const uint end_sim_id);
 
     template <typename ElementType>
     static void dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt);
@@ -228,10 +281,10 @@ struct Problem {
         return SWE::compute_residual_L2(stepper, elt);
     }
 
-    template <typename SimType>
-    static void finalize_simulation(SimType* sim) {
+    template <typename GlobalDataType>
+    static void finalize_simulation(GlobalDataType& global_data) {
 #ifdef HAS_PETSC
-        sim->sim_units[0]->discretization.global_data.destroy();
+        global_data.destroy();
 #endif
     }
 };

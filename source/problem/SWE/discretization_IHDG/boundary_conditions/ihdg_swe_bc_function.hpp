@@ -1,11 +1,15 @@
 #ifndef IHDG_SWE_BC_FUNCTION_HPP
 #define IHDG_SWE_BC_FUNCTION_HPP
 
+#include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
+
 namespace SWE {
 namespace IHDG {
 namespace BC {
 class Function {
   private:
+    HybMatrix<double, SWE::n_variables> q_ex;
+
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> Aplus;
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dze;
     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>> dAplus_dqx;
@@ -20,8 +24,8 @@ class Function {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -30,6 +34,8 @@ class Function {
 template <typename BoundaryType>
 void Function::Initialize(BoundaryType& bound) {
     uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
+
+    this->q_ex.resize(SWE::n_variables, ngp);
 
     this->Aplus.resize(ngp);
     this->dAplus_dze.resize(ngp);
@@ -42,8 +48,8 @@ void Function::Initialize(BoundaryType& bound) {
     this->dAminus_dqy.resize(ngp);
 }
 
-template <typename EdgeBoundaryType>
-void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Function::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& bound = edge_bound.boundary;
 
     auto& state    = bound.data.state[0];
@@ -67,7 +73,8 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) +
+            row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
         get_Aplus(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->Aplus);
         get_dAplus_dze(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAplus_dze);
@@ -79,9 +86,9 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         get_dAminus_dqx(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqx);
         get_dAminus_dqy(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqy);
 
-        HybMatrix<double, SWE::n_variables> q_ex = edge_bound.boundary.ComputeFgp([](Point<2>& pt) {
-            double t = 0.0;
+        double t = stepper.GetTimeAtCurrentStage();
 
+        this->q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
             double ze = 0.0;
             double qx = 0.0;
             double qy = 0.0;
@@ -103,7 +110,7 @@ void Function::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
             auto q     = column(boundary.q_at_gp, gp);
             auto q_hat = column(edge_internal.q_hat_at_gp, gp);
-            auto q_inf = column(q_ex, gp);
+            auto q_inf = column(this->q_ex, gp);
 
             StatMatrix<double, SWE::n_variables, SWE::n_variables> dB_dq_hat = this->Aminus[gp] - this->Aplus[gp];
 
@@ -167,9 +174,9 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
     get_dAminus_dqx(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqx);
     get_dAminus_dqy(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAminus_dqy);
 
-    double t = stepper.GetTimeAtCurrentStage() + stepper.GetDT();
+    double t = stepper.GetTimeAtNextStage();
 
-    HybMatrix<double, SWE::n_variables> q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
+    this->q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
         double ze = 0.0;
         double qx = 0.0;
         double qy = 0.0;
@@ -191,7 +198,7 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
         auto q     = column(boundary.q_at_gp, gp);
         auto q_hat = column(q_hat_at_gp, gp);
-        auto q_inf = column(q_ex, gp);
+        auto q_inf = column(this->q_ex, gp);
 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> dB_dq_hat = this->Aminus[gp] - this->Aplus[gp];
 

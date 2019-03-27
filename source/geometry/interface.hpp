@@ -48,14 +48,12 @@ class Interface {
               RawBoundary<dimension, DataType>&& raw_boundary_ex,
               Args&&... args);
 
-    Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
-    Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
-
-    Shape::Shape<dimension + 1>& GetShapeIN() { return this->shape_in; }
-    Shape::Shape<dimension + 1>& GetShapeEX() { return this->shape_ex; }
-
-    std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
-    std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
+    const Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
+    const Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
+    const Shape::Shape<dimension + 1>& GetShapeIN() { return this->shape_in; }
+    const Shape::Shape<dimension + 1>& GetShapeEX() { return this->shape_ex; }
+    const std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
+    const std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
 
     template <typename InputArrayType>
     decltype(auto) ComputeUgpIN(const InputArrayType& u);

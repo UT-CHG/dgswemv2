@@ -20,8 +20,8 @@ class Outflow {
     template <typename BoundaryType>
     void Initialize(BoundaryType& bound);
 
-    template <typename EdgeBoundaryType>
-    void ComputeInitTrace(EdgeBoundaryType& edge_bound);
+    template <typename StepperType, typename EdgeBoundaryType>
+    void ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -42,8 +42,8 @@ void Outflow::Initialize(BoundaryType& bound) {
     this->dAminus_dqy.resize(ngp);
 }
 
-template <typename EdgeBoundaryType>
-void Outflow::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
+template <typename StepperType, typename EdgeBoundaryType>
+void Outflow::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& bound = edge_bound.boundary;
 
     auto& state    = bound.data.state[0];
@@ -67,7 +67,8 @@ void Outflow::ComputeInitTrace(EdgeBoundaryType& edge_bound) {
         edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+            row(edge_internal.q_hat_at_gp, SWE::Variables::ze) +
+            row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
         get_Aplus(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->Aplus);
         get_dAplus_dze(q_hat_at_gp, aux_hat_at_gp, surface_normal, this->dAplus_dze);

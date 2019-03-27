@@ -16,6 +16,7 @@ class Simulation : public SimulationBase {
     uint n_steps;
 
     typename ProblemType::ProblemDiscretizationType discretization;
+    typename ProblemType::ProblemGlobalDataType global_data;
 
     typename ProblemType::ProblemStepperType stepper;
     typename ProblemType::ProblemWriterType writer;
@@ -30,9 +31,6 @@ class Simulation : public SimulationBase {
     void Run();
     void ComputeL2Residual();
     void Finalize();
-
-  private:
-    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -68,7 +66,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Run() {
-    ProblemType::preprocessor_serial(this->discretization, this->problem_input);
+    ProblemType::preprocessor_serial(this->discretization, this->global_data, this->stepper, this->problem_input);
 
     if (this->writer.WritingLog()) {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
@@ -83,7 +81,7 @@ void Simulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; ++step) {
-        ProblemType::step_serial(this);
+        ProblemType::step_serial(this->discretization, this->global_data, this->stepper, this->writer, this->parser);
     }
 }
 
@@ -99,7 +97,7 @@ void Simulation<ProblemType>::ComputeL2Residual() {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Finalize() {
-    ProblemType::finalize_simulation(this);
+    ProblemType::finalize_simulation(this->global_data);
 }
 }
 #endif

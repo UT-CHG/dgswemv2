@@ -5,6 +5,7 @@ namespace SWE {
 namespace IHDG {
 template <typename ProblemType>
 void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
+                                               const typename ProblemType::ProblemStepperType& stepper,
                                                uint& global_dof_offset) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
@@ -22,6 +23,16 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
         uint ndof_global = edge_int.edge_data.get_ndof();
+
+        uint gp_ex;
+        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+            gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+
+            edge_internal.aux_hat_at_gp(SWE::Auxiliaries::bath, gp) =
+                (boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp) +
+                 boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex)) /
+                2.0;
+        }
 
         // Set indexes for global matrix construction
         edge_internal.global_dof_indx.resize(ndof_global * SWE::n_variables);
@@ -55,10 +66,12 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         edge_int.interface.specialization.ComputeInitTrace(edge_int);
     });
 
-    discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_dof_offset](auto& edge_bound) {
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper, &global_dof_offset](auto& edge_bound) {
         auto& edge_internal = edge_bound.edge_data.edge_internal;
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         uint ndof_global = edge_bound.edge_data.get_ndof();
 
@@ -86,15 +99,15 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
         boundary.delta_global.resize(SWE::n_variables * edge_bound.edge_data.get_ndof(),
                                      SWE::n_variables * edge_bound.boundary.data.get_ndof());
 
-        edge_bound.boundary.boundary_condition.ComputeInitTrace(edge_bound);
+        edge_bound.boundary.boundary_condition.ComputeInitTrace(stepper, edge_bound);
     });
 }
 
-template <typename ProblemType, typename Communicator>
+template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
-                                                          Communicator& communicator,
+                                                          const typename ProblemType::ProblemStepperType& stepper,
                                                           uint& global_dof_offset) {
-    Problem::initialize_global_problem_serial(discretization, global_dof_offset);
+    Problem::initialize_global_problem_serial(discretization, stepper, global_dof_offset);
 
     discretization.mesh_skeleton.CallForEachEdgeDistributed([&global_dof_offset](auto& edge_dbound) {
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
@@ -184,12 +197,16 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
         // Construct message to exterior state
         std::vector<double> message;
 
-        message.reserve(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
+        message.reserve(1 + (SWE::n_variables + 1) * dbound.data.get_ngp_boundary(dbound.bound_id));
 
         for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
             for (uint var = 0; var < SWE::n_variables; ++var) {
                 message.push_back(boundary.q_at_gp(var, gp));
             }
+        }
+
+        for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
+            message.push_back(boundary.aux_at_gp(SWE::Auxiliaries::bath, gp));
         }
 
         uint ndof_global = edge_dbound.edge_data.get_ndof();
@@ -214,9 +231,8 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
     });
 }
 
-template <typename ProblemType, typename Communicator>
+template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization,
-                                                              Communicator& communicator,
                                                               std::vector<uint>& global_dof_indx) {
     discretization.mesh_skeleton.CallForEachEdgeInterface([&global_dof_indx](auto& edge_int) {
         auto& edge_internal = edge_int.edge_data.edge_internal;
@@ -250,10 +266,9 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
 
-        std::vector<double> message;
+        std::vector<double> message(1 + (SWE::n_variables + 1) * ngp);
         HybMatrix<double, SWE::n_variables> q_ex(SWE::n_variables, ngp);
-
-        message.resize(1 + SWE::n_variables * ngp);
+        DynRowVector<double> bath_ex(ngp);
 
         edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::init_global_prob, message);
 
@@ -265,6 +280,13 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
                 q_ex(var, gp_ex) = message[SWE::n_variables * gp + var];
             }
         }
+
+        for (uint gp = 0; gp < ngp; ++gp) {
+            bath_ex(ngp - gp - 1) = message[SWE::n_variables * ngp + gp];
+        }
+
+        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) =
+            (row(boundary.aux_at_gp, SWE::Auxiliaries::bath) + bath_ex) / 2.0;
 
         edge_internal.delta_hat_global_con_flat.resize(edge_dbound.boundary.data.get_nbound() - 1);
 

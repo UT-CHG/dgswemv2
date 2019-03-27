@@ -13,7 +13,9 @@
 #include "dist_boundary_conditions/rkdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/rkdg_swe_interface_specializations.hpp"
 
-#include "data_structure/rkdg_swe_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_edge_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_global_data.hpp"
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
@@ -23,6 +25,10 @@
 #include "geometry/mesh_definitions.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
+#include "problem/SWE/problem_preprocessor/swe_pre_create_intface.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_bound.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_dbound.hpp"
+
 namespace SWE {
 namespace RKDG {
 struct Problem {
@@ -31,7 +37,9 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
-    using ProblemDataType = Data;
+    using ProblemDataType       = SWE::Data;
+    using ProblemEdgeDataType   = SWE::EdgeData;
+    using ProblemGlobalDataType = SWE::GlobalData;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Data, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes =
@@ -53,23 +61,44 @@ struct Problem {
 
     static void preprocess_mesh_data(InputParameters<ProblemInputType>& input) { SWE::preprocess_mesh_data(input); }
 
+    // helpers to create communication
+    static constexpr uint n_communications = SWE::RKDG::n_communications;
+
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
+        std::vector<uint> offset(SWE::RKDG::n_communications);
+
+        offset[CommTypes::baryctr_coord] = begin_index[CommTypes::baryctr_coord];
+        offset[CommTypes::bound_state]   = begin_index[CommTypes::bound_state];
+        offset[CommTypes::baryctr_state] = begin_index[CommTypes::baryctr_state];
+
+        begin_index[CommTypes::baryctr_coord] += 2;
+        begin_index[CommTypes::bound_state] += SWE::n_variables * ngp + 1;  // + w/d state
+        begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
+
+        return offset;
+    }
+
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& input,
-                                  ProblemWriterType& writer);
+                                  ProblemWriterType& writer) {
+        SWE::create_interfaces<SWE::RKDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
                                   ProblemInputType& input,
-                                  ProblemWriterType& writer);
+                                  ProblemWriterType& writer) {
+        SWE::create_boundaries<SWE::RKDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
         std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
         ProblemMeshType&,
-        ProblemInputType& input,
+        ProblemInputType& problem_input,
         std::tuple<>&,
         ProblemWriterType&) {}
 
@@ -79,36 +108,49 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        ProblemWriterType& writer);
-
-    // helpers to create communication
-    static constexpr uint n_communications = SWE::RKDG::n_communications;
-    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
-
+        ProblemWriterType& writer) {
+        // *** //
+        SWE::create_distributed_boundaries<SWE::RKDG::Problem>(raw_boundaries, mesh, input, communicator, writer);
+    }
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
+                                    ProblemGlobalDataType& global_data,
+                                    const ProblemStepperType& stepper,
                                     const ProblemInputType& problem_specific_input);
 
     template <typename OMPISimUnitType>
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                  uint begin_sim_id,
-                                  uint end_sim_id);
+                                  ProblemGlobalDataType& global_data,
+                                  const ProblemStepperType& stepper,
+                                  const uint begin_sim_id,
+                                  const uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    static void step_serial(ProblemDiscretizationType& discretization,
+                            ProblemGlobalDataType& global_data,
+                            ProblemStepperType& stepper,
+                            ProblemWriterType& writer,
+                            ProblemParserType& parser);
 
-    static void stage_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization);
+    static void stage_serial(ProblemDiscretizationType& discretization,
+                             ProblemGlobalDataType& global_data,
+                             ProblemStepperType& stepper);
 
-    template <typename OMPISimType>
-    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                          ProblemGlobalDataType& global_data,
+                          ProblemStepperType& stepper,
+                          const uint begin_sim_id,
+                          const uint end_sim_id);
 
     template <typename OMPISimUnitType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                           uint begin_sim_id,
-                           uint end_sim_id);
+                           ProblemGlobalDataType& global_data,
+                           ProblemStepperType& stepper,
+                           const uint begin_sim_id,
+                           const uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto stage_hpx(HPXSimUnitType* sim_unit);
@@ -154,8 +196,7 @@ struct Problem {
         return SWE::compute_residual_L2(stepper, elt);
     }
 
-    template <typename SimType>
-    static void finalize_simulation(SimType* sim) {}
+    static void finalize_simulation(ProblemGlobalDataType& global_data) {}
 };
 }
 }

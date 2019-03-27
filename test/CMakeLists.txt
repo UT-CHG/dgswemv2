@@ -1,13 +1,4 @@
-add_executable(
-  test_linear_algebra_exe
-  test_linear_algebra.cpp
-)
-
-target_compile_definitions(test_linear_algebra_exe PRIVATE ${LINALG_DEFINITION})
-
-#[[target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
-target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
-
+if (EHDG)
 add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
@@ -15,14 +6,17 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_jacobians_ehdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_jacobians_ehdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_jacobians_ehdg
   test_jacobians_ehdg_exe
 )
+endif()
 
+if (IHDG)
 add_executable(
   test_jacobians_ihdg_exe
   test_jacobians_ihdg.cpp
@@ -30,8 +24,9 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_jacobians_ihdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_jacobians_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_jacobians_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_jacobians_ihdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_jacobians_ihdg
@@ -45,13 +40,15 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_global_jacobian_ihdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_global_jacobian_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
-)]]
+)
+endif()
 
 add_executable(
   test_tuple_helpers_exe
