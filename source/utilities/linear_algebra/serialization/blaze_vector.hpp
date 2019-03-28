@@ -39,6 +39,7 @@
 #define SERIALIZATION_BLAZE_VECTOR_HPP
 
 #include <blaze/math/serialization/VectorSerializer.h>
+#include <hpx/include/serialization.hpp>
 
 namespace hpx {
 namespace serialization {

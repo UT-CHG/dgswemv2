@@ -91,7 +91,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
         edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::init_global_prob, message);
 
         for (uint gp = 0; gp < ngp; ++gp) {
-            bath_ex(ngp - gp - 1) = message[gp];
+            bath_ex[ngp - gp - 1] = message[gp];
         }
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) =

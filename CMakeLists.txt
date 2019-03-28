@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (DGSWEMv2 CXX C)
 
-option(USE_EIGEN "Use Eigen" ON)
+option(USE_EIGEN "Use Eigen" OFF)
 option(USE_BLAZE "Use Blaze" OFF)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
