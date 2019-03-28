@@ -66,9 +66,9 @@ class Element {
     decltype(auto) L2ProjectionNode(const InputArrayType& nodal_values);
 
     template <typename InputArrayType>
-    DynMatrix<double> ProjectBasisToLinear(const InputArrayType& u);
+    decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
     template <typename InputArrayType>
-    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
 
     template <typename F>
     DynMatrix<double> ComputeFgp(const F& f);
@@ -298,25 +298,26 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2Pro
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(const InputArrayType& u) {
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectBasisToLinear(
+    const InputArrayType& u) {
     if (const_J) {
-        return this->master->basis.ProjectBasisToLinear(u);
+        return this->master->ProjectBasisToLinear(u);
     } else {
-        return DynMatrix<double>();
         // Placeholder for nonconstant Jacobian
+        return this->master->ProjectBasisToLinear(u);
     }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
-DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
     const uint ndof,
     const InputArrayType& u_lin) {
     if (const_J) {
-        return this->master->basis.ProjectLinearToBasis(ndof, u_lin);
+        return this->master->ProjectLinearToBasis(u_lin);
     } else {
-        return DynMatrix<double>();
         // Placeholder for nonconstant Jacobian
+        return this->master->ProjectLinearToBasis(u_lin);
     }
 }
 

@@ -57,6 +57,14 @@ DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
     return m_inv;
 }
 
+DynMatrix<double> Legendre_1D::GetBasisLinearT(const uint p) {
+    return DynMatrix<double>();
+}
+
+DynMatrix<double> Legendre_1D::GetLinearBasisT(const uint p) {
+    return DynMatrix<double>();
+}
+
 DynMatrix<double> Legendre_1D::ProjectBasisToLinear(const DynMatrix<double>& u) {
     std::cout << "Legendre_1D::ProjectBasisToLinear not implemented!" << std::endl;
     abort();

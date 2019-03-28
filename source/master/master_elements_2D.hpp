@@ -54,6 +54,11 @@ class Triangle : public Master<2> {
                                                       const std::vector<Point<1>>& z_boundary) const;
 
     template <typename InputArrayType>
+    decltype(auto) ProjectBasisToLinear(const InputArrayType& u) const;
+    template <typename InputArrayType>
+    decltype(auto) ProjectLinearToBasis(const InputArrayType& u_lin) const;
+
+    template <typename InputArrayType>
     decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin) const;
     template <typename InputArrayType>
     decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin) const;
