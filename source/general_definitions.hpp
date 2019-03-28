@@ -88,9 +88,6 @@ class Basis {
 
     virtual DynMatrix<double> GetBasisLinearT(const uint p) = 0;
     virtual DynMatrix<double> GetLinearBasisT(const uint p) = 0;
-
-    virtual DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u)                      = 0;
-    virtual DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) = 0;
 };
 }
 

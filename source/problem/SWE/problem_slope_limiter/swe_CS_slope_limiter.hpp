@@ -193,7 +193,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
             double q_norm     = norm(row(sl_state.q_lin, var));
 
             if (del_q_norm / q_norm > 1.0e-12) {
-                row(state.q, var) = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(sl_state.q_at_vrtx, var));
+                row(state.q, var) = elt.ProjectLinearToBasis(row(sl_state.q_at_vrtx, var));
             }
         }
     }

@@ -68,7 +68,7 @@ class Element {
     template <typename InputArrayType>
     decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
     template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    decltype(auto) ProjectLinearToBasis(const InputArrayType& u_lin);
 
     template <typename F>
     DynMatrix<double> ComputeFgp(const F& f);
@@ -311,7 +311,6 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Proje
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ProjectLinearToBasis(
-    const uint ndof,
     const InputArrayType& u_lin) {
     if (const_J) {
         return this->master->ProjectLinearToBasis(u_lin);
