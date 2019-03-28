@@ -148,9 +148,7 @@ inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryT
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * int_lambda_lambda_fact(gp, lookup)
-    uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
-
-    return u_gp * column(this->int_lambda_lambda_fact, lookup);
+    return u_gp * column(this->int_lambda_lambda_fact, this->edge_data.get_ndof() * dof_i + dof_j);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>
@@ -160,9 +158,7 @@ inline decltype(auto) EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryT
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * int_phi_lambda_fact(gp, lookup)
-    uint lookup = this->edge_data.get_ndof() * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_lambda_fact, lookup);
+    return u_gp * column(this->int_phi_lambda_fact, this->edge_data.get_ndof() * dof_i + dof_j);
 }
 
 template <uint dimension, typename BasisType, typename EdgeDataType, typename BoundaryType>

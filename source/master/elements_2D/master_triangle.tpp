@@ -11,6 +11,9 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     this->ndof = (p + 1) * (p + 2) / 2;
     this->ngp  = this->integration_rule.first.size();
 
+    this->T_basis_linear = this->basis.GetBasisLinearT(p);
+    this->T_linear_basis = this->basis.GetLinearBasisT(p);
+
     this->chi_baryctr.resize(this->nvrtx);
 
     this->chi_baryctr[0] = 1.0 / 3.0;
@@ -111,6 +114,18 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
     }
 
     return z_master;
+}
+
+template <typename BasisType, typename IntegrationType>
+template <typename InputArrayType>
+decltype(auto) Triangle<BasisType, IntegrationType>::ProjectBasisToLinear(const InputArrayType& u) const {
+    return u * this->T_basis_linear;
+}
+
+template <typename BasisType, typename IntegrationType>
+template <typename InputArrayType>
+decltype(auto) Triangle<BasisType, IntegrationType>::ProjectLinearToBasis(const InputArrayType& u_lin) const {
+    return u_lin * this->T_linear_basis;
 }
 
 template <typename BasisType, typename IntegrationType>

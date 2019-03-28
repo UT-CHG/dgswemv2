@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename ElementType>
-void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state                  = elt.data.state[stage];
@@ -48,7 +48,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
 
         wd_state.wet = false;
 
-        state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
+        state.q = elt.ProjectLinearToBasis(wd_state.q_at_vrtx);
 
         set_constant(state.rhs, 0.0);
 
@@ -111,7 +111,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             }
         }
 
-        state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
+        state.q = elt.ProjectLinearToBasis(wd_state.q_at_vrtx);
 
         check_element = true;
     }
@@ -137,7 +137,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
         }
 
-        state.q = elt.ProjectLinearToBasis(elt.data.get_ndof(), wd_state.q_at_vrtx);
+        state.q = elt.ProjectLinearToBasis(wd_state.q_at_vrtx);
 
         set_constant(state.rhs, 0.0);
     } else if (set_wet_element) {

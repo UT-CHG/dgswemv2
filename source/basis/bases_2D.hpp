@@ -17,8 +17,8 @@ class Dubiner_2D : Basis<2> {
 
     DynMatrix<double> GetMinv(const uint p);
 
-    DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u);
-    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin);
+    DynMatrix<double> GetBasisLinearT(const uint p);
+    DynMatrix<double> GetLinearBasisT(const uint p);
 
   private:
     /**

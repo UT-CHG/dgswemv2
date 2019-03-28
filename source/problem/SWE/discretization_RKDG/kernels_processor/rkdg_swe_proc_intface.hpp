@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename InterfaceType>
-void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
+template <typename StepperType, typename InterfaceType>
+void Problem::interface_kernel(const StepperType& stepper, InterfaceType& intface) {
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
 

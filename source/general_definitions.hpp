@@ -86,8 +86,8 @@ class Basis {
      */
     virtual DynMatrix<double> GetMinv(const uint p) = 0;
 
-    virtual DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u)                      = 0;
-    virtual DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) = 0;
+    virtual DynMatrix<double> GetBasisLinearT(const uint p) = 0;
+    virtual DynMatrix<double> GetLinearBasisT(const uint p) = 0;
 };
 }
 
@@ -133,6 +133,9 @@ class Master {
 
     std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule;
 
+    DynMatrix<double> T_basis_linear;
+    DynMatrix<double> T_linear_basis;
+
     DynVector<double> chi_baryctr;
     DynMatrix<double> chi_midpts;
 
@@ -168,8 +171,13 @@ class Master {
     // template <typename InputArrayType>
     // decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
 
+    // template <typename InputArrayType>
+    // decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
+    // template <typename InputArrayType>
+    // decltype(auto) ProjectLinearToBasis(const InputArrayType& u_lin);
+
   private:
-    virtual std::vector<Point<2>> VTKPostCell() const = 0;
+    virtual std::vector<Point<2>> VTKPostCell() const  = 0;
     virtual std::vector<Point<2>> VTKPostPoint() const = 0;
 };
 }
