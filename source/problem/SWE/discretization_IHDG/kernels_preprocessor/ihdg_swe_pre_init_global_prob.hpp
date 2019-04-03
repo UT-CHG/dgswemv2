@@ -282,7 +282,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
         }
 
         for (uint gp = 0; gp < ngp; ++gp) {
-            bath_ex(ngp - gp - 1) = message[SWE::n_variables * ngp + gp];
+            bath_ex[ngp - gp - 1] = message[SWE::n_variables * ngp + gp];
         }
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) =

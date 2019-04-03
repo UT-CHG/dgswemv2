@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (DGSWEMv2 CXX C)
 
-option(USE_EIGEN "Use Eigen" ON)
+option(USE_EIGEN "Use Eigen" OFF)
 option(USE_BLAZE "Use Blaze" OFF)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
@@ -54,9 +54,14 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 find_package(METIS REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-if(NOT USE_EIGEN AND NOT USE_BLAZE) 
+if(NOT USE_EIGEN AND NOT USE_BLAZE)
   message(WARNING "Linear algebra package not specified! Using default: Eigen!")
   set(USE_EIGEN ON)
+endif()
+
+if(USE_EIGEN AND USE_BLAZE)
+  message(WARNING "Both Eigen and Blaze cannot be used simultaneously. Using default: Eigen.")
+  set(USE_BLAZE OFF)
 endif()
 
 if(USE_EIGEN)

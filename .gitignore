@@ -28,3 +28,16 @@ examples/files_for_manufactured_solution/dgswemv2_input*
 examples/files_for_manufactured_solution/quad_mesh*
 examples/swe_parabolic_bowl/input_files/parabowl_040.*
 examples/swe_parabolic_bowl/input_files/output/*
+
+#emacs related
+*~
+*/*~
+*/*/*~
+*/*/*/*~
+*/*/*/*/*~
+
+\#*\#
+*/\#*\#
+*/*/\#*\#
+*/*/*/\#*\#
+*/*/*/*/\#*\#

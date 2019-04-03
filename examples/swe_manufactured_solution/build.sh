@@ -18,9 +18,9 @@ make_swe_manufactured_solution() {
 	fi
 	if [ $# -gt 2 ]; then
 	    #TODO add logic to check for absolute paths
-	    BUILD_DIR=${DGSWEMV2_DIR}/${3}
+	    ABS_BUILD_DIR=${DGSWEMV2_DIR}/${3}
 	else
-	    BUILD_DIR=${DGSWEMV2_DIR}/build
+	    ABS_BUILD_DIR=${DGSWEMV2_DIR}/build
 	fi
 
 	#check that directories exist
@@ -29,8 +29,8 @@ make_swe_manufactured_solution() {
 	    return 4
 	fi
 
-	if [ ! -d "$BUILD_DIR" ]; then
-	    echo "Error: could not find build directory: ${BUILD_DIR}"
+	if [ ! -d "$ABS_BUILD_DIR" ]; then
+	    echo "Error: could not find build directory: ${ABS_BUILD_DIR}"
 	    return 3
 	fi
 
@@ -46,7 +46,7 @@ make_swe_manufactured_solution() {
 	#Print out input state
 	echo "DGSWEMV2_DIR: ${DGSWEMV2_DIR}"
 	echo "TARGET: ${TARGET}"
-	echo "BUILD_DIR: ${BUILD_DIR}"
+	echo "ABS_BUILD_DIR: ${ABS_BUILD_DIR}"
 
 	#swap files
 	MANSOL_DIR=${DGSWEMV2_DIR}/examples/swe_manufactured_solution
@@ -76,7 +76,7 @@ make_swe_manufactured_solution() {
 	fi
 
 	old_dir=${PWD}
-	cd $BUILD_DIR
+	cd $ABS_BUILD_DIR
 	make dgswemv2-${TARGET}
 	status=$?
 	mv source/dgswemv2-${TARGET} source/manufactured-solution-swe-${TARGET}
