@@ -158,6 +158,22 @@ int main() {
         error_found = true;
     }
 
+    // Check Contains Point
+    if(!triangle.ContainsPoint(Point<2>{0.0, 0.5})) {
+        std::cerr << "Error in ContainsPoint\n";
+        error_found = true;
+    }
+
+    if(!triangle.ContainsPoint(Point<2>{0.5, 0.0})) {
+        std::cerr << "Error in ContainsPoint\n";
+        error_found = true;
+    }
+
+    if(triangle.ContainsPoint(Point<2>{0.501, 0.0})) {
+        std::cerr << "Error in ContainsPoint\n";
+        error_found = true;
+    }
+
     if (error_found) {
         return 1;
     }

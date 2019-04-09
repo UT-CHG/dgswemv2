@@ -16,18 +16,16 @@ class StraightTriangle : public Shape<2> {
 
     DynVector<double> GetJdet(const std::vector<Point<2>>& points) const;
     DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) const;
-
     AlignedVector<StatMatrix<double, 2, 2>> GetJinv(const std::vector<Point<2>>& points) const;
-
     AlignedVector<StatVector<double, 2>> GetSurfaceNormal(const uint bound_id,
                                                           const std::vector<Point<2>>& points) const;
 
     DynMatrix<double> GetPsi(const std::vector<Point<2>>& points) const;
     std::array<DynMatrix<double>, 2> GetDPsi(const std::vector<Point<2>>& points) const;
-
     DynMatrix<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points) const;
 
     std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points) const;
+    bool ContainsPoint(const Point<2>& point) const;
 
     void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const;
 

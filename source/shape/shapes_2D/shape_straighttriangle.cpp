@@ -205,6 +205,26 @@ std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vect
     return global_coordinates;
 }
 
+bool StraightTriangle::ContainsPoint(const Point<2>& point) const {
+    StatMatrix<double, 2, 2> T;
+
+    T(0, 0) = this->nodal_coordinates[1][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(0, 1) = this->nodal_coordinates[2][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(1, 0) = this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+    T(1, 1) = this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+
+    StatMatrix<double, 2, 2> T_inv = inverse(T);
+
+    StatVector<double, 2> lambda =
+        (point[GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) * column(T_inv, GlobalCoord::x) +
+        (point[GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) * column(T_inv, GlobalCoord::y);
+
+    if (lambda[0] >= 0.0 && lambda[1] >= 0.0 && lambda[0] + lambda[1] <= 1.0)
+        return true;
+
+    return false;
+}
+
 void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const {
     uint number_pt = points.size();
 

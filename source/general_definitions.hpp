@@ -204,22 +204,20 @@ class Shape {
 
     virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points) const                          = 0;
     virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) const = 0;
-
     virtual AlignedVector<StatMatrix<double, dimension, dimension>> GetJinv(
         const std::vector<Point<dimension>>& points) const = 0;
-
     virtual AlignedVector<StatVector<double, dimension>> GetSurfaceNormal(
         const uint bound_id,
         const std::vector<Point<dimension>>& points) const = 0;
 
     virtual DynMatrix<double> GetPsi(const std::vector<Point<dimension>>& points) const                         = 0;
     virtual std::array<DynMatrix<double>, dimension> GetDPsi(const std::vector<Point<dimension>>& points) const = 0;
-
     virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id,
-                                             const std::vector<Point<dimension - 1>>& points) const = 0;
+                                             const std::vector<Point<dimension - 1>>& points) const             = 0;
 
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(
-        const std::vector<Point<dimension>>& points) const = 0;
+        const std::vector<Point<dimension>>& points) const          = 0;
+    virtual bool ContainsPoint(const Point<dimension>& point) const = 0;
 
     virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const = 0;
 
