@@ -25,6 +25,7 @@ class StraightTriangle : public Shape<2> {
     DynMatrix<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points) const;
 
     std::vector<Point<2>> LocalToGlobalCoordinates(const std::vector<Point<2>>& points) const;
+    std::vector<Point<2>> GlobalToLocalCoordinates(const std::vector<Point<2>>& points) const;
     bool ContainsPoint(const Point<2>& point) const;
 
     void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const;

@@ -205,6 +205,34 @@ std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vect
     return global_coordinates;
 }
 
+std::vector<Point<2>> StraightTriangle::GlobalToLocalCoordinates(const std::vector<Point<2>>& points) const {
+    uint npt = points.size();
+
+    std::vector<Point<2>> local_coordinates(npt);
+
+    StatMatrix<double, 2, 2> T;
+
+    T(0, 0) = this->nodal_coordinates[1][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(0, 1) = this->nodal_coordinates[2][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(1, 0) = this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+    T(1, 1) = this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+
+    StatMatrix<double, 2, 2> T_inv = inverse(T);
+
+    StatVector<double, 2> lambda;
+
+    for (uint pt = 0; pt < npt; ++pt) {
+        lambda =
+            (points[pt][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) * column(T_inv, GlobalCoord::x) +
+            (points[pt][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) * column(T_inv, GlobalCoord::y);
+
+        local_coordinates[pt][LocalCoordTri::z1] = 2 * lambda[0] - 1.0;
+        local_coordinates[pt][LocalCoordTri::z2] = 2 * lambda[1] - 1.0;
+    }
+
+    return local_coordinates;
+}
+
 bool StraightTriangle::ContainsPoint(const Point<2>& point) const {
     StatMatrix<double, 2, 2> T;
 

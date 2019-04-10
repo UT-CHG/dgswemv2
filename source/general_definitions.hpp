@@ -216,6 +216,8 @@ class Shape {
                                              const std::vector<Point<dimension - 1>>& points) const             = 0;
 
     virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(
+        const std::vector<Point<dimension>>& points) const = 0;
+    virtual std::vector<Point<dimension>> GlobalToLocalCoordinates(
         const std::vector<Point<dimension>>& points) const          = 0;
     virtual bool ContainsPoint(const Point<dimension>& point) const = 0;
 

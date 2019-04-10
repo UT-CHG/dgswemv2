@@ -174,6 +174,43 @@ int main() {
         error_found = true;
     }
 
+    // Check global/local transform of coordinates
+    std::vector<Point<2>> transformation_pts(4);
+    transformation_pts[0] = {-1. / 3., -1. / 3.};  // barycenter
+    transformation_pts[1] = {0., 0.};              // midpt 0
+    transformation_pts[2] = {-1., 0.};             // midpt 1
+    transformation_pts[3] = {0., -1.};             // midpt 2
+
+    std::vector<Point<2>> transformation_true(4);
+    transformation_true[0] = {0.0, std::sqrt(3.) / 6.};    // barycenter
+    transformation_true[1] = {0.25, std::sqrt(3.) / 4.};   // midpt 0
+    transformation_true[2] = {-0.25, std::sqrt(3.) / 4.};  // midpt 1
+    transformation_true[3] = {0., 0.};                     // midpt 2
+
+    std::vector<Point<2>> transformation = triangle.LocalToGlobalCoordinates(transformation_pts);
+
+    for (uint pt = 0; pt < 4; ++pt) {
+        for (uint dir = 0; dir < 2; ++dir) {
+            if (!almost_equal(transformation[pt][dir], transformation_true[pt][dir])) {
+                std::cerr << "Error in LocalToGlobalCoordinates\n";
+                std::cerr << transformation[pt][dir] << ' ' << transformation_true[pt][dir] << '\n';
+                error_found = true;
+            }
+        }
+    }
+
+    transformation = triangle.GlobalToLocalCoordinates(transformation);
+
+    for (uint pt = 0; pt < 4; ++pt) {
+        for (uint dir = 0; dir < 2; ++dir) {
+            if (!almost_equal(transformation[pt][dir], transformation_pts[pt][dir])) {
+                std::cerr << "Error in LocalToGlobalCoordinates\n";
+                std::cerr << transformation[pt][dir] << ' ' << transformation_pts[pt][dir] << '\n';
+                error_found = true;
+            }
+        }
+    }
+
     if (error_found) {
         return 1;
     }
