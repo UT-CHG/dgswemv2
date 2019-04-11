@@ -321,6 +321,37 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
         }
     }
 
+    // Check writing survey point data
+    // randomly assign q
+    triangle.data.initialize();
+
+    for (uint dof = 0; dof < triangle.data.get_ndof(); ++dof) {
+        for (uint var = 0; var < SWE::n_variables; ++var) {
+            triangle.data.state[0].q(var, dof) = -1.0 + 2.0 * ((double)rand() / (RAND_MAX));
+        }
+    }
+
+    Integration::Dunavant_2D integration;
+    std::vector<Point<2>> gauss_points        = integration.GetRule(20).second;
+    std::vector<Point<2>> gauss_points_global = triangle.GetShape().LocalToGlobalCoordinates(gauss_points);
+
+    AlignedVector<StatVector<double, SWE::n_variables>> q_at_sp;
+
+    triangle.SetSurveyPoints(gauss_points_global);
+    triangle.WriteSurveyPointData(triangle.data.state[0].q, q_at_sp);
+
+    triangle.data.internal.q_at_gp = triangle.ComputeUgp(triangle.data.state[0].q);
+
+    StatVector<double, SWE::n_variables> temp;
+    for (uint gp = 0; gp < integration.GetNumGP(20); ++gp) {
+        temp = column(triangle.data.internal.q_at_gp, gp) - q_at_sp[gp];
+        if (!almost_equal(norm(temp), 0.0)) {
+            error_found = true;
+
+            std::cerr << "Error found in Triangle element in WriteSurveyPointData" << std::endl;
+        }
+    }
+
     return error_found;
 }
 

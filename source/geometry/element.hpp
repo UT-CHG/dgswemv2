@@ -20,8 +20,11 @@ class Element {
     std::vector<uchar> boundary_type;
 
     std::vector<Point<dimension>> gp_global_coordinates;
+    std::vector<Point<dimension>> sp_global_coordinates;
 
     bool const_J;
+
+    DynMatrix<double> phi_sp;
 
     /* psi_gp stored in shape */   // nodal basis, i.e. shape functions
     /* chi_gp stored in master */  // linear basis
@@ -55,6 +58,7 @@ class Element {
     const std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
+    void SetSurveyPoints(const std::vector<Point<dimension>>& survey_points);
 
     void Initialize();
     void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
@@ -116,6 +120,8 @@ class Element {
     void WriteCellDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& cell_data);
     template <typename InputArrayType, typename OutputArrayType>
     void WritePointDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& point_data);
+    template <typename InputArrayType, typename OutputArrayType>
+    void WriteSurveyPointData(const InputArrayType& u, AlignedVector<OutputArrayType>& survey_point_data);
 
     template <typename F, typename InputArrayType>
     double ComputeResidualL2(const F& f, const InputArrayType& u);
@@ -152,6 +158,16 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
       neighbor_ID(std::move(neighbor_ID)),
       boundary_type(std::move(boundary_type)) {
     this->Initialize();
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+void Element<dimension, MasterType, ShapeType, DataType>::SetSurveyPoints(
+    const std::vector<Point<dimension>>& survey_points) {
+    // *** //
+    std::vector<Point<dimension>> sp_local_coordinates = this->shape.GlobalToLocalCoordinates(survey_points);
+
+    this->sp_global_coordinates = survey_points;
+    this->phi_sp                = this->master->basis.GetPhi(this->master->p, sp_local_coordinates);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
@@ -482,13 +498,9 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename InputArrayType, typename OutputArrayType>
 void Element<dimension, MasterType, ShapeType, DataType>::WriteCellDataVTK(const InputArrayType& u,
                                                                            AlignedVector<OutputArrayType>& cell_data) {
-    // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
-    OutputArrayType temp;
-
     for (uint cell = 0; cell < columns(this->master->phi_postprocessor_cell); ++cell) {
-        temp = u * column(this->master->phi_postprocessor_cell, cell);
-
-        cell_data.emplace_back(std::move(temp));
+        // cell_data[q] = u(q, dof) * phi_postprocessor_cell(cell)[dof]
+        cell_data.emplace_back(u * column(this->master->phi_postprocessor_cell, cell));
     }
 }
 
@@ -497,13 +509,22 @@ template <typename InputArrayType, typename OutputArrayType>
 void Element<dimension, MasterType, ShapeType, DataType>::WritePointDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& point_data) {
-    // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)
-    OutputArrayType temp;
-
+    // *** //
     for (uint pt = 0; pt < columns(this->master->phi_postprocessor_point); ++pt) {
-        temp = u * column(this->master->phi_postprocessor_point, pt);
+        // point_data[q] = u(q, dof) * phi_postprocessor_point(pt)[dof]
+        point_data.emplace_back(u * column(this->master->phi_postprocessor_point, pt));
+    }
+}
 
-        point_data.emplace_back(std::move(temp));
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType, typename OutputArrayType>
+void Element<dimension, MasterType, ShapeType, DataType>::WriteSurveyPointData(
+    const InputArrayType& u,
+    AlignedVector<OutputArrayType>& survey_point_data) {
+    // *** //
+    for (uint spt = 0; spt < columns(this->phi_sp); ++spt) {
+        // survey_point_data[q] = u(q, dof) * phi_sp(spt)[dof]
+        survey_point_data.emplace_back(u * column(this->phi_sp, spt));
     }
 }
 
