@@ -18,7 +18,7 @@ constexpr bool ColumnMajor = blaze::columnMajor;
 constexpr bool RowMajor    = blaze::rowMajor;
 }
 
-constexpr int hyb_mat_buff_size = 16;
+constexpr int hyb_mat_buff_size = 128;
 
 template <typename Matrix>
 using Column = decltype(blaze::column(std::declval<Matrix>(), std::declval<int>()));
