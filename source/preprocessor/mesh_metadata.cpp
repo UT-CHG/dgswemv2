@@ -9,9 +9,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
             throw std::logic_error("Fatal Error: in ADCIRC mesh node ID is negative!\n");
         }
 
-        node_meta.coordinates[GlobalCoord::x] = nod.second[GlobalCoord::x];
-        node_meta.coordinates[GlobalCoord::y] = nod.second[GlobalCoord::y];
-        node_meta.coordinates[GlobalCoord::z] = nod.second[GlobalCoord::z];
+        node_meta.coordinates = Point<3>{nod.second[0], nod.second[1], nod.second[2]};
 
         uint ID = nod.first;
         this->nodes.insert({ID, std::move(node_meta)});

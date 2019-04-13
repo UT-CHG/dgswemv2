@@ -4,7 +4,7 @@
 bool is_equal(Shape::StraightTriangle& o_tri, Shape::StraightTriangle& i_tri) {
     using Utilities::almost_equal;
 
-    std::vector<Point<2>> test_points{{0.5, 0.5}, {-0.5, 0.5}, {0, 0}};
+    std::vector<Point<2>> test_points{Point<2>{0.5, 0.5}, Point<2>{-0.5, 0.5}, Point<2>{0, 0}};
 
     bool is_equal{true};
 
@@ -24,9 +24,9 @@ bool is_equal(Shape::StraightTriangle& o_tri, Shape::StraightTriangle& i_tri) {
 
 int main() {
     std::vector<Point<3>> nodal_coord(3);
-    nodal_coord[0] = {-1, 0, 0};
-    nodal_coord[1] = {1, 0, 0};
-    nodal_coord[2] = {0, 1, 0};
+    nodal_coord[0] = Point<3>{-1, 0, 0};
+    nodal_coord[1] = Point<3>{1, 0, 0};
+    nodal_coord[2] = Point<3>{0, 1, 0};
 
     Shape::StraightTriangle o_tri(std::move(nodal_coord));
     std::vector<char> buffer;

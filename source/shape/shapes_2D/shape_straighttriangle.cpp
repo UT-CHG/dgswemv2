@@ -262,13 +262,7 @@ void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cell
 
     for (uint i = 0; i <= N_DIV; ++i) {
         for (uint j = 0; j <= N_DIV - i; ++j) {
-            Point<3> point;
-
-            point[0] = 0;
-            point[1] = 0;
-            point[2] = 0;
-
-            points.push_back(point);
+            points.push_back(Point<3>{0., 0., 0.});
 
             z1 = -1.0 + dz * j;
             z2 = -1.0 + dz * i;
