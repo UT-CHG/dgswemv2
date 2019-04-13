@@ -142,7 +142,7 @@ int main() {
 
     Array2D<double> interpolation_derivative_true = {{1.0}, {1.0 / std::sqrt(3.)}};
 
-    std::array<DynMatrix<double>, 2> dpsi_interp = triangle.GetDPsi(std::vector<Point<2>>(1, {0, 0}));
+    std::array<DynMatrix<double>, 2> dpsi_interp = triangle.GetDPsi(std::vector<Point<2>>(1, Point<2>{0, 0}));
 
     Array2D<double> interpolation_derivative_comp(2, std::vector<double>(1));
 
