@@ -332,8 +332,8 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     }
 
     Integration::Dunavant_2D integration;
-    std::vector<Point<2>> gauss_points        = integration.GetRule(20).second;
-    std::vector<Point<2>> gauss_points_global = triangle.GetShape().LocalToGlobalCoordinates(gauss_points);
+    AlignedVector<Point<2>> gauss_points        = integration.GetRule(20).second;
+    AlignedVector<Point<2>> gauss_points_global = triangle.GetShape().LocalToGlobalCoordinates(gauss_points);
 
     AlignedVector<StatVector<double, SWE::n_variables>> q_at_sp;
 

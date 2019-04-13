@@ -211,7 +211,7 @@ void Writer<ProblemType>::WriteOutput(const typename ProblemType::ProblemStepper
 
 template <typename ProblemType>
 void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh) {
-    std::vector<Point<3>> points;
+    AlignedVector<Point<3>> points;
     Array2D<uint> cells;
 
     mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });
@@ -276,7 +276,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
 
 template <typename ProblemType>
 void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::ProblemMeshType& mesh) {
-    std::vector<Point<3>> points;
+    AlignedVector<Point<3>> points;
     Array2D<uint> cells;
 
     mesh.CallForEachElement([&points, &cells](auto& elem) { elem.InitializeVTK(points, cells); });

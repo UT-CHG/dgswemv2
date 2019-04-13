@@ -19,8 +19,8 @@ class Element {
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
-    std::vector<Point<dimension>> gp_global_coordinates;
-    std::vector<Point<dimension>> sp_global_coordinates;
+    AlignedVector<Point<dimension>> gp_global_coordinates;
+    AlignedVector<Point<dimension>> sp_global_coordinates;
 
     bool const_J;
 
@@ -46,7 +46,7 @@ class Element {
     Element() = default;
     Element(const uint ID,
             MasterType& master,
-            std::vector<Point<3>>&& nodal_coordinates,
+            AlignedVector<Point<3>>&& nodal_coordinates,
             std::vector<uint>&& node_ID,
             std::vector<uint>&& neighbor_ID,
             std::vector<uchar>&& boundary_type);
@@ -58,7 +58,7 @@ class Element {
     const std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
-    void SetSurveyPoints(const std::vector<Point<dimension>>& survey_points);
+    void SetSurveyPoints(const AlignedVector<Point<dimension>>& survey_points);
 
     void Initialize();
     void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
@@ -115,7 +115,7 @@ class Element {
     template <typename InputArrayType>
     decltype(auto) ApplyMinv(const InputArrayType& rhs);
 
-    void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
+    void InitializeVTK(AlignedVector<Point<3>>& points, Array2D<uint>& cells);
     template <typename InputArrayType, typename OutputArrayType>
     void WriteCellDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& cell_data);
     template <typename InputArrayType, typename OutputArrayType>
@@ -147,7 +147,7 @@ class Element {
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
                                                              MasterType& master,
-                                                             std::vector<Point<3>>&& nodal_coordinates,
+                                                             AlignedVector<Point<3>>&& nodal_coordinates,
                                                              std::vector<uint>&& node_ID,
                                                              std::vector<uint>&& neighbor_ID,
                                                              std::vector<uchar>&& boundary_type)
@@ -162,9 +162,9 @@ Element<dimension, MasterType, ShapeType, DataType>::Element(const uint ID,
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 void Element<dimension, MasterType, ShapeType, DataType>::SetSurveyPoints(
-    const std::vector<Point<dimension>>& survey_points) {
+    const AlignedVector<Point<dimension>>& survey_points) {
     // *** //
-    std::vector<Point<dimension>> sp_local_coordinates = this->shape.GlobalToLocalCoordinates(survey_points);
+    AlignedVector<Point<dimension>> sp_local_coordinates = this->shape.GlobalToLocalCoordinates(survey_points);
 
     this->sp_global_coordinates = survey_points;
     this->phi_sp                = this->master->basis.GetPhi(this->master->p, sp_local_coordinates);
@@ -489,7 +489,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Apply
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
-void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(std::vector<Point<3>>& points,
+void Element<dimension, MasterType, ShapeType, DataType>::InitializeVTK(AlignedVector<Point<3>>& points,
                                                                         Array2D<uint>& cells) {
     this->shape.GetVTK(points, cells);
 }
@@ -532,14 +532,14 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename F, typename InputArrayType>
 double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
     // At this point we use maximum possible p for Dunavant integration
-    std::pair<DynVector<double>, std::vector<Point<2>>> rule = this->master->integration.GetRule(20);
+    std::pair<DynVector<double>, AlignedVector<Point<2>>> rule = this->master->integration.GetRule(20);
 
     // get u_gp
     DynMatrix<double> phi_gp = this->master->basis.GetPhi(this->master->p, rule.second);
     DynMatrix<double> u_gp   = u * phi_gp;
 
     // get true_gp
-    std::vector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
+    AlignedVector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
 
     uint nvar = f(*(gp_global.begin())).size();
     uint ngp  = gp_global.size();

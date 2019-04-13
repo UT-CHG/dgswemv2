@@ -63,7 +63,7 @@ class Basis {
      * @param points vector of points at which the basis functions are evaluated
      * @return 2-dimensional array indexed as [dof][point]
      */
-    virtual DynMatrix<double> GetPhi(const uint p, const std::vector<Point<dimension>>& points) = 0;
+    virtual DynMatrix<double> GetPhi(const uint p, const AlignedVector<Point<dimension>>& points) = 0;
     /**
      * Evaluate the gradients of the basis function at points.
      * Evaluate gradients of all basis functions evaluated at points up to polynomial order p.
@@ -76,7 +76,7 @@ class Basis {
      *         corresponds to the dimension in which the derivative is taken.
      */
     virtual std::array<DynMatrix<double>, dimension> GetDPhi(const uint p,
-                                                             const std::vector<Point<dimension>>& points) = 0;
+                                                             const AlignedVector<Point<dimension>>& points) = 0;
 
     /**
      * Obtain the inverted mass matrix of basis functions of polynomial order p.
@@ -107,7 +107,7 @@ class Integration {
      * @param p Polynomial order for which the rule should return exact results.
      * @return Number of Gauss points
      */
-    virtual std::pair<DynVector<double>, std::vector<Point<dimension>>> GetRule(const uint p) = 0;
+    virtual std::pair<DynVector<double>, AlignedVector<Point<dimension>>> GetRule(const uint p) = 0;
 
     /**
      * Returns the number of Gauss points required for a rule of strength p
@@ -132,7 +132,7 @@ class Master {
     uint nvrtx;
     uint nbound;
 
-    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule;
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> integration_rule;
 
     DynMatrix<double> T_basis_linear;
     DynMatrix<double> T_linear_basis;
@@ -160,9 +160,9 @@ class Master {
 
     virtual ~Master() = default;
 
-    virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
+    virtual AlignedVector<Point<dimension>> BoundaryToMasterCoordinates(
         const uint bound_id,
-        const std::vector<Point<dimension - 1>>& z_boundary) const = 0;
+        const AlignedVector<Point<dimension - 1>>& z_boundary) const = 0;
 
     // The following member methods have to be defined (cannot define templated member methods as virual)
     // template <typename InputArrayType>
@@ -178,8 +178,8 @@ class Master {
     // decltype(auto) ProjectLinearToBasis(const InputArrayType& u_lin);
 
   private:
-    virtual std::vector<Point<2>> VTKPostCell() const  = 0;
-    virtual std::vector<Point<2>> VTKPostPoint() const = 0;
+    virtual AlignedVector<Point<2>> VTKPostCell() const  = 0;
+    virtual AlignedVector<Point<2>> VTKPostPoint() const = 0;
 };
 }
 
@@ -187,42 +187,42 @@ namespace Shape {
 template <uint dimension>
 class Shape {
   public:
-    std::vector<Point<3>> nodal_coordinates;
+    AlignedVector<Point<3>> nodal_coordinates;
 
     DynMatrix<double> psi_gp;
     std::array<DynMatrix<double>, dimension> dpsi_gp;
 
   public:
     Shape() = default;
-    Shape(std::vector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
+    Shape(AlignedVector<Point<3>>&& nodal_coordinates) : nodal_coordinates(std::move(nodal_coordinates)) {}
 
     virtual ~Shape() = default;
 
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint>& node_ID) const = 0;
 
-    virtual Point<dimension> GetBarycentricCoordinates() const           = 0;
-    virtual std::vector<Point<dimension>> GetMidpointCoordinates() const = 0;
+    virtual Point<dimension> GetBarycentricCoordinates() const             = 0;
+    virtual AlignedVector<Point<dimension>> GetMidpointCoordinates() const = 0;
 
-    virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points) const                          = 0;
-    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) const = 0;
+    virtual DynVector<double> GetJdet(const AlignedVector<Point<dimension>>& points) const                          = 0;
+    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const AlignedVector<Point<dimension>>& points) const = 0;
     virtual AlignedVector<StatMatrix<double, dimension, dimension>> GetJinv(
-        const std::vector<Point<dimension>>& points) const = 0;
+        const AlignedVector<Point<dimension>>& points) const = 0;
     virtual AlignedVector<StatVector<double, dimension>> GetSurfaceNormal(
         const uint bound_id,
-        const std::vector<Point<dimension>>& points) const = 0;
+        const AlignedVector<Point<dimension>>& points) const = 0;
 
-    virtual DynMatrix<double> GetPsi(const std::vector<Point<dimension>>& points) const                         = 0;
-    virtual std::array<DynMatrix<double>, dimension> GetDPsi(const std::vector<Point<dimension>>& points) const = 0;
+    virtual DynMatrix<double> GetPsi(const AlignedVector<Point<dimension>>& points) const                         = 0;
+    virtual std::array<DynMatrix<double>, dimension> GetDPsi(const AlignedVector<Point<dimension>>& points) const = 0;
     virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id,
-                                             const std::vector<Point<dimension - 1>>& points) const             = 0;
+                                             const AlignedVector<Point<dimension - 1>>& points) const             = 0;
 
-    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(
-        const std::vector<Point<dimension>>& points) const = 0;
-    virtual std::vector<Point<dimension>> GlobalToLocalCoordinates(
-        const std::vector<Point<dimension>>& points) const          = 0;
+    virtual AlignedVector<Point<dimension>> LocalToGlobalCoordinates(
+        const AlignedVector<Point<dimension>>& points) const = 0;
+    virtual AlignedVector<Point<dimension>> GlobalToLocalCoordinates(
+        const AlignedVector<Point<dimension>>& points) const        = 0;
     virtual bool ContainsPoint(const Point<dimension>& point) const = 0;
 
-    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const = 0;
+    virtual void GetVTK(AlignedVector<Point<3>>& points, Array2D<uint>& cells) const = 0;
 
 #ifdef HAS_HPX
     template <typename Archive>

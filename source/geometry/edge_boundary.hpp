@@ -50,7 +50,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
     // *** //
     typename BoundaryType::BoundaryIntegrationType integration;
 
-    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule =
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * this->boundary.GetMaster().p + 1);
 
     uint ngp = integration_rule.first.size();
@@ -60,7 +60,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
     if (ccw) {  // if trace basis is defined counterclockwise around element
         this->lambda_gp = basis.GetPhi(this->boundary.GetMaster().p, integration_rule.second);
     } else {
-        std::vector<Point<dimension>> gauss_points = integration_rule.second;
+        AlignedVector<Point<dimension>> gauss_points = integration_rule.second;
 
         for (uint gp = 0; gp < (ngp / 2); ++gp) {
             std::swap(gauss_points[gp], gauss_points[ngp - gp - 1]);
@@ -71,7 +71,7 @@ EdgeBoundary<dimension, BasisType, EdgeDataType, BoundaryType>::EdgeBoundary(Bou
 
     uint ndof = row(this->lambda_gp, 0).size();
 
-    std::vector<Point<dimension + 1>> z_master =
+    AlignedVector<Point<dimension + 1>> z_master =
         this->boundary.GetMaster().BoundaryToMasterCoordinates(this->boundary.bound_id, integration_rule.second);
 
     DynVector<double> surface_J = this->boundary.GetShape().GetSurfaceJ(this->boundary.bound_id, z_master);

@@ -56,11 +56,11 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     this->phi_gp  = this->basis.GetPhi(this->p, this->integration_rule.second);
     this->dphi_gp = this->basis.GetDPhi(this->p, this->integration_rule.second);
 
-    std::vector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
-    this->phi_postprocessor_cell               = this->basis.GetPhi(this->p, z_postprocessor_cell);
+    AlignedVector<Point<2>> z_postprocessor_cell = this->VTKPostCell();
+    this->phi_postprocessor_cell                 = this->basis.GetPhi(this->p, z_postprocessor_cell);
 
-    std::vector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
-    this->phi_postprocessor_point               = this->basis.GetPhi(this->p, z_postprocessor_point);
+    AlignedVector<Point<2>> z_postprocessor_point = this->VTKPostPoint();
+    this->phi_postprocessor_point                 = this->basis.GetPhi(this->p, z_postprocessor_point);
 
     this->int_phi_fact = transpose(this->phi_gp);
     for (uint dof = 0; dof < this->ndof; ++dof) {
@@ -82,13 +82,13 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
+AlignedVector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
     const uint bound_id,
-    const std::vector<Point<1>>& z_boundary) const {
+    const AlignedVector<Point<1>>& z_boundary) const {
     // *** //
     uint ngp = z_boundary.size();
 
-    std::vector<Point<2>> z_master(ngp);
+    AlignedVector<Point<2>> z_master(ngp);
 
     if (bound_id == 0) {
         for (uint gp = 0; gp < ngp; ++gp) {
@@ -147,8 +147,8 @@ inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(c
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() const {
-    std::vector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
+AlignedVector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() const {
+    AlignedVector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
 
     double dz = 2.0 / N_DIV;
 
@@ -172,8 +172,8 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() const 
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() const {
-    std::vector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
+AlignedVector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() const {
+    AlignedVector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
 
     double dz = 2.0 / N_DIV;
 

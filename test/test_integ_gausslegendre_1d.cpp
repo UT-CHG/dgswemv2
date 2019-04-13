@@ -6,7 +6,7 @@ int main() {
 
     bool any_error = false;
     Integration::GaussLegendre_1D gausslegendre;
-    std::pair<DynVector<double>, std::vector<Point<1>>> rule;
+    std::pair<DynVector<double>, AlignedVector<Point<1>>> rule;
 
     for (uint p = 1; p < 20; ++p) {
         double exact_integration = 2 - 1 / ((double)p + 1) * (1 + pow(-1.0, p));  // S(1-x^p)dx from -1 to 1

@@ -28,8 +28,8 @@ struct SlopeLimit {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
 
     Point<2> baryctr_coord;
-    std::vector<Point<2>> midpts_coord;
-    std::vector<Point<2>> baryctr_coord_neigh;
+    AlignedVector<Point<2>> midpts_coord;
+    AlignedVector<Point<2>> baryctr_coord_neigh;
 
     AlignedVector<StatVector<double, SWE::n_dimensions>> median;
     AlignedVector<StatVector<double, SWE::n_dimensions>> alpha;

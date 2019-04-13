@@ -1,7 +1,7 @@
 #include "../integrations_2D.hpp"
 
 namespace Integration {
-std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
+std::pair<DynVector<double>, AlignedVector<Point<2>>> Dunavant_2D::GetRule(const uint p) {
     if (p < 0 || p > 20) {
         printf("\n");
         printf("DUNAVANT 2D - Fatal error!\n");
@@ -9,8 +9,8 @@ std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const u
         exit(1);
     }
 
-    std::vector<uint> permutation                                 = this->PermutationData(p);
-    std::pair<std::vector<double>, std::vector<Point<3>>> gp_data = this->GPData(p);
+    std::vector<uint> permutation                                   = this->PermutationData(p);
+    std::pair<std::vector<double>, AlignedVector<Point<3>>> gp_data = this->GPData(p);
 
     if (permutation.size() != gp_data.first.size()) {
         printf("\n");
@@ -23,7 +23,7 @@ std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const u
     for (uint i = 0; i < permutation.size(); ++i)
         ngp += permutation[i];
 
-    std::pair<DynVector<double>, std::vector<Point<2>>> rule;
+    std::pair<DynVector<double>, AlignedVector<Point<2>>> rule;
     rule.first.resize(ngp);
     rule.second.resize(ngp);
 
@@ -351,8 +351,8 @@ std::vector<uint> Dunavant_2D::PermutationData(const uint p) {
     return permutations;
 }
 
-std::pair<std::vector<double>, std::vector<Point<3>>> Dunavant_2D::GPData(const uint p) {
-    std::pair<std::vector<double>, std::vector<Point<3>>> gp;
+std::pair<std::vector<double>, AlignedVector<Point<3>>> Dunavant_2D::GPData(const uint p) {
+    std::pair<std::vector<double>, AlignedVector<Point<3>>> gp;
 
     if (p == 0 || p == 1) {
         gp.first.reserve(1);

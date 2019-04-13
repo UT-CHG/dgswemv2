@@ -12,7 +12,7 @@ namespace Integration {
  */
 class Dunavant_2D : Integration<2> {
   public:
-    std::pair<DynVector<double>, std::vector<Point<2>>> GetRule(const uint p);
+    std::pair<DynVector<double>, AlignedVector<Point<2>>> GetRule(const uint p);
 
     uint GetNumGP(const uint p);
 
@@ -37,7 +37,7 @@ class Dunavant_2D : Integration<2> {
      * @param p Polynomial order for which the rule should return exact results.
      * @return Pair of weights and coordinates in Barycentric coordinates.
      */
-    std::pair<std::vector<double>, std::vector<Point<3>>> GPData(const uint p);
+    std::pair<std::vector<double>, AlignedVector<Point<3>>> GPData(const uint p);
 };
 }
 

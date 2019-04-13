@@ -135,10 +135,10 @@ void MeshMetaData::write_to(const std::string& file) {
     ofs.close();
 }
 
-std::vector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
+AlignedVector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
     const std::vector<uint>& node_ID = this->elements.at(elt_id).node_ID;
 
-    std::vector<Point<3>> nodal_coordinates(node_ID.size());
+    AlignedVector<Point<3>> nodal_coordinates(node_ID.size());
 
     for (uint indx = 0; indx < node_ID.size(); ++indx) {
         nodal_coordinates[indx] = this->nodes.at(node_ID[indx]).coordinates;

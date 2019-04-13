@@ -84,7 +84,7 @@ struct MeshMetaData {
 
     void write_to(const std::string& file);  // write to file
 
-    std::vector<Point<3>> get_nodal_coordinates(uint elt_id) const;
+    AlignedVector<Point<3>> get_nodal_coordinates(uint elt_id) const;
 
     std::string mesh_name;
     std::unordered_map<uint, ElementMetaData> elements;

@@ -28,8 +28,8 @@ class Interface {
     std::vector<uint> node_ID_in;
     std::vector<uint> node_ID_ex;
 
-    std::vector<Point<dimension + 1>> gp_global_coordinates_in;
-    std::vector<Point<dimension + 1>> gp_global_coordinates_ex;
+    AlignedVector<Point<dimension + 1>> gp_global_coordinates_in;
+    AlignedVector<Point<dimension + 1>> gp_global_coordinates_ex;
 
     DynMatrix<double> psi_gp_in;
     DynMatrix<double> psi_gp_ex;
@@ -124,12 +124,12 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
 
     IntegrationType integration;
 
-    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     uint ngp = integration_rule.first.size();
 
     // transfrom gp to master coord in
-    std::vector<Point<dimension + 1>> z_master_in =
+    AlignedVector<Point<dimension + 1>> z_master_in =
         this->master_in.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
 
     // Global coordinates of gps in
@@ -145,7 +145,7 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     this->phi_gp_in = raw_boundary_in.basis.GetPhi(raw_boundary_in.p, z_master_in);
 
     // transfrom gp to master coord ex
-    std::vector<Point<dimension + 1>> z_master_ex =
+    AlignedVector<Point<dimension + 1>> z_master_ex =
         this->master_ex.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
 
     // Global coordinates of gps ex

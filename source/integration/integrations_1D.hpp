@@ -11,7 +11,7 @@ namespace Integration {
  */
 class GaussLegendre_1D : Integration<1> {
   public:
-    std::pair<DynVector<double>, std::vector<Point<1>>> GetRule(const uint p);
+    std::pair<DynVector<double>, AlignedVector<Point<1>>> GetRule(const uint p);
 
     uint GetNumGP(const uint p);
 
@@ -22,7 +22,7 @@ class GaussLegendre_1D : Integration<1> {
      * @param number of gauss points desired in the rule.
      * @return Pair of the weights and point on the unit interval
      */
-    std::pair<std::vector<double>, std::vector<Point<1>>> GPData(const uint number_gp);
+    std::pair<std::vector<double>, AlignedVector<Point<1>>> GPData(const uint number_gp);
 };
 }
 

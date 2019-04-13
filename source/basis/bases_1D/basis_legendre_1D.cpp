@@ -1,7 +1,7 @@
 #include "../bases_1D.hpp"
 
 namespace Basis {
-DynMatrix<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>& points) {
+DynMatrix<double> Legendre_1D::GetPhi(const uint p, const AlignedVector<Point<1>>& points) {
     uint ndof = p + 1;
     uint npt  = points.size();
 
@@ -20,7 +20,7 @@ DynMatrix<double> Legendre_1D::GetPhi(const uint p, const std::vector<Point<1>>&
     return phi;
 }
 
-std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const std::vector<Point<1>>& points) {
+std::array<DynMatrix<double>, 1> Legendre_1D::GetDPhi(const uint p, const AlignedVector<Point<1>>& points) {
     uint ndof = p + 1;
     uint npt  = points.size();
 

@@ -24,7 +24,7 @@ int main() {
     SWE::PostProcessing::h_o = 0.01;
 
     // make an equilateral triangle
-    std::vector<Point<3>> vrtxs(3);
+    AlignedVector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};

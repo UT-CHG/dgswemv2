@@ -21,7 +21,7 @@ class Boundary {
 
     std::vector<uint> node_ID;
 
-    std::vector<Point<dimension + 1>> gp_global_coordinates;
+    AlignedVector<Point<dimension + 1>> gp_global_coordinates;
 
     DynMatrix<double> psi_gp;
     DynMatrix<double> psi_bound_gp;
@@ -79,12 +79,12 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
     // *** //
     IntegrationType integration;
 
-    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule =
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> integration_rule =
         integration.GetRule(2 * raw_boundary.p + 1);
 
     uint ngp = integration_rule.first.size();
 
-    std::vector<Point<dimension + 1>> z_master =
+    AlignedVector<Point<dimension + 1>> z_master =
         this->master.BoundaryToMasterCoordinates(this->bound_id, integration_rule.second);
 
     // Global coordinates of gps

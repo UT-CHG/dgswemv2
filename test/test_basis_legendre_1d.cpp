@@ -112,7 +112,7 @@ const std::vector<std::vector<double>> true_Dvals = {
 int main() {
     using Utilities::almost_equal;
 
-    std::vector<Point<1>> points(5);
+    AlignedVector<Point<1>> points(5);
 
     points[0][0] = -1.0000000000000000e+00;
     points[1][0] = -5.0000000000000000e-01;
