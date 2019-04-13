@@ -8,6 +8,9 @@
 struct NodeMetaData {
     Point<3> coordinates;
 
+    NodeMetaData() = default;
+    NodeMetaData(double x, double y, double z) : coordinates(x, y, z) {};
+
     friend std::ostream& operator<<(std::ostream& s, const NodeMetaData& node) {
         return s << std::setprecision(15) << node.coordinates[0] << " " << node.coordinates[1] << " "
                  << node.coordinates[2];

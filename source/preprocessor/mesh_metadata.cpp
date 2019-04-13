@@ -9,7 +9,7 @@ MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
         }
 
         uint ID = nod.first;
-        this->nodes.insert({ID, {nod.second[0], nod.second[1], nod.second[2]}});
+        this->nodes.insert({ID, NodeMetaData{nod.second[0], nod.second[1], nod.second[2]}});
     }
 
     for (const auto& elt : mesh_file.elements) {

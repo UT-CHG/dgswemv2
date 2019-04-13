@@ -102,11 +102,11 @@ int main() {
     std::vector<double> bound_nodal_vals(2);
 
     std::vector<Point<1>> bound_interpolation_pts(5);
-    bound_interpolation_pts[0] = {-1};
-    bound_interpolation_pts[1] = {-0.5};
-    bound_interpolation_pts[2] = {0};
-    bound_interpolation_pts[3] = {0.5};
-    bound_interpolation_pts[4] = {1};
+    bound_interpolation_pts[0] = Point<1>{-1};
+    bound_interpolation_pts[1] = Point<1>{-0.5};
+    bound_interpolation_pts[2] = Point<1>{0};
+    bound_interpolation_pts[3] = Point<1>{0.5};
+    bound_interpolation_pts[4] = Point<1>{1};
 
     Array2D<double> bound_interpolation_true = {
         {2., 2.25, 2.5, 2.75, 3.}, {3., 1.75, 0.5, -0.75, -2}, {-2., -1., 0., 1., 2.}};
