@@ -532,7 +532,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 template <typename F, typename InputArrayType>
 double Element<dimension, MasterType, ShapeType, DataType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
     // At this point we use maximum possible p for Dunavant integration
-    std::pair<DynVector<double>, AlignedVector<Point<2>>> rule = this->master->integration.GetRule(20);
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> rule = this->master->integration.GetRule(20);
 
     // get u_gp
     DynMatrix<double> phi_gp = this->master->basis.GetPhi(this->master->p, rule.second);

@@ -27,18 +27,13 @@
 using uint  = unsigned int;
 using uchar = unsigned char;
 
-template <typename T>
-using Array2D = std::vector<std::vector<T>>;
-template <typename T>
-using Array3D = std::vector<std::vector<std::vector<T>>>;
-template <typename T>
-using Array4D = std::vector<std::vector<std::vector<std::vector<T>>>>;
-
 #include "utilities/linear_algebra.hpp"
 #include "utilities/edge_types.hpp"
 
 template <uint dimension>
 using Point = StatVector<double, dimension>;
+template <typename T>
+using Array2D = std::vector<std::vector<T>>;
 
 #ifdef HAS_HPX
 //#include "simulation/hpx/load_balancer/serialization_headers.hpp"
