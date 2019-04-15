@@ -38,8 +38,9 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
     discretization.mesh_skeleton.CallForEachEdgeInterface(
         [&stepper](auto& edge_int) { Problem::global_edge_interface_kernel(stepper, edge_int); });
 
-    discretization.mesh_skeleton.CallForEachEdgeBoundary(
-        [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper](auto& edge_bound) {
+        edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);
+    });
     /* Global Step */
 
     /* Local Step */
