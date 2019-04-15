@@ -1,4 +1,4 @@
-if (EHDG)
+#[[if (EHDG)
 add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
@@ -14,7 +14,7 @@ add_test(
   Unit_test_jacobians_ehdg
   test_jacobians_ehdg_exe
 )
-endif()
+endif()]]
 
 if (IHDG)
 add_executable(
