@@ -31,9 +31,6 @@ class DistributedLevee {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
-
-    template <typename EdgeDistributedType>
     void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
 };
 
@@ -57,11 +54,6 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
     this->H_bar_gp       = dbound.ComputeBoundaryNodalUgp(this->H_barrier);
     this->C_subcrit_gp   = dbound.ComputeBoundaryNodalUgp(this->C_subcritical);
     this->C_supercrit_gp = dbound.ComputeBoundaryNodalUgp(this->C_supercritical);
-}
-
-template <typename EdgeDistributedType>
-void DistributedLevee::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
-    // Something to implement in the future
 }
 
 template <typename EdgeDistributedType>

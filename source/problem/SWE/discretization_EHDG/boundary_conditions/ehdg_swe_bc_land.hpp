@@ -32,8 +32,10 @@ void Land::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
               vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), n_y);
 
     row(edge_internal.q_hat_at_gp, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
-    row(edge_internal.q_hat_at_gp, SWE::Variables::qx) = row(boundary.q_at_gp, SWE::Variables::qx) - vec_cw_mult(qn, n_x);
-    row(edge_internal.q_hat_at_gp, SWE::Variables::qy) = row(boundary.q_at_gp, SWE::Variables::qy) - vec_cw_mult(qn, n_y);
+    row(edge_internal.q_hat_at_gp, SWE::Variables::qx) =
+        row(boundary.q_at_gp, SWE::Variables::qx) - vec_cw_mult(qn, n_x);
+    row(edge_internal.q_hat_at_gp, SWE::Variables::qy) =
+        row(boundary.q_at_gp, SWE::Variables::qy) - vec_cw_mult(qn, n_y);
 
     /* Compute trace flux */
 

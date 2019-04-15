@@ -23,9 +23,6 @@ class Distributed {
     void Initialize(DistributedBoundaryType& dbound);
 
     template <typename EdgeDistributedType>
-    void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
-
-    template <typename EdgeDistributedType>
     void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
 };
 
@@ -39,25 +36,10 @@ void Distributed::Initialize(DistributedBoundaryType& dbound) {
 }
 
 template <typename EdgeDistributedType>
-void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
-    auto& edge_state    = edge_dbound.edge_data.edge_state;
+void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
-
-    auto& q_hat_at_gp    = edge_internal.q_hat_at_gp;
-    auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
-    auto& surface_normal = edge_dbound.boundary.surface_normal;
-
-    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
-
-    SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
-    SWE::get_dtau_dze_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dze);
-    SWE::get_dtau_dqx_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dqx);
-    SWE::get_dtau_dqy_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.dtau_dqy);
 
     /* Get message from ex */
 
@@ -78,33 +60,8 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
         }
     }
 
-    StatVector<double, SWE::n_variables> del_q;
-    StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq;
-
-    for (uint gp = 0; gp < ngp; ++gp) {
-        del_q = column(boundary.q_at_gp, gp) + column(this->q_ex, gp) - 2.0 * column(edge_internal.q_hat_at_gp, gp);
-
-        column(dtau_delq, SWE::Variables::ze) = edge_internal.dtau_dze[gp] * del_q;
-        column(dtau_delq, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q;
-        column(dtau_delq, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q;
-
-        column(edge_internal.rhs_global_kernel_at_gp, gp) = edge_internal.tau[gp] * del_q;
-
-        column(edge_internal.delta_hat_global_kernel_at_gp, gp) =
-            flatten<double>(dtau_delq - 2.0 * edge_internal.tau[gp]);
-    }
-
-    // This whole calculation is pointless since in fact q_hat = 0.5 * (q_in + q_ex)
-}
-
-template <typename EdgeDistributedType>
-void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
-    auto& edge_state    = edge_dbound.edge_data.edge_state;
-    auto& edge_internal = edge_dbound.edge_data.edge_internal;
-
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
-
-    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
+    // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
+    edge_internal.q_hat_at_gp = (boundary.q_at_gp + this->q_ex) / 2.0;
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);

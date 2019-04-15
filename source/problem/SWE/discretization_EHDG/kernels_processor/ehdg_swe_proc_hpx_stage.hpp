@@ -34,10 +34,12 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         [sim_unit](auto& bound) { Problem::global_boundary_kernel(sim_unit->stepper, bound); });
 
     sim_unit->discretization.mesh_skeleton.CallForEachEdgeInterface(
-        [sim_unit](auto& edge_int) { Problem::global_edge_interface_kernel(sim_unit->stepper, edge_int); });
+        [&stepper](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
 
-    sim_unit->discretization.mesh_skeleton.CallForEachEdgeBoundary(
-        [sim_unit](auto& edge_bound) { Problem::global_edge_boundary_kernel(sim_unit->stepper, edge_bound); });
+    sim_unit->discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper](auto& edge_bound) {
+        edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);
+    });
+
     /* Global Pre Receive Step */
 
     /* Local Pre Receive Step */
@@ -66,8 +68,9 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         }
 
         /* Global Post Receive Step */
-        sim_unit->discretization.mesh_skeleton.CallForEachEdgeDistributed(
-            [sim_unit](auto& edge_dbound) { Problem::global_edge_distributed_kernel(sim_unit->stepper, edge_dbound); });
+        sim_unit->discretization.mesh_skeleton.CallForEachEdgeDistributed([sim_unit](auto& edge_dbound) {
+            edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);
+        });
         /* Global Post Receive Step */
 
         /* Local Post Receive Step */
