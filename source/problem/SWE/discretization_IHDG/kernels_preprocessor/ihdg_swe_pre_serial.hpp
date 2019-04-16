@@ -18,6 +18,8 @@ void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization
 
     global_data.delta_hat_global.resize(global_dof_offset, global_dof_offset);
     global_data.rhs_global.resize(global_dof_offset);
+
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) { elt.data.resize(stepper.GetNumStages() + 1); });
 }
 }
 }

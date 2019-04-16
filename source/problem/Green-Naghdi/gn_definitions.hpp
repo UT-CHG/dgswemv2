@@ -3,9 +3,9 @@
 
 #include "utilities/ignore.hpp"
 
-#define RKDG_SWE
+//#define RKDG_SWE
 //#define EHDG_SWE
-//#define IHDG_SWE
+#define IHDG_SWE
 
 #ifdef RKDG_SWE
 namespace SWE_SIM = SWE::RKDG;

@@ -33,6 +33,11 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<Prob
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_coord, 0);
     }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->discretization.mesh.CallForEachElement(
+            [&stepper](auto& elt) { elt.data.resize(stepper.GetNumStages() + 1); });
+    }
 }
 }
 }

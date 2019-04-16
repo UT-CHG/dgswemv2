@@ -35,7 +35,7 @@ namespace GN {
 namespace EHDG {
 struct Problem {
     using ProblemInputType   = GN::Inputs;
-    using ProblemStepperType = SecondStrangStepper<ESSPRKStepper, ESSPRKStepper>;
+    using ProblemStepperType = SecondStrangStepper<SWE_SIM::Problem::ProblemStepperType, ESSPRKStepper>;
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = GN::Parser;
 

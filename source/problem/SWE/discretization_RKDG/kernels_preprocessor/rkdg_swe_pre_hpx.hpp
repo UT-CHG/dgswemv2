@@ -16,6 +16,9 @@ auto Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
 
     return receive_future.then([sim_unit](auto&&) {
         initialize_data_parallel_post_receive(sim_unit->discretization.mesh, CommTypes::baryctr_coord);
+
+        sim_unit->discretization.mesh.CallForEachElement(
+            [sim_unit](auto& elt) { elt.data.resize(sim_unit->stepper.GetNumStages() + 1); });
     });
 }
 }

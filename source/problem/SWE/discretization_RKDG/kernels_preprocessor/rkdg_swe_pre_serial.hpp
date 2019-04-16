@@ -11,6 +11,8 @@ void Problem::preprocessor_serial(DiscretizationType<ProblemType>& discretizatio
                                   const typename ProblemType::ProblemStepperType& stepper,
                                   const typename ProblemType::ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
+
+    discretization.mesh.CallForEachElement([&stepper](auto& elt) { elt.data.resize(stepper.GetNumStages() + 1); });
 }
 }
 }

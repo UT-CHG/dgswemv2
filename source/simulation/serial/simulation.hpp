@@ -72,10 +72,6 @@ void Simulation<ProblemType>::Run() {
         this->writer.GetLogFile() << std::endl << "Launching Simulation!" << std::endl << std::endl;
     }
 
-    uint n_stages = this->stepper.GetNumStages();
-
-    this->discretization.mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
-
     if (this->writer.WritingOutput()) {
         this->writer.WriteFirstStep(this->stepper, this->discretization.mesh);
     }

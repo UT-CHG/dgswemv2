@@ -85,11 +85,6 @@ void OMPISimulation<ProblemType>::Run() {
                 this->sim_units[su_id]->writer.WriteFirstStep(this->stepper,
                                                               this->sim_units[su_id]->discretization.mesh);
             }
-
-            uint n_stages = this->stepper.GetNumStages();
-
-            this->sim_units[su_id]->discretization.mesh.CallForEachElement(
-                [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
         }
 
         for (uint step = 1; step <= this->n_steps; ++step) {
