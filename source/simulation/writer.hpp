@@ -46,10 +46,8 @@ class Writer {
     void StartLog();
 
     bool WritingOutput() { return this->writing_output; }
-    template <typename StepperType>
-    void WriteFirstStep(const StepperType& stepper, typename ProblemType::ProblemMeshType& mesh);
-    template <typename StepperType>
-    void WriteOutput(const StepperType& stepper, typename ProblemType::ProblemMeshType& mesh);
+    void WriteFirstStep(const typename ProblemType::ProblemStepperType& stepper, typename ProblemType::ProblemMeshType& mesh);
+    void WriteOutput(const typename ProblemType::ProblemStepperType& stepper, typename ProblemType::ProblemMeshType& mesh);
 
   private:
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
@@ -114,8 +112,7 @@ void Writer<ProblemType>::StartLog() {
 }
 
 template <typename ProblemType>
-template <typename StepperType>
-void Writer<ProblemType>::WriteFirstStep(const StepperType& stepper, typename ProblemType::ProblemMeshType& mesh) {
+void Writer<ProblemType>::WriteFirstStep(const typename ProblemType::ProblemStepperType& stepper, typename ProblemType::ProblemMeshType& mesh) {
     if (this->writing_vtk_output) {
         this->vtk_file_name_geom = this->output_path + mesh.GetMeshName() + "_geometry.vtk";
         this->vtk_file_name_raw  = this->output_path + mesh.GetMeshName() + "_raw_data.vtk";
@@ -135,8 +132,7 @@ void Writer<ProblemType>::WriteFirstStep(const StepperType& stepper, typename Pr
 }
 
 template <typename ProblemType>
-template <typename StepperType>
-void Writer<ProblemType>::WriteOutput(const StepperType& stepper, typename ProblemType::ProblemMeshType& mesh) {
+void Writer<ProblemType>::WriteOutput(const typename ProblemType::ProblemStepperType& stepper, typename ProblemType::ProblemMeshType& mesh) {
     if (this->writing_vtk_output && (stepper.GetStep() % this->vtk_output_frequency == 0)) {
         std::ofstream raw_data_file(this->vtk_file_name_raw);
 

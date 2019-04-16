@@ -270,13 +270,13 @@ struct Problem {
         return SWE::write_VTU_data(mesh, raw_data_file);
     }
 
-    static void write_modal_data(const ESSPRKStepper& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+    static void write_modal_data(const ProblemStepperType& stepper, ProblemMeshType& mesh, const std::string& output_path) {
         return SWE::write_modal_data(stepper, mesh, output_path);
     }
 
     template <typename ElementType>
     static double compute_residual_L2(const ProblemStepperType& stepper, ElementType& elt) {
-        return SWE::compute_residual_L2(stepper.GetSecondStepper(), elt);
+        return SWE::compute_residual_L2(stepper, elt);
     }
 
     template <typename GlobalDataType>

@@ -40,7 +40,7 @@ void Problem::step_serial(ProblemDiscretizationType& discretization,
     }
 
     if (writer.WritingOutput()) {
-        writer.WriteOutput(second_stepper, discretization.mesh);
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 

@@ -48,7 +48,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingOutput()) {
-            sim_units[su_id]->writer.WriteOutput(second_stepper, sim_units[su_id]->discretization.mesh);
+            sim_units[su_id]->writer.WriteOutput(stepper, sim_units[su_id]->discretization.mesh);
         }
     }
 }
