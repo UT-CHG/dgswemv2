@@ -9,7 +9,7 @@ namespace RKDG {
 template <template <typename> typename DiscretizationType, typename ProblemType>
 void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
                           typename ProblemType::ProblemGlobalDataType& global_data,
-                          typename ProblemType::ProblemStepperType& stepper,
+                          ProblemStepperType& stepper,
                           typename ProblemType::ProblemWriterType& writer,
                           typename ProblemType::ProblemParserType& parser) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
@@ -28,7 +28,7 @@ void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
 template <template <typename> typename DiscretizationType, typename ProblemType>
 void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
                            typename ProblemType::ProblemGlobalDataType& global_data,
-                           typename ProblemType::ProblemStepperType& stepper) {
+                           ProblemStepperType& stepper) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::volume_kernel(stepper, elt); });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::source_kernel(stepper, elt); });

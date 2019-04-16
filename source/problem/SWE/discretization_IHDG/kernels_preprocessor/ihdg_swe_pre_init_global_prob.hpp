@@ -5,7 +5,7 @@ namespace SWE {
 namespace IHDG {
 template <typename ProblemType>
 void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
-                                               const typename ProblemType::ProblemStepperType& stepper,
+                                               const ProblemStepperType& stepper,
                                                uint& global_dof_offset) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
@@ -105,7 +105,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
 
 template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
-                                                          const typename ProblemType::ProblemStepperType& stepper,
+                                                          const ProblemStepperType& stepper,
                                                           uint& global_dof_offset) {
     Problem::initialize_global_problem_serial(discretization, stepper, global_dof_offset);
 

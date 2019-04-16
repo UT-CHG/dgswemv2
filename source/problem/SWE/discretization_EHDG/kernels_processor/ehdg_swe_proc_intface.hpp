@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename StepperType, typename InterfaceType>
-void Problem::global_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
+template <typename InterfaceType>
+void Problem::global_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
     auto& state_in    = intface.data_in.state[stage];
@@ -17,8 +17,8 @@ void Problem::global_interface_kernel(const StepperType& stepper, InterfaceType&
     boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
 }
 
-template <typename StepperType, typename InterfaceType>
-void Problem::local_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
+template <typename InterfaceType>
+void Problem::local_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
     auto& state_in    = intface.data_in.state[stage];

@@ -10,7 +10,7 @@ namespace IHDG {
 template <typename ProblemType>
 void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
                           typename ProblemType::ProblemGlobalDataType& global_data,
-                          typename ProblemType::ProblemStepperType& stepper,
+                          ProblemStepperType& stepper,
                           typename ProblemType::ProblemWriterType& writer,
                           typename ProblemType::ProblemParserType& parser) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
@@ -29,7 +29,7 @@ void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
 template <typename ProblemType>
 void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
                            typename ProblemType::ProblemGlobalDataType& global_data,
-                           typename ProblemType::ProblemStepperType& stepper) {
+                           ProblemStepperType& stepper) {
     Problem::init_iteration(stepper, discretization);
 
     uint iter = 0;

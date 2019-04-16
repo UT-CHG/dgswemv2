@@ -152,24 +152,24 @@ struct Problem {
     template <typename ProblemType>
     static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
                                     typename ProblemType::ProblemGlobalDataType& global_data,
-                                    const typename ProblemType::ProblemStepperType& stepper,
+                                    const ProblemStepperType& stepper,
                                     const typename ProblemType::ProblemInputType& problem_specific_input);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
-                                  const typename ProblemType::ProblemStepperType& stepper,
+                                  const ProblemStepperType& stepper,
                                   const uint begin_sim_id,
                                   const uint end_sim_id);
 
     template <typename ProblemType>
     static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
-                                                 const typename ProblemType::ProblemStepperType& stepper,
+                                                 const ProblemStepperType& stepper,
                                                  uint& global_dof_offset);
 
     template <typename ProblemType>
     static void initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
-                                                            const typename ProblemType::ProblemStepperType& stepper,
+                                                            const ProblemStepperType& stepper,
                                                             uint& global_dof_offset);
 
     template <typename ProblemType>
@@ -184,108 +184,108 @@ struct Problem {
     template <typename ProblemType>
     static void step_serial(HDGDiscretization<ProblemType>& discretization,
                             typename ProblemType::ProblemGlobalDataType& global_data,
-                            typename ProblemType::ProblemStepperType& stepper,
+                            ProblemStepperType& stepper,
                             typename ProblemType::ProblemWriterType& writer,
                             typename ProblemType::ProblemParserType& parser);
 
     template <typename ProblemType>
     static void stage_serial(HDGDiscretization<ProblemType>& discretization,
                              typename ProblemType::ProblemGlobalDataType& global_data,
-                             typename ProblemType::ProblemStepperType& stepper);
+                             ProblemStepperType& stepper);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                           typename ProblemType::ProblemGlobalDataType& global_data,
-                          typename ProblemType::ProblemStepperType& stepper,
+                          ProblemStepperType& stepper,
                           const uint begin_sim_id,
                           const uint end_sim_id);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                            typename ProblemType::ProblemGlobalDataType& global_data,
-                           typename ProblemType::ProblemStepperType& stepper,
+                           ProblemStepperType& stepper,
                            const uint begin_sim_id,
                            const uint end_sim_id);
 
     /* init interation begin */
 
-    template <typename StepperType, typename ProblemType>
-    static void init_iteration(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+    template <typename ProblemType>
+    static void init_iteration(const ProblemStepperType& stepper, HDGDiscretization<ProblemType>& discretization);
 
-    template <typename StepperType, typename ElementType>
-    static void init_volume_kernel(const StepperType& stepper, ElementType& elt);
+    template <typename ElementType>
+    static void init_volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
-    template <typename StepperType, typename ElementType>
-    static void init_source_kernel(const StepperType& stepper, ElementType& elt);
+    template <typename ElementType>
+    static void init_source_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
-    template <typename StepperType, typename InterfaceType>
-    static void init_interface_kernel(const StepperType& stepper, InterfaceType& intface);
+    template <typename InterfaceType>
+    static void init_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface);
 
-    template <typename StepperType, typename BoundaryType>
-    static void init_boundary_kernel(const StepperType& stepper, BoundaryType& bound);
+    template <typename BoundaryType>
+    static void init_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound);
 
-    template <typename StepperType, typename DistributedBoundaryType>
-    static void init_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound);
+    template <typename DistributedBoundaryType>
+    static void init_distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound);
 
-    template <typename StepperType, typename EdgeInterfaceType>
-    static void init_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int);
+    template <typename EdgeInterfaceType>
+    static void init_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
 
-    template <typename StepperType, typename EdgeBoundaryType>
-    static void init_edge_boundary_kernel(const StepperType& stepper, EdgeBoundaryType& edge_bound);
+    template <typename EdgeBoundaryType>
+    static void init_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
 
-    template <typename StepperType, typename EdgeDistributedType>
-    static void init_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound);
+    template <typename EdgeDistributedType>
+    static void init_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
 
     /* init interation end */
 
     /* local step begin */
 
-    template <typename StepperType, typename ElementType>
-    static void local_volume_kernel(const StepperType& stepper, ElementType& elt);
+    template <typename ElementType>
+    static void local_volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
-    template <typename StepperType, typename ElementType>
-    static void local_source_kernel(const StepperType& stepper, ElementType& elt);
+    template <typename ElementType>
+    static void local_source_kernel(const ProblemStepperType& stepper, ElementType& elt);
 
-    template <typename StepperType, typename InterfaceType>
-    static void local_interface_kernel(const StepperType& stepper, InterfaceType& intface);
+    template <typename InterfaceType>
+    static void local_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface);
 
-    template <typename StepperType, typename BoundaryType>
-    static void local_boundary_kernel(const StepperType& stepper, BoundaryType& bound);
+    template <typename BoundaryType>
+    static void local_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound);
 
-    template <typename StepperType, typename DistributedBoundaryType>
-    static void local_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound);
+    template <typename DistributedBoundaryType>
+    static void local_distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound);
 
-    template <typename StepperType, typename EdgeInterfaceType>
-    static void local_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int);
+    template <typename EdgeInterfaceType>
+    static void local_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
 
-    template <typename StepperType, typename EdgeBoundaryType>
-    static void local_edge_boundary_kernel(const StepperType& stepper, EdgeBoundaryType& edge_bound);
+    template <typename EdgeBoundaryType>
+    static void local_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
 
-    template <typename StepperType, typename EdgeDistributedType>
-    static void local_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound);
+    template <typename EdgeDistributedType>
+    static void local_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
 
     /* local step end */
 
     /* global step begin */
 
-    template <typename StepperType, typename EdgeInterfaceType>
-    static void global_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int);
+    template <typename EdgeInterfaceType>
+    static void global_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
 
-    template <typename StepperType, typename EdgeBoundaryType>
-    static void global_edge_boundary_kernel(const StepperType& stepper, EdgeBoundaryType& edge_bound);
+    template <typename EdgeBoundaryType>
+    static void global_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
 
-    template <typename StepperType, typename EdgeDistributedType>
-    static void global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_bound);
+    template <typename EdgeDistributedType>
+    static void global_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_bound);
 
     template <typename ProblemType>
     static bool serial_solve_global_problem(HDGDiscretization<ProblemType>& discretization,
                                             typename ProblemType::ProblemGlobalDataType& global_data,
-                                            const typename ProblemType::ProblemStepperType& stepper);
+                                            const ProblemStepperType& stepper);
 
     template <template <typename> typename OMPISimUnitType, typename ProblemType>
     static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                           typename ProblemType::ProblemGlobalDataType& global_data,
-                                          const typename ProblemType::ProblemStepperType& stepper,
+                                          const ProblemStepperType& stepper,
                                           const uint begin_sim_id,
                                           const uint end_sim_id);
 
@@ -302,13 +302,13 @@ struct Problem {
         SWE::write_VTU_data(mesh, raw_data_file);
     }
 
-    template <typename StepperType, typename MeshType>
-    static void write_modal_data(const StepperType& stepper, MeshType& mesh, const std::string& output_path) {
+    template <typename MeshType>
+    static void write_modal_data(const ProblemStepperType& stepper, MeshType& mesh, const std::string& output_path) {
         SWE::write_modal_data(stepper, mesh, output_path);
     }
 
-    template <typename StepperType, typename ElementType>
-    static double compute_residual_L2(const StepperType& stepper, ElementType& elt) {
+    template <typename ElementType>
+    static double compute_residual_L2(const ProblemStepperType& stepper, ElementType& elt) {
         return SWE::compute_residual_L2(stepper, elt);
     }
 

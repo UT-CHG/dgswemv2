@@ -9,7 +9,8 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
                                   ProblemGlobalDataType& global_data,
                                   const ProblemStepperType& stepper,
                                   const ProblemInputType& problem_specific_input) {
-    SWE_SIM::Problem::preprocessor_serial(discretization, global_data, stepper, problem_specific_input);
+    SWE_SIM::Problem::preprocessor_serial(
+        discretization, global_data, stepper.GetFirstStepper(), problem_specific_input);
 
     uint dc_global_dof_offset = 0;
 

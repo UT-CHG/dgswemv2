@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename DistributedBoundaryType>
-void Problem::init_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound) {
+template <typename DistributedBoundaryType>
+void Problem::init_distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
     if (stepper.GetOrder() == 2) {
         const uint stage = stepper.GetStage();
 
@@ -15,8 +15,8 @@ void Problem::init_distributed_boundary_kernel(const StepperType& stepper, Distr
     }
 }
 
-template <typename StepperType, typename DistributedBoundaryType>
-void Problem::local_distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound) {
+template <typename DistributedBoundaryType>
+void Problem::local_distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage + 1];

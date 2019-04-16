@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace EHDG {
-template <typename StepperType, typename BoundaryType>
-void Problem::global_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
+template <typename BoundaryType>
+void Problem::global_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];
@@ -13,8 +13,8 @@ void Problem::global_boundary_kernel(const StepperType& stepper, BoundaryType& b
     boundary.q_at_gp = bound.ComputeUgp(state.q);
 }
 
-template <typename StepperType, typename BoundaryType>
-void Problem::local_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
+template <typename BoundaryType>
+void Problem::local_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage];

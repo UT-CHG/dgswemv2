@@ -13,39 +13,42 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
                         ProblemStepperType& stepper,
                         const uint begin_sim_id,
                         const uint end_sim_id) {
-    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+    auto& first_stepper  = stepper.GetFirstStepper();
+    auto& second_stepper = stepper.GetSecondStepper();
+
+    for (uint stage = 0; stage < first_stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
-                sim_units[su_id]->parser.ParseInput(stepper, sim_units[su_id]->discretization.mesh);
+                sim_units[su_id]->parser.ParseInput(first_stepper, sim_units[su_id]->discretization.mesh);
             }
         }
 
-        SWE_SIM::Problem::stage_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
+        SWE_SIM::Problem::stage_ompi(sim_units, global_data, first_stepper, begin_sim_id, end_sim_id);
     }
 
-    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+    for (uint stage = 0; stage < second_stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
-                sim_units[su_id]->parser.ParseInput(stepper, sim_units[su_id]->discretization.mesh);
+                sim_units[su_id]->parser.ParseInput(second_stepper, sim_units[su_id]->discretization.mesh);
             }
         }
 
-        Problem::dispersive_correction_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
+        Problem::dispersive_correction_ompi(sim_units, global_data, second_stepper, begin_sim_id, end_sim_id);
     }
 
-    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+    for (uint stage = 0; stage < first_stepper.GetNumStages(); ++stage) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             if (sim_units[su_id]->parser.ParsingInput()) {
-                sim_units[su_id]->parser.ParseInput(stepper, sim_units[su_id]->discretization.mesh);
+                sim_units[su_id]->parser.ParseInput(first_stepper, sim_units[su_id]->discretization.mesh);
             }
         }
 
-        SWE_SIM::Problem::stage_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
+        SWE_SIM::Problem::stage_ompi(sim_units, global_data, first_stepper, begin_sim_id, end_sim_id);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingOutput()) {
-            sim_units[su_id]->writer.WriteOutput(stepper, sim_units[su_id]->discretization.mesh);
+            sim_units[su_id]->writer.WriteOutput(second_stepper, sim_units[su_id]->discretization.mesh);
         }
     }
 }
@@ -53,7 +56,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
 template <typename OMPISimUnitType>
 void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                          ProblemGlobalDataType& global_data,
-                                         ProblemStepperType& stepper,
+                                         ESSPRKStepper& stepper,
                                          const uint begin_sim_id,
                                          const uint end_sim_id) {
     Problem::compute_derivatives_ompi(sim_units, stepper, begin_sim_id, end_sim_id);

@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename StepperType, typename ElementType>
-void Problem::source_kernel(const StepperType& stepper, ElementType& elt) {
+template <typename ElementType>
+void Problem::source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
 
     if (wd_state.wet) {

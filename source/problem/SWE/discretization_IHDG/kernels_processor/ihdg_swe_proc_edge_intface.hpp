@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename EdgeInterfaceType>
-void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
+template <typename EdgeInterfaceType>
+void Problem::init_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int) {
     if (stepper.GetOrder() == 2) {
         auto& edge_state    = edge_int.edge_data.edge_state;
         auto& edge_internal = edge_int.edge_data.edge_internal;
@@ -59,8 +59,8 @@ void Problem::init_edge_interface_kernel(const StepperType& stepper, EdgeInterfa
     }
 }
 
-template <typename StepperType, typename EdgeInterfaceType>
-void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
+template <typename EdgeInterfaceType>
+void Problem::local_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
@@ -182,8 +182,8 @@ void Problem::local_edge_interface_kernel(const StepperType& stepper, EdgeInterf
     }
 }
 
-template <typename StepperType, typename EdgeInterfaceType>
-void Problem::global_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
+template <typename EdgeInterfaceType>
+void Problem::global_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
     auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];

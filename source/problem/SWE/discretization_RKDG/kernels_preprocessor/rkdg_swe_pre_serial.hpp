@@ -8,7 +8,7 @@ namespace RKDG {
 template <template <typename> typename DiscretizationType, typename ProblemType>
 void Problem::preprocessor_serial(DiscretizationType<ProblemType>& discretization,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
-                                  const typename ProblemType::ProblemStepperType& stepper,
+                                  const ProblemStepperType& stepper,
                                   const typename ProblemType::ProblemInputType& problem_specific_input) {
     initialize_data_serial(discretization.mesh, problem_specific_input);
 

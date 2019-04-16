@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename InterfaceType>
-void Problem::init_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
+template <typename InterfaceType>
+void Problem::init_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
     if (stepper.GetOrder() == 2) {
         const uint stage = stepper.GetStage();
 
@@ -19,8 +19,8 @@ void Problem::init_interface_kernel(const StepperType& stepper, InterfaceType& i
     }
 }
 
-template <typename StepperType, typename InterfaceType>
-void Problem::local_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
+template <typename InterfaceType>
+void Problem::local_interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
     const uint stage = stepper.GetStage();
 
     auto& state_in    = intface.data_in.state[stage + 1];
