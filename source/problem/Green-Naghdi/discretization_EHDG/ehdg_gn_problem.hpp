@@ -270,7 +270,9 @@ struct Problem {
         return SWE::write_VTU_data(mesh, raw_data_file);
     }
 
-    static void write_modal_data(const ProblemStepperType& stepper, ProblemMeshType& mesh, const std::string& output_path) {
+    static void write_modal_data(const ProblemStepperType& stepper,
+                                 ProblemMeshType& mesh,
+                                 const std::string& output_path) {
         return SWE::write_modal_data(stepper, mesh, output_path);
     }
 

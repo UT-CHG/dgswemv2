@@ -15,8 +15,7 @@ class SecondStrangStepper {
 
   public:
     SecondStrangStepper() = default;
-    SecondStrangStepper(const StepperInput& stepper_input)
-        : first(stepper_input), second(stepper_input) {
+    SecondStrangStepper(const StepperInput& stepper_input) : first(stepper_input), second(stepper_input) {
         this->first.SetDT(this->first.GetDT() / 2.0);
     }
 

@@ -21,8 +21,9 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
 
     Problem::compute_bathymetry_derivatives_serial(discretization);
 
-    uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages() ?
-    stepper.GetFirstStepper().GetNumStages() : stepper.GetSecondStepper().GetNumStages();
+    uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages()
+                        ? stepper.GetFirstStepper().GetNumStages()
+                        : stepper.GetSecondStepper().GetNumStages();
 
     discretization.mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 }
