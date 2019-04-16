@@ -3,6 +3,7 @@
 
 #include "problem/SWE/problem_flux/swe_flux.hpp"
 #include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
+#include "compute_bc_trace.hpp"
 
 namespace SWE {
 namespace EHDG {
