@@ -3,11 +3,11 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename ElementType>
-void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void Problem::wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
-    auto& state                  = elt.data.state[stage + 1];
+    auto& state                  = elt.data.state[stage];
     auto& wd_state               = elt.data.wet_dry_state;
     uint number_of_dry_nodes     = 0;
     wd_state.went_completely_dry = false;
@@ -43,7 +43,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             check_element = true;
         }
     } else if (number_of_dry_nodes == wd_state.h_at_vrtx.size()) {
-        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+        for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
             wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
             wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
@@ -52,14 +52,14 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
         wd_state.wet = false;
 
         for ( uint var = 0; var < 3; ++var ) {
-            state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
+            state.q[var] = elt.ProjectLinearToBasis(row(wd_state.q_at_vrtx,var));
             set_constant(state.rhs[var], 0.0);
         }
 
         return;
     } else {
         if (h_avg <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
                 wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0;
                 wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0;
@@ -91,7 +91,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
             double del_qy = 0;
 
             uint n_dry_vrtx = 0;
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     n_dry_vrtx++;
 
@@ -105,7 +105,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
 
             assert(n_dry_vrtx < 3);
 
-            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); vrtx++) {
+            for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = wd_state.h_at_vrtx[vrtx] - wd_state.bath_at_vrtx[vrtx];
 
                 if (wd_state.h_at_vrtx[vrtx] > PostProcessing::h_o + PostProcessing::h_o_threshold) {
@@ -116,7 +116,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
         }
 
         for ( uint var = 0; var < 3; ++var ) {
-            state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
+            state.q[var] = elt.ProjectLinearToBasis(row(wd_state.q_at_vrtx,var));
         }
 
         check_element = true;
@@ -144,7 +144,7 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
         }
 
         for ( uint var = 0; var < 3; ++var ) {
-            state.q[var] = elt.ProjectLinearToBasis(elt.data.get_ndof(), row(wd_state.q_at_vrtx,var));
+            state.q[var] = elt.ProjectLinearToBasis(row(wd_state.q_at_vrtx,var));
             set_constant(state.rhs[var], 0.0);
         }
 

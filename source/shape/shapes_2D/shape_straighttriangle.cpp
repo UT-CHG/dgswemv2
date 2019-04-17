@@ -10,7 +10,7 @@ StraightTriangle::StraightTriangle(std::vector<Point<3>>&& nodal_coordinates) : 
     }
 }
 
-std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) {
+std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const std::vector<uint>& node_ID) const {
     std::vector<uint> bound_node_ID(2);
 
     bound_node_ID[0] = node_ID[(bound_id + 1) % 3];
@@ -19,7 +19,7 @@ std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const
     return bound_node_ID;
 }
 
-Point<2> StraightTriangle::GetBarycentricCoordinates() {
+Point<2> StraightTriangle::GetBarycentricCoordinates() const {
     Point<2> baryctr_coord;
 
     baryctr_coord[GlobalCoord::x] =
@@ -35,7 +35,7 @@ Point<2> StraightTriangle::GetBarycentricCoordinates() {
     return baryctr_coord;
 }
 
-std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
+std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() const {
     std::vector<Point<2>> midpoint_coord(3);
 
     for (uint midpt = 0; midpt < 3; ++midpt) {
@@ -51,7 +51,7 @@ std::vector<Point<2>> StraightTriangle::GetMidpointCoordinates() {
     return midpoint_coord;
 }
 
-DynVector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) {
+DynVector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points) const {
     DynVector<double> J_det(1);
 
     StatMatrix<double, 2, 2> J;
@@ -66,7 +66,7 @@ DynVector<double> StraightTriangle::GetJdet(const std::vector<Point<2>>& points)
     return J_det;
 }
 
-DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) {
+DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::vector<Point<2>>& points) const {
     DynVector<double> surface_J(1);
 
     surface_J[0] = std::sqrt(pow(this->nodal_coordinates[(bound_id + 2) % 3][GlobalCoord::x] -
@@ -80,7 +80,7 @@ DynVector<double> StraightTriangle::GetSurfaceJ(const uint bound_id, const std::
     return surface_J;
 }
 
-AlignedVector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) {
+AlignedVector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const std::vector<Point<2>>& points) const {
     AlignedVector<StatMatrix<double, 2, 2>> J_inv(1);
 
     StatMatrix<double, 2, 2> J;
@@ -96,7 +96,7 @@ AlignedVector<StatMatrix<double, 2, 2>> StraightTriangle::GetJinv(const std::vec
 }
 
 AlignedVector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const uint bound_id,
-                                                                        const std::vector<Point<2>>& points) {
+                                                                        const std::vector<Point<2>>& points) const {
     AlignedVector<StatVector<double, 2>> surface_normal(1);
 
     StatMatrix<double, 2, 2> J;
@@ -126,7 +126,7 @@ AlignedVector<StatVector<double, 2>> StraightTriangle::GetSurfaceNormal(const ui
     return surface_normal;
 }
 
-DynMatrix<double> StraightTriangle::GetPsi(const std::vector<Point<2>>& points) {
+DynMatrix<double> StraightTriangle::GetPsi(const std::vector<Point<2>>& points) const {
     uint ndof = 3;
     uint npt  = points.size();
 
@@ -141,7 +141,7 @@ DynMatrix<double> StraightTriangle::GetPsi(const std::vector<Point<2>>& points) 
     return psi;
 }
 
-std::array<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const std::vector<Point<2>>& points) {
+std::array<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const std::vector<Point<2>>& points) const {
     uint ndof = 3;
     uint npt  = points.size();
 
@@ -171,7 +171,7 @@ std::array<DynMatrix<double>, 2> StraightTriangle::GetDPsi(const std::vector<Poi
     return dpsi;
 }
 
-DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points) {
+DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const std::vector<Point<1>>& points) const {
     uint ndof = 2;
     uint npt  = points.size();
 
@@ -185,7 +185,7 @@ DynMatrix<double> StraightTriangle::GetBoundaryPsi(const uint bound_id, const st
     return psi_bound;
 }
 
-std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) {
+std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vector<Point<2>>& points) const {
     uint npt = points.size();
 
     std::vector<Point<2>> global_coordinates(npt);
@@ -205,7 +205,55 @@ std::vector<Point<2>> StraightTriangle::LocalToGlobalCoordinates(const std::vect
     return global_coordinates;
 }
 
-void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) {
+std::vector<Point<2>> StraightTriangle::GlobalToLocalCoordinates(const std::vector<Point<2>>& points) const {
+    uint npt = points.size();
+
+    std::vector<Point<2>> local_coordinates(npt);
+
+    StatMatrix<double, 2, 2> T;
+
+    T(0, 0) = this->nodal_coordinates[1][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(0, 1) = this->nodal_coordinates[2][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(1, 0) = this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+    T(1, 1) = this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+
+    StatMatrix<double, 2, 2> T_inv = inverse(T);
+
+    StatVector<double, 2> lambda;
+
+    for (uint pt = 0; pt < npt; ++pt) {
+        lambda =
+            (points[pt][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) * column(T_inv, GlobalCoord::x) +
+            (points[pt][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) * column(T_inv, GlobalCoord::y);
+
+        local_coordinates[pt][LocalCoordTri::z1] = 2 * lambda[0] - 1.0;
+        local_coordinates[pt][LocalCoordTri::z2] = 2 * lambda[1] - 1.0;
+    }
+
+    return local_coordinates;
+}
+
+bool StraightTriangle::ContainsPoint(const Point<2>& point) const {
+    StatMatrix<double, 2, 2> T;
+
+    T(0, 0) = this->nodal_coordinates[1][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(0, 1) = this->nodal_coordinates[2][GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x];
+    T(1, 0) = this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+    T(1, 1) = this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y];
+
+    StatMatrix<double, 2, 2> T_inv = inverse(T);
+
+    StatVector<double, 2> lambda =
+        (point[GlobalCoord::x] - this->nodal_coordinates[0][GlobalCoord::x]) * column(T_inv, GlobalCoord::x) +
+        (point[GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) * column(T_inv, GlobalCoord::y);
+
+    if (lambda[0] >= 0.0 && lambda[1] >= 0.0 && lambda[0] + lambda[1] <= 1.0)
+        return true;
+
+    return false;
+}
+
+void StraightTriangle::GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const {
     uint number_pt = points.size();
 
     double z1;

@@ -1,13 +1,16 @@
 #ifndef EHDG_SWE_BC_LAND_HPP
 #define EHDG_SWE_BC_LAND_HPP
 
+#include "problem/SWE/problem_flux/swe_flux.hpp"
+#include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
+
 namespace SWE {
 namespace EHDG {
 namespace BC {
 class Land {
   public:
     template <typename BoundaryType>
-    void Initialize(BoundaryType& bound) {} /*nothing to initialize*/
+    void Initialize(BoundaryType& bound);
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound);
@@ -16,11 +19,20 @@ class Land {
     void ComputeNumericalFlux(EdgeBoundaryType& edge_bound);
 };
 
+template <typename BoundaryType>
+void Land::Initialize(BoundaryType& bound) {}
+
 template <typename StepperType, typename EdgeBoundaryType>
 void Land::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
+    auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+
+    edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
+
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     double qn;
     double nx, ny;
@@ -44,11 +56,32 @@ void Land::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType& ed
 
 template <typename EdgeBoundaryType>
 void Land::ComputeNumericalFlux(EdgeBoundaryType& edge_bound) {
+    auto& edge_state    = edge_bound.edge_data.edge_state;
+    auto& edge_internal = edge_bound.edge_data.edge_internal;
+
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    boundary.F_hat_at_gp = boundary.Fn_at_gp;
+    edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
 
-    add_F_hat_tau_terms_bound_LF(edge_bound);
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
+
+    /* Compute trace flux */
+
+    SWE::get_Fn(edge_internal.q_hat_at_gp,
+                edge_internal.aux_hat_at_gp,
+                edge_bound.boundary.surface_normal,
+                boundary.F_hat_at_gp);
+
+    /* Add stabilization parameter terms */
+
+    SWE::get_tau_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
+
+    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+        column(boundary.F_hat_at_gp, gp) +=
+            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    }
 }
 }
 }

@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename BoundaryType>
-void Problem::boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
+template <typename StepperType, typename BoundaryType>
+void Problem::boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
     auto& wd_state = bound.data.wet_dry_state;
 
     if (wd_state.wet) {

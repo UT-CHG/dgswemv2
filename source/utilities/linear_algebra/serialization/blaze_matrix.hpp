@@ -41,6 +41,7 @@
 #include <hpx/include/serialization.hpp>
 
 #include <blaze/math/serialization/MatrixSerializer.h>
+#include <hpx/include/serialization.hpp>
 
 namespace hpx {
 namespace serialization {

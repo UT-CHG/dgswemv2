@@ -109,7 +109,7 @@ struct SparseMatrixMeta {
 
 /* Vector/Matrix (aka Array) Operations */
 template <typename ArrayType>
-void set_constant(ArrayType&& array, double value) {
+void set_constant(ArrayType&& array, const double value) {
     array = value;
 }
 

@@ -8,7 +8,6 @@ class Tide {
   private:
     HybMatrix<double, SWE::n_variables> q_ex;
 
-  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;
@@ -80,11 +79,11 @@ void Tide::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     set_constant(this->q_ex, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); ++con) {
-        for (uint gp = 0; gp < ngp; ++gp) {
-            row(this->q_ex, SWE::Variables::ze)[gp] += stepper.GetRamp() * this->forcing_fact[con] *
-                                                       this->amplitude_gp[con][gp] *
-                                                       cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() +
-                                                           this->equilib_arg[con] - this->phase_gp[con][gp]);
+        for (uint gp = 0; gp < boundary.q_at_gp[0].size(); ++gp) {
+            this->q_ex(SWE::Variables::ze, gp) += stepper.GetRamp() * this->forcing_fact[con] *
+                                                  this->amplitude_gp[con][gp] *
+                                                  cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() +
+                                                      this->equilib_arg[con] - this->phase_gp[con][gp]);
         }
     }
 

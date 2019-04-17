@@ -77,75 +77,56 @@ std::pair<DynVector<double>, std::vector<Point<2>>> Dunavant_2D::GetRule(const u
 
 uint Dunavant_2D::GetNumGP(const uint p) {
     uint num_gp{0};
-    switch (p) {
-        case (1):
-            num_gp = 1;
-            break;
-        case (2):
-            num_gp = 3;
-            break;
-        case (3):
-            num_gp = 4;
-            break;
-        case (4):
-            num_gp = 6;
-            break;
-        case (5):
-            num_gp = 7;
-            break;
-        case (6):
-            num_gp = 12;
-            break;
-        case (7):
-            num_gp = 13;
-            break;
-        case (8):
-            num_gp = 16;
-            break;
-        case (9):
-            num_gp = 19;
-            break;
-        case (10):
-            num_gp = 25;
-            break;
-        case (11):
-            num_gp = 27;
-            break;
-        case (12):
-            num_gp = 33;
-            break;
-        case (13):
-            num_gp = 37;
-            break;
-        case (14):
-            num_gp = 42;
-            break;
-        case (15):
-            num_gp = 48;
-            break;
-        case (16):
-            num_gp = 52;
-            break;
-        case (17):
-            num_gp = 61;
-            break;
-        case (18):
-            num_gp = 70;
-            break;
-        case (19):
-            num_gp = 73;
-            break;
-        case (20):
-            num_gp = 79;
-            break;
+
+    if (p == 0 || p == 1) {
+        num_gp = 1;
+    } else if (p == 2) {
+        num_gp = 3;
+    } else if (p == 3) {
+        num_gp = 4;
+    } else if (p == 4) {
+        num_gp = 6;
+    } else if (p == 5) {
+        num_gp = 7;
+    } else if (p == 6) {
+        num_gp = 12;
+    } else if (p == 7) {
+        num_gp = 13;
+    } else if (p == 8) {
+        num_gp = 16;
+    } else if (p == 9) {
+        num_gp = 19;
+    } else if (p == 10) {
+        num_gp = 25;
+    } else if (p == 11) {
+        num_gp = 27;
+    } else if (p == 12) {
+        num_gp = 33;
+    } else if (p == 13) {
+        num_gp = 37;
+    } else if (p == 14) {
+        num_gp = 42;
+    } else if (p == 15) {
+        num_gp = 48;
+    } else if (p == 16) {
+        num_gp = 52;
+    } else if (p == 17) {
+        num_gp = 61;
+    } else if (p == 18) {
+        num_gp = 70;
+    } else if (p == 19) {
+        num_gp = 73;
+    } else if (p == 20) {
+        num_gp = 79;
     }
+
     return num_gp;
 }
 
 std::vector<uint> Dunavant_2D::PermutationData(const uint p) {
     std::vector<uint> permutations;
 
-    if (p == 1) {
+    if (p == 0 || p == 1) {
         permutations.reserve(1);
 
         permutations.push_back(1);
@@ -373,7 +354,7 @@ std::vector<uint> Dunavant_2D::PermutationData(const uint p) {
 std::pair<std::vector<double>, std::vector<Point<3>>> Dunavant_2D::GPData(const uint p) {
     std::pair<std::vector<double>, std::vector<Point<3>>> gp;
 
-    if (p == 1) {
+    if (p == 0 || p == 1) {
         gp.first.reserve(1);
         gp.second.reserve(1);
 

@@ -8,6 +8,5 @@
 #include "rkdg_swe_proc_dbound.hpp"
 #include "rkdg_swe_proc_update.hpp"
 #include "rkdg_swe_proc_wet_dry.hpp"
-#include "rkdg_swe_proc_slope_limit.hpp"
 
 #endif

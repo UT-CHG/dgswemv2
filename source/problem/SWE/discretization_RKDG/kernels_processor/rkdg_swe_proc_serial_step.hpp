@@ -2,26 +2,34 @@
 #define RKDG_SWE_PROC_SERIAL_STEP_HPP
 
 #include "rkdg_swe_kernels_processor.hpp"
+#include "problem/SWE/problem_slope_limiter/swe_CS_sl_serial.hpp"
 
 namespace SWE {
 namespace RKDG {
-template <typename SerialSimType>
-void Problem::step_serial(SerialSimType* sim) {
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+template <template <typename> typename DiscretizationType, typename ProblemType>
+void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
+                          typename ProblemType::ProblemGlobalDataType& global_data,
+                          typename ProblemType::ProblemStepperType& stepper,
+                          typename ProblemType::ProblemWriterType& writer,
+                          typename ProblemType::ProblemParserType& parser) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        Problem::stage_serial(sim->stepper, sim->discretization);
+        Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (sim->writer.WritingOutput()) {
-        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    if (writer.WritingOutput()) {
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 
-void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationType& discretization) {
-    VolumeKernel volume_kernel(stepper);
+template <template <typename> typename DiscretizationType, typename ProblemType>
+void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
+                           typename ProblemType::ProblemGlobalDataType& global_data,
+                           typename ProblemType::ProblemStepperType& stepper) {
+    VolumeKernel<decltype(stepper)> volume_kernel(stepper);
     discretization.mesh.CallForEachElement(volume_kernel);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::source_kernel(stepper, elt); });
@@ -34,6 +42,16 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
     UpdateKernel update_kernel(stepper);
     discretization.mesh.CallForEachElement(update_kernel);
 
+    ++stepper;
+
+    if (SWE::PostProcessing::wetting_drying) {
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); });
+    }
+
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_serial(stepper, discretization);
+    }
+
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = SWE::scrutinize_solution(stepper, elt);
 
@@ -42,25 +60,6 @@ void Problem::stage_serial(ProblemStepperType& stepper, ProblemDiscretizationTyp
             abort();
         }
     });
-
-    if (SWE::PostProcessing::wetting_drying) {
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); });
-    }
-
-    if (SWE::PostProcessing::slope_limiting) {
-        discretization.mesh.CallForEachElement(
-            [&stepper](auto& elt) { Problem::slope_limiting_prepare_element_kernel(stepper, elt); });
-
-        discretization.mesh.CallForEachInterface(
-            [&stepper](auto& intface) { Problem::slope_limiting_prepare_interface_kernel(stepper, intface); });
-
-        discretization.mesh.CallForEachBoundary(
-            [&stepper](auto& bound) { Problem::slope_limiting_prepare_boundary_kernel(stepper, bound); });
-
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::slope_limiting_kernel(stepper, elt); });
-    }
-
-    ++stepper;
 }
 }
 }

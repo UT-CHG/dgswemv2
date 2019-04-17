@@ -35,10 +35,9 @@ class Boundary {
     template <typename... Args>
     Boundary(RawBoundary<dimension, DataType>&& raw_boundary, Args&&... args);
 
-    Master::Master<dimension + 1>& GetMaster() { return this->master; }
-    Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
-
-    std::vector<uint>& GetNodeID() { return this->node_ID; }
+    const Master::Master<dimension + 1>& GetMaster() { return this->master; }
+    const Shape::Shape<dimension + 1>& GetShape() { return this->shape; }
+    const std::vector<uint>& GetNodeID() { return this->node_ID; }
 
     template <typename F>
     DynMatrix<double> ComputeFgp(const F& f);
@@ -137,7 +136,7 @@ Boundary<dimension, IntegrationType, DataType, ConditonType>::Boundary(RawBounda
 
 template <uint dimension, typename IntegrationType, typename DataType, typename ConditonType>
 template <typename F>
-inline DynMatrix<double> Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeFgp(const F& f) {
+DynMatrix<double> Boundary<dimension, IntegrationType, DataType, ConditonType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
@@ -206,9 +205,7 @@ inline decltype(auto) Boundary<dimension, IntegrationType, DataType, ConditonTyp
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master.ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact, lookup);
+    return u_gp * column(this->int_phi_phi_fact, this->master.ndof * dof_i + dof_j);
 }
 }
 

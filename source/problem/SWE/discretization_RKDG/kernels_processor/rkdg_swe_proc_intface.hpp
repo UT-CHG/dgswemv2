@@ -4,7 +4,6 @@
 namespace SWE {
 namespace RKDG {
 namespace detail {
-
 template <typename IntfaceSoA>
 struct ComputeUgpBdryHelper {
     constexpr bool is_vectorized() { return true; }

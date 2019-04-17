@@ -18,7 +18,7 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Accessor>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Accessor>;
 
     // the whole test is designed for h_0 = 0.01
     SWE::PostProcessing::h_o = 0.01;
@@ -31,7 +31,7 @@ int main() {
 
     MasterType master(1);
 
-    Geometry::ElementSoA<ElementType, SWE::RKDG::SoAContainer> data_holder(master);
+    Geometry::ElementSoA<ElementType, SWE::SoAContainer> data_holder(master);
     data_holder.reserve(3 /*ndof*/, 1 /*stage*/, 1 /*element*/);
 
     ElementType triangle = data_holder.at(0, //SoA index
@@ -52,7 +52,7 @@ int main() {
     ESSPRKStepper stepper(stepper_input);
 
     auto& wd_state = triangle.data.wet_dry_state;
-    auto& state    = triangle.data.state[1];
+    auto& state    = triangle.data.state[0];
 
     wd_state.bath_at_vrtx[0] = 1.;
     wd_state.bath_at_vrtx[1] = 2.;

@@ -1,6 +1,8 @@
 #ifndef SWE_JACOBIAN_HPP
 #define SWE_JACOBIAN_HPP
 
+#include "utilities/sign.hpp"
+
 namespace SWE {
 StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, double v, double nx, double ny);
 StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u, double v, double nx, double ny);
@@ -25,7 +27,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(double h, doubl
 void get_A(const HybMatrix<double, SWE::n_variables>& q,
            const HybMatrix<double, SWE::n_auxiliaries>& aux,
            const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-           HybMatrix<double, SWE::n_variables * SWE::n_variables>& A) {
+           AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& A) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -34,14 +36,14 @@ void get_A(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(A, gp) = flatten<double>(R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny));
+        A[gp] = R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny);
     }
 }
 
 void get_dA_dze(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                HybMatrix<double, SWE::n_variables * SWE::n_variables>& dA_dze) {
+                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dA_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -50,16 +52,16 @@ void get_dA_dze(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dA_dze, gp) = flatten<double>(dR_dze(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                                             R(h, u, v, nx, ny) * dL_dze(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                                             R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * dinvR_dze(h, u, v, nx, ny));
+        dA_dze[gp] = dR_dze(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                     R(h, u, v, nx, ny) * dL_dze(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                     R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * dinvR_dze(h, u, v, nx, ny);
     }
 }
 
 void get_dA_dqx(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                HybMatrix<double, SWE::n_variables * SWE::n_variables>& dA_dqx) {
+                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dA_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -68,16 +70,16 @@ void get_dA_dqx(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dA_dqx, gp) = flatten<double>(dR_dqx(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                                             R(h, u, v, nx, ny) * dL_dqx(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                                             R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * dinvR_dqx(h, u, v, nx, ny));
+        dA_dqx[gp] = dR_dqx(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                     R(h, u, v, nx, ny) * dL_dqx(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                     R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * dinvR_dqx(h, u, v, nx, ny);
     }
 }
 
 void get_dA_dqy(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                HybMatrix<double, SWE::n_variables * SWE::n_variables>& dA_dqy) {
+                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dA_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -86,16 +88,16 @@ void get_dA_dqy(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dA_dqy, gp) = flatten<double>(dR_dqy(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                                             R(h, u, v, nx, ny) * dL_dqy(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                                             R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * dinvR_dqy(h, u, v, nx, ny));
+        dA_dqy[gp] = dR_dqy(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                     R(h, u, v, nx, ny) * dL_dqy(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                     R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * dinvR_dqy(h, u, v, nx, ny);
     }
 }
 
 void get_absA(const HybMatrix<double, SWE::n_variables>& q,
               const HybMatrix<double, SWE::n_auxiliaries>& aux,
               const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-              HybMatrix<double, SWE::n_variables * SWE::n_variables>& absA) {
+              AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& absA) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -104,14 +106,14 @@ void get_absA(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(absA, gp) = flatten<double>(R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny));
+        absA[gp] = R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny);
     }
 }
 
 void get_dabsA_dze(const HybMatrix<double, SWE::n_variables>& q,
                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                   HybMatrix<double, SWE::n_variables * SWE::n_variables>& dabsA_dze) {
+                   AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dabsA_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -120,17 +122,16 @@ void get_dabsA_dze(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dabsA_dze, gp) =
-            flatten<double>(dR_dze(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                            R(h, u, v, nx, ny) * dabsL_dze(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                            R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * dinvR_dze(h, u, v, nx, ny));
+        dabsA_dze[gp] = dR_dze(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                        R(h, u, v, nx, ny) * dabsL_dze(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                        R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * dinvR_dze(h, u, v, nx, ny);
     }
 }
 
 void get_dabsA_dqx(const HybMatrix<double, SWE::n_variables>& q,
                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                   HybMatrix<double, SWE::n_variables * SWE::n_variables>& dabsA_dqx) {
+                   AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dabsA_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -139,17 +140,16 @@ void get_dabsA_dqx(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dabsA_dqx, gp) =
-            flatten<double>(dR_dqx(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                            R(h, u, v, nx, ny) * dabsL_dqx(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                            R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * dinvR_dqx(h, u, v, nx, ny));
+        dabsA_dqx[gp] = dR_dqx(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                        R(h, u, v, nx, ny) * dabsL_dqx(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                        R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * dinvR_dqx(h, u, v, nx, ny);
     }
 }
 
 void get_dabsA_dqy(const HybMatrix<double, SWE::n_variables>& q,
                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                   HybMatrix<double, SWE::n_variables * SWE::n_variables>& dabsA_dqy) {
+                   AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dabsA_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -158,17 +158,16 @@ void get_dabsA_dqy(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dabsA_dqy, gp) =
-            flatten<double>(dR_dqy(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                            R(h, u, v, nx, ny) * dabsL_dqy(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
-                            R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * dinvR_dqy(h, u, v, nx, ny));
+        dabsA_dqy[gp] = dR_dqy(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                        R(h, u, v, nx, ny) * dabsL_dqy(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
+                        R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * dinvR_dqy(h, u, v, nx, ny);
     }
 }
 
 void get_Aplus(const HybMatrix<double, SWE::n_variables>& q,
                const HybMatrix<double, SWE::n_auxiliaries>& aux,
                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-               HybMatrix<double, SWE::n_variables * SWE::n_variables>& Aplus) {
+               AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& Aplus) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -177,15 +176,14 @@ void get_Aplus(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(Aplus, gp) = 0.5 * flatten<double>(R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) *
-                                                  invR(h, u, v, nx, ny));
+        Aplus[gp] = 0.5 * R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny);
     }
 }
 
 void get_dAplus_dze(const HybMatrix<double, SWE::n_variables>& q,
                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                    HybMatrix<double, SWE::n_variables * SWE::n_variables>& dAplus_dze) {
+                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -194,19 +192,17 @@ void get_dAplus_dze(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dAplus_dze, gp) =
-            0.5 *
-            flatten<double>(
-                dR_dze(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (dL_dze(h, u, v, nx, ny) + dabsL_dze(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * dinvR_dze(h, u, v, nx, ny));
+        dAplus_dze[gp] =
+            0.5 * (dR_dze(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (dL_dze(h, u, v, nx, ny) + dabsL_dze(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * dinvR_dze(h, u, v, nx, ny));
     }
 }
 
 void get_dAplus_dqx(const HybMatrix<double, SWE::n_variables>& q,
                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                    HybMatrix<double, SWE::n_variables * SWE::n_variables>& dAplus_dqx) {
+                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -215,19 +211,17 @@ void get_dAplus_dqx(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dAplus_dqx, gp) =
-            0.5 *
-            flatten<double>(
-                dR_dqx(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (dL_dqx(h, u, v, nx, ny) + dabsL_dqx(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * dinvR_dqx(h, u, v, nx, ny));
+        dAplus_dqx[gp] =
+            0.5 * (dR_dqx(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (dL_dqx(h, u, v, nx, ny) + dabsL_dqx(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * dinvR_dqx(h, u, v, nx, ny));
     }
 }
 
 void get_dAplus_dqy(const HybMatrix<double, SWE::n_variables>& q,
                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                    HybMatrix<double, SWE::n_variables * SWE::n_variables>& dAplus_dqy) {
+                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -236,19 +230,17 @@ void get_dAplus_dqy(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dAplus_dqy, gp) =
-            0.5 *
-            flatten<double>(
-                dR_dqy(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (dL_dqy(h, u, v, nx, ny) + dabsL_dqy(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * dinvR_dqy(h, u, v, nx, ny));
+        dAplus_dqy[gp] =
+            0.5 * (dR_dqy(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (dL_dqy(h, u, v, nx, ny) + dabsL_dqy(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * dinvR_dqy(h, u, v, nx, ny));
     }
 }
 
 void get_Aminus(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                HybMatrix<double, SWE::n_variables * SWE::n_variables>& Aminus) {
+                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& Aminus) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -257,15 +249,14 @@ void get_Aminus(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(Aminus, gp) = 0.5 * flatten<double>(R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) *
-                                                   invR(h, u, v, nx, ny));
+        Aminus[gp] = 0.5 * R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny);
     }
 }
 
 void get_dAminus_dze(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
                      const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                     HybMatrix<double, SWE::n_variables * SWE::n_variables>& dAminus_dze) {
+                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -274,19 +265,17 @@ void get_dAminus_dze(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dAminus_dze, gp) =
-            0.5 *
-            flatten<double>(
-                dR_dze(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (dL_dze(h, u, v, nx, ny) - dabsL_dze(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * dinvR_dze(h, u, v, nx, ny));
+        dAminus_dze[gp] =
+            0.5 * (dR_dze(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (dL_dze(h, u, v, nx, ny) - dabsL_dze(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * dinvR_dze(h, u, v, nx, ny));
     }
 }
 
 void get_dAminus_dqx(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
                      const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                     HybMatrix<double, SWE::n_variables * SWE::n_variables>& dAminus_dqx) {
+                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -295,19 +284,17 @@ void get_dAminus_dqx(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dAminus_dqx, gp) =
-            0.5 *
-            flatten<double>(
-                dR_dqx(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (dL_dqx(h, u, v, nx, ny) - dabsL_dqx(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * dinvR_dqx(h, u, v, nx, ny));
+        dAminus_dqx[gp] =
+            0.5 * (dR_dqx(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (dL_dqx(h, u, v, nx, ny) - dabsL_dqx(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * dinvR_dqx(h, u, v, nx, ny));
     }
 }
 
 void get_dAminus_dqy(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
                      const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                     HybMatrix<double, SWE::n_variables * SWE::n_variables>& dAminus_dqy) {
+                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -316,16 +303,14 @@ void get_dAminus_dqy(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        column(dAminus_dqy, gp) =
-            0.5 *
-            flatten<double>(
-                dR_dqy(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (dL_dqy(h, u, v, nx, ny) - dabsL_dqy(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
-                R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * dinvR_dqy(h, u, v, nx, ny));
+        dAminus_dqy[gp] =
+            0.5 * (dR_dqy(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (dL_dqy(h, u, v, nx, ny) - dabsL_dqy(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
+                   R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * dinvR_dqy(h, u, v, nx, ny));
     }
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
 
     double c  = std::sqrt(Global::g * h);
@@ -340,7 +325,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> L(double h, double u, dou
     return L;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h,
+                                                                     double u,
+                                                                     double v,
+                                                                     double nx,
+                                                                     double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze;
 
     double dc_dze  = std::sqrt(Global::g / h) / 2.0;
@@ -355,7 +344,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(double h, double u
     return dL_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(double h,
+                                                                     double u,
+                                                                     double v,
+                                                                     double nx,
+                                                                     double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx;
 
     double dun_dqx = nx / h;
@@ -369,7 +362,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(double h, double u
     return dL_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(double h,
+                                                                     double u,
+                                                                     double v,
+                                                                     double nx,
+                                                                     double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy;
 
     double dun_dqy = ny / h;
@@ -383,7 +380,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(double h, double u
     return dL_dqy;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> absL;
 
     double c  = std::sqrt(Global::g * h);
@@ -398,7 +395,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(double h, double u, 
     return absL;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h,
+                                                                        double u,
+                                                                        double v,
+                                                                        double nx,
+                                                                        double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze;
 
     double c  = std::sqrt(Global::g * h);
@@ -409,14 +410,18 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(double h, doubl
 
     set_constant(dabsL_dze, 0.0);
 
-    dabsL_dze(SWE::Variables::ze, SWE::Variables::ze) = (dun_dze - dc_dze) * std::pow(-1.0, std::signbit(un - c));
-    dabsL_dze(SWE::Variables::qx, SWE::Variables::qx) = dun_dze * std::pow(-1.0, std::signbit(un));
-    dabsL_dze(SWE::Variables::qy, SWE::Variables::qy) = (dun_dze + dc_dze) * std::pow(-1.0, std::signbit(un + c));
+    dabsL_dze(SWE::Variables::ze, SWE::Variables::ze) = (dun_dze - dc_dze) * Utilities::sign(un - c);
+    dabsL_dze(SWE::Variables::qx, SWE::Variables::qx) = dun_dze * Utilities::sign(un);
+    dabsL_dze(SWE::Variables::qy, SWE::Variables::qy) = (dun_dze + dc_dze) * Utilities::sign(un + c);
 
     return dabsL_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h,
+                                                                        double u,
+                                                                        double v,
+                                                                        double nx,
+                                                                        double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx;
 
     double c  = std::sqrt(Global::g * h);
@@ -426,14 +431,18 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(double h, doubl
 
     set_constant(dabsL_dqx, 0.0);
 
-    dabsL_dqx(SWE::Variables::ze, SWE::Variables::ze) = dun_dqx * std::pow(-1.0, std::signbit(un - c));
-    dabsL_dqx(SWE::Variables::qx, SWE::Variables::qx) = dun_dqx * std::pow(-1.0, std::signbit(un));
-    dabsL_dqx(SWE::Variables::qy, SWE::Variables::qy) = dun_dqx * std::pow(-1.0, std::signbit(un + c));
+    dabsL_dqx(SWE::Variables::ze, SWE::Variables::ze) = dun_dqx * Utilities::sign(un - c);
+    dabsL_dqx(SWE::Variables::qx, SWE::Variables::qx) = dun_dqx * Utilities::sign(un);
+    dabsL_dqx(SWE::Variables::qy, SWE::Variables::qy) = dun_dqx * Utilities::sign(un + c);
 
     return dabsL_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h,
+                                                                        double u,
+                                                                        double v,
+                                                                        double nx,
+                                                                        double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy;
 
     double c  = std::sqrt(Global::g * h);
@@ -443,14 +452,14 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(double h, doubl
 
     set_constant(dabsL_dqy, 0.0);
 
-    dabsL_dqy(SWE::Variables::ze, SWE::Variables::ze) = dun_dqy * std::pow(-1.0, std::signbit(un - c));
-    dabsL_dqy(SWE::Variables::qx, SWE::Variables::qx) = dun_dqy * std::pow(-1.0, std::signbit(un));
-    dabsL_dqy(SWE::Variables::qy, SWE::Variables::qy) = dun_dqy * std::pow(-1.0, std::signbit(un + c));
+    dabsL_dqy(SWE::Variables::ze, SWE::Variables::ze) = dun_dqy * Utilities::sign(un - c);
+    dabsL_dqy(SWE::Variables::qx, SWE::Variables::qx) = dun_dqy * Utilities::sign(un);
+    dabsL_dqy(SWE::Variables::qy, SWE::Variables::qy) = dun_dqy * Utilities::sign(un + c);
 
     return dabsL_dqy;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> R(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> R(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
 
     double c = std::sqrt(Global::g * h);
@@ -470,7 +479,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> R(double h, double u, dou
     return R;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(double h,
+                                                                     double u,
+                                                                     double v,
+                                                                     double nx,
+                                                                     double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze;
 
     double dc_dze = std::sqrt(Global::g / h) / 2.0;
@@ -485,7 +498,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(double h, double u
     return dR_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(double h,
+                                                                     double u,
+                                                                     double v,
+                                                                     double nx,
+                                                                     double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx;
 
     set_constant(dR_dqx, 0.0);
@@ -496,7 +513,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(double h, double u
     return dR_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(double h,
+                                                                     double u,
+                                                                     double v,
+                                                                     double nx,
+                                                                     double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy;
 
     set_constant(dR_dqy, 0.0);
@@ -507,7 +528,7 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(double h, double u
     return dR_dqy;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(double h, double u, double v, double nx, double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> invR;
 
     double c  = std::sqrt(Global::g * h);
@@ -528,7 +549,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(double h, double u, 
     return invR;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(double h,
+                                                                        double u,
+                                                                        double v,
+                                                                        double nx,
+                                                                        double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze;
 
     double c    = std::sqrt(Global::g * h);
@@ -552,7 +577,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(double h, doubl
     return dinvR_dze;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(double h,
+                                                                        double u,
+                                                                        double v,
+                                                                        double nx,
+                                                                        double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx;
 
     double c = std::sqrt(Global::g * h);
@@ -566,7 +595,11 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(double h, doubl
     return dinvR_dqx;
 }
 
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(double h, double u, double v, double nx, double ny) {
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(double h,
+                                                                        double u,
+                                                                        double v,
+                                                                        double nx,
+                                                                        double ny) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy;
 
     double c = std::sqrt(Global::g * h);

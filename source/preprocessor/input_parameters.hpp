@@ -160,8 +160,8 @@ InputParameters<ProblemInput>::InputParameters(const std::string& input_string) 
             this->stepper_input.run_time =
                 difftime(timegm(&this->stepper_input.T_end), timegm(&this->stepper_input.T_start));
             this->stepper_input.dt      = time_stepping["dt"].as<double>();
-            this->stepper_input.nstages = time_stepping["order"].as<uint>();
-            this->stepper_input.order   = time_stepping["nstages"].as<uint>();
+            this->stepper_input.order   = time_stepping["order"].as<uint>();
+            this->stepper_input.nstages = time_stepping["nstages"].as<uint>();
 
             this->stepper_input.ramp_duration =
                 time_stepping["ramp_duration"] ? time_stepping["ramp_duration"].as<double>() : 0;

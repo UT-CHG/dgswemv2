@@ -12,12 +12,12 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Accessor>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Accessor>;
 
-    using RawBoundaryType = Geometry::RawBoundary<1, SWE::RKDG::Accessor>;
-    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::RKDG::Accessor, SWE::RKDG::BC::Land>;
+    using RawBoundaryType = Geometry::RawBoundary<1, SWE::Accessor>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Accessor, SWE::RKDG::BC::Land>;
     using InterfaceType =
-        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::RKDG::Accessor, SWE::RKDG::ISP::Internal>;
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Accessor, SWE::RKDG::ISP::Internal>;
 
     // make an equilateral triangle
     std::vector<Point<3>> vrtxs(3);
@@ -27,12 +27,12 @@ int main() {
 
     uint n_edge_gp = Integration::GaussLegendre_1D{}.GetNumGP(2*10 + 1);
     MasterType master(10);
-    SWE::RKDG::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/,
-                                        master.ngp,
-                                        n_edge_gp,
-                                        1 /*stage*/,
-                                        1 /*element*/,
-                                        master.nbound);
+    SWE::SoAContainer data_holder((10+1)*(10+2)/2 /*ndofs*/,
+                                  master.ngp,
+                                  n_edge_gp,
+                                  1 /*stage*/,
+                                  1 /*element*/,
+                                  master.nbound);
     ShapeType shape(std::move(vrtxs));
 
     vrtxs.resize(3);

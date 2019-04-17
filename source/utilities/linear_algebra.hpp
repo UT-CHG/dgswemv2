@@ -18,8 +18,8 @@ struct Result<double> {
 
 // The following are STL containers with aligned allocators.
 // These should be used whenever the template parameter is
-// a static or Hybrid vector type or contains is a class
-// which contains Hybrid or static vector types
+// a Static or Hybrid vector type or contains is a class
+// which contains Hybrid or Static vector types
 template <typename T>
 using AlignedVector = std::vector<T, AlignedAllocator<T>>;
 

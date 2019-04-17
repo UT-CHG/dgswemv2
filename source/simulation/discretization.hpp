@@ -12,18 +12,16 @@ struct DGDiscretization {
     MeshType mesh;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
-                    typename ProblemType::ProblemWriterType& writer,
-                    typename ProblemType::ProblemStepperType& stepper) {
+                    typename ProblemType::ProblemWriterType& writer) {
         std::tuple<> empty_comm;
 
-        this->initialize(input, empty_comm, writer, stepper);
+        this->initialize(input, empty_comm, writer);
     }
 
     template <typename CommunicatorType>
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
                     CommunicatorType& communicator,
-                    typename ProblemType::ProblemWriterType& writer,
-                    typename ProblemType::ProblemStepperType& stepper) {
+                    typename ProblemType::ProblemWriterType& writer) {
         mesh.reserve(input.stepper_input.nstages,
                      {static_cast<uint>(input.mesh_input.mesh_data.elements.size())});
         initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
@@ -41,7 +39,6 @@ template <typename ProblemType>
 struct HDGDiscretization {
     typename ProblemType::ProblemMeshType mesh;
     typename ProblemType::ProblemMeshSkeletonType mesh_skeleton;
-    typename ProblemType::ProblemGlobalDataType global_data;
 
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
                     typename ProblemType::ProblemWriterType& writer) {

@@ -58,7 +58,15 @@ enum JacobianVariables : uint {
     qy_qy = 8
 };
 
-enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, function = 3, internal = INTERNAL, levee = INTERNAL + 1 };
+enum BoundaryTypes : uchar {
+    land     = 0,
+    tide     = 1,
+    flow     = 2,
+    function = 3,
+    outflow  = 4,
+    internal = INTERNAL,
+    levee    = INTERNAL + 1
+};
 
 namespace RKDG {
 constexpr uint n_communications = 3;
@@ -66,13 +74,13 @@ enum CommTypes : uchar { baryctr_coord = 0, bound_state = 1, baryctr_state = 2 }
 }
 
 namespace EHDG {
-constexpr uint n_communications = 1;
-enum CommTypes : uchar { bound_state = 0 };
+constexpr uint n_communications = 4;
+enum CommTypes : uchar { baryctr_coord = 0, init_global_prob = 1, bound_state = 2, baryctr_state = 3 };
 }
 
 namespace IHDG {
-constexpr uint n_communications = 1;
-enum CommTypes : uchar { global_dof_indx = 0 };
+constexpr uint n_communications = 3;
+enum CommTypes : uchar { baryctr_coord = 0, init_global_prob = 1, baryctr_state = 2 };
 }
 
 enum class SphericalProjectionType { None, Enable };

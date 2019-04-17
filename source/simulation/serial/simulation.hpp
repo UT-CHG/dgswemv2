@@ -16,6 +16,7 @@ class Simulation : public SimulationBase {
     uint n_steps;
 
     typename ProblemType::ProblemDiscretizationType discretization;
+    typename ProblemType::ProblemGlobalDataType global_data;
 
     typename ProblemType::ProblemStepperType stepper;
     typename ProblemType::ProblemWriterType writer;
@@ -31,9 +32,6 @@ class Simulation : public SimulationBase {
     void Run();
     void ComputeL2Residual();
     void Finalize();
-
-  private:
-    friend ProblemType;
 };
 
 template <typename ProblemType>
@@ -69,7 +67,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Initialize() {
-    ProblemType::preprocessor_serial(this->discretization, this->problem_input);
+    ProblemType::preprocessor_serial(this->discretization, this->global_data, this->stepper, this->problem_input);
 }
 
 template <typename ProblemType>
@@ -83,7 +81,7 @@ void Simulation<ProblemType>::Run() {
     }
 
     for (uint step = 1; step <= this->n_steps; ++step) {
-        ProblemType::step_serial(this);
+        ProblemType::step_serial(this->discretization, this->global_data, this->stepper, this->writer, this->parser);
     }
 }
 
@@ -94,12 +92,12 @@ void Simulation<ProblemType>::ComputeL2Residual() {
     this->discretization.mesh.CallForEachElement(
         [this, &residual_L2](auto& elt) { residual_L2 += ProblemType::compute_residual_L2(this->stepper, elt); });
 
-    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(residual_L2) << std::endl;
+    std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(residual_L2) << std::endl;
 }
 
 template <typename ProblemType>
 void Simulation<ProblemType>::Finalize() {
-    ProblemType::finalize_simulation(this);
+    ProblemType::finalize_simulation(this->global_data);
 }
 }
 #endif

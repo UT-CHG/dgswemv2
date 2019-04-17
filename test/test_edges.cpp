@@ -15,21 +15,22 @@ int main() {
 
     using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
     using ShapeType   = Shape::StraightTriangle;
-    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::EHDG::Accessor>;
 
-    using RawBoundaryType = Geometry::RawBoundary<1, SWE::EHDG::Accessor>;
-    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::EHDG::Accessor, SWE::EHDG::BC::Land>;
+    using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Accessor>;
+
+    using RawBoundaryType = Geometry::RawBoundary<1, SWE::Accessor>;
+    using BoundaryType    = Geometry::Boundary<1, Integration::GaussLegendre_1D, SWE::Accessor, SWE::EHDG::BC::Land>;
     using InterfaceType =
-        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::EHDG::Accessor, SWE::EHDG::ISP::Internal>;
+        Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Accessor, SWE::EHDG::ISP::Internal>;
 
     using EdgeBoundaryTypes =
-        Geometry::EdgeBoundaryTypeTuple<SWE::EHDG::EdgeData,
-                                        Geometry::BoundaryTypeTuple<SWE::EHDG::Accessor, SWE::EHDG::BC::Land>>::Type;
+        Geometry::EdgeBoundaryTypeTuple<SWE::EdgeData,
+                                        Geometry::BoundaryTypeTuple<SWE::Accessor, SWE::EHDG::BC::Land>>::Type;
     using EdgeBoundaryType = typename std::tuple_element<0, EdgeBoundaryTypes>::type;
 
     using EdgeInterfaceTypes =
-        Geometry::EdgeInterfaceTypeTuple<SWE::EHDG::EdgeData,
-                                         Geometry::InterfaceTypeTuple<SWE::EHDG::Accessor, SWE::EHDG::ISP::Internal>>::Type;
+        Geometry::EdgeInterfaceTypeTuple<SWE::EdgeData,
+                                         Geometry::InterfaceTypeTuple<SWE::Accessor, SWE::EHDG::ISP::Internal>>::Type;
     using EdgeInterfaceType = typename std::tuple_element<0, EdgeInterfaceTypes>::type;
 
     // make an equilateral triangle
@@ -142,7 +143,7 @@ int main() {
         edge_interfaces.emplace_back(EdgeInterfaceType(intface));
     }
 
-    for (uint n_int = 0; n_int < 3; n_int++) {
+    for (uint n_int = 0; n_int < 3; ++n_int) {
         u_proj_gp  = edge_interfaces[n_int].ComputeUgp(u_proj);
         u_proj_res = edge_interfaces[n_int].L2Projection(u_proj_gp);
 
@@ -159,7 +160,7 @@ int main() {
         set_constant(u, 0.0);
         row(u, 0)[dof] = 1.0;
 
-        for (uint n_int = 0; n_int < 3; n_int++) {
+        for (uint n_int = 0; n_int < 3; ++n_int) {
             // just checking orthogonality of Legendre 1D poly
             u_gp = edge_interfaces[n_int].ComputeUgp(u);
 
@@ -213,7 +214,7 @@ int main() {
         }
     }
 
-    for (uint n_int = 0; n_int < 3; n_int++) {
+    for (uint n_int = 0; n_int < 3; ++n_int) {
         for (uint dof = 0; dof < 66; ++dof) {
             set_constant(u_phi, 0.0);
             row(u_phi, 0)[dof] = 1.0;

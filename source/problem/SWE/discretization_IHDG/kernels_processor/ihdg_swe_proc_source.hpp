@@ -1,32 +1,34 @@
 #ifndef IHDG_SWE_PROC_SOURCE_HPP
 #define IHDG_SWE_PROC_SOURCE_HPP
 
+#include "problem/SWE/problem_source/swe_source.hpp"
+
 namespace SWE {
 namespace IHDG {
 template <typename StepperType, typename ElementType>
+void Problem::init_source_kernel(const StepperType& stepper, ElementType& elt) {
+    if (stepper.GetOrder() == 2) {
+        auto& internal = elt.data.internal;
+
+        SWE::get_source(stepper.GetTimeAtCurrentStage(), elt);
+
+        for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
+            subvector(internal.rhs_prev, SWE::n_variables * dof, SWE::n_variables) +=
+                elt.IntegrationPhi(dof, internal.source_at_gp);
+        }
+    }
+}
+
+template <typename StepperType, typename ElementType>
 void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
-    // auto& source   = elt.data.source;
+    auto& source   = elt.data.source;
 
-    double t = stepper.GetTimeAtCurrentStage() + stepper.GetDT();
+    set_constant(internal.dsource_dq_at_gp, 0.0);
 
-    // note we assume that the values at gauss points have already been computed
-    // compute contribution of hydrostatic pressure
-    set_constant(row(internal.source_at_gp, SWE::Variables::ze), 0.0);
-
-    row(internal.source_at_gp, SWE::Variables::qx) =
-        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));
-    row(internal.source_at_gp, SWE::Variables::qy) =
-        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
-
-    if (SWE::SourceTerms::function_source) {
-        auto source_q = [t](Point<2>& pt) { return SWE::source_q(t, pt); };
-
-        internal.source_at_gp += elt.ComputeFgp(source_q);
-    }
-
-    /*if (SWE::SourceTerms::bottom_friction) {
-        double Cf = SWE::SourceTerms::Cf;
+    if (SWE::SourceTerms::bottom_friction) {
+        double Cf      = SWE::SourceTerms::Cf;
+        double dCf_dze = 0.0;
 
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute bottom friction contribution
@@ -36,67 +38,49 @@ void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) 
             // compute manning friction factor
             if (source.manning) {
                 Cf = source.g_manning_n_sq / std::pow(internal.aux_at_gp(SWE::Auxiliaries::h, gp), 1.0 / 3.0);
-                if (Cf < SWE::SourceTerms::Cf)
-                    Cf = SWE::SourceTerms::Cf;
+                dCf_dze =
+                    -source.g_manning_n_sq / std::pow(internal.aux_at_gp(SWE::Auxiliaries::h, gp), 4.0 / 3.0) / 3.0;
+
+                if (Cf < SWE::SourceTerms::Cf) {
+                    Cf      = SWE::SourceTerms::Cf;
+                    dCf_dze = 0.0;
+                }
             }
 
             double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
+            double C                      = Cf / (std::hypot(u, v) * internal.aux_at_gp(SWE::Auxiliaries::h, gp));
 
-            internal.source_at_gp(SWE::Variables::qx, gp) -=
-                bottom_friction_stress * internal.q_at_gp(SWE::Variables::qx, gp);
-            internal.source_at_gp(SWE::Variables::qy, gp) -=
-                bottom_friction_stress * internal.q_at_gp(SWE::Variables::qy, gp);
+            internal.dsource_dq_at_gp(JacobianVariables::qx_ze, gp) -=
+                -2.0 * bottom_friction_stress * u +
+                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qx, gp);
+            internal.dsource_dq_at_gp(JacobianVariables::qx_qx, gp) -= bottom_friction_stress + C * u * u;
+            internal.dsource_dq_at_gp(JacobianVariables::qx_qy, gp) -= C * u * v;
+
+            internal.dsource_dq_at_gp(JacobianVariables::qy_ze, gp) -=
+                -2.0 * bottom_friction_stress * v +
+                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qy, gp);
+            internal.dsource_dq_at_gp(JacobianVariables::qy_qx, gp) -= C * u * v;
+            internal.dsource_dq_at_gp(JacobianVariables::qy_qy, gp) -= bottom_friction_stress + C * v * v;
         }
     }
 
-    if (SWE::SourceTerms::meteo_forcing) {
-        // elt.ComputeNodalUgp(source.tau_s, internal.tau_s_at_gp);
-        // elt.ComputeNodalDUgp(source.p_atm, internal.dp_atm_at_gp);
+    SWE::get_source(stepper.GetTimeAtNextStage(), elt);
 
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            // compute surface friction contribution
-            internal.source_at_gp(SWE::Variables::qx, gp) +=
-                internal.tau_s_at_gp(GlobalCoord::x, gp) / Global::rho_water;
-            internal.source_at_gp(SWE::Variables::qy, gp) +=
-                internal.tau_s_at_gp(GlobalCoord::y, gp) / Global::rho_water;
+    double theta = stepper.GetTheta();
 
-            // compute atmospheric pressure contribution
-            internal.source_at_gp(SWE::Variables::qx, gp) -=
-                internal.aux_at_gp(SWE::Auxiliaries::sp, gp) * internal.aux_at_gp(SWE::Auxiliaries::h, gp) *
-                internal.dp_atm_at_gp(GlobalCoord::x, gp) / Global::rho_water;
-            internal.source_at_gp(SWE::Variables::qy, gp) -= internal.aux_at_gp(SWE::Auxiliaries::h, gp) *
-                                                             internal.dp_atm_at_gp(GlobalCoord::y, gp) /
-                                                             Global::rho_water;
+    for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
+        for (uint dof_j = 0; dof_j < elt.data.get_ndof(); ++dof_j) {
+            submatrix(internal.delta_local,
+                      SWE::n_variables * dof_i,
+                      SWE::n_variables * dof_j,
+                      SWE::n_variables,
+                      SWE::n_variables) -=
+                reshape<double, SWE::n_variables>((1.0 - theta) *
+                                                  elt.IntegrationPhiPhi(dof_j, dof_i, internal.dsource_dq_at_gp));
         }
-    }
 
-    if (SWE::SourceTerms::tide_potential) {
-        // elt.ComputeNodalDUgp(source.tide_pot, internal.dtide_pot_at_gp);
-
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            // compute tide potential contribution
-            internal.source_at_gp(SWE::Variables::qx, gp) +=
-                Global::g * internal.aux_at_gp(SWE::Auxiliaries::sp, gp) *
-                internal.aux_at_gp(SWE::Auxiliaries::h, gp) * internal.dtide_pot_at_gp(GlobalCoord::x, gp);
-            internal.source_at_gp(SWE::Variables::qy, gp) += Global::g *
-                                                             internal.aux_at_gp(SWE::Auxiliaries::h, gp) *
-                                                             internal.dtide_pot_at_gp(GlobalCoord::y, gp);
-        }
-    }
-
-    if (SWE::SourceTerms::coriolis) {
-        for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-            // compute coriolis contribution
-            internal.source_at_gp(SWE::Variables::qx, gp) +=
-                source.coriolis_f * internal.q_at_gp(SWE::Variables::qy, gp);
-            internal.source_at_gp(SWE::Variables::qy, gp) -=
-                source.coriolis_f * internal.q_at_gp(SWE::Variables::qx, gp);
-        }
-    }*/
-
-    for (uint dof = 0; dof < elt.data.get_ndof(); ++dof) {
-        subvector(internal.rhs_local, SWE::n_variables * dof, SWE::n_variables) +=
-            elt.IntegrationPhi(dof, internal.source_at_gp);
+        subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) +=
+            (1.0 - theta) * elt.IntegrationPhi(dof_i, internal.source_at_gp);
     }
 }
 }

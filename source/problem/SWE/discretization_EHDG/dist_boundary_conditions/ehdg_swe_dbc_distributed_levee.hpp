@@ -13,8 +13,6 @@ class DistributedLevee {
   private:
     double H_tolerance = 0.01;
 
-    HybMatrix<double, SWE::n_variables> q_ex;
-
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
     DynRowVector<double> C_supercritical;
@@ -56,10 +54,6 @@ DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger, const std::
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
-    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-
-    this->q_ex.resize(SWE::n_variables, ngp);
-
     this->H_bar_gp       = dbound.ComputeBoundaryNodalUgp(this->H_barrier);
     this->C_subcrit_gp   = dbound.ComputeBoundaryNodalUgp(this->C_subcritical);
     this->C_supercrit_gp = dbound.ComputeBoundaryNodalUgp(this->C_supercritical);

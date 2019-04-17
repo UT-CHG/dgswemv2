@@ -34,6 +34,9 @@ class Interface {
     std::vector<uint> node_ID_ex;
 
     double abs_J;
+    std::vector<Point<dimension + 1>> gp_global_coordinates_in;
+    std::vector<Point<dimension + 1>> gp_global_coordinates_ex;
+
     DynMatrix<double> psi_gp_in;
     DynMatrix<double> psi_gp_ex;
     DynMatrix<double> psi_bound_gp_in;
@@ -54,14 +57,12 @@ class Interface {
               RawBoundary<dimension, DataType>&& raw_boundary_ex,
               Args&&... args);
 
-    Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
-    Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
-
-    Shape::Shape<dimension + 1>& GetShapeIN() { return this->shape_in; }
-    Shape::Shape<dimension + 1>& GetShapeEX() { return this->shape_ex; }
-
-    std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
-    std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
+    const Master::Master<dimension + 1>& GetMasterIN() { return this->master_in; }
+    const Master::Master<dimension + 1>& GetMasterEX() { return this->master_ex; }
+    const Shape::Shape<dimension + 1>& GetShapeIN() { return this->shape_in; }
+    const Shape::Shape<dimension + 1>& GetShapeEX() { return this->shape_ex; }
+    const std::vector<uint>& GetNodeIDIN() { return this->node_ID_in; }
+    const std::vector<uint>& GetNodeIDEX() { return this->node_ID_ex; }
 
     double GetAbsJ() { return this->abs_J; }
 
@@ -69,6 +70,11 @@ class Interface {
     decltype(auto) ComputeUgpIN(const InputArrayType& u);
     template <typename InputArrayType>
     decltype(auto) ComputeUgpEX(const InputArrayType& u);
+
+    template <typename F>
+    DynMatrix<double> ComputeFgpIN(const F& f);
+    template <typename F>
+    DynMatrix<double> ComputeFgpEX(const F& f);
 
     template <typename InputArrayType>
     decltype(auto) ComputeNodalUgpIN(const InputArrayType& u_nodal);
@@ -131,6 +137,9 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     std::vector<Point<dimension + 1>> z_master_in =
         this->master_in.BoundaryToMasterCoordinates(this->bound_id_in, integration_rule.second);
 
+    // Global coordinates of gps in
+    this->gp_global_coordinates_in = this->shape_in.LocalToGlobalCoordinates(z_master_in);
+
     // Compute factors to expand nodal values in
     this->psi_gp_in = this->shape_in.GetPsi(z_master_in);
 
@@ -143,6 +152,9 @@ Interface<dimension, IntegrationType, DataType, SpecializationType>::Interface(
     // transfrom gp to master coord ex
     std::vector<Point<dimension + 1>> z_master_ex =
         this->master_ex.BoundaryToMasterCoordinates(this->bound_id_ex, integration_rule.second);
+
+    // Global coordinates of gps ex
+    this->gp_global_coordinates_ex = this->shape_ex.LocalToGlobalCoordinates(z_master_ex);
 
     // Compute factors to expand nodal values ex
     this->psi_gp_ex = reverse_columns(this->shape_ex.GetPsi(z_master_ex));
@@ -224,6 +236,21 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename F>
+DynMatrix<double> Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeFgpIN(const F& f) {
+    uint nvar = f(this->gp_global_coordinates_in[0]).size();
+    uint ngp  = this->gp_global_coordinates_in.size();
+
+    DynMatrix<double> f_vals(nvar, ngp);
+
+    for (uint gp = 0; gp < this->gp_global_coordinates_in.size(); ++gp) {
+        column(f_vals, gp) = f(this->gp_global_coordinates_in[gp]);
+    }
+
+    return f_vals;
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
 template <typename InputArrayType>
 inline decltype(auto) Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeNodalUgpIN(
     const InputArrayType& u_nodal) {
@@ -271,9 +298,7 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master_in.ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact_in, lookup);
+    return u_gp * column(this->int_phi_phi_fact_in, this->master_in.ndof * dof_i + dof_j);
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
@@ -282,6 +307,21 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const InputArrayType& u) {
     // u_gp(q, gp) = u(q, dof) * phi_gp(dof, gp)
     return u * this->phi_gp_ex;
+}
+
+template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
+template <typename F>
+DynMatrix<double> Interface<dimension, IntegrationType, DataType, SpecializationType>::ComputeFgpEX(const F& f) {
+    uint nvar = f(this->gp_global_coordinates_ex[0]).size();
+    uint ngp  = this->gp_global_coordinates_ex.size();
+
+    DynMatrix<double> f_vals(nvar, ngp);
+
+    for (uint gp = 0; gp < this->gp_global_coordinates_ex.size(); ++gp) {
+        column(f_vals, gp) = f(this->gp_global_coordinates_ex[gp]);
+    }
+
+    return f_vals;
 }
 
 template <uint dimension, typename IntegrationType, typename DataType, typename SpecializationType>
@@ -332,9 +372,7 @@ inline decltype(auto) Interface<dimension, IntegrationType, DataType, Specializa
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] =  u_gp(q, gp) * int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master_ex.ndof * dof_i + dof_j;
-
-    return u_gp * column(this->int_phi_phi_fact_ex, lookup);
+    return u_gp * column(this->int_phi_phi_fact_ex, this->master_ex.ndof * dof_i + dof_j);
 }
 }
 

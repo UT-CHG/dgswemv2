@@ -60,7 +60,7 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
                                       << sim_unit->stepper.GetTimestamp() << std::endl;
     }
 
-    return receive_future.then([sim_unit](auto&&) {
+    hpx::future<void> stage_future = receive_future.then([sim_unit](auto&&) {
         if (sim_unit->writer.WritingVerboseLog()) {
             sim_unit->writer.GetLogFile() << "Starting work after receive" << std::endl;
         }
@@ -82,19 +82,31 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             sim_unit->stepper.UpdateState(elt);
         });
 
+        ++(sim_unit->stepper);
+        /* Local Post Receive Step */
+
+        if (sim_unit->writer.WritingVerboseLog()) {
+            sim_unit->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
+        }
+    });
+
+    if (SWE::PostProcessing::slope_limiting) {
+        stage_future = stage_future.then([sim_unit](auto&& f) {
+            f.get();  // check for exceptions
+
+            return CS_slope_limiter_hpx(sim_unit, CommTypes::baryctr_state);
+        });
+    }
+
+    return stage_future.then([sim_unit](auto&& f) {
+        f.get();  // check for exceptions
+
         sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
             bool nan_found = SWE::scrutinize_solution(sim_unit->stepper, elt);
 
             if (nan_found)
                 hpx::terminate();
         });
-        /* Local Post Receive Step */
-
-        ++(sim_unit->stepper);
-
-        if (sim_unit->writer.WritingVerboseLog()) {
-            sim_unit->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
-        }
     });
 }
 }

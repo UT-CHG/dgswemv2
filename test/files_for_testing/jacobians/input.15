@@ -16,18 +16,13 @@ timestepping:
   order: 1
   nstages: 1
 
-polynomial_order: 1
+polynomial_order: 3
 
 problem:
-  name: swe
+  name: rkdg_swe
   gravity: 9.81
   density_air: 1.225
-  density_water: 1000.0
-
-output:
-  path: ../../test/files_for_testing/jacobians/
-  vtu:
-    frequency: 120.0
-  logfile:
-    name: log
-    verbose: false
+  density_water: 1000.0  
+  bottom_friction:
+    type: Chezy
+    coefficient: 0.003

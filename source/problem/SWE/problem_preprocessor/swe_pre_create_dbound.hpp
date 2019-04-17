@@ -23,7 +23,7 @@ void create_distributed_boundaries(std::map<uchar, std::map<std::pair<uint, uint
     uint n_distributed = 0;
     uint n_distr_levee = 0;
 
-    for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); rank_boundary_id++) {
+    for (uint rank_boundary_id = 0; rank_boundary_id < communicator.GetRankBoundaryNumber(); ++rank_boundary_id) {
         typename Communicator::RankBoundaryType& rank_boundary = communicator.GetRankBoundary(rank_boundary_id);
 
         uint element_id_in, bound_id_in, p, ngp;
@@ -43,7 +43,7 @@ void create_distributed_boundaries(std::map<uchar, std::map<std::pair<uint, uint
         locality_ex = rb_meta_data.locality_ex;
         submesh_ex  = rb_meta_data.submesh_ex;
 
-        for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); dboundary_id++) {
+        for (uint dboundary_id = 0; dboundary_id < rb_meta_data.elements_in.size(); ++dboundary_id) {
             element_id_in = rb_meta_data.elements_in[dboundary_id];
             // element_id_ex = rb_meta_data.elements_ex[dboundary_id];
             bound_id_in = rb_meta_data.bound_ids_in[dboundary_id];

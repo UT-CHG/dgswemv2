@@ -66,7 +66,7 @@ make_gn_analytic_solution() {
 	    simulation->ComputeL2Residual();' ${MAIN_DIR}/dgswemv2-serial.cpp
 	elif [ "${TARGET}" == "ompi" ]; then
 	    sed -i.tmp '/        MPI_Finalize();/i\
-                simulation->ComputeL2Residual();\' ${MAIN_DIR}/dgswemv2-ompi.cpp
+                simulation->ComputeL2Residual();' ${MAIN_DIR}/dgswemv2-ompi.cpp
 	fi
 
 	old_dir=${PWD}

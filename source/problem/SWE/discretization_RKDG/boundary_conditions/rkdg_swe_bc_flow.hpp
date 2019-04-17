@@ -9,7 +9,6 @@ class Flow {
     HybMatrix<double, SWE::n_variables> q_ex;
     DynRowVector<double> qn;
 
-  private:
     std::vector<double> frequency;
     std::vector<double> forcing_fact;
     std::vector<double> equilib_arg;

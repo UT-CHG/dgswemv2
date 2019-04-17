@@ -5,36 +5,22 @@ namespace SWE {
 namespace EHDG {
 template <typename StepperType, typename EdgeDistributedType>
 void Problem::global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
-    auto& edge_state    = edge_dbound.edge_data.edge_state;
-    auto& edge_internal = edge_dbound.edge_data.edge_internal;
-
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
-
     /* Newton-Raphson iterator */
 
     uint iter = 0;
-    while (true) {
-        iter++;
+    while (iter != 100) {
+        ++iter;
 
         Problem::global_edge_distributed_iteration(stepper, edge_dbound);
 
-        if (iter == 100) {
-            break;
-        }
+        double delta_hat_norm = norm(edge_dbound.edge_data.edge_internal.rhs_global);
 
-        double delta_hat_norm = norm(edge_internal.rhs_global) / edge_internal.rhs_global.size();
-
-        if (delta_hat_norm < 1.0e-8) {
+        if (delta_hat_norm < 1.0e-12) {
             break;
         }
     }
 
     /* Compute Numerical Flux */
-
-    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
 }
@@ -43,13 +29,6 @@ template <typename StepperType, typename EdgeDistributedType>
 void Problem::global_edge_distributed_iteration(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
-
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
-
-    edge_internal.q_hat_at_gp = edge_dbound.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Assemble global kernels */
 

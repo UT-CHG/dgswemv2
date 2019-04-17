@@ -210,50 +210,49 @@ std::array<double, 2> Dubiner_2D::ComputeSingularDPhiDZ2(const uint q) {
     return dphi_data;
 }
 
-inline DynRowVector<double> Dubiner_2D::ProjectBasisToLinear(const DynRowVector<double>& u) {
-    DynRowVector<double> u_lin(3);
+DynMatrix<double> Dubiner_2D::GetBasisLinearT(const uint p) {
+    uint ndof     = (p + 1) * (p + 2) / 2;
+    uint ndof_lin = 3;
 
-    u_lin[0] = u[0] - u[1] - u[2];
-    u_lin[1] = u[0] - u[1] + u[2];
-    u_lin[2] = u[0] + 2.0 * u[1];
+    DynMatrix<double> T_basis_linear(ndof, ndof_lin);
 
-    return u_lin;
+    set_constant(T_basis_linear, 0.0);
+
+    T_basis_linear(0, 0) = 1.0;
+    T_basis_linear(1, 0) = -1.0;
+    T_basis_linear(2, 0) = -1.0;
+
+    T_basis_linear(0, 1) = 1.0;
+    T_basis_linear(1, 1) = -1.0;
+    T_basis_linear(2, 1) = 1.0;
+
+    T_basis_linear(0, 2) = 1.0;
+    T_basis_linear(1, 2) = 2.0;
+    T_basis_linear(2, 2) = 0.0;
+
+    return T_basis_linear;
 }
 
-inline DynRowVector<double> Dubiner_2D::ProjectLinearToBasis(const uint ndof, const DynRowVector<double>& u_lin) {
-    DynRowVector<double> u(ndof);
+DynMatrix<double> Dubiner_2D::GetLinearBasisT(const uint p) {
+    uint ndof     = (p + 1) * (p + 2) / 2;
+    uint ndof_lin = 3;
 
-    set_constant(u, 0.0);
+    DynMatrix<double> T_linear_basis(ndof_lin, ndof);
 
-    u[0] = (u_lin[0] + u_lin[1] + u_lin[2]) / 3.0;
-    u[1] = (-u_lin[0] - u_lin[1] + 2.0 * u_lin[2]) / 6.0;
-    u[2] = (-u_lin[0] + u_lin[1]) / 2.0;
-    return u;
-}
+    set_constant(T_linear_basis, 0.0);
 
-inline DynMatrix<double> Dubiner_2D::ProjectBasisToLinear(const DynMatrix<double>& u) {
-    uint nvar = rows(u);
+    T_linear_basis(0, 0) = 1.0 / 3.0;
+    T_linear_basis(1, 0) = 1.0 / 3.0;
+    T_linear_basis(2, 0) = 1.0 / 3.0;
 
-    DynMatrix<double> u_lin(nvar, 3);
+    T_linear_basis(0, 1) = -1.0 / 6.0;
+    T_linear_basis(1, 1) = -1.0 / 6.0;
+    T_linear_basis(2, 1) = 1.0 / 3.0;
 
-    column(u_lin, 0) = column(u, 0) - column(u, 1) - column(u, 2);
-    column(u_lin, 1) = column(u, 0) - column(u, 1) + column(u, 2);
-    column(u_lin, 2) = column(u, 0) + 2.0 * column(u, 1);
+    T_linear_basis(0, 2) = -1.0 / 2.0;
+    T_linear_basis(1, 2) = 1.0 / 2.0;
+    T_linear_basis(2, 2) = 0.0;
 
-    return u_lin;
-}
-
-inline DynMatrix<double> Dubiner_2D::ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) {
-    uint nvar = rows(u_lin);
-
-    DynMatrix<double> u(nvar, ndof);
-
-    set_constant(u, 0.0);
-
-    column(u, 0) = (column(u_lin, 0) + column(u_lin, 1) + column(u_lin, 2)) / 3.0;
-    column(u, 1) = (-column(u_lin, 0) - column(u_lin, 1) + 2.0 * column(u_lin, 2)) / 6.0;
-    column(u, 2) = (-column(u_lin, 0) + column(u_lin, 1)) / 2.0;
-
-    return u;
+    return T_linear_basis;
 }
 }

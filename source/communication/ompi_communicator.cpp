@@ -30,7 +30,7 @@ void OMPICommunicator::InitializeCommunication() {
         this->receive_requests[comm].resize(nrbound);
     }
 
-    for (uint rank_boundary_id = 0; rank_boundary_id < this->rank_boundaries.size(); rank_boundary_id++) {
+    for (uint rank_boundary_id = 0; rank_boundary_id < this->rank_boundaries.size(); ++rank_boundary_id) {
         OMPIRankBoundary& rank_boundary = this->rank_boundaries[rank_boundary_id];
 
         uint ncomm = rank_boundary.send_buffer.size();

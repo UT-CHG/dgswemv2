@@ -10,7 +10,7 @@
 
 using MasterType  = Master::Triangle<Basis::Dubiner_2D, Integration::Dunavant_2D>;
 using ShapeType   = Shape::StraightTriangle;
-using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::RKDG::Accessor>;
+using ElementType = Geometry::Element<2, MasterType, ShapeType, SWE::Accessor>;
 
 using Utilities::almost_equal;
 
@@ -257,7 +257,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
     }
 
     // Check integrations PhiPhi PhiDPhi
-    DynMatrix<double> unit_gp(1, triangle.data.get_ngp_internal());
+    DynRowVector<double> unit_gp(triangle.data.get_ngp_internal());
     set_constant(unit_gp, 1.0);
 
     for (uint dof = 0; dof < 66; ++dof) {
@@ -268,13 +268,13 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
         for (uint doff = 0; doff < 66; ++doff) {
             if (!almost_equal(triangle.IntegrationPhi(doff, gp_vals)[0],
-                              triangle.IntegrationPhiPhi(dof, doff, unit_gp)[0],
+                              triangle.IntegrationPhiPhi(dof, doff, unit_gp),
                               1.e+03)) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiPhi" << std::endl;
                 std::cerr << std::setprecision(16) << "  " << triangle.IntegrationPhi(doff, gp_vals)[0] << ' '
-                          << triangle.IntegrationPhiPhi(dof, doff, unit_gp)[0] << '\n';
+                          << triangle.IntegrationPhiPhi(dof, doff, unit_gp) << '\n';
             }
         }
 
@@ -282,17 +282,17 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
         for (uint doff = 0; doff < 66; ++doff) {
             if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::x, doff, gp_vals)[0],
-                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp)[0],
+                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp),
                               1.e+03)) {
                 error_found = true;
 
                 std::cerr << "Error found in Triangle element in IntegrationPhiDPhi" << std::endl;
                 std::cerr << std::setprecision(16) << "  " << triangle.IntegrationDPhi(GlobalCoord::x, doff, gp_vals)[0]
-                          << ' ' << triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp)[0] << '\n';
+                          << ' ' << triangle.IntegrationPhiDPhi(dof, GlobalCoord::x, doff, unit_gp) << '\n';
             }
 
             if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals)[0],
-                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::x, dof, unit_gp)[0],
+                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::x, dof, unit_gp),
                               1.e+05)) {
                 error_found = true;
 
@@ -304,7 +304,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
 
         for (uint doff = 0; doff < 66; ++doff) {
             if (!almost_equal(triangle.IntegrationDPhi(GlobalCoord::y, doff, gp_vals)[0],
-                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::y, doff, unit_gp)[0],
+                              triangle.IntegrationPhiDPhi(dof, GlobalCoord::y, doff, unit_gp),
                               1.e+03)) {
                 error_found = true;
 
@@ -312,7 +312,7 @@ bool check_for_error(ElementType& triangle, DynMatrix<double>& f_vals) {
             }
 
             if (!almost_equal(triangle.IntegrationPhi(doff, gp_dvals)[0],
-                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::y, dof, unit_gp)[0],
+                              triangle.IntegrationPhiDPhi(doff, GlobalCoord::y, dof, unit_gp),
                               1.e+05)) {
                 error_found = true;
 

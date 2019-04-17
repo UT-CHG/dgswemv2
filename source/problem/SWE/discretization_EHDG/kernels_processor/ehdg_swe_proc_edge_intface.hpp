@@ -5,36 +5,22 @@ namespace SWE {
 namespace EHDG {
 template <typename StepperType, typename EdgeInterfaceType>
 void Problem::global_edge_interface_kernel(const StepperType& stepper, EdgeInterfaceType& edge_int) {
-    auto& edge_state    = edge_int.edge_data.edge_state;
-    auto& edge_internal = edge_int.edge_data.edge_internal;
-
-    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-
     /* Newton-Raphson iterator */
 
     uint iter = 0;
-    while (true) {
-        iter++;
+    while (iter != 100) {
+        ++iter;
 
         Problem::global_edge_interface_iteration(stepper, edge_int);
 
-        if (iter == 100) {
-            break;
-        }
+        double delta_hat_norm = norm(edge_int.edge_data.edge_internal.rhs_global);
 
-        double delta_hat_norm = norm(edge_internal.rhs_global) / edge_internal.rhs_global.size();
-
-        if (delta_hat_norm < 1.0e-8) {
+        if (delta_hat_norm < 1.0e-12) {
             break;
         }
     }
 
     /* Compute Numerical Flux */
-
-    edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
     edge_int.interface.specialization.ComputeNumericalFlux(edge_int);
 }
@@ -43,13 +29,6 @@ template <typename StepperType, typename EdgeInterfaceType>
 void Problem::global_edge_interface_iteration(const StepperType& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
-
-    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-
-    edge_internal.q_hat_at_gp = edge_int.ComputeUgp(edge_state.q_hat);
-
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
-        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
 
     /* Assemble global kernels */
 

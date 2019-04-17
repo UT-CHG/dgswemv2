@@ -46,11 +46,11 @@ class Element {
             std::vector<uint>&& neighbor_ID,
             std::vector<uchar>&& boundary_type);
 
-    uint GetID() { return this->ID; }
-    MasterType& GetMaster() { return *this->master; }
-    ShapeType& GetShape() { return this->shape; }
-    std::vector<uint>& GetNodeID() { return this->node_ID; }
-    std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
+    uint GetID() const { return this->ID; }
+    const MasterType& GetMaster() const { return *this->master; }
+    const ShapeType& GetShape() const { return this->shape; }
+    const std::vector<uint>& GetNodeID() const { return this->node_ID; }
+    const std::vector<uchar>& GetBoundaryType() const { return this->boundary_type; }
     double GetAbsJ() const { return abs_J; }
     StatMatrix<double, dimension, dimension> GetJinv(){ return this->shape.GetJinv(master->integration_rule.second)[0]; }
 
@@ -68,7 +68,7 @@ class Element {
     template <typename InputArrayType>
     decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
     template <typename InputArrayType>
-    decltype(auto) ProjectLinearToBasis(const uint ndof, const InputArrayType& u_lin);
+    decltype(auto) ProjectLinearToBasis(const InputArrayType& u_lin);
 
     template <typename F>
     DynMatrix<double> ComputeFgp(const F& f);
@@ -255,7 +255,7 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::CreateRawBoundarie
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename F>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionF(const F& f) {
+DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
     DynMatrix<double> projection = this->ComputeFgp(f) * this->master->int_phi_fact * this->master->m_inv;
 
@@ -274,32 +274,29 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ProjectBasisToLinear(
     const InputArrayType& u) {
-    return this->master->basis.ProjectBasisToLinear(u);
-/*
     if (const_J) {
+        return this->master->ProjectBasisToLinear(u);
     } else {
-        return DynMatrix<double>();
         // Placeholder for nonconstant Jacobian
-        }*/
+        return this->master->ProjectBasisToLinear(u);
+    }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::ProjectLinearToBasis(
-    const uint ndof,
     const InputArrayType& u_lin) {
-    return this->master->basis.ProjectLinearToBasis(ndof, u_lin);
-    /* fixme add curved element support
     if (const_J) {
+        return this->master->ProjectLinearToBasis(u_lin);
     } else {
-        return DynMatrix<double>();
         // Placeholder for nonconstant Jacobian
-        }*/
+        return this->master->ProjectLinearToBasis(u_lin);
+    }
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename F>
-inline DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::ComputeFgp(const F& f) {
+DynMatrix<double> Element<dimension, MasterType, ShapeType, AccessorType>::ComputeFgp(const F& f) {
     uint nvar = f(this->gp_global_coordinates[0]).size();
     uint ngp  = this->gp_global_coordinates.size();
 
@@ -394,7 +391,7 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::IntegrationPhi(const uint dof,
                                                                                           const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_fact(gp, dof)
-    return u_gp * column(this->master->int_phi_fact, dof) * this->abs_J;
+    return (u_gp * column(this->master->int_phi_fact, dof)) * this->abs_J;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -411,7 +408,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::I
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_phi_fact(gp, lookup)
-    uint lookup = this->master->ndof * dof_i + dof_j;
+    const uint lookup = this->master->ndof * dof_i + dof_j;
 
     return (u_gp * column(this->master->int_phi_phi_fact, lookup)) * this->abs_J;
 }
@@ -459,7 +456,7 @@ void Element<dimension, MasterType, ShapeType, AccessorType>::InitializeVTK(std:
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType, typename OutputArrayType>
-inline void Element<dimension, MasterType, ShapeType, AccessorType>::WriteCellDataVTK(
+void Element<dimension, MasterType, ShapeType, AccessorType>::WriteCellDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& cell_data) {
     // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
@@ -474,7 +471,7 @@ inline void Element<dimension, MasterType, ShapeType, AccessorType>::WriteCellDa
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename InputArrayType, typename OutputArrayType>
-inline void Element<dimension, MasterType, ShapeType, AccessorType>::WritePointDataVTK(
+void Element<dimension, MasterType, ShapeType, AccessorType>::WritePointDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& point_data) {
     // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)

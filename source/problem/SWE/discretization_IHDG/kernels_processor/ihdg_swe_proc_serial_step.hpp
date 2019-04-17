@@ -2,47 +2,45 @@
 #define IHDG_SWE_PROC_SERIAL_STEP_HPP
 
 #include "ihdg_swe_kernels_processor.hpp"
+#include "ihdg_swe_proc_init_iter.hpp"
 #include "ihdg_swe_proc_serial_sol_glob_prob.hpp"
 
 namespace SWE {
 namespace IHDG {
-template <typename SerialSimType>
-void Problem::step_serial(SerialSimType* sim) {
-    for (uint stage = 0; stage < sim->stepper.GetNumStages(); ++stage) {
-        if (sim->parser.ParsingInput()) {
-            sim->parser.ParseInput(sim->stepper, sim->discretization.mesh);
+template <typename ProblemType>
+void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
+                          typename ProblemType::ProblemGlobalDataType& global_data,
+                          typename ProblemType::ProblemStepperType& stepper,
+                          typename ProblemType::ProblemWriterType& writer,
+                          typename ProblemType::ProblemParserType& parser) {
+    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+        if (parser.ParsingInput()) {
+            parser.ParseInput(stepper, discretization.mesh);
         }
 
-        Problem::stage_serial(sim->stepper, sim->discretization);
+        Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (sim->writer.WritingOutput()) {
-        sim->writer.WriteOutput(sim->stepper, sim->discretization.mesh);
+    if (writer.WritingOutput()) {
+        writer.WriteOutput(stepper, discretization.mesh);
     }
 }
 
-template <typename StepperType, typename ProblemType>
-void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
-    discretization.mesh.CallForEachElement([&stepper, &discretization](auto& elt) {
-        const uint stage = stepper.GetStage();
-
-        auto& state      = elt.data.state[stage + 1];
-        auto& state_prev = elt.data.state[stage];
-        auto& internal   = elt.data.internal;
-
-        state.q = state_prev.q;
-
-        internal.q_prev_at_gp = elt.ComputeUgp(state_prev.q);
-    });
+template <typename ProblemType>
+void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
+                           typename ProblemType::ProblemGlobalDataType& global_data,
+                           typename ProblemType::ProblemStepperType& stepper) {
+    Problem::init_iteration(stepper, discretization);
 
     uint iter = 0;
-    while (true) {
-        iter++;
+    while (iter != 100) {
+        ++iter;
 
         /* Local Step */
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_volume_kernel(stepper, elt); });
-
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_source_kernel(stepper, elt); });
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            Problem::local_volume_kernel(stepper, elt);
+            Problem::local_source_kernel(stepper, elt);
+        });
 
         discretization.mesh.CallForEachInterface(
             [&stepper](auto& intface) { Problem::local_interface_kernel(stepper, intface); });
@@ -66,16 +64,14 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
             [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
         /* Global Step */
 
-        bool converged = Problem::serial_solve_global_problem(stepper, discretization);
+        bool converged = Problem::serial_solve_global_problem(discretization, global_data, stepper);
 
         if (converged) {
             break;
         }
-
-        if (iter == 100) {
-            break;
-        }
     }
+
+    ++stepper;
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         uint n_stages = stepper.GetNumStages();
@@ -85,14 +81,16 @@ void Problem::stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>&
         std::swap(state[0].q, state[n_stages].q);
     });
 
+    if (SWE::PostProcessing::slope_limiting) {
+        CS_slope_limiter_serial(stepper, discretization);
+    }
+
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         bool nan_found = SWE::scrutinize_solution(stepper, elt);
 
         if (nan_found)
             abort();
     });
-
-    ++stepper;
 }
 }
 }

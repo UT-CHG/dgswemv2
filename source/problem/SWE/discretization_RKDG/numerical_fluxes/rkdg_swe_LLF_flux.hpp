@@ -15,6 +15,7 @@ inline void LLF_flux(const double gravity,
                      const std::array<InputViewType, SWE::n_auxiliaries>& aux,
                      const std::array<InputArrayType, SWE::n_dimensions>& surface_normal,
                      std::array<typename Result<InputArrayType>::type, SWE::n_variables>& Flux) {
+
     using result_t = typename Result<InputArrayType>::type;
 
     auto& bath = aux[SWE::Auxiliaries::bath];

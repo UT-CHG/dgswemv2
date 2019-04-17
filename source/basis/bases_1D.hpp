@@ -12,11 +12,8 @@ class Legendre_1D : Basis<1> {
 
     DynMatrix<double> GetMinv(const uint p);
 
-    DynRowVector<double> ProjectBasisToLinear(const DynRowVector<double>& u);
-    DynRowVector<double> ProjectLinearToBasis(const uint ndof, const DynRowVector<double>& u_lin);
-
-    DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u);
-    DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin);
+    DynMatrix<double> GetBasisLinearT(const uint p);
+    DynMatrix<double> GetLinearBasisT(const uint p);
 };
 }
 

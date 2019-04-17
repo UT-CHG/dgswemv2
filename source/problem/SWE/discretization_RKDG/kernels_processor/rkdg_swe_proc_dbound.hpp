@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_send_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
+template <typename StepperType, typename DistributedBoundaryType>
+void Problem::distributed_boundary_send_kernel(const StepperType& stepper, DistributedBoundaryType& dbound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = dbound.data.state[stage];
@@ -31,8 +31,8 @@ void Problem::distributed_boundary_send_kernel(const ProblemStepperType& stepper
     dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::bound_state, message);
 }
 
-template <typename DistributedBoundaryType>
-void Problem::distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
+template <typename StepperType, typename DistributedBoundaryType>
+void Problem::distributed_boundary_kernel(const StepperType& stepper, DistributedBoundaryType& dbound) {
     auto& wd_state_in = dbound.data.wet_dry_state;
 
     // Get message from exterior state

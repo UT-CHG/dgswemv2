@@ -117,6 +117,8 @@ class Mesh<std::tuple<Elements...>,
         intface_container.SetElementData(this->elements);
         intface_container.reserve(n_interfaces);
     }
+//    const MasterElementTypes& GetMasters() { return this->masters; }
+//   void SetMasters() { this->masters = master_maker<MasterElementTypes>::construct_masters(p); }
 
     template <typename BoundaryType>
     void reserve_boundaries(size_t n_boundaries) {

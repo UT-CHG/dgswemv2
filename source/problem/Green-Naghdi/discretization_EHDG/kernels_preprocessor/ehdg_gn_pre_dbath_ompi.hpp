@@ -5,11 +5,11 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                                  uint begin_sim_id,
-                                                  uint end_sim_id) {
+                                                  const uint begin_sim_id,
+                                                  const uint end_sim_id) {
     /* First derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -27,10 +27,10 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::dbath, message);
         });
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::dbath, 0);
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
@@ -81,8 +81,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& state    = dbound.data.state[0];
@@ -116,14 +116,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
     /* First derivatives end */
 
     /* Second derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& state    = dbound.data.state[0];
@@ -146,10 +146,10 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::dbath, message);
         });
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::dbath, 0);
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
@@ -213,8 +213,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& state    = dbound.data.state[0];
@@ -253,14 +253,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
     /* Second derivatives end */
 
     /* Trird derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& state    = dbound.data.state[0];
@@ -283,10 +283,10 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::dbath, message);
         });
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::dbath, 0);
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& state    = elt.data.state[0];
             auto& internal = elt.data.internal;
@@ -350,8 +350,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& state    = dbound.data.state[0];
@@ -393,8 +393,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
     /* Third derivatives end */
 }

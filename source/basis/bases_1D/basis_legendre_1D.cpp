@@ -57,33 +57,13 @@ DynMatrix<double> Legendre_1D::GetMinv(const uint p) {
     return m_inv;
 }
 
-DynRowVector<double> Legendre_1D::ProjectBasisToLinear(const DynRowVector<double>& u) {
-    std::cout << "Legendre_1D::ProjectBasisToLinear not implemented!" << std::endl;
-    abort();
-    /*u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
-    u_lin[1] = 0.5 * u[0] + 0.5 * u[1];*/
+DynMatrix<double> Legendre_1D::GetBasisLinearT(const uint p) {
+    assert(false); //not implemented
+    return DynMatrix<double>();
 }
 
-DynRowVector<double> Legendre_1D::ProjectLinearToBasis(const uint ndof, const DynRowVector<double>& u_lin) {
-    std::cout << "Legendre_1D::ProjectLinearToBasis not implemented!" << std::endl;
-    abort();
-    /*u[0] = u_lin[0] + u_lin[1];
-    u[1] = -u_lin[0] + u_lin[1];*/
-}
-
-
-
-DynMatrix<double> Legendre_1D::ProjectBasisToLinear(const DynMatrix<double>& u) {
-    std::cout << "Legendre_1D::ProjectBasisToLinear not implemented!" << std::endl;
-    abort();
-    /*u_lin[0] = 0.5 * u[0] - 0.5 * u[1];
-    u_lin[1] = 0.5 * u[0] + 0.5 * u[1];*/
-}
-
-DynMatrix<double> Legendre_1D::ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) {
-    std::cout << "Legendre_1D::ProjectLinearToBasis not implemented!" << std::endl;
-    abort();
-    /*u[0] = u_lin[0] + u_lin[1];
-    u[1] = -u_lin[0] + u_lin[1];*/
+DynMatrix<double> Legendre_1D::GetLinearBasisT(const uint p) {
+    assert(false); //not implemented
+    return DynMatrix<double>();
 }
 }

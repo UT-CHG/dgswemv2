@@ -11,6 +11,9 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     this->ndof = (p + 1) * (p + 2) / 2;
     this->ngp  = this->integration_rule.first.size();
 
+    this->T_basis_linear = this->basis.GetBasisLinearT(p);
+    this->T_linear_basis = this->basis.GetLinearBasisT(p);
+
     this->chi_baryctr.resize(this->nvrtx);
 
     this->chi_baryctr[0] = 1.0 / 3.0;
@@ -78,7 +81,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     }
 
 
-    for (uint dir = 0; dir < 2; dir++) {
+    for (uint dir = 0; dir < 2; ++dir) {
         this->int_dphi_fact[dir] = transpose(this->dphi_gp[dir]);
         for (uint dof = 0; dof < this->ndof; ++dof) {
             for (uint gp = 0; gp < this->ngp; ++gp) {
@@ -93,7 +96,7 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
 template <typename BasisType, typename IntegrationType>
 std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoordinates(
     const uint bound_id,
-    const std::vector<Point<1>>& z_boundary) {
+    const std::vector<Point<1>>& z_boundary) const {
     // *** //
     uint ngp = z_boundary.size();
 
@@ -127,24 +130,36 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::BoundaryToMasterCoor
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
-inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const InputArrayType& u_lin) {
+decltype(auto) Triangle<BasisType, IntegrationType>::ProjectBasisToLinear(const InputArrayType& u) const {
+    return u * this->T_basis_linear;
+}
+
+template <typename BasisType, typename IntegrationType>
+template <typename InputArrayType>
+decltype(auto) Triangle<BasisType, IntegrationType>::ProjectLinearToBasis(const InputArrayType& u_lin) const {
+    return u_lin * this->T_linear_basis;
+}
+
+template <typename BasisType, typename IntegrationType>
+template <typename InputArrayType>
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUbaryctr(const InputArrayType& u_lin) const {
     return u_lin * this->chi_baryctr;
 }
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
-inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const InputArrayType& u_lin) {
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUmidpts(const InputArrayType& u_lin) const {
     return u_lin * this->chi_midpts;
 }
 
 template <typename BasisType, typename IntegrationType>
 template <typename InputArrayType>
-inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const InputArrayType& u_lin) {
+inline decltype(auto) Triangle<BasisType, IntegrationType>::ComputeLinearUvrtx(const InputArrayType& u_lin) const {
     return u_lin;
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() const {
     std::vector<Point<2>> z_postprocessor_cell(N_DIV * N_DIV);
 
     double dz = 2.0 / N_DIV;
@@ -169,7 +184,7 @@ std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostCell() {
 }
 
 template <typename BasisType, typename IntegrationType>
-std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() {
+std::vector<Point<2>> Triangle<BasisType, IntegrationType>::VTKPostPoint() const {
     std::vector<Point<2>> z_postprocessor_point((N_DIV + 1) * (N_DIV + 2) / 2);
 
     double dz = 2.0 / N_DIV;

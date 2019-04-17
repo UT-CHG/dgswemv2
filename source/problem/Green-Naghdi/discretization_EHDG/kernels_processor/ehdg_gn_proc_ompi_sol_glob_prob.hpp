@@ -5,9 +5,11 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                           uint begin_sim_id,
-                                           uint end_sim_id) {
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+                                           ProblemGlobalDataType& global_data,
+                                           const ProblemStepperType& stepper,
+                                           const uint begin_sim_id,
+                                           const uint end_sim_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
 
@@ -144,8 +146,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             }
         });
     }
-
-    auto& global_data = sim_units[0]->discretization.global_data;
 
     Mat& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
     Vec& w1_hat_rhs    = global_data.w1_hat_rhs;
@@ -330,7 +330,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
     }
 #pragma omp barrier
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&global_data](auto& edge_int) {
             auto& edge_internal = edge_int.edge_data.edge_internal;
 
@@ -374,8 +374,8 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = elt.data.state[stage];
             auto& internal = elt.data.internal;

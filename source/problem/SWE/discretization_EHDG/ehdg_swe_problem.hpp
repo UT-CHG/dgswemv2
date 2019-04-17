@@ -9,15 +9,15 @@
 #include "simulation/writer.hpp"
 #include "simulation/discretization.hpp"
 
-#include "problem/SWE/discretization_EHDG/stabilization_parameters/ehdg_swe_stabilization_params.hpp"
+#include "problem/SWE/problem_stabilization_parameters/swe_stabilization_params.hpp"
 
 #include "boundary_conditions/ehdg_swe_boundary_conditions.hpp"
 #include "dist_boundary_conditions/ehdg_swe_distributed_boundary_conditions.hpp"
 #include "interface_specializations/ehdg_swe_interface_specializations.hpp"
 
-#include "data_structure/ehdg_swe_data.hpp"
-#include "data_structure/ehdg_swe_edge_data.hpp"
-#include "data_structure/ehdg_swe_global_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_edge_data.hpp"
+#include "problem/SWE/problem_data_structure/swe_global_data.hpp"
 
 #include "problem/SWE/problem_input/swe_inputs.hpp"
 #include "problem/SWE/problem_parser/swe_parser.hpp"
@@ -28,6 +28,13 @@
 #include "geometry/mesh_skeleton_definitions.hpp"
 #include "preprocessor/mesh_metadata.hpp"
 
+#include "problem/SWE/problem_preprocessor/swe_pre_create_intface.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_bound.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_dbound.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_edge_intface.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_edge_bound.hpp"
+#include "problem/SWE/problem_preprocessor/swe_pre_create_edge_dbound.hpp"
+
 namespace SWE {
 namespace EHDG {
 struct Problem {
@@ -36,12 +43,13 @@ struct Problem {
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = SWE::Parser;
 
-    using ProblemAccessorType       = Accessor;
-    using ProblemEdgeDataType   = EdgeData;
-    using ProblemGlobalDataType = std::tuple<>;
+    using ProblemAccessorType   = SWE::Accessor;
+    using ProblemEdgeDataType   = SWE::EdgeData;
+    using ProblemGlobalDataType = std::GlobalData;
 
-    using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<Accessor, ISP::Internal, ISP::Levee>;
-    using ProblemBoundaryTypes  = Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function>;
+    using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<SWE::Accessor, ISP::Internal, ISP::Levee>;
+    using ProblemBoundaryTypes  =
+        Geometry::BoundaryTypeTuple<SWE::Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>;
     using ProblemDistributedBoundaryTypes =
         Geometry::DistributedBoundaryTypeTuple<Accessor, DBC::Distributed, DBC::DistributedLevee>;
 
@@ -52,13 +60,13 @@ struct Problem {
 
     using ProblemMeshType = Geometry::MeshType<Accessor,
                                                std::tuple<ISP::Internal, ISP::Levee>,
-                                               std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function>,
+                                               std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemMeshSkeletonType = Geometry::MeshSkeletonType<
         EdgeData,
         Geometry::InterfaceTypeTuple<Accessor, ISP::Internal, ISP::Levee>,
-        Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function>,
+        Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
         Geometry::DistributedBoundaryTypeTuple<Accessor, DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemDiscretizationType = HDGDiscretization<Problem>;
@@ -70,17 +78,40 @@ struct Problem {
 
     static void preprocess_mesh_data(InputParameters<ProblemInputType>& input) { SWE::preprocess_mesh_data(input); }
 
+    // helpers to create communication
+    static constexpr uint n_communications = SWE::EHDG::n_communications;
+
+    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp) {
+        std::vector<uint> offset(SWE::EHDG::n_communications);
+
+        offset[CommTypes::baryctr_coord]    = begin_index[CommTypes::baryctr_coord];
+        offset[CommTypes::init_global_prob] = begin_index[CommTypes::init_global_prob];
+        offset[CommTypes::bound_state]      = begin_index[CommTypes::bound_state];
+        offset[CommTypes::baryctr_state]    = begin_index[CommTypes::baryctr_state];
+
+        begin_index[CommTypes::baryctr_coord] += 2;
+        begin_index[CommTypes::init_global_prob] += ngp;  // bath_at_gp
+        begin_index[CommTypes::bound_state] += SWE::n_variables * ngp;
+        begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;  // + w/d state
+
+        return offset;
+    }
+
     template <typename RawBoundaryType>
     static void create_interfaces(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
-                                  ProblemInputType& problem_input,
-                                  ProblemWriterType& writer);
+                                  ProblemInputType& input,
+                                  ProblemWriterType& writer) {
+        SWE::create_interfaces<SWE::EHDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>>& raw_boundaries,
                                   ProblemMeshType& mesh,
-                                  ProblemInputType& problem_input,
-                                  ProblemWriterType& writer);
+                                  ProblemInputType& input,
+                                  ProblemWriterType& writer) {
+        SWE::create_boundaries<SWE::EHDG::Problem>(raw_boundaries, mesh, input, writer);
+    }
 
     template <typename RawBoundaryType>
     static void create_distributed_boundaries(
@@ -96,59 +127,80 @@ struct Problem {
         ProblemMeshType& mesh,
         ProblemInputType& input,
         Communicator& communicator,
-        ProblemWriterType& writer);
-
-    // helpers to create communication
-    static constexpr uint n_communications = SWE::EHDG::n_communications;
-    static std::vector<uint> comm_buffer_offsets(std::vector<uint>& begin_index, uint ngp);
+        ProblemWriterType& writer) {
+        // *** //
+        SWE::create_distributed_boundaries<SWE::EHDG::Problem>(raw_boundaries, mesh, input, communicator, writer);
+    }
 
     static void create_edge_interfaces(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       ProblemWriterType& writer);
+                                       ProblemWriterType& writer) {
+        SWE::create_edge_interfaces<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     static void create_edge_boundaries(ProblemMeshType& mesh,
                                        ProblemMeshSkeletonType& mesh_skeleton,
-                                       ProblemWriterType& writer);
+                                       ProblemWriterType& writer) {
+        SWE::create_edge_boundaries<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     static void create_edge_distributeds(ProblemMeshType& mesh,
                                          ProblemMeshSkeletonType& mesh_skeleton,
-                                         ProblemWriterType& writer);
+                                         ProblemWriterType& writer) {
+        SWE::create_edge_distributeds<SWE::EHDG::Problem>(mesh, mesh_skeleton, writer);
+    }
 
     template <typename ProblemType>
     static void preprocessor_serial(HDGDiscretization<ProblemType>& discretization,
-                                    const ProblemInputType& problem_specific_input);
+                                    typename ProblemType::ProblemGlobalDataType& global_data,
+                                    const typename ProblemType::ProblemStepperType& stepper,
+                                    const typename ProblemType::ProblemInputType& problem_specific_input);
 
-    template <typename OMPISimUnitType>
-    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                  uint begin_sim_id,
-                                  uint end_sim_id);
+    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                                  typename ProblemType::ProblemGlobalDataType& global_data,
+                                  const typename ProblemType::ProblemStepperType& stepper,
+                                  const uint begin_sim_id,
+                                  const uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
-    template <typename MeshType>
-    static void initialize_data_serial(MeshType& mesh, const ProblemInputType& problem_specific_input);
-
-    template <typename MeshType>
-    static void initialize_data_parallel(MeshType& mesh, const ProblemInputType& problem_specific_input);
+    template <typename ProblemType>
+    static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization);
 
     template <typename ProblemType>
-    static void initialize_global_problem(HDGDiscretization<ProblemType>& discretization);
+    static void initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization);
+
+    template <typename ProblemType>
+    static void initialize_global_problem_parallel_post_receive(HDGDiscretization<ProblemType>& discretization);
 
     // processor kernels
-    template <typename SerialSimType>
-    static void step_serial(SerialSimType* sim);
+    template <typename ProblemType>
+    static void step_serial(HDGDiscretization<ProblemType>& discretization,
+                            typename ProblemType::ProblemGlobalDataType& global_data,
+                            typename ProblemType::ProblemStepperType& stepper,
+                            typename ProblemType::ProblemWriterType& writer,
+                            typename ProblemType::ProblemParserType& parser);
 
-    template <typename StepperType, typename ProblemType>
-    static void stage_serial(StepperType& stepper, HDGDiscretization<ProblemType>& discretization);
+    template <typename ProblemType>
+    static void stage_serial(HDGDiscretization<ProblemType>& discretization,
+                             typename ProblemType::ProblemGlobalDataType& global_data,
+                             typename ProblemType::ProblemStepperType& stepper);
 
-    template <typename OMPISimType>
-    static void step_ompi(OMPISimType* sim, uint begin_sim_id, uint end_sim_id);
+    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                          typename ProblemType::ProblemGlobalDataType& global_data,
+                          typename ProblemType::ProblemStepperType& stepper,
+                          const uint begin_sim_id,
+                          const uint end_sim_id);
 
-    template <typename OMPISimUnitType>
-    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                           uint begin_sim_id,
-                           uint end_sim_id);
+    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                           typename ProblemType::ProblemGlobalDataType& global_data,
+                           typename ProblemType::ProblemStepperType& stepper,
+                           const uint begin_sim_id,
+                           const uint end_sim_id);
 
     template <typename HPXSimUnitType>
     static auto stage_hpx(HPXSimUnitType* sim_unit);
@@ -224,8 +276,8 @@ struct Problem {
         return SWE::compute_residual_L2(stepper, elt);
     }
 
-    template <typename SimType>
-    static void finalize_simulation(SimType* sim) {}
+    template <typename GlobalDataType>
+    static void finalize_simulation(GlobalDataType& global_data) {}
 };
 }
 }

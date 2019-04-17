@@ -10,9 +10,12 @@ add_test(
   test_linear_algebra_exe
 )
 
-#[[target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
-target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
+if (PETSC_FOUND)
+  target_include_directories(test_linear_algebra_exe PRIVATE ${PETSC_INCLUDES})  
+  target_link_libraries(test_linear_algebra_exe ${PETSC_LIBRARIES})
+endif()
 
+if (EHDG)
 add_executable(
   test_jacobians_ehdg_exe
   test_jacobians_ehdg.cpp
@@ -20,14 +23,17 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_jacobians_ehdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_jacobians_ehdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_jacobians_ehdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_jacobians_ehdg
   test_jacobians_ehdg_exe
 )
+endif()
 
+if (IHDG)
 add_executable(
   test_jacobians_ihdg_exe
   test_jacobians_ihdg.cpp
@@ -35,8 +41,9 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_jacobians_ihdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_jacobians_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_jacobians_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_jacobians_ihdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_jacobians_ihdg
@@ -50,13 +57,15 @@ add_executable(
   ${SWE_SOURCES}
 )
 
+target_compile_definitions(test_global_jacobian_ihdg_exe PRIVATE ${LINALG_DEFINITION} ${PROBLEM_DEFINITIONS})
 target_include_directories(test_global_jacobian_ihdg_exe PRIVATE ${YAML_CPP_INCLUDE_DIR})  
-target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(test_global_jacobian_ihdg_exe ${YAML_CPP_LIBRARIES})
 
 add_test(
   Unit_test_global_jacobian_ihdg
   test_global_jacobian_ihdg_exe
-)]]
+)
+endif()
 
 add_executable(
   test_tuple_helpers_exe
@@ -529,25 +538,6 @@ if(USE_HPX)
     test_shape_serialization_exe
   )
 
-  add_executable(
-    test_element_serialization_exe
-    test_element_serialization.cpp
-    ${PROJECT_SOURCE_DIR}/source/basis/polynomials/basis_polynomials.cpp
-    ${PROJECT_SOURCE_DIR}/source/basis/bases_2D/basis_dubiner_2D.cpp
-    ${PROJECT_SOURCE_DIR}/source/integration/integrations_1D/integration_gausslegendre_1D.cpp
-    ${PROJECT_SOURCE_DIR}/source/integration/integrations_2D/integration_dunavant_2D.cpp
-    ${PROJECT_SOURCE_DIR}/source/shape/shapes_2D/shape_straighttriangle.cpp
-  )
-
-  target_compile_definitions(test_element_serialization_exe PRIVATE HAS_HPX ${LINALG_DEFINITION})
-  target_include_directories(test_element_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
-  target_link_libraries(test_element_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
-
-  add_test(
-    Unit_element_serialization
-    test_element_serialization_exe
-  )
-
   #[[add_executable(
     test_mesh_serialization_exe
     test_mesh_serialization.cpp
@@ -582,7 +572,7 @@ if(USE_HPX)
   target_include_directories(test_rk_stepper_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
   target_link_libraries(test_rk_stepper_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
 
-  
+
   add_test(
     Unit_rk_stepper_serialization
     test_rk_stepper_serialization_exe
@@ -611,7 +601,7 @@ if(USE_HPX)
     target_compile_definitions(test_blaze_serialization_exe PRIVATE HAS_HPX USE_BLAZE)
     target_include_directories(test_blaze_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
     target_link_libraries(test_blaze_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
-  
+
     add_test(
       Unit_blaze_serialization
       test_blaze_serialization_exe
@@ -627,7 +617,7 @@ if(USE_HPX)
     target_compile_definitions(test_eigen_serialization_exe PRIVATE HAS_HPX USE_EIGEN)
     target_include_directories(test_eigen_serialization_exe PRIVATE ${HPX_INCLUDE_DIRS})
     target_link_libraries(test_eigen_serialization_exe ${HPX_LIBRARIES} ${YAML_CPP_LIBRARIES})
-  
+
     add_test(
       Unit_eigen_serialization
       test_eigen_serialization_exe

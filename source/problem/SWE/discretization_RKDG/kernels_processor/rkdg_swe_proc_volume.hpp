@@ -1,14 +1,11 @@
 #ifndef RKDG_SWE_PROC_VOLUME_HPP
 #define RKDG_SWE_PROC_VOLUME_HPP
 
-#include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
-
+#include "problem/SWE/problem_flux/swe_flux.hpp"
 namespace SWE {
 namespace RKDG {
+template <typename StepperType>
 class VolumeKernel {
-private:
-    using StepperType = typename Problem::ProblemStepperType;
-
 public:
     template <typename ElementType>
     constexpr static bool is_vectorized() { return true; }

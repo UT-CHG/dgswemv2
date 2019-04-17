@@ -5,14 +5,15 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                       uint begin_sim_id,
-                                       uint end_sim_id) {
+                                       const ProblemStepperType& stepper,
+                                       const uint begin_sim_id,
+                                       const uint end_sim_id) {
     /* First derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = dbound.data.state[stage];
             auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -44,12 +45,12 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::derivatives, message);
         });
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::derivatives, stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = elt.data.state[stage];
             auto& internal = elt.data.internal;
@@ -75,8 +76,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
+            const uint stage = stepper.GetStage();
 
             auto& state_in    = intface.data_in.state[stage];
             auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
@@ -141,8 +142,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachBoundary([&sim_units, su_id](auto& bound) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachBoundary([&stepper](auto& bound) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = bound.data.state[stage];
             auto& boundary = bound.data.boundary[bound.bound_id];
@@ -173,12 +174,11 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives,
-                                                       sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives, stepper.GetTimestamp());
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = dbound.data.state[stage];
             auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -215,8 +215,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state = elt.data.state[stage];
 
@@ -225,17 +225,17 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
     /* First derivatives end */
 
     /* Second derivatives begin */
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = dbound.data.state[stage];
             auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -257,12 +257,12 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::derivatives, message);
         });
 
-        sim_units[su_id]->communicator.SendAll(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
+        sim_units[su_id]->communicator.SendAll(CommTypes::derivatives, stepper.GetTimestamp());
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = elt.data.state[stage];
             auto& internal = elt.data.internal;
@@ -276,8 +276,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachInterface([&sim_units, su_id](auto& intface) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
+            const uint stage = stepper.GetStage();
 
             auto& state_in    = intface.data_in.state[stage];
             auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
@@ -312,8 +312,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachBoundary([&sim_units, su_id](auto& bound) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachBoundary([&stepper](auto& bound) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = bound.data.state[stage];
             auto& boundary = bound.data.boundary[bound.bound_id];
@@ -329,12 +329,11 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives,
-                                                       sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives, stepper.GetTimestamp());
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&sim_units, su_id](auto& dbound) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = dbound.data.state[stage];
             auto& boundary = dbound.data.boundary[dbound.bound_id];
@@ -365,8 +364,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&sim_units, su_id](auto& elt) {
-            const uint stage = sim_units[su_id]->stepper.GetStage();
+        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
+            const uint stage = stepper.GetStage();
 
             auto& state    = elt.data.state[stage];
             auto& internal = elt.data.internal;
@@ -377,8 +376,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         });
     }
 
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; su_id++) {
-        sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, sim_units[su_id]->stepper.GetTimestamp());
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
     /* Second derivatives end */
 }

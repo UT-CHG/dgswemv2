@@ -29,12 +29,12 @@ using uchar = unsigned char;
 
 template <uint dimension>
 using Point = std::array<double, dimension>;
-template <typename type>
-using Array2D = std::vector<std::vector<type>>;
-template <typename type>
-using Array3D = std::vector<std::vector<std::vector<type>>>;
-template <typename type>
-using Array4D = std::vector<std::vector<std::vector<std::vector<type>>>>;
+template <typename T>
+using Array2D = std::vector<std::vector<T>>;
+template <typename T>
+using Array3D = std::vector<std::vector<std::vector<T>>>;
+template <typename T>
+using Array4D = std::vector<std::vector<std::vector<std::vector<T>>>>;
 
 #include "utilities/linear_algebra.hpp"
 #include "utilities/edge_types.hpp"
@@ -86,11 +86,8 @@ class Basis {
      */
     virtual DynMatrix<double> GetMinv(const uint p) = 0;
 
-    virtual DynRowVector<double> ProjectBasisToLinear(const DynRowVector<double>& u) =0;
-    virtual DynRowVector<double> ProjectLinearToBasis(const uint ndof, const DynRowVector<double>& u_lin) = 0;
-
-    virtual DynMatrix<double> ProjectBasisToLinear(const DynMatrix<double>& u)                      = 0;
-    virtual DynMatrix<double> ProjectLinearToBasis(const uint ndof, const DynMatrix<double>& u_lin) = 0;
+    virtual DynMatrix<double> GetBasisLinearT(const uint p) = 0;
+    virtual DynMatrix<double> GetLinearBasisT(const uint p) = 0;
 };
 }
 
@@ -136,6 +133,9 @@ class Master {
 
     std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule;
 
+    DynMatrix<double> T_basis_linear;
+    DynMatrix<double> T_linear_basis;
+
     DynVector<double> chi_baryctr;
     DynMatrix<double> chi_midpts;
 
@@ -158,9 +158,11 @@ class Master {
     Master() = default;
     Master(const uint p) : p(p) {}
 
+    virtual ~Master() = default;
+
     virtual std::vector<Point<dimension>> BoundaryToMasterCoordinates(
         const uint bound_id,
-        const std::vector<Point<dimension - 1>>& z_boundary) = 0;
+        const std::vector<Point<dimension - 1>>& z_boundary) const = 0;
 
     // The following member methods have to be defined (cannot define templated member methods as virual)
     // template <typename InputArrayType>
@@ -169,6 +171,15 @@ class Master {
     // decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
     // template <typename InputArrayType>
     // decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin);
+
+    // template <typename InputArrayType>
+    // decltype(auto) ProjectBasisToLinear(const InputArrayType& u);
+    // template <typename InputArrayType>
+    // decltype(auto) ProjectLinearToBasis(const InputArrayType& u_lin);
+
+  private:
+    virtual std::vector<Point<2>> VTKPostCell() const  = 0;
+    virtual std::vector<Point<2>> VTKPostPoint() const = 0;
 };
 }
 
@@ -187,29 +198,31 @@ class Shape {
 
     virtual ~Shape() = default;
 
-    virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint> node_ID) = 0;
+    virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint>& node_ID) const = 0;
 
-    virtual Point<dimension> GetBarycentricCoordinates()           = 0;
-    virtual std::vector<Point<dimension>> GetMidpointCoordinates() = 0;
+    virtual Point<dimension> GetBarycentricCoordinates() const           = 0;
+    virtual std::vector<Point<dimension>> GetMidpointCoordinates() const = 0;
 
-    virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points)                          = 0;
-    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) = 0;
-
+    virtual DynVector<double> GetJdet(const std::vector<Point<dimension>>& points) const                          = 0;
+    virtual DynVector<double> GetSurfaceJ(const uint bound_id, const std::vector<Point<dimension>>& points) const = 0;
     virtual AlignedVector<StatMatrix<double, dimension, dimension>> GetJinv(
-        const std::vector<Point<dimension>>& points) = 0;
-
+        const std::vector<Point<dimension>>& points) const = 0;
     virtual AlignedVector<StatVector<double, dimension>> GetSurfaceNormal(
         const uint bound_id,
-        const std::vector<Point<dimension>>& points) = 0;
+        const std::vector<Point<dimension>>& points) const = 0;
 
-    virtual DynMatrix<double> GetPsi(const std::vector<Point<dimension>>& points)                         = 0;
-    virtual std::array<DynMatrix<double>, dimension> GetDPsi(const std::vector<Point<dimension>>& points) = 0;
+    virtual DynMatrix<double> GetPsi(const std::vector<Point<dimension>>& points) const                         = 0;
+    virtual std::array<DynMatrix<double>, dimension> GetDPsi(const std::vector<Point<dimension>>& points) const = 0;
+    virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id,
+                                             const std::vector<Point<dimension - 1>>& points) const             = 0;
 
-    virtual DynMatrix<double> GetBoundaryPsi(const uint bound_id, const std::vector<Point<dimension - 1>>& points) = 0;
+    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(
+        const std::vector<Point<dimension>>& points) const = 0;
+    virtual std::vector<Point<dimension>> GlobalToLocalCoordinates(
+        const std::vector<Point<dimension>>& points) const          = 0;
+    virtual bool ContainsPoint(const Point<dimension>& point) const = 0;
 
-    virtual std::vector<Point<dimension>> LocalToGlobalCoordinates(const std::vector<Point<dimension>>& points) = 0;
-
-    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) = 0;
+    virtual void GetVTK(std::vector<Point<3>>& points, Array2D<uint>& cells) const = 0;
 
 #ifdef HAS_HPX
     template <typename Archive>
@@ -277,13 +290,6 @@ class Stepper {
      * This operation will update all of the internal states of the stepper by one stage.
      */
     virtual Stepper& operator++() = 0;
-
-    // The following member method has to be defined (cannot define templated member methods as virual)
-    /**
-     * This operation will do one time stage update for an element
-     */
-    // template <typename ElementType>
-    // void UpdateState(ElementType& elt) const;
 };
 
 #define PI 3.14159265359

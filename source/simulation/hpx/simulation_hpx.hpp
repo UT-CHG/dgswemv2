@@ -13,7 +13,7 @@ template <typename ClientType>
 hpx::future<double> ComputeL2Residual(std::vector<ClientType>& clients) {
     std::vector<hpx::future<double>> res_futures;
 
-    for (uint id = 0; id < clients.size(); id++) {
+    for (uint id = 0; id < clients.size(); ++id) {
         res_futures.push_back(clients[id].ResidualL2());
     }
 
@@ -99,17 +99,17 @@ hpx::future<void> HPXSimulation::Initialize() {
 hpx::future<void> HPXSimulation::Run() {
     std::vector<hpx::future<void>> simulation_futures;
     simulation_futures.reserve(this->simulation_unit_clients.size());
-    for ( uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+    for ( uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); ++sim_id) {
       simulation_futures.push_back(hpx::make_ready_future());
     }
 
-    for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+    for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); ++sim_id) {
         simulation_futures[sim_id] = simulation_futures[sim_id].then(
             [this, sim_id](auto&&) { return this->simulation_unit_clients[sim_id].Launch(); });
     }
 
-    for (uint step = 1; step <= this->n_steps; step++) {
-        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); sim_id++) {
+    for (uint step = 1; step <= this->n_steps; ++step) {
+        for (uint sim_id = 0; sim_id < this->simulation_unit_clients.size(); ++sim_id) {
             simulation_futures[sim_id] = simulation_futures[sim_id].then([this, sim_id](auto&& f) {
                 f.get();  // check for exceptions
                 return this->simulation_unit_clients[sim_id].Step();
