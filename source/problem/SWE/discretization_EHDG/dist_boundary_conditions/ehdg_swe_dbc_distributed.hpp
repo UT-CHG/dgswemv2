@@ -47,16 +47,18 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
 
     uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
 
-    message.resize(SWE::n_variables * ngp);
+    message.resize(1 + SWE::n_variables * ngp);
 
     edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::bound_state, message);
+
+    bool wet_ex = (bool)message[0];
 
     uint gp_ex;
     for (uint gp = 0; gp < ngp; ++gp) {
         gp_ex = ngp - gp - 1;
 
         for (uint var = 0; var < SWE::n_variables; ++var) {
-            this->q_ex(var, gp_ex) = message[SWE::n_variables * gp + var];
+            this->q_ex(var, gp_ex) = message[1 + SWE::n_variables * gp + var];
         }
     }
 

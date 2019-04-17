@@ -7,20 +7,23 @@ namespace SWE {
 namespace EHDG {
 template <typename ElementType>
 void Problem::local_volume_kernel(const ProblemStepperType& stepper, ElementType& elt) {
-    const uint stage = stepper.GetStage();
+    auto& state = elt.data.state[stepper.GetStage();];
 
-    auto& state    = elt.data.state[stage];
-    auto& internal = elt.data.internal;
+    set_constant(state.rhs, 0.0);
 
-    internal.q_at_gp = elt.ComputeUgp(state.q);
+    if (elt.data.wet_dry_state.wet) {
+        auto& internal = elt.data.internal;
 
-    row(internal.aux_at_gp, SWE::Auxiliaries::h) =
-        row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
+        internal.q_at_gp = elt.ComputeUgp(state.q);
 
-    SWE::get_F(internal.q_at_gp, internal.aux_at_gp, internal.Fx_at_gp, internal.Fy_at_gp);
+        row(internal.aux_at_gp, SWE::Auxiliaries::h) =
+            row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
 
-    state.rhs =
-        elt.IntegrationDPhi(GlobalCoord::x, internal.Fx_at_gp) + elt.IntegrationDPhi(GlobalCoord::y, internal.Fy_at_gp);
+        SWE::get_F(internal.q_at_gp, internal.aux_at_gp, internal.Fx_at_gp, internal.Fy_at_gp);
+
+        state.rhs = elt.IntegrationDPhi(GlobalCoord::x, internal.Fx_at_gp) +
+                    elt.IntegrationDPhi(GlobalCoord::y, internal.Fy_at_gp);
+    }
 }
 }
 }

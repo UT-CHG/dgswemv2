@@ -5,16 +5,11 @@ namespace SWE {
 namespace RKDG {
 template <typename InterfaceType>
 void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType& intface) {
-    auto& wd_state_in = intface.data_in.wet_dry_state;
-    auto& wd_state_ex = intface.data_ex.wet_dry_state;
-
-    if (wd_state_in.wet || wd_state_ex.wet) {
-        const uint stage = stepper.GetStage();
-
-        auto& state_in    = intface.data_in.state[stage];
+    if (intface.data_in.wet_dry_state.wet || intface.data_ex.wet_dry_state.wet) {
+        auto& state_in    = intface.data_in.state[stepper.GetStage()];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
 
-        auto& state_ex    = intface.data_ex.state[stage];
+        auto& state_ex    = intface.data_ex.state[stepper.GetStage()];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
         boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
