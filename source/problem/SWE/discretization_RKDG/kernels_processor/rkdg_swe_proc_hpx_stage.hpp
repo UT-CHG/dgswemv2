@@ -75,7 +75,7 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             f.get();  // check for exceptions
 
             sim_unit->discretization.mesh.CallForEachElement(
-                [sim_unit](auto& elt) { Problem::wetting_drying_kernel(sim_unit->stepper, elt); });
+                [sim_unit](auto& elt) { wetting_drying_kernel(sim_unit->stepper, elt); });
         });
     }
 

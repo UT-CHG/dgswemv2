@@ -10,7 +10,7 @@
 #include "problem/SWE/problem_function_files/swe_true_solution_functions.hpp"
 
 #include "problem/SWE/discretization_RKDG/rkdg_swe_problem.hpp"
-#include "problem/SWE/discretization_RKDG/kernels_processor/rkdg_swe_proc_wet_dry.hpp"
+#include "problem/SWE/problem_postprocessor/swe_post_wet_dry.hpp"
 
 int main() {
     using Utilities::almost_equal;
@@ -73,7 +73,7 @@ int main() {
 
     state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
 
-    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::wetting_drying_kernel(stepper, triangle);
 
     wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
@@ -125,7 +125,7 @@ int main() {
 
     state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
 
-    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::wetting_drying_kernel(stepper, triangle);
 
     wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
@@ -174,7 +174,7 @@ int main() {
 
     state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
 
-    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::wetting_drying_kernel(stepper, triangle);
 
     wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
@@ -227,7 +227,7 @@ int main() {
 
     state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
 
-    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::wetting_drying_kernel(stepper, triangle);
 
     wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);
@@ -297,7 +297,7 @@ int main() {
 
     state.q = triangle.L2ProjectionNode(wd_state.q_at_vrtx);
 
-    SWE::RKDG::Problem::wetting_drying_kernel(stepper, triangle);
+    SWE::wetting_drying_kernel(stepper, triangle);
 
     wd_state.q_lin     = triangle.ProjectBasisToLinear(state.q);
     wd_state.q_at_vrtx = triangle.ComputeLinearUvrtx(wd_state.q_lin);

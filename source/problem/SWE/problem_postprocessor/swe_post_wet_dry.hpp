@@ -1,10 +1,9 @@
-#ifndef RKDG_SWE_PROC_WET_DRY_HPP
-#define RKDG_SWE_PROC_WET_DRY_HPP
+#ifndef SWE_POST_WET_DRY_HPP
+#define SWE_POST_WET_DRY_HPP
 
 namespace SWE {
-namespace RKDG {
-template <typename ElementType>
-void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state                  = elt.data.state[stage];
@@ -143,7 +142,6 @@ void Problem::wetting_drying_kernel(const ProblemStepperType& stepper, ElementTy
     } else if (set_wet_element) {
         wd_state.wet = true;
     }
-}
 }
 }
 

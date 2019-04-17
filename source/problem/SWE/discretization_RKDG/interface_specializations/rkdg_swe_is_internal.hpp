@@ -18,7 +18,7 @@ class Internal {
 
 template <typename InterfaceType>
 void Internal::Initialize(InterfaceType& intface) {
-    land_boundary.Initialize(1);
+    this->land_boundary.Initialize(1);
 }
 
 template <typename InterfaceType>

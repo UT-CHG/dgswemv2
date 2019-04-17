@@ -49,7 +49,7 @@ void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
     ++stepper;
 
     if (SWE::PostProcessing::wetting_drying) {
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); });
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });
     }
 
     if (SWE::PostProcessing::slope_limiting) {

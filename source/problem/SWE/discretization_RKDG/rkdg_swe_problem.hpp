@@ -177,9 +177,6 @@ struct Problem {
     template <typename DistributedBoundaryType>
     static void distributed_boundary_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound);
 
-    template <typename ElementType>
-    static void wetting_drying_kernel(const ProblemStepperType& stepper, ElementType& elt);
-
     // postprocessor kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {
         SWE::write_VTK_data(mesh, raw_data_file);
