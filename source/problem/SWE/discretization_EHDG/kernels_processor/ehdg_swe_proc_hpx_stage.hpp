@@ -93,6 +93,15 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         }
     });
 
+    if (SWE::PostProcessing::wetting_drying) {
+        stage_future = stage_future.then([sim_unit](auto&& f) {
+            f.get();  // check for exceptions
+
+            sim_unit->discretization.mesh.CallForEachElement(
+                [sim_unit](auto& elt) { wetting_drying_kernel(sim_unit->stepper, elt); });
+        });
+    }
+
     if (SWE::PostProcessing::slope_limiting) {
         stage_future = stage_future.then([sim_unit](auto&& f) {
             f.get();  // check for exceptions

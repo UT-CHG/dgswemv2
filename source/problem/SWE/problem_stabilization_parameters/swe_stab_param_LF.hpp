@@ -23,6 +23,24 @@ void get_tau_LF(const HybMatrix<double, SWE::n_variables>& q,
     }
 }
 
+void get_tau_LF(double gravity,
+                const Column<HybMatrix<double, SWE::n_variables>>& q,
+                const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
+                const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                StatMatrix<double, SWE::n_variables, SWE::n_variables>& tau) {
+    double h = aux[SWE::Auxiliaries::h];
+    double u = q[SWE::Variables::qx] / h;
+    double v = q[SWE::Variables::qy] / h;
+
+    double nx = surface_normal[GlobalCoord::x];
+    double ny = surface_normal[GlobalCoord::y];
+
+    double c  = std::sqrt(Global::g * h);
+    double un = u * nx + v * ny;
+
+    tau = (c + std::abs(un)) * IdentityMatrix<double>(3);
+}
+
 void get_dtau_dze_LF(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
                      const HybMatrix<double, SWE::n_dimensions>& surface_normal,

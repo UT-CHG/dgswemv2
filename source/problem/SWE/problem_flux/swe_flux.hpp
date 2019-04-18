@@ -45,6 +45,28 @@ void get_Fn(const HybMatrix<double, SWE::n_variables>& q,
                                   vec_cw_mult(vvh + pe, row(surface_normal, GlobalCoord::y));
 }
 
+void get_Fn(double gravity,
+            const Column<HybMatrix<double, SWE::n_variables>>& q,
+            const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
+            const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+            Column<HybMatrix<double, SWE::n_variables>>&& Fn) {
+    double u = q[SWE::Variables::qx] / aux[SWE::Auxiliaries::h];
+    double v = q[SWE::Variables::qy] / aux[SWE::Auxiliaries::h];
+
+    double uuh = u * q[SWE::Variables::qx];
+    double vvh = v * q[SWE::Variables::qy];
+    double uvh = u * q[SWE::Variables::qy];
+    double pe =
+        gravity * (std::pow(q[SWE::Variables::ze], 2) / 2 + q[SWE::Variables::ze] * aux[SWE::Auxiliaries::bath]);
+
+    double nx = surface_normal[GlobalCoord::x];
+    double ny = surface_normal[GlobalCoord::y];
+
+    Fn[SWE::Variables::ze] = q[SWE::Variables::qx] * nx + q[SWE::Variables::qy] * ny;
+    Fn[SWE::Variables::qx] = (uuh + pe) * nx + uvh * ny;
+    Fn[SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
+}
+
 void get_dF_dq(const HybMatrix<double, SWE::n_variables>& q,
                const HybMatrix<double, SWE::n_auxiliaries>& aux,
                HybMatrix<double, SWE::n_variables * SWE::n_variables>& dFx_dq,

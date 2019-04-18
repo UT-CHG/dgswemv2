@@ -131,6 +131,13 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
     { ++(stepper); }
 #pragma omp barrier
 
+    if (SWE::PostProcessing::wetting_drying) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+            sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });
+        }
+    }
+
     if (SWE::PostProcessing::slope_limiting) {
         CS_slope_limiter_ompi(stepper, sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);
     }

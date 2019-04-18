@@ -14,6 +14,13 @@ class Land {
 
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& edge_bound);
+
+    void ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                     const Column<HybMatrix<double, SWE::n_variables>>& q,
+                     const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_hat,
+                     StatMatrix<double, SWE::n_variables, SWE::n_variables>& tau,
+                     Column<HybMatrix<double, SWE::n_variables>>&& q_hat,
+                     Column<HybMatrix<double, SWE::n_variables>>&& F_hat);
 };
 
 template <typename BoundaryType>
@@ -56,6 +63,29 @@ void Land::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
         column(boundary.F_hat_at_gp, gp) +=
             edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
     }
+}
+
+void Land::ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
+                       const Column<HybMatrix<double, SWE::n_variables>>& q,
+                       const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_hat,
+                       StatMatrix<double, SWE::n_variables, SWE::n_variables>& tau,
+                       Column<HybMatrix<double, SWE::n_variables>>&& q_hat,
+                       Column<HybMatrix<double, SWE::n_variables>>&& F_hat) {
+    // *** //
+    double n_x = surface_normal[GlobalCoord::x];
+    double n_y = surface_normal[GlobalCoord::y];
+
+    double qn = q[SWE::Variables::qx] * n_x + q[SWE::Variables::qy] * n_y;
+
+    q_hat[SWE::Variables::ze] = q[SWE::Variables::ze];
+    q_hat[SWE::Variables::qx] = q[SWE::Variables::qx] - qn * n_x;
+    q_hat[SWE::Variables::qy] = q[SWE::Variables::qy] - qn * n_y;
+
+    SWE::get_Fn(Global::g, q_hat, aux_hat, surface_normal, std::move(F_hat));
+
+    SWE::get_tau_LF(Global::g, q_hat, aux_hat, surface_normal, tau);
+
+    F_hat += tau * (q - q_hat);
 }
 }
 }

@@ -65,6 +65,10 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
 
     ++stepper;
 
+    if (SWE::PostProcessing::wetting_drying) {
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });
+    }
+
     if (SWE::PostProcessing::slope_limiting) {
         CS_slope_limiter_serial(stepper, discretization);
     }
