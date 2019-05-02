@@ -32,12 +32,12 @@ template <typename Key, typename T, typename Compare = std::less<Key>>
 using AlignedMap = std::map<Key, T, Compare, AlignedAllocator<std::pair<const Key, T>>>;
 
 namespace detail {
-template<typename T, bool SO, size_t... Is>
+template<typename T, so_t SO, size_t... Is>
 std::array<DynView<T,SO>,sizeof...(Is)> make_rows_as_views_impl( std::array<DynMatrix<T,SO>,sizeof...(Is)>& mats, size_t index, std::index_sequence<Is...>) {
     return { row_as_view(mats[Is],index)... };
 }
 }
-template<typename T, bool SO, size_t N>
+template<typename T, so_t SO, size_t N>
 std::array<DynView<T,SO>,N> make_rows_as_views( std::array<DynMatrix<T,SO>,N>& mats, size_t index) {
     using Indices = std::make_index_sequence<N>;
     return detail::make_rows_as_views_impl(mats, index, Indices{});

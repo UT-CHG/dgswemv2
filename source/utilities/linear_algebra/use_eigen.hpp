@@ -11,6 +11,8 @@
 #include "serialization/eigen_matrix.hpp"
 #endif
 
+using so_t = int;
+
 namespace SO {
 constexpr int ColumnMajor = Eigen::StorageOptions::ColMajor;
 constexpr int RowMajor    = Eigen::StorageOptions::RowMajor;
@@ -45,8 +47,8 @@ using DynRow = Row<DynMatrix<T>>;
 template <typename Vector>
 using View = typename Eigen::Map<Vector>;
 
-template <typename T>
-using DynView = typename Eigen::Map<DynRowVector<T>>;
+template <typename T, int SO = Eigen::StorageOptions::RowMajor>
+using DynView = typename Eigen::Map<DynMatrix<T, SO>>;
 
 template <typename T>
 using SparseVector = Eigen::SparseVector<T>;
@@ -56,6 +58,10 @@ using SparseMatrix = Eigen::SparseMatrix<T>;
 template <typename EigenType>
 using AlignedAllocator = Eigen::aligned_allocator<EigenType>;
 
+template <typename ArrayType>
+struct Result {
+    using type = typename ArrayType::PlainArray;
+};
 
 template <typename T>
 DynMatrix<T> IdentityMatrix(const uint size) {
@@ -104,9 +110,39 @@ double sq_norm(const ArrayType& array) {
     return array.squaredNorm();
 }
 
-template <typename ArrayType>
-decltype(auto) power(const ArrayType& array, const double exp) {
+template <typename ArrayType, typename Number>
+decltype(auto) pow_vec(const ArrayType& array, const Number exp) {
     return array.array().pow(exp);
+}
+
+template <typename ArrayType>
+decltype(auto) sqrt_vec(const ArrayType& array) {
+    return array.array().sqrt();
+}
+
+template <typename ArrayType>
+decltype(auto) abs_vec(const ArrayType& array) {
+    return array.array().abs();
+}
+
+template <typename ArrayType>
+decltype(auto) cos_vec(const ArrayType& array) {
+    return array.array().cos();
+}
+
+template <typename ArrayType>
+typename ArrayType::Scalar max_vec(const ArrayType& array) {
+    return array.maxCoeff();
+}
+
+template <typename ArrayType1, typename ArrayType2>
+decltype(auto) max_vec(const ArrayType1& arr1, const ArrayType2& arr2) {
+    return arr1.cwiseMax(arr2);;
+}
+
+template <typename ArrayType1, typename ArrayType2, typename... ArrayTypes>
+decltype(auto) max_vec(const ArrayType1& arr1, const ArrayType2& arr2, const ArrayTypes& ...arrays) {
+    return arr1.cwiseMax(max_vec(arr2, arrays...));
 }
 
 /* Vector Operations */
@@ -217,6 +253,18 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
     return ret;
 }
+
+template <typename LeftMatrixType, typename RightMatrixType>
+decltype(auto) mat_cw_mult(const LeftMatrixType& matrix_left, const RightMatrixType& matrix_right) {
+    return vec_cw_mult(matrix_left, matrix_right);
+}
+
+
+template <typename LeftMatrixType, typename RightMatrixType>
+decltype(auto) mat_cw_div(const LeftMatrixType& matrix_left, const RightMatrixType& matrix_right) {
+    return vec_cw_div(matrix_left, matrix_right);
+}
+
 
 /* Solving Linear System */
 template <typename MatrixType, typename ArrayType>

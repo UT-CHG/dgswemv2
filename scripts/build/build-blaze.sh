@@ -147,8 +147,8 @@ if [ ! -d "$BLAZE_BUILD_PATH" ]; then
     cd build
     CMAKE_FLAGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
                  -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
-                 -DBLAZE_SHARED_MEMORY_PARALLELIZATION=OFF \
-                 -DBLAZE_BLAS_MODE=On"
+                 -DBLAZE_SHARED_MEMORY_PARALLELIZATION=OFF"
+#                 -DBLAZE_BLAS_MODE=On"
     if [ -v CXX_COMPILER ]; then
     CMAKE_FLAGS="$CMAKE_FLAGS \
                  -DCMAKE_CXX_COMPILER=${CXX_COMPILER}"

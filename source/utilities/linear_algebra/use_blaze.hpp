@@ -15,6 +15,8 @@
 #include "serialization/blaze_matrix.hpp"
 #endif
 
+using so_t = bool;
+
 namespace SO {
 constexpr bool ColumnMajor = blaze::columnMajor;
 constexpr bool RowMajor    = blaze::rowMajor;

@@ -62,7 +62,7 @@ Simulation<ProblemType>::Simulation(const std::string& input_string) {
                                   << std::endl;
     }
 
-    this->discretization.initialize(input, this->writer, this->stepper);
+    this->discretization.initialize(input, this->writer);
 }
 
 template <typename ProblemType>
