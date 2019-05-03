@@ -9,7 +9,7 @@
  * Explicit Strong Stability preserving Runge-Kutta methods
  * Class discretizes an ODE using strong stability preserving Runge Kutta methods.
  */
-class ImplicitStepper : public Stepper {
+class ImplicitStepper {
   private:
     uint order;
     uint nstages;

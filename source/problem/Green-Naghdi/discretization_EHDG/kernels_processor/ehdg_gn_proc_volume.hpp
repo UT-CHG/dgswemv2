@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename ElementType>
-void Problem::local_dc_volume_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+void Problem::local_dc_volume_kernel(const ESSPRKStepper& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
 
     // at this point h_at_gp
@@ -122,7 +122,7 @@ void Problem::local_dc_volume_kernel(const ProblemStepperType& stepper, ElementT
 }
 
 template <typename ElementType>
-void Problem::dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+void Problem::dispersive_correction_kernel(const ESSPRKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];

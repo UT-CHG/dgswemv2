@@ -14,10 +14,8 @@ public:
 
     template <typename SoA>
     void operator() (SoA& soa) const {
-        const uint stage = stepper.GetStage();
-
 //    auto& wd_state = elt.data.wet_dry_state;
-        auto& state    = soa.data.state[stage];
+        auto& state    = soa.data.state[stepper.GetStage()];
 
 //    for ( uint var = 0; var < SWE::n_variables; ++var ) {
 //        set_constant(state.rhs[var], 0.0);
@@ -36,6 +34,7 @@ public:
         auto&  h   = internal.aux_at_gp[SWE::Auxiliaries::h];
         auto& bath = internal.aux_at_gp[SWE::Auxiliaries::bath];
         h = ze + bath;
+
 
         auto u = mat_cw_div(qx, h);
         auto v = mat_cw_div(qy, h);

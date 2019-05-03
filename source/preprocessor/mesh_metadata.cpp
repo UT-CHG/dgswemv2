@@ -3,13 +3,16 @@
 MeshMetaData::MeshMetaData(const AdcircFormat& mesh_file) {
     this->mesh_name = mesh_file.name;
 
+    NodeMetaData node_meta;
     for (const auto& nod : mesh_file.nodes) {
         if (nod.first < 0) {
             throw std::logic_error("Fatal Error: in ADCIRC mesh node ID is negative!\n");
         }
 
+        node_meta.coordinates = Point<3>{nod.second[0], nod.second[1], nod.second[2]};
+
         uint ID = nod.first;
-        this->nodes.insert({ID, {nod.second[0], nod.second[1], nod.second[2]}});
+        this->nodes.insert({ID, std::move(node_meta)});
     }
 
     for (const auto& elt : mesh_file.elements) {
@@ -132,10 +135,10 @@ void MeshMetaData::write_to(const std::string& file) {
     ofs.close();
 }
 
-std::vector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
+AlignedVector<Point<3>> MeshMetaData::get_nodal_coordinates(uint elt_id) const {
     const std::vector<uint>& node_ID = this->elements.at(elt_id).node_ID;
 
-    std::vector<Point<3>> nodal_coordinates(node_ID.size());
+    AlignedVector<Point<3>> nodal_coordinates(node_ID.size());
 
     for (uint indx = 0; indx < node_ID.size(); ++indx) {
         nodal_coordinates[indx] = this->nodes.at(node_ID[indx]).coordinates;

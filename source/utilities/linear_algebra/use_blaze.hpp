@@ -22,7 +22,7 @@ constexpr bool ColumnMajor = blaze::columnMajor;
 constexpr bool RowMajor    = blaze::rowMajor;
 }
 
-constexpr int hyb_mat_buff_size = 79;
+constexpr int hyb_mat_buff_size = 128;
 
 template <typename T, uint m>
 using StatVector = blaze::StaticVector<T, m>;

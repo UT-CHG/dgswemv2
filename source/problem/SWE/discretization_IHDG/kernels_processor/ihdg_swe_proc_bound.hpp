@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename BoundaryType>
-void Problem::init_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
+template <typename BoundaryType>
+void Problem::init_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
     if (stepper.GetOrder() == 2) {
         const uint stage = stepper.GetStage();
 
@@ -15,8 +15,8 @@ void Problem::init_boundary_kernel(const StepperType& stepper, BoundaryType& bou
     }
 }
 
-template <typename StepperType, typename BoundaryType>
-void Problem::local_boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
+template <typename BoundaryType>
+void Problem::local_boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
     const uint stage = stepper.GetStage();
 
     auto& state    = bound.data.state[stage + 1];

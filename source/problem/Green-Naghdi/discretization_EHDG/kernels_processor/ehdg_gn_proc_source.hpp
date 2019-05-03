@@ -4,7 +4,7 @@
 namespace GN {
 namespace EHDG {
 template <typename ElementType>
-void Problem::local_dc_source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+void Problem::local_dc_source_kernel(const ESSPRKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage];

@@ -13,7 +13,7 @@ class Internal {
   public:
     template <typename InterfaceType>
     void Initialize(InterfaceType& intface) {
-        land_boundary.Initialize(1);
+        this->land_boundary.Initialize(1);
     }
 
     template <typename InterfaceType>
@@ -87,7 +87,7 @@ class Internal {
             }*/
 
 //        assert(!std::isnan(boundary_in.F_hat_at_gp[Variables::ze][gp]));
-    //   }
+        //   }
     }
 
     template <typename SoAType>
@@ -103,8 +103,8 @@ class Internal {
         size_t rows_ = rows(soa.data.q_in_at_gp[0]);
         size_t columns_ = columns(soa.data.q_in_at_gp[0]);
 
-	//Note that this is not optional. Converting to a row major matrix requires inverting the loops
-	constexpr auto SO = SO::ColumnMajor;
+        //Note that this is not optional. Converting to a row major matrix requires inverting the loops
+        constexpr auto SO = SO::ColumnMajor;
 
         const DynMatrix<double, SO>& ze_in = soa.data.q_in_at_gp[SWE::Variables::ze];
         const DynMatrix<double, SO>& qx_in = soa.data.q_in_at_gp[SWE::Variables::qx];
@@ -121,7 +121,6 @@ class Internal {
         DynMatrix<double, SO>& flux_qy     = soa.data.F_hat_at_gp[SWE::Variables::qy];
 
         for ( size_t j=0UL; j < columns_; ++j ) {
-
             for ( size_t i = 0UL; i < rows_; i += SIMDSIZE) {
 
                 blaze::LLF_flux(g_vec,

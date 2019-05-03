@@ -8,7 +8,7 @@ namespace EHDG {
 template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                 typename ProblemType::ProblemGlobalDataType& global_data,
-                                const typename ProblemType::ProblemStepperType& stepper,
+                                const ProblemStepperType& stepper,
                                 const uint begin_sim_id,
                                 const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -46,6 +46,11 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<Prob
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::init_global_prob, 0);
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->discretization.mesh.CallForEachElement(
+            [&stepper](auto& elt) { elt.data.resize(stepper.GetNumStages() + 1); });
     }
 }
 }

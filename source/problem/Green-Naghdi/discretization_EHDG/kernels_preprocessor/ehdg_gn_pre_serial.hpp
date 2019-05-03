@@ -9,7 +9,8 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
                                   ProblemGlobalDataType& global_data,
                                   const ProblemStepperType& stepper,
                                   const ProblemInputType& problem_specific_input) {
-    SWE_SIM::Problem::preprocessor_serial(discretization, global_data, stepper, problem_specific_input);
+    SWE_SIM::Problem::preprocessor_serial(
+        discretization, global_data, stepper.GetFirstStepper(), problem_specific_input);
 
     uint dc_global_dof_offset = 0;
 
@@ -19,6 +20,12 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
     global_data.w1_hat_rhs.resize(dc_global_dof_offset);
 
     Problem::compute_bathymetry_derivatives_serial(discretization);
+
+    uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages()
+                        ? stepper.GetFirstStepper().GetNumStages()
+                        : stepper.GetSecondStepper().GetNumStages();
+
+    discretization.mesh.CallForEachElement([n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
 }
 }
 }

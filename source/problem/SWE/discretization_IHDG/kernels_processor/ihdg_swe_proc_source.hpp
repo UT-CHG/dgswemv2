@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename ElementType>
-void Problem::init_source_kernel(const StepperType& stepper, ElementType& elt) {
+template <typename ElementType>
+void Problem::init_source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     if (stepper.GetOrder() == 2) {
         auto& internal = elt.data.internal;
 
@@ -19,8 +19,8 @@ void Problem::init_source_kernel(const StepperType& stepper, ElementType& elt) {
     }
 }
 
-template <typename StepperType, typename ElementType>
-void Problem::local_source_kernel(const StepperType& stepper, ElementType& elt) {
+template <typename ElementType>
+void Problem::local_source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     auto& internal = elt.data.internal;
     auto& source   = elt.data.source;
 

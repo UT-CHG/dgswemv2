@@ -3,8 +3,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename ProblemType>
-void Problem::init_iteration(const StepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
+template <typename ProblemType>
+void Problem::init_iteration(const ProblemStepperType& stepper, HDGDiscretization<ProblemType>& discretization) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::init_volume_kernel(stepper, elt); });
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::init_source_kernel(stepper, elt); });

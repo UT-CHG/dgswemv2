@@ -3,14 +3,10 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename StepperType, typename BoundaryType>
-void Problem::boundary_kernel(const StepperType& stepper, BoundaryType& bound) {
-    auto& wd_state = bound.data.wet_dry_state;
-
-    if (wd_state.wet) {
-        const uint stage = stepper.GetStage();
-
-        auto& state    = bound.data.state[stage];
+template <typename BoundaryType>
+void Problem::boundary_kernel(const ProblemStepperType& stepper, BoundaryType& bound) {
+    if (bound.data.wet_dry_state.wet) {
+        auto& state    = bound.data.state[stepper.GetStage()];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
         for ( uint var = 0; var < SWE::n_variables; ++var) {

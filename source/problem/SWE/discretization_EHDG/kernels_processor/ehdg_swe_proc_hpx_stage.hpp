@@ -34,10 +34,12 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         [sim_unit](auto& bound) { Problem::global_boundary_kernel(sim_unit->stepper, bound); });
 
     sim_unit->discretization.mesh_skeleton.CallForEachEdgeInterface(
-        [sim_unit](auto& edge_int) { Problem::global_edge_interface_kernel(sim_unit->stepper, edge_int); });
+        [sim_unit](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
 
-    sim_unit->discretization.mesh_skeleton.CallForEachEdgeBoundary(
-        [sim_unit](auto& edge_bound) { Problem::global_edge_boundary_kernel(sim_unit->stepper, edge_bound); });
+    sim_unit->discretization.mesh_skeleton.CallForEachEdgeBoundary([sim_unit](auto& edge_bound) {
+        edge_bound.boundary.boundary_condition.ComputeNumericalFlux(sim_unit->stepper, edge_bound);
+    });
+
     /* Global Pre Receive Step */
 
     /* Local Pre Receive Step */
@@ -66,8 +68,9 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         }
 
         /* Global Post Receive Step */
-        sim_unit->discretization.mesh_skeleton.CallForEachEdgeDistributed(
-            [sim_unit](auto& edge_dbound) { Problem::global_edge_distributed_kernel(sim_unit->stepper, edge_dbound); });
+        sim_unit->discretization.mesh_skeleton.CallForEachEdgeDistributed([sim_unit](auto& edge_dbound) {
+            edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
+        });
         /* Global Post Receive Step */
 
         /* Local Post Receive Step */
@@ -89,6 +92,15 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
             sim_unit->writer.GetLogFile() << "Finished work after receive" << std::endl << std::endl;
         }
     });
+
+    if (SWE::PostProcessing::wetting_drying) {
+        stage_future = stage_future.then([sim_unit](auto&& f) {
+            f.get();  // check for exceptions
+
+            sim_unit->discretization.mesh.CallForEachElement(
+                [sim_unit](auto& elt) { wetting_drying_kernel(sim_unit->stepper, elt); });
+        });
+    }
 
     if (SWE::PostProcessing::slope_limiting) {
         stage_future = stage_future.then([sim_unit](auto&& f) {

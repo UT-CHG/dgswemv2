@@ -12,28 +12,31 @@ void Problem::step_serial(ProblemDiscretizationType& discretization,
                           ProblemStepperType& stepper,
                           ProblemWriterType& writer,
                           ProblemParserType& parser) {
-    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+    auto& first_stepper  = stepper.GetFirstStepper();
+    auto& second_stepper = stepper.GetSecondStepper();
+
+    for (uint stage = 0; stage < first_stepper.GetNumStages(); ++stage) {
         if (parser.ParsingInput()) {
-            parser.ParseInput(stepper, discretization.mesh);
+            parser.ParseInput(first_stepper, discretization.mesh);
         }
 
-        SWE_SIM::Problem::stage_serial(discretization, global_data, stepper);
+        SWE_SIM::Problem::stage_serial(discretization, global_data, first_stepper);
     }
 
-    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+    for (uint stage = 0; stage < second_stepper.GetNumStages(); ++stage) {
         if (parser.ParsingInput()) {
-            parser.ParseInput(stepper, discretization.mesh);
+            parser.ParseInput(second_stepper, discretization.mesh);
         }
 
-        Problem::dispersive_correction_serial(discretization, global_data, stepper);
+        Problem::dispersive_correction_serial(discretization, global_data, second_stepper);
     }
 
-    for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
+    for (uint stage = 0; stage < first_stepper.GetNumStages(); ++stage) {
         if (parser.ParsingInput()) {
-            parser.ParseInput(stepper, discretization.mesh);
+            parser.ParseInput(first_stepper, discretization.mesh);
         }
 
-        SWE_SIM::Problem::stage_serial(discretization, global_data, stepper);
+        SWE_SIM::Problem::stage_serial(discretization, global_data, first_stepper);
     }
 
     if (writer.WritingOutput()) {
@@ -43,7 +46,7 @@ void Problem::step_serial(ProblemDiscretizationType& discretization,
 
 void Problem::dispersive_correction_serial(ProblemDiscretizationType& discretization,
                                            ProblemGlobalDataType& global_data,
-                                           ProblemStepperType& stepper) {
+                                           ESSPRKStepper& stepper) {
     // Compute du, ddu
     Problem::compute_derivatives_serial(discretization, stepper);
 

@@ -11,7 +11,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                                 const ProblemStepperType& stepper,
                                 const uint begin_sim_id,
                                 const uint end_sim_id) {
-    SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
+    SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, stepper.GetFirstStepper(), begin_sim_id, end_sim_id);
 
 #pragma omp barrier
 #pragma omp master
@@ -149,6 +149,15 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 #pragma omp barrier
 
     Problem::compute_bathymetry_derivatives_ompi(sim_units, begin_sim_id, end_sim_id);
+
+    uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages()
+                        ? stepper.GetFirstStepper().GetNumStages()
+                        : stepper.GetSecondStepper().GetNumStages();
+
+    for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+        sim_units[su_id]->discretization.mesh.CallForEachElement(
+            [n_stages](auto& elt) { elt.data.resize(n_stages + 1); });
+    }
 }
 }
 }

@@ -9,7 +9,7 @@ namespace RKDG {
 template <template <typename> typename DiscretizationType, typename ProblemType>
 void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
                           typename ProblemType::ProblemGlobalDataType& global_data,
-                          typename ProblemType::ProblemStepperType& stepper,
+                          ProblemStepperType& stepper,
                           typename ProblemType::ProblemWriterType& writer,
                           typename ProblemType::ProblemParserType& parser) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
@@ -28,8 +28,8 @@ void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
 template <template <typename> typename DiscretizationType, typename ProblemType>
 void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
                            typename ProblemType::ProblemGlobalDataType& global_data,
-                           typename ProblemType::ProblemStepperType& stepper) {
-    VolumeKernel<decltype(stepper)> volume_kernel(stepper);
+                           ProblemStepperType& stepper) {
+    VolumeKernel<ProblemStepperType> volume_kernel(stepper);
     discretization.mesh.CallForEachElement(volume_kernel);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::source_kernel(stepper, elt); });
@@ -45,7 +45,7 @@ void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
     ++stepper;
 
     if (SWE::PostProcessing::wetting_drying) {
-        discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::wetting_drying_kernel(stepper, elt); });
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });
     }
 
     if (SWE::PostProcessing::slope_limiting) {

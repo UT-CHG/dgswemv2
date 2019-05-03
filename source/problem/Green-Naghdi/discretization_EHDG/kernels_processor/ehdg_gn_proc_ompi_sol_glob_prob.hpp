@@ -6,7 +6,7 @@ namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                            ProblemGlobalDataType& global_data,
-                                           const ProblemStepperType& stepper,
+                                           const ESSPRKStepper& stepper,
                                            const uint begin_sim_id,
                                            const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {

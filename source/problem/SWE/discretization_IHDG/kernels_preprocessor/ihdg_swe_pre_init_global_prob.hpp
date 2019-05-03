@@ -5,7 +5,7 @@ namespace SWE {
 namespace IHDG {
 template <typename ProblemType>
 void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization,
-                                               const typename ProblemType::ProblemStepperType& stepper,
+                                               const ProblemStepperType& stepper,
                                                uint& global_dof_offset) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& internal = elt.data.internal;
@@ -105,7 +105,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
 
 template <typename ProblemType>
 void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<ProblemType>& discretization,
-                                                          const typename ProblemType::ProblemStepperType& stepper,
+                                                          const ProblemStepperType& stepper,
                                                           uint& global_dof_offset) {
     Problem::initialize_global_problem_serial(discretization, stepper, global_dof_offset);
 
@@ -264,7 +264,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
-        uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
+        uint ngp = edge_dbound.edge_data.get_ngp();
 
         std::vector<double> message(1 + (SWE::n_variables + 1) * ngp);
         HybMatrix<double, SWE::n_variables> q_ex(SWE::n_variables, ngp);

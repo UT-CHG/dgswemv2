@@ -8,7 +8,7 @@ namespace EHDG {
 template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                         typename ProblemType::ProblemGlobalDataType& global_data,
-                        typename ProblemType::ProblemStepperType& stepper,
+                        ProblemStepperType& stepper,
                         const uint begin_sim_id,
                         const uint end_sim_id) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
@@ -31,7 +31,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>
 template <template <typename> typename OMPISimUnitType, typename ProblemType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                          typename ProblemType::ProblemGlobalDataType& global_data,
-                         typename ProblemType::ProblemStepperType& stepper,
+                         ProblemStepperType& stepper,
                          const uint begin_sim_id,
                          const uint end_sim_id) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -63,10 +63,12 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
             [&stepper](auto& bound) { Problem::global_boundary_kernel(stepper, bound); });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
-            [&stepper](auto& edge_int) { Problem::global_edge_interface_kernel(stepper, edge_int); });
+            [&stepper](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
 
-        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary(
-            [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper](auto& edge_bound) {
+            edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);
+        });
+
         /* Global Pre Receive Step */
 
         /* Local Pre Receive Step */
@@ -101,8 +103,9 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         }
 
         /* Global Post Receive Step */
-        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
-            [&stepper](auto& edge_dbound) { Problem::global_edge_distributed_kernel(stepper, edge_dbound); });
+        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed([&stepper](auto& edge_dbound) {
+            edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
+        });
         /* Global Post Receive Step */
 
         /* Local Post Receive Step */
@@ -127,6 +130,13 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
 #pragma omp master
     { ++(stepper); }
 #pragma omp barrier
+
+    if (SWE::PostProcessing::wetting_drying) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+            sim_units[su_id]->discretization.mesh.CallForEachElement(
+                [&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });
+        }
+    }
 
     if (SWE::PostProcessing::slope_limiting) {
         CS_slope_limiter_ompi(stepper, sim_units, begin_sim_id, end_sim_id, CommTypes::baryctr_state);

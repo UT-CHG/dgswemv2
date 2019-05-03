@@ -54,7 +54,7 @@ void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<Prob
 
         auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-        uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
+        uint ngp = edge_dbound.edge_data.get_ngp();
 
         // Construct message to exterior state
         std::vector<double> message;
@@ -83,7 +83,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
 
         auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-        uint ngp = edge_dbound.boundary.data.get_ngp_boundary(edge_dbound.boundary.bound_id);
+        uint ngp = edge_dbound.edge_data.get_ngp();
 
         std::vector<double> message(ngp);
         DynRowVector<double> bath_ex(ngp);

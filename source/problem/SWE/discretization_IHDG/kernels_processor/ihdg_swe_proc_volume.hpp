@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename ElementType>
-void Problem::init_volume_kernel(const StepperType& stepper, ElementType& elt) {
+template <typename ElementType>
+void Problem::init_volume_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state_prev = elt.data.state[stage];
@@ -35,8 +35,8 @@ void Problem::init_volume_kernel(const StepperType& stepper, ElementType& elt) {
     }
 }
 
-template <typename StepperType, typename ElementType>
-void Problem::local_volume_kernel(const StepperType& stepper, ElementType& elt) {
+template <typename ElementType>
+void Problem::local_volume_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
 
     auto& state    = elt.data.state[stage + 1];

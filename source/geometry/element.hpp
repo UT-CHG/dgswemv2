@@ -21,10 +21,13 @@ class Element {
     std::vector<uint> neighbor_ID;
     std::vector<uchar> boundary_type;
 
-    std::vector<Point<dimension>> gp_global_coordinates;
+    AlignedVector<Point<dimension>> gp_global_coordinates;
+    AlignedVector<Point<dimension>> sp_global_coordinates;
 
     bool const_J;
     double abs_J;
+
+    DynMatrix<double> phi_sp;
 
     /* psi_gp stored in shape */   // nodal basis, i.e. shape functions
     /* chi_gp stored in master */  // linear basis
@@ -41,7 +44,7 @@ class Element {
     Element(MasterType& master,
             AccessorType&& data,
             const uint ID,
-            std::vector<Point<3>>&& nodal_coordinates,
+            AlignedVector<Point<3>>&& nodal_coordinates,
             std::vector<uint>&& node_ID,
             std::vector<uint>&& neighbor_ID,
             std::vector<uchar>&& boundary_type);
@@ -55,6 +58,7 @@ class Element {
     StatMatrix<double, dimension, dimension> GetJinv(){ return this->shape.GetJinv(master->integration_rule.second)[0]; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
+    void SetSurveyPoints(const AlignedVector<Point<dimension>>& survey_points);
 
     void Initialize();
     void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, AccessorType>>>&
@@ -111,11 +115,13 @@ class Element {
     template <typename InputArrayType>
     decltype(auto) ApplyMinv(const InputArrayType& rhs);
 
-    void InitializeVTK(std::vector<Point<3>>& points, Array2D<uint>& cells);
+    void InitializeVTK(AlignedVector<Point<3>>& points, Array2D<uint>& cells);
     template <typename InputArrayType, typename OutputArrayType>
     void WriteCellDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& cell_data);
     template <typename InputArrayType, typename OutputArrayType>
     void WritePointDataVTK(const InputArrayType& u, AlignedVector<OutputArrayType>& point_data);
+    template <typename InputArrayType>
+    decltype(auto) WriteSurveyPointData(const InputArrayType& u);
 
     template <typename F, typename InputArrayType>
     double ComputeResidualL2(const F& f, const InputArrayType& u);
@@ -142,7 +148,7 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Acce
 Element<dimension, MasterType, ShapeType, AccessorType>::Element(MasterType& master,
                                                                  AccessorType&& data,
                                                                  const uint ID,
-                                                                 std::vector<Point<3>>&& nodal_coordinates,
+                                                                 AlignedVector<Point<3>>&& nodal_coordinates,
                                                                  std::vector<uint>&& node_ID,
                                                                  std::vector<uint>&& neighbor_ID,
                                                                  std::vector<uchar>&& boundary_type)
@@ -154,6 +160,16 @@ Element<dimension, MasterType, ShapeType, AccessorType>::Element(MasterType& mas
       neighbor_ID(std::move(neighbor_ID)),
       boundary_type(std::move(boundary_type)) {
     this->Initialize();
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
+void Element<dimension, MasterType, ShapeType, AccessorType>::SetSurveyPoints(
+    const AlignedVector<Point<dimension>>& survey_points) {
+    // *** //
+    AlignedVector<Point<dimension>> sp_local_coordinates = this->shape.GlobalToLocalCoordinates(survey_points);
+
+    this->sp_global_coordinates = survey_points;
+    this->phi_sp                = this->master->basis.GetPhi(this->master->p, sp_local_coordinates);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
@@ -449,7 +465,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::A
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
-void Element<dimension, MasterType, ShapeType, AccessorType>::InitializeVTK(std::vector<Point<3>>& points,
+void Element<dimension, MasterType, ShapeType, AccessorType>::InitializeVTK(AlignedVector<Point<3>>& points,
                                                                         Array2D<uint>& cells) {
     this->shape.GetVTK(points, cells);
 }
@@ -459,13 +475,9 @@ template <typename InputArrayType, typename OutputArrayType>
 void Element<dimension, MasterType, ShapeType, AccessorType>::WriteCellDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& cell_data) {
-    // cell_data[q] = u(q, dof) * phi_postprocessor_cell(dof, cell)
-    OutputArrayType temp;
-
     for (uint cell = 0; cell < columns(this->master->phi_postprocessor_cell); ++cell) {
-        temp = u * column(this->master->phi_postprocessor_cell, cell);
-
-        cell_data.emplace_back(std::move(temp));
+        // cell_data[q] = u(q, dof) * phi_postprocessor_cell(cell)[dof]
+        cell_data.emplace_back(u * column(this->master->phi_postprocessor_cell, cell));
     }
 }
 
@@ -474,28 +486,33 @@ template <typename InputArrayType, typename OutputArrayType>
 void Element<dimension, MasterType, ShapeType, AccessorType>::WritePointDataVTK(
     const InputArrayType& u,
     AlignedVector<OutputArrayType>& point_data) {
-    // point_data[q] = u(q, dof) * phi_postprocessor_point(pt, dof)
-    OutputArrayType temp;
-
+    // *** //
     for (uint pt = 0; pt < columns(this->master->phi_postprocessor_point); ++pt) {
-        temp = u * column(this->master->phi_postprocessor_point, pt);
-
-        point_data.emplace_back(std::move(temp));
+        // point_data[q] = u(q, dof) * phi_postprocessor_point(pt)[dof]
+        point_data.emplace_back(u * column(this->master->phi_postprocessor_point, pt));
     }
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
+template <typename InputArrayType>
+decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::WriteSurveyPointData(
+    const InputArrayType& u) {
+    // survey_point_data[q] = u(q, dof) * phi_sp(spt)[dof]
+    return u * this->phi_sp;
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>
 template <typename F, typename InputArrayType>
 double Element<dimension, MasterType, ShapeType, AccessorType>::ComputeResidualL2(const F& f, const InputArrayType& u) {
     // At this point we use maximum possible p for Dunavant integration
-    std::pair<DynVector<double>, std::vector<Point<2>>> rule = this->master->integration.GetRule(20);
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> rule = this->master->integration.GetRule(20);
 
     // get u_gp
     DynMatrix<double> phi_gp = this->master->basis.GetPhi(this->master->p, rule.second);
     DynMatrix<double> u_gp   = u * phi_gp;
 
     // get true_gp
-    std::vector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
+    AlignedVector<Point<dimension>> gp_global = this->shape.LocalToGlobalCoordinates(rule.second);
 
     uint nvar = f(*(gp_global.begin())).size();
     uint ngp  = gp_global.size();

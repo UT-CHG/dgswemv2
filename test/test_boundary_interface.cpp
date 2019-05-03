@@ -20,7 +20,7 @@ int main() {
         Geometry::Interface<1, Integration::GaussLegendre_1D, SWE::Accessor, SWE::RKDG::ISP::Internal>;
 
     // make an equilateral triangle
-    std::vector<Point<3>> vrtxs(3);
+    AlignedVector<Point<3>> vrtxs(3);
     vrtxs[0] = {-0.5, 0., 0.};
     vrtxs[1] = {0.5, 0., 0.};
     vrtxs[2] = {0, std::sqrt(3.) / 2., 0.};
@@ -62,7 +62,7 @@ int main() {
 
     // Check Integrations
     Integration::Dunavant_2D integ_2D;
-    std::vector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
+    AlignedVector<Point<2>> gp_2D = integ_2D.GetRule(20).second;
 
     DynMatrix<double> x_node(1, 3);
     DynMatrix<double> y_node(1, 3);
@@ -92,8 +92,8 @@ int main() {
     }
 
     Integration::GaussLegendre_1D integ_1D;
-    std::vector<Point<1>> gp_1D = integ_1D.GetRule(21).second;
-    std::vector<Point<2>> gp_bound;
+    AlignedVector<Point<1>> gp_1D = integ_1D.GetRule(21).second;
+    AlignedVector<Point<2>> gp_bound;
 
     DynMatrix<double> F_vals_bound(2, triangle.data.get_ngp_boundary(0));
     DynMatrix<double> Fn_vals_bound(3, triangle.data.get_ngp_boundary(0));

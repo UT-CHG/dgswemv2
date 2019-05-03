@@ -5,7 +5,7 @@ namespace GN {
 namespace EHDG {
 void Problem::serial_solve_global_dc_problem(ProblemDiscretizationType& discretization,
                                              ProblemGlobalDataType& global_data,
-                                             const ProblemStepperType& stepper) {
+                                             const ESSPRKStepper& stepper) {
     SparseMatrix<double>& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
     DynVector<double>& w1_hat_rhs       = global_data.w1_hat_rhs;
 

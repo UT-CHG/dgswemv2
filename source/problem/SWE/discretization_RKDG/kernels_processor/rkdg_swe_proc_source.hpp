@@ -5,14 +5,10 @@
 
 namespace SWE {
 namespace RKDG {
-template <typename StepperType, typename ElementType>
-void Problem::source_kernel(const StepperType& stepper, ElementType& elt) {
-    auto& wd_state = elt.data.wet_dry_state;
-
-    if (wd_state.wet) {
-        const uint stage = stepper.GetStage();
-
-        auto& state    = elt.data.state[stage];
+template <typename ElementType>
+void Problem::source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+    if (elt.data.wet_dry_state.wet) {
+        auto& state    = elt.data.state[stepper.GetStage()];
         auto& internal = elt.data.internal;
 
         SWE::get_source(stepper.GetTimeAtCurrentStage(), elt);

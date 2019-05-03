@@ -8,7 +8,7 @@ namespace EHDG {
 template <typename ProblemType>
 void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
                           typename ProblemType::ProblemGlobalDataType& global_data,
-                          typename ProblemType::ProblemStepperType& stepper,
+                          ProblemStepperType& stepper,
                           typename ProblemType::ProblemWriterType& writer,
                           typename ProblemType::ProblemParserType& parser) {
     for (uint stage = 0; stage < stepper.GetNumStages(); ++stage) {
@@ -27,7 +27,7 @@ void Problem::step_serial(HDGDiscretization<ProblemType>& discretization,
 template <typename ProblemType>
 void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
                            typename ProblemType::ProblemGlobalDataType& global_data,
-                           typename ProblemType::ProblemStepperType& stepper) {
+                           ProblemStepperType& stepper) {
     /* Global Step */
     discretization.mesh.CallForEachInterface(
         [&stepper](auto& intface) { Problem::global_interface_kernel(stepper, intface); });
@@ -36,10 +36,11 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
         [&stepper](auto& bound) { Problem::global_boundary_kernel(stepper, bound); });
 
     discretization.mesh_skeleton.CallForEachEdgeInterface(
-        [&stepper](auto& edge_int) { Problem::global_edge_interface_kernel(stepper, edge_int); });
+        [&stepper](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
 
-    discretization.mesh_skeleton.CallForEachEdgeBoundary(
-        [&stepper](auto& edge_bound) { Problem::global_edge_boundary_kernel(stepper, edge_bound); });
+    discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper](auto& edge_bound) {
+        edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);
+    });
     /* Global Step */
 
     /* Local Step */
@@ -63,6 +64,10 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
     /* Local Step */
 
     ++stepper;
+
+    if (SWE::PostProcessing::wetting_drying) {
+        discretization.mesh.CallForEachElement([&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });
+    }
 
     if (SWE::PostProcessing::slope_limiting) {
         CS_slope_limiter_serial(stepper, discretization);

@@ -88,12 +88,11 @@ public:
 //        auto& wd_state_ex = intface.data_ex.wet_dry_state;
 
 //    if (wd_state_in.wet || wd_state_ex.wet) {
-        const uint stage = stepper.GetStage();
 
-        auto& state_in    = intface.data_in.state[stage];
+        auto& state_in    = intface.data_in.state[stepper.GetStage()];
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
 
-        auto& state_ex    = intface.data_ex.state[stage];
+        auto& state_ex    = intface.data_ex.state[stepper.GetStage()];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
         boundary_in.q_at_gp[SWE::Variables::ze] = intface.ComputeUgpIN(state_in.q[SWE::Variables::ze]);

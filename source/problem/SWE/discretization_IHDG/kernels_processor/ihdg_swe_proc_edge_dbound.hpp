@@ -5,8 +5,8 @@
 
 namespace SWE {
 namespace IHDG {
-template <typename StepperType, typename EdgeDistributedType>
-void Problem::init_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
+template <typename EdgeDistributedType>
+void Problem::init_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound) {
     if (stepper.GetOrder() == 2) {
         auto& edge_state    = edge_dbound.edge_data.edge_state;
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
@@ -44,8 +44,8 @@ void Problem::init_edge_distributed_kernel(const StepperType& stepper, EdgeDistr
     }
 }
 
-template <typename StepperType, typename EdgeDistributedType>
-void Problem::local_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
+template <typename EdgeDistributedType>
+void Problem::local_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_state    = edge_dbound.edge_data.edge_state;
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
@@ -119,8 +119,8 @@ void Problem::local_edge_distributed_kernel(const StepperType& stepper, EdgeDist
     }
 }
 
-template <typename StepperType, typename EdgeDistributedType>
-void Problem::global_edge_distributed_kernel(const StepperType& stepper, EdgeDistributedType& edge_dbound) {
+template <typename EdgeDistributedType>
+void Problem::global_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];

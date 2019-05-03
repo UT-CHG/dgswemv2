@@ -24,8 +24,12 @@ auto Problem::preprocessor_hpx(HPXSimUnitType* sim_unit) {
         return sim_unit->communicator.ReceiveAll(CommTypes::init_global_prob, sim_unit->stepper.GetTimestamp());
     });
 
-    return future.then(
-        [sim_unit](auto&&) { Problem::initialize_global_problem_parallel_post_receive(sim_unit->discretization); });
+    return future.then([sim_unit](auto&&) {
+        Problem::initialize_global_problem_parallel_post_receive(sim_unit->discretization);
+
+        sim_unit->discretization.mesh.CallForEachElement(
+            [sim_unit](auto& elt) { elt.data.resize(sim_unit->stepper.GetNumStages() + 1); });
+    });
 }
 }
 }

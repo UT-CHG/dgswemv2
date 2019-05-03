@@ -56,7 +56,7 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
 
     typename InterfaceType::InterfaceIntegrationType integration;
 
-    std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
+    std::pair<DynVector<double>, AlignedVector<Point<dimension>>> integration_rule = integration.GetRule(2 * p + 1);
 
     uint ngp = integration_rule.first.size();
 
@@ -65,7 +65,7 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
     if (ccw) {  // if trace basis is defined counterclockwise around element
         this->lambda_gp = basis.GetPhi(p, integration_rule.second);
     } else {
-        std::vector<Point<dimension>> gauss_points = integration_rule.second;
+        AlignedVector<Point<dimension>> gauss_points = integration_rule.second;
 
         for (uint gp = 0; gp < (ngp / 2); ++gp) {
             std::swap(gauss_points[gp], gauss_points[ngp - gp - 1]);
@@ -77,7 +77,7 @@ EdgeInterface<dimension, BasisType, EdgeDataType, InterfaceType>::EdgeInterface(
     uint ndof = row(this->lambda_gp, 0).size();
 
     // transfrom gp to master coord in
-    std::vector<Point<dimension + 1>> z_master_in =
+    AlignedVector<Point<dimension + 1>> z_master_in =
         this->interface.GetMasterIN().BoundaryToMasterCoordinates(this->interface.bound_id_in, integration_rule.second);
 
     DynVector<double> surface_J = this->interface.GetShapeIN().GetSurfaceJ(this->interface.bound_id_in, z_master_in);

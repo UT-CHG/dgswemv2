@@ -35,7 +35,7 @@ namespace GN {
 namespace EHDG {
 struct Problem {
     using ProblemInputType   = GN::Inputs;
-    using ProblemStepperType = SecondStrangStepper<ESSPRKStepper, ESSPRKStepper>;
+    using ProblemStepperType = SecondStrangStepper<SWE_SIM::Problem::ProblemStepperType, ESSPRKStepper>;
     using ProblemWriterType  = Writer<Problem>;
     using ProblemParserType  = GN::Parser;
 
@@ -148,6 +148,7 @@ struct Problem {
                                          ProblemWriterType& writer) {
         GN::create_edge_distributeds<GN::EHDG::Problem>(mesh, mesh_skeleton, writer);
     }
+
     static void preprocessor_serial(ProblemDiscretizationType& discretization,
                                     ProblemGlobalDataType& global_data,
                                     const ProblemStepperType& stepper,
@@ -201,65 +202,64 @@ struct Problem {
 
     static void dispersive_correction_serial(ProblemDiscretizationType& discretization,
                                              ProblemGlobalDataType& global_data,
-                                             ProblemStepperType& stepper);
+                                             ESSPRKStepper& stepper);
 
-    static void compute_derivatives_serial(ProblemDiscretizationType& discretization,
-                                           const ProblemStepperType& stepper);
+    static void compute_derivatives_serial(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper);
 
     template <typename OMPISimUnitType>
     static void dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                            ProblemGlobalDataType& global_data,
-                                           ProblemStepperType& stepper,
+                                           ESSPRKStepper& stepper,
                                            const uint begin_sim_id,
                                            const uint end_sim_id);
 
     template <typename OMPISimUnitType>
     static void compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
-                                         const ProblemStepperType& stepper,
+                                         const ESSPRKStepper& stepper,
                                          const uint begin_sim_id,
                                          const uint end_sim_id);
 
     /* local step */
 
     template <typename ElementType>
-    static void local_dc_volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
+    static void local_dc_volume_kernel(const ESSPRKStepper& stepper, ElementType& elt);
 
     template <typename ElementType>
-    static void local_dc_source_kernel(const ProblemStepperType& stepper, ElementType& elt);
+    static void local_dc_source_kernel(const ESSPRKStepper& stepper, ElementType& elt);
 
     template <typename EdgeInterfaceType>
-    static void local_dc_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
+    static void local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeBoundaryType>
-    static void local_dc_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
+    static void local_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeDistributedType>
-    static void local_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
+    static void local_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     /* global step */
 
     template <typename EdgeInterfaceType>
-    static void global_dc_edge_interface_kernel(const ProblemStepperType& stepper, EdgeInterfaceType& edge_int);
+    static void global_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeInterfaceType& edge_int);
 
     template <typename EdgeBoundaryType>
-    static void global_dc_edge_boundary_kernel(const ProblemStepperType& stepper, EdgeBoundaryType& edge_bound);
+    static void global_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBoundaryType& edge_bound);
 
     template <typename EdgeDistributedType>
-    static void global_dc_edge_distributed_kernel(const ProblemStepperType& stepper, EdgeDistributedType& edge_dbound);
+    static void global_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, EdgeDistributedType& edge_dbound);
 
     static void serial_solve_global_dc_problem(ProblemDiscretizationType& discretization,
                                                ProblemGlobalDataType& global_data,
-                                               const ProblemStepperType& stepper);
+                                               const ESSPRKStepper& stepper);
 
     template <typename OMPISimUnitType>
     static void ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                              ProblemGlobalDataType& global_data,
-                                             const ProblemStepperType& stepper,
+                                             const ESSPRKStepper& stepper,
                                              const uint begin_sim_id,
                                              const uint end_sim_id);
 
     template <typename ElementType>
-    static void dispersive_correction_kernel(const ProblemStepperType& stepper, ElementType& elt);
+    static void dispersive_correction_kernel(const ESSPRKStepper& stepper, ElementType& elt);
 
     // writing output kernels
     static void write_VTK_data(ProblemMeshType& mesh, std::ofstream& raw_data_file) {

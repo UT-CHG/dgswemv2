@@ -46,13 +46,13 @@ struct InterfaceSoAHelper {
         //Get **interface** integration rule
         typename InterfaceType::InterfaceIntegrationType integration;
 
-        std::pair<DynVector<double>, std::vector<Point<dimension>>> integration_rule
+        std::pair<DynVector<double>, AlignedVector<Point<dimension>>> integration_rule
             = integration.GetRule(2 * p + 1);
 
         uint ngp = integration_rule.second.size();
         auto& master = elt_container.GetMaster();
         for ( uint side = 0; side < 3; ++side ) {
-            std::vector<Point<dimension + 1>> z_master =
+            AlignedVector<Point<dimension + 1>> z_master =
                 master.BoundaryToMasterCoordinates(side, integration_rule.second);
 
             this->phi_gp_bdry[side] = master.basis.GetPhi(p, z_master);

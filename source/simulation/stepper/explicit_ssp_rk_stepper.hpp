@@ -9,7 +9,7 @@
  * Explicit Strong Stability preserving Runge-Kutta methods
  * Class discretizes an ODE using strong stability preserving Runge Kutta methods.
  */
-class ESSPRKStepper : public Stepper {
+class ESSPRKStepper {
   public:
     Array2D<double> ark;
     Array2D<double> brk;

@@ -3,7 +3,7 @@
 
 namespace GN {
 namespace EHDG {
-void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization, const ProblemStepperType& stepper) {
+void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
 
