@@ -34,7 +34,7 @@ using DynVector = blaze::DynamicVector<T>;
 template <typename T>
 using DynRowVector = blaze::DynamicVector<T, blaze::rowVector>;
 template <typename T, bool SO = blaze::rowMajor>
-using DynMatrix = blaze::DynamicMatrix<T,SO>;
+using DynMatrix = blaze::DynamicMatrix<T, SO>;
 template <typename T, uint m>
 using HybMatrix = blaze::HybridMatrix<T, m, hyb_mat_buff_size>;
 
@@ -316,10 +316,21 @@ decltype(auto) mat_cw_div(const LeftMatrixType& matrix_left, const RightMatrixTy
 
 
 /* Solving Linear System */
-template <typename MatrixType, typename ArrayType>
-void solve_sle(MatrixType& A, ArrayType& B) {
-    int ipiv[blaze::columns(A)];
-    blaze::gesv(A, B, ipiv);
+template <typename ArrayType>
+void solve_sle(blaze::DynamicMatrix<double, blaze::rowMajor>& A, ArrayType& B) {
+    // If blaze calls gesv on a rowMajor matrix, it will solve A^T X = B.
+    // So instead we manually assign A to a columnMajor matrix, solve the system,
+    // and then assign the LU factors to A.
+    std::vector<int> ipiv(blaze::columns(A));
+    blaze::DynamicMatrix<double,blaze::columnMajor> tmp = A;
+    blaze::gesv(tmp, B, ipiv.data());
+    A = tmp;
+}
+
+template <typename ArrayType>
+void solve_sle(blaze::DynamicMatrix<double, blaze::columnMajor>& A, ArrayType& B) {
+    std::vector<int> ipiv(blaze::columns(A));
+    blaze::gesv(A, B, ipiv.data());
 }
 
 template <typename ArrayType, typename T>
