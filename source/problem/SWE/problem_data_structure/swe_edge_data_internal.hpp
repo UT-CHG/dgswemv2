@@ -27,7 +27,7 @@ struct EdgeInternal {
     HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_hat_global_kernel_at_gp;
     HybMatrix<double, SWE::n_variables> rhs_global_kernel_at_gp;
 
-    DynMatrix<double> delta_hat_global;
+    DynMatrix<double, SO::ColumnMajor> delta_hat_global;
     DynVector<double> rhs_global;
 
     DynVector<double> delta_hat_global_flat;

@@ -28,7 +28,7 @@ template <typename T>
 using DynVector = Eigen::Matrix<T, Eigen::Dynamic, 1>;
 template <typename T>
 using DynRowVector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
-template <typename T>
+template <typename T, int SO = SO::ColumnMajor>
 using DynMatrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 template <typename T, uint m>
 using HybMatrix = Eigen::Matrix<T, m, Eigen::Dynamic>;
