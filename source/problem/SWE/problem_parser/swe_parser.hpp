@@ -86,7 +86,7 @@ void Parser::ParseInput(const StepperType& stepper, MeshType& mesh) {
 
         this->InterpolateMeteoData(stepper);
 
-        mesh.CallForEachElement([this](auto& elt) {
+        mesh.CallForEachElement([](auto& elt) {
             for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 elt.data.source.tau_s[node][GlobalCoord::x] = elt.data.source.parsed_meteo_data[node]->at(0);
                 elt.data.source.tau_s[node][GlobalCoord::y] = elt.data.source.parsed_meteo_data[node]->at(1);

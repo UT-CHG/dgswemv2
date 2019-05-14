@@ -59,7 +59,7 @@ class HPXSimulationUnitClient : public hpx::components::client_base<HPXSimulatio
 };
 
 template <typename ProblemType>
-class HPXSimulationUnit;
+struct HPXSimulationUnit;
 
 struct HPXSimulationUnitFactory {
     static HPXSimulationUnitClient Create(const hpx::naming::id_type& here,

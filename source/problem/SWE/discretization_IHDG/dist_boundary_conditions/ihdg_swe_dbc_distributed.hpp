@@ -11,7 +11,6 @@ class Distributed {
     DBDataExchanger exchanger;
 
   public:
-    Distributed() = default;
     Distributed(const DBDataExchanger& exchanger);
 
     template <typename DistributedBoundaryType>

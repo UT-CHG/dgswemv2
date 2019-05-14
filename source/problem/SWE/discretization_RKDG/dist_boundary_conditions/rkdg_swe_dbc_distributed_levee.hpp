@@ -26,7 +26,6 @@ class DistributedLevee {
     BC::Land land_boundary;
 
   public:
-    DistributedLevee() = default;
     DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input);
 
     template <typename DistributedBoundaryType>

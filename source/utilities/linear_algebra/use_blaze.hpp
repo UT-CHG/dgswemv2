@@ -220,7 +220,7 @@ void solve_sle(blaze::DynamicMatrix<double, blaze::rowMajor>& A, ArrayType& B) {
     // So instead we manually assign A to a columnMajor matrix, solve the system,
     // and then assign the LU factors to A.
     std::vector<int> ipiv(blaze::columns(A));
-    blaze::DynamicMatrix<double,blaze::columnMajor> tmp = A;
+    blaze::DynamicMatrix<double, blaze::columnMajor> tmp = A;
     blaze::gesv(tmp, B, ipiv.data());
     A = tmp;
 }

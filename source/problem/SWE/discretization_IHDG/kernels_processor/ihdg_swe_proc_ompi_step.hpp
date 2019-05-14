@@ -7,7 +7,7 @@
 
 namespace SWE {
 namespace IHDG {
-template <template <typename> typename OMPISimUnitType, typename ProblemType>
+template <template <typename> class OMPISimUnitType, typename ProblemType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                         typename ProblemType::ProblemGlobalDataType& global_data,
                         ProblemStepperType& stepper,
@@ -30,7 +30,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>
     }
 }
 
-template <template <typename> typename OMPISimUnitType, typename ProblemType>
+template <template <typename> class OMPISimUnitType, typename ProblemType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                          typename ProblemType::ProblemGlobalDataType& global_data,
                          ProblemStepperType& stepper,

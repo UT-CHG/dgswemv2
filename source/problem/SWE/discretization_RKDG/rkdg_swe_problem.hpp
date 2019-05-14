@@ -113,13 +113,13 @@ struct Problem {
         SWE::create_distributed_boundaries<SWE::RKDG::Problem>(raw_boundaries, mesh, input, communicator, writer);
     }
 
-    template <template <typename> typename DiscretizationType, typename ProblemType>
+    template <template <typename> class DiscretizationType, typename ProblemType>
     static void preprocessor_serial(DiscretizationType<ProblemType>& discretization,
                                     typename ProblemType::ProblemGlobalDataType& global_data,
                                     const ProblemStepperType& stepper,
                                     const typename ProblemType::ProblemInputType& problem_specific_input);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
                                   const ProblemStepperType& stepper,
@@ -130,26 +130,26 @@ struct Problem {
     static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
 
     // processor kernels
-    template <template <typename> typename DiscretizationType, typename ProblemType>
+    template <template <typename> class DiscretizationType, typename ProblemType>
     static void step_serial(DiscretizationType<ProblemType>& discretization,
                             typename ProblemType::ProblemGlobalDataType& global_data,
                             ProblemStepperType& stepper,
                             typename ProblemType::ProblemWriterType& writer,
                             typename ProblemType::ProblemParserType& parser);
 
-    template <template <typename> typename DiscretizationType, typename ProblemType>
+    template <template <typename> class DiscretizationType, typename ProblemType>
     static void stage_serial(DiscretizationType<ProblemType>& discretization,
                              typename ProblemType::ProblemGlobalDataType& global_data,
                              ProblemStepperType& stepper);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                           typename ProblemType::ProblemGlobalDataType& global_data,
                           ProblemStepperType& stepper,
                           const uint begin_sim_id,
                           const uint end_sim_id);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                            typename ProblemType::ProblemGlobalDataType& global_data,
                            ProblemStepperType& stepper,

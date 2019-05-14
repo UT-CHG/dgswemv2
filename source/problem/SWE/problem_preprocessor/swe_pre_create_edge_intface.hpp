@@ -16,7 +16,7 @@ void create_edge_interfaces(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_internal = mesh_skeleton.GetNumberEdgeInterfaces();
 
-    mesh.template CallForEachInterfaceOfType<InterfaceTypeInternal>([&mesh_skeleton, &writer](auto& intface) {
+    mesh.template CallForEachInterfaceOfType<InterfaceTypeInternal>([&mesh_skeleton](auto& intface) {
         mesh_skeleton.template CreateEdgeInterface<EdgeInterfaceTypeInternal>(intface);
     });
 
@@ -27,7 +27,7 @@ void create_edge_interfaces(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_levee = mesh_skeleton.GetNumberEdgeInterfaces();
 
-    mesh.template CallForEachInterfaceOfType<InterfaceTypeLevee>([&mesh_skeleton, &writer](auto& intface) {
+    mesh.template CallForEachInterfaceOfType<InterfaceTypeLevee>([&mesh_skeleton](auto& intface) {
         mesh_skeleton.template CreateEdgeInterface<EdgeInterfaceTypeLevee>(intface);
     });
 

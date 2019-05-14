@@ -11,7 +11,7 @@ class DistributedLevee {
     DBDataExchanger exchanger;
 
   private:
-    double H_tolerance = 0.01;
+    // double H_tolerance = 0.01;
 
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
@@ -21,10 +21,9 @@ class DistributedLevee {
     DynRowVector<double> C_subcrit_gp;
     DynRowVector<double> C_supercrit_gp;
 
-    BC::Land land_boundary;
+    // BC::Land land_boundary;
 
   public:
-    DistributedLevee() = default;
     DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input);
 
     template <typename DistributedBoundaryType>

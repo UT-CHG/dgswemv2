@@ -39,13 +39,13 @@ int main() {
 
     MasterType master(10);
 
-    ElementType triangle(0,
-                         master,
-                         std::move(vrtxs),
-                         std::move(std::vector<uint>{0, 0, 0}),
-                         std::move(std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID}),
-                         std::move(std::vector<unsigned char>{
-                             SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land}));
+    ElementType triangle(
+        0,
+        master,
+        std::move(vrtxs),
+        std::vector<uint>{0, 0, 0},
+        std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
+        std::vector<unsigned char>{SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land});
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 

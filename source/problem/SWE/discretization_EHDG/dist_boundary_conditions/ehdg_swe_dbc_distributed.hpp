@@ -18,7 +18,6 @@ class Distributed {
     BC::Land land_boundary;
 
   public:
-    Distributed() = default;
     Distributed(const DBDataExchanger& exchanger);
 
     template <typename DistributedBoundaryType>
