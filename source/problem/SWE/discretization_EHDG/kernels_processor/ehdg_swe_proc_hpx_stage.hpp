@@ -77,13 +77,8 @@ auto Problem::stage_hpx(HPXSimUnitType* sim_unit) {
         sim_unit->discretization.mesh.CallForEachDistributedBoundary(
             [sim_unit](auto& dbound) { Problem::local_distributed_boundary_kernel(sim_unit->stepper, dbound); });
 
-        sim_unit->discretization.mesh.CallForEachElement([sim_unit](auto& elt) {
-            auto& state = elt.data.state[sim_unit->stepper.GetStage()];
-
-            state.solution = elt.ApplyMinv(state.rhs);
-
-            sim_unit->stepper.UpdateState(elt);
-        });
+        UpdateKernel update_kernel(sim_unit->stepper);
+        sim_unit->discretization.mesh.CallForEachElement(update_kernel);
 
         ++(sim_unit->stepper);
         /* Local Post Receive Step */

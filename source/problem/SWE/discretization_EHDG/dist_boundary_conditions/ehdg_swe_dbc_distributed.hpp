@@ -68,7 +68,9 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
         auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
         // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
-        edge_internal.q_hat_at_gp = (boundary.q_at_gp + this->q_ex) / 2.0;
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            row(edge_internal.q_hat_at_gp,var) = (boundary.q_at_gp[var] + row(this->q_ex,var)) / 2.0;
+        }
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
             row(edge_internal.q_hat_at_gp, SWE::Variables::ze) +
@@ -88,13 +90,17 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
                         edge_dbound.boundary.surface_normal,
                         edge_internal.tau);
 
-        for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-            column(boundary.F_hat_at_gp, gp) +=
-                edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
+                for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                    boundary.F_hat_at_gp[var][gp] +=
+                        edge_internal.tau[gp](var,w) * (boundary.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w, gp));
+                }
+            }
         }
 
         // correct numerical fluxes for wetting/drying
-        for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
+        /*for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
             if (boundary.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
                 if (!wet_in) {  // water flowing from dry IN element
                     // Zero flux on IN element side
@@ -135,7 +141,7 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
             }
 
             assert(!std::isnan(boundary.F_hat_at_gp(Variables::ze, gp)));
-        }
+            }*/
     }
 }
 }

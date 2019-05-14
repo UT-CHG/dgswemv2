@@ -112,13 +112,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary(
             [&stepper](auto& dbound) { Problem::local_distributed_boundary_kernel(stepper, dbound); });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-            auto& state = elt.data.state[stepper.GetStage()];
-
-            state.solution = elt.ApplyMinv(state.rhs);
-
-            stepper.UpdateState(elt);
-        });
+        UpdateKernel update_kernel(stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement(update_kernel);
         /* Local Post Receive Step */
 
         if (sim_units[su_id]->writer.WritingVerboseLog()) {

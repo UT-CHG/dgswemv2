@@ -62,7 +62,7 @@ void Problem::initialize_global_problem_parallel_pre_send(HDGDiscretization<Prob
         message.reserve(ngp);
 
         for (uint gp = 0; gp < ngp; ++gp) {
-            message.push_back(boundary.aux_at_gp(SWE::Auxiliaries::bath, gp));
+            message.push_back(boundary.aux_at_gp[SWE::Auxiliaries::bath][gp]);
         }
 
         edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(CommTypes::init_global_prob, message);
@@ -95,7 +95,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
         }
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) =
-            (row(boundary.aux_at_gp, SWE::Auxiliaries::bath) + bath_ex) / 2.0;
+            (boundary.aux_at_gp[SWE::Auxiliaries::bath] + bath_ex) / 2.0;
     });
 }
 }
