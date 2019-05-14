@@ -44,14 +44,15 @@ struct HDGDiscretization {
                     typename ProblemType::ProblemWriterType& writer) {
         std::tuple<> empty_comm;
 
-        initialize_mesh<ProblemType>(this->mesh, input, empty_comm, writer);
-        initialize_mesh_skeleton<ProblemType>(this->mesh, this->mesh_skeleton, writer);
+        this->initialize(input, empty_comm, writer);
     }
 
     template <typename CommunicatorType>
     void initialize(InputParameters<typename ProblemType::ProblemInputType>& input,
                     CommunicatorType& communicator,
                     typename ProblemType::ProblemWriterType& writer) {
+        mesh.reserve(input.stepper_input.nstages,
+                     {static_cast<uint>(input.mesh_input.mesh_data.elements.size())});
         initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
         initialize_mesh_skeleton<ProblemType>(this->mesh, this->mesh_skeleton, writer);
     }

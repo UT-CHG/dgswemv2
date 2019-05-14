@@ -106,17 +106,17 @@ void Flow::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
     set_constant(this->qn, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); ++con) {
-        for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
+        for (uint gp = 0; gp < boundary.q_at_gp[0].size(); ++gp) {
             this->qn[gp] += stepper.GetRamp() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
                             cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() + this->equilib_arg[con] -
                                 this->phase_gp[con][gp]);
         }
     }
 
-    auto n_x = row(edge_bound.boundary.surface_normal, GlobalCoord::x);
-    auto n_y = row(edge_bound.boundary.surface_normal, GlobalCoord::y);
+    auto n_x = edge_bound.boundary.surface_normal[GlobalCoord::x];
+    auto n_y = edge_bound.boundary.surface_normal[GlobalCoord::y];
 
-    row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
+    row(this->q_ex, SWE::Variables::ze) = boundary.q_at_gp[SWE::Variables::ze];
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn, n_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn, n_y);
 
@@ -139,10 +139,15 @@ void Flow::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
 
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        column(boundary.F_hat_at_gp, gp) +=
-            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+            for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                boundary.F_hat_at_gp[var][gp] +=
+                    edge_internal.tau[gp](var, w) * (boundary.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w, gp));
+            }
+        }
     }
+
 }
 }
 }

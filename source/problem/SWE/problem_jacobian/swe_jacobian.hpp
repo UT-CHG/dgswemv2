@@ -26,15 +26,15 @@ StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(double h, doubl
 
 void get_A(const HybMatrix<double, SWE::n_variables>& q,
            const HybMatrix<double, SWE::n_auxiliaries>& aux,
-           const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+           const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
            AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& A) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         A[gp] = R(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny);
     }
@@ -42,15 +42,15 @@ void get_A(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dA_dze(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                 AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dA_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dA_dze[gp] = dR_dze(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
                      R(h, u, v, nx, ny) * dL_dze(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
@@ -60,15 +60,15 @@ void get_dA_dze(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dA_dqx(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                 AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dA_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dA_dqx[gp] = dR_dqx(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
                      R(h, u, v, nx, ny) * dL_dqx(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
@@ -78,15 +78,15 @@ void get_dA_dqx(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dA_dqy(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                 AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dA_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dA_dqy[gp] = dR_dqy(h, u, v, nx, ny) * L(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
                      R(h, u, v, nx, ny) * dL_dqy(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
@@ -96,15 +96,15 @@ void get_dA_dqy(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_absA(const HybMatrix<double, SWE::n_variables>& q,
               const HybMatrix<double, SWE::n_auxiliaries>& aux,
-              const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+              const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
               AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& absA) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         absA[gp] = R(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny);
     }
@@ -112,15 +112,15 @@ void get_absA(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dabsA_dze(const HybMatrix<double, SWE::n_variables>& q,
                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                   const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                   const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dabsA_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dabsA_dze[gp] = dR_dze(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
                         R(h, u, v, nx, ny) * dabsL_dze(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
@@ -130,15 +130,15 @@ void get_dabsA_dze(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dabsA_dqx(const HybMatrix<double, SWE::n_variables>& q,
                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                   const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                   const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dabsA_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dabsA_dqx[gp] = dR_dqx(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
                         R(h, u, v, nx, ny) * dabsL_dqx(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
@@ -148,15 +148,15 @@ void get_dabsA_dqx(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dabsA_dqy(const HybMatrix<double, SWE::n_variables>& q,
                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                   const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                   const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dabsA_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dabsA_dqy[gp] = dR_dqy(h, u, v, nx, ny) * absL(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
                         R(h, u, v, nx, ny) * dabsL_dqy(h, u, v, nx, ny) * invR(h, u, v, nx, ny) +
@@ -166,15 +166,15 @@ void get_dabsA_dqy(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_Aplus(const HybMatrix<double, SWE::n_variables>& q,
                const HybMatrix<double, SWE::n_auxiliaries>& aux,
-               const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+               const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& Aplus) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         Aplus[gp] = 0.5 * R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny);
     }
@@ -182,15 +182,15 @@ void get_Aplus(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dAplus_dze(const HybMatrix<double, SWE::n_variables>& q,
                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                    const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dAplus_dze[gp] =
             0.5 * (dR_dze(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
@@ -201,15 +201,15 @@ void get_dAplus_dze(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dAplus_dqx(const HybMatrix<double, SWE::n_variables>& q,
                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                    const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dAplus_dqx[gp] =
             0.5 * (dR_dqx(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
@@ -220,15 +220,15 @@ void get_dAplus_dqx(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dAplus_dqy(const HybMatrix<double, SWE::n_variables>& q,
                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                    const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dAplus_dqy[gp] =
             0.5 * (dR_dqy(h, u, v, nx, ny) * (L(h, u, v, nx, ny) + absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
@@ -239,15 +239,15 @@ void get_dAplus_dqy(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_Aminus(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                 AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& Aminus) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         Aminus[gp] = 0.5 * R(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny);
     }
@@ -255,15 +255,15 @@ void get_Aminus(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dAminus_dze(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                      AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dAminus_dze[gp] =
             0.5 * (dR_dze(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
@@ -274,15 +274,15 @@ void get_dAminus_dze(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dAminus_dqx(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                      AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dAminus_dqx[gp] =
             0.5 * (dR_dqx(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +
@@ -293,15 +293,15 @@ void get_dAminus_dqx(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dAminus_dqy(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                      AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         dAminus_dqy[gp] =
             0.5 * (dR_dqy(h, u, v, nx, ny) * (L(h, u, v, nx, ny) - absL(h, u, v, nx, ny)) * invR(h, u, v, nx, ny) +

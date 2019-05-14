@@ -33,12 +33,9 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
         auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
         // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
-        uint gp_ex;
-        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-            gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
-
-            column(edge_internal.q_hat_at_gp, gp) =
-                (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
+        for ( uint var = 0; var < SWE::n_variables; ++var) {
+            row(edge_internal.q_hat_at_gp, var) =
+                (boundary_in.q_at_gp[var] + boundary_ex.q_at_gp[var]) / 2.0;
         }
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
@@ -59,20 +56,21 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
                         edge_int.interface.surface_normal_in,
                         edge_internal.tau);
 
-        gp_ex = 0;
-        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-            gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            for ( uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp ) {
+                boundary_ex.F_hat_at_gp[var][gp] = -boundary_in.F_hat_at_gp[var][gp];
 
-            column(boundary_ex.F_hat_at_gp, gp) = -column(boundary_in.F_hat_at_gp, gp_ex);
-
-            column(boundary_in.F_hat_at_gp, gp) +=
-                edge_internal.tau[gp] * (column(boundary_in.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
-            column(boundary_ex.F_hat_at_gp, gp_ex) +=
-                edge_internal.tau[gp] * (column(boundary_ex.q_at_gp, gp_ex) - column(edge_internal.q_hat_at_gp, gp));
+                for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                    boundary_in.F_hat_at_gp[var][gp] +=
+                        edge_internal.tau[gp](var, w) * (boundary_in.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w,gp));
+                    boundary_ex.F_hat_at_gp[var][gp] +=
+                        edge_internal.tau[gp](var, w) * (boundary_ex.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w,gp));
+                }
+            }
         }
 
         // corrent numerical fluxes for wetting/drying
-        gp_ex = 0;
+        /*gp_ex = 0;
         for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
             gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
@@ -146,11 +144,11 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
             }
 
             assert(!std::isnan(boundary_in.F_hat_at_gp(Variables::ze, gp)));
-        }
+            }
+            }*/
     }
 }
 }
 }
 }
-
 #endif

@@ -2,32 +2,32 @@
 #define SWE_FLUX_HPP
 
 namespace SWE {
-void get_F(const HybMatrix<double, SWE::n_variables>& q,
-           const HybMatrix<double, SWE::n_auxiliaries>& aux,
-           HybMatrix<double, SWE::n_variables>& F_x,
-           HybMatrix<double, SWE::n_variables>& F_y) {
-    auto u = vec_cw_div(row(q, SWE::Variables::qx), row(aux, SWE::Auxiliaries::h));
-    auto v = vec_cw_div(row(q, SWE::Variables::qy), row(aux, SWE::Auxiliaries::h));
+void get_F(const std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables>& q,
+           const std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries>& aux,
+           DynMatrix<double>& F_x,
+           DynMatrix<double>& F_y) {
+    auto u = vec_cw_div(q[SWE::Variables::qx], aux[SWE::Auxiliaries::h]);
+    auto v = vec_cw_div(q[SWE::Variables::qy], aux[SWE::Auxiliaries::h]);
 
-    auto uuh = vec_cw_mult(u, row(q, SWE::Variables::qx));
-    auto vvh = vec_cw_mult(v, row(q, SWE::Variables::qy));
-    auto uvh = vec_cw_mult(u, row(q, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * vec_cw_mult(row(q, SWE::Variables::ze), row(q, SWE::Variables::ze)) +
-                           vec_cw_mult(row(q, SWE::Variables::ze), row(aux, SWE::Auxiliaries::bath)));
+    auto uuh = vec_cw_mult(u, q[SWE::Variables::qx]);
+    auto vvh = vec_cw_mult(v, q[SWE::Variables::qy]);
+    auto uvh = vec_cw_mult(u, q[SWE::Variables::qy]);
+    auto pe  = Global::g * (0.5 * vec_cw_mult(q[SWE::Variables::ze], q[SWE::Variables::ze]) +
+                           vec_cw_mult(q[SWE::Variables::ze], aux[SWE::Auxiliaries::bath]));
 
-    row(F_x, SWE::Variables::ze) = row(q, SWE::Variables::qx);
+    row(F_x, SWE::Variables::ze) = q[SWE::Variables::qx];
     row(F_x, SWE::Variables::qx) = uuh + pe;
     row(F_x, SWE::Variables::qy) = uvh;
 
-    row(F_y, SWE::Variables::ze) = row(q, SWE::Variables::qy);
+    row(F_y, SWE::Variables::ze) = q[SWE::Variables::qy];
     row(F_y, SWE::Variables::qx) = uvh;
     row(F_y, SWE::Variables::qy) = vvh + pe;
 }
 
 void get_Fn(const HybMatrix<double, SWE::n_variables>& q,
             const HybMatrix<double, SWE::n_auxiliaries>& aux,
-            const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-            HybMatrix<double, SWE::n_variables>& Fn) {
+            const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
+            std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables>& Fn) {
     auto u = vec_cw_div(row(q, SWE::Variables::qx), row(aux, SWE::Auxiliaries::h));
     auto v = vec_cw_div(row(q, SWE::Variables::qy), row(aux, SWE::Auxiliaries::h));
 
@@ -37,12 +37,12 @@ void get_Fn(const HybMatrix<double, SWE::n_variables>& q,
     auto pe  = Global::g * (0.5 * vec_cw_mult(row(q, SWE::Variables::ze), row(q, SWE::Variables::ze)) +
                            vec_cw_mult(row(q, SWE::Variables::ze), row(aux, SWE::Auxiliaries::bath)));
 
-    row(Fn, SWE::Variables::ze) = vec_cw_mult(row(q, SWE::Variables::qx), row(surface_normal, GlobalCoord::x)) +
-                                  vec_cw_mult(row(q, SWE::Variables::qy), row(surface_normal, GlobalCoord::y));
-    row(Fn, SWE::Variables::qx) = vec_cw_mult(uuh + pe, row(surface_normal, GlobalCoord::x)) +
-                                  vec_cw_mult(uvh, row(surface_normal, GlobalCoord::y));
-    row(Fn, SWE::Variables::qy) = vec_cw_mult(uvh, row(surface_normal, GlobalCoord::x)) +
-                                  vec_cw_mult(vvh + pe, row(surface_normal, GlobalCoord::y));
+    Fn[SWE::Variables::ze] = vec_cw_mult(row(q, SWE::Variables::qx), surface_normal[GlobalCoord::x]) +
+                                  vec_cw_mult(row(q, SWE::Variables::qy), surface_normal[GlobalCoord::y]);
+    Fn[SWE::Variables::qx] = vec_cw_mult(uuh + pe, surface_normal[GlobalCoord::x]) +
+                                  vec_cw_mult(uvh, surface_normal[GlobalCoord::y]);
+    Fn[SWE::Variables::qy] = vec_cw_mult(uvh, surface_normal[GlobalCoord::x]) +
+                                  vec_cw_mult(vvh + pe, surface_normal[GlobalCoord::y]);
 }
 
 void get_Fn(double gravity,

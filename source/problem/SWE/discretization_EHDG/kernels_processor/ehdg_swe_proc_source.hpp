@@ -13,7 +13,9 @@ void Problem::local_source_kernel(const ProblemStepperType& stepper, ElementType
 
         SWE::get_source(stepper.GetTimeAtCurrentStage(), elt);
 
-        state.rhs += elt.IntegrationPhi(internal.source_at_gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            state.rhs[var] += elt.IntegrationPhi(row(internal.source_at_gp, var));
+        }
     }
 }
 }

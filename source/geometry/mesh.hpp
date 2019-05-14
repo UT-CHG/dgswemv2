@@ -35,6 +35,10 @@ class Mesh<std::tuple<Elements...>,
     using BoundaryContainers            = std::tuple<BoundaryContainer<Boundaries>...>;
     using DistributedBoundaryContainers = std::tuple<BoundaryContainer<DistributedBoundaries>...>;
 
+    using ElementAccessors = std::tuple<typename ElementContainer<Elements,DataSoAType>::ElementType...>;
+    using InterfaceAccessors = std::tuple<typename InterfaceContainer<Interfaces,InterfaceDataSoAType,ElementContainers>::InterfaceType...>;
+    using BoundaryAccessors = std::tuple<typename BoundaryContainer<Boundaries>::BoundaryType...>;
+    using DistributedBoundaryAccessors = std::tuple<typename BoundaryContainer<DistributedBoundaries>::BoundaryType...>;
   private:
     uint p;
 
@@ -313,7 +317,7 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           InterfaceDataSoAType>::CallForEachElementOfType(const F& f) {
     auto& elt_container =
-        std::get<Utilities::index<ElementType, ElementContainers>::value>(this->elements);
+        std::get<Utilities::index<ElementType, ElementAccessors>::value>(this->elements);
 
     using element_t = typename std::decay<decltype(elt_container)>::type::ElementType;
 
@@ -329,7 +333,7 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           InterfaceDataSoAType>::CallForEachInterfaceOfType(const F& f) {
     auto& intface_container =
-        std::get<Utilities::index<InterfaceType, InterfaceContainers>::value>(this->interfaces);
+        std::get<Utilities::index<InterfaceType, InterfaceAccessors>::value>(this->interfaces);
 
     intface_container.CallForEachInterface(f, Utilities::is_vectorized<F>{});
 }
@@ -343,7 +347,7 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           InterfaceDataSoAType>::CallForEachBoundaryOfType(const F& f) {
     auto& bdry_container =
-        std::get<Utilities::index<BoundaryType, BoundaryContainers>::value>(this->boundaries);
+        std::get<Utilities::index<BoundaryType, BoundaryAccessors>::value>(this->boundaries);
 
     bdry_container.CallForEachBoundary(f, Utilities::is_vectorized<F>{});
 }
@@ -357,10 +361,10 @@ void Mesh<std::tuple<Elements...>,
           DataSoAType,
           InterfaceDataSoAType>::CallForEachDistributedBoundaryOfType(const F& f) {
     auto& dbound_container =
-        std::get<Utilities::index<DistributedBoundaryType, DistributedBoundaryContainers>::value>(
+        std::get<Utilities::index<DistributedBoundaryType, DistributedBoundaryAccessors>::value>(
             this->distributed_boundaries);
 
-    dbound_container.CallForEachBoundry(f, Utilities::is_vectorized<F>{});
+    dbound_container.CallForEachBoundary(f, Utilities::is_vectorized<F>{});
 }
 }
 

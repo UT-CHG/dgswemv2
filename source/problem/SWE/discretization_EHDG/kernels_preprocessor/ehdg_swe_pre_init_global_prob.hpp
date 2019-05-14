@@ -16,8 +16,8 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
             gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
             edge_internal.aux_hat_at_gp(SWE::Auxiliaries::bath, gp) =
-                (boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp) +
-                 boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex)) /
+                (boundary_in.aux_at_gp[SWE::Auxiliaries::bath][gp] +
+                 boundary_ex.aux_at_gp[SWE::Auxiliaries::bath][gp_ex]) /
                 2.0;
         }
 
@@ -34,7 +34,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = boundary.aux_at_gp[SWE::Auxiliaries::bath];
 
         set_constant(edge_bound.edge_data.edge_state.q_hat, 0.0);
 

@@ -9,7 +9,9 @@ void Problem::global_boundary_kernel(const ProblemStepperType& stepper, Boundary
         auto& state    = bound.data.state[stepper.GetStage()];
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        boundary.q_at_gp = bound.ComputeUgp(state.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            boundary.q_at_gp[var] = bound.ComputeUgp(state.q[var]);
+        }
     }
 }
 
@@ -20,7 +22,9 @@ void Problem::local_boundary_kernel(const ProblemStepperType& stepper, BoundaryT
         auto& boundary = bound.data.boundary[bound.bound_id];
 
         // now compute contributions to the righthand side
-        state.rhs -= bound.IntegrationPhi(boundary.F_hat_at_gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            state.rhs[var] -= bound.IntegrationPhi(boundary.F_hat_at_gp[var]);
+        }
     }
 }
 }

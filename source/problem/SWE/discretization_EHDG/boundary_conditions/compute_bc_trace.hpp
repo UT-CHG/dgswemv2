@@ -14,6 +14,7 @@ void compute_bc_trace(EdgeBoundaryType& edge_bound) {
     auto& aux_hat_at_gp  = edge_internal.aux_hat_at_gp;
     auto& surface_normal = edge_bound.boundary.surface_normal;
 
+    StatVector<double, SWE::n_variables> q;
     uint iter = 0;
     while (iter != 100) {
         edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
@@ -33,7 +34,9 @@ void compute_bc_trace(EdgeBoundaryType& edge_bound) {
         get_dAminus_dqy(q_hat_at_gp, aux_hat_at_gp, surface_normal, boundary_condition.dAminus_dqy);
 
         for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-            auto q     = column(boundary.q_at_gp, gp);
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                q[var] = boundary.q_at_gp[var][gp];
+            }
             auto q_hat = column(edge_internal.q_hat_at_gp, gp);
             auto q_inf = column(boundary_condition.q_ex, gp);
 

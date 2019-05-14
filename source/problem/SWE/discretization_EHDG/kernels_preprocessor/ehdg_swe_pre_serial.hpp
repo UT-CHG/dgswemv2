@@ -13,8 +13,6 @@ void Problem::preprocessor_serial(HDGDiscretization<ProblemType>& discretization
     initialize_data_serial(discretization.mesh, problem_specific_input);
 
     Problem::initialize_global_problem_serial(discretization);
-
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) { elt.data.resize(stepper.GetNumStages() + 1); });
 }
 }
 }

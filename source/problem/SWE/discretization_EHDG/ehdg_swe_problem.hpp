@@ -44,30 +44,35 @@ struct Problem {
     using ProblemParserType  = SWE::Parser;
 
     using ProblemAccessorType   = SWE::Accessor;
+    using ProblemSoAContainerType  = SWE::SoAContainer;
     using ProblemEdgeDataType   = SWE::EdgeData;
-    using ProblemGlobalDataType = std::GlobalData;
+    using ProblemGlobalDataType = SWE::GlobalData;
+
+    using ProblemInterfaceSoAType = SWE::InterfaceData;
 
     using ProblemInterfaceTypes = Geometry::InterfaceTypeTuple<SWE::Accessor, ISP::Internal, ISP::Levee>;
     using ProblemBoundaryTypes  =
         Geometry::BoundaryTypeTuple<SWE::Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>;
     using ProblemDistributedBoundaryTypes =
-        Geometry::DistributedBoundaryTypeTuple<Accessor, DBC::Distributed, DBC::DistributedLevee>;
+        Geometry::DistributedBoundaryTypeTuple<SWE::Accessor, DBC::Distributed, DBC::DistributedLevee>;
 
     using ProblemEdgeInterfaceTypes = Geometry::EdgeInterfaceTypeTuple<EdgeData, ProblemInterfaceTypes>::Type;
     using ProblemEdgeBoundaryTypes  = Geometry::EdgeBoundaryTypeTuple<EdgeData, ProblemBoundaryTypes>::Type;
     using ProblemEdgeDistributedTypes =
         Geometry::EdgeDistributedTypeTuple<EdgeData, ProblemDistributedBoundaryTypes>::Type;
 
-    using ProblemMeshType = Geometry::MeshType<Accessor,
+    using ProblemMeshType = Geometry::MeshType<SWE::Accessor,
+                                               SWE::SoAContainer,
+                                               ProblemInterfaceSoAType,
                                                std::tuple<ISP::Internal, ISP::Levee>,
                                                std::tuple<BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
                                                std::tuple<DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemMeshSkeletonType = Geometry::MeshSkeletonType<
         EdgeData,
-        Geometry::InterfaceTypeTuple<Accessor, ISP::Internal, ISP::Levee>,
-        Geometry::BoundaryTypeTuple<Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
-        Geometry::DistributedBoundaryTypeTuple<Accessor, DBC::Distributed, DBC::DistributedLevee>>::Type;
+        Geometry::InterfaceTypeTuple<SWE::Accessor, ISP::Internal, ISP::Levee>,
+        Geometry::BoundaryTypeTuple<SWE::Accessor, BC::Land, BC::Tide, BC::Flow, BC::Function, BC::Outflow>,
+        Geometry::DistributedBoundaryTypeTuple<SWE::Accessor, DBC::Distributed, DBC::DistributedLevee>>::Type;
 
     using ProblemDiscretizationType = HDGDiscretization<Problem>;
 

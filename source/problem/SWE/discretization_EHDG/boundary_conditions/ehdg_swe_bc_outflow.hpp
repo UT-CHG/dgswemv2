@@ -74,9 +74,13 @@ void Outflow::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType&
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
 
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        column(boundary.F_hat_at_gp, gp) +=
-            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+            for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                boundary.F_hat_at_gp[var][gp] +=
+                    edge_internal.tau[gp](var, w) * (boundary.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w, gp));
+            }
+        }
     }
 }
 }

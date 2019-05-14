@@ -54,13 +54,8 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
     discretization.mesh.CallForEachBoundary(
         [&stepper](auto& bound) { Problem::local_boundary_kernel(stepper, bound); });
 
-    discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        auto& state = elt.data.state[stepper.GetStage()];
-
-        state.solution = elt.ApplyMinv(state.rhs);
-
-        stepper.UpdateState(elt);
-    });
+    UpdateKernel update_kernel(stepper);
+    discretization.mesh.CallForEachElement(update_kernel);
     /* Local Step */
 
     ++stepper;

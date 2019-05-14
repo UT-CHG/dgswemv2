@@ -12,8 +12,10 @@ void Problem::global_interface_kernel(const ProblemStepperType& stepper, Interfa
         auto& state_ex    = intface.data_ex.state[stepper.GetStage()];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
-        boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            boundary_in.q_at_gp[var] = intface.ComputeUgpIN(state_in.q[var]);
+            boundary_ex.q_at_gp[var] = intface.ComputeUgpEX(state_ex.q[var]);
+        }
     }
 }
 
@@ -27,9 +29,11 @@ void Problem::local_interface_kernel(const ProblemStepperType& stepper, Interfac
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
         // now compute contributions to the righthand side
-        state_in.rhs -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            state_in.rhs[var] -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp[var]);
 
-        state_ex.rhs -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp);
+            state_ex.rhs[var] -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp[var]);
+        }
     }
 }
 }

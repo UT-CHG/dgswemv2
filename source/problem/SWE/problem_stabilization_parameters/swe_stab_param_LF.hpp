@@ -6,15 +6,15 @@
 namespace SWE {
 void get_tau_LF(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                 AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& tau) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         double c  = std::sqrt(Global::g * h);
         double un = u * nx + v * ny;

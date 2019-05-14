@@ -32,17 +32,17 @@ void Land::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
 
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    auto n_x = row(edge_bound.boundary.surface_normal, GlobalCoord::x);
-    auto n_y = row(edge_bound.boundary.surface_normal, GlobalCoord::y);
+    auto n_x = edge_bound.boundary.surface_normal[GlobalCoord::x];
+    auto n_y = edge_bound.boundary.surface_normal[GlobalCoord::y];
 
-    auto qn = vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qx), n_x) +
-              vec_cw_mult(row(boundary.q_at_gp, SWE::Variables::qy), n_y);
+    auto qn = vec_cw_mult(boundary.q_at_gp[SWE::Variables::qx], n_x) +
+              vec_cw_mult(boundary.q_at_gp[SWE::Variables::qy], n_y);
 
-    row(edge_internal.q_hat_at_gp, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
+    row(edge_internal.q_hat_at_gp, SWE::Variables::ze) = boundary.q_at_gp[SWE::Variables::ze];
     row(edge_internal.q_hat_at_gp, SWE::Variables::qx) =
-        row(boundary.q_at_gp, SWE::Variables::qx) - vec_cw_mult(qn, n_x);
+        boundary.q_at_gp[SWE::Variables::qx] - vec_cw_mult(qn, n_x);
     row(edge_internal.q_hat_at_gp, SWE::Variables::qy) =
-        row(boundary.q_at_gp, SWE::Variables::qy) - vec_cw_mult(qn, n_y);
+        boundary.q_at_gp[SWE::Variables::qy] - vec_cw_mult(qn, n_y);
 
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
@@ -59,9 +59,13 @@ void Land::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
 
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        column(boundary.F_hat_at_gp, gp) +=
-            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+            for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                boundary.F_hat_at_gp[var][gp] +=
+                    edge_internal.tau[gp](var, w) * (boundary.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w, gp));
+            }
+        }
     }
 }
 

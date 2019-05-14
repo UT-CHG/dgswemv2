@@ -104,7 +104,7 @@ void Tide::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
     set_constant(this->q_ex, 0.0);
 
     for (uint con = 0; con < this->frequency.size(); ++con) {
-        for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
+        for (uint gp = 0; gp < boundary.q_at_gp[0].size(); ++gp) {
             this->q_ex(SWE::Variables::ze, gp) += stepper.GetRamp() * this->forcing_fact[con] *
                                                   this->amplitude_gp[con][gp] *
                                                   cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() +
@@ -112,8 +112,8 @@ void Tide::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
         }
     }
 
-    row(this->q_ex, SWE::Variables::qx) = row(boundary.q_at_gp, SWE::Variables::qx);
-    row(this->q_ex, SWE::Variables::qy) = row(boundary.q_at_gp, SWE::Variables::qy);
+    row(this->q_ex, SWE::Variables::qx) = boundary.q_at_gp[SWE::Variables::qx];
+    row(this->q_ex, SWE::Variables::qy) = boundary.q_at_gp[SWE::Variables::qy];
 
     SWE::compute_bc_trace(edge_bound);
 
@@ -134,9 +134,13 @@ void Tide::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
 
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        column(boundary.F_hat_at_gp, gp) +=
-            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
+            for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                boundary.F_hat_at_gp[var][gp] +=
+                    edge_internal.tau[gp](var, w) * (boundary.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w, gp));
+            }
+        }
     }
 }
 }

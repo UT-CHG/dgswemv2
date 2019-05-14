@@ -53,6 +53,8 @@ struct index<T, std::tuple<T, Ts...>> {
 
 template <typename T, typename U, typename... Ts>
 struct index<T, std::tuple<U, Ts...>> {
+    static_assert(sizeof...(Ts) > 0UL, "Unable to find type T in tuple");
+
     static const std::size_t value = 1 + index<T, std::tuple<Ts...>>::value;
 };
 
