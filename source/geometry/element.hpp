@@ -454,7 +454,7 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, AccessorType>::I
     const uint dof_j,
     const InputArrayType& u_gp) {
     // integral[q] = u_gp(q, gp) * this->int_phi_dphi_fact[dir_j](lookup, gp)
-    return (u_gp * row(this->master->phi_gp, dof_i)) * column(this->int_dphi_fact[dir_j], dof_j);
+    return scale_cols(u_gp, row(this->master->phi_gp, dof_i)) * column(this->int_dphi_fact[dir_j], dof_j);
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename AccessorType>

@@ -346,4 +346,70 @@ void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     blaze::gesv(A_dense, B, ipiv);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// scale_rows
+template <typename VT1, typename VT2>
+decltype(auto) scale_rows(const blaze::DenseVector<VT1, blaze::columnVector>& array,
+                          const blaze::DenseVector<VT2, blaze::columnVector>& scaling) {
+    return (~scaling) * (~array);
+}
+
+template <typename VT1, typename VT2>
+decltype(auto) scale_rows(const blaze::DenseVector<VT1, blaze::columnVector>& array,
+                          const blaze::DenseVector<VT2, blaze::rowVector>& scaling) {
+    return blaze::trans(~scaling) * (~array);
+}
+
+template< typename MT, bool SO, typename VT>
+decltype(auto) scale_rows( const blaze::DenseMatrix<MT,SO>& A,
+                           const blaze::DenseVector<VT,blaze::columnVector>& x )
+{
+    return blaze::expand( ~x, (~A).columns() ) % (~A);
+}
+
+template< typename MT, bool SO, typename VT>
+decltype(auto) scale_rows( const blaze::DenseMatrix<MT,SO>& A,
+                           const blaze::DenseVector<VT,blaze::rowVector>& x )
+{
+    return blaze::expand( blaze::trans(~x), (~A).columns() ) % (~A);
+}
+
+template<typename MT, bool SO, typename Column_, typename = typename std::enable_if<blaze::IsColumn<Column_>::value>::type >
+decltype(auto) scale_rows( const blaze::DenseMatrix<MT,SO>& A, const Column_& r ) {
+    return blaze::expand( r, (~A).columns() ) % (~A);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// scale_cols
+template <typename VT1, typename VT2>
+decltype(auto) scale_cols(const blaze::DenseVector<VT1, blaze::rowVector>& array,
+                          const blaze::DenseVector<VT2, blaze::rowVector>& scaling) {
+    return (~array) * (~scaling);
+}
+
+template <typename VT1, typename VT2>
+decltype(auto) scale_cols(const blaze::DenseVector<VT1, blaze::rowVector>& array,
+                          const blaze::DenseVector<VT2, blaze::columnVector>& scaling) {
+    return (~array) * blaze::trans(~scaling);
+}
+
+template< typename MT, bool SO, typename VT>
+decltype(auto) scale_cols( const blaze::DenseMatrix<MT,SO>& A,
+                           const blaze::DenseVector<VT,blaze::rowVector>& x )
+{
+    return (~A) % blaze::expand( ~x, (~A).rows() );
+}
+
+template< typename MT, bool SO, typename VT>
+decltype(auto) scale_cols( const blaze::DenseMatrix<MT,SO>& A,
+                           const blaze::DenseVector<VT,blaze::columnVector>& x )
+{
+    return (~A) % blaze::expand( blaze::trans(~x), (~A).rows() );
+}
+
+template<typename MT, bool SO, typename Row_, typename = typename std::enable_if<blaze::IsRow<Row_>::value>::type >
+decltype(auto) scale_cols( const blaze::DenseMatrix<MT,SO>& A, const Row_& c ) {
+    return (~A) % blaze::expand( c, (~A).rows() );
+}
+
 #endif
