@@ -9,7 +9,7 @@ class DefaultPartitionerInputs final : public ProblemPartitionerInputs {
   public:
     DefaultPartitionerInputs(const MeshMetaData& mesh);
 
-    WeightsType GetWeights() { return weights; }
+    WeightsType GetWeights() final { return weights; }
 
   private:
     WeightsType weights;

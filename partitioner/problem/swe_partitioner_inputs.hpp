@@ -11,7 +11,7 @@ class PartitionerInputs final : public ProblemPartitionerInputs {
   public:
     PartitionerInputs(const MeshMetaData& mesh, Inputs inputs);
 
-    inline WeightsType GetWeights() { return weights; }
+    inline WeightsType GetWeights() final { return weights; }
 
     // To be added at a later date
     // void PartitionAuxiliaryFiles();

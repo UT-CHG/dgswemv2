@@ -41,13 +41,13 @@ struct HPXSimulationUnit : public HPXSimulationUnitBase,
 
     HPXSimulationUnit& operator=(HPXSimulationUnit&& rhs) = default;
 
-    hpx::future<void> Preprocessor();
+    hpx::future<void> Preprocessor() override;
 
-    void Launch();
+    void Launch() override;
 
-    hpx::future<void> Step();
+    hpx::future<void> Step() override;
 
-    double ResidualL2();
+    double ResidualL2() override;
 
     /*    template <typename Archive>
         void save(Archive& ar, unsigned) const;
@@ -200,12 +200,12 @@ struct HPXEmptySimUnit : HPXSimulationUnitBase, hpx::components::managed_compone
     using type_holder      = HPXEmptySimUnit;
     using base_type_holder = HPXSimulationUnitBase;
 
-    hpx::future<void> Preprocessor() { return hpx::make_ready_future(); }
+    hpx::future<void> Preprocessor() override { return hpx::make_ready_future(); }
 
-    void Launch() {}
+    void Launch() override {}
 
-    hpx::future<void> Step() { return hpx::make_ready_future(); }
-    double ResidualL2() { return 0.; }
+    hpx::future<void> Step() override { return hpx::make_ready_future(); }
+    double ResidualL2() override { return 0.; }
 };
 
 using RKDG_SWE_SimUnit = std::conditional<Utilities::is_defined<SWE::RKDG::Problem>::value,

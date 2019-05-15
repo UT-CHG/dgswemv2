@@ -12,9 +12,9 @@ namespace Integration {
  */
 class Dunavant_2D : Integration<2> {
   public:
-    std::pair<DynVector<double>, AlignedVector<Point<2>>> GetRule(const uint p);
+    std::pair<DynVector<double>, AlignedVector<Point<2>>> GetRule(const uint p) override;
 
-    uint GetNumGP(const uint p);
+    uint GetNumGP(const uint p) override;
 
   private:
     /**

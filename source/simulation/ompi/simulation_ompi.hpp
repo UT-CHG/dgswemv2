@@ -22,9 +22,9 @@ class OMPISimulation : public OMPISimulationBase {
     OMPISimulation() = default;
     OMPISimulation(const std::string& input_string);
 
-    void Run();
-    void ComputeL2Residual();
-    void Finalize();
+    void Run() override;
+    void ComputeL2Residual() override;
+    void Finalize() override;
 };
 
 template <typename ProblemType>
