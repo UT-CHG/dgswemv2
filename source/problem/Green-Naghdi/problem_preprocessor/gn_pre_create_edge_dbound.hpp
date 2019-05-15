@@ -17,7 +17,7 @@ void create_edge_distributeds(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_distributed = mesh_skeleton.GetNumberEdgeDistributeds();
 
-    mesh.template CallForEachDistributedBoundaryOfType<DBTypeDistributed>([&mesh_skeleton, &writer](auto& dbound) {
+    mesh.template CallForEachDistributedBoundaryOfType<DBTypeDistributed>([&mesh_skeleton](auto& dbound) {
         uint locality_in = dbound.boundary_condition.exchanger.locality_in;
         uint submesh_in  = dbound.boundary_condition.exchanger.submesh_in;
 
@@ -42,7 +42,7 @@ void create_edge_distributeds(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_distributed_levee = mesh_skeleton.GetNumberEdgeDistributeds();
 
-    mesh.template CallForEachDistributedBoundaryOfType<DBTypeDistributedLevee>([&mesh_skeleton, &writer](auto& dbound) {
+    mesh.template CallForEachDistributedBoundaryOfType<DBTypeDistributedLevee>([&mesh_skeleton](auto& dbound) {
         uint locality_in = dbound.boundary_condition.exchanger.locality_in;
         uint submesh_in  = dbound.boundary_condition.exchanger.submesh_in;
 

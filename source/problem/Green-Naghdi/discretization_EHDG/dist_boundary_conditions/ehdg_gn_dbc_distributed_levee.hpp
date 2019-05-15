@@ -8,7 +8,6 @@ namespace EHDG {
 namespace DBC {
 class DistributedLevee : public SWE_SIM::DBC::DistributedLevee {
   public:
-    DistributedLevee() = default;
     DistributedLevee(const DBDataExchanger& exchanger, const std::vector<SWE::LeveeInput>& levee_input)
         : SWE_SIM::DBC::DistributedLevee(exchanger, levee_input) {}
 
