@@ -32,7 +32,7 @@ int main() {
     MasterType master(1);
 
     ElementType triangle(
-        0, master, std::move(vrtxs), std::vector<uint>(0), std::vector<uint>(0), std::vector<unsigned char>(0));
+        0, master, std::move(vrtxs), std::vector<uint>(0), std::vector<uint>(0), std::vector<uchar>(0));
 
     triangle.data.initialize();
     triangle.data.resize(2);

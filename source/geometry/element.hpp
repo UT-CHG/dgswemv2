@@ -274,9 +274,9 @@ template <uint dimension, typename MasterType, typename ShapeType, typename Data
 void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>& raw_boundaries) {
     // *** //
-    Basis::Basis<dimension>* my_basis    = (Basis::Basis<dimension>*)(&this->master->basis);
-    Master::Master<dimension>* my_master = (Master::Master<dimension>*)(this->master);
-    Shape::Shape<dimension>* my_shape    = (Shape::Shape<dimension>*)(&this->shape);
+    auto* my_basis    = (Basis::Basis<dimension>*)(&this->master->basis);
+    auto* my_master = (Master::Master<dimension>*)(this->master);
+    auto* my_shape    = (Shape::Shape<dimension>*)(&this->shape);
 
     for (uint bound_id = 0; bound_id < this->boundary_type.size(); ++bound_id) {
         std::vector<uint> bound_node_ID = this->shape.GetBoundaryNodeID(bound_id, this->node_ID);

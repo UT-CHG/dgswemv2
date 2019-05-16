@@ -20,8 +20,8 @@ std::pair<DynVector<double>, AlignedVector<Point<2>>> Dunavant_2D::GetRule(const
     }
 
     uint ngp = 0;
-    for (uint i = 0; i < permutation.size(); ++i)
-        ngp += permutation[i];
+    for (uint i : permutation)
+        ngp += i;
 
     std::pair<DynVector<double>, AlignedVector<Point<2>>> rule;
     rule.first.resize(ngp);

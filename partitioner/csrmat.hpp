@@ -160,8 +160,8 @@ class CSRMat {
 
         std::cout << "First ten elements of _edges \n";
         for (int j = 0; j < 10; ++j) {
-            for (uint k = 0; k < _edges[j].size(); ++k)
-                std::cout << _edges[j][k] << " ";
+            for (int k : _edges[j])
+                std::cout << k << " ";
             std::cout << "\n";
         }
     }

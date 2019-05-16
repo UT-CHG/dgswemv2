@@ -165,20 +165,20 @@ int main(int argc, const char* argv[]) {
     file << "quadrilateral\n";
     file << 2 * m * n << "    " << (m + 1) * (n + 1) << '\n';
 
-    for (uint node = 0; node < nodes.size(); ++node) {
-        file << nodes[node].ID << ' ';
-        file << nodes[node].coord[0] << ' ';
-        file << nodes[node].coord[1] << ' ';
-        file << nodes[node].coord[2] << ' ';
+    for (auto& node : nodes) {
+        file << node.ID << ' ';
+        file << node.coord[0] << ' ';
+        file << node.coord[1] << ' ';
+        file << node.coord[2] << ' ';
         file << '\n';
     }
 
-    for (uint element = 0; element < elements.size(); ++element) {
-        file << elements[element].ID << ' ';
-        file << elements[element].type << ' ';
-        file << elements[element].nodes[0] << ' ';
-        file << elements[element].nodes[1] << ' ';
-        file << elements[element].nodes[2] << ' ';
+    for (auto& element : elements) {
+        file << element.ID << ' ';
+        file << element.type << ' ';
+        file << element.nodes[0] << ' ';
+        file << element.nodes[1] << ' ';
+        file << element.nodes[2] << ' ';
         file << '\n';
     }
 

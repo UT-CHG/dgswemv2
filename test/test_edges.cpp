@@ -45,7 +45,7 @@ int main() {
         std::move(vrtxs),
         std::vector<uint>{0, 0, 0},
         std::vector<uint>{DEFAULT_ID, DEFAULT_ID, DEFAULT_ID},
-        std::vector<unsigned char>{SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land});
+        std::vector<uchar>{SWE::BoundaryTypes::land, SWE::BoundaryTypes::land, SWE::BoundaryTypes::land});
 
     std::map<uchar, std::map<std::pair<uint, uint>, RawBoundaryType>> raw_boundary;
 
