@@ -24,7 +24,7 @@ class DistributedLevee {
     // BC::Land land_boundary;
 
   public:
-    DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input);
+    DistributedLevee(DBDataExchanger  exchanger, const std::vector<LeveeInput>& levee_input);
 
     template <typename DistributedBoundaryType>
     void Initialize(DistributedBoundaryType& dbound);
@@ -33,8 +33,8 @@ class DistributedLevee {
     void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
 };
 
-DistributedLevee::DistributedLevee(const DBDataExchanger& exchanger, const std::vector<LeveeInput>& levee_input)
-    : exchanger(exchanger) {
+DistributedLevee::DistributedLevee(DBDataExchanger  exchanger, const std::vector<LeveeInput>& levee_input)
+    : exchanger(std::move(exchanger)) {
     uint n_nodes = levee_input.size();
 
     this->H_barrier.resize(n_nodes);

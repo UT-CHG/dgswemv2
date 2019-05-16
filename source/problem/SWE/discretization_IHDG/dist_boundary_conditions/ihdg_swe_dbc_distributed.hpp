@@ -11,7 +11,7 @@ class Distributed {
     DBDataExchanger exchanger;
 
   public:
-    Distributed(const DBDataExchanger& exchanger);
+    Distributed(DBDataExchanger  exchanger);
 
     template <typename DistributedBoundaryType>
     void Initialize(DistributedBoundaryType& dbound);
@@ -23,7 +23,7 @@ class Distributed {
     void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
 };
 
-Distributed::Distributed(const DBDataExchanger& exchanger) : exchanger(exchanger) {}
+Distributed::Distributed(DBDataExchanger  exchanger) : exchanger(std::move(exchanger)) {}
 
 template <typename DistributedBoundaryType>
 void Distributed::Initialize(DistributedBoundaryType& dbound) {}
