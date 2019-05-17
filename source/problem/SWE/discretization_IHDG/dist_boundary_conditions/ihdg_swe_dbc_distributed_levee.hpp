@@ -24,7 +24,7 @@ class DistributedLevee {
     // BC::Land land_boundary;
 
   public:
-    DistributedLevee(DBDataExchanger  exchanger, const std::vector<LeveeInput>& levee_input);
+    DistributedLevee(DBDataExchanger exchanger, const std::vector<LeveeInput>& levee_input);
 
     template <typename DistributedBoundaryType>
     void Initialize(DistributedBoundaryType& dbound);
@@ -36,7 +36,7 @@ class DistributedLevee {
     void ComputeGlobalKernels(EdgeDistributedType& edge_dbound);
 };
 
-DistributedLevee::DistributedLevee(DBDataExchanger  exchanger, const std::vector<LeveeInput>& levee_input)
+DistributedLevee::DistributedLevee(DBDataExchanger exchanger, const std::vector<LeveeInput>& levee_input)
     : exchanger(std::move(exchanger)) {
     uint n_nodes = levee_input.size();
 

@@ -243,7 +243,7 @@ std::vector<int64_t> metis_part(const CSRMat& mat, int64_t nparts, const double 
     }
 
     // set up metis parameters
-    int64_t ncon = static_cast<int64_t>(mat.constraint_number());
+    auto ncon = static_cast<int64_t>(mat.constraint_number());
     int64_t objval;
     std::vector<int64_t> options(METIS_NOPTIONS), part(nvtxs);
     std::vector<double> tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);

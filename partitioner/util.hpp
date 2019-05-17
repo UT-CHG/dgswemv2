@@ -89,7 +89,7 @@ class Say {
     std::stringstream ss;
 
   public:
-    Say() {}
+    Say() = default;
     ~Say() {
         ss << '\n';
         std::cerr << ss.str();
