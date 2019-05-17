@@ -10,7 +10,7 @@ namespace Integration {
  * (-1,1), (1,-1), and (-1,1)
  * @note The strength of the rule is limited to polynomial degree 20.
  */
-class Dunavant_2D : Integration<2> {
+class Dunavant_2D : public Integration<2> {
   public:
     std::pair<DynVector<double>, AlignedVector<Point<2>>> GetRule(const uint p) override;
 

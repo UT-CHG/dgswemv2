@@ -16,7 +16,7 @@
 #include "utilities/almost_equal.hpp"
 
 int main(int argc, char* argv[]) {
-    srand(time(NULL));
+    srand(time(nullptr));
 
     bool any_error = false;
 

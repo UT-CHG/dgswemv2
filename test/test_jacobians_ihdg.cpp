@@ -18,7 +18,7 @@
 std::vector<std::string> var_name = {"ze", "qx", "qy"};
 
 int main(int argc, char* argv[]) {
-    srand(time(NULL));
+    srand(time(nullptr));
 
     bool any_error = false;
 

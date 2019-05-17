@@ -55,7 +55,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         for (uint bdry = 0; bdry < this->NOPE; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
-            this->NBDV.push_back(std::vector<uint>(n_nodes_bdry));
+            this->NBDV.emplace_back(n_nodes_bdry);
             for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBDV[bdry][n];
                 ifs.ignore(1000, '\n');
@@ -81,13 +81,13 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                 this->IBTYPE[bdry] % 10 == 1 ||  // island
                 this->IBTYPE[bdry] % 10 == 2) {  // flow
                 // *** //
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 for (uint n = 0; n < n_nodes_bdry; ++n) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
                 }
             } else if (this->IBTYPE[bdry] % 10 == 4) {  // internal barrier
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 this->IBCONN[bdry]    = std::vector<uint>(n_nodes_bdry);
                 this->BARINTH[bdry]   = std::vector<double>(n_nodes_bdry);
                 this->BARINCFSB[bdry] = std::vector<double>(n_nodes_bdry);
@@ -101,13 +101,13 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                     ifs.ignore(1000, '\n');
                 }
             } else if (this->IBTYPE[bdry] == 77) {  // function
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 for (uint n = 0; n < n_nodes_bdry; ++n) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
                 }
             } else if (this->IBTYPE[bdry] == 88) {  // outflow
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 for (uint n = 0; n < n_nodes_bdry; ++n) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
@@ -137,7 +137,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         for (uint bdry = 0; bdry < this->NGEN; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
-            this->NBGN.push_back(std::vector<uint>(n_nodes_bdry));
+            this->NBGN.emplace_back(n_nodes_bdry);
             for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBGN[bdry][n];
                 ifs.ignore(1000, '\n');

@@ -114,7 +114,7 @@ struct tuple_join<std::tuple<Pack1...>, std::tuple<Pack2...>> {
     /**
      *  joined tuple type std::tuple<Pack1..., Pack2...>
      */
-    typedef std::tuple<Pack1..., Pack2...> type;
+    using type = std::tuple<Pack1..., Pack2...>;
 };
 }
 

@@ -15,14 +15,14 @@
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
-#include <assert.h>
+#include <cassert>
 #include <array>
 #include <vector>
 #include <map>
 #include <unordered_map>
 #include <tuple>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 
 using uint  = unsigned int;
 using uchar = unsigned char;
