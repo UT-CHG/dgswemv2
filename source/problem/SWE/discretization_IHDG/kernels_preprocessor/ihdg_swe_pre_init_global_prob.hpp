@@ -29,8 +29,8 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
             gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
 
             edge_internal.aux_hat_at_gp(SWE::Auxiliaries::bath, gp) =
-                (boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp) +
-                 boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex)) /
+                (boundary_in.aux_at_gp[SWE::Auxiliaries::bath][gp] +
+                 boundary_ex.aux_at_gp[SWE::Auxiliaries::bath][gp_ex]) /
                 2.0;
         }
 
@@ -71,7 +71,7 @@ void Problem::initialize_global_problem_serial(HDGDiscretization<ProblemType>& d
 
         auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+        row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = boundary.aux_at_gp[SWE::Auxiliaries::bath];
 
         uint ndof_global = edge_bound.edge_data.get_ndof();
 
@@ -192,7 +192,9 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
         auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
-        boundary.q_at_gp = dbound.ComputeUgp(state.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            boundary.q_at_gp[var] = dbound.ComputeUgp(state.q[var]);
+        }
 
         // Construct message to exterior state
         std::vector<double> message;
@@ -201,12 +203,12 @@ void Problem::initialize_global_problem_parallel_finalize_pre_send(HDGDiscretiza
 
         for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
             for (uint var = 0; var < SWE::n_variables; ++var) {
-                message.push_back(boundary.q_at_gp(var, gp));
+                message.push_back(boundary.q_at_gp[var][gp]);
             }
         }
 
         for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-            message.push_back(boundary.aux_at_gp(SWE::Auxiliaries::bath, gp));
+            message.push_back(boundary.aux_at_gp[SWE::Auxiliaries::bath][gp]);
         }
 
         uint ndof_global = edge_dbound.edge_data.get_ndof();
@@ -286,7 +288,7 @@ void Problem::initialize_global_problem_parallel_post_receive(HDGDiscretization<
         }
 
         row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) =
-            (row(boundary.aux_at_gp, SWE::Auxiliaries::bath) + bath_ex) / 2.0;
+            (boundary.aux_at_gp[SWE::Auxiliaries::bath] + bath_ex) / 2.0;
 
         edge_internal.delta_hat_global_con_flat.resize(edge_dbound.boundary.data.get_nbound() - 1);
 

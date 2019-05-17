@@ -61,7 +61,9 @@ void Function::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& ed
 
     auto& edge_state = edge_bound.edge_data.edge_state;
 
-    boundary.q_at_gp = bound.ComputeUgp(state.q);
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        boundary.q_at_gp[var] = bound.ComputeUgp(state.q[var]);
+    }
 
     set_constant(edge_state.q_hat, 0.0);
 
@@ -130,24 +132,29 @@ void Function::ComputeGlobalKernels(const StepperType& stepper, EdgeBoundaryType
         return q;
     });
 
+    StatVector<double, SWE::n_variables> q_minus_q_hat;
+
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        auto q     = column(boundary.q_at_gp, gp);
         auto q_hat = column(q_hat_at_gp, gp);
         auto q_inf = column(this->q_ex, gp);
 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> dB_dq_hat = this->Aminus[gp] - this->Aplus[gp];
 
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            q_minus_q_hat[var] = boundary.q_at_gp[var][gp] - q_hat[var];
+        }
+
         column(dB_dq_hat, SWE::Variables::ze) +=
-            this->dAplus_dze[gp] * (q - q_hat) - this->dAminus_dze[gp] * (q_inf - q_hat);
+            this->dAplus_dze[gp] * q_minus_q_hat - this->dAminus_dze[gp] * (q_inf - q_hat);
         column(dB_dq_hat, SWE::Variables::qx) +=
-            this->dAplus_dqx[gp] * (q - q_hat) - this->dAminus_dqx[gp] * (q_inf - q_hat);
+            this->dAplus_dqx[gp] * q_minus_q_hat - this->dAminus_dqx[gp] * (q_inf - q_hat);
         column(dB_dq_hat, SWE::Variables::qy) +=
-            this->dAplus_dqy[gp] * (q - q_hat) - this->dAminus_dqy[gp] * (q_inf - q_hat);
+            this->dAplus_dqy[gp] * q_minus_q_hat - this->dAminus_dqy[gp] * (q_inf - q_hat);
 
         column(boundary.delta_global_kernel_at_gp, gp)          = flatten<double>(this->Aplus[gp]);
         column(edge_internal.delta_hat_global_kernel_at_gp, gp) = flatten<double>(dB_dq_hat);
         column(edge_internal.rhs_global_kernel_at_gp, gp) =
-            this->Aplus[gp] * (q - q_hat) - this->Aminus[gp] * (q_inf - q_hat);
+            this->Aplus[gp] * q_minus_q_hat - this->Aminus[gp] * (q_inf - q_hat);
     }
 }
 }

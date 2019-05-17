@@ -14,7 +14,8 @@ std::unique_ptr<SimulationBase> SimulationFactory::Create(const std::string& inp
         } else if (problem_name == "ehdg_swe") {
             return SimulationFactory::CreateSimulation<SWE::EHDG::Problem>(input_string);
         } else if (problem_name == "ihdg_swe") {
-            return SimulationFactory::CreateSimulation<SWE::IHDG::Problem>(input_string);
+            throw std::runtime_error{"Serial ihdg_swe problem currently not supported\n"};
+//            return SimulationFactory::CreateSimulation<SWE::IHDG::Problem>(input_string);
         } else if (problem_name == "ehdg_gn") {
             return SimulationFactory::CreateSimulation<GN::EHDG::Problem>(input_string);
         } else {

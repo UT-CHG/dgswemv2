@@ -154,11 +154,6 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<Prob
             global_data.rhs_global, global_data.from, global_data.sol, global_data.to, &(global_data.scatter));
     }
 #pragma omp barrier
-
-    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement(
-            [&stepper](auto& elt) { elt.data.resize(stepper.GetNumStages() + 1); });
-    }
 }
 }
 }

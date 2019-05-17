@@ -388,7 +388,11 @@ bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitT
 
             internal.rhs_local = internal.delta_local_inv * internal.rhs_local;
 
-            state.q += reshape<double, SWE::n_variables, SO::ColumnMajor>(internal.rhs_local, elt.data.get_ndof());
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                for ( uint dof_i; dof_i < elt.data.get_ndof(); ++dof_i ) {
+                    state.q[var][dof_i] += internal.rhs_local[var + SWE::n_variables * dof_i];
+                }
+            }
         });
     }
 

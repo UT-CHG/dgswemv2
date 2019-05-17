@@ -32,16 +32,15 @@ void Internal::ComputeInitTrace(EdgeInterfaceType& edge_int) {
     auto& edge_state    = edge_int.edge_data.edge_state;
     auto& edge_internal = edge_int.edge_data.edge_internal;
 
-    boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
-    boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        boundary_in.q_at_gp[var] = intface.ComputeUgpIN(state_in.q[var]);
+        boundary_ex.q_at_gp[var] = intface.ComputeUgpEX(state_ex.q[var]);
 
-    // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
-    uint gp_ex;
-    for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
-        gp_ex = edge_int.edge_data.get_ngp() - gp - 1;
-
-        column(edge_internal.q_hat_at_gp, gp) =
-            (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
+        // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
+        for (uint gp = 0; gp < edge_int.edge_data.get_ngp(); ++gp) {
+            edge_internal.q_hat_at_gp(var, gp) =
+                (boundary_in.q_at_gp[var][gp] + boundary_ex.q_at_gp[var][gp]) / 2.0;
+        }
     }
 
     edge_state.q_hat = edge_int.L2Projection(edge_internal.q_hat_at_gp);
@@ -64,8 +63,9 @@ void Internal::ComputeGlobalKernels(EdgeInterfaceType& edge_int) {
         column(edge_internal.delta_hat_global_kernel_at_gp, gp) = column(boundary_in.dF_hat_dq_hat_at_gp, gp);
         column(edge_internal.delta_hat_global_kernel_at_gp, gp) += column(boundary_ex.dF_hat_dq_hat_at_gp, gp_ex);
 
-        column(edge_internal.rhs_global_kernel_at_gp, gp) = column(boundary_in.F_hat_at_gp, gp);
-        column(edge_internal.rhs_global_kernel_at_gp, gp) += column(boundary_ex.F_hat_at_gp, gp_ex);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            edge_internal.rhs_global_kernel_at_gp(var, gp) = boundary_in.F_hat_at_gp[var][gp] + boundary_ex.F_hat_at_gp[var][gp];
+        }
     }
 }
 }

@@ -32,14 +32,14 @@ void Problem::local_source_kernel(const ProblemStepperType& stepper, ElementType
 
         for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
             // compute bottom friction contribution
-            double u = internal.q_at_gp(SWE::Variables::qx, gp) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
-            double v = internal.q_at_gp(SWE::Variables::qy, gp) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
+            double u = internal.q_at_gp[SWE::Variables::qx][gp] / internal.aux_at_gp[SWE::Auxiliaries::h][gp];
+            double v = internal.q_at_gp[SWE::Variables::qy][gp] / internal.aux_at_gp[SWE::Auxiliaries::h][gp];
 
             // compute manning friction factor
             if (source.manning) {
-                Cf = source.g_manning_n_sq / std::pow(internal.aux_at_gp(SWE::Auxiliaries::h, gp), 1.0 / 3.0);
+                Cf = source.g_manning_n_sq / std::pow(internal.aux_at_gp[SWE::Auxiliaries::h][gp], 1.0 / 3.0);
                 dCf_dze =
-                    -source.g_manning_n_sq / std::pow(internal.aux_at_gp(SWE::Auxiliaries::h, gp), 4.0 / 3.0) / 3.0;
+                    -source.g_manning_n_sq / std::pow(internal.aux_at_gp[SWE::Auxiliaries::h][gp], 4.0 / 3.0) / 3.0;
 
                 if (Cf < SWE::SourceTerms::Cf) {
                     Cf      = SWE::SourceTerms::Cf;
@@ -47,18 +47,18 @@ void Problem::local_source_kernel(const ProblemStepperType& stepper, ElementType
                 }
             }
 
-            double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp(SWE::Auxiliaries::h, gp);
-            double C                      = Cf / (std::hypot(u, v) * internal.aux_at_gp(SWE::Auxiliaries::h, gp));
+            double bottom_friction_stress = Cf * std::hypot(u, v) / internal.aux_at_gp[SWE::Auxiliaries::h][gp];
+            double C                      = Cf / (std::hypot(u, v) * internal.aux_at_gp[SWE::Auxiliaries::h][gp]);
 
             internal.dsource_dq_at_gp(JacobianVariables::qx_ze, gp) -=
                 -2.0 * bottom_friction_stress * u +
-                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qx, gp);
+                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp[SWE::Variables::qx][gp];
             internal.dsource_dq_at_gp(JacobianVariables::qx_qx, gp) -= bottom_friction_stress + C * u * u;
             internal.dsource_dq_at_gp(JacobianVariables::qx_qy, gp) -= C * u * v;
 
             internal.dsource_dq_at_gp(JacobianVariables::qy_ze, gp) -=
                 -2.0 * bottom_friction_stress * v +
-                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp(SWE::Variables::qy, gp);
+                dCf_dze * bottom_friction_stress / Cf * internal.q_at_gp[SWE::Variables::qy][gp];
             internal.dsource_dq_at_gp(JacobianVariables::qy_qx, gp) -= C * u * v;
             internal.dsource_dq_at_gp(JacobianVariables::qy_qy, gp) -= bottom_friction_stress + C * v * v;
         }

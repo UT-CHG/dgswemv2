@@ -67,19 +67,20 @@ void get_Fn(double gravity,
     Fn[SWE::Variables::qy] = uvh * nx + (vvh + pe) * ny;
 }
 
-void get_dF_dq(const HybMatrix<double, SWE::n_variables>& q,
-               const HybMatrix<double, SWE::n_auxiliaries>& aux,
+
+void get_dF_dq(const std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables>& q,
+               const std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries>& aux,
                HybMatrix<double, SWE::n_variables * SWE::n_variables>& dFx_dq,
                HybMatrix<double, SWE::n_variables * SWE::n_variables>& dFy_dq) {
-    auto u = vec_cw_div(row(q, SWE::Variables::qx), row(aux, SWE::Auxiliaries::h));
-    auto v = vec_cw_div(row(q, SWE::Variables::qy), row(aux, SWE::Auxiliaries::h));
+    auto u = vec_cw_div(q[SWE::Variables::qx], aux[SWE::Auxiliaries::h]);
+    auto v = vec_cw_div(q[SWE::Variables::qy], aux[SWE::Auxiliaries::h]);
 
     // dFx/dq terms
     set_constant(row(dFx_dq, JacobianVariables::ze_ze), 0.0);
     set_constant(row(dFx_dq, JacobianVariables::ze_qx), 1.0);
     set_constant(row(dFx_dq, JacobianVariables::ze_qy), 0.0);
 
-    row(dFx_dq, JacobianVariables::qx_ze) = -vec_cw_mult(u, u) + Global::g * row(aux, SWE::Auxiliaries::h);
+    row(dFx_dq, JacobianVariables::qx_ze) = -vec_cw_mult(u, u) + Global::g * aux[SWE::Auxiliaries::h];
     row(dFx_dq, JacobianVariables::qx_qx) = 2.0 * u;
     set_constant(row(dFx_dq, JacobianVariables::qx_qy), 0.0);
 
@@ -96,35 +97,38 @@ void get_dF_dq(const HybMatrix<double, SWE::n_variables>& q,
     row(dFy_dq, JacobianVariables::qx_qx) = v;
     row(dFy_dq, JacobianVariables::qx_qy) = u;
 
-    row(dFy_dq, JacobianVariables::qy_ze) = -vec_cw_mult(v, v) + Global::g * row(aux, SWE::Auxiliaries::h);
+    row(dFy_dq, JacobianVariables::qy_ze) = -vec_cw_mult(v, v) + Global::g * aux[SWE::Auxiliaries::h];
     set_constant(row(dFy_dq, JacobianVariables::qy_qx), 0.0);
     row(dFy_dq, JacobianVariables::qy_qy) = 2.0 * v;
 }
 
 void get_dFn_dq(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                 HybMatrix<double, SWE::n_variables * SWE::n_variables>& dFn_dq) {
     auto u = vec_cw_div(row(q, SWE::Variables::qx), row(aux, SWE::Auxiliaries::h));
     auto v = vec_cw_div(row(q, SWE::Variables::qy), row(aux, SWE::Auxiliaries::h));
 
+    const DynRowVector<double>& nx = surface_normal[0];
+    const DynRowVector<double>& ny = surface_normal[1];
+
     set_constant(row(dFn_dq, JacobianVariables::ze_ze), 0.0);
-    row(dFn_dq, JacobianVariables::ze_qx) = row(surface_normal, GlobalCoord::x);
-    row(dFn_dq, JacobianVariables::ze_qy) = row(surface_normal, GlobalCoord::y);
+    row(dFn_dq, JacobianVariables::ze_qx) = nx;
+    row(dFn_dq, JacobianVariables::ze_qy) = ny;
 
     row(dFn_dq, JacobianVariables::qx_ze) = vec_cw_mult(-vec_cw_mult(u, u) + Global::g * row(aux, SWE::Auxiliaries::h),
-                                                        row(surface_normal, GlobalCoord::x)) -
-                                            vec_cw_mult(vec_cw_mult(u, v), row(surface_normal, GlobalCoord::y));
+                                                        nx) -
+                                            vec_cw_mult(vec_cw_mult(u, v), ny);
     row(dFn_dq, JacobianVariables::qx_qx) =
-        2.0 * vec_cw_mult(u, row(surface_normal, GlobalCoord::x)) + vec_cw_mult(v, row(surface_normal, GlobalCoord::y));
-    row(dFn_dq, JacobianVariables::qx_qy) = vec_cw_mult(u, row(surface_normal, GlobalCoord::y));
+        2.0 * vec_cw_mult(u, nx) + vec_cw_mult(v, ny);
+    row(dFn_dq, JacobianVariables::qx_qy) = vec_cw_mult(u, ny);
 
-    row(dFn_dq, JacobianVariables::qy_ze) = -vec_cw_mult(vec_cw_mult(u, v), row(surface_normal, GlobalCoord::x)) +
+    row(dFn_dq, JacobianVariables::qy_ze) = -vec_cw_mult(vec_cw_mult(u, v), nx) +
                                             vec_cw_mult(-vec_cw_mult(v, v) + Global::g * row(aux, SWE::Auxiliaries::h),
-                                                        row(surface_normal, GlobalCoord::y));
-    row(dFn_dq, JacobianVariables::qy_qx) = vec_cw_mult(v, row(surface_normal, GlobalCoord::x));
+                                                        ny);
+    row(dFn_dq, JacobianVariables::qy_qx) = vec_cw_mult(v, nx);
     row(dFn_dq, JacobianVariables::qy_qy) =
-        vec_cw_mult(u, row(surface_normal, GlobalCoord::x)) + 2.0 * vec_cw_mult(v, row(surface_normal, GlobalCoord::y));
+        vec_cw_mult(u, nx) + 2.0 * vec_cw_mult(v, ny);
 }
 }
 

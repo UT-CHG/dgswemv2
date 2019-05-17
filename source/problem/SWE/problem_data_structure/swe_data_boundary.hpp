@@ -3,33 +3,34 @@
 
 namespace SWE {
 struct BoundaryAccessor {
-    /*Boundary(const uint ngp)
-        : q_at_gp(SWE::n_variables, ngp),
-          aux_at_gp(SWE::n_auxiliaries, ngp),
-          F_hat_at_gp(SWE::n_variables, ngp),
-          dF_hat_dq_at_gp(SWE::n_variables * SWE::n_variables, ngp),
-          dF_hat_dq_hat_at_gp(SWE::n_variables * SWE::n_variables, ngp),
-          delta_global_kernel_at_gp(SWE::n_variables * SWE::n_variables, ngp) {}*/
-
      BoundaryAccessor() = default;
      BoundaryAccessor( std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> q_at_gp_,
                        std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries> aux_at_gp_,
                        std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> F_hat_at_gp_)
-         :  q_at_gp(q_at_gp_), aux_at_gp(aux_at_gp_), F_hat_at_gp(F_hat_at_gp_)
-        {}
+         :  q_at_gp(q_at_gp_), aux_at_gp(aux_at_gp_), F_hat_at_gp(F_hat_at_gp_) {
+         uint ngp = q_at_gp[0].size();
+
+         dF_hat_dq_at_gp = HybMatrix<double, SWE::n_variables * SWE::n_variables>(SWE::n_variables * SWE::n_variables,
+                                                                                  ngp);
+
+         dF_hat_dq_hat_at_gp = HybMatrix<double, SWE::n_variables * SWE::n_variables>(SWE::n_variables * SWE::n_variables,
+                                                                                      ngp);
+         delta_global_kernel_at_gp = HybMatrix<double, SWE::n_variables * SWE::n_variables>(SWE::n_variables * SWE::n_variables,
+                                                                                            ngp);
+     }
 
     std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> q_at_gp;
     std::array<DynView<double, SO::ColumnMajor>, SWE::n_auxiliaries> aux_at_gp;
     std::array<DynView<double, SO::ColumnMajor>, SWE::n_variables> F_hat_at_gp;
 
-/*    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_at_gp;
+    HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_at_gp;
     HybMatrix<double, SWE::n_variables * SWE::n_variables> dF_hat_dq_hat_at_gp;
     HybMatrix<double, SWE::n_variables * SWE::n_variables> delta_global_kernel_at_gp;
 
     DynMatrix<double> delta_global;
     DynMatrix<double> delta_hat_local;
 
-    std::vector<uint> global_dof_indx;*/
+    std::vector<uint> global_dof_indx;
 };
 
 struct BoundaryData {

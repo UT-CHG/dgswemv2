@@ -39,7 +39,9 @@ void Distributed::ComputeInitTrace(EdgeDistributedType& edge_dbound, const HybMa
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
 
     // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
-    edge_internal.q_hat_at_gp = (boundary.q_at_gp + q_ex) / 2.0;
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        row(edge_internal.q_hat_at_gp,var) = (boundary.q_at_gp[var] + row(q_ex, var)) / 2.0;
+    }
 
     edge_state.q_hat = edge_dbound.L2Projection(edge_internal.q_hat_at_gp);
 }
@@ -52,7 +54,9 @@ void Distributed::ComputeGlobalKernels(EdgeDistributedType& edge_dbound) {
 
     boundary.delta_global_kernel_at_gp          = boundary.dF_hat_dq_at_gp;
     edge_internal.delta_hat_global_kernel_at_gp = boundary.dF_hat_dq_hat_at_gp;
-    edge_internal.rhs_global_kernel_at_gp       = boundary.F_hat_at_gp;
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        row(edge_internal.rhs_global_kernel_at_gp,var)       = boundary.F_hat_at_gp[var];
+    }
 }
 }
 }

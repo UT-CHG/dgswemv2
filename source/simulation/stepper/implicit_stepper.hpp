@@ -87,6 +87,13 @@ class ImplicitStepper {
 
         return *this;
     }
+
+    template <typename ElementType>
+    void UpdateState(ElementType& elt) const {
+        auto& state = elt.data.state;
+
+        std::swap(state[0].q, state[this->GetNumStages()].q);
+    }
 };
 
 #endif

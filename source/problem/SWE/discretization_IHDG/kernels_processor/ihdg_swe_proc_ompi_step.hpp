@@ -96,13 +96,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
 #pragma omp barrier
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-            uint n_stages = stepper.GetNumStages();
-
-            auto& state = elt.data.state;
-
-            std::swap(state[0].q, state[n_stages].q);
-        });
+        UpdateKernel update_kernel(stepper);
+        sim_units[su_id]->discretization.mesh.CallForEachElement(update_kernel);
     }
 
     if (SWE::PostProcessing::slope_limiting) {

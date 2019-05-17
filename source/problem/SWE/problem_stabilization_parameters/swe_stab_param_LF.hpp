@@ -43,15 +43,15 @@ void get_tau_LF(double gravity,
 
 void get_dtau_dze_LF(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                      AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dtau_dze) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         double un      = u * nx + v * ny;
         double dc_dze  = std::sqrt(Global::g / h) / 2.0;
@@ -63,15 +63,15 @@ void get_dtau_dze_LF(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dtau_dqx_LF(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                      AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dtau_dqx) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         double un      = u * nx + v * ny;
         double dun_dqx = nx / h;
@@ -82,15 +82,15 @@ void get_dtau_dqx_LF(const HybMatrix<double, SWE::n_variables>& q,
 
 void get_dtau_dqy_LF(const HybMatrix<double, SWE::n_variables>& q,
                      const HybMatrix<double, SWE::n_auxiliaries>& aux,
-                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     const std::array<DynRowVector<double>, SWE::n_dimensions>& surface_normal,
                      AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dtau_dqy) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
         double v = q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp);
 
-        double nx = surface_normal(GlobalCoord::x, gp);
-        double ny = surface_normal(GlobalCoord::y, gp);
+        double nx = surface_normal[GlobalCoord::x][gp];
+        double ny = surface_normal[GlobalCoord::y][gp];
 
         double un      = u * nx + v * ny;
         double dun_dqy = ny / h;

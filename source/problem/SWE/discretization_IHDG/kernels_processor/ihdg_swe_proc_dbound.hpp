@@ -11,7 +11,9 @@ void Problem::init_distributed_boundary_kernel(const ProblemStepperType& stepper
         auto& state_prev = dbound.data.state[stage];
         auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
-        boundary.q_at_gp = dbound.ComputeUgp(state_prev.q);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            boundary.q_at_gp[var] = dbound.ComputeUgp(state_prev.q[var]);
+        }
     }
 }
 
@@ -22,7 +24,9 @@ void Problem::local_distributed_boundary_kernel(const ProblemStepperType& steppe
     auto& state    = dbound.data.state[stage + 1];
     auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    boundary.q_at_gp = dbound.ComputeUgp(state.q);
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        boundary.q_at_gp[var] = dbound.ComputeUgp(state.q[var]);
+    }
 }
 }
 }

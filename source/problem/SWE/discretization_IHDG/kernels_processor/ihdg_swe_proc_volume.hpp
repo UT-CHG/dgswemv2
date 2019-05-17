@@ -16,14 +16,16 @@ void Problem::init_volume_kernel(const ProblemStepperType& stepper, ElementType&
     // Initial guess of state
     state_next.q = state_prev.q;
 
-    internal.q_at_gp      = elt.ComputeUgp(state_prev.q);
-    internal.q_prev_at_gp = internal.q_at_gp;
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        internal.q_at_gp[var]      = elt.ComputeUgp(state_prev.q[var]);
+        row(internal.q_prev_at_gp, var) = internal.q_at_gp[var];
+    }
 
     set_constant(internal.rhs_prev, 0.0);
 
     if (stepper.GetOrder() == 2) {
-        row(internal.aux_at_gp, SWE::Auxiliaries::h) =
-            row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
+        internal.aux_at_gp[SWE::Auxiliaries::h] =
+            internal.q_at_gp[SWE::Variables::ze] + internal.aux_at_gp[SWE::Auxiliaries::bath];
 
         SWE::get_F(internal.q_at_gp, internal.aux_at_gp, internal.Fx_at_gp, internal.Fy_at_gp);
 
@@ -42,15 +44,19 @@ void Problem::local_volume_kernel(const ProblemStepperType& stepper, ElementType
     auto& state    = elt.data.state[stage + 1];
     auto& internal = elt.data.internal;
 
-    internal.q_at_gp = elt.ComputeUgp(state.q);
+    for ( uint var = 0; var < SWE::n_variables; ++var ) {
+        internal.q_at_gp[var] = elt.ComputeUgp(state.q[var]);
+    }
 
-    row(internal.aux_at_gp, SWE::Auxiliaries::h) =
-        row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
+    internal.aux_at_gp[SWE::Auxiliaries::h] =
+        internal.q_at_gp[SWE::Variables::ze] + internal.aux_at_gp[SWE::Auxiliaries::bath];
 
     SWE::get_F(internal.q_at_gp, internal.aux_at_gp, internal.Fx_at_gp, internal.Fy_at_gp);
 
     // del_q / DT
-    internal.del_q_DT_at_gp = (internal.q_at_gp - internal.q_prev_at_gp) / stepper.GetDT();
+    for (uint var = 0; var < SWE::n_variables; ++var ) {
+        row(internal.del_q_DT_at_gp, var) = (internal.q_at_gp[var] - row(internal.q_prev_at_gp,var)) / stepper.GetDT();
+    }
 
     SWE::get_dF_dq(internal.q_at_gp, internal.aux_at_gp, internal.dFx_dq_at_gp, internal.dFy_dq_at_gp);
 

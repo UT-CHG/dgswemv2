@@ -33,13 +33,19 @@ void Problem::init_edge_distributed_kernel(const ProblemStepperType& stepper, Ed
         SWE::get_tau_LF(q_hat_at_gp, aux_hat_at_gp, surface_normal, edge_internal.tau);
 
         for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-            column(boundary.F_hat_at_gp, gp) +=
-                edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                    boundary.F_hat_at_gp[var][gp] +=
+                        edge_internal.tau[gp](var,w) * (boundary.q_at_gp[w][gp] - edge_internal.q_hat_at_gp(w, gp));
+                }
+            }
         }
 
         for (uint dof_i = 0; dof_i < edge_dbound.boundary.data.get_ndof(); ++dof_i) {
-            subvector(internal.rhs_prev, SWE::n_variables * dof_i, SWE::n_variables) +=
-                -edge_dbound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
+            for ( uint var = 0; var < SWE::n_variables; ++var ) {
+                internal.rhs_prev[var + SWE::n_variables * dof_i] +=
+                    -edge_dbound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp[var]);
+            }
         }
     }
 }
@@ -78,13 +84,19 @@ void Problem::local_edge_distributed_kernel(const ProblemStepperType& stepper, E
     StatMatrix<double, SWE::n_variables, SWE::n_variables> dtau_delq;
 
     for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        del_q = column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            del_q[var] = boundary.q_at_gp[var][gp] - edge_internal.q_hat_at_gp(var, gp);
+        }
 
         column(dtau_delq, SWE::Variables::ze) = edge_internal.dtau_dze[gp] * del_q;
         column(dtau_delq, SWE::Variables::qx) = edge_internal.dtau_dqx[gp] * del_q;
         column(dtau_delq, SWE::Variables::qy) = edge_internal.dtau_dqy[gp] * del_q;
 
-        column(boundary.F_hat_at_gp, gp) += edge_internal.tau[gp] * del_q;
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            for ( uint w = 0; w < SWE::n_variables; ++w ) {
+                boundary.F_hat_at_gp[var][gp] += edge_internal.tau[gp](var,w) * del_q[w];
+            }
+        }
         column(boundary.dF_hat_dq_at_gp, gp) = flatten<double>(edge_internal.tau[gp]);
         column(boundary.dF_hat_dq_hat_at_gp, gp) += flatten<double>(dtau_delq - edge_internal.tau[gp]);
     }
@@ -102,8 +114,10 @@ void Problem::local_edge_distributed_kernel(const ProblemStepperType& stepper, E
                     (1.0 - theta) * edge_dbound.boundary.IntegrationPhiPhi(dof_j, dof_i, boundary.dF_hat_dq_at_gp));
         }
 
-        subvector(internal.rhs_local, SWE::n_variables * dof_i, SWE::n_variables) +=
-            -(1.0 - theta) * edge_dbound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp);
+        for ( uint var = 0; var < SWE::n_variables; ++var ) {
+            internal.rhs_local[ var + SWE::n_variables * dof_i] +=
+                -(1.0 - theta) * edge_dbound.boundary.IntegrationPhi(dof_i, boundary.F_hat_at_gp[var]);
+        }
     }
 
     for (uint dof_i = 0; dof_i < edge_dbound.boundary.data.get_ndof(); ++dof_i) {
