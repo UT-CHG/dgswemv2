@@ -116,7 +116,7 @@ void Tide::ComputeInitTrace(const StepperType& stepper, EdgeBoundaryType& edge_b
             this->q_ex(SWE::Variables::ze, gp) += stepper.GetRamp() * this->forcing_fact[con] *
                                                   this->amplitude_gp[con][gp] *
                                                   cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() +
-                                                      this->equilib_arg[con] - this->phase_gp[con][gp]);
+                                                      (this->equilib_arg[con] - this->phase_gp[con][gp]) * PI / 180);
         }
     }
 

@@ -2,11 +2,9 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
+cmake-build-release/*
+cmake-build-debug/*
 build/*
-build_debug/*
-build-old/*
-settings.json
-.vscode/*
 
 #Ignore files generated running tests
 test/files_for_testing/sample_fort.14.out
