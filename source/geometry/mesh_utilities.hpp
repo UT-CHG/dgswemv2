@@ -9,13 +9,13 @@ struct make_master_type;
 
 template <typename E>
 struct make_master_type<std::tuple<E>> {
-    typedef std::tuple<typename E::ElementMasterType> type;
+    using type = std::tuple<typename E::ElementMasterType>;
 };
 
 template <typename E, typename... Es>
 struct make_master_type<std::tuple<E, Es...>> {
-    typedef typename Utilities::tuple_join<std::tuple<typename E::ElementMasterType>,
-                                           typename make_master_type<std::tuple<Es...>>::type>::type type;
+    using type = typename Utilities::tuple_join<std::tuple<typename E::ElementMasterType>,
+                                                typename make_master_type<std::tuple<Es...>>::type>::type;
 };
 
 template <typename... Ms>

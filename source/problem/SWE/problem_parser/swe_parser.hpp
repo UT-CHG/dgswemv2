@@ -86,7 +86,7 @@ void Parser::ParseInput(const StepperType& stepper, MeshType& mesh) {
 
         this->InterpolateMeteoData(stepper);
 
-        mesh.CallForEachElement([this](auto& elt) {
+        mesh.CallForEachElement([](auto& elt) {
             for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 elt.data.source.tau_s[node][GlobalCoord::x] = elt.data.source.parsed_meteo_data[node]->at(0);
                 elt.data.source.tau_s[node][GlobalCoord::y] = elt.data.source.parsed_meteo_data[node]->at(1);
@@ -168,18 +168,18 @@ void Parser::InterpolateMeteoData(const StepperType& stepper) {
 
     double interp_factor = (stepper.GetTimeAtCurrentStage() - t_start) / (t_end - t_start);
 
-    for (auto it = this->node_meteo_data_interp.begin(); it != this->node_meteo_data_interp.end(); ++it) {
-        it->second[0] = this->node_meteo_data_step[step_start][it->first][0] +
-                        interp_factor * (this->node_meteo_data_step[step_end][it->first][0] -
-                                         this->node_meteo_data_step[step_start][it->first][0]);
+    for (auto& it : this->node_meteo_data_interp) {
+        it.second[0] = this->node_meteo_data_step[step_start][it.first][0] +
+                       interp_factor * (this->node_meteo_data_step[step_end][it.first][0] -
+                                        this->node_meteo_data_step[step_start][it.first][0]);
 
-        it->second[1] = this->node_meteo_data_step[step_start][it->first][1] +
-                        interp_factor * (this->node_meteo_data_step[step_end][it->first][1] -
-                                         this->node_meteo_data_step[step_start][it->first][1]);
+        it.second[1] = this->node_meteo_data_step[step_start][it.first][1] +
+                       interp_factor * (this->node_meteo_data_step[step_end][it.first][1] -
+                                        this->node_meteo_data_step[step_start][it.first][1]);
 
-        it->second[2] = this->node_meteo_data_step[step_start][it->first][2] +
-                        interp_factor * (this->node_meteo_data_step[step_end][it->first][2] -
-                                         this->node_meteo_data_step[step_start][it->first][2]);
+        it.second[2] = this->node_meteo_data_step[step_start][it.first][2] +
+                       interp_factor * (this->node_meteo_data_step[step_end][it.first][2] -
+                                        this->node_meteo_data_step[step_start][it.first][2]);
     }
 }
 }

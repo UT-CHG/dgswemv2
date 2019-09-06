@@ -31,23 +31,23 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "\t\t\t<PointData>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"ze_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = q_point_data.begin(); it != q_point_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Variables::ze] << ' ';
+    for (auto& it : q_point_data)
+        raw_data_file << (float)it[SWE::Variables::ze] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qx_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = q_point_data.begin(); it != q_point_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Variables::qx] << ' ';
+    for (auto& it : q_point_data)
+        raw_data_file << (float)it[SWE::Variables::qx] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = q_point_data.begin(); it != q_point_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Variables::qy] << ' ';
+    for (auto& it : q_point_data)
+        raw_data_file << (float)it[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = aux_point_data.begin(); it != aux_point_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Auxiliaries::bath] << ' ';
+    for (auto& it : aux_point_data)
+        raw_data_file << (float)it[SWE::Auxiliaries::bath] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t</PointData>\n";
@@ -55,38 +55,38 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "\t\t\t<CellData>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"ze_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = q_cell_data.begin(); it != q_cell_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Variables::ze] << ' ';
+    for (auto& it : q_cell_data)
+        raw_data_file << (float)it[SWE::Variables::ze] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qx_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = q_cell_data.begin(); it != q_cell_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Variables::qx] << ' ';
+    for (auto& it : q_cell_data)
+        raw_data_file << (float)it[SWE::Variables::qx] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = q_cell_data.begin(); it != q_cell_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Variables::qy] << ' ';
+    for (auto& it : q_cell_data)
+        raw_data_file << (float)it[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_cell\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = aux_cell_data.begin(); it != aux_cell_data.end(); ++it)
-        raw_data_file << (float)(*it)[SWE::Auxiliaries::bath] << ' ';
+    for (auto& it : aux_cell_data)
+        raw_data_file << (float)it[SWE::Auxiliaries::bath] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"UInt32\" Name=\"ID\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = elt_id_data.begin(); it != elt_id_data.end(); ++it)
-        raw_data_file << *it << ' ';
+    for (uint& it : elt_id_data)
+        raw_data_file << it << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Int8\" Name=\"wet_dry\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = wd_data.begin(); it != wd_data.end(); ++it)
-        raw_data_file << (*it)[0] << ' ';
+    for (auto& it : wd_data)
+        raw_data_file << it[0] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Int8\" Name=\"went_completely_dry\" format=\"ascii\">\n\t\t\t\t\t";
-    for (auto it = wd_data.begin(); it != wd_data.end(); ++it)
-        raw_data_file << (*it)[1] << ' ';
+    for (auto& it : wd_data)
+        raw_data_file << it[1] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t</CellData>\n";

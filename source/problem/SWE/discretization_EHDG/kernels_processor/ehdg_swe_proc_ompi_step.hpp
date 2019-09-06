@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace EHDG {
-template <template <typename> typename OMPISimUnitType, typename ProblemType>
+template <template <typename> class OMPISimUnitType, typename ProblemType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                         typename ProblemType::ProblemGlobalDataType& global_data,
                         ProblemStepperType& stepper,
@@ -28,7 +28,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>
     }
 }
 
-template <template <typename> typename OMPISimUnitType, typename ProblemType>
+template <template <typename> class OMPISimUnitType, typename ProblemType>
 void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                          typename ProblemType::ProblemGlobalDataType& global_data,
                          ProblemStepperType& stepper,
@@ -63,7 +63,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
             [&stepper](auto& bound) { Problem::global_boundary_kernel(stepper, bound); });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
-            [&stepper](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
+            [](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper](auto& edge_bound) {
             edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);
@@ -103,9 +103,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         }
 
         /* Global Post Receive Step */
-        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed([&stepper](auto& edge_dbound) {
-            edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound);
-        });
+        sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
+            [](auto& edge_dbound) { edge_dbound.boundary.boundary_condition.ComputeNumericalFlux(edge_dbound); });
         /* Global Post Receive Step */
 
         /* Local Post Receive Step */

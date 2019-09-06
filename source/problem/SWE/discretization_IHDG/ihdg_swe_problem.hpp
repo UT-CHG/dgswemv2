@@ -155,7 +155,7 @@ struct Problem {
                                     const ProblemStepperType& stepper,
                                     const typename ProblemType::ProblemInputType& problem_specific_input);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static void preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
                                   const ProblemStepperType& stepper,
@@ -193,14 +193,14 @@ struct Problem {
                              typename ProblemType::ProblemGlobalDataType& global_data,
                              ProblemStepperType& stepper);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static void step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                           typename ProblemType::ProblemGlobalDataType& global_data,
                           ProblemStepperType& stepper,
                           const uint begin_sim_id,
                           const uint end_sim_id);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static void stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                            typename ProblemType::ProblemGlobalDataType& global_data,
                            ProblemStepperType& stepper,
@@ -282,7 +282,7 @@ struct Problem {
                                             typename ProblemType::ProblemGlobalDataType& global_data,
                                             const ProblemStepperType& stepper);
 
-    template <template <typename> typename OMPISimUnitType, typename ProblemType>
+    template <template <typename> class OMPISimUnitType, typename ProblemType>
     static bool ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                           typename ProblemType::ProblemGlobalDataType& global_data,
                                           const ProblemStepperType& stepper,

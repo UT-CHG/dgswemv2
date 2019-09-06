@@ -22,9 +22,9 @@ class OMPISimulation : public OMPISimulationBase {
     OMPISimulation() = default;
     OMPISimulation(const std::string& input_string);
 
-    void Run();
-    void ComputeL2Residual();
-    void Finalize();
+    void Run() override;
+    void ComputeL2Residual() override;
+    void Finalize() override;
 };
 
 template <typename ProblemType>
@@ -102,9 +102,8 @@ void OMPISimulation<ProblemType>::ComputeL2Residual() {
     double residual_l2{0};
 
     for (auto& sim_unit : this->sim_units) {
-        sim_unit->discretization.mesh.CallForEachElement([this, &sim_unit, &residual_l2](auto& elt) {
-            residual_l2 += ProblemType::compute_residual_L2(this->stepper, elt);
-        });
+        sim_unit->discretization.mesh.CallForEachElement(
+            [this, &residual_l2](auto& elt) { residual_l2 += ProblemType::compute_residual_L2(this->stepper, elt); });
     }
 
     MPI_Reduce(&residual_l2, &global_l2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

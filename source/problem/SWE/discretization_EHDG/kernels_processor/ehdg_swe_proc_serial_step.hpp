@@ -36,7 +36,7 @@ void Problem::stage_serial(HDGDiscretization<ProblemType>& discretization,
         [&stepper](auto& bound) { Problem::global_boundary_kernel(stepper, bound); });
 
     discretization.mesh_skeleton.CallForEachEdgeInterface(
-        [&stepper](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
+        [](auto& edge_int) { edge_int.interface.specialization.ComputeNumericalFlux(edge_int); });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&stepper](auto& edge_bound) {
         edge_bound.boundary.boundary_condition.ComputeNumericalFlux(stepper, edge_bound);

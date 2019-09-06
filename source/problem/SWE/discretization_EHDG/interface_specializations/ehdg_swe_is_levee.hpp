@@ -6,7 +6,7 @@ namespace EHDG {
 namespace ISP {
 class Levee {
   private:
-    double H_tolerance = 0.01;
+    // double H_tolerance = 0.01;
 
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
@@ -16,7 +16,7 @@ class Levee {
     DynRowVector<double> C_subcrit_gp;
     DynRowVector<double> C_supercrit_gp;
 
-    BC::Land land_boundary;
+    // BC::Land land_boundary;
 
   public:
     Levee() = default;

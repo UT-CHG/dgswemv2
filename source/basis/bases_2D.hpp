@@ -10,15 +10,15 @@ namespace Basis {
  * This class implements a basis over the reference triangle given via coordinates
  * (-1,-1), (1,-1), and (-1,1).
  */
-class Dubiner_2D : Basis<2> {
+class Dubiner_2D : public Basis<2> {
   public:
-    DynMatrix<double> GetPhi(const uint p, const AlignedVector<Point<2>>& points);
-    std::array<DynMatrix<double>, 2> GetDPhi(const uint p, const AlignedVector<Point<2>>& points);
+    DynMatrix<double> GetPhi(const uint p, const AlignedVector<Point<2>>& points) override;
+    std::array<DynMatrix<double>, 2> GetDPhi(const uint p, const AlignedVector<Point<2>>& points) override;
 
-    DynMatrix<double> GetMinv(const uint p);
+    DynMatrix<double> GetMinv(const uint p) override;
 
-    DynMatrix<double> GetBasisLinearT(const uint p);
-    DynMatrix<double> GetLinearBasisT(const uint p);
+    DynMatrix<double> GetBasisLinearT(const uint p) override;
+    DynMatrix<double> GetLinearBasisT(const uint p) override;
 
   private:
     /**

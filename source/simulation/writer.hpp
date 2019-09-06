@@ -224,20 +224,20 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
     file << "DATASET UNSTRUCTURED_GRID\n";
     file << "POINTS " << points.size() << " double\n";
 
-    for (auto it = points.begin(); it != points.end(); ++it) {
-        file << (*it)[0] << '\t' << (*it)[1] << '\t' << (*it)[2] << '\n';
+    for (auto& point : points) {
+        file << point[0] << '\t' << point[1] << '\t' << point[2] << '\n';
     }
 
     uint n_cell_entries = 0;
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        switch ((*it)[0]) {
+    for (auto& cell : cells) {
+        switch (cell[0]) {
             case VTKElementTypes::straight_triangle:
                 n_cell_entries += 4;
                 break;
             default:
                 printf("\n");
                 printf("MESH InitializeVTK - Fatal error!\n");
-                printf("Undefined cell type = %d\n", (*it)[0]);
+                printf("Undefined cell type = %d\n", cell[0]);
                 exit(1);
         }
     }
@@ -246,8 +246,8 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
 
     uint n_nodes;
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        switch ((*it)[0]) {
+    for (auto& cell : cells) {
+        switch (cell[0]) {
             case VTKElementTypes::straight_triangle:
                 file << 3 << '\t';
                 n_nodes = 3;
@@ -255,20 +255,20 @@ void Writer<ProblemType>::InitializeMeshGeometryVTK(typename ProblemType::Proble
             default:
                 printf("\n");
                 printf("MESH InitializeVTK - Fatal error!\n");
-                printf("Undefined cell type = %d\n", (*it)[0]);
+                printf("Undefined cell type = %d\n", cell[0]);
                 exit(1);
         }
 
         for (uint i = 1; i <= n_nodes; ++i) {
-            file << (*it)[i] << '\t';
+            file << cell[i] << '\t';
         }
         file << '\n';
     }
 
     file << "CELL_TYPES " << cells.size() << '\n';
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        file << (*it)[0] << '\n';
+    for (auto& cell : cells) {
+        file << cell[0] << '\n';
     }
 
     file.close();
@@ -295,8 +295,8 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
     file << "\t\t\t<Points>\n";
     file << "\t\t\t\t<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n\t\t\t\t\t";
 
-    for (auto it = points.begin(); it != points.end(); ++it) {
-        file << (*it)[0] << ' ' << (*it)[1] << ' ' << (*it)[2] << ' ';
+    for (auto& point : points) {
+        file << point[0] << ' ' << point[1] << ' ' << point[2] << ' ';
     }
 
     file << "\n\t\t\t\t</DataArray>\n";
@@ -308,20 +308,20 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 
     uint n_nodes;
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        switch ((*it)[0]) {
+    for (auto& cell : cells) {
+        switch (cell[0]) {
             case VTKElementTypes::straight_triangle:
                 n_nodes = 3;
                 break;
             default:
                 printf("\n");
                 printf("MESH InitializeVTK - Fatal error!\n");
-                printf("Undefined cell type = %d\n", (*it)[0]);
+                printf("Undefined cell type = %d\n", cell[0]);
                 exit(1);
         }
 
         for (uint i = 1; i <= n_nodes; ++i) {
-            file << (*it)[i] << ' ';
+            file << cell[i] << ' ';
         }
     }
 
@@ -331,8 +331,8 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 
     uint offset = 0;
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        switch ((*it)[0]) {
+    for (auto& cell : cells) {
+        switch (cell[0]) {
             case VTKElementTypes::straight_triangle:
                 offset += 3;
                 file << offset << ' ';
@@ -340,7 +340,7 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
             default:
                 printf("\n");
                 printf("MESH InitializeVTK - Fatal error!\n");
-                printf("Undefined cell type = %d\n", (*it)[0]);
+                printf("Undefined cell type = %d\n", cell[0]);
                 exit(1);
         }
     }
@@ -349,8 +349,8 @@ void Writer<ProblemType>::InitializeMeshGeometryVTU(typename ProblemType::Proble
 
     file << "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n\t\t\t\t\t";
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        file << (*it)[0] << ' ';
+    for (auto& cell : cells) {
+        file << cell[0] << ' ';
     }
 
     file << "\n\t\t\t\t</DataArray>\n";

@@ -160,8 +160,8 @@ class CSRMat {
 
         std::cout << "First ten elements of _edges \n";
         for (int j = 0; j < 10; ++j) {
-            for (uint k = 0; k < _edges[j].size(); ++k)
-                std::cout << _edges[j][k] << " ";
+            for (int k : _edges[j])
+                std::cout << k << " ";
             std::cout << "\n";
         }
     }
@@ -243,7 +243,7 @@ std::vector<int64_t> metis_part(const CSRMat& mat, int64_t nparts, const double 
     }
 
     // set up metis parameters
-    int64_t ncon = static_cast<int64_t>(mat.constraint_number());
+    auto ncon = static_cast<int64_t>(mat.constraint_number());
     int64_t objval;
     std::vector<int64_t> options(METIS_NOPTIONS), part(nvtxs);
     std::vector<double> tpwgts(nparts * ncon, 1.0 / nparts), ubvec(ncon, imba_ratio);

@@ -9,11 +9,11 @@ namespace Integration {
  * GaussLegendre_1D describes the Gauss Legendre quadrature rules for the unit interval.
  * @note The strength of the rule is limited to polynomial degree 65.
  */
-class GaussLegendre_1D : Integration<1> {
+class GaussLegendre_1D : public Integration<1> {
   public:
-    std::pair<DynVector<double>, AlignedVector<Point<1>>> GetRule(const uint p);
+    std::pair<DynVector<double>, AlignedVector<Point<1>>> GetRule(const uint p) override;
 
-    uint GetNumGP(const uint p);
+    uint GetNumGP(const uint p) override;
 
   private:
     /**

@@ -51,7 +51,7 @@ class Triangle : public Master<2> {
      * @param The points on the boundary
      */
     AlignedVector<Point<2>> BoundaryToMasterCoordinates(const uint bound_id,
-                                                        const AlignedVector<Point<1>>& z_boundary) const;
+                                                        const AlignedVector<Point<1>>& z_boundary) const override;
 
     template <typename InputArrayType>
     decltype(auto) ProjectBasisToLinear(const InputArrayType& u) const;
@@ -66,8 +66,8 @@ class Triangle : public Master<2> {
     decltype(auto) ComputeLinearUvrtx(const InputArrayType& u_lin) const;
 
   private:
-    AlignedVector<Point<2>> VTKPostCell() const;
-    AlignedVector<Point<2>> VTKPostPoint() const;
+    AlignedVector<Point<2>> VTKPostCell() const override;
+    AlignedVector<Point<2>> VTKPostPoint() const override;
 };
 }
 

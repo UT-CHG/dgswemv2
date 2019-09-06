@@ -22,9 +22,8 @@ void create_edge_boundaries(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_land = mesh_skeleton.GetNumberEdgeBoundaries();
 
-    mesh.template CallForEachBoundaryOfType<BoundaryTypeLand>([&mesh_skeleton, &writer](auto& bound) {
-        mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeLand>(bound);
-    });
+    mesh.template CallForEachBoundaryOfType<BoundaryTypeLand>(
+        [&mesh_skeleton](auto& bound) { mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeLand>(bound); });
 
     if (writer.WritingLog()) {
         writer.GetLogFile() << "Number of land edges: " << mesh_skeleton.GetNumberEdgeBoundaries() - old_edge_land
@@ -33,9 +32,8 @@ void create_edge_boundaries(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_tide = mesh_skeleton.GetNumberEdgeBoundaries();
 
-    mesh.template CallForEachBoundaryOfType<BoundaryTypeTide>([&mesh_skeleton, &writer](auto& bound) {
-        mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeTide>(bound);
-    });
+    mesh.template CallForEachBoundaryOfType<BoundaryTypeTide>(
+        [&mesh_skeleton](auto& bound) { mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeTide>(bound); });
 
     if (writer.WritingLog()) {
         writer.GetLogFile() << "Number of tide edges: " << mesh_skeleton.GetNumberEdgeBoundaries() - old_edge_tide
@@ -44,9 +42,8 @@ void create_edge_boundaries(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_flow = mesh_skeleton.GetNumberEdgeBoundaries();
 
-    mesh.template CallForEachBoundaryOfType<BoundaryTypeFlow>([&mesh_skeleton, &writer](auto& bound) {
-        mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeFlow>(bound);
-    });
+    mesh.template CallForEachBoundaryOfType<BoundaryTypeFlow>(
+        [&mesh_skeleton](auto& bound) { mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeFlow>(bound); });
 
     if (writer.WritingLog()) {
         writer.GetLogFile() << "Number of flow edges: " << mesh_skeleton.GetNumberEdgeBoundaries() - old_edge_flow
@@ -55,9 +52,8 @@ void create_edge_boundaries(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_function = mesh_skeleton.GetNumberEdgeBoundaries();
 
-    mesh.template CallForEachBoundaryOfType<BoundaryTypeFunction>([&mesh_skeleton, &writer](auto& bound) {
-        mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeFunction>(bound);
-    });
+    mesh.template CallForEachBoundaryOfType<BoundaryTypeFunction>(
+        [&mesh_skeleton](auto& bound) { mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeFunction>(bound); });
 
     if (writer.WritingLog()) {
         writer.GetLogFile() << "Number of function edges: "
@@ -66,9 +62,8 @@ void create_edge_boundaries(typename ProblemType::ProblemMeshType& mesh,
 
     uint old_edge_outflow = mesh_skeleton.GetNumberEdgeBoundaries();
 
-    mesh.template CallForEachBoundaryOfType<BoundaryTypeOutflow>([&mesh_skeleton, &writer](auto& bound) {
-        mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeOutflow>(bound);
-    });
+    mesh.template CallForEachBoundaryOfType<BoundaryTypeOutflow>(
+        [&mesh_skeleton](auto& bound) { mesh_skeleton.template CreateEdgeBoundary<EdgeBoundaryTypeOutflow>(bound); });
 
     if (writer.WritingLog()) {
         writer.GetLogFile() << "Number of outflow edges: " << mesh_skeleton.GetNumberEdgeBoundaries() - old_edge_outflow

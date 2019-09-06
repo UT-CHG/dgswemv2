@@ -5,7 +5,7 @@
 
 namespace SWE {
 namespace RKDG {
-template <template <typename> typename DiscretizationType, typename ProblemType>
+template <template <typename> class DiscretizationType, typename ProblemType>
 void Problem::preprocessor_serial(DiscretizationType<ProblemType>& discretization,
                                   typename ProblemType::ProblemGlobalDataType& global_data,
                                   const ProblemStepperType& stepper,

@@ -6,7 +6,7 @@
 
 namespace SWE {
 namespace RKDG {
-template <template <typename> typename DiscretizationType, typename ProblemType>
+template <template <typename> class DiscretizationType, typename ProblemType>
 void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
                           typename ProblemType::ProblemGlobalDataType& global_data,
                           ProblemStepperType& stepper,
@@ -25,7 +25,7 @@ void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
     }
 }
 
-template <template <typename> typename DiscretizationType, typename ProblemType>
+template <template <typename> class DiscretizationType, typename ProblemType>
 void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
                            typename ProblemType::ProblemGlobalDataType& global_data,
                            ProblemStepperType& stepper) {

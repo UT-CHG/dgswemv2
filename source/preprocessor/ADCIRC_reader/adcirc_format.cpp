@@ -55,7 +55,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         for (uint bdry = 0; bdry < this->NOPE; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
-            this->NBDV.push_back(std::vector<uint>(n_nodes_bdry));
+            this->NBDV.emplace_back(n_nodes_bdry);
             for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBDV[bdry][n];
                 ifs.ignore(1000, '\n');
@@ -81,13 +81,13 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                 this->IBTYPE[bdry] % 10 == 1 ||  // island
                 this->IBTYPE[bdry] % 10 == 2) {  // flow
                 // *** //
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 for (uint n = 0; n < n_nodes_bdry; ++n) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
                 }
             } else if (this->IBTYPE[bdry] % 10 == 4) {  // internal barrier
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 this->IBCONN[bdry]    = std::vector<uint>(n_nodes_bdry);
                 this->BARINTH[bdry]   = std::vector<double>(n_nodes_bdry);
                 this->BARINCFSB[bdry] = std::vector<double>(n_nodes_bdry);
@@ -101,13 +101,13 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
                     ifs.ignore(1000, '\n');
                 }
             } else if (this->IBTYPE[bdry] == 77) {  // function
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 for (uint n = 0; n < n_nodes_bdry; ++n) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
                 }
             } else if (this->IBTYPE[bdry] == 88) {  // outflow
-                this->NBVV.push_back(std::vector<uint>(n_nodes_bdry));
+                this->NBVV.emplace_back(n_nodes_bdry);
                 for (uint n = 0; n < n_nodes_bdry; ++n) {
                     ifs >> this->NBVV[bdry][n];
                     ifs.ignore(1000, '\n');
@@ -137,7 +137,7 @@ AdcircFormat::AdcircFormat(const std::string& fort14) {
         for (uint bdry = 0; bdry < this->NGEN; ++bdry) {
             ifs >> n_nodes_bdry;
             ifs.ignore(1000, '\n');
-            this->NBGN.push_back(std::vector<uint>(n_nodes_bdry));
+            this->NBGN.emplace_back(n_nodes_bdry);
             for (uint n = 0; n < n_nodes_bdry; ++n) {
                 ifs >> this->NBGN[bdry][n];
                 ifs.ignore(1000, '\n');
@@ -175,8 +175,8 @@ void AdcircFormat::write_to(const char* out_name) const {
     file << this->NETA << " = Total number of open boundary nodes\n";
     for (uint n = 0; n < this->NOPE; ++n) {
         file << this->NBDV[n].size() << " = Number of nodes for open boundary " << n + 1 << " \n";
-        for (uint i = 0; i < this->NBDV[n].size(); ++i) {
-            file << this->NBDV[n][i] << "\n";
+        for (uint i : this->NBDV[n]) {
+            file << i << "\n";
         }
     }
 
@@ -205,8 +205,8 @@ void AdcircFormat::write_to(const char* out_name) const {
     file << this->NNGN << " = Total number of generic boundary nodes\n";
     for (uint n = 0; n < this->NGEN; ++n) {
         file << this->NBGN[n].size() << " = Number of nodes for generic boundary " << n + 1 << " \n";
-        for (uint i = 0; i < this->NBGN[n].size(); ++i) {
-            file << this->NBGN[n][i] << "\n";
+        for (uint i : this->NBGN[n]) {
+            file << i << "\n";
         }
     }
 }
@@ -256,11 +256,11 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
 }
 
 std::array<uint, 2> AdcircFormat::get_internal_node_pair(std::array<uint, 2>& node_pair) const {
-    for (auto it = this->IBCONN.begin(); it != this->IBCONN.end(); ++it) {
-        uint segment_id = it->first;
+    for (const auto& it : this->IBCONN) {
+        uint segment_id = it.first;
 
         auto& segment_nbvv   = this->NBVV[segment_id];
-        auto& segment_ibconn = it->second;
+        auto& segment_ibconn = it.second;
 
         uint n_nodes = segment_nbvv.size();
 

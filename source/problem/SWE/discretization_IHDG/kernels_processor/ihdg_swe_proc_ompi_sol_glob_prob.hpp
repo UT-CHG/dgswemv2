@@ -3,7 +3,7 @@
 
 namespace SWE {
 namespace IHDG {
-template <template <typename> typename OMPISimUnitType, typename ProblemType>
+template <template <typename> class OMPISimUnitType, typename ProblemType>
 bool Problem::ompi_solve_global_problem(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                                         typename ProblemType::ProblemGlobalDataType& global_data,
                                         const ProblemStepperType& stepper,

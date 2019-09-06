@@ -9,12 +9,8 @@ int main() {
 
     MasterType master(10);
 
-    ElementType o_triangle(0,
-                           master,
-                           std::move(vrtxs),
-                           std::move(std::vector<uint>(0)),
-                           std::move(std::vector<uint>(0)),
-                           std::move(std::vector<unsigned char>(0)));
+    ElementType o_triangle(
+        0, master, std::move(vrtxs), std::vector<uint>(0), std::vector<uint>(0), std::vector<uchar>(0));
 
     Integration::Dunavant_2D integ;
     AlignedVector<Point<2>> gp = integ.GetRule(20).second;

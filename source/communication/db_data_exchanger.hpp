@@ -18,7 +18,6 @@ class DBDataExchanger {
     std::vector<std::vector<double>>& receive_buffer;
 
   public:
-    DBDataExchanger() = default;
     DBDataExchanger(const uint locality_in,
                     const uint submesh_in,
                     const uint locality_ex,

@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
         }
 
 #ifdef HAS_PETSC
-        PetscInitialize(&argc, &argv, (char*)0, NULL);
+        PetscInitialize(&argc, &argv, (char*)nullptr, nullptr);
 #endif
 
         std::string input_string = std::string(argv[1]);

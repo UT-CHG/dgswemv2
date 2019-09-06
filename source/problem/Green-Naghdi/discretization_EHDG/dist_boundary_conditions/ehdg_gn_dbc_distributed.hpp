@@ -8,7 +8,6 @@ namespace EHDG {
 namespace DBC {
 class Distributed : public SWE_SIM::DBC::Distributed {
   public:
-    Distributed() = default;
     Distributed(const DBDataExchanger& exchanger) : SWE_SIM::DBC::Distributed(exchanger) {}
 
     template <typename EdgeDistributedType>
