@@ -40,7 +40,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
-source SCRIPTPATH/util.sh
+source $SCRIPTPATH/util.sh
 
 if [ -z "$CONFIGFILE" ]; then
     CONFIGFILE=${SCRIPTPATH}/config.txt

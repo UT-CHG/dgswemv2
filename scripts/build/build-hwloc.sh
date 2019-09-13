@@ -51,7 +51,7 @@ if [ -z "$CONFIGFILE" ]; then
     exit 1
 fi
 
-load_config_files $CONFIGFILE
+load_config_file $CONFIGFILE
 
 HWLOC_BUILD_PATH="${BUILD_PATH}/hwloc"
 
