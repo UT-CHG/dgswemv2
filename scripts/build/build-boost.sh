@@ -29,7 +29,7 @@ fi
 if [ "$1" == "-h" ]; then usage; fi
 if [ "$1" == "--help" ]; then usage; fi
 
-if ["$#" -gt 0]; then
+if [ "$#" -gt 0 ]; then
     if [ "$1" != "clean" ] && [ "$1" != "no-make" ]; then
 	echo "invalid option: $1"
 	usage
@@ -37,6 +37,8 @@ if ["$#" -gt 0]; then
 fi
 
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+export $SCRIPTPATH/util.sh
+
 if [ -z "$CONFIGFILE" ]; then
     CONFIGFILE=${SCRIPTPATH}/config.txt
 fi
@@ -46,69 +48,13 @@ if [ -z "$CONFIGFILE" ]; then
     exit 1
 fi
 
-echo -n "config file: "
-$START_BOLD
-echo "$CONFIGFILE"
-$END_BOLD
-while read line; do
-
-    if [[ "$line" =~ "#" ]]; then
-	echo -e "    \e[31m${line}\e[0m"
-    else    
-	VAR=`echo $line | awk -F= '{print $1}'`
-	VALUE=`echo $line | awk -F= '{print $2}'`
-	if [ -z "$VAR" ] || [ -z "$VALUE" ]; then
-	    echo "    $line"
-	else
-	    echo -n "    "
-	    echo -e "\e[33m${VAR}\e[0m=\e[37m${VALUE}\e[0m"
-	fi
-    fi
-done < $CONFIGFILE
-
-echo "Press enter to continue with these settings (or ctrl-c to exit)."
-read answer
-
-if [ -s "$CONFIGFILE" ]; then
-    source $CONFIGFILE
-else
-    echo "config file $CONFIGFILE either empty or non-existent"
-    exit 1
-fi
-
-if [ -z "$VERBOSE" ]; then
-    VERBOSE="false"
-fi
-
-if [ "$VERBOSE" = "true" ]; then
-    echo "verbose mode"
-    set -x
-else
-    set +x
-fi
+load_config_file $CONFIGFILE
 
 # Done setting up variables.
 
 BOOST_BUILD="${BUILD_PATH}/boost"
 if [ "$1" = "clean" ]; then
-    CLEAN_CMD="rm -rf ${BOOST_BUILD}"
-
-    $START_BOLD
-    echo "$0 clean:"
-    $END_BOLD
-    echo "about to execute:"
-    echo "${CLEAN_CMD}"
-    $START_BOLD
-    echo "is this okay? [y/N]"
-    $END_BOLD
-    read answer
-    if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${BOOST_BUILD}"
-	$CLEAN_CMD
-    else
-	echo "doing nothing."
-    fi
-    exit 0
+    clean_up $BOOST_BUILD
 fi
 
 if [ ! -d $INSTALL_PATH ]; then
@@ -116,9 +62,7 @@ if [ ! -d $INSTALL_PATH ]; then
     mkdir -p ${INSTALL_PATH}
 fi
 
-for module in $MODULES; do
-    module load $module
-done
+try_loading_modules $MODULES
 
 if [ ! -d ${BOOST_BUILD} ]; then
     set -e

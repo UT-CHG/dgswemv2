@@ -32,7 +32,7 @@ if [ "$1" == "-h" ]; then usage; fi
 if [ "$1" == "--help" ]; then usage; fi
 
 # Fix me: handle more options
-if ["$#" -gt 0]; then
+if [ "$#" -gt 0 ]; then
     if [ "$1" != "clean" ] && [ "$1" != "no-make" ] && [ "$1" != "reinstall"]; then
 	echo "invalid option: $1"
 	usage
@@ -40,6 +40,8 @@ if ["$#" -gt 0]; then
 fi
 
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
+source $SCRIPTPATH/util.sh
+
 if [ -z "$CONFIGFILE" ]; then
     CONFIGFILE=${SCRIPTPATH}/config.txt
 fi
@@ -49,81 +51,21 @@ if [ -z "$CONFIGFILE" ]; then
     exit 1
 fi
 
-echo -n "config file: "
-$START_BOLD
-echo "$CONFIGFILE"
-$END_BOLD
-while read line; do
-
-    if [[ "$line" =~ "#" ]]; then
-	echo -e "    \e[31m${line}\e[0m"
-    else
-	VAR=`echo $line | awk -F= '{print $1}'`
-	VALUE=`echo $line | awk -F= '{print $2}'`
-	if [ -z "$VAR" ] || [ -z "$VALUE" ]; then
-	    echo "    $line"
-	else
-	    echo -n "    "
-	    echo -e "\e[33m${VAR}\e[0m=\e[37m${VALUE}\e[0m"
-	fi
-    fi
-done < $CONFIGFILE
-
-echo "Press enter to continue with these settings (or ctrl-c to exit)."
-
-#TODO: change argument handling in these scripts
-if [ "$1" == "reinstall" ]; then
-    $START_BOLD
-    echo "WARNING! reinstalling old files if you've changed the config file might be a bad idea"
-fi
-
-read answer
-
-if [ -s "$CONFIGFILE" ]; then
-    echo "sourcing config file $CONFIGFILE"
-    source $CONFIGFILE
-else
-    echo "config file $CONFIGFILE either empty or non-existent"
-    exit 1
-fi
-
-if [ -z "$VERBOSE" ]; then
-    VERBOSE="false"
-fi
-
-if [ "$VERBOSE" = "true" ]; then
-    echo "verbose mode"
-    set -x
-else
-    set +x
-fi
+load_config_file $CONFIGFILE
 
 if [ -d "${YAML_CPP_REPO_PATH}" ]; then
     echo "found yaml-cpp repo path: ${YAML_CPP_REPO_PATH}"
 else
     echo "could not find yaml-cpp repo path: ${YAML_CPP_REPO_PATH}"
-    exit 1
+    echo "clone yaml-cpp to ${YAML_CPP_REPO_PATH}?"
+    echo "Press enter to continue with these settings (or ctrl-c to exit)"
+    read answer
+
+    git clone https://github.com/jbeder/yaml-cpp.git ${YAML_CPP_REPO_PATH}
 fi
 
 if [ "$1" == "clean" ]; then
-    CLEAN_CMD="rm -rf $YAML_CPP_BUILD_PATH"
-
-    $START_BOLD
-    echo "$0 clean:"
-    $END_BOLD
-    echo "about to execute:"
-    echo "${CLEAN_CMD}"
-    $START_BOLD
-    echo "is this okay? [y/N]"
-    $END_BOLD
-    read answer
-    if echo "$answer" | grep -iq "^y" ;then
-	echo "removing build directory ${YAML_CPP_BUILD_PATH}"
-	$CLEAN_CMD
-    else
-	echo "doing nothing."
-    fi
-    exit 0
+    clean_up $YAML_CPP_BUILD_PATH
 fi
 
 if [ "$1" == "reinstall" ]; then
@@ -139,28 +81,7 @@ fi
 echo "Build type is: ${BUILD_TYPE}"
 echo "Build path is: ${YAML_CPP_BUILD_PATH}"
 
-echo "MODULES = $MODULES"
-
-module purge
-
-for module in $MODULES; do
-    module load $module
-done
-
-module list
-
-#echo "git branch:"
-#git show-branch >> $LOGFILE
-#echo "git hash:"
-#git rev-parse HEAD >> $LOGFILE
-#echo "git status:"
-#git status >> $LOGFILE
-
-#echo "*** config file: ***"
-#cat $CONFIGFILE >> $LOGFILE
-#echo "*** end config file ***"
-
-#echo "MODULES = $MODULES" >> $LOGFILE
+try_loading_modules $MODULES
 
 if [ ! -d "$YAML_CPP_BUILD_PATH" ]; then
     echo "Creating build path..."
