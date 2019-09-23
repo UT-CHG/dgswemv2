@@ -6,31 +6,27 @@ namespace EHDG {
 template <typename EdgeBoundaryType>
 void Problem::local_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
-
     auto& internal = edge_bound.boundary.data.internal;
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
+    double tau = -20;  // hardcode the tau value here
+
     // at this point h_at_gp
     // has been calculated in derivatives kernel
-
     // set h_hat as internal state
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = row(boundary.aux_at_gp, SWE::Auxiliaries::h);
 
-    double tau = -20;  // hardcode the tau value here
+    set_constant(boundary.w1_w1_kernel_at_gp, 0.0);
+    set_constant(row(boundary.w1_w1_kernel_at_gp, 0), -NDParameters::alpha / 3.0 * tau);
+    set_constant(row(boundary.w1_w1_kernel_at_gp, 3), -NDParameters::alpha / 3.0 * tau);
 
     // set kernels up
-    double h_hat;
-    double bx, by;
-    double nx, ny;
-
     for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        h_hat = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
-
-        bx = boundary.dbath_hat_at_gp(GlobalCoord::x, gp);
-        by = boundary.dbath_hat_at_gp(GlobalCoord::y, gp);
-
-        nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
-        ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
+        const double h_hat = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
+        const double bx = boundary.dbath_hat_at_gp(GlobalCoord::x, gp);
+        const double by = boundary.dbath_hat_at_gp(GlobalCoord::y, gp);
+        const double nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
+        const double ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
 
         column(boundary.w1_w1_kernel_at_gp, gp) =
             -NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
@@ -85,7 +81,6 @@ void Problem::local_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBo
 template <typename EdgeBoundaryType>
 void Problem::global_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
-
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     edge_bound.boundary.boundary_condition.ComputeGlobalKernelsDC(stepper, edge_bound);
