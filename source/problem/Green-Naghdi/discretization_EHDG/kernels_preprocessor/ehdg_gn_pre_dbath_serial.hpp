@@ -14,7 +14,6 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
     compute_dbath_rhs(discretization);
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state    = elt.data.state[0];
-
         state.dbath = elt.ApplyMinv(elt.data.state[0].dbath);
     });
 
@@ -22,7 +21,6 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
     compute_ddbath_rhs(discretization);
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state    = elt.data.state[0];
-
         state.ddbath = elt.ApplyMinv(elt.data.state[0].ddbath);
     });
 
@@ -30,7 +28,6 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
-
         state.dddbath = elt.ApplyMinv(state.dddbath);
         elt.data.internal.dddbath_at_gp = elt.ComputeUgp(state.dddbath);
     });

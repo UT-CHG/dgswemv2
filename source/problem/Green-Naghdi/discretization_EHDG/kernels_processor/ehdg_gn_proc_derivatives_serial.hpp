@@ -15,7 +15,6 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
         auto& state = elt.data.state[stage];
-
         state.dze = elt.ApplyMinv(state.dze);
     });
 
@@ -23,7 +22,6 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
         auto& state = elt.data.state[stage];
-
         state.du  = elt.ApplyMinv(state.du);
     });
 
@@ -32,7 +30,6 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
         const uint stage = stepper.GetStage();
         auto& state    = elt.data.state[stage];
         auto& internal = elt.data.internal;
-
         state.ddu = elt.ApplyMinv(state.ddu);
         internal.ddu_at_gp = elt.ComputeUgp(state.ddu);
     });
