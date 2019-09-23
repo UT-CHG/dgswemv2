@@ -6,10 +6,10 @@ namespace EHDG {
 template <typename EdgeInterfaceType>
 void Problem::local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
-    auto& internal_in = edge_int.interface.data_in.internal;
-    auto& internal_ex = edge_int.interface.data_ex.internal;
-    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+    auto& internal_in   = edge_int.interface.data_in.internal;
+    auto& internal_ex   = edge_int.interface.data_ex.internal;
+    auto& boundary_in   = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     double tau = -20;  // hardcode the tau value here
 
@@ -24,10 +24,10 @@ void Problem::local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeI
     }
 
     const auto h_hat = row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h);
-    const auto bx = row(boundary_in.dbath_hat_at_gp, GlobalCoord::x);
-    const auto by = row(boundary_in.dbath_hat_at_gp, GlobalCoord::y);
-    const auto nx = row(edge_int.interface.surface_normal_in, GlobalCoord::x);
-    const auto ny = row(edge_int.interface.surface_normal_in, GlobalCoord::y);
+    const auto bx    = row(boundary_in.dbath_hat_at_gp, GlobalCoord::x);
+    const auto by    = row(boundary_in.dbath_hat_at_gp, GlobalCoord::y);
+    const auto nx    = row(edge_int.interface.surface_normal_in, GlobalCoord::x);
+    const auto ny    = row(edge_int.interface.surface_normal_in, GlobalCoord::y);
 
     set_constant(boundary_in.w1_w1_kernel_at_gp, 0.0);
     set_constant(row(boundary_in.w1_w1_kernel_at_gp, RowMajTrans2D::xx), -NDParameters::alpha / 3.0 * tau);
@@ -40,33 +40,29 @@ void Problem::local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeI
     boundary_ex.w1_w1_hat_kernel_at_gp = boundary_in.w1_w1_hat_kernel_at_gp;
 
     row(boundary_in.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xx) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, nx), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, nx), h_hat);
     row(boundary_in.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xy) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, nx), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, nx), h_hat);
     row(boundary_in.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yx) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, ny), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, ny), h_hat);
     row(boundary_in.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yy) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, ny), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, ny), h_hat);
 
     row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -vec_cw_div(nx, h_hat);
     row(boundary_in.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = -vec_cw_div(ny, h_hat);
 
     for (uint gp = 0; gp < ngp; ++gp) {
-        const uint gp_ex = ngp - gp - 1;
+        const uint gp_ex   = ngp - gp - 1;
         const double h_hat = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
-        const double bx = boundary_ex.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
-        const double by = boundary_ex.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
-        const double nx = edge_int.interface.surface_normal_ex(GlobalCoord::x, gp_ex);
-        const double ny = edge_int.interface.surface_normal_ex(GlobalCoord::y, gp_ex);
+        const double bx    = boundary_ex.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
+        const double by    = boundary_ex.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
+        const double nx    = edge_int.interface.surface_normal_ex(GlobalCoord::x, gp_ex);
+        const double ny    = edge_int.interface.surface_normal_ex(GlobalCoord::y, gp_ex);
 
-        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::xx, gp_ex) +=
-            NDParameters::alpha / 2.0 * h_hat * bx * nx;
-        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::xy, gp_ex) +=
-            NDParameters::alpha / 2.0 * h_hat * by * nx;
-        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::yx, gp_ex) +=
-            NDParameters::alpha / 2.0 * h_hat * bx * ny;
-        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::yy, gp_ex) +=
-            NDParameters::alpha / 2.0 * h_hat * by * ny;
+        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::xx, gp_ex) += NDParameters::alpha / 2.0 * h_hat * bx * nx;
+        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::xy, gp_ex) += NDParameters::alpha / 2.0 * h_hat * by * nx;
+        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::yx, gp_ex) += NDParameters::alpha / 2.0 * h_hat * bx * ny;
+        boundary_ex.w1_w1_hat_kernel_at_gp(RowMajTrans2D::yy, gp_ex) += NDParameters::alpha / 2.0 * h_hat * by * ny;
 
         boundary_ex.w2_w1_hat_kernel_at_gp(GlobalCoord::x, gp_ex) = -nx / h_hat;
         boundary_ex.w2_w1_hat_kernel_at_gp(GlobalCoord::y, gp_ex) = -ny / h_hat;
@@ -132,8 +128,8 @@ void Problem::local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeI
 template <typename EdgeInterfaceType>
 void Problem::global_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
-    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+    auto& boundary_in   = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     edge_int.interface.specialization.ComputeGlobalKernelsDC(edge_int);
 

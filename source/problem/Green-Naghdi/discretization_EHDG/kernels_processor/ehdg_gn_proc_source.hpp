@@ -6,8 +6,8 @@ namespace EHDG {
 template <typename ElementType>
 void Problem::local_dc_source_kernel(const ESSPRKStepper& stepper, ElementType& elt) {
     const uint stage = stepper.GetStage();
-    auto& state    = elt.data.state[stage];
-    auto& internal = elt.data.internal;
+    auto& state      = elt.data.state[stage];
+    auto& internal   = elt.data.internal;
 
     // at this point h_at_gp, u_at_gp, du_at_gp and ddu_at_gp
     // have been calculated in derivatives kernel

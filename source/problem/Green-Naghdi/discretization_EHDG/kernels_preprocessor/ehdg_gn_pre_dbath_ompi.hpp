@@ -43,7 +43,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             std::vector<double> message(ngp);
             dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
             for (uint gp = 0; gp < ngp; ++gp) {
-                const uint gp_ex = ngp - gp - 1;
+                const uint gp_ex            = ngp - gp - 1;
                 boundary.bath_hat_at_gp[gp] = (boundary.aux_at_gp(SWE::Auxiliaries::bath, gp) + message[gp_ex]) / 2.0;
             }
 
@@ -119,7 +119,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
-            auto& state = elt.data.state[0];
+            auto& state  = elt.data.state[0];
             state.ddbath = elt.ApplyMinv(state.ddbath);
         });
     }
@@ -184,9 +184,9 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         });
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
-            auto& state    = elt.data.state[0];
-            auto& internal = elt.data.internal;
-            state.dddbath = elt.ApplyMinv(state.dddbath);
+            auto& state            = elt.data.state[0];
+            auto& internal         = elt.data.internal;
+            state.dddbath          = elt.ApplyMinv(state.dddbath);
             internal.dddbath_at_gp = elt.ComputeUgp(state.dddbath);
         });
     }

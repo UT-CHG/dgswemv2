@@ -15,8 +15,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             const uint stage = stepper.GetStage();
-            auto& state    = dbound.data.state[stage];
-            auto& boundary = dbound.data.boundary[dbound.bound_id];
+            auto& state      = dbound.data.state[stage];
+            auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             boundary.q_at_gp = dbound.ComputeUgp(state.q);
             row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
@@ -28,10 +28,10 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             row(boundary.u_hat_at_gp, GlobalCoord::y) =
                 vec_cw_div(row(boundary.q_at_gp, SWE::Variables::qy), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
 
-            const uint ngp =  dbound.data.get_ngp_boundary(dbound.bound_id);
+            const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
             std::vector<double> message(SWE::n_variables * ngp);
             for (uint gp = 0; gp < ngp; ++gp) {
-                message[SWE::n_variables * gp] = boundary.ze_hat_at_gp[gp];
+                message[SWE::n_variables * gp]     = boundary.ze_hat_at_gp[gp];
                 message[SWE::n_variables * gp + 1] = boundary.u_hat_at_gp(GlobalCoord::x, gp);
                 message[SWE::n_variables * gp + 2] = boundary.u_hat_at_gp(GlobalCoord::y, gp);
             }
@@ -51,14 +51,14 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             const uint stage = stepper.GetStage();
-            auto& state    = dbound.data.state[stage];
-            auto& boundary = dbound.data.boundary[dbound.bound_id];
+            auto& state      = dbound.data.state[stage];
+            auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
             std::vector<double> message(SWE::n_variables * ngp);
             dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
             for (uint gp = 0; gp < ngp; ++gp) {
-                const uint gp_ex = ngp - gp - 1;
+                const uint gp_ex          = ngp - gp - 1;
                 boundary.ze_hat_at_gp[gp] = (boundary.ze_hat_at_gp[gp] + message[SWE::n_variables * gp_ex]) / 2.0;
                 boundary.u_hat_at_gp(GlobalCoord::x, gp) =
                     (boundary.u_hat_at_gp(GlobalCoord::x, gp) + message[SWE::n_variables * gp_ex + 1]) / 2.0;
@@ -81,7 +81,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
             const uint stage = stepper.GetStage();
-            auto& state = elt.data.state[stage];
+            auto& state      = elt.data.state[stage];
 
             state.dze = elt.ApplyMinv(state.dze);
             state.du  = elt.ApplyMinv(state.du);
@@ -99,8 +99,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             const uint stage = stepper.GetStage();
-            auto& state    = dbound.data.state[stage];
-            auto& boundary = dbound.data.boundary[dbound.bound_id];
+            auto& state      = dbound.data.state[stage];
+            auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             boundary.du_hat_at_gp = dbound.ComputeUgp(state.du);
 
@@ -126,11 +126,11 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             const uint stage = stepper.GetStage();
-            auto& state    = dbound.data.state[stage];
-            auto& boundary = dbound.data.boundary[dbound.bound_id];
+            auto& state      = dbound.data.state[stage];
+            auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-            std::vector<double>  message(GN::n_du_terms * ngp);
+            std::vector<double> message(GN::n_du_terms * ngp);
             dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
             for (uint gp = 0; gp < ngp; ++gp) {
                 const uint gp_ex = ngp - gp - 1;
@@ -150,10 +150,10 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
             const uint stage = stepper.GetStage();
-            auto& state    = elt.data.state[stage];
-            auto& internal = elt.data.internal;
+            auto& state      = elt.data.state[stage];
+            auto& internal   = elt.data.internal;
 
-            state.ddu = elt.ApplyMinv(state.ddu);
+            state.ddu          = elt.ApplyMinv(state.ddu);
             internal.ddu_at_gp = elt.ComputeUgp(state.ddu);
         });
     }

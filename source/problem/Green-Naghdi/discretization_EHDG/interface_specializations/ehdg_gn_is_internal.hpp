@@ -13,8 +13,8 @@ class Internal : public SWE_SIM::ISP::Internal {
 template <typename EdgeInterfaceType>
 void Internal::ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int) {
     auto& edge_internal = edge_int.edge_data.edge_internal;
-    auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-    auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+    auto& boundary_in   = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+    auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
     double tau = -20;
 

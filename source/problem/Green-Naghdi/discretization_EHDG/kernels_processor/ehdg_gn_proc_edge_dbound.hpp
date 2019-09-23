@@ -6,8 +6,8 @@ namespace EHDG {
 template <typename EdgeDistributedType>
 void Problem::local_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
-    auto& internal = edge_dbound.boundary.data.internal;
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+    auto& internal      = edge_dbound.boundary.data.internal;
+    auto& boundary      = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
     double tau = -20;  // hardcode the tau value here
 
@@ -16,10 +16,10 @@ void Problem::local_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, Edg
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = boundary.bath_hat_at_gp + boundary.ze_hat_at_gp;
 
     const auto h_hat = row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h);
-    const auto bx = row(boundary.dbath_hat_at_gp, GlobalCoord::x);
-    const auto by = row(boundary.dbath_hat_at_gp, GlobalCoord::y);
-    const auto nx = row(edge_dbound.boundary.surface_normal, GlobalCoord::x);
-    const auto ny = row(edge_dbound.boundary.surface_normal, GlobalCoord::y);
+    const auto bx    = row(boundary.dbath_hat_at_gp, GlobalCoord::x);
+    const auto by    = row(boundary.dbath_hat_at_gp, GlobalCoord::y);
+    const auto nx    = row(edge_dbound.boundary.surface_normal, GlobalCoord::x);
+    const auto ny    = row(edge_dbound.boundary.surface_normal, GlobalCoord::y);
 
     set_constant(boundary.w1_w1_kernel_at_gp, 0.0);
     set_constant(row(boundary.w1_w1_kernel_at_gp, RowMajTrans2D::xx), -NDParameters::alpha / 3.0 * tau);
@@ -29,13 +29,13 @@ void Problem::local_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, Edg
     set_constant(row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xx), NDParameters::alpha / 3.0 * tau);
     set_constant(row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yy), NDParameters::alpha / 3.0 * tau);
     row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xx) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, nx), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, nx), h_hat);
     row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xy) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, nx), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, nx), h_hat);
     row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yx) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, ny), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, ny), h_hat);
     row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yy) +=
-            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, ny), h_hat);
+        NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, ny), h_hat);
 
     row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -vec_cw_div(nx, h_hat);
     row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = -vec_cw_div(ny, h_hat);
@@ -72,7 +72,7 @@ void Problem::local_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, Edg
 template <typename EdgeDistributedType>
 void Problem::global_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+    auto& boundary      = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
     edge_dbound.boundary.boundary_condition.ComputeGlobalKernelsDC(edge_dbound);
 

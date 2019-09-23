@@ -17,7 +17,7 @@ class Distributed : public SWE_SIM::DBC::Distributed {
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernelsDC(EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
-    auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+    auto& boundary      = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
     double tau = -20;
 
