@@ -16,36 +16,30 @@ void Problem::local_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBo
     // set h_hat as internal state
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = row(boundary.aux_at_gp, SWE::Auxiliaries::h);
 
+    const auto h_hat = row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h);
+    const auto bx = row(boundary.dbath_hat_at_gp, GlobalCoord::x);
+    const auto by = row(boundary.dbath_hat_at_gp, GlobalCoord::y);
+    const auto nx = row(edge_bound.boundary.surface_normal, GlobalCoord::x);
+    const auto ny = row(edge_bound.boundary.surface_normal, GlobalCoord::y);
+
     set_constant(boundary.w1_w1_kernel_at_gp, 0.0);
-    set_constant(row(boundary.w1_w1_kernel_at_gp, 0), -NDParameters::alpha / 3.0 * tau);
-    set_constant(row(boundary.w1_w1_kernel_at_gp, 3), -NDParameters::alpha / 3.0 * tau);
+    set_constant(row(boundary.w1_w1_kernel_at_gp, RowMajTrans2D::xx), -NDParameters::alpha / 3.0 * tau);
+    set_constant(row(boundary.w1_w1_kernel_at_gp, RowMajTrans2D::yy), -NDParameters::alpha / 3.0 * tau);
 
-    // set kernels up
-    for (uint gp = 0; gp < edge_bound.edge_data.get_ngp(); ++gp) {
-        const double h_hat = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
-        const double bx = boundary.dbath_hat_at_gp(GlobalCoord::x, gp);
-        const double by = boundary.dbath_hat_at_gp(GlobalCoord::y, gp);
-        const double nx = edge_bound.boundary.surface_normal(GlobalCoord::x, gp);
-        const double ny = edge_bound.boundary.surface_normal(GlobalCoord::y, gp);
+    set_constant(boundary.w1_w1_hat_kernel_at_gp, 0.0);
+    set_constant(row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xx), NDParameters::alpha / 3.0 * tau);
+    set_constant(row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yy), NDParameters::alpha / 3.0 * tau);
+    row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xx) +=
+            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, nx), h_hat);
+    row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::xy) +=
+            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, nx), h_hat);
+    row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yx) +=
+            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(bx, ny), h_hat);
+    row(boundary.w1_w1_hat_kernel_at_gp, RowMajTrans2D::yy) +=
+            NDParameters::alpha / 2.0 * vec_cw_mult(vec_cw_mult(by, ny), h_hat);
 
-        column(boundary.w1_w1_kernel_at_gp, gp) =
-            -NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
-
-        column(boundary.w1_w1_hat_kernel_at_gp, gp) =
-            NDParameters::alpha / 3.0 * tau * IdentityVector<double>(GN::n_dimensions);
-
-        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::x, gp) +=
-            NDParameters::alpha / 2.0 * h_hat * bx * nx;
-        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::y, gp) +=
-            NDParameters::alpha / 2.0 * h_hat * by * nx;
-        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::x, gp) +=
-            NDParameters::alpha / 2.0 * h_hat * bx * ny;
-        boundary.w1_w1_hat_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp) +=
-            NDParameters::alpha / 2.0 * h_hat * by * ny;
-
-        boundary.w2_w1_hat_kernel_at_gp(GlobalCoord::x, gp) = -nx / h_hat;
-        boundary.w2_w1_hat_kernel_at_gp(GlobalCoord::y, gp) = -ny / h_hat;
-    }
+    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x) = -vec_cw_div(nx, h_hat);
+    row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y) = -vec_cw_div(ny, h_hat);
 
     for (uint dof_i = 0; dof_i < edge_bound.boundary.data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < edge_bound.boundary.data.get_ndof(); ++dof_j) {
@@ -68,10 +62,8 @@ void Problem::local_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBo
                       GN::n_dimensions) =
                 reshape<double, GN::n_dimensions>(
                     edge_bound.IntegrationPhiLambda(dof_i, dof_j, boundary.w1_w1_hat_kernel_at_gp));
-
             boundary.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::x) =
                 edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::x));
-
             boundary.w2_w1_hat(dof_i, GN::n_dimensions * dof_j + GlobalCoord::y) =
                 edge_bound.IntegrationPhiLambda(dof_i, dof_j, row(boundary.w2_w1_hat_kernel_at_gp, GlobalCoord::y));
         }

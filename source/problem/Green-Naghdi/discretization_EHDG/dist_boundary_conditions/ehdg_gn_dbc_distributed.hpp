@@ -17,16 +17,17 @@ class Distributed : public SWE_SIM::DBC::Distributed {
 template <typename EdgeDistributedType>
 void Distributed::ComputeGlobalKernelsDC(EdgeDistributedType& edge_dbound) {
     auto& edge_internal = edge_dbound.edge_data.edge_internal;
-
     auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
     double tau = -20;
 
-    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
-        column(edge_internal.w1_hat_w1_hat_kernel_at_gp, gp) = -tau * IdentityVector<double>(GN::n_dimensions);
+    set_constant(edge_internal.w1_hat_w1_hat_kernel_at_gp, 0.0);
+    set_constant(row(edge_internal.w1_hat_w1_hat_kernel_at_gp, RowMajTrans2D::xx), -tau);
+    set_constant(row(edge_internal.w1_hat_w1_hat_kernel_at_gp, RowMajTrans2D::yy), -tau);
 
-        column(boundary.w1_hat_w1_kernel_at_gp, gp) = tau * IdentityVector<double>(GN::n_dimensions);
-    }
+    set_constant(boundary.w1_hat_w1_kernel_at_gp, 0.0);
+    set_constant(row(boundary.w1_hat_w1_kernel_at_gp, RowMajTrans2D::xx), tau);
+    set_constant(row(boundary.w1_hat_w1_kernel_at_gp, RowMajTrans2D::yy), tau);
 
     boundary.w1_hat_w2_kernel_at_gp = edge_dbound.boundary.surface_normal;
 }

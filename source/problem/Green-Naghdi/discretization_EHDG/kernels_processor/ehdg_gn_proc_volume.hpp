@@ -10,24 +10,22 @@ void Problem::local_dc_volume_kernel(const ESSPRKStepper& stepper, ElementType& 
     // at this point h_at_gp
     // has been calculated in derivatives kernel
 
-    for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
-        const double bx = internal.dbath_at_gp(GlobalCoord::x, gp);
-        const double by = internal.dbath_at_gp(GlobalCoord::y, gp);
+    const auto h = row(internal.aux_at_gp, SWE::Auxiliaries::h);
+    const auto bx = row(internal.dbath_at_gp,GlobalCoord::x);
+    const auto by = row(internal.dbath_at_gp,GlobalCoord::y);
 
-        internal.w1_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::x, gp) =
-            1.0 + NDParameters::alpha * bx * bx;
-        internal.w1_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::x + GlobalCoord::y, gp) =
-            NDParameters::alpha * bx * by;
-        internal.w1_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::x, gp) =
-            NDParameters::alpha * bx * by;
-        internal.w1_w1_kernel_at_gp(GN::n_dimensions * GlobalCoord::y + GlobalCoord::y, gp) =
-            1.0 + NDParameters::alpha * by * by;
-    }
+    set_constant(internal.w1_w1_kernel_at_gp, 0.0);
+    set_constant(row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xx), 1.0);
+    set_constant(row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yy), 1.0);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xx) += NDParameters::alpha * vec_cw_mult(bx, bx);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xy) += NDParameters::alpha * vec_cw_mult(bx, by);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yx) += NDParameters::alpha * vec_cw_mult(by, bx);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yy) += NDParameters::alpha * vec_cw_mult(by, by);
 
     set_constant(internal.w1_w2_kernel_at_gp, -NDParameters::alpha / 3.0);
-    row(internal.w2_w1_kernel_at_gp, GlobalCoord::x) = power(row(internal.aux_at_gp, SWE::Auxiliaries::h), -1.0);
-    row(internal.w2_w1_kernel_at_gp, GlobalCoord::y) = power(row(internal.aux_at_gp, SWE::Auxiliaries::h), -1.0);
-    internal.w2_w2_kernel_at_gp = power(row(internal.aux_at_gp, SWE::Auxiliaries::h), -3.0);
+    row(internal.w2_w1_kernel_at_gp, GlobalCoord::x) = power(h, -1.0);
+    row(internal.w2_w1_kernel_at_gp, GlobalCoord::y) = power(h, -1.0);
+    internal.w2_w2_kernel_at_gp = power(h, -3.0);
 
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < elt.data.get_ndof(); ++dof_j) {
@@ -54,25 +52,25 @@ void Problem::local_dc_volume_kernel(const ESSPRKStepper& stepper, ElementType& 
         }
     }
 
-    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::x + GlobalCoord::x) =
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xx) =
         -NDParameters::alpha / 2.0 *
-        vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::x));
-    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::x + GlobalCoord::y) =
+        vec_cw_mult(h, bx);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xy) =
         -NDParameters::alpha / 2.0 *
-        vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::y));
-    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::y + GlobalCoord::x) =
+        vec_cw_mult(h, by);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yx) =
         -NDParameters::alpha / 2.0 *
-        vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::x));
-    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::y + GlobalCoord::y) =
+        vec_cw_mult(h, bx);
+    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yy) =
         -NDParameters::alpha / 2.0 *
-        vec_cw_mult(row(internal.aux_at_gp, SWE::Auxiliaries::h), row(internal.dbath_at_gp, GlobalCoord::y));
+        vec_cw_mult(h, by);
 
     row(internal.w1_w2_kernel_at_gp, GlobalCoord::x) =
         -NDParameters::alpha / 2.0 *
-        vec_cw_div(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+        vec_cw_div(bx, h);
     row(internal.w1_w2_kernel_at_gp, GlobalCoord::y) =
         -NDParameters::alpha / 2.0 *
-        vec_cw_div(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+        vec_cw_div(by, h);
 
     for (uint dof_i = 0; dof_i < elt.data.get_ndof(); ++dof_i) {
         for (uint dof_j = 0; dof_j < elt.data.get_ndof(); ++dof_j) {
@@ -81,25 +79,25 @@ void Problem::local_dc_volume_kernel(const ESSPRKStepper& stepper, ElementType& 
                     dof_j,
                     GlobalCoord::x,
                     dof_i,
-                    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::x + GlobalCoord::x));
+                    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xx));
             internal.w1_w1(GN::n_dimensions * dof_i + GlobalCoord::x, GN::n_dimensions * dof_j + GlobalCoord::y) +=
                 elt.IntegrationPhiDPhi(
                     dof_j,
                     GlobalCoord::x,
                     dof_i,
-                    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::x + GlobalCoord::y));
+                    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xy));
             internal.w1_w1(GN::n_dimensions * dof_i + GlobalCoord::y, GN::n_dimensions * dof_j + GlobalCoord::x) +=
                 elt.IntegrationPhiDPhi(
                     dof_j,
                     GlobalCoord::y,
                     dof_i,
-                    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::y + GlobalCoord::x));
+                    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yx));
             internal.w1_w1(GN::n_dimensions * dof_i + GlobalCoord::y, GN::n_dimensions * dof_j + GlobalCoord::y) +=
                 elt.IntegrationPhiDPhi(
                     dof_j,
                     GlobalCoord::y,
                     dof_i,
-                    row(internal.w1_w1_kernel_at_gp, GN::n_dimensions * GlobalCoord::y + GlobalCoord::y));
+                    row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::yy));
             internal.w1_w2(GN::n_dimensions * dof_i + GlobalCoord::x, dof_j) +=
                 elt.IntegrationPhiPhi(dof_i, dof_j, row(internal.w1_w2_kernel_at_gp, GlobalCoord::x));
             internal.w1_w2(GN::n_dimensions * dof_i + GlobalCoord::y, dof_j) +=

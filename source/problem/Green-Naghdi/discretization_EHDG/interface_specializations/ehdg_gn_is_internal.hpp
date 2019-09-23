@@ -19,12 +19,12 @@ void Internal::ComputeGlobalKernelsDC(EdgeInterfaceType& edge_int) {
     double tau = -20;
 
     set_constant(edge_internal.w1_hat_w1_hat_kernel_at_gp, 0.0);
-    set_constant(row(edge_internal.w1_hat_w1_hat_kernel_at_gp, 0), -2.0 * tau);
-    set_constant(row(edge_internal.w1_hat_w1_hat_kernel_at_gp, 3), -2.0 * tau);
+    set_constant(row(edge_internal.w1_hat_w1_hat_kernel_at_gp, RowMajTrans2D::xx), -2.0 * tau);
+    set_constant(row(edge_internal.w1_hat_w1_hat_kernel_at_gp, RowMajTrans2D::yy), -2.0 * tau);
 
     set_constant(boundary_in.w1_hat_w1_kernel_at_gp, 0.0);
-    set_constant(row(boundary_in.w1_hat_w1_kernel_at_gp, 0), tau);
-    set_constant(row(boundary_in.w1_hat_w1_kernel_at_gp, 3), tau);
+    set_constant(row(boundary_in.w1_hat_w1_kernel_at_gp, RowMajTrans2D::xx), tau);
+    set_constant(row(boundary_in.w1_hat_w1_kernel_at_gp, RowMajTrans2D::yy), tau);
     boundary_ex.w1_hat_w1_kernel_at_gp = boundary_in.w1_hat_w1_kernel_at_gp;
 
     boundary_in.w1_hat_w2_kernel_at_gp = edge_int.interface.surface_normal_in;

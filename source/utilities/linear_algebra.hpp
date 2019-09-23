@@ -9,6 +9,9 @@
 #include "utilities/linear_algebra/use_eigen.hpp"
 #endif
 
+// Row major transform
+enum RowMajTrans2D : uchar { xx = 0, xy = 1, yx = 2, yy = 3 };
+
 // The following are STL containers with aligned allocators.
 // These should be used whenever the template parameter is
 // a Static or Hybrid vector type or contains is a class
