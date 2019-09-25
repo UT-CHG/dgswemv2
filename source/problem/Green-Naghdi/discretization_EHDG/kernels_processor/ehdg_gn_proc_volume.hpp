@@ -91,11 +91,11 @@ void Problem::dispersive_correction_kernel(const ESSPRKStepper& stepper, Element
     const auto h      = row(internal.aux_at_gp, SWE::Auxiliaries::h);
     const auto dze_dx = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
     const auto dze_dy = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
+    const auto w1x    = elt.ComputeUgp(row(state.w1, GlobalCoord::x));
+    const auto w1y    = elt.ComputeUgp(row(state.w1, GlobalCoord::y));
 
-    row(internal.source_at_gp, SWE::Variables::qx) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dx, h);
-    row(internal.source_at_gp, SWE::Variables::qy) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dy, h);
-    row(internal.source_at_gp, SWE::Variables::qx) -= elt.ComputeUgp(row(state.w1, GlobalCoord::x));
-    row(internal.source_at_gp, SWE::Variables::qy) -= elt.ComputeUgp(row(state.w1, GlobalCoord::y));
+    row(internal.source_at_gp, SWE::Variables::qx) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dx, h) - w1x;
+    row(internal.source_at_gp, SWE::Variables::qy) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dy, h) - w1y;
 
     set_constant(row(state.rhs, SWE::Variables::ze), 0);
     row(state.rhs, SWE::Variables::qx) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qx));
