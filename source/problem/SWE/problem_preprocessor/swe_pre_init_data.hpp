@@ -11,39 +11,32 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         elt.data.initialize();
 
         auto& shape = elt.GetShape();
-
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
-        uint nnode = elt.data.get_nnode();
-        uint ngp   = elt.data.get_ngp_internal();
+        const uint nnode = elt.data.get_nnode();
+        const uint ngp   = elt.data.get_ngp_internal();
 
         DynRowVector<double> bathymetry(nnode);
-
         for (uint node_id = 0; node_id < nnode; ++node_id) {
             bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
         }
-
         row(state.aux, SWE::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
 
-        row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeNodalUgp(bathymetry);
-        row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeNodalDUgp(GlobalCoord::x, bathymetry);
-        row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeNodalDUgp(GlobalCoord::y, bathymetry);
+        row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeUgp(row(state.aux, SWE::Auxiliaries::bath));
+        row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeDUgp(GlobalCoord::x, row(state.aux, SWE::Auxiliaries::bath));
+        row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeDUgp(GlobalCoord::y, row(state.aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
-
             for (uint node_id = 0; node_id < nnode; ++node_id) {
                 y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
-
             DynRowVector<double> y_at_gp(ngp);
-
             y_at_gp = elt.ComputeNodalUgp(y_node);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
-            double R         = problem_specific_input.spherical_projection.R;
-
+            const double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
+            const double R         = problem_specific_input.spherical_projection.R;
             for (uint gp = 0; gp < ngp; ++gp) {
                 internal.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
@@ -55,20 +48,16 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
         if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Constant ||
             problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Default) {
-            uint nnode = elt.GetShape().nodal_coordinates.size();
-
+            const uint nnode = elt.GetShape().nodal_coordinates.size();
             HybMatrix<double, SWE::n_variables> u_node(SWE::n_variables, nnode);
-
             for (uint node_id = 0; node_id < nnode; ++node_id) {
                 u_node(SWE::Variables::ze, node_id) = problem_specific_input.initial_conditions.ze_initial;
                 u_node(SWE::Variables::qx, node_id) = problem_specific_input.initial_conditions.qx_initial;
                 u_node(SWE::Variables::qy, node_id) = problem_specific_input.initial_conditions.qy_initial;
             }
-
             state.q = elt.L2ProjectionNode(u_node);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
-            auto q_init = [](Point<2>& pt) { return SWE::ic_q(0, pt); };
-
+            const auto q_init = [](Point<2>& pt) { return SWE::ic_q(0, pt); };
             state.q = elt.L2ProjectionF(q_init);
         }
     });
@@ -76,54 +65,33 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
         auto& shape_in = intface.GetShapeIN();
         auto& shape_ex = intface.GetShapeEX();
-
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
-        uint nnode = intface.data_in.get_nnode();
-        uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+        const uint nnode = intface.data_in.get_nnode();
+        const uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
 
-        DynRowVector<double> bathymetry(nnode);
-
-        for (uint node_id = 0; node_id < nnode; ++node_id) {
-            bathymetry[node_id] = shape_in.nodal_coordinates[node_id][GlobalCoord::z];
-        }
-
-        row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpIN(bathymetry);
-
-        // bathymetry is not necessarily continuous across weir nodes
-        for (uint node_id = 0; node_id < nnode; ++node_id) {
-            bathymetry[node_id] = shape_ex.nodal_coordinates[node_id][GlobalCoord::z];
-        }
-
-        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeNodalUgpEX(bathymetry);
+        row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeUgpIN(row(intface.data_in.state[0].aux, SWE::Auxiliaries::bath));
+        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeUgpEX(row(intface.data_ex.state[0].aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
-
             for (uint node_id = 0; node_id < intface.data_in.get_nnode(); ++node_id) {
                 y_node[node_id] = shape_in.nodal_coordinates[node_id][GlobalCoord::y];
             }
-
             DynRowVector<double> y_at_gp(ngp);
-
             y_at_gp = intface.ComputeNodalUgpIN(y_node);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
-            double R         = problem_specific_input.spherical_projection.R;
-
-            uint gp_ex;
+            const double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
+            const double R         = problem_specific_input.spherical_projection.R;
             for (uint gp = 0; gp < ngp; ++gp) {
-                gp_ex = ngp - gp - 1;
-
+                const uint gp_ex = ngp - gp - 1;
                 boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = cos_phi_o / std::cos(y_at_gp[gp] / R);
                 boundary_ex.aux_at_gp(SWE::Auxiliaries::sp, gp_ex) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
-            uint gp_ex;
             for (uint gp = 0; gp < ngp; ++gp) {
-                gp_ex = ngp - gp - 1;
-
+                const uint gp_ex = ngp - gp - 1;
                 boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = 1.0;
                 boundary_ex.aux_at_gp(SWE::Auxiliaries::sp, gp_ex) = 1.0;
             }
@@ -132,34 +100,23 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
         auto& shape = bound.GetShape();
-
         auto& boundary = bound.data.boundary[bound.bound_id];
 
-        uint nnode = bound.data.get_nnode();
-        uint ngp   = bound.data.get_ngp_boundary(bound.bound_id);
+        const uint nnode = bound.data.get_nnode();
+        const uint ngp   = bound.data.get_ngp_boundary(bound.bound_id);
 
-        DynRowVector<double> bathymetry(nnode);
-
-        for (uint node_id = 0; node_id < nnode; ++node_id) {
-            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
-        }
-
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = bound.ComputeNodalUgp(bathymetry);
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = bound.ComputeUgp(row(bound.data.state[0].aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
-
             for (uint node_id = 0; node_id < bound.data.get_nnode(); ++node_id) {
                 y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
-
             DynRowVector<double> y_at_gp(ngp);
-
             y_at_gp = bound.ComputeNodalUgp(y_node);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
-            double R         = problem_specific_input.spherical_projection.R;
-
+            const double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
+            const double R         = problem_specific_input.spherical_projection.R;
             for (uint gp = 0; gp < ngp; ++gp) {
                 boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
@@ -172,34 +129,23 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
         auto& shape = dbound.GetShape();
-
         auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-        uint nnode = dbound.data.get_nnode();
-        uint ngp   = dbound.data.get_ngp_boundary(dbound.bound_id);
+        const uint nnode = dbound.data.get_nnode();
+        const uint ngp   = dbound.data.get_ngp_boundary(dbound.bound_id);
 
-        DynRowVector<double> bathymetry(nnode);
-
-        for (uint node_id = 0; node_id < nnode; ++node_id) {
-            bathymetry[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::z];
-        }
-
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeNodalUgp(bathymetry);
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeUgp(row(dbound.data.state[0].aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
-
             for (uint node_id = 0; node_id < dbound.data.get_nnode(); ++node_id) {
                 y_node[node_id] = shape.nodal_coordinates[node_id][GlobalCoord::y];
             }
-
             DynRowVector<double> y_at_gp(ngp);
-
             y_at_gp = dbound.ComputeNodalUgp(y_node);
 
-            double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
-            double R         = problem_specific_input.spherical_projection.R;
-
+            const double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
+            const double R         = problem_specific_input.spherical_projection.R;
             for (uint gp = 0; gp < ngp; ++gp) {
                 boundary.aux_at_gp(SWE::Auxiliaries::sp, gp) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
@@ -219,24 +165,19 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         }
 
         std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
-
-        uint node_ID;
-        double manning_n;
         std::map<uint, double> node_manning_n;
-
         std::string line;
         while (std::getline(manning_file, line)) {
             std::istringstream input_string(line);
-
+            uint node_ID;
+            double manning_n;
             if (!(input_string >> node_ID >> manning_n))
                 break;
-
             node_manning_n[node_ID] = manning_n;
         }
 
         mesh.CallForEachElement([&node_manning_n](auto& elt) {
             const std::vector<uint>& node_ID = elt.GetNodeID();
-
             for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
             }
@@ -254,16 +195,12 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     if (problem_specific_input.coriolis.type == SWE::CoriolisType::Enable) {
         mesh.CallForEachElement([&problem_specific_input](auto& elt) {
             double y_avg = 0;
-
             for (uint node = 0; node < elt.data.get_nnode(); ++node) {
                 y_avg += elt.GetShape().nodal_coordinates[node][GlobalCoord::y];
             }
-
             y_avg /= elt.data.get_nnode();
-
             // If spherical projection is not specified we use default value for R which is R earth
             double latitude_avg = y_avg / problem_specific_input.spherical_projection.R;
-
             elt.data.source.coriolis_f = 2 * 7.2921E-5 * std::sin(latitude_avg);
         });
     }
@@ -272,30 +209,23 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     if (SWE::PostProcessing::wetting_drying) {
         mesh.CallForEachElement([](auto& elt) {
             auto& shape = elt.GetShape();
-
             auto& state    = elt.data.state[0];
             auto& wd_state = elt.data.wet_dry_state;
 
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.bath_at_vrtx[vrtx] = shape.nodal_coordinates[vrtx][GlobalCoord::z];
             }
-
             wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
-
             wd_state.q_lin = elt.ProjectBasisToLinear(state.q);
-
             wd_state.q_at_vrtx = elt.ComputeLinearUvrtx(wd_state.q_lin);
-
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.h_at_vrtx[vrtx] = wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) + wd_state.bath_at_vrtx[vrtx];
             }
 
             bool set_wet_element = true;
-
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
-
                     set_wet_element = false;
                 }
             }
@@ -304,14 +234,11 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
                 wd_state.wet = true;
             } else {
                 wd_state.wet = false;
-
                 for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                     wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
                     wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
                 }
-
                 state.q = elt.ProjectLinearToBasis(wd_state.q_at_vrtx);
-
                 set_constant(state.rhs, 0.0);
             }
         });
@@ -321,29 +248,23 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     if (SWE::PostProcessing::slope_limiting) {
         mesh.CallForEachElement([](auto& elt) {
             auto& shape = elt.GetShape();
-
             auto& sl_state = elt.data.slope_limit_state;
 
             DynRowVector<double> bath_lin(elt.data.get_nvrtx());
-
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 bath_lin[vrtx] = shape.nodal_coordinates[vrtx][GlobalCoord::z];
             }
-
             sl_state.bath_at_baryctr = elt.ComputeLinearUbaryctr(bath_lin);
             sl_state.bath_at_midpts  = elt.ComputeLinearUmidpts(bath_lin);
-
             sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
             sl_state.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
 
             StatVector<double, SWE::n_dimensions> median;
-
             for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
                 median[GlobalCoord::x] =
                     sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
                 median[GlobalCoord::y] =
                     sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
-
                 sl_state.median[bound] = median / norm(median);
             }
         });
@@ -407,16 +328,10 @@ void initialize_data_parallel_pre_send(MeshType& mesh,
         mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
             auto& sl_state = dbound.data.slope_limit_state;
 
-            // Construct message to exterior state
-            std::vector<double> message;
-
-            message.reserve(SWE::n_dimensions);
-
+            std::vector<double> message(SWE::n_dimensions);
             for (uint dim = 0; dim < SWE::n_dimensions; ++dim) {
-                message.push_back(sl_state.baryctr_coord[dim]);
+                message[dim] = sl_state.baryctr_coord[dim];
             }
-
-            // Set message to send buffer
             dbound.boundary_condition.exchanger.SetToSendBuffer(comm_type, message);
         });
     }
@@ -428,12 +343,8 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
         mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
             auto& sl_state = dbound.data.slope_limit_state;
 
-            std::vector<double> message;
-
-            message.resize(SWE::n_dimensions);
-
+            std::vector<double> message(SWE::n_dimensions);
             dbound.boundary_condition.exchanger.GetFromReceiveBuffer(comm_type, message);
-
             for (uint dim = 0; dim < SWE::n_dimensions; ++dim) {
                 sl_state.baryctr_coord_neigh[dbound.bound_id][dim] = message[dim];
             }
