@@ -1,12 +1,13 @@
 cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (DGSWEMv2 CXX C)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(USE_EIGEN "Use Eigen" OFF)
 option(USE_BLAZE "Use Blaze" OFF)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
 option(USE_HPX "Use HPX" OFF)
 option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
-option(SET_VERBOSE "Verbose MakeFile" OFF)
 
 option(RKDG "Build with RKDG discretization" ON)
 option(EHDG "Build with explicit HDG discretization" OFF)
@@ -33,15 +34,8 @@ else()
   message(WARNING "Using untested compiler")
 endif()
 
-add_definitions(-std=c++14 -g)
-
 if(COMPILER_WARNINGS)
   add_definitions(-Wall)
-endif()
-
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-if(SET_VERBOSE)
-  set(CMAKE_VERBOSE_MAKEFILE ON)
 endif()
 
 get_filename_component (default_prefix "../install" ABSOLUTE)
