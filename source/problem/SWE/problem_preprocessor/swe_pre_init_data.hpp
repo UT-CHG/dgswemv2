@@ -64,7 +64,6 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
         auto& shape_in = intface.GetShapeIN();
-        auto& shape_ex = intface.GetShapeEX();
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 

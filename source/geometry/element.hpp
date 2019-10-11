@@ -379,7 +379,7 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUgp(
     const uint dir,
     const InputArrayType& u_lin) {
-    // du_lin_gp(q, gp) = du(q, dof) * chi_gp[dir](dof, gp)
+    // du_lin_gp(q, gp) = du(q, dof) * dchi_gp[dir](dof, gp)
     return u_lin * this->dchi_gp[dir];
 }
 

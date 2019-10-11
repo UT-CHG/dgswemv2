@@ -11,9 +11,9 @@ void Problem::local_dc_edge_distributed_kernel(const ESSPRKStepper& stepper, Edg
 
     double tau = -20;  // hardcode the tau value here
 
-    // at this point ze_hat_at_gp and bath_hat_at_gp
-    // has been calculated in derivatives kernel
-    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = boundary.bath_hat_at_gp + boundary.ze_hat_at_gp;
+    // at this point h_hat_at_gp
+    // has been calculated in derivatives kernel and stored to row(boundary.aux_at_gp, SWE::Auxiliaries::h)
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = row(boundary.aux_at_gp, SWE::Auxiliaries::h);
 
     const auto h_hat = row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h);
     const auto bx    = row(boundary.dbath_hat_at_gp, GlobalCoord::x);

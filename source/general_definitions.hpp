@@ -195,6 +195,7 @@ class Shape {
 
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint>& node_ID) const = 0;
 
+    virtual double GetArea() const = 0;
     virtual Point<dimension> GetBarycentricCoordinates() const             = 0;
     virtual AlignedVector<Point<dimension>> GetMidpointCoordinates() const = 0;
 
@@ -233,7 +234,7 @@ class Shape {
 
 #define PI 3.14159265359
 
-#define N_DIV 2                // postproc elem div
+#define N_DIV 1                // postproc elem div
 #define DEFAULT_ID 4294967295  // max uint as default id
 
 enum CoordinateSystem : uchar { cartesian = 0, polar = 1, spherical = 2 };

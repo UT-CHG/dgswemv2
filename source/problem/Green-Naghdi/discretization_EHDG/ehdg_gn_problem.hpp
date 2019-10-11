@@ -90,8 +90,8 @@ struct Problem {
         offset[CommTypes::derivatives]        = begin_index[CommTypes::derivatives];
 
         begin_index[CommTypes::dc_global_dof_indx] += 1;
-        begin_index[CommTypes::dbath] += GN::n_ddbath_terms * ngp;
-        begin_index[CommTypes::derivatives] += GN::n_du_terms * ngp;
+        begin_index[CommTypes::dbath] += GN::n_dddbath_terms * ngp;
+        begin_index[CommTypes::derivatives] += GN::n_ddu_terms * ngp;
 
         return offset;
     }

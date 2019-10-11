@@ -20,6 +20,12 @@ std::vector<uint> StraightTriangle::GetBoundaryNodeID(const uint bound_id, const
     return bound_node_ID;
 }
 
+double StraightTriangle::GetArea() const {
+    return 0.5 * (this->nodal_coordinates[0][GlobalCoord::x] * (this->nodal_coordinates[1][GlobalCoord::y] - this->nodal_coordinates[2][GlobalCoord::y]) +
+                  this->nodal_coordinates[1][GlobalCoord::x] * (this->nodal_coordinates[2][GlobalCoord::y] - this->nodal_coordinates[0][GlobalCoord::y]) +
+                  this->nodal_coordinates[2][GlobalCoord::x] * (this->nodal_coordinates[0][GlobalCoord::y] - this->nodal_coordinates[1][GlobalCoord::y]));
+}
+
 Point<2> StraightTriangle::GetBarycentricCoordinates() const {
     Point<2> baryctr_coord;
 
