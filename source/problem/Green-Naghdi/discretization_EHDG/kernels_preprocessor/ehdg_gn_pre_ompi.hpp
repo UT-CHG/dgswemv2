@@ -15,8 +15,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     SWE_SIM::Problem::preprocessor_ompi(sim_units, global_data, stepper.GetFirstStepper(), begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        GN::initialize_data_parallel_pre_send(
-                sim_units[su_id]->discretization.mesh, SWE_SIM::CommTypes::baryctr_coord);
+        GN::initialize_data_parallel_pre_send(sim_units[su_id]->discretization.mesh, SWE_SIM::CommTypes::baryctr_coord);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -30,7 +29,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(SWE_SIM::CommTypes::baryctr_coord, 0);
 
-        GN::initialize_data_parallel_post_receive(sim_units[su_id]->discretization.mesh, SWE_SIM::CommTypes::baryctr_coord);
+        GN::initialize_data_parallel_post_receive(sim_units[su_id]->discretization.mesh,
+                                                  SWE_SIM::CommTypes::baryctr_coord);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {

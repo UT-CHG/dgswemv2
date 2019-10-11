@@ -10,7 +10,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     mesh.CallForEachElement([&problem_specific_input](auto& elt) {
         elt.data.initialize();
 
-        auto& shape = elt.GetShape();
+        auto& shape    = elt.GetShape();
         auto& state    = elt.data.state[0];
         auto& internal = elt.data.internal;
 
@@ -24,8 +24,10 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         row(state.aux, SWE::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
 
         row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeUgp(row(state.aux, SWE::Auxiliaries::bath));
-        row(internal.dbath_at_gp, GlobalCoord::x)       = elt.ComputeDUgp(GlobalCoord::x, row(state.aux, SWE::Auxiliaries::bath));
-        row(internal.dbath_at_gp, GlobalCoord::y)       = elt.ComputeDUgp(GlobalCoord::y, row(state.aux, SWE::Auxiliaries::bath));
+        row(internal.dbath_at_gp, GlobalCoord::x) =
+            elt.ComputeDUgp(GlobalCoord::x, row(state.aux, SWE::Auxiliaries::bath));
+        row(internal.dbath_at_gp, GlobalCoord::y) =
+            elt.ComputeDUgp(GlobalCoord::y, row(state.aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -58,20 +60,22 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
             state.q = elt.L2ProjectionNode(u_node);
         } else if (problem_specific_input.initial_conditions.type == SWE::InitialConditionsType::Function) {
             const auto q_init = [](Point<2>& pt) { return SWE::ic_q(0, pt); };
-            state.q = elt.L2ProjectionF(q_init);
+            state.q           = elt.L2ProjectionF(q_init);
         }
     });
 
     mesh.CallForEachInterface([&problem_specific_input](auto& intface) {
-        auto& shape_in = intface.GetShapeIN();
+        auto& shape_in    = intface.GetShapeIN();
         auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
         auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
 
         const uint nnode = intface.data_in.get_nnode();
         const uint ngp   = intface.data_in.get_ngp_boundary(intface.bound_id_in);
 
-        row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeUgpIN(row(intface.data_in.state[0].aux, SWE::Auxiliaries::bath));
-        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath) = intface.ComputeUgpEX(row(intface.data_ex.state[0].aux, SWE::Auxiliaries::bath));
+        row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath) =
+            intface.ComputeUgpIN(row(intface.data_in.state[0].aux, SWE::Auxiliaries::bath));
+        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath) =
+            intface.ComputeUgpEX(row(intface.data_ex.state[0].aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -84,13 +88,13 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
             const double cos_phi_o = std::cos(problem_specific_input.spherical_projection.latitude_o * PI / 180.0);
             const double R         = problem_specific_input.spherical_projection.R;
             for (uint gp = 0; gp < ngp; ++gp) {
-                const uint gp_ex = ngp - gp - 1;
+                const uint gp_ex                                   = ngp - gp - 1;
                 boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = cos_phi_o / std::cos(y_at_gp[gp] / R);
                 boundary_ex.aux_at_gp(SWE::Auxiliaries::sp, gp_ex) = cos_phi_o / std::cos(y_at_gp[gp] / R);
             }
         } else {
             for (uint gp = 0; gp < ngp; ++gp) {
-                const uint gp_ex = ngp - gp - 1;
+                const uint gp_ex                                   = ngp - gp - 1;
                 boundary_in.aux_at_gp(SWE::Auxiliaries::sp, gp)    = 1.0;
                 boundary_ex.aux_at_gp(SWE::Auxiliaries::sp, gp_ex) = 1.0;
             }
@@ -98,13 +102,14 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     });
 
     mesh.CallForEachBoundary([&problem_specific_input](auto& bound) {
-        auto& shape = bound.GetShape();
+        auto& shape    = bound.GetShape();
         auto& boundary = bound.data.boundary[bound.bound_id];
 
         const uint nnode = bound.data.get_nnode();
         const uint ngp   = bound.data.get_ngp_boundary(bound.bound_id);
 
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = bound.ComputeUgp(row(bound.data.state[0].aux, SWE::Auxiliaries::bath));
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) =
+            bound.ComputeUgp(row(bound.data.state[0].aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -127,13 +132,14 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     });
 
     mesh.CallForEachDistributedBoundary([&problem_specific_input](auto& dbound) {
-        auto& shape = dbound.GetShape();
+        auto& shape    = dbound.GetShape();
         auto& boundary = dbound.data.boundary[dbound.bound_id];
 
         const uint nnode = dbound.data.get_nnode();
         const uint ngp   = dbound.data.get_ngp_boundary(dbound.bound_id);
 
-        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) = dbound.ComputeUgp(row(dbound.data.state[0].aux, SWE::Auxiliaries::bath));
+        row(boundary.aux_at_gp, SWE::Auxiliaries::bath) =
+            dbound.ComputeUgp(row(dbound.data.state[0].aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
             DynRowVector<double> y_node(nnode);
@@ -199,7 +205,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
             }
             y_avg /= elt.data.get_nnode();
             // If spherical projection is not specified we use default value for R which is R earth
-            double latitude_avg = y_avg / problem_specific_input.spherical_projection.R;
+            double latitude_avg        = y_avg / problem_specific_input.spherical_projection.R;
             elt.data.source.coriolis_f = 2 * 7.2921E-5 * std::sin(latitude_avg);
         });
     }
@@ -207,15 +213,15 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     // WETTING-DRYING INITIALIZE
     if (SWE::PostProcessing::wetting_drying) {
         mesh.CallForEachElement([](auto& elt) {
-            auto& shape = elt.GetShape();
+            auto& shape    = elt.GetShape();
             auto& state    = elt.data.state[0];
             auto& wd_state = elt.data.wet_dry_state;
 
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.bath_at_vrtx[vrtx] = shape.nodal_coordinates[vrtx][GlobalCoord::z];
             }
-            wd_state.bath_min = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
-            wd_state.q_lin = elt.ProjectBasisToLinear(state.q);
+            wd_state.bath_min  = *std::min_element(wd_state.bath_at_vrtx.begin(), wd_state.bath_at_vrtx.end());
+            wd_state.q_lin     = elt.ProjectBasisToLinear(state.q);
             wd_state.q_at_vrtx = elt.ComputeLinearUvrtx(wd_state.q_lin);
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 wd_state.h_at_vrtx[vrtx] = wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) + wd_state.bath_at_vrtx[vrtx];
@@ -225,7 +231,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                 if (wd_state.h_at_vrtx[vrtx] <= PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = PostProcessing::h_o - wd_state.bath_at_vrtx[vrtx];
-                    set_wet_element = false;
+                    set_wet_element                              = false;
                 }
             }
 
@@ -246,7 +252,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     // SLOPE LIMIT INITIALIZE
     if (SWE::PostProcessing::slope_limiting) {
         mesh.CallForEachElement([](auto& elt) {
-            auto& shape = elt.GetShape();
+            auto& shape    = elt.GetShape();
             auto& sl_state = elt.data.slope_limit_state;
 
             DynRowVector<double> bath_lin(elt.data.get_nvrtx());
@@ -255,8 +261,8 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
             }
             sl_state.bath_at_baryctr = elt.ComputeLinearUbaryctr(bath_lin);
             sl_state.bath_at_midpts  = elt.ComputeLinearUmidpts(bath_lin);
-            sl_state.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
-            sl_state.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
+            sl_state.baryctr_coord   = elt.GetShape().GetBarycentricCoordinates();
+            sl_state.midpts_coord    = elt.GetShape().GetMidpointCoordinates();
 
             StatVector<double, SWE::n_dimensions> median;
             for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {

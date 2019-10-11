@@ -46,7 +46,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& derivative = dbound.data.derivative;
-            auto& boundary = dbound.data.boundary[dbound.bound_id];
+            auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
             std::vector<double> message(GN::n_ddbath_terms + GN::n_dimensions * ngp);
@@ -63,7 +63,6 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
 
         sim_units[su_id]->communicator.SendAll(CommTypes::dbath, 0);
     }
-
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);

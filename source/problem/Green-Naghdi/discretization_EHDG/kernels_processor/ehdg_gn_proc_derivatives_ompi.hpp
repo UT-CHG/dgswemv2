@@ -18,7 +18,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             auto& derivative = dbound.data.derivative;
-            auto& boundary = dbound.data.boundary[dbound.bound_id];
+            auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
             std::vector<double> message(GN::n_dimensions + GN::n_du_terms + ngp);
