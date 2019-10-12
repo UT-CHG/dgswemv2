@@ -20,7 +20,7 @@ struct Derivative {
           /* *** */
           ddu_at_midpts(GN::n_ddu_terms, nbound),
           ddu_at_baryctr_neigh(nbound),
-          ddu_lin(GN::n_du_terms, nvrtx),
+          ddu_lin(GN::n_ddu_terms, nvrtx),
           /* *** */
           dbath_at_midpts(GN::n_dimensions, nbound),
           dbath_at_baryctr_neigh(nbound),
