@@ -21,8 +21,6 @@ struct GlobalData : SWE::GlobalData {
     DynVector<double> dc_solution;
 
     void destroy() {
-        SWE::GlobalData::destroy();
-
         MatDestroy(&w1_hat_w1_hat);
         VecDestroy(&w1_hat_rhs);
         KSPDestroy(&dc_ksp);
@@ -31,6 +29,10 @@ struct GlobalData : SWE::GlobalData {
         ISDestroy(&dc_to);
         VecScatterDestroy(&dc_scatter);
         VecDestroy(&dc_sol);
+
+#ifdef IHDG_SWE
+        SWE::GlobalData::destroy();
+#endif
     }
 #endif
 };
