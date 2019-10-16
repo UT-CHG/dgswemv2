@@ -1,6 +1,7 @@
 #ifndef WRITER_HPP
 #define WRITER_HPP
 
+#include <sys/stat.h>
 #include "general_definitions.hpp"
 #include "preprocessor/input_parameters.hpp"
 
@@ -90,6 +91,7 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
       writing_modal_output(writer_input.writing_modal_output),
       modal_output_frequency(writer_input.modal_output_freq_step),
       version(0) {
+    mkdir(this->output_path.c_str(), ACCESSPERMS);     	      
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name;
     }
@@ -98,6 +100,8 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
 template <typename ProblemType>
 Writer<ProblemType>::Writer(const WriterInput& writer_input, const uint locality_id, const uint submesh_id)
     : Writer(writer_input) {
+    this->output_path += std::to_string(locality_id) + '_' + std::to_string(submesh_id) + '/';
+    mkdir(this->output_path.c_str(), ACCESSPERMS);
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name + '_' + std::to_string(locality_id) + '_' +
                               std::to_string(submesh_id);
