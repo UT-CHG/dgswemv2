@@ -123,7 +123,14 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
                  -DHPX_WITH_ITTNOTIFY=On \
                  -DAMPLIFIER_ROOT=${VTUNE_DIR}"
     fi
-
+    if [ -v CXX_COMPILER ]; then
+    CMAKE_FLAGS="$CMAKE_FLAGS \
+                 -DCMAKE_CXX_COMPILER=${CXX_COMPILER}"
+    fi
+    if [ -v C_COMPILER ]; then
+    CMAKE_FLAGS="$CMAKE_FLAGS \
+                 -DCMAKE_C_COMPILER=${C_COMPILER}"
+    fi
     CMD="cmake ${CMAKE_FLAGS} $HPX_REPO_PATH"
     echo "CMD = $CMD"
 
