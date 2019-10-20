@@ -21,113 +21,8 @@ jobs:
           paths:
             - /usr/dgswemv2
 ##########################################################################
-# Eigen jobs
-#this tests if the sfinae to build only SWE support is properly working
-  build_dgswemv2_swe_only_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - run:
-          name: Building dgswemv2 with eigen---SWE only
-          command: |
-            cmake --version
-            rm -rf /usr/dgswemv2/build_eigen/*
-            cmake \
-                -DCMAKE_PREFIX_PATH=/usr/install \
-                -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
-                -DCOMPILER_WARNINGS=On \
-                -DUSE_OMPI=On \
-                -DUSE_HPX=On \
-                /usr/dgswemv2
-            make
-
-  build_dgswemv2_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - run:
-          name: Building dgswemv2 with eigen
-          command: |
-            cmake --version
-            rm -rf /usr/dgswemv2/build_eigen/*
-            cmake \
-                -DCMAKE_PREFIX_PATH=/usr/install \
-                -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
-                -DCOMPILER_WARNINGS=On \
-                -DUSE_OMPI=On \
-                -DUSE_HPX=On \
-                -DRKDG=On \
-                -DEHDG=On \
-                /usr/dgswemv2
-            make
-      - persist_to_workspace:
-          root: /usr/dgswemv2
-          paths:
-            - build_eigen/*
-            - test/*
-
-  run_unit_tests_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - attach_workspace:
-          at: /usr/dgswemv2
-      - run:
-          name: Running unit tests with Eigen
-          command: |
-            ctest --test-regex unit
-
-  rkdg_run_parallel_correctness_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - attach_workspace:
-          at: /usr/dgswemv2
-      - run:
-          no_output_timeout: 60m
-          name: RKDG Parallel Manufactured Solution with Eigen
-          command: |
-            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh rkdg_swe build_eigen
-
-  rkdg_run_parallel_weirs_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - attach_workspace:
-          at: /usr/dgswemv2
-      - run:
-          no_output_timeout: 60m
-          name: RKDG Parallel Weirs with Eigen
-          command: |
-            /usr/dgswemv2/scripts/correctness/test_rkdg_parallel_weirs.sh build_eigen
-
-  ehdg_run_parallel_correctness_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - attach_workspace:
-          at: /usr/dgswemv2
-      - run:
-          no_output_timeout: 60m
-          name: EHDG Parallel Manufactured Solution with Eigen
-          command: |
-            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh ehdg_swe build_eigen
-##########################################################################
 # Blaze jobs
+#this tests if the sfinae to build only SWE support is properly working
   build_dgswemv2_swe_only_blaze:
     working_directory: /usr/dgswemv2/build_blaze
     <<: *defaults
@@ -142,7 +37,7 @@ jobs:
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
                 -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
+                -DCMAKE_VERBOSE_MAKEFILE:BOOL=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
@@ -164,12 +59,12 @@ jobs:
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
                 -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
+                -DCMAKE_VERBOSE_MAKEFILE:BOOL=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
                 -DRKDG=On \
-                -DEHDG=Off \
+                -DEHDG=On \
                 -DUSE_BLAZE=On \
                 /usr/dgswemv2
             make
@@ -240,24 +135,6 @@ workflows:
   build-and-test:
     jobs:
       - checkout_code
-      - build_dgswemv2_swe_only_eigen:
-          requires:
-            - checkout_code
-      - build_dgswemv2_eigen:
-          requires:
-            - checkout_code
-      - run_unit_tests_eigen:
-          requires:
-            - build_dgswemv2_eigen
-      - rkdg_run_parallel_correctness_eigen:
-          requires:
-            - build_dgswemv2_eigen
-      - rkdg_run_parallel_weirs_eigen:
-          requires:
-            - build_dgswemv2_eigen
-      - ehdg_run_parallel_correctness_eigen:
-          requires:
-            - build_dgswemv2_eigen
       - build_dgswemv2_swe_only_blaze:
           requires:
             - checkout_code
@@ -267,12 +144,12 @@ workflows:
       - run_unit_tests_blaze:
           requires:
             - build_dgswemv2_blaze
-#      - rkdg_run_parallel_correctness_blaze:
-#          requires:
-#            - build_dgswemv2_blaze
-#      - rkdg_run_parallel_weirs_blaze:
-#          requires:
-#            - build_dgswemv2_blaze
-#      - ehdg_run_parallel_correctness_blaze:
-#          requires:
-#            - build_dgswemv2_blaze
+      - rkdg_run_parallel_correctness_blaze:
+          requires:
+            - build_dgswemv2_blaze
+      - rkdg_run_parallel_weirs_blaze:
+          requires:
+            - build_dgswemv2_blaze
+      - ehdg_run_parallel_correctness_blaze:
+          requires:
+            - build_dgswemv2_blaze
