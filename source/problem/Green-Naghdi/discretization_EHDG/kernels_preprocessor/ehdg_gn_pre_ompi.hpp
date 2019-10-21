@@ -51,7 +51,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             dc_global_dof_offsets.push_back(dc_global_dof_offset);
         }
 
-        uint total_dc_global_dof_offset = 0;
+        uint total_dc_global_dof_offset = 0; // this is the number of local dofs
 
         if (!dc_global_dof_offsets.empty()) {
             total_dc_global_dof_offset = std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
@@ -87,7 +87,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                    0,
                    MPI_COMM_WORLD);
 
-        uint n_dc_global_dofs;
+        uint n_dc_global_dofs = 0;
 
         if (locality_id == 0) {
             n_dc_global_dofs =
@@ -107,11 +107,21 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         MPI_Bcast(&n_dc_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-        MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
-        MatSetSizes(global_data.w1_hat_w1_hat, PETSC_DECIDE, PETSC_DECIDE, n_dc_global_dofs, n_dc_global_dofs);
-        MatSetUp(global_data.w1_hat_w1_hat);
+        MatCreateBAIJ(MPI_COMM_WORLD
+                , 4
+                , total_dc_global_dof_offset
+                , total_dc_global_dof_offset
+                , n_dc_global_dofs
+                , n_dc_global_dofs
+                , 5, NULL
+                , 2, NULL
+                , &(global_data.w1_hat_w1_hat));
 
-        VecCreateMPI(MPI_COMM_WORLD, PETSC_DECIDE, n_dc_global_dofs, &(global_data.w1_hat_rhs));
+        //MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
+        //MatSetSizes(global_data.w1_hat_w1_hat, total_dc_global_dof_offset, total_dc_global_dof_offset, n_dc_global_dofs, n_dc_global_dofs);
+        //MatSetUp(global_data.w1_hat_w1_hat);
+
+        VecCreateMPI(MPI_COMM_WORLD, total_dc_global_dof_offset, n_dc_global_dofs, &(global_data.w1_hat_rhs));
 
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
@@ -125,6 +135,16 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         // KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
         // PCSetType(global_data.dc_pc, PCLU);
 
+        if (locality_id == 3) {
+            PetscInt a;
+            PetscInt b;
+            MatGetOwnershipRange(global_data.w1_hat_w1_hat, &a, &b);
+            std::cout << a << ' ' << b << '\n';
+            VecGetOwnershipRange(global_data.w1_hat_rhs, &a, &b);
+            std::cout << a << ' ' << b << '\n';
+            std::cout << total_dc_global_dof_offset << ' ';
+        }
+
         MPI_Scatter(&total_dc_global_dof_offsets.front(),
                     1,
                     MPI_UNSIGNED,
@@ -133,6 +153,10 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                     MPI_UNSIGNED,
                     0,
                     MPI_COMM_WORLD);
+
+        if (locality_id == 3) {
+            std::cout << total_dc_global_dof_offset << std::endl;
+        }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             dc_global_dof_offsets[su_id] += total_dc_global_dof_offset;

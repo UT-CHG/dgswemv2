@@ -169,13 +169,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                  edge_internal.w1_hat_rhs.data(),
                                  ADD_VALUES);
 
-                    MatSetValues(w1_hat_w1_hat,
-                                 dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
-                                 dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
-                                 edge_internal.w1_hat_w1_hat_flat.data(),
-                                 ADD_VALUES);
+                    int beg = dc_global_dof_indx.front() / 4;
+
+                    MatSetValuesBlocked(w1_hat_w1_hat,
+                                         1,
+                                         &beg,
+                                         1,
+                                         &beg,
+                                         edge_internal.w1_hat_w1_hat_flat.data(),
+                                         ADD_VALUES);
 
                     uint bcon_id = 0;
 
@@ -187,13 +189,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
                         std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-                        MatSetValues(w1_hat_w1_hat,
-                                     dc_global_dof_indx.size(),
-                                     (int*)&dc_global_dof_indx.front(),
-                                     dc_global_dof_con_indx.size(),
-                                     (int*)&dc_global_dof_con_indx.front(),
-                                     edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                     ADD_VALUES);
+                        int beg_con = dc_global_dof_con_indx.front() / 4;
+
+                        MatSetValuesBlocked(w1_hat_w1_hat,
+                                            1,
+                                            &beg,
+                                            1,
+                                            &beg_con,
+                                            edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                                            ADD_VALUES);
 
                         ++bcon_id;
                     }
@@ -206,13 +210,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
                         std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-                        MatSetValues(w1_hat_w1_hat,
-                                     dc_global_dof_indx.size(),
-                                     (int*)&dc_global_dof_indx.front(),
-                                     dc_global_dof_con_indx.size(),
-                                     (int*)&dc_global_dof_con_indx.front(),
-                                     edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                     ADD_VALUES);
+                        int beg_con = dc_global_dof_con_indx.front() / 4;
+
+                        MatSetValuesBlocked(w1_hat_w1_hat,
+                                            1,
+                                            &beg,
+                                            1,
+                                            &beg_con,
+                                            edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                                            ADD_VALUES);
 
                         ++bcon_id;
                     }
@@ -230,13 +236,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                  edge_internal.w1_hat_rhs.data(),
                                  ADD_VALUES);
 
-                    MatSetValues(w1_hat_w1_hat,
-                                 dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
-                                 dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
-                                 edge_internal.w1_hat_w1_hat_flat.data(),
-                                 ADD_VALUES);
+                    int beg = dc_global_dof_indx.front() / 4;
+
+                    MatSetValuesBlocked(w1_hat_w1_hat,
+                                        1,
+                                        &beg,
+                                        1,
+                                        &beg,
+                                        edge_internal.w1_hat_w1_hat_flat.data(),
+                                        ADD_VALUES);
 
                     uint bcon_id = 0;
 
@@ -248,13 +256,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
                         std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-                        MatSetValues(w1_hat_w1_hat,
-                                     dc_global_dof_indx.size(),
-                                     (int*)&dc_global_dof_indx.front(),
-                                     dc_global_dof_con_indx.size(),
-                                     (int*)&dc_global_dof_con_indx.front(),
-                                     edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                     ADD_VALUES);
+                        int beg_con = dc_global_dof_con_indx.front() / 4;
+
+                        MatSetValuesBlocked(w1_hat_w1_hat,
+                                            1,
+                                            &beg,
+                                            1,
+                                            &beg_con,
+                                            edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                                            ADD_VALUES);
 
                         ++bcon_id;
                     }
@@ -272,13 +282,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                  edge_internal.w1_hat_rhs.data(),
                                  ADD_VALUES);
 
-                    MatSetValues(w1_hat_w1_hat,
-                                 dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
-                                 dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
-                                 edge_internal.w1_hat_w1_hat_flat.data(),
-                                 ADD_VALUES);
+                    int beg = dc_global_dof_indx.front() / 4;
+
+                    MatSetValuesBlocked(w1_hat_w1_hat,
+                                        1,
+                                        &beg,
+                                        1,
+                                        &beg,
+                                        edge_internal.w1_hat_w1_hat_flat.data(),
+                                        ADD_VALUES);
 
                     uint bcon_id = 0;
 
@@ -290,13 +302,15 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
                         std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
 
-                        MatSetValues(w1_hat_w1_hat,
-                                     dc_global_dof_indx.size(),
-                                     (int*)&dc_global_dof_indx.front(),
-                                     dc_global_dof_con_indx.size(),
-                                     (int*)&dc_global_dof_con_indx.front(),
-                                     edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                     ADD_VALUES);
+                        int beg_con = dc_global_dof_con_indx.front() / 4;
+
+                        MatSetValuesBlocked(w1_hat_w1_hat,
+                                            1,
+                                            &beg,
+                                            1,
+                                            &beg_con,
+                                            edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                                            ADD_VALUES);
 
                         ++bcon_id;
                     }
