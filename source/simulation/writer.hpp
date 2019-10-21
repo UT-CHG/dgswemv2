@@ -91,7 +91,7 @@ Writer<ProblemType>::Writer(const WriterInput& writer_input)
       writing_modal_output(writer_input.writing_modal_output),
       modal_output_frequency(writer_input.modal_output_freq_step),
       version(0) {
-    mkdir(this->output_path.c_str(), ACCESSPERMS);     	      
+    mkdir(this->output_path.c_str(), ACCESSPERMS);
     if (this->writing_log_file) {
         this->log_file_name = this->output_path + writer_input.log_file_name;
     }

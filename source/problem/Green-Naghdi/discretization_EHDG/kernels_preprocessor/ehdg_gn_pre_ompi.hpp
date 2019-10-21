@@ -116,14 +116,14 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
 
-        PetscLogStageRegister("Construct", &global_data.con_stage); 
-        PetscLogStageRegister("Solve", &global_data.sol_stage);  
-        PetscLogStageRegister("Propagate", &global_data.prop_stage);  
+        PetscLogStageRegister("Construct", &global_data.con_stage);
+        PetscLogStageRegister("Solve", &global_data.sol_stage);
+        PetscLogStageRegister("Propagate", &global_data.prop_stage);
         PetscLogStageRegister("SWE", &global_data.swe_stage);
-        PetscLogStageRegister("Derivatives", &global_data.d_stage); 
+        PetscLogStageRegister("Derivatives", &global_data.d_stage);
 
-        //KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
-        //PCSetType(global_data.dc_pc, PCLU);
+        // KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
+        // PCSetType(global_data.dc_pc, PCLU);
 
         MPI_Scatter(&total_dc_global_dof_offsets.front(),
                     1,

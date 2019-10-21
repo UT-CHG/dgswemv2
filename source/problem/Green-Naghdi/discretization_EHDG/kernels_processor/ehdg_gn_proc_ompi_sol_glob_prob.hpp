@@ -313,12 +313,12 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
         Vec& dc_sol            = global_data.dc_sol;
         VecScatter& dc_scatter = global_data.dc_scatter;
 
-	PetscLogStagePop();
+        PetscLogStagePop();
         PetscLogStagePush(global_data.sol_stage);
 
         KSPSolve(dc_ksp, w1_hat_rhs, w1_hat_rhs);
 
-	PetscLogStagePop();
+        PetscLogStagePop();
         PetscLogStagePush(global_data.prop_stage);
 
         VecScatterBegin(dc_scatter, w1_hat_rhs, dc_sol, INSERT_VALUES, SCATTER_FORWARD);

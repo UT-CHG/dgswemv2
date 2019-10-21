@@ -26,7 +26,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
         { PetscLogStagePush(global_data.swe_stage); }
 
         SWE_SIM::Problem::stage_ompi(sim_units, global_data, first_stepper, begin_sim_id, end_sim_id);
-    
+
 #pragma omp master
         { PetscLogStagePop(); }
     }
@@ -49,7 +49,7 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
         }
 #pragma omp master
         { PetscLogStagePush(global_data.swe_stage); }
-        
+
         SWE_SIM::Problem::stage_ompi(sim_units, global_data, first_stepper, begin_sim_id, end_sim_id);
 
 #pragma omp master
