@@ -9,6 +9,9 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                            const ESSPRKStepper& stepper,
                                            const uint begin_sim_id,
                                            const uint end_sim_id) {
+#pragma omp master
+    { PetscLogStagePush(global_data.con_stage); }
+
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
@@ -310,7 +313,13 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
         Vec& dc_sol            = global_data.dc_sol;
         VecScatter& dc_scatter = global_data.dc_scatter;
 
+	PetscLogStagePop();
+        PetscLogStagePush(global_data.sol_stage);
+
         KSPSolve(dc_ksp, w1_hat_rhs, w1_hat_rhs);
+
+	PetscLogStagePop();
+        PetscLogStagePush(global_data.prop_stage);
 
         VecScatterBegin(dc_scatter, w1_hat_rhs, dc_sol, INSERT_VALUES, SCATTER_FORWARD);
         VecScatterEnd(dc_scatter, w1_hat_rhs, dc_sol, INSERT_VALUES, SCATTER_FORWARD);
@@ -383,6 +392,9 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             state.w1 = reshape<double, GN::n_dimensions, SO::ColumnMajor>(internal.w1_rhs, elt.data.get_ndof());
         });
     }
+
+#pragma omp master
+    { PetscLogStagePop(); }
 }
 }
 }

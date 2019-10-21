@@ -14,6 +14,12 @@ struct GlobalData : SWE::GlobalData {
     KSP dc_ksp;
     PC dc_pc;
 
+    PetscLogStage con_stage;
+    PetscLogStage sol_stage;
+    PetscLogStage prop_stage;
+    PetscLogStage swe_stage;
+    PetscLogStage d_stage;
+
     IS dc_from, dc_to;
     VecScatter dc_scatter;
     Vec dc_sol;

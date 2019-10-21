@@ -22,8 +22,13 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
                 sim_units[su_id]->parser.ParseInput(first_stepper, sim_units[su_id]->discretization.mesh);
             }
         }
+#pragma omp master
+        { PetscLogStagePush(global_data.swe_stage); }
 
         SWE_SIM::Problem::stage_ompi(sim_units, global_data, first_stepper, begin_sim_id, end_sim_id);
+    
+#pragma omp master
+        { PetscLogStagePop(); }
     }
 
     for (uint stage = 0; stage < second_stepper.GetNumStages(); ++stage) {
@@ -42,8 +47,13 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
                 sim_units[su_id]->parser.ParseInput(first_stepper, sim_units[su_id]->discretization.mesh);
             }
         }
-
+#pragma omp master
+        { PetscLogStagePush(global_data.swe_stage); }
+        
         SWE_SIM::Problem::stage_ompi(sim_units, global_data, first_stepper, begin_sim_id, end_sim_id);
+
+#pragma omp master
+        { PetscLogStagePop(); }
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -59,7 +69,13 @@ void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnit
                                          ESSPRKStepper& stepper,
                                          const uint begin_sim_id,
                                          const uint end_sim_id) {
+#pragma omp master
+    { PetscLogStagePush(global_data.d_stage); }
+
     Problem::compute_derivatives_ompi(sim_units, stepper, begin_sim_id, end_sim_id);
+
+#pragma omp master
+    { PetscLogStagePop(); }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh.CallForEachElement(
