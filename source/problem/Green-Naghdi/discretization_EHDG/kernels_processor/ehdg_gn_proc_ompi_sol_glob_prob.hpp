@@ -132,7 +132,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
             std::vector<uint>& dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
-            std::vector<double> message(3 * 16 + 3);
+            std::vector<double> message(3 * 16 + 3 + 4);
             uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
             uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
             uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
@@ -141,6 +141,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
                 message[0] = (double)(dc_global_dof_indx.front() / 4);
                 memcpy(&message[1], edge_internal.w1_hat_w1_hat_flat.data(), sizeof(double) * 16);
+                memcpy(&message[51], edge_internal.w1_hat_rhs.data(), sizeof(double) * 4);
             }
 
             uint bcon_id = 0;
@@ -188,7 +189,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                  dc_global_dof_indx.size(),
                                  (int*)&dc_global_dof_indx.front(),
                                  edge_internal.w1_hat_rhs.data(),
-                                 ADD_VALUES);
+                                 INSERT_VALUES);
 
                     int beg = dc_global_dof_indx.front() / 4;
 
@@ -198,7 +199,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                          1,
                                          &beg,
                                          edge_internal.w1_hat_w1_hat_flat.data(),
-                                         ADD_VALUES);
+                                         INSERT_VALUES);
 
                     uint bcon_id = 0;
 
@@ -218,7 +219,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             1,
                                             &beg_con,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                            ADD_VALUES);
+                                            INSERT_VALUES);
 
                         ++bcon_id;
                     }
@@ -239,7 +240,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             1,
                                             &beg_con,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                            ADD_VALUES);
+                                            INSERT_VALUES);
 
                         ++bcon_id;
                     }
@@ -255,7 +256,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                  dc_global_dof_indx.size(),
                                  (int*)&dc_global_dof_indx.front(),
                                  edge_internal.w1_hat_rhs.data(),
-                                 ADD_VALUES);
+                                 INSERT_VALUES);
 
                     int beg = dc_global_dof_indx.front() / 4;
 
@@ -265,7 +266,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                         1,
                                         &beg,
                                         edge_internal.w1_hat_w1_hat_flat.data(),
-                                        ADD_VALUES);
+                                        INSERT_VALUES);
 
                     uint bcon_id = 0;
 
@@ -285,7 +286,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             1,
                                             &beg_con,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                            ADD_VALUES);
+                                            INSERT_VALUES);
 
                         ++bcon_id;
                     }
@@ -297,13 +298,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
                     std::vector <uint> &dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
-                    VecSetValues(w1_hat_rhs,
-                                 dc_global_dof_indx.size(),
-                                 (int *) &dc_global_dof_indx.front(),
-                                 edge_internal.w1_hat_rhs.data(),
-                                 ADD_VALUES);
-
-                    std::vector<double> message(16 * 3 + 3);
+                    std::vector<double> message(16 * 3 + 3 + 4);
                     uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
                     uint submesh_in = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
                     uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
@@ -318,6 +313,10 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                             edge_internal.w1_hat_w1_hat_flat[i] += message[i + 1];
                         }
 
+                        for (int i = 0; i < 4; ++i) {
+                            edge_internal.w1_hat_rhs[i] += message[i + 51];
+                        }
+
                         int beg1 = (int)message[17];
 
                         MatSetValuesBlocked(w1_hat_w1_hat,
@@ -326,7 +325,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             1,
                                             &beg1,
                                             &message[18],
-                                            ADD_VALUES);
+                                            INSERT_VALUES);
 
                         int beg2 = (int)message[34];
 
@@ -336,8 +335,13 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             1,
                                             &beg2,
                                             &message[35],
-                                            ADD_VALUES);
+                                            INSERT_VALUES);
 
+                        VecSetValues(w1_hat_rhs,
+                                     dc_global_dof_indx.size(),
+                                     (int *) &dc_global_dof_indx.front(),
+                                     edge_internal.w1_hat_rhs.data(),
+                                     INSERT_VALUES);
 
                         MatSetValuesBlocked(w1_hat_w1_hat,
                                             1,
@@ -345,7 +349,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             1,
                                             &beg,
                                             edge_internal.w1_hat_w1_hat_flat.data(),
-                                            ADD_VALUES);
+                                            INSERT_VALUES);
 
                         uint bcon_id = 0;
 
@@ -365,7 +369,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                                 1,
                                                 &beg_con,
                                                 edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
-                                                ADD_VALUES);
+                                                INSERT_VALUES);
 
                             ++bcon_id;
                         }
@@ -407,8 +411,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
         if(stepper.GetStep() == 0) {
             MatSetOption(w1_hat_w1_hat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
         }
-        MatZeroEntries(w1_hat_w1_hat);
-        VecZeroEntries(w1_hat_rhs);
     }
 #pragma omp barrier
 

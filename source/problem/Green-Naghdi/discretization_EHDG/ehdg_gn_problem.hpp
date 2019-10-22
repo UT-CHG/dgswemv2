@@ -93,7 +93,7 @@ struct Problem {
         begin_index[CommTypes::dc_global_dof_indx] += 1;
         begin_index[CommTypes::dbath] += GN::n_dddbath_terms * ngp;
         begin_index[CommTypes::derivatives] += GN::n_ddu_terms * ngp;
-        begin_index[CommTypes::global_mat] += 16 * 3 + 3;
+        begin_index[CommTypes::global_mat] += 16 * 3 + 3 + 4;
 
         return offset;
     }

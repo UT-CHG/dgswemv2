@@ -114,7 +114,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                 , n_dc_global_dofs
                 , n_dc_global_dofs
                 , 5, NULL
-                , 2, NULL
+                , 4, NULL
                 , &(global_data.w1_hat_w1_hat));
 
         //MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
