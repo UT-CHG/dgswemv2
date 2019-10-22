@@ -13,6 +13,8 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
     { PetscLogStagePush(global_data.con_stage); }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::global_mat, stepper.GetTimestamp());
+
         sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
             auto& internal = elt.data.internal;
 
@@ -119,35 +121,52 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed([](auto& edge_dbound) {
             auto& edge_internal = edge_dbound.edge_data.edge_internal;
-
             auto& internal = edge_dbound.boundary.data.internal;
             auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
             boundary.w1_hat_w1 -= boundary.w1_hat_w2 * internal.w2_w2_inv * internal.w2_w1;
-
             edge_internal.w1_hat_w1_hat -=
                 boundary.w1_hat_w2 * internal.w2_w2_inv * boundary.w2_w1_hat + boundary.w1_hat_w1 * boundary.w1_w1_hat;
-
             edge_internal.w1_hat_rhs = -boundary.w1_hat_w1 * internal.w1_rhs;
-
             edge_internal.w1_hat_w1_hat_flat = flatten<double>(edge_internal.w1_hat_w1_hat);
 
-            uint bcon_id = 0;
+            std::vector<uint>& dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
+            std::vector<double> message(3 * 16 + 3);
+            uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
+            uint submesh_in  = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
+            uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
+            uint submesh_ex  = edge_dbound.boundary.boundary_condition.exchanger.submesh_ex;
+
+            if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
+                message[0] = (double)(dc_global_dof_indx.front() / 4);
+                memcpy(&message[1], edge_internal.w1_hat_w1_hat_flat.data(), sizeof(double) * 16);
+            }
+
+            uint bcon_id = 0;
             for (uint bound_id = 0; bound_id < edge_dbound.boundary.data.get_nbound(); ++bound_id) {
-                if (bound_id == edge_dbound.boundary.bound_id)
-                    continue;
+                if (bound_id == edge_dbound.boundary.bound_id) continue;
 
                 auto& boundary_con = edge_dbound.boundary.data.boundary[bound_id];
-
+                std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
                 edge_internal.w1_hat_w1_hat = -(boundary.w1_hat_w2 * internal.w2_w2_inv * boundary_con.w2_w1_hat +
                                                 boundary.w1_hat_w1 * boundary_con.w1_w1_hat);
-
                 edge_internal.w1_hat_w1_hat_con_flat[bcon_id] = flatten<double>(edge_internal.w1_hat_w1_hat);
+                if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
+                    message[17 * (bcon_id + 1)] = (double)(dc_global_dof_con_indx.front() / 4);
+                    memcpy(&message[17 * (bcon_id + 1) + 1], edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                           sizeof(double) * 16);
+                }
 
                 ++bcon_id;
             }
+
+            if (locality_in > locality_ex || (locality_in == locality_ex && submesh_in > submesh_ex)) {
+                edge_dbound.boundary.boundary_condition.exchanger.SetToSendBuffer(CommTypes::global_mat, message);
+            }
         });
+
+        sim_units[su_id]->communicator.SendAll(CommTypes::global_mat, stepper.GetTimestamp());
     }
 
     Mat& w1_hat_w1_hat = global_data.w1_hat_w1_hat;
@@ -157,6 +176,8 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 #pragma omp master
     {
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
+            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::global_mat, stepper.GetTimestamp());
+
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface(
                 [&w1_hat_rhs, &w1_hat_w1_hat](auto& edge_int) {
                     auto& edge_internal = edge_int.edge_data.edge_internal;
@@ -272,47 +293,82 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
             sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed(
                 [&w1_hat_rhs, &w1_hat_w1_hat](auto& edge_dbound) {
-                    auto& edge_internal = edge_dbound.edge_data.edge_internal;
+                    auto &edge_internal = edge_dbound.edge_data.edge_internal;
 
-                    std::vector<uint>& dc_global_dof_indx = edge_internal.dc_global_dof_indx;
+                    std::vector <uint> &dc_global_dof_indx = edge_internal.dc_global_dof_indx;
 
                     VecSetValues(w1_hat_rhs,
                                  dc_global_dof_indx.size(),
-                                 (int*)&dc_global_dof_indx.front(),
+                                 (int *) &dc_global_dof_indx.front(),
                                  edge_internal.w1_hat_rhs.data(),
                                  ADD_VALUES);
 
+                    std::vector<double> message(16 * 3 + 3);
+                    uint locality_in = edge_dbound.boundary.boundary_condition.exchanger.locality_in;
+                    uint submesh_in = edge_dbound.boundary.boundary_condition.exchanger.submesh_in;
+                    uint locality_ex = edge_dbound.boundary.boundary_condition.exchanger.locality_ex;
+                    uint submesh_ex = edge_dbound.boundary.boundary_condition.exchanger.submesh_ex;
+
                     int beg = dc_global_dof_indx.front() / 4;
 
-                    MatSetValuesBlocked(w1_hat_w1_hat,
-                                        1,
-                                        &beg,
-                                        1,
-                                        &beg,
-                                        edge_internal.w1_hat_w1_hat_flat.data(),
-                                        ADD_VALUES);
+                    if (locality_in < locality_ex || (locality_in == locality_ex && submesh_in < submesh_ex)) {
+                        edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::global_mat, message);
 
-                    uint bcon_id = 0;
+                        for (int i = 0; i < 16; ++i) {
+                            edge_internal.w1_hat_w1_hat_flat[i] += message[i + 1];
+                        }
 
-                    for (uint bound_id = 0; bound_id < edge_dbound.boundary.data.get_nbound(); ++bound_id) {
-                        if (bound_id == edge_dbound.boundary.bound_id)
-                            continue;
-
-                        auto& boundary_con = edge_dbound.boundary.data.boundary[bound_id];
-
-                        std::vector<uint>& dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
-
-                        int beg_con = dc_global_dof_con_indx.front() / 4;
+                        int beg1 = (int)message[17];
 
                         MatSetValuesBlocked(w1_hat_w1_hat,
                                             1,
                                             &beg,
                                             1,
-                                            &beg_con,
-                                            edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                                            &beg1,
+                                            &message[18],
                                             ADD_VALUES);
 
-                        ++bcon_id;
+                        int beg2 = (int)message[34];
+
+                        MatSetValuesBlocked(w1_hat_w1_hat,
+                                            1,
+                                            &beg,
+                                            1,
+                                            &beg2,
+                                            &message[35],
+                                            ADD_VALUES);
+
+
+                        MatSetValuesBlocked(w1_hat_w1_hat,
+                                            1,
+                                            &beg,
+                                            1,
+                                            &beg,
+                                            edge_internal.w1_hat_w1_hat_flat.data(),
+                                            ADD_VALUES);
+
+                        uint bcon_id = 0;
+
+                        for (uint bound_id = 0; bound_id < edge_dbound.boundary.data.get_nbound(); ++bound_id) {
+                            if (bound_id == edge_dbound.boundary.bound_id)
+                                continue;
+
+                            auto &boundary_con = edge_dbound.boundary.data.boundary[bound_id];
+
+                            std::vector <uint> &dc_global_dof_con_indx = boundary_con.dc_global_dof_indx;
+
+                            int beg_con = dc_global_dof_con_indx.front() / 4;
+
+                            MatSetValuesBlocked(w1_hat_w1_hat,
+                                                1,
+                                                &beg,
+                                                1,
+                                                &beg_con,
+                                                edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
+                                                ADD_VALUES);
+
+                            ++bcon_id;
+                        }
                     }
                 });
         }
@@ -348,6 +404,9 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
         VecRestoreArray(dc_sol, &sol_ptr);
 
+        if(stepper.GetStep() == 0) {
+            MatSetOption(w1_hat_w1_hat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
+        }
         MatZeroEntries(w1_hat_w1_hat);
         VecZeroEntries(w1_hat_rhs);
     }
@@ -405,6 +464,8 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
             state.w1 = reshape<double, GN::n_dimensions, SO::ColumnMajor>(internal.w1_rhs, elt.data.get_ndof());
         });
+
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::global_mat, stepper.GetTimestamp());
     }
 
 #pragma omp master

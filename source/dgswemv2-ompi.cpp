@@ -58,6 +58,8 @@ int main(int argc, char* argv[]) {
         PetscFinalize();
 #endif
 
+                simulation->ComputeL2Residual();
+                simulation->ComputeL2Residual();
         MPI_Finalize();
 
         return 0;

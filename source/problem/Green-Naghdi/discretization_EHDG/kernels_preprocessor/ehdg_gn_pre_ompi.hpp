@@ -125,25 +125,14 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
+        // KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
+        // PCSetType(global_data.dc_pc, PCLU);
 
         PetscLogStageRegister("Construct", &global_data.con_stage);
         PetscLogStageRegister("Solve", &global_data.sol_stage);
         PetscLogStageRegister("Propagate", &global_data.prop_stage);
         PetscLogStageRegister("SWE", &global_data.swe_stage);
         PetscLogStageRegister("Derivatives", &global_data.d_stage);
-
-        // KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
-        // PCSetType(global_data.dc_pc, PCLU);
-
-        if (locality_id == 3) {
-            PetscInt a;
-            PetscInt b;
-            MatGetOwnershipRange(global_data.w1_hat_w1_hat, &a, &b);
-            std::cout << a << ' ' << b << '\n';
-            VecGetOwnershipRange(global_data.w1_hat_rhs, &a, &b);
-            std::cout << a << ' ' << b << '\n';
-            std::cout << total_dc_global_dof_offset << ' ';
-        }
 
         MPI_Scatter(&total_dc_global_dof_offsets.front(),
                     1,
@@ -153,10 +142,6 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                     MPI_UNSIGNED,
                     0,
                     MPI_COMM_WORLD);
-
-        if (locality_id == 3) {
-            std::cout << total_dc_global_dof_offset << std::endl;
-        }
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             dc_global_dof_offsets[su_id] += total_dc_global_dof_offset;

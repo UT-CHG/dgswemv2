@@ -88,10 +88,12 @@ struct Problem {
         offset[CommTypes::dc_global_dof_indx] = begin_index[CommTypes::dc_global_dof_indx];
         offset[CommTypes::dbath]              = begin_index[CommTypes::dbath];
         offset[CommTypes::derivatives]        = begin_index[CommTypes::derivatives];
+        offset[CommTypes::global_mat]         = begin_index[CommTypes::global_mat];
 
         begin_index[CommTypes::dc_global_dof_indx] += 1;
         begin_index[CommTypes::dbath] += GN::n_dddbath_terms * ngp;
         begin_index[CommTypes::derivatives] += GN::n_ddu_terms * ngp;
+        begin_index[CommTypes::global_mat] += 16 * 3 + 3;
 
         return offset;
     }
