@@ -135,6 +135,8 @@ class Master {
     DynVector<double> chi_baryctr;
     DynMatrix<double> chi_midpts;
 
+    std::array<DynVector<double>, dimension> dchi_baryctr;
+
     DynMatrix<double> chi_gp;
     DynMatrix<double> phi_gp;
 

@@ -27,6 +27,7 @@ void Problem::initialize_global_dc_problem_serial(ProblemDiscretizationType& dis
         uint ndof_global = edge_int.edge_data.get_ndof();
 
         // Set indexes for global matrix construction
+        edge_internal.dc_local_dof_indx = dc_global_dof_offset;
         edge_internal.dc_global_dof_indx.resize(ndof_global * GN::n_dimensions);
 
         for (uint indx = 0; indx < ndof_global * GN::n_dimensions; ++indx) {
@@ -74,6 +75,7 @@ void Problem::initialize_global_dc_problem_serial(ProblemDiscretizationType& dis
         uint ndof_global = edge_bound.edge_data.get_ndof();
 
         // Set indexes for global matrix construction
+        edge_internal.dc_local_dof_indx = dc_global_dof_offset;
         edge_internal.dc_global_dof_indx.resize(ndof_global * GN::n_dimensions);
 
         for (uint indx = 0; indx < ndof_global * GN::n_dimensions; ++indx) {
@@ -122,6 +124,7 @@ void Problem::initialize_global_dc_problem_parallel_pre_send(ProblemDiscretizati
 
         if (locality_in < locality_ex || (locality_in == locality_ex && submesh_in < submesh_ex)) {
             // Set indexes for global matrix construction
+            edge_internal.dc_local_dof_indx = dc_global_dof_offset;
             edge_internal.dc_global_dof_indx.resize(ndof_global * GN::n_dimensions);
 
             for (uint indx = 0; indx < ndof_global * GN::n_dimensions; ++indx) {

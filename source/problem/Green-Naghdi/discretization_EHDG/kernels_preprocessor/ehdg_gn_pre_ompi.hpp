@@ -117,6 +117,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
                 , 4, NULL
                 , &(global_data.w1_hat_w1_hat));
 
+        global_data.w1_hat_w1_hat_flat.resize(total_dc_global_dof_offset * 20);
         //MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
         //MatSetSizes(global_data.w1_hat_w1_hat, total_dc_global_dof_offset, total_dc_global_dof_offset, n_dc_global_dofs, n_dc_global_dofs);
         //MatSetUp(global_data.w1_hat_w1_hat);

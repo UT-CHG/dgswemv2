@@ -34,6 +34,8 @@ class Element {
     std::array<DynMatrix<double>, dimension> dchi_gp;  // linear basis
     std::array<DynMatrix<double>, dimension> dphi_gp;  // modal basis
 
+    std::array<DynVector<double>, dimension> dchi_baryctr;  // linear basis
+
     DynVector<double> int_fact;
     DynMatrix<double> int_phi_fact;
     DynMatrix<double> int_phi_phi_fact;
@@ -64,6 +66,8 @@ class Element {
     void CreateRawBoundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBoundary<dimension - 1, DataType>>>&
                                  pre_specialized_interfaces);
 
+    template <typename InputArrayType>
+    decltype(auto) L2Projection(const InputArrayType& u_gp);
     template <typename F>
     DynMatrix<double> L2ProjectionF(const F& f);
     template <typename InputArrayType>
@@ -87,6 +91,8 @@ class Element {
     decltype(auto) ComputeLinearDUgp(const uint dir, const InputArrayType& u_lin);
     template <typename InputArrayType>
     decltype(auto) ComputeLinearUbaryctr(const InputArrayType& u_lin);
+    template <typename InputArrayType>
+    decltype(auto) ComputeLinearDUbaryctr(const uint dir, const InputArrayType& u_lin);
     template <typename InputArrayType>
     decltype(auto) ComputeLinearUmidpts(const InputArrayType& u_lin);
     template <typename InputArrayType>
@@ -189,6 +195,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
         this->dchi_gp = this->master->dchi_gp;
+        this->dchi_baryctr = this->master->dchi_baryctr;
         for (uint dir = 0; dir < dimension; ++dir) {
             for (uint gp = 0; gp < this->master->ngp; ++gp) {
                 for (uint dof = 0; dof < this->master->nvrtx; ++dof) {
@@ -198,6 +205,13 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
                     }
                     this->dchi_gp[dir](dof, gp) = dchi;
                 }
+            }
+            for (uint dof = 0; dof < this->master->nvrtx; ++dof) {
+                double dchi = 0;
+                for (uint z = 0; z < dimension; ++z) {
+                    dchi += this->master->dchi_baryctr[z][dof] * J_inv[0](z, dir);
+                }
+                this->dchi_baryctr[dir][dof] = dchi;
             }
         }
 
@@ -296,6 +310,13 @@ void Element<dimension, MasterType, ShapeType, DataType>::CreateRawBoundaries(
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::L2Projection(const InputArrayType& u_gp) {
+    // projection(q, dof) = gp_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
+    return u_gp * this->int_phi_fact * this->m_inv;
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename F>
 DynMatrix<double> Element<dimension, MasterType, ShapeType, DataType>::L2ProjectionF(const F& f) {
     // projection(q, dof) = f_values(q, gp) * int_phi_fact(gp, dof) * m_inv(dof, dof)
@@ -388,6 +409,14 @@ template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearUbaryctr(
     const InputArrayType& u_lin) {
     return this->master->ComputeLinearUbaryctr(u_lin);
+}
+
+template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
+template <typename InputArrayType>
+inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUbaryctr(
+        const uint dir,
+        const InputArrayType& u_lin) {
+    return u_lin * this->dchi_baryctr[dir];
 }
 
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
