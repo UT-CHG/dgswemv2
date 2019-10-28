@@ -30,46 +30,52 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
 
     raw_data_file << "\t\t\t<PointData>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"ze_point\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"ze_point\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_point_data)
         raw_data_file << (float)it[SWE::Variables::ze] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qx_point\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"qx_point\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_point_data)
         raw_data_file << (float)it[SWE::Variables::qx] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_point\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"qy_point\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_point_data)
         raw_data_file << (float)it[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_point\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"bath_point\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : aux_point_data)
         raw_data_file << (float)it[SWE::Auxiliaries::bath] << ' ';
+    raw_data_file << "\n\t\t\t\t</DataArray>\n";
+
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"velocity_point\" format=\"ascii\">\n\t\t\t\t\t";
+    for (uint pt = 0; pt <  q_point_data.size(); ++pt)
+        raw_data_file << (float)(std::hypot(q_point_data[pt][SWE::Variables::qx], q_point_data[pt][SWE::Variables::qy]) /
+                                 (q_point_data[pt][SWE::Variables::ze]+aux_point_data[pt][SWE::Auxiliaries::bath])) << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t</PointData>\n";
 
     raw_data_file << "\t\t\t<CellData>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"ze_cell\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"ze_cell\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_cell_data)
         raw_data_file << (float)it[SWE::Variables::ze] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qx_cell\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"qx_cell\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_cell_data)
         raw_data_file << (float)it[SWE::Variables::qx] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"qy_cell\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"qy_cell\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_cell_data)
         raw_data_file << (float)it[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
-    raw_data_file << "\t\t\t\t<DataArray type=\"Float64\" Name=\"bath_cell\" format=\"ascii\">\n\t\t\t\t\t";
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"bath_cell\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : aux_cell_data)
         raw_data_file << (float)it[SWE::Auxiliaries::bath] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
