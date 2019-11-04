@@ -4,6 +4,7 @@
 namespace GN {
 template <typename MeshType>
 void initialize_data_serial(MeshType& mesh) {
+#ifdef D_INTERPOLATION
     mesh.CallForEachElement([](auto& elt) {
         auto& derivative         = elt.data.derivative;
         derivative.area          = elt.GetShape().GetArea();
@@ -51,12 +52,14 @@ void initialize_data_serial(MeshType& mesh) {
             }
         }
     });
+#endif
 }
 
 template <typename MeshType>
 void initialize_data_parallel_pre_send(MeshType& mesh, uint comm_type) {
     initialize_data_serial(mesh);
 
+#ifdef D_INTERPOLATION
     mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
         auto& derivative = dbound.data.derivative;
 
@@ -66,10 +69,12 @@ void initialize_data_parallel_pre_send(MeshType& mesh, uint comm_type) {
         }
         dbound.boundary_condition.exchanger.SetToSendBuffer(comm_type, message);
     });
+#endif
 }
 
 template <typename MeshType>
 void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
+#ifdef D_INTERPOLATION
     mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
         auto& derivative = dbound.data.derivative;
 
@@ -108,6 +113,7 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
             }
         }
     });
+#endif
 }
 }
 

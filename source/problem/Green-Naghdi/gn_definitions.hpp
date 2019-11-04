@@ -36,6 +36,9 @@ const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water);
 
 constexpr uint n_dimensions = 2;
 
+//#define D_PROJECTION
+#define D_INTERPOLATION
+
 constexpr uint n_du_terms  = 4;
 constexpr uint n_ddu_terms = 8;
 enum DU : uint { ux = 0, uy = 1, vx = 2, vy = 3 };
