@@ -1,35 +1,30 @@
-#ifndef INTERPOLATION_DBATH_SERIAL_HPP
-#define INTERPOLATION_DBATH_SERIAL_HPP
+#ifndef GREENGAUSS_DBATH_SERIAL_HPP
+#define GREENGAUSS_DBATH_SERIAL_HPP
+
+#include "interpolation_dbath.hpp"
 
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType>
-void compute_dbath_avg(ProblemDiscretizationType& discretization);
+void compute_dbath_gg(ProblemDiscretizationType& discretization);
 template <typename ProblemDiscretizationType>
-void compute_ddbath_avg(ProblemDiscretizationType& discretization);
+void compute_ddbath_gg(ProblemDiscretizationType& discretization);
 template <typename ProblemDiscretizationType>
-void compute_dddbath_avg(ProblemDiscretizationType& discretization);
-
-template <typename ProblemDiscretizationType>
-void compute_dbath(ProblemDiscretizationType& discretization);
-template <typename ProblemDiscretizationType>
-void compute_ddbath(ProblemDiscretizationType& discretization);
-template <typename ProblemDiscretizationType>
-void compute_dddbath(ProblemDiscretizationType& discretization);
+void compute_dddbath_gg(ProblemDiscretizationType& discretization);
 
 void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization) {
-    compute_dbath_avg(discretization);
-    compute_dbath(discretization);
+    compute_dbath_gg(discretization);
+    interpolate_dbath(discretization);
 
-    compute_ddbath_avg(discretization);
-    compute_ddbath(discretization);
+    compute_ddbath_gg(discretization);
+    interpolate_ddbath(discretization);
 
-    compute_dddbath_avg(discretization);
-    compute_dddbath(discretization);
+    compute_dddbath_gg(discretization);
+    interpolate_dddbath(discretization);
 }
 
 template <typename ProblemDiscretizationType>
-void compute_dbath_avg(ProblemDiscretizationType& discretization) {
+void compute_dbath_gg(ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative = elt.data.derivative;
         set_constant(derivative.dbath_at_baryctr, 0);
@@ -79,49 +74,7 @@ void compute_dbath_avg(ProblemDiscretizationType& discretization) {
 }
 
 template <typename ProblemDiscretizationType>
-void compute_dbath(ProblemDiscretizationType& discretization) {
-    discretization.mesh.CallForEachInterface([](auto& intface) {
-        auto& derivative_in                                       = intface.data_in.derivative;
-        auto& derivative_ex                                       = intface.data_ex.derivative;
-        derivative_in.dbath_at_baryctr_neigh[intface.bound_id_in] = derivative_ex.dbath_at_baryctr;
-        derivative_ex.dbath_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.dbath_at_baryctr;
-    });
-
-    discretization.mesh.CallForEachBoundary([](auto& bound) {
-        auto& derivative                                  = bound.data.derivative;
-        derivative.dbath_at_baryctr_neigh[bound.bound_id] = derivative.dbath_at_baryctr;
-    });
-
-    discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& derivative = dbound.data.derivative;
-        std::vector<double> message(GN::n_dimensions);
-        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
-        for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
-            derivative.dbath_at_baryctr_neigh[dbound.bound_id][dbath] = message[dbath];
-        }
-    });
-
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state      = elt.data.state[0];
-        auto& derivative = elt.data.derivative;
-        auto& internal   = elt.data.internal;
-
-        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            const uint element_1 = derivative.a_elem[2 * bound];
-            const uint element_2 = derivative.a_elem[2 * bound + 1];
-            column(derivative.dbath_at_midpts, bound) =
-                derivative.dbath_at_baryctr +
-                (derivative.dbath_at_baryctr_neigh[element_1] - derivative.dbath_at_baryctr) * derivative.a[bound][0] +
-                (derivative.dbath_at_baryctr_neigh[element_2] - derivative.dbath_at_baryctr) * derivative.a[bound][1];
-        }
-        derivative.dbath_lin = derivative.dbath_at_midpts * derivative.T;
-        state.dbath          = elt.ProjectLinearToBasis(derivative.dbath_lin);
-        internal.dbath_at_gp = elt.ComputeUgp(state.dbath);
-    });
-}
-
-template <typename ProblemDiscretizationType>
-void compute_ddbath_avg(ProblemDiscretizationType& discretization) {
+void compute_ddbath_gg(ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative = elt.data.derivative;
         set_constant(derivative.ddbath_at_baryctr, 0);
@@ -198,61 +151,7 @@ void compute_ddbath_avg(ProblemDiscretizationType& discretization) {
 }
 
 template <typename ProblemDiscretizationType>
-void compute_ddbath(ProblemDiscretizationType& discretization) {
-    discretization.mesh.CallForEachInterface([](auto& intface) {
-        auto& derivative_in                                        = intface.data_in.derivative;
-        auto& derivative_ex                                        = intface.data_ex.derivative;
-        derivative_in.ddbath_at_baryctr_neigh[intface.bound_id_in] = derivative_ex.ddbath_at_baryctr;
-        derivative_ex.ddbath_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.ddbath_at_baryctr;
-    });
-
-    discretization.mesh.CallForEachBoundary([](auto& bound) {
-        auto& derivative                                   = bound.data.derivative;
-        derivative.ddbath_at_baryctr_neigh[bound.bound_id] = derivative.ddbath_at_baryctr;
-    });
-
-    discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& derivative = dbound.data.derivative;
-        auto& boundary   = dbound.data.boundary[dbound.bound_id];
-
-        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-        std::vector<double> message(GN::n_ddbath_terms + GN::n_dimensions * ngp);
-        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
-        for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
-            derivative.ddbath_at_baryctr_neigh[dbound.bound_id][ddbath] = message[ddbath];
-        }
-        for (uint gp = 0; gp < ngp; ++gp) {
-            const uint gp_ex = ngp - gp - 1;
-            for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
-                boundary.dbath_hat_at_gp(dbath, gp) = (boundary.dbath_hat_at_gp(dbath, gp) +
-                                                       message[GN::n_ddbath_terms + GN::n_dimensions * gp_ex + dbath]) /
-                                                      2.0;
-            }
-        }
-    });
-
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state      = elt.data.state[0];
-        auto& derivative = elt.data.derivative;
-        auto& internal   = elt.data.internal;
-
-        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            const uint element_1 = derivative.a_elem[2 * bound];
-            const uint element_2 = derivative.a_elem[2 * bound + 1];
-            column(derivative.ddbath_at_midpts, bound) =
-                derivative.ddbath_at_baryctr +
-                (derivative.ddbath_at_baryctr_neigh[element_1] - derivative.ddbath_at_baryctr) *
-                    derivative.a[bound][0] +
-                (derivative.ddbath_at_baryctr_neigh[element_2] - derivative.ddbath_at_baryctr) * derivative.a[bound][1];
-        }
-        derivative.ddbath_lin = derivative.ddbath_at_midpts * derivative.T;
-        state.ddbath          = elt.ProjectLinearToBasis(derivative.ddbath_lin);
-        internal.ddbath_at_gp = elt.ComputeUgp(state.ddbath);
-    });
-}
-
-template <typename ProblemDiscretizationType>
-void compute_dddbath_avg(ProblemDiscretizationType& discretization) {
+void compute_dddbath_gg(ProblemDiscretizationType& discretization) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative = elt.data.derivative;
         set_constant(derivative.dddbath_at_baryctr, 0);
@@ -309,50 +208,6 @@ void compute_dddbath_avg(ProblemDiscretizationType& discretization) {
                     dbound.Integration(vec_cw_mult(row(ddbath_at_gp, ddbath), row(dbound.surface_normal, dir)));
             }
         }
-    });
-}
-
-template <typename ProblemDiscretizationType>
-void compute_dddbath(ProblemDiscretizationType& discretization) {
-    discretization.mesh.CallForEachInterface([](auto& intface) {
-        auto& derivative_in                                         = intface.data_in.derivative;
-        auto& derivative_ex                                         = intface.data_ex.derivative;
-        derivative_in.dddbath_at_baryctr_neigh[intface.bound_id_in] = derivative_ex.dddbath_at_baryctr;
-        derivative_ex.dddbath_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.dddbath_at_baryctr;
-    });
-
-    discretization.mesh.CallForEachBoundary([](auto& bound) {
-        auto& derivative                                    = bound.data.derivative;
-        derivative.dddbath_at_baryctr_neigh[bound.bound_id] = derivative.dddbath_at_baryctr;
-    });
-
-    discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& derivative = dbound.data.derivative;
-        std::vector<double> message(GN::n_dddbath_terms);
-        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
-        for (uint dddbath = 0; dddbath < GN::n_dddbath_terms; ++dddbath) {
-            derivative.dddbath_at_baryctr_neigh[dbound.bound_id][dddbath] = message[dddbath];
-        }
-    });
-
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state      = elt.data.state[0];
-        auto& derivative = elt.data.derivative;
-        auto& internal   = elt.data.internal;
-
-        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            const uint element_1 = derivative.a_elem[2 * bound];
-            const uint element_2 = derivative.a_elem[2 * bound + 1];
-            column(derivative.dddbath_at_midpts, bound) =
-                derivative.dddbath_at_baryctr +
-                (derivative.dddbath_at_baryctr_neigh[element_1] - derivative.dddbath_at_baryctr) *
-                    derivative.a[bound][0] +
-                (derivative.dddbath_at_baryctr_neigh[element_2] - derivative.dddbath_at_baryctr) *
-                    derivative.a[bound][1];
-        }
-        derivative.dddbath_lin = derivative.dddbath_at_midpts * derivative.T;
-        state.dddbath          = elt.ProjectLinearToBasis(derivative.dddbath_lin);
-        internal.dddbath_at_gp = elt.ComputeUgp(state.dddbath);
     });
 }
 }

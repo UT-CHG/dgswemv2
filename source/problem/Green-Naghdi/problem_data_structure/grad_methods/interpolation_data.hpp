@@ -1,10 +1,10 @@
-#ifndef INTERPOLATION_DATA_DERIVATIVE_HPP
-#define INTERPOLATION_DATA_DERIVATIVE_HPP
+#ifndef INTERPOLATION_DATA_HPP
+#define INTERPOLATION_DATA_HPP
 
 namespace GN {
-struct Derivative {
-    Derivative() = default;
-    Derivative(const uint nvrtx, const uint nbound, const std::vector<uint>& ngp_boundary)
+struct Interpolation {
+    Interpolation() = default;
+    Interpolation(const uint nvrtx, const uint nbound, const std::vector<uint>& ngp_boundary)
         : midpts_coord(nbound),
           baryctr_coord_neigh(nbound),
           a(nbound),

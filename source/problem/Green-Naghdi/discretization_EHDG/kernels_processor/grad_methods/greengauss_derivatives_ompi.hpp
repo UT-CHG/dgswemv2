@@ -1,7 +1,7 @@
-#ifndef INTERPOLATION_DERIVATIVES_OMPI_HPP
-#define INTERPOLATION_DERIVATIVES_OMPI_HPP
+#ifndef GREENGAUSS_DERIVATIVES_OMPI_HPP
+#define GREENGAUSS_DERIVATIVES_OMPI_HPP
 
-#include "interpolation_derivatives_serial.hpp"
+#include "greengauss_derivatives_serial.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -13,8 +13,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
-        compute_dze_avg(sim_units[su_id]->discretization, stepper);
-        compute_du_avg(sim_units[su_id]->discretization, stepper);
+        compute_dze_gg(sim_units[su_id]->discretization, stepper);
+        compute_du_gg(sim_units[su_id]->discretization, stepper);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             auto& derivative = dbound.data.derivative;
@@ -40,8 +40,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives, stepper.GetTimestamp());
 
-        compute_dze(sim_units[su_id]->discretization, stepper);
-        compute_du(sim_units[su_id]->discretization, stepper);
+        interpolate_dze(sim_units[su_id]->discretization, stepper);
+        interpolate_du(sim_units[su_id]->discretization, stepper);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -53,7 +53,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
-        compute_ddu_avg(sim_units[su_id]->discretization, stepper);
+        compute_ddu_gg(sim_units[su_id]->discretization, stepper);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             auto& derivative = dbound.data.derivative;
@@ -70,7 +70,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives, stepper.GetTimestamp());
 
-        compute_ddu(sim_units[su_id]->discretization, stepper);
+        interpolate_ddu(sim_units[su_id]->discretization, stepper);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {

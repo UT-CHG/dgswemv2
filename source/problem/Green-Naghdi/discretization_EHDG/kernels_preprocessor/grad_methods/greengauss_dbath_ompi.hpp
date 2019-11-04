@@ -1,7 +1,7 @@
-#ifndef INTERPOLATION_DBATH_OMPI_HPP
-#define INTERPOLATION_DBATH_OMPI_HPP
+#ifndef GREENGAUSS_DBATH_OMPI_HPP
+#define GREENGAUSS_DBATH_OMPI_HPP
 
-#include "interpolation_dbath_serial.hpp"
+#include "greengauss_dbath_serial.hpp"
 
 namespace GN {
 namespace EHDG {
@@ -13,7 +13,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
-        compute_dbath_avg(sim_units[su_id]->discretization);
+        compute_dbath_gg(sim_units[su_id]->discretization);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& derivative = dbound.data.derivative;
@@ -30,7 +30,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        compute_dbath(sim_units[su_id]->discretization);
+        interpolate_dbath(sim_units[su_id]->discretization);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -42,7 +42,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
-        compute_ddbath_avg(sim_units[su_id]->discretization);
+        compute_ddbath_gg(sim_units[su_id]->discretization);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& derivative = dbound.data.derivative;
@@ -67,7 +67,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        compute_ddbath(sim_units[su_id]->discretization);
+        interpolate_ddbath(sim_units[su_id]->discretization);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -79,7 +79,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
-        compute_dddbath_avg(sim_units[su_id]->discretization);
+        compute_dddbath_gg(sim_units[su_id]->discretization);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
             auto& derivative = dbound.data.derivative;
@@ -96,7 +96,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        compute_dddbath(sim_units[su_id]->discretization);
+        interpolate_dddbath(sim_units[su_id]->discretization);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {

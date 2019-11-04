@@ -5,8 +5,8 @@
 #include "grad_methods/projection_derivatives_serial.hpp"
 #endif
 
-#ifdef D_INTERPOLATION
-#include "grad_methods/interpolation_derivatives_serial.hpp"
+#ifdef D_GREENGAUSS
+#include "grad_methods/greengauss_derivatives_serial.hpp"
 #endif
 
 #endif

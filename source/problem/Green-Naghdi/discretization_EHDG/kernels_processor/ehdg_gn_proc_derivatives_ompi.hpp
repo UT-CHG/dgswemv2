@@ -5,8 +5,8 @@
 #include "grad_methods/projection_derivatives_ompi.hpp"
 #endif
 
-#ifdef D_INTERPOLATION
-#include "grad_methods/interpolation_derivatives_ompi.hpp"
+#ifdef D_GREENGAUSS
+#include "grad_methods/greengauss_derivatives_ompi.hpp"
 #endif
 
 #endif

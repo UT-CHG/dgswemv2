@@ -5,8 +5,8 @@
 #include "grad_methods/projection_dbath_serial.hpp"
 #endif
 
-#ifdef D_INTERPOLATION
-#include "grad_methods/interpolation_dbath_serial.hpp"
+#ifdef D_GREENGAUSS
+#include "grad_methods/greengauss_dbath_serial.hpp"
 #endif
 
 #endif
