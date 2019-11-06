@@ -9,4 +9,8 @@
 #include "grad_methods/greengauss_derivatives_ompi.hpp"
 #endif
 
+#ifdef D_LEASTSQUARES
+#include "grad_methods/leastsquares_derivatives_ompi.hpp"
+#endif
+
 #endif

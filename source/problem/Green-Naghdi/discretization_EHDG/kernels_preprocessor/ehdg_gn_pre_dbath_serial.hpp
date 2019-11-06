@@ -9,4 +9,8 @@
 #include "grad_methods/greengauss_dbath_serial.hpp"
 #endif
 
+#ifdef D_LEASTSQUARES
+#include "grad_methods/leastsquares_dbath_serial.hpp"
+#endif
+
 #endif

@@ -9,4 +9,8 @@
 #include "grad_methods/greengauss_dbath_ompi.hpp"
 #endif
 
+#ifdef D_LEASTSQUARES
+#include "grad_methods/leastsquares_dbath_ompi.hpp"
+#endif
+
 #endif

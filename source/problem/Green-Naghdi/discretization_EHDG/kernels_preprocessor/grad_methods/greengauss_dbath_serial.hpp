@@ -163,8 +163,8 @@ void compute_dddbath_gg(ProblemDiscretizationType& discretization) {
         auto& derivative_in = intface.data_in.derivative;
         auto& derivative_ex = intface.data_ex.derivative;
 
-        auto ddbath_at_gp_in = intface.ComputeUgpIN(state_in.ddbath);
-        auto ddbath_at_gp_ex = intface.ComputeUgpEX(state_ex.ddbath);
+        const auto ddbath_at_gp_in = intface.ComputeUgpIN(state_in.ddbath);
+        const auto ddbath_at_gp_ex = intface.ComputeUgpEX(state_ex.ddbath);
 
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
@@ -184,7 +184,7 @@ void compute_dddbath_gg(ProblemDiscretizationType& discretization) {
         auto& state      = bound.data.state[0];
         auto& derivative = bound.data.derivative;
 
-        auto ddbath_at_gp = bound.ComputeUgp(state.ddbath);
+        const auto ddbath_at_gp = bound.ComputeUgp(state.ddbath);
 
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
@@ -199,7 +199,7 @@ void compute_dddbath_gg(ProblemDiscretizationType& discretization) {
         auto& state      = dbound.data.state[0];
         auto& derivative = dbound.data.derivative;
 
-        auto ddbath_at_gp = dbound.ComputeUgp(state.ddbath);
+        const auto ddbath_at_gp = dbound.ComputeUgp(state.ddbath);
 
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {

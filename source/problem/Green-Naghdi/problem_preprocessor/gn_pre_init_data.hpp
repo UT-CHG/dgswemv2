@@ -51,6 +51,13 @@ void initialize_data_serial(MeshType& mesh) {
                 }
             }
         }
+#ifdef D_LEASTSQUARES
+        HybMatrix<double, 2> D_transpose(2, elt.data.get_nbound());
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            column(D_transpose, bound) = derivative.baryctr_coord_neigh[bound] - derivative.baryctr_coord;
+        }
+        derivative.P = inverse(D_transpose * transpose(D_transpose)) * D_transpose;
+#endif
     });
 #endif
 }
@@ -112,6 +119,13 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
                 }
             }
         }
+#ifdef D_LEASTSQUARES
+        HybMatrix<double, 2> D_transpose(2, elt.data.get_nbound());
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            column(D_transpose, bound) = derivative.baryctr_coord_neigh[bound] - derivative.baryctr_coord;
+        }
+        derivative.P = inverse(D_transpose * transpose(D_transpose)) * D_transpose;
+#endif
     });
 #endif
 }

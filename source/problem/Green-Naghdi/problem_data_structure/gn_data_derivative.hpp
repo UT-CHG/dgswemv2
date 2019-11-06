@@ -9,4 +9,8 @@
 #include "grad_methods/greengauss_data_derivative.hpp"
 #endif
 
+#ifdef D_LEASTSQUARES
+#include "grad_methods/leastsquares_data_derivative.hpp"
+#endif
+
 #endif
