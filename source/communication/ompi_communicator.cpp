@@ -10,9 +10,9 @@ OMPICommunicator::OMPICommunicator(const DistributedBoundaryMetaData& db_data) {
         rank_boundary.receive_rank = rb_meta_data.locality_ex;
 
         rank_boundary.send_tag =
-            (int)((unsigned short)rb_meta_data.submesh_in << 16 | (unsigned short)rb_meta_data.submesh_ex);
+            (int)((unsigned short)rb_meta_data.submesh_in << 8 | (unsigned short)rb_meta_data.submesh_ex);
         rank_boundary.receive_tag =
-            (int)((unsigned short)rb_meta_data.submesh_ex << 16 | (unsigned short)rb_meta_data.submesh_in);
+            (int)((unsigned short)rb_meta_data.submesh_ex << 8 | (unsigned short)rb_meta_data.submesh_in);
 
         this->rank_boundaries.push_back(std::move(rank_boundary));
     }
