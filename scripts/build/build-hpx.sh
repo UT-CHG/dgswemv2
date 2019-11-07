@@ -3,44 +3,10 @@
 START_BOLD="tput bold"
 END_BOLD="tput sgr0"
 
-usage () {
-    echo "usage: $0 [options]"
-    echo "options:"
-    echo "    -h"
-    echo "        shows this message"
-    echo "    -c <config_file> "
-    echo "        specify a config file."
-    echo "        default config file is config.txt"
-    echo "    clean"
-    echo "        removes build directory."
-    echo "    no-make"
-    echo "        runs CMake, does not run make."
-    echo "    reinstall"
-    echo "        if already built, reinstalls into install dir."
-    exit 1
-}
-
-CONFIGFILE=""
-
-if [ "$#" -gt 2 ]; then usage; fi
-
-if [ "$#" == 2 ] && [ "$1" == "-c" ]; then
-    CONFIGFILE=$2
-fi
-
-if [ "$1" == "-h" ]; then usage; fi
-if [ "$1" == "--help" ]; then usage; fi
-
-# Fix me: handle more options
-if [ "$#" -gt 0 ]; then
-    if [ "$1" != "clean" ] && [ "$1" != "no-make" ] && [ "$1" != "reinstall"]; then
-	echo "invalid option: $1"
-	usage
-    fi
-fi
-
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 source $SCRIPTPATH/util.sh
+
+parse_args "$@"
 
 if [ -z "$CONFIGFILE" ]; then
     CONFIGFILE=${SCRIPTPATH}/config.txt
@@ -108,8 +74,7 @@ if [ ! -d "$HPX_BUILD_PATH" ]; then
                  -DHPX_WITH_THREAD_IDLE_RATES=${IDLE_RATES} \
                  -DHPX_WITH_CXX14=On \
                  -DHPX_WITH_TESTS=Off \
-                 -DHPX_WITH_EXAMPLES=Off \
-                 -DMPI_CXX_SKIP_MPICXX=true"
+                 -DHPX_WITH_EXAMPLES=Off"
     if [ $MACHINE = "stampede2-skx" ]; then
     CMAKE_FLAGS="${CMAKE_FLAGS} \
                  -DHPX_WITH_MORE_THAN_64_THREADS=On \
