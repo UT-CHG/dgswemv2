@@ -37,7 +37,7 @@ jobs:
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
                 -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
+                -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
@@ -58,7 +58,7 @@ jobs:
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
                 -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
+                -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
@@ -142,7 +142,7 @@ jobs:
             cmake \
                 -DCMAKE_PREFIX_PATH=/usr/install \
                 -DCMAKE_BUILD_TYPE=Debug \
-                -DSET_VERBOSE=On \
+                -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
@@ -165,7 +165,7 @@ jobs:
                 -DCMAKE_PREFIX_PATH=/usr/install \
                 -DCMAKE_BUILD_TYPE=Debug \
                 -DSET_VERBOSE=On \
-                -DCOMPILER_WARNINGS=On \
+                -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
                 -DRKDG=On \
