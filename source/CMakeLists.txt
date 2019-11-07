@@ -46,8 +46,8 @@ if(USE_HPX)
   hpx_setup_target(
     dgswemv2-hpx
     COMPONENT_DEPENDENCIES iostreams
+    DEPENDENCIES ${YAML_CPP_LIBRARIES}
   )
-  target_include_directories(dgswemv2-hpx PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})  
-  target_link_libraries(dgswemv2-hpx ${YAML_CPP_LIBRARIES} ${HPX_LIBRARIES})
+  target_include_directories(dgswemv2-hpx PRIVATE ${YAML_CPP_INCLUDE_DIR} ${HPX_INCLUDE_DIRS})
   install(TARGETS dgswemv2-hpx DESTINATION bin)
 endif()

@@ -2,7 +2,6 @@
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx_main.hpp>
 #include <hpx/include/iostreams.hpp>
-#include <hpx/include/components.hpp>
 #include <hpx/include/lcos.hpp>
 
 #include "general_definitions.hpp"

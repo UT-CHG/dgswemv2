@@ -37,9 +37,9 @@ if [ ! -d ${BOOST_BUILD} ]; then
     set -e
     mkdir -p ${BOOST_BUILD}
     cd ${BOOST_BUILD}
-    wget 'http://downloads.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2'
-    tar xf boost_1_63_0.tar.bz2
-    cd boost_1_63_0
+    wget 'https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.bz2'
+    tar xf boost_1_69_0.tar.bz2
+    cd boost_1_69_0
     ./bootstrap.sh --prefix="$INSTALL_PATH"
     ./b2 -j${NUM_BUILDCORES} install
     exit
