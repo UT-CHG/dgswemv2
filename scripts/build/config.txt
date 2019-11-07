@@ -2,13 +2,13 @@ BUILD_TYPE=Release
 MACHINE=stampede2-knl
 #VERBOSE=true
 
-if [ "$MACHINE" == "ices-desktop" ]; then
-   echo "using ices-desktop"
-    NUM_BUILDCORES=4
-    MODULES="c7 gcc/8.1 cmake/3.10.2 boost/1.67.0 mpich/1.2.7p1"
-    CMAKE="/opt/apps/ossw/applications/cmake/cmake-3.10.2/c7/gcc-8.1/bin/cmake"
+if [ "$MACHINE" == "oden-desktop" ]; then
+   echo "using oden-desktop"
+   NUM_BUILDCORES=4
+   MODULES="ubt18 gcc/8.2 mpich2/3.2 mkl/19.0 petsc/3.9.3-cxx-opt"
+   CMAKE="/usr/bin/cmake"
 
-    WORK=/workspace/bremer
+   WORK=/workspace/bremer
 fi
 
 if [ "$MACHINE" == "stampede2-knl" ] || [ "$MACHINE" == "stampede2-skx" ]; then

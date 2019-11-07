@@ -69,7 +69,7 @@ $DGSWEMV2_ROOT_/$BUILD_DIR/source/manufactured-solution-swe-serial dgswemv2_inpu
 
 echo "Running HPX Test case..."
 rm -f hpx.out
-$DGSWEMV2_ROOT_/$BUILD_DIR/partitioner/partitioner dgswemv2_input.15 2 1
+$DGSWEMV2_ROOT_/$BUILD_DIR/partitioner/partitioner dgswemv2_input.15 4 1
 $DGSWEMV2_ROOT_/$BUILD_DIR/source/manufactured-solution-swe-hpx dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
 
 echo "Running MPI Test case..."
