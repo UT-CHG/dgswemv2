@@ -199,8 +199,8 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
 
 template <typename T, int SO = Eigen::StorageOptions::RowMajor>
 void flatten(const DynMatrix<T>& matrix, T* mem) {
-    uint m = matrix.rows();
-    uint n = matrix.cols();
+    uint m                                                                           = matrix.rows();
+    uint n                                                                           = matrix.cols();
     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(mem, m, n) = matrix;
 }
 

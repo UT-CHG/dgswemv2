@@ -59,25 +59,16 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             dc_global_dof_offsets.resize(n_localities);
         }
 
-        MPI_Gather(&dc_global_dof_offset,
-                   1,
-                   MPI_UNSIGNED,
-                   &dc_global_dof_offsets.front(),
-                   1,
-                   MPI_UNSIGNED,
-                   0,
-                   MPI_COMM_WORLD);
+        MPI_Gather(
+            &dc_global_dof_offset, 1, MPI_UNSIGNED, &dc_global_dof_offsets.front(), 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
         uint n_dc_global_dofs = 0;
 
         if (locality_id == 0) {
-            n_dc_global_dofs =
-                std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
+            n_dc_global_dofs = std::accumulate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end(), 0);
 
             // exclusive scan
-            std::rotate(dc_global_dof_offsets.begin(),
-                        dc_global_dof_offsets.end() - 1,
-                        dc_global_dof_offsets.end());
+            std::rotate(dc_global_dof_offsets.begin(), dc_global_dof_offsets.end() - 1, dc_global_dof_offsets.end());
 
             dc_global_dof_offsets.front() = 0;
 
@@ -88,27 +79,29 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
 
         MPI_Bcast(&n_dc_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-        MatCreateBAIJ(MPI_COMM_WORLD
-                , 4
-                , dc_global_dof_offset
-                , dc_global_dof_offset
-                , n_dc_global_dofs
-                , n_dc_global_dofs
-                , 5, NULL
-                , 4, NULL
-                , &(global_data.w1_hat_w1_hat));
+        MatCreateBAIJ(MPI_COMM_WORLD,
+                      4,
+                      dc_global_dof_offset,
+                      dc_global_dof_offset,
+                      n_dc_global_dofs,
+                      n_dc_global_dofs,
+                      5,
+                      NULL,
+                      4,
+                      NULL,
+                      &(global_data.w1_hat_w1_hat));
 
         global_data.w1_hat_w1_hat_flat.resize(dc_global_dof_offset * 20);
-        //MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
-        //MatSetSizes(global_data.w1_hat_w1_hat, total_dc_global_dof_offset, total_dc_global_dof_offset, n_dc_global_dofs, n_dc_global_dofs);
-        //MatSetUp(global_data.w1_hat_w1_hat);
+        // MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
+        // MatSetSizes(global_data.w1_hat_w1_hat, total_dc_global_dof_offset, total_dc_global_dof_offset,
+        // n_dc_global_dofs, n_dc_global_dofs); MatSetUp(global_data.w1_hat_w1_hat);
 
         VecCreateMPI(MPI_COMM_WORLD, dc_global_dof_offset, n_dc_global_dofs, &(global_data.w1_hat_rhs));
 
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
-        //KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
-        //PCSetType(global_data.dc_pc, PCLU);
+        // KSPGetPC(global_data.dc_ksp, &(global_data.dc_pc));
+        // PCSetType(global_data.dc_pc, PCLU);
 
         PetscLogStageRegister("Construct", &global_data.con_stage);
         PetscLogStageRegister("Solve", &global_data.sol_stage);
@@ -116,14 +109,8 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         PetscLogStageRegister("SWE", &global_data.swe_stage);
         PetscLogStageRegister("Derivatives", &global_data.d_stage);
 
-        MPI_Scatter(&dc_global_dof_offsets.front(),
-                    1,
-                    MPI_UNSIGNED,
-                    &dc_global_dof_offset,
-                    1,
-                    MPI_UNSIGNED,
-                    0,
-                    MPI_COMM_WORLD);
+        MPI_Scatter(
+            &dc_global_dof_offsets.front(), 1, MPI_UNSIGNED, &dc_global_dof_offset, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
             Problem::initialize_global_dc_problem_parallel_finalize_pre_send(sim_units[su_id]->discretization,

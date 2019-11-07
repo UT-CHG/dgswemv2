@@ -194,7 +194,7 @@ void Element<dimension, MasterType, ShapeType, DataType>::Initialize() {
 
     if (const_J) {  // constant Jacobian
         // DIFFERENTIATION FACTORS
-        this->dchi_gp = this->master->dchi_gp;
+        this->dchi_gp      = this->master->dchi_gp;
         this->dchi_baryctr = this->master->dchi_baryctr;
         for (uint dir = 0; dir < dimension; ++dir) {
             for (uint gp = 0; gp < this->master->ngp; ++gp) {
@@ -414,8 +414,8 @@ inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::Compu
 template <uint dimension, typename MasterType, typename ShapeType, typename DataType>
 template <typename InputArrayType>
 inline decltype(auto) Element<dimension, MasterType, ShapeType, DataType>::ComputeLinearDUbaryctr(
-        const uint dir,
-        const InputArrayType& u_lin) {
+    const uint dir,
+    const InputArrayType& u_lin) {
     return u_lin * this->dchi_baryctr[dir];
 }
 

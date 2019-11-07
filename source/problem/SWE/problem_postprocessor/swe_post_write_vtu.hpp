@@ -51,9 +51,11 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"velocity_point\" format=\"ascii\">\n\t\t\t\t\t";
-    for (uint pt = 0; pt <  q_point_data.size(); ++pt)
-        raw_data_file << (float)(std::hypot(q_point_data[pt][SWE::Variables::qx], q_point_data[pt][SWE::Variables::qy]) /
-                                 (q_point_data[pt][SWE::Variables::ze]+aux_point_data[pt][SWE::Auxiliaries::bath])) << ' ';
+    for (uint pt = 0; pt < q_point_data.size(); ++pt)
+        raw_data_file << (float)(std::hypot(q_point_data[pt][SWE::Variables::qx],
+                                            q_point_data[pt][SWE::Variables::qy]) /
+                                 (q_point_data[pt][SWE::Variables::ze] + aux_point_data[pt][SWE::Auxiliaries::bath]))
+                      << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t</PointData>\n";
