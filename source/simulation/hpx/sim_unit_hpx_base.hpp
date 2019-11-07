@@ -4,6 +4,8 @@
 #include "general_definitions.hpp"
 #include "utilities/is_defined.hpp"
 
+#include <hpx/include/components.hpp>
+
 struct HPXSimulationUnitBase
     //    : public hpx::components::migration_support<hpx::components::component_base<HPXSimulationUnit<ProblemType>>> {
     : public hpx::components::abstract_managed_component_base<HPXSimulationUnitBase> {

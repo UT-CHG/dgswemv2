@@ -1,4 +1,4 @@
-#include <hpx/runtime/serialization/serialize.hpp>
+#include <hpx/serialization/serialize.hpp>
 #include "utilities/serialize_chrono.hpp"
 
 #include <iostream>
