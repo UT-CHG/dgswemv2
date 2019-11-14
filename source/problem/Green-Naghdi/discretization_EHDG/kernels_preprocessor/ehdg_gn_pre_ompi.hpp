@@ -154,7 +154,7 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
     }
 #pragma omp barrier
 
-    Problem::compute_bathymetry_derivatives_ompi(sim_units, begin_sim_id, end_sim_id);
+    Problem::compute_bathymetry_derivatives_ompi(sim_units, global_data, begin_sim_id, end_sim_id);
 
     uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages()
                         ? stepper.GetFirstStepper().GetNumStages()

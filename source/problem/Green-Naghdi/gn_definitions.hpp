@@ -37,11 +37,14 @@ const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water);
 constexpr uint n_dimensions = 2;
 
 //#define D_PROJECTION
-//#define D_GREENGAUSS
-#define D_LEASTSQUARES
+#define D_GREENGAUSS
+//#define D_LEASTSQUARES
 
 #if defined(D_GREENGAUSS) || defined(D_LEASTSQUARES)
-#define D_INTERPOLATION
+#define D_RECONSTRUCTION
+//#define D_RECON_INT
+//#define D_RECON_LS
+#define D_RECON_AVG
 #endif
 
 constexpr uint n_du_terms  = 4;

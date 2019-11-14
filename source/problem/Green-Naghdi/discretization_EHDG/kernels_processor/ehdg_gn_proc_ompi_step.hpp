@@ -72,7 +72,7 @@ void Problem::dispersive_correction_ompi(std::vector<std::unique_ptr<OMPISimUnit
 #pragma omp master
     { PetscLogStagePush(global_data.d_stage); }
 
-    Problem::compute_derivatives_ompi(sim_units, stepper, begin_sim_id, end_sim_id);
+    Problem::compute_derivatives_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
 
 #pragma omp master
     { PetscLogStagePop(); }

@@ -1,8 +1,6 @@
 #ifndef GREENGAUSS_DERIVATIVES_SERIAL_HPP
 #define GREENGAUSS_DERIVATIVES_SERIAL_HPP
 
-#include "interpolation_derivatives.hpp"
-
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType>
@@ -12,15 +10,17 @@ void compute_du_gg(ProblemDiscretizationType& discretization, const ESSPRKSteppe
 template <typename ProblemDiscretizationType>
 void compute_ddu_gg(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper);
 
-void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper) {
+void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization,
+                                         ProblemGlobalDataType& global_data,
+                                         const ESSPRKStepper& stepper) {
     compute_dze_gg(discretization, stepper);
-    interpolate_dze(discretization, stepper);
+    reconstruct_dze(discretization, global_data, stepper);
 
     compute_du_gg(discretization, stepper);
-    interpolate_du(discretization, stepper);
+    reconstruct_du(discretization, global_data, stepper);
 
     compute_ddu_gg(discretization, stepper);
-    interpolate_ddu(discretization, stepper);
+    reconstruct_ddu(discretization, global_data, stepper);
 }
 
 template <typename ProblemDiscretizationType>
@@ -219,6 +219,7 @@ void compute_ddu_gg(ProblemDiscretizationType& discretization, const ESSPRKStepp
         const uint stage = stepper.GetStage();
         auto& state      = dbound.data.state[stage];
         auto& derivative = dbound.data.derivative;
+        auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
         const auto du_at_gp = dbound.ComputeUgp(state.du);
 
@@ -228,6 +229,16 @@ void compute_ddu_gg(ProblemDiscretizationType& discretization, const ESSPRKStepp
                     1.0 / derivative.area *
                     dbound.Integration(vec_cw_mult(row(du_at_gp, du), row(dbound.surface_normal, dir)));
             }
+        }
+
+        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+        std::vector<double> message(GN::n_dimensions + GN::n_du_terms + ngp);
+        dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
+        for (uint gp = 0; gp < ngp; ++gp) {
+            const uint gp_ex = ngp - gp - 1;
+            boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
+                    (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[GN::n_dimensions + GN::n_du_terms + gp_ex]) /
+                    2.0;
         }
     });
 }

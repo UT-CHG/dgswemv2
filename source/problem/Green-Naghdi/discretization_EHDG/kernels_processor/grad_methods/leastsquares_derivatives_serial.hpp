@@ -1,8 +1,6 @@
 #ifndef LEASTSQUARES_DERIVATIVES_SERIAL_HPP
 #define LEASTSQUARES_DERIVATIVES_SERIAL_HPP
 
-#include "interpolation_derivatives.hpp"
-
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType>
@@ -12,7 +10,9 @@ void compute_du_ls(ProblemDiscretizationType& discretization, const ESSPRKSteppe
 template <typename ProblemDiscretizationType>
 void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper);
 
-void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper) {
+void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization,
+                                         ProblemGlobalDataType& global_data,
+                                         const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();
         auto& state      = elt.data.state[stage];
@@ -28,7 +28,7 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
         derivative.ze_at_midpts  = elt.ComputeLinearUmidpts(derivative.ze_lin);
     });
     compute_dze_ls(discretization, stepper);
-    interpolate_dze(discretization, stepper);
+    reconstruct_dze(discretization, global_data, stepper);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         auto& derivative = elt.data.derivative;
@@ -44,7 +44,7 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
         derivative.u_at_midpts  = elt.ComputeLinearUmidpts(derivative.u_lin);
     });
     compute_du_ls(discretization, stepper);
-    interpolate_du(discretization, stepper);
+    reconstruct_du(discretization, global_data, stepper);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         auto& derivative = elt.data.derivative;
@@ -52,7 +52,7 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
         derivative.du_at_midpts  = elt.ComputeLinearUmidpts(derivative.du_lin);
     });
     compute_ddu_ls(discretization, stepper);
-    interpolate_ddu(discretization, stepper);
+    reconstruct_ddu(discretization, global_data, stepper);
 }
 
 template <typename ProblemDiscretizationType>
@@ -156,10 +156,19 @@ void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
 
     discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
         auto& derivative = dbound.data.derivative;
-        std::vector<double> message(GN::n_du_terms);
+        auto& boundary   = dbound.data.boundary[dbound.bound_id];
+
+        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+        std::vector<double> message(GN::n_du_terms + ngp);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
         for (uint du = 0; du < GN::n_du_terms; ++du) {
             derivative.du_at_baryctr_neigh[dbound.bound_id][du] = message[du];
+        }
+        for (uint gp = 0; gp < ngp; ++gp) {
+            const uint gp_ex = ngp - gp - 1;
+            boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
+                    (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[GN::n_du_terms + gp_ex]) /
+                    2.0;
         }
     });
 

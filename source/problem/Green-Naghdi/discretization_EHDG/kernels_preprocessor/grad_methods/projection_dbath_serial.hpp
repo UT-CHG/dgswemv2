@@ -10,7 +10,7 @@ void compute_ddbath_rhs(ProblemDiscretizationType& discretization);
 template <typename ProblemDiscretizationType>
 void compute_dddbath_rhs(ProblemDiscretizationType& discretization);
 
-void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization) {
+void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
     compute_dbath_rhs(discretization);
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state = elt.data.state[0];

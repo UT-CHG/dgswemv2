@@ -1,10 +1,10 @@
-#ifndef INTERPOLATION_DBATH_HPP
-#define INTERPOLATION_DBATH_HPP
+#ifndef RECON_LS_DBATH_HPP
+#define RECON_LS_DBATH_HPP
 
 namespace GN {
 namespace EHDG {
-template <typename ProblemDiscretizationType>
-void interpolate_dbath(ProblemDiscretizationType& discretization) {
+template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
+void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                       = intface.data_in.derivative;
         auto& derivative_ex                                       = intface.data_ex.derivative;
@@ -32,12 +32,11 @@ void interpolate_dbath(ProblemDiscretizationType& discretization) {
         auto& internal   = elt.data.internal;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            const uint element_1 = derivative.a_elem[2 * bound];
-            const uint element_2 = derivative.a_elem[2 * bound + 1];
-            column(derivative.dbath_at_midpts, bound) =
-                derivative.dbath_at_baryctr +
-                (derivative.dbath_at_baryctr_neigh[element_1] - derivative.dbath_at_baryctr) * derivative.a[bound][0] +
-                (derivative.dbath_at_baryctr_neigh[element_2] - derivative.dbath_at_baryctr) * derivative.a[bound][1];
+            column(derivative.dbath_at_midpts, bound) = derivative.dbath_at_baryctr_neigh[bound] - derivative.dbath_at_baryctr;
+        }
+        derivative.dbath_at_midpts *= transpose(derivative.P) * derivative.dX_transpose;
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            column(derivative.dbath_at_midpts, bound) += derivative.dbath_at_baryctr;
         }
         derivative.dbath_lin = derivative.dbath_at_midpts * derivative.T;
         state.dbath          = elt.ProjectLinearToBasis(derivative.dbath_lin);
@@ -45,8 +44,8 @@ void interpolate_dbath(ProblemDiscretizationType& discretization) {
     });
 }
 
-template <typename ProblemDiscretizationType>
-void interpolate_ddbath(ProblemDiscretizationType& discretization) {
+template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
+void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                        = intface.data_in.derivative;
         auto& derivative_ex                                        = intface.data_ex.derivative;
@@ -61,21 +60,10 @@ void interpolate_ddbath(ProblemDiscretizationType& discretization) {
 
     discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& derivative = dbound.data.derivative;
-        auto& boundary   = dbound.data.boundary[dbound.bound_id];
-
-        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-        std::vector<double> message(GN::n_ddbath_terms + GN::n_dimensions * ngp);
+        std::vector<double> message(GN::n_ddbath_terms);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             derivative.ddbath_at_baryctr_neigh[dbound.bound_id][ddbath] = message[ddbath];
-        }
-        for (uint gp = 0; gp < ngp; ++gp) {
-            const uint gp_ex = ngp - gp - 1;
-            for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
-                boundary.dbath_hat_at_gp(dbath, gp) = (boundary.dbath_hat_at_gp(dbath, gp) +
-                                                       message[GN::n_ddbath_terms + GN::n_dimensions * gp_ex + dbath]) /
-                                                      2.0;
-            }
         }
     });
 
@@ -85,13 +73,11 @@ void interpolate_ddbath(ProblemDiscretizationType& discretization) {
         auto& internal   = elt.data.internal;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            const uint element_1 = derivative.a_elem[2 * bound];
-            const uint element_2 = derivative.a_elem[2 * bound + 1];
-            column(derivative.ddbath_at_midpts, bound) =
-                derivative.ddbath_at_baryctr +
-                (derivative.ddbath_at_baryctr_neigh[element_1] - derivative.ddbath_at_baryctr) *
-                    derivative.a[bound][0] +
-                (derivative.ddbath_at_baryctr_neigh[element_2] - derivative.ddbath_at_baryctr) * derivative.a[bound][1];
+            column(derivative.ddbath_at_midpts, bound) = derivative.ddbath_at_baryctr_neigh[bound] - derivative.ddbath_at_baryctr;
+        }
+        derivative.ddbath_at_midpts *= transpose(derivative.P) * derivative.dX_transpose;
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            column(derivative.ddbath_at_midpts, bound) += derivative.ddbath_at_baryctr;
         }
         derivative.ddbath_lin = derivative.ddbath_at_midpts * derivative.T;
         state.ddbath          = elt.ProjectLinearToBasis(derivative.ddbath_lin);
@@ -99,8 +85,8 @@ void interpolate_ddbath(ProblemDiscretizationType& discretization) {
     });
 }
 
-template <typename ProblemDiscretizationType>
-void interpolate_dddbath(ProblemDiscretizationType& discretization) {
+template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
+void reconstruct_dddbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                         = intface.data_in.derivative;
         auto& derivative_ex                                         = intface.data_ex.derivative;
@@ -128,14 +114,11 @@ void interpolate_dddbath(ProblemDiscretizationType& discretization) {
         auto& internal   = elt.data.internal;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            const uint element_1 = derivative.a_elem[2 * bound];
-            const uint element_2 = derivative.a_elem[2 * bound + 1];
-            column(derivative.dddbath_at_midpts, bound) =
-                derivative.dddbath_at_baryctr +
-                (derivative.dddbath_at_baryctr_neigh[element_1] - derivative.dddbath_at_baryctr) *
-                    derivative.a[bound][0] +
-                (derivative.dddbath_at_baryctr_neigh[element_2] - derivative.dddbath_at_baryctr) *
-                    derivative.a[bound][1];
+            column(derivative.dddbath_at_midpts, bound) = derivative.dddbath_at_baryctr_neigh[bound] - derivative.dddbath_at_baryctr;
+        }
+        derivative.dddbath_at_midpts *= transpose(derivative.P) * derivative.dX_transpose;
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            column(derivative.dddbath_at_midpts, bound) += derivative.dddbath_at_baryctr;
         }
         derivative.dddbath_lin = derivative.dddbath_at_midpts * derivative.T;
         state.dddbath          = elt.ProjectLinearToBasis(derivative.dddbath_lin);

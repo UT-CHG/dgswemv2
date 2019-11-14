@@ -7,6 +7,7 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                                  ProblemGlobalDataType& global_data,
                                                   const uint begin_sim_id,
                                                   const uint end_sim_id) {
     /* First derivatives begin */

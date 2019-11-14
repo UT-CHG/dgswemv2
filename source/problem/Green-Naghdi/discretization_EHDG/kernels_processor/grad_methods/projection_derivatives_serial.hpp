@@ -10,7 +10,9 @@ void compute_du_rhs(ProblemDiscretizationType& discretization, const ESSPRKStepp
 template <typename ProblemDiscretizationType>
 void compute_ddu_rhs(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper);
 
-void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper) {
+void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretization,
+                                         ProblemGlobalDataType& global_data,
+                                         const ESSPRKStepper& stepper) {
     compute_dze_rhs(discretization, stepper);
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         const uint stage = stepper.GetStage();

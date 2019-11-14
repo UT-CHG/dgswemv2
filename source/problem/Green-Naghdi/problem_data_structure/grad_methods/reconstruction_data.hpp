@@ -1,11 +1,15 @@
-#ifndef INTERPOLATION_DATA_HPP
-#define INTERPOLATION_DATA_HPP
+#ifndef RECONSTRUCTION_DATA_HPP
+#define RECONSTRUCTION_DATA_HPP
 
 namespace GN {
-struct Interpolation {
-    Interpolation() = default;
-    Interpolation(const uint nvrtx, const uint nbound, const std::vector<uint>& ngp_boundary)
-        : midpts_coord(nbound),
+struct Reconstruction {
+    Reconstruction() = default;
+    Reconstruction(const uint nvrtx, const uint nbound, const std::vector<uint>& ngp_boundary)
+        : local_nodeID(nvrtx),
+          node_mult(nvrtx),
+          dX_transpose(2, nbound),
+          P(2, nbound),
+          midpts_coord(nbound),
           baryctr_coord_neigh(nbound),
           a(nbound),
           a_elem(2 * nbound),
@@ -39,6 +43,12 @@ struct Interpolation {
         this->T(1, 1) = -1.0;
         this->T(2, 2) = -1.0;
     }
+
+    std::vector<uint> local_nodeID;
+    std::vector<uint> node_mult;
+
+    HybMatrix<double, 2> dX_transpose;
+    HybMatrix<double, 2> P;
 
     StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
 

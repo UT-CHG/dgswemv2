@@ -1,14 +1,13 @@
 #ifndef LEASTSQUARES_DATA_DERIVATIVE_HPP
 #define LEASTSQUARES_DATA_DERIVATIVE_HPP
 
-#include "interpolation_data.hpp"
+#include "reconstruction_data.hpp"
 
 namespace GN {
-struct Derivative : GN::Interpolation {
+struct Derivative : GN::Reconstruction {
     Derivative() = default;
     Derivative(const uint nvrtx, const uint nbound, const std::vector<uint>& ngp_boundary)
-        : GN::Interpolation(nvrtx, nbound, ngp_boundary),
-          P(2, nbound),
+        : GN::Reconstruction(nvrtx, nbound, ngp_boundary),
           bath_at_midpts(nbound),
           bath_at_baryctr_neigh(nbound),
           bath_lin(nvrtx),
@@ -18,8 +17,6 @@ struct Derivative : GN::Interpolation {
           u_at_midpts(GN::n_dimensions, nbound),
           u_at_baryctr_neigh(nbound),
           u_lin(GN::n_dimensions, nvrtx) {}
-
-    HybMatrix<double, 2> P;
 
     double bath_at_baryctr;
     DynRowVector<double> bath_at_midpts;

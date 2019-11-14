@@ -94,6 +94,11 @@ decltype(auto) power(const ArrayType& array, const double exp) {
 }
 
 /* Vector Operations */
+template <typename VectorType>
+uint size(const VectorType& vector) {
+    return vector.size();
+}
+
 template <typename LeftVectorType, typename RightVectorType>
 decltype(auto) vec_cw_mult(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
     return vector_left.cwiseProduct(vector_right);

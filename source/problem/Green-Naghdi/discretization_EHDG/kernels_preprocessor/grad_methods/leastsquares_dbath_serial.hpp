@@ -1,8 +1,6 @@
 #ifndef LEASTSQUARES_DBATH_SERIAL_HPP
 #define LEASTSQUARES_DBATH_SERIAL_HPP
 
-#include "interpolation_dbath.hpp"
-
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType>
@@ -12,7 +10,7 @@ void compute_ddbath_ls(ProblemDiscretizationType& discretization);
 template <typename ProblemDiscretizationType>
 void compute_dddbath_ls(ProblemDiscretizationType& discretization);
 
-void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization) {
+void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& state      = elt.data.state[0];
         auto& derivative = elt.data.derivative;
@@ -21,7 +19,7 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
         derivative.bath_at_midpts  = elt.ComputeLinearUmidpts(derivative.bath_lin);
     });
     compute_dbath_ls(discretization);
-    interpolate_dbath(discretization);
+    reconstruct_dbath(discretization, global_data);
 
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative = elt.data.derivative;
@@ -29,7 +27,7 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
         derivative.dbath_at_midpts  = elt.ComputeLinearUmidpts(derivative.dbath_lin);
     });
     compute_ddbath_ls(discretization);
-    interpolate_ddbath(discretization);
+    reconstruct_ddbath(discretization, global_data);
 
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative = elt.data.derivative;
@@ -37,7 +35,7 @@ void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& d
         derivative.ddbath_at_midpts  = elt.ComputeLinearUmidpts(derivative.ddbath_lin);
     });
     compute_dddbath_ls(discretization);
-    interpolate_dddbath(discretization);
+    reconstruct_dddbath(discretization, global_data);
 }
 
 template <typename ProblemDiscretizationType>
@@ -147,10 +145,21 @@ void compute_dddbath_ls(ProblemDiscretizationType& discretization) {
 
     discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
         auto& derivative = dbound.data.derivative;
-        std::vector<double> message(GN::n_ddbath_terms);
+        auto& boundary   = dbound.data.boundary[dbound.bound_id];
+
+        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+        std::vector<double> message(GN::n_ddbath_terms + GN::n_dimensions * ngp);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
         for (uint ddbath = 0; ddbath < GN::n_ddbath_terms; ++ddbath) {
             derivative.ddbath_at_baryctr_neigh[dbound.bound_id][ddbath] = message[ddbath];
+        }
+        for (uint gp = 0; gp < ngp; ++gp) {
+            const uint gp_ex = ngp - gp - 1;
+            for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
+                boundary.dbath_hat_at_gp(dbath, gp) = (boundary.dbath_hat_at_gp(dbath, gp) +
+                                                       message[GN::n_ddbath_terms + GN::n_dimensions * gp_ex + dbath]) /
+                                                      2.0;
+            }
         }
     });
 

@@ -48,7 +48,7 @@ void Problem::dispersive_correction_serial(ProblemDiscretizationType& discretiza
                                            ProblemGlobalDataType& global_data,
                                            ESSPRKStepper& stepper) {
     // Compute du, ddu
-    Problem::compute_derivatives_serial(discretization, stepper);
+    Problem::compute_derivatives_serial(discretization, global_data, stepper);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { Problem::local_dc_volume_kernel(stepper, elt); });
 

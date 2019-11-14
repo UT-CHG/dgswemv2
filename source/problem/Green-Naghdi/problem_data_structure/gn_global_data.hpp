@@ -6,6 +6,7 @@ struct GlobalData : SWE::GlobalData {
 #ifndef HAS_PETSC
     SparseMatrix<double> w1_hat_w1_hat;
     DynVector<double> w1_hat_rhs;
+    DynVector<double> derivatives_at_node;
 #endif
 
 #ifdef HAS_PETSC
@@ -15,6 +16,7 @@ struct GlobalData : SWE::GlobalData {
     PC dc_pc;
 
     std::vector<double> w1_hat_w1_hat_flat;
+    DynVector<double> derivatives_at_node;
 
     PetscLogStage con_stage;
     PetscLogStage sol_stage;

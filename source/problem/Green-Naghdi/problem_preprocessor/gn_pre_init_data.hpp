@@ -4,12 +4,15 @@
 namespace GN {
 template <typename MeshType>
 void initialize_data_serial(MeshType& mesh) {
-#ifdef D_INTERPOLATION
+#ifdef D_RECONSTRUCTION
     mesh.CallForEachElement([](auto& elt) {
         auto& derivative         = elt.data.derivative;
         derivative.area          = elt.GetShape().GetArea();
         derivative.baryctr_coord = elt.GetShape().GetBarycentricCoordinates();
         derivative.midpts_coord  = elt.GetShape().GetMidpointCoordinates();
+        for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
+            column(derivative.dX_transpose, bound) = derivative.midpts_coord[bound] - derivative.baryctr_coord;
+        }
     });
 
     mesh.CallForEachInterface([](auto& intface) {
@@ -51,13 +54,12 @@ void initialize_data_serial(MeshType& mesh) {
                 }
             }
         }
-#ifdef D_LEASTSQUARES
+
         HybMatrix<double, 2> D_transpose(2, elt.data.get_nbound());
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             column(D_transpose, bound) = derivative.baryctr_coord_neigh[bound] - derivative.baryctr_coord;
         }
         derivative.P = inverse(D_transpose * transpose(D_transpose)) * D_transpose;
-#endif
     });
 #endif
 }
@@ -66,7 +68,7 @@ template <typename MeshType>
 void initialize_data_parallel_pre_send(MeshType& mesh, uint comm_type) {
     initialize_data_serial(mesh);
 
-#ifdef D_INTERPOLATION
+#ifdef D_RECONSTRUCTION
     mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
         auto& derivative = dbound.data.derivative;
 
@@ -81,7 +83,7 @@ void initialize_data_parallel_pre_send(MeshType& mesh, uint comm_type) {
 
 template <typename MeshType>
 void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
-#ifdef D_INTERPOLATION
+#ifdef D_RECONSTRUCTION
     mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
         auto& derivative = dbound.data.derivative;
 
@@ -119,13 +121,12 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
                 }
             }
         }
-#ifdef D_LEASTSQUARES
+
         HybMatrix<double, 2> D_transpose(2, elt.data.get_nbound());
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             column(D_transpose, bound) = derivative.baryctr_coord_neigh[bound] - derivative.baryctr_coord;
         }
         derivative.P = inverse(D_transpose * transpose(D_transpose)) * D_transpose;
-#endif
     });
 #endif
 }

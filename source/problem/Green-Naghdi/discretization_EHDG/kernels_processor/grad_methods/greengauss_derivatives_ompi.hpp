@@ -7,6 +7,7 @@ namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType>
 void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                       ProblemGlobalDataType& global_data,
                                        const ESSPRKStepper& stepper,
                                        const uint begin_sim_id,
                                        const uint end_sim_id) {
@@ -40,20 +41,17 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives, stepper.GetTimestamp());
 
-        interpolate_dze(sim_units[su_id]->discretization, stepper);
-        interpolate_du(sim_units[su_id]->discretization, stepper);
+        reconstruct_dze(sim_units[su_id]->discretization, global_data, stepper);
+        reconstruct_du(sim_units[su_id]->discretization, global_data, stepper);
+        compute_ddu_gg(sim_units[su_id]->discretization, stepper);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
-    /* First derivatives end */
 
-    /* Second derivatives begin */
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
-
-        compute_ddu_gg(sim_units[su_id]->discretization, stepper);
 
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             auto& derivative = dbound.data.derivative;
@@ -70,13 +68,12 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::derivatives, stepper.GetTimestamp());
 
-        interpolate_ddu(sim_units[su_id]->discretization, stepper);
+        reconstruct_ddu(sim_units[su_id]->discretization, global_data, stepper);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
-    /* Second derivatives end */
 }
 }
 }
