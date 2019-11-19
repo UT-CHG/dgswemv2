@@ -51,6 +51,7 @@ struct GlobalData : SWE::GlobalData {
         VecScatterDestroy(&dc_scatter);
         VecDestroy(&dc_sol);
 
+#ifdef D_RECON_AVG
         VecDestroy(&global_derivatives_at_node);
         VecDestroy(&global_node_mult);
 
@@ -63,6 +64,7 @@ struct GlobalData : SWE::GlobalData {
         ISDestroy(&node_mult_to);
         VecScatterDestroy(&node_mult_scatter);
         VecDestroy(&local_node_mult);
+#endif
 
 #ifdef IHDG_SWE
         SWE::GlobalData::destroy();
