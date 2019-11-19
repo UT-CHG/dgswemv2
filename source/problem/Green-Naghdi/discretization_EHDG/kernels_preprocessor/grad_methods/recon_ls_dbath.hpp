@@ -32,7 +32,8 @@ void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalD
         auto& internal   = elt.data.internal;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            column(derivative.dbath_at_midpts, bound) = derivative.dbath_at_baryctr_neigh[bound] - derivative.dbath_at_baryctr;
+            column(derivative.dbath_at_midpts, bound) =
+                derivative.dbath_at_baryctr_neigh[bound] - derivative.dbath_at_baryctr;
         }
         derivative.dbath_at_midpts *= transpose(derivative.P) * derivative.dX_transpose;
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
@@ -73,7 +74,8 @@ void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobal
         auto& internal   = elt.data.internal;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            column(derivative.ddbath_at_midpts, bound) = derivative.ddbath_at_baryctr_neigh[bound] - derivative.ddbath_at_baryctr;
+            column(derivative.ddbath_at_midpts, bound) =
+                derivative.ddbath_at_baryctr_neigh[bound] - derivative.ddbath_at_baryctr;
         }
         derivative.ddbath_at_midpts *= transpose(derivative.P) * derivative.dX_transpose;
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
@@ -114,7 +116,8 @@ void reconstruct_dddbath(ProblemDiscretizationType& discretization, ProblemGloba
         auto& internal   = elt.data.internal;
 
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-            column(derivative.dddbath_at_midpts, bound) = derivative.dddbath_at_baryctr_neigh[bound] - derivative.dddbath_at_baryctr;
+            column(derivative.dddbath_at_midpts, bound) =
+                derivative.dddbath_at_baryctr_neigh[bound] - derivative.dddbath_at_baryctr;
         }
         derivative.dddbath_at_midpts *= transpose(derivative.P) * derivative.dX_transpose;
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {

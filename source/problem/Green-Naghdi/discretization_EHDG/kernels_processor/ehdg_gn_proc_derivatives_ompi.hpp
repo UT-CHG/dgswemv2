@@ -11,6 +11,7 @@
 
 #ifdef D_RECON_AVG
 #include "grad_methods/recon_avg_derivatives.hpp"
+#include "grad_methods/recon_avg_derivatives_ompi.hpp"
 #endif
 
 #ifdef D_PROJECTION

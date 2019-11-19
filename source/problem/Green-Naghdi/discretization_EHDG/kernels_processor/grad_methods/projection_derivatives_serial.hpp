@@ -54,13 +54,13 @@ void compute_dze_rhs(ProblemDiscretizationType& discretization, const ESSPRKStep
     });
 
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
-        const uint stage  = stepper.GetStage();
-        auto& state_in    = intface.data_in.state[stage];
-        auto& state_ex    = intface.data_ex.state[stage];
+        const uint stage    = stepper.GetStage();
+        auto& state_in      = intface.data_in.state[stage];
+        auto& state_ex      = intface.data_ex.state[stage];
         auto& derivative_in = intface.data_in.derivative;
         auto& derivative_ex = intface.data_ex.derivative;
-        auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+        auto& boundary_in   = intface.data_in.boundary[intface.bound_id_in];
+        auto& boundary_ex   = intface.data_ex.boundary[intface.bound_id_ex];
 
         boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
         boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
@@ -75,15 +75,18 @@ void compute_dze_rhs(ProblemDiscretizationType& discretization, const ESSPRKStep
         for (uint gp = 0; gp < ngp; ++gp) {
             const uint gp_ex = ngp - gp - 1;
             derivative_in.ze_hat_at_gp[intface.bound_id_in][gp] =
-                (derivative_in.ze_hat_at_gp[intface.bound_id_in][gp] + derivative_ex.ze_hat_at_gp[intface.bound_id_ex][gp_ex]) / 2.0;
-            derivative_ex.ze_hat_at_gp[intface.bound_id_ex][gp_ex] = derivative_in.ze_hat_at_gp[intface.bound_id_in][gp];
+                (derivative_in.ze_hat_at_gp[intface.bound_id_in][gp] +
+                 derivative_ex.ze_hat_at_gp[intface.bound_id_ex][gp_ex]) /
+                2.0;
+            derivative_ex.ze_hat_at_gp[intface.bound_id_ex][gp_ex] =
+                derivative_in.ze_hat_at_gp[intface.bound_id_in][gp];
         }
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-            row(state_in.dze, dir) +=
-                intface.IntegrationPhiIN(vec_cw_mult(derivative_in.ze_hat_at_gp[intface.bound_id_in], row(intface.surface_normal_in, dir)));
-            row(state_ex.dze, dir) +=
-                intface.IntegrationPhiEX(vec_cw_mult(derivative_ex.ze_hat_at_gp[intface.bound_id_ex], row(intface.surface_normal_ex, dir)));
+            row(state_in.dze, dir) += intface.IntegrationPhiIN(
+                vec_cw_mult(derivative_in.ze_hat_at_gp[intface.bound_id_in], row(intface.surface_normal_in, dir)));
+            row(state_ex.dze, dir) += intface.IntegrationPhiEX(
+                vec_cw_mult(derivative_ex.ze_hat_at_gp[intface.bound_id_ex], row(intface.surface_normal_ex, dir)));
         }
     });
 
@@ -99,8 +102,8 @@ void compute_dze_rhs(ProblemDiscretizationType& discretization, const ESSPRKStep
         derivative.ze_hat_at_gp[bound.bound_id] = row(boundary.q_at_gp, SWE::Variables::ze);
 
         for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-            row(state.dze, dir) +=
-                bound.IntegrationPhi(vec_cw_mult(derivative.ze_hat_at_gp[bound.bound_id], row(bound.surface_normal, dir)));
+            row(state.dze, dir) += bound.IntegrationPhi(
+                vec_cw_mult(derivative.ze_hat_at_gp[bound.bound_id], row(bound.surface_normal, dir)));
         }
     });
 }
@@ -125,23 +128,23 @@ void compute_du_rhs(ProblemDiscretizationType& discretization, const ESSPRKStepp
     });
 
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
-        const uint stage  = stepper.GetStage();
-        auto& state_in    = intface.data_in.state[stage];
-        auto& state_ex    = intface.data_ex.state[stage];
+        const uint stage    = stepper.GetStage();
+        auto& state_in      = intface.data_in.state[stage];
+        auto& state_ex      = intface.data_ex.state[stage];
         auto& derivative_in = intface.data_in.derivative;
         auto& derivative_ex = intface.data_ex.derivative;
-        auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-        auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+        auto& boundary_in   = intface.data_in.boundary[intface.bound_id_in];
+        auto& boundary_ex   = intface.data_ex.boundary[intface.bound_id_ex];
 
         row(derivative_in.u_hat_at_gp[intface.bound_id_in], GlobalCoord::x) =
-                vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qx), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
+            vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qx), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
         row(derivative_in.u_hat_at_gp[intface.bound_id_in], GlobalCoord::y) =
-                vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qy), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
+            vec_cw_div(row(boundary_in.q_at_gp, SWE::Variables::qy), row(boundary_in.aux_at_gp, SWE::Auxiliaries::h));
 
         row(derivative_ex.u_hat_at_gp[intface.bound_id_ex], GlobalCoord::x) =
-                vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qx), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
+            vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qx), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
         row(derivative_ex.u_hat_at_gp[intface.bound_id_ex], GlobalCoord::y) =
-                vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qy), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
+            vec_cw_div(row(boundary_ex.q_at_gp, SWE::Variables::qy), row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h));
 
         const uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
         for (uint gp = 0; gp < ngp; ++gp) {
@@ -149,17 +152,19 @@ void compute_du_rhs(ProblemDiscretizationType& discretization, const ESSPRKStepp
             for (uint u = 0; u < GN::n_dimensions; ++u) {
                 derivative_in.u_hat_at_gp[intface.bound_id_in](u, gp) =
                     (derivative_in.u_hat_at_gp[intface.bound_id_in](u, gp) +
-                     derivative_ex.u_hat_at_gp[intface.bound_id_ex](u, gp_ex)) / 2.0;
-                derivative_ex.u_hat_at_gp[intface.bound_id_ex](u, gp_ex) = derivative_in.u_hat_at_gp[intface.bound_id_in](u, gp);
+                     derivative_ex.u_hat_at_gp[intface.bound_id_ex](u, gp_ex)) /
+                    2.0;
+                derivative_ex.u_hat_at_gp[intface.bound_id_ex](u, gp_ex) =
+                    derivative_in.u_hat_at_gp[intface.bound_id_in](u, gp);
             }
         }
 
         for (uint u = 0; u < GN::n_dimensions; ++u) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state_in.du, GN::n_dimensions * u + dir) += intface.IntegrationPhiIN(
-                    vec_cw_mult(row(derivative_in.u_hat_at_gp[intface.bound_id_in], u), row(intface.surface_normal_in, dir)));
-                row(state_ex.du, GN::n_dimensions * u + dir) += intface.IntegrationPhiEX(
-                    vec_cw_mult(row(derivative_ex.u_hat_at_gp[intface.bound_id_ex], u), row(intface.surface_normal_ex, dir)));
+                row(state_in.du, GN::n_dimensions * u + dir) += intface.IntegrationPhiIN(vec_cw_mult(
+                    row(derivative_in.u_hat_at_gp[intface.bound_id_in], u), row(intface.surface_normal_in, dir)));
+                row(state_ex.du, GN::n_dimensions * u + dir) += intface.IntegrationPhiEX(vec_cw_mult(
+                    row(derivative_ex.u_hat_at_gp[intface.bound_id_ex], u), row(intface.surface_normal_ex, dir)));
             }
         }
     });
@@ -177,8 +182,8 @@ void compute_du_rhs(ProblemDiscretizationType& discretization, const ESSPRKStepp
 
         for (uint u = 0; u < GN::n_dimensions; ++u) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state.du, GN::n_dimensions * u + dir) +=
-                    bound.IntegrationPhi(vec_cw_mult(row(derivative.u_hat_at_gp[bound.bound_id], u), row(bound.surface_normal, dir)));
+                row(state.du, GN::n_dimensions * u + dir) += bound.IntegrationPhi(
+                    vec_cw_mult(row(derivative.u_hat_at_gp[bound.bound_id], u), row(bound.surface_normal, dir)));
             }
         }
     });
@@ -201,9 +206,9 @@ void compute_ddu_rhs(ProblemDiscretizationType& discretization, const ESSPRKStep
     });
 
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
-        const uint stage  = stepper.GetStage();
-        auto& state_in    = intface.data_in.state[stage];
-        auto& state_ex    = intface.data_ex.state[stage];
+        const uint stage    = stepper.GetStage();
+        auto& state_in      = intface.data_in.state[stage];
+        auto& state_ex      = intface.data_ex.state[stage];
         auto& derivative_in = intface.data_in.derivative;
         auto& derivative_ex = intface.data_ex.derivative;
 
@@ -216,17 +221,19 @@ void compute_ddu_rhs(ProblemDiscretizationType& discretization, const ESSPRKStep
             for (uint du = 0; du < GN::n_du_terms; ++du) {
                 derivative_in.du_hat_at_gp[intface.bound_id_in](du, gp) =
                     (derivative_in.du_hat_at_gp[intface.bound_id_in](du, gp) +
-                     derivative_ex.du_hat_at_gp[intface.bound_id_ex](du, gp_ex)) / 2.0;
-                derivative_ex.du_hat_at_gp[intface.bound_id_ex](du, gp_ex) = derivative_in.du_hat_at_gp[intface.bound_id_in](du, gp);
+                     derivative_ex.du_hat_at_gp[intface.bound_id_ex](du, gp_ex)) /
+                    2.0;
+                derivative_ex.du_hat_at_gp[intface.bound_id_ex](du, gp_ex) =
+                    derivative_in.du_hat_at_gp[intface.bound_id_in](du, gp);
             }
         }
 
         for (uint du = 0; du < GN::n_du_terms; ++du) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state_in.ddu, GN::n_dimensions * du + dir) += intface.IntegrationPhiIN(
-                    vec_cw_mult(row(derivative_in.du_hat_at_gp[intface.bound_id_in], du), row(intface.surface_normal_in, dir)));
-                row(state_ex.ddu, GN::n_dimensions * du + dir) += intface.IntegrationPhiEX(
-                    vec_cw_mult(row(derivative_ex.du_hat_at_gp[intface.bound_id_ex], du), row(intface.surface_normal_ex, dir)));
+                row(state_in.ddu, GN::n_dimensions * du + dir) += intface.IntegrationPhiIN(vec_cw_mult(
+                    row(derivative_in.du_hat_at_gp[intface.bound_id_in], du), row(intface.surface_normal_in, dir)));
+                row(state_ex.ddu, GN::n_dimensions * du + dir) += intface.IntegrationPhiEX(vec_cw_mult(
+                    row(derivative_ex.du_hat_at_gp[intface.bound_id_ex], du), row(intface.surface_normal_ex, dir)));
             }
         }
     });
@@ -240,8 +247,8 @@ void compute_ddu_rhs(ProblemDiscretizationType& discretization, const ESSPRKStep
 
         for (uint du = 0; du < GN::n_du_terms; ++du) {
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state.ddu, GN::n_dimensions * du + dir) +=
-                    bound.IntegrationPhi(vec_cw_mult(row(derivative.du_hat_at_gp[bound.bound_id], du), row(bound.surface_normal, dir)));
+                row(state.ddu, GN::n_dimensions * du + dir) += bound.IntegrationPhi(
+                    vec_cw_mult(row(derivative.du_hat_at_gp[bound.bound_id], du), row(bound.surface_normal, dir)));
             }
         }
     });

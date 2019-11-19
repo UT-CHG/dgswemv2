@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -eq "0" ]; then
-    cmd="clang-format -i -style=file */*.cpp */*.hpp */*.tpp */*/*.cpp */*/*.hpp */*/*.tpp */*/*/*.cpp */*/*/*.hpp */*/*/*.tpp */*/*/*/*.cpp */*/*/*/*.hpp */*/*/*/*.tpp */*/*/*/*/*.cpp */*/*/*/*/*.hpp */*/*/*/*/*.tpp"
+    cmd="clang-format -i -style=file */*.cpp */*.hpp */*.tpp */*/*.cpp */*/*.hpp */*/*.tpp */*/*/*.cpp */*/*/*.hpp */*/*/*.tpp */*/*/*/*.cpp */*/*/*/*.hpp */*/*/*/*.tpp */*/*/*/*/*.cpp */*/*/*/*/*.hpp */*/*/*/*/*.tpp */*/*/*/*/*/*.cpp */*/*/*/*/*/*.hpp */*/*/*/*/*/*.tpp"
     echo ${cmd}
     ${cmd}
 else

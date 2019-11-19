@@ -60,19 +60,25 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             std::vector<double> message(SWE::n_variables * ngp);
             dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
             for (uint gp = 0; gp < ngp; ++gp) {
-                const uint gp_ex          = ngp - gp - 1;
-                derivative.ze_hat_at_gp[dbound.bound_id][gp] = (derivative.ze_hat_at_gp[dbound.bound_id][gp] + message[SWE::n_variables * gp_ex]) / 2.0;
+                const uint gp_ex = ngp - gp - 1;
+                derivative.ze_hat_at_gp[dbound.bound_id][gp] =
+                    (derivative.ze_hat_at_gp[dbound.bound_id][gp] + message[SWE::n_variables * gp_ex]) / 2.0;
                 derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) =
-                    (derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) + message[SWE::n_variables * gp_ex + 1]) / 2.0;
+                    (derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) +
+                     message[SWE::n_variables * gp_ex + 1]) /
+                    2.0;
                 derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp) =
-                    (derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp) + message[SWE::n_variables * gp_ex + 2]) / 2.0;
+                    (derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp) +
+                     message[SWE::n_variables * gp_ex + 2]) /
+                    2.0;
 
-                boundary.aux_at_gp(SWE::Auxiliaries::h, gp) = derivative.ze_hat_at_gp[dbound.bound_id][gp] + derivative.bath_hat_at_gp[dbound.bound_id][gp];
+                boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
+                    derivative.ze_hat_at_gp[dbound.bound_id][gp] + derivative.bath_hat_at_gp[dbound.bound_id][gp];
             }
 
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                row(state.dze, dir) +=
-                    dbound.IntegrationPhi(vec_cw_mult(derivative.ze_hat_at_gp[dbound.bound_id], row(dbound.surface_normal, dir)));
+                row(state.dze, dir) += dbound.IntegrationPhi(
+                    vec_cw_mult(derivative.ze_hat_at_gp[dbound.bound_id], row(dbound.surface_normal, dir)));
             }
 
             for (uint u = 0; u < GN::n_dimensions; ++u) {
@@ -146,8 +152,8 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
             for (uint du = 0; du < GN::n_du_terms; ++du) {
                 for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
-                    row(state.ddu, GN::n_dimensions * du + dir) += dbound.IntegrationPhi(
-                        vec_cw_mult(row(derivative.du_hat_at_gp[dbound.bound_id], du), row(dbound.surface_normal, dir)));
+                    row(state.ddu, GN::n_dimensions * du + dir) += dbound.IntegrationPhi(vec_cw_mult(
+                        row(derivative.du_hat_at_gp[dbound.bound_id], du), row(dbound.surface_normal, dir)));
                 }
             }
         });

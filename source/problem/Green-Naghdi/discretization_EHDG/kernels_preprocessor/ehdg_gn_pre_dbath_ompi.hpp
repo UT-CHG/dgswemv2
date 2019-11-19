@@ -11,6 +11,7 @@
 
 #ifdef D_RECON_AVG
 #include "grad_methods/recon_avg_dbath.hpp"
+#include "grad_methods/recon_avg_dbath_ompi.hpp"
 #endif
 
 #ifdef D_PROJECTION

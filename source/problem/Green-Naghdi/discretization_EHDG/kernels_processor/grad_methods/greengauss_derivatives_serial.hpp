@@ -232,13 +232,12 @@ void compute_ddu_gg(ProblemDiscretizationType& discretization, const ESSPRKStepp
         }
 
         const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-        std::vector<double> message(GN::n_dimensions + GN::n_du_terms + ngp);
+        std::vector<double> message(ngp);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
         for (uint gp = 0; gp < ngp; ++gp) {
             const uint gp_ex = ngp - gp - 1;
             boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
-                    (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[GN::n_dimensions + GN::n_du_terms + gp_ex]) /
-                    2.0;
+                (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[gp_ex]) / 2.0;
         }
     });
 }

@@ -10,7 +10,8 @@ void compute_ddbath_gg(ProblemDiscretizationType& discretization);
 template <typename ProblemDiscretizationType>
 void compute_dddbath_gg(ProblemDiscretizationType& discretization);
 
-void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
+void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization,
+                                                    ProblemGlobalDataType& global_data) {
     compute_dbath_gg(discretization);
     reconstruct_dbath(discretization, global_data);
 
@@ -94,7 +95,7 @@ void compute_ddbath_gg(ProblemDiscretizationType& discretization) {
             const uint gp_ex = ngp - gp - 1;
             for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
                 boundary_in.dbath_hat_at_gp(dbath, gp) =
-                        (boundary_in.dbath_hat_at_gp(dbath, gp) + boundary_ex.dbath_hat_at_gp(dbath, gp_ex)) / 2.0;
+                    (boundary_in.dbath_hat_at_gp(dbath, gp) + boundary_ex.dbath_hat_at_gp(dbath, gp_ex)) / 2.0;
                 boundary_ex.dbath_hat_at_gp(dbath, gp_ex) = boundary_in.dbath_hat_at_gp(dbath, gp);
             }
         }
@@ -209,14 +210,13 @@ void compute_dddbath_gg(ProblemDiscretizationType& discretization) {
         }
 
         const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-        std::vector<double> message(GN::n_ddbath_terms + GN::n_dimensions * ngp);
+        std::vector<double> message(GN::n_dimensions * ngp);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::dbath, message);
         for (uint gp = 0; gp < ngp; ++gp) {
             const uint gp_ex = ngp - gp - 1;
             for (uint dbath = 0; dbath < GN::n_dimensions; ++dbath) {
-                boundary.dbath_hat_at_gp(dbath, gp) = (boundary.dbath_hat_at_gp(dbath, gp) +
-                                                       message[GN::n_ddbath_terms + GN::n_dimensions * gp_ex + dbath]) /
-                                                      2.0;
+                boundary.dbath_hat_at_gp(dbath, gp) =
+                    (boundary.dbath_hat_at_gp(dbath, gp) + message[GN::n_dimensions * gp_ex + dbath]) / 2.0;
             }
         }
     });

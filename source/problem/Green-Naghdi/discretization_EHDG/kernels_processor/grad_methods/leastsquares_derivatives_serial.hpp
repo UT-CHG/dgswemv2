@@ -21,7 +21,7 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
 
         internal.q_at_gp = elt.ComputeUgp(state.q);
         row(internal.aux_at_gp, SWE::Auxiliaries::h) =
-                row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
+            row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
 
         derivative.ze_lin        = elt.ProjectBasisToLinear(row(state.q, SWE::Variables::ze));
         derivative.ze_at_baryctr = elt.ComputeLinearUbaryctr(derivative.ze_lin);
@@ -35,9 +35,9 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
         auto& internal   = elt.data.internal;
 
         row(internal.u_at_gp, GlobalCoord::x) =
-                vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+            vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
         row(internal.u_at_gp, GlobalCoord::y) =
-                vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+            vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
 
         derivative.u_lin        = elt.ProjectBasisToLinear(elt.L2Projection(internal.u_at_gp));
         derivative.u_at_baryctr = elt.ComputeLinearUbaryctr(derivative.u_lin);
@@ -47,7 +47,7 @@ void Problem::compute_derivatives_serial(ProblemDiscretizationType& discretizati
     reconstruct_du(discretization, global_data, stepper);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-        auto& derivative = elt.data.derivative;
+        auto& derivative         = elt.data.derivative;
         derivative.du_at_baryctr = elt.ComputeLinearUbaryctr(derivative.du_lin);
         derivative.du_at_midpts  = elt.ComputeLinearUmidpts(derivative.du_lin);
     });
@@ -69,9 +69,9 @@ void compute_dze_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
         boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
         boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
         row(boundary_in.aux_at_gp, SWE::Auxiliaries::h) =
-                row(boundary_in.q_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
+            row(boundary_in.q_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
         row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h) =
-                row(boundary_ex.q_at_gp, SWE::Variables::ze) + row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath);
+            row(boundary_ex.q_at_gp, SWE::Variables::ze) + row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath);
 
         derivative_in.ze_at_baryctr_neigh[intface.bound_id_in] = derivative_ex.ze_at_baryctr;
         derivative_ex.ze_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.ze_at_baryctr;
@@ -85,7 +85,7 @@ void compute_dze_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
 
         boundary.q_at_gp = bound.ComputeUgp(state.q);
         row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
-                row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+            row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         derivative.ze_at_baryctr_neigh[bound.bound_id] = derivative.ze_at_midpts[bound.bound_id];
     });
@@ -98,14 +98,14 @@ void compute_dze_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
 
         boundary.q_at_gp = dbound.ComputeUgp(state.q);
         row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
-                row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
+            row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
         std::vector<double> message(3);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
-        derivative.ze_at_baryctr_neigh[dbound.bound_id] = message[0];
+        derivative.ze_at_baryctr_neigh[dbound.bound_id]                = message[0];
         derivative.u_at_baryctr_neigh[dbound.bound_id][GlobalCoord::x] = message[1];
         derivative.u_at_baryctr_neigh[dbound.bound_id][GlobalCoord::y] = message[2];
-   });
+    });
 
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative = elt.data.derivative;
@@ -119,14 +119,14 @@ void compute_dze_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
 template <typename ProblemDiscretizationType>
 void compute_du_ls(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
-        auto& derivative_in = intface.data_in.derivative;
-        auto& derivative_ex = intface.data_ex.derivative;
+        auto& derivative_in                                   = intface.data_in.derivative;
+        auto& derivative_ex                                   = intface.data_ex.derivative;
         derivative_in.u_at_baryctr_neigh[intface.bound_id_in] = derivative_ex.u_at_baryctr;
         derivative_ex.u_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.u_at_baryctr;
     });
 
     discretization.mesh.CallForEachBoundary([&stepper](auto& bound) {
-        auto& derivative = bound.data.derivative;
+        auto& derivative                              = bound.data.derivative;
         derivative.u_at_baryctr_neigh[bound.bound_id] = column(derivative.u_at_midpts, bound.bound_id);
     });
 
@@ -135,22 +135,22 @@ void compute_du_ls(ProblemDiscretizationType& discretization, const ESSPRKSteppe
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             column(derivative.u_at_midpts, bound) = derivative.u_at_baryctr_neigh[bound] - derivative.u_at_baryctr;
         }
-        derivative.du_at_baryctr =
-                flatten<double, GN::n_dimensions, GN::n_dimensions, SO::ColumnMajor>(derivative.P * transpose(derivative.u_at_midpts));
+        derivative.du_at_baryctr = flatten<double, GN::n_dimensions, GN::n_dimensions, SO::ColumnMajor>(
+            derivative.P * transpose(derivative.u_at_midpts));
     });
 }
 
 template <typename ProblemDiscretizationType>
 void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
-        auto& derivative_in = intface.data_in.derivative;
-        auto& derivative_ex = intface.data_ex.derivative;
+        auto& derivative_in                                    = intface.data_in.derivative;
+        auto& derivative_ex                                    = intface.data_ex.derivative;
         derivative_in.du_at_baryctr_neigh[intface.bound_id_in] = derivative_ex.du_at_baryctr;
         derivative_ex.du_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.du_at_baryctr;
     });
 
     discretization.mesh.CallForEachBoundary([&stepper](auto& bound) {
-        auto& derivative = bound.data.derivative;
+        auto& derivative                               = bound.data.derivative;
         derivative.du_at_baryctr_neigh[bound.bound_id] = column(derivative.du_at_midpts, bound.bound_id);
     });
 
@@ -167,8 +167,7 @@ void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
         for (uint gp = 0; gp < ngp; ++gp) {
             const uint gp_ex = ngp - gp - 1;
             boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
-                    (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[GN::n_du_terms + gp_ex]) /
-                    2.0;
+                (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[GN::n_du_terms + gp_ex]) / 2.0;
         }
     });
 
@@ -177,8 +176,8 @@ void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
         for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
             column(derivative.du_at_midpts, bound) = derivative.du_at_baryctr_neigh[bound] - derivative.du_at_baryctr;
         }
-        derivative.ddu_at_baryctr =
-                flatten<double, GN::n_dimensions, GN::n_du_terms, SO::ColumnMajor>(derivative.P * transpose(derivative.du_at_midpts));
+        derivative.ddu_at_baryctr = flatten<double, GN::n_dimensions, GN::n_du_terms, SO::ColumnMajor>(
+            derivative.P * transpose(derivative.du_at_midpts));
     });
 }
 }

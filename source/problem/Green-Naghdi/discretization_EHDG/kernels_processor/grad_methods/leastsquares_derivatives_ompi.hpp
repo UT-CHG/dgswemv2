@@ -11,7 +11,6 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
                                        const ESSPRKStepper& stepper,
                                        const uint begin_sim_id,
                                        const uint end_sim_id) {
-    /* First derivatives begin */
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
@@ -23,16 +22,16 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
 
             internal.q_at_gp = elt.ComputeUgp(state.q);
             row(internal.aux_at_gp, SWE::Auxiliaries::h) =
-                    row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
+                row(internal.q_at_gp, SWE::Variables::ze) + row(internal.aux_at_gp, SWE::Auxiliaries::bath);
 
             derivative.ze_lin        = elt.ProjectBasisToLinear(row(state.q, SWE::Variables::ze));
             derivative.ze_at_baryctr = elt.ComputeLinearUbaryctr(derivative.ze_lin);
             derivative.ze_at_midpts  = elt.ComputeLinearUmidpts(derivative.ze_lin);
 
             row(internal.u_at_gp, GlobalCoord::x) =
-                    vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+                vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
             row(internal.u_at_gp, GlobalCoord::y) =
-                    vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+                vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
 
             derivative.u_lin        = elt.ProjectBasisToLinear(elt.L2Projection(internal.u_at_gp));
             derivative.u_at_baryctr = elt.ComputeLinearUbaryctr(derivative.u_lin);
@@ -62,6 +61,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
 
+#if defined(D_RECON_INT) || defined(D_RECON_LS)
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
@@ -90,14 +90,15 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
-    /* First derivatives end */
+#elif defined(D_RECON_AVG)
+    reconstruct_dzedu(sim_units, global_data);
+#endif
 
-    /* Second derivatives begin */
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
-            auto& derivative = elt.data.derivative;
+            auto& derivative         = elt.data.derivative;
             derivative.du_at_baryctr = elt.ComputeLinearUbaryctr(derivative.du_lin);
             derivative.du_at_midpts  = elt.ComputeLinearUmidpts(derivative.du_lin);
         });
@@ -130,6 +131,7 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
 
+#if defined(D_RECON_INT) || defined(D_RECON_LS)
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::derivatives, stepper.GetTimestamp());
 
@@ -154,7 +156,9 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::derivatives, stepper.GetTimestamp());
     }
-    /* Second derivatives end */
+#elif defined(D_RECON_AVG)
+    reconstruct_ddu(sim_units, global_data);
+#endif
 }
 }
 }

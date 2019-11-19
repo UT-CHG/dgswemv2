@@ -4,7 +4,9 @@
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_dze(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data, const ESSPRKStepper& stepper) {
+void reconstruct_dze(ProblemDiscretizationType& discretization,
+                     ProblemGlobalDataType& global_data,
+                     const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
         auto& derivative_in                                     = intface.data_in.derivative;
         auto& derivative_ex                                     = intface.data_ex.derivative;
@@ -48,7 +50,9 @@ void reconstruct_dze(ProblemDiscretizationType& discretization, ProblemGlobalDat
 }
 
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_du(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data, const ESSPRKStepper& stepper) {
+void reconstruct_du(ProblemDiscretizationType& discretization,
+                    ProblemGlobalDataType& global_data,
+                    const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
         auto& derivative_in                                    = intface.data_in.derivative;
         auto& derivative_ex                                    = intface.data_ex.derivative;
@@ -82,7 +86,9 @@ void reconstruct_du(ProblemDiscretizationType& discretization, ProblemGlobalData
 }
 
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_ddu(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data, const ESSPRKStepper& stepper) {
+void reconstruct_ddu(ProblemDiscretizationType& discretization,
+                     ProblemGlobalDataType& global_data,
+                     const ESSPRKStepper& stepper) {
     discretization.mesh.CallForEachInterface([&stepper](auto& intface) {
         auto& derivative_in                                     = intface.data_in.derivative;
         auto& derivative_ex                                     = intface.data_ex.derivative;
