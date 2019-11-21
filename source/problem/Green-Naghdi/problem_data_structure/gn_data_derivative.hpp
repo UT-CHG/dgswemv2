@@ -58,6 +58,16 @@ struct Derivative {
           ddu_at_midpts(GN::n_ddu_terms, nbound),
           ddu_at_baryctr_neigh(nbound),
           ddu_lin(GN::n_ddu_terms, nvrtx) {
+        /* *** */
+        for (uint bound = 0; bound < nbound; ++bound) {
+            bath_hat_at_gp[bound]   = DynRowVector<double>(ngp_boundary[bound]);
+            ddbath_hat_at_gp[bound] = HybMatrix<double, GN::n_ddbath_terms>(GN::n_ddbath_terms, ngp_boundary[bound]);
+
+            bath_hat_at_gp[bound] = DynRowVector<double>(ngp_boundary[bound]);
+            u_hat_at_gp[bound]    = HybMatrix<double, GN::n_dimensions>(GN::n_dimensions, ngp_boundary[bound]);
+            du_hat_at_gp[bound]   = HybMatrix<double, GN::n_du_terms>(GN::n_du_terms, ngp_boundary[bound]);
+        }
+
         set_constant(this->T, 1.0);
         this->T(0, 0) = -1.0;
         this->T(1, 1) = -1.0;
