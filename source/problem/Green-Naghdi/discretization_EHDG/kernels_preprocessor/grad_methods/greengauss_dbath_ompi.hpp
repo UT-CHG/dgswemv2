@@ -14,7 +14,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         compute_dbath_gg(sim_units[su_id]->discretization);
     }
 
-#if defined(D_RECON_INT) || defined(D_RECON_LS)
+#if defined(B_RECON_INT) || defined(B_RECON_LS)
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
@@ -39,7 +39,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
-#elif defined(D_RECON_AVG)
+#elif defined(B_RECON_AVG)
     reconstruct_dbath(sim_units, global_data);
 #endif
 
@@ -47,7 +47,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         compute_ddbath_gg(sim_units[su_id]->discretization);
     }
 
-#if defined(D_RECON_INT) || defined(D_RECON_LS)
+#if defined(B_RECON_INT) || defined(B_RECON_LS)
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
@@ -72,7 +72,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
-#elif defined(D_RECON_AVG)
+#elif defined(B_RECON_AVG)
     reconstruct_ddbath(sim_units, global_data);
 #endif
 
@@ -104,7 +104,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
 
-#if defined(D_RECON_INT) || defined(D_RECON_LS)
+#if defined(B_RECON_INT) || defined(B_RECON_LS)
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
@@ -129,7 +129,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
-#elif defined(D_RECON_AVG)
+#elif defined(B_RECON_AVG)
     reconstruct_dddbath(sim_units, global_data);
 #endif
 }

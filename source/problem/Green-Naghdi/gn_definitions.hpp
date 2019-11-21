@@ -41,7 +41,6 @@ constexpr uint n_dimensions = 2;
 //#define D_LEASTSQUARES
 
 #if defined(D_GREENGAUSS) || defined(D_LEASTSQUARES)
-#define D_RECONSTRUCTION
 //#define D_RECON_INT
 //#define D_RECON_LS
 #define D_RECON_AVG
@@ -51,6 +50,16 @@ constexpr uint n_du_terms  = 4;
 constexpr uint n_ddu_terms = 8;
 enum DU : uint { ux = 0, uy = 1, vx = 2, vy = 3 };
 enum DDU : uint { uxx = 0, uxy = 1, uyx = 2, uyy = 3, vxx = 4, vxy = 5, vyx = 6, vyy = 7 };
+
+//#define B_PROJECTION
+#define B_GREENGAUSS
+//#define B_LEASTSQUARES
+
+#if defined(B_GREENGAUSS) || defined(B_LEASTSQUARES)
+//#define B_RECON_INT
+//#define B_RECON_LS
+#define B_RECON_AVG
+#endif
 
 constexpr uint n_ddbath_terms  = 4;
 constexpr uint n_dddbath_terms = 8;
