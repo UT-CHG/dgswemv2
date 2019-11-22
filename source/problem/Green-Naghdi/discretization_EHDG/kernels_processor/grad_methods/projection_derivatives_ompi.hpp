@@ -72,8 +72,9 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
                      message[SWE::n_variables * gp_ex + 2]) /
                     2.0;
 
+                // HERE I ASSUME THAT BATHYMETRY IS CONTINUOUS
                 boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
-                    derivative.ze_hat_at_gp[dbound.bound_id][gp] + derivative.bath_hat_at_gp[dbound.bound_id][gp];
+                    derivative.ze_hat_at_gp[dbound.bound_id][gp] + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
             }
 
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
