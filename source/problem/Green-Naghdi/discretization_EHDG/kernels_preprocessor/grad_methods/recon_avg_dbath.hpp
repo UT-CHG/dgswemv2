@@ -8,10 +8,11 @@ void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalD
     std::set<uint> nodeIDs;
     discretization.mesh.CallForEachElement(
         [&nodeIDs](auto& elt) { nodeIDs.insert(elt.GetNodeID().begin(), elt.GetNodeID().end()); });
+    uint max_nodeID = *std::max_element(nodeIDs.begin(), nodeIDs.end());
 
-    global_data.derivatives_at_node = DynVector<double>(nodeIDs.size() * GN::n_dddbath_terms);
+    global_data.derivatives_at_node = DynVector<double>((max_nodeID + 1) * GN::n_dddbath_terms);
     set_constant(global_data.derivatives_at_node, 0.0);
-    std::vector<uint> node_mult(nodeIDs.size(), 0);
+    std::vector<uint> node_mult((max_nodeID + 1), 0);
 
     discretization.mesh.CallForEachElement([&global_data, &node_mult](auto& elt) {
         auto& derivative = elt.data.derivative;
