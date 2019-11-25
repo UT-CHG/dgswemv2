@@ -29,7 +29,7 @@ struct Boundary : SWE::Boundary {
     DynMatrix<double> w1_hat_w1;
     DynMatrix<double> w1_hat_w2;
 
-    std::vector<uint> dc_global_dof_indx;
+    uint dc_global_dof_indx;
 };
 }
 

@@ -70,12 +70,11 @@ enum DDDBath : uint { bxxx = 0, bxxy = 1, bxyx = 2, bxyy = 3, byxx = 4, byxy = 5
 enum BoundaryTypes : uchar { land = 0, tide = 1, flow = 2, function = 3, internal = INTERNAL, levee = INTERNAL + 1 };
 
 namespace EHDG {
-constexpr uint n_communications = SWE_SIM::n_communications + 4;
+constexpr uint n_communications = SWE_SIM::n_communications + 3;
 enum CommTypes : uchar {
     dc_global_dof_indx = SWE_SIM::n_communications + 0,
     dbath              = SWE_SIM::n_communications + 1,
     derivatives        = SWE_SIM::n_communications + 2,
-    global_mat         = SWE_SIM::n_communications + 3
 };
 }
 }

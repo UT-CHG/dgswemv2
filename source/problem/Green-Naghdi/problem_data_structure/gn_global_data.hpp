@@ -39,8 +39,6 @@ struct GlobalData : SWE::GlobalData {
     PetscLogStage swe_stage;
     PetscLogStage d_stage;
 
-    std::vector<double> w1_hat_w1_hat_flat;
-
     void destroy() {
         MatDestroy(&w1_hat_w1_hat);
         VecDestroy(&w1_hat_rhs);

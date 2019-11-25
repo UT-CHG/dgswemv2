@@ -88,12 +88,10 @@ struct Problem {
         offset[CommTypes::dc_global_dof_indx] = begin_index[CommTypes::dc_global_dof_indx];
         offset[CommTypes::dbath]              = begin_index[CommTypes::dbath];
         offset[CommTypes::derivatives]        = begin_index[CommTypes::derivatives];
-        offset[CommTypes::global_mat]         = begin_index[CommTypes::global_mat];
 
         begin_index[CommTypes::dc_global_dof_indx] += 1;
         begin_index[CommTypes::dbath] += GN::n_dddbath_terms * ngp;
         begin_index[CommTypes::derivatives] += GN::n_ddu_terms * ngp;
-        begin_index[CommTypes::global_mat] += 16 * 3 + 3 + 4;
 
         return offset;
     }
@@ -166,17 +164,13 @@ struct Problem {
     static void initialize_global_dc_problem_serial(ProblemDiscretizationType& discretization,
                                                     uint& dc_global_dof_offset);
 
-    template <typename Communicator>
     static void initialize_global_dc_problem_parallel_pre_send(ProblemDiscretizationType& discretization,
-                                                               Communicator& communicator,
                                                                uint& dc_global_dof_offset);
 
     static void initialize_global_dc_problem_parallel_finalize_pre_send(ProblemDiscretizationType& discretization,
                                                                         uint dc_global_dof_offset);
 
-    template <typename Communicator>
     static void initialize_global_dc_problem_parallel_post_receive(ProblemDiscretizationType& discretization,
-                                                                   Communicator& communicator,
                                                                    std::vector<uint>& dc_global_dof_indx);
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization,
