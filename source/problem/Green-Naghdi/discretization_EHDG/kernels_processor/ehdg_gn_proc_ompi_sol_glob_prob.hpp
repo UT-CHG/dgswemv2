@@ -131,7 +131,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                         (int*)&edge_internal.dc_global_dof_indx,
                                         edge_internal.w1_hat_rhs.data(),
                                         ADD_VALUES);
-
                     MatSetValuesBlocked(w1_hat_w1_hat,
                                         1,
                                         (int*)&edge_internal.dc_global_dof_indx,
@@ -141,11 +140,9 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                         ADD_VALUES);
 
                     uint bcon_id = 0;
-
                     for (uint bound_id = 0; bound_id < edge_int.interface.data_in.get_nbound(); ++bound_id) {
                         if (bound_id == edge_int.interface.bound_id_in)
                             continue;
-
                         auto& boundary_con = edge_int.interface.data_in.boundary[bound_id];
                         MatSetValuesBlocked(w1_hat_w1_hat,
                                             1,
@@ -154,14 +151,12 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             (int*)&boundary_con.dc_global_dof_indx,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
                                             ADD_VALUES);
-
                         ++bcon_id;
                     }
 
                     for (uint bound_id = 0; bound_id < edge_int.interface.data_ex.get_nbound(); ++bound_id) {
                         if (bound_id == edge_int.interface.bound_id_ex)
                             continue;
-
                         auto& boundary_con = edge_int.interface.data_ex.boundary[bound_id];
                         MatSetValuesBlocked(w1_hat_w1_hat,
                                             1,
@@ -170,7 +165,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             (int*)&boundary_con.dc_global_dof_indx,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
                                             ADD_VALUES);
-
                         ++bcon_id;
                     }
                 });
@@ -184,7 +178,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                         (int*)&edge_internal.dc_global_dof_indx,
                                         edge_internal.w1_hat_rhs.data(),
                                         ADD_VALUES);
-
                     MatSetValuesBlocked(w1_hat_w1_hat,
                                         1,
                                         (int*)&edge_internal.dc_global_dof_indx,
@@ -197,9 +190,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                     for (uint bound_id = 0; bound_id < edge_bound.boundary.data.get_nbound(); ++bound_id) {
                         if (bound_id == edge_bound.boundary.bound_id)
                             continue;
-
                         auto& boundary_con = edge_bound.boundary.data.boundary[bound_id];
-
                         MatSetValuesBlocked(w1_hat_w1_hat,
                                             1,
                                             (int*)&edge_internal.dc_global_dof_indx,
@@ -207,7 +198,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             (int*)&boundary_con.dc_global_dof_indx,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
                                             ADD_VALUES);
-
                         ++bcon_id;
                     }
                 });
@@ -221,7 +211,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                         (int*)&edge_internal.dc_global_dof_indx,
                                         edge_internal.w1_hat_rhs.data(),
                                         ADD_VALUES);
-
                     MatSetValuesBlocked(w1_hat_w1_hat,
                                         1,
                                         (int*)&edge_internal.dc_global_dof_indx,
@@ -234,9 +223,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                     for (uint bound_id = 0; bound_id < edge_dbound.boundary.data.get_nbound(); ++bound_id) {
                         if (bound_id == edge_dbound.boundary.bound_id)
                             continue;
-
                         auto& boundary_con = edge_dbound.boundary.data.boundary[bound_id];
-
                         MatSetValuesBlocked(w1_hat_w1_hat,
                                             1,
                                             (int*)&edge_internal.dc_global_dof_indx,
@@ -244,7 +231,6 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                                             (int*)&boundary_con.dc_global_dof_indx,
                                             edge_internal.w1_hat_w1_hat_con_flat[bcon_id].data(),
                                             ADD_VALUES);
-
                         ++bcon_id;
                     }
                 });
@@ -283,48 +269,55 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
         MatZeroEntries(w1_hat_w1_hat);
         VecZeroEntries(w1_hat_rhs);
+
+        if (stepper.GetStep() == 0) {
+            MatSetOption(w1_hat_w1_hat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
+        }
     }
 #pragma omp barrier
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeInterface([&global_data](auto& edge_int) {
             auto& edge_internal = edge_int.edge_data.edge_internal;
-            auto& internal_in = edge_int.interface.data_in.internal;
-            auto& internal_ex = edge_int.interface.data_ex.internal;
-            auto& boundary_in = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
-            auto& boundary_ex = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
+            auto& internal_in   = edge_int.interface.data_in.internal;
+            auto& internal_ex   = edge_int.interface.data_ex.internal;
+            auto& boundary_in   = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
+            auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
             const uint n_global_dofs = edge_int.edge_data.get_ndof() * GN::n_dimensions;
-            const auto w1_hat = subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
+            const auto w1_hat =
+                subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
             internal_in.w1_rhs -= boundary_in.w1_w1_hat * w1_hat;
             internal_ex.w1_rhs -= boundary_ex.w1_w1_hat * w1_hat;
         });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_data](auto& edge_bound) {
             auto& edge_internal = edge_bound.edge_data.edge_internal;
-            auto& internal = edge_bound.boundary.data.internal;
-            auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
+            auto& internal      = edge_bound.boundary.data.internal;
+            auto& boundary      = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
             const uint n_global_dofs = edge_bound.edge_data.get_ndof() * GN::n_dimensions;
-            const auto w1_hat = subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
+            const auto w1_hat =
+                subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
             internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
         });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed([&global_data](auto& edge_dbound) {
             auto& edge_internal = edge_dbound.edge_data.edge_internal;
-            auto& internal = edge_dbound.boundary.data.internal;
-            auto& boundary = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
+            auto& internal      = edge_dbound.boundary.data.internal;
+            auto& boundary      = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
             const uint n_global_dofs = edge_dbound.edge_data.get_ndof() * GN::n_dimensions;
-            const auto w1_hat = subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
+            const auto w1_hat =
+                subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
             internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
         });
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
             const uint stage = stepper.GetStage();
-            auto& state    = elt.data.state[stage];
-            auto& internal = elt.data.internal;
-            state.w1 = reshape<double, GN::n_dimensions, SO::ColumnMajor>(internal.w1_rhs, elt.data.get_ndof());
+            auto& state      = elt.data.state[stage];
+            auto& internal   = elt.data.internal;
+            state.w1         = reshape<double, GN::n_dimensions, SO::ColumnMajor>(internal.w1_rhs, elt.data.get_ndof());
         });
     }
 
