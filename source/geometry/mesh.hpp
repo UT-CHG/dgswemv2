@@ -46,6 +46,8 @@ class Mesh<std::tuple<Elements...>,
     Mesh& operator=(Mesh&&) = default;
     Mesh(Mesh&&)            = default;
 
+    uint GetP() { return this->p; }
+
     std::string GetMeshName() { return this->mesh_name; }
     void SetMeshName(const std::string& mesh_name) { this->mesh_name = mesh_name; }
 

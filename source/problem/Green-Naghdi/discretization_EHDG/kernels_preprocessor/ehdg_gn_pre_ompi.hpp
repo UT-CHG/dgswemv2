@@ -64,24 +64,24 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
         }
         MPI_Bcast(&n_dc_global_dofs, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
+        const uint n_global_dofs = (sim_units.front()->discretization.mesh.GetP() + 1) * GN::n_dimensions;
         MatCreateBAIJ(MPI_COMM_WORLD,
-                      4,
-                      4 * dc_global_dof_offset,
-                      4 * dc_global_dof_offset,
-                      4 * n_dc_global_dofs,
-                      4 * n_dc_global_dofs,
+                      n_global_dofs,
+                      n_global_dofs * dc_global_dof_offset,
+                      n_global_dofs * dc_global_dof_offset,
+                      n_global_dofs * n_dc_global_dofs,
+                      n_global_dofs * n_dc_global_dofs,
                       5,
                       NULL,
                       4,
                       NULL,
                       &(global_data.w1_hat_w1_hat));
 
-        // MatCreate(MPI_COMM_WORLD, &(global_data.w1_hat_w1_hat));
-        // MatSetSizes(global_data.w1_hat_w1_hat, total_dc_global_dof_offset, total_dc_global_dof_offset,
-        // n_dc_global_dofs, n_dc_global_dofs); MatSetUp(global_data.w1_hat_w1_hat);
-
-        VecCreateMPI(MPI_COMM_WORLD, 4 * dc_global_dof_offset, 4 * n_dc_global_dofs, &(global_data.w1_hat_rhs));
-        VecSetBlockSize(global_data.w1_hat_rhs, 4);
+        VecCreateMPI(MPI_COMM_WORLD,
+                     n_global_dofs * dc_global_dof_offset,
+                     n_global_dofs * n_dc_global_dofs,
+                     &(global_data.w1_hat_rhs));
+        VecSetBlockSize(global_data.w1_hat_rhs, n_global_dofs);
 
         KSPCreate(MPI_COMM_WORLD, &(global_data.dc_ksp));
         KSPSetOperators(global_data.dc_ksp, global_data.w1_hat_w1_hat, global_data.w1_hat_w1_hat);
@@ -125,15 +125,15 @@ void Problem::preprocessor_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& s
             sim_units[su_id]->communicator.WaitAllSends(CommTypes::dc_global_dof_indx, 0);
         }
 
-        VecCreateSeq(MPI_COMM_SELF, 4 * dc_global_dof_indx.size(), &(global_data.dc_sol));
+        VecCreateSeq(MPI_COMM_SELF, n_global_dofs * dc_global_dof_indx.size(), &(global_data.dc_sol));
 
         ISCreateBlock(MPI_COMM_SELF,
-                      4,
+                      n_global_dofs,
                       dc_global_dof_indx.size(),
                       (int*)&dc_global_dof_indx.front(),
                       PETSC_COPY_VALUES,
                       &(global_data.dc_from));
-        ISCreateStride(MPI_COMM_SELF, 4 * dc_global_dof_indx.size(), 0, 1, &(global_data.dc_to));
+        ISCreateStride(MPI_COMM_SELF, n_global_dofs * dc_global_dof_indx.size(), 0, 1, &(global_data.dc_to));
 
         VecScatterCreate(global_data.w1_hat_rhs,
                          global_data.dc_from,
