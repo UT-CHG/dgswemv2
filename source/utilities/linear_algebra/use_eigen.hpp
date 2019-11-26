@@ -94,6 +94,11 @@ decltype(auto) power(const ArrayType& array, const double exp) {
 }
 
 /* Vector Operations */
+template <typename VectorType>
+uint size(const VectorType& vector) {
+    return vector.size();
+}
+
 template <typename LeftVectorType, typename RightVectorType>
 decltype(auto) vec_cw_mult(const LeftVectorType& vector_left, const RightVectorType& vector_right) {
     return vector_left.cwiseProduct(vector_right);
@@ -195,6 +200,13 @@ DynVector<T> flatten(const DynMatrix<T>& matrix) {
     DynVector<T> ret(m * n);
     Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(ret.data(), m, n) = matrix;
     return ret;
+}
+
+template <typename T, int SO = Eigen::StorageOptions::RowMajor>
+void flatten(const DynMatrix<T>& matrix, T* mem) {
+    uint m                                                                           = matrix.rows();
+    uint n                                                                           = matrix.cols();
+    Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, SO>>(mem, m, n) = matrix;
 }
 
 /* Solving Linear System */

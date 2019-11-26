@@ -29,7 +29,7 @@ struct Data {
         }
 
         this->source            = GN::Source(this->nnode);
-        this->derivative        = GN::Derivative(this->nvrtx, this->nbound);
+        this->derivative        = GN::Derivative(this->nvrtx, this->nbound, this->ngp_boundary);
         this->wet_dry_state     = GN::WetDry(this->nvrtx);
         this->slope_limit_state = GN::SlopeLimit(this->nvrtx, this->nbound);
     }

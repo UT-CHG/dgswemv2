@@ -21,6 +21,7 @@
 #include <map>
 #include <unordered_map>
 #include <tuple>
+#include <set>
 #include <cstdlib>
 #include <ctime>
 
@@ -134,6 +135,8 @@ class Master {
 
     DynVector<double> chi_baryctr;
     DynMatrix<double> chi_midpts;
+
+    std::array<DynVector<double>, dimension> dchi_baryctr;
 
     DynMatrix<double> chi_gp;
     DynMatrix<double> phi_gp;

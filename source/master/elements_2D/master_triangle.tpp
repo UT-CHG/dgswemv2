@@ -32,6 +32,17 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
     this->chi_midpts(2, 1) = 1.0 / 2.0;
     this->chi_midpts(2, 2) = 0.0;
 
+    this->dchi_baryctr[LocalCoordTri::z1].resize(this->nvrtx);
+    this->dchi_baryctr[LocalCoordTri::z2].resize(this->nvrtx);
+
+    this->dchi_baryctr[LocalCoordTri::z1][0] = -0.5;
+    this->dchi_baryctr[LocalCoordTri::z1][1] = 0.5;
+    this->dchi_baryctr[LocalCoordTri::z1][2] = 0.0;
+
+    this->dchi_baryctr[LocalCoordTri::z2][0] = -0.5;
+    this->dchi_baryctr[LocalCoordTri::z2][1] = 0.0;
+    this->dchi_baryctr[LocalCoordTri::z2][2] = 0.5;
+
     this->chi_gp.resize(this->nvrtx, this->ngp);
     this->dchi_gp[LocalCoordTri::z1].resize(this->nvrtx, this->ngp);
     this->dchi_gp[LocalCoordTri::z2].resize(this->nvrtx, this->ngp);
@@ -43,14 +54,8 @@ Triangle<BasisType, IntegrationType>::Triangle(const uint p) : Master<2>(p) {
         this->chi_gp(1, gp) = (1 + this->integration_rule.second[gp][LocalCoordTri::z1]) / 2.0;
         this->chi_gp(2, gp) = (1 + this->integration_rule.second[gp][LocalCoordTri::z2]) / 2.0;
 
-        this->dchi_gp[LocalCoordTri::z1](0, gp) = -0.5;
-        this->dchi_gp[LocalCoordTri::z2](0, gp) = -0.5;
-
-        this->dchi_gp[LocalCoordTri::z1](1, gp) = 0.5;
-        this->dchi_gp[LocalCoordTri::z2](1, gp) = 0.0;
-
-        this->dchi_gp[LocalCoordTri::z1](2, gp) = 0.0;
-        this->dchi_gp[LocalCoordTri::z2](2, gp) = 0.5;
+        column(this->dchi_gp[LocalCoordTri::z1], gp) = this->dchi_baryctr[LocalCoordTri::z1];
+        column(this->dchi_gp[LocalCoordTri::z2], gp) = this->dchi_baryctr[LocalCoordTri::z2];
     }
 
     this->phi_gp  = this->basis.GetPhi(this->p, this->integration_rule.second);

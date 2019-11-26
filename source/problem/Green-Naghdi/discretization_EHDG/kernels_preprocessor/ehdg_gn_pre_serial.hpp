@@ -17,10 +17,12 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
 
     uint dc_global_dof_offset = 0;
     Problem::initialize_global_dc_problem_serial(discretization, dc_global_dof_offset);
-    global_data.w1_hat_w1_hat.resize(dc_global_dof_offset, dc_global_dof_offset);
-    global_data.w1_hat_rhs.resize(dc_global_dof_offset);
 
-    Problem::compute_bathymetry_derivatives_serial(discretization);
+    const uint n_global_dofs = (discretization.mesh.GetP() + 1) * GN::n_dimensions;
+    global_data.w1_hat_w1_hat.resize(n_global_dofs * dc_global_dof_offset, n_global_dofs * dc_global_dof_offset);
+    global_data.w1_hat_rhs.resize(n_global_dofs * dc_global_dof_offset);
+
+    Problem::compute_bathymetry_derivatives_serial(discretization, global_data);
 
     uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages()
                         ? stepper.GetFirstStepper().GetNumStages()
