@@ -127,7 +127,7 @@ void Problem::serial_solve_global_dc_problem(ProblemDiscretizationType& discreti
         auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
         const uint n_global_dofs = edge_int.edge_data.get_ndof() * GN::n_dimensions;
-        const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
+        const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_global_dof_indx * n_global_dofs, n_global_dofs);
         internal_in.w1_rhs -= boundary_in.w1_w1_hat * w1_hat;
         internal_ex.w1_rhs -= boundary_ex.w1_w1_hat * w1_hat;
     });
@@ -138,7 +138,7 @@ void Problem::serial_solve_global_dc_problem(ProblemDiscretizationType& discreti
         auto& boundary      = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
         const uint n_global_dofs = edge_bound.edge_data.get_ndof() * GN::n_dimensions;
-        const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
+        const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_global_dof_indx * n_global_dofs, n_global_dofs);
         internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
     });
 
