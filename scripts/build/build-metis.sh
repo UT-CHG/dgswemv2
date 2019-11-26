@@ -3,44 +3,10 @@
 START_BOLD="tput bold"
 END_BOLD="tput sgr0"
 
-usage () {
-    echo "usage: $0 [options]"
-    echo "options:"
-    echo "    -h"
-    echo "        shows this message"
-    echo "    -c <config_file> "
-    echo "        specify a config file."
-    echo "        default config file is config.txt"
-    echo "    clean"
-    echo "        removes build directory."
-    echo "    no-make"
-    echo "        runs CMake, does not run make."
-    echo "    reinstall"
-    echo "        if already built, reinstalls into install dir."
-    exit 1
-}
-
-CONFIGFILE=""
-
-if [ "$#" -gt 2 ]; then usage; fi
-
-if [ "$#" == 2 ] && [ "$1" == "-c" ]; then
-    CONFIGFILE=$2
-fi
-
-if [ "$1" == "-h" ]; then usage; fi
-if [ "$1" == "--help" ]; then usage; fi
-
-# Fix me: handle more options
-if [ "$#" -gt 0 ]; then
-    if [ "$1" != "clean" ] && [ "$1" != "no-make" ] && [ "$1" != "reinstall"]; then
-	echo "invalid option: $1"
-	usage
-    fi
-fi
-
 SCRIPTPATH=$( cd $(dirname $0) ; pwd -P )
 source $SCRIPTPATH/util.sh
+
+parse_args "$@"
 
 if [ -z "$CONFIGFILE" ]; then
     CONFIGFILE=${SCRIPTPATH}/config.txt
@@ -65,7 +31,13 @@ if [ ! -d "$METIS_BUILD_PATH" ]; then
     set -e
     mkdir -p ${METIS_BUILD_PATH}
     cd ${METIS_BUILD_PATH}
-    wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+
+    { #try pulling from metis website
+        wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz
+    } || { #otherwise pull from the fedora mirror
+        wget http://pkgs.fedoraproject.org/repo/pkgs/metis/metis-5.1.0.tar.gz/md5/5465e67079419a69e0116de24fce58fe/metis-5.1.0.tar.gz
+    }
+
     tar xf metis-5.1.0.tar.gz
     cd metis-5.1.0
     sed -i 's/#define IDXTYPEWIDTH 32/#define IDXTYPEWIDTH 64/g' include/metis.h

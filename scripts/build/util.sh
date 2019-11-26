@@ -1,6 +1,53 @@
  #!/bin/bash
 
 ################################################################################
+# print usage information
+# Inputs:
+#   1. script name
+function usage {
+    echo "usage: $0 [options]"
+    echo "options:"
+    echo "    -h"
+    echo "        shows this message"
+    echo "    -c <config_file> "
+    echo "        specify a config file."
+    echo "        default config file is config.txt"
+    echo "    clean"
+    echo "        removes build directory."
+    echo "    no-make"
+    echo "        runs CMake, does not run make."
+    echo "    reinstall"
+    echo "        if already built, reinstalls into install dir."
+    exit 1
+}
+
+################################################################################
+# parses inputs to build scripts (looking for correctness)
+# Inputs:
+#  1. Simply pass all command line arguments with "$@"
+# Outputs:
+#  1. Sets CONFIGFILE
+function parse_args {
+    CONFIGFILE=""
+
+    if [ "$#" -gt 2 ]; then usage; fi
+
+    if [ "$#" == 2 ] && [ "$1" == "-c" ]; then
+        CONFIGFILE=$2
+        return
+    fi
+
+    if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then usage; fi
+
+    # Fix me: handle more options
+    if [ "$#" -gt 0 ]; then
+        if [ "$1" != "clean" ] && [ "$1" != "no-make" ] && [ "$1" != "reinstall" ]; then
+	    echo "invalid option: $1"
+	    usage
+        fi
+    fi
+}
+################################################################################
 # see if system supports modules and if so load modules specified in $MODULES
 #Inputs:
 # 1. Space delimited string of modules to be loaded
