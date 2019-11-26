@@ -281,9 +281,8 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
 
         VecRestoreArray(dc_sol, &sol_ptr);
 
-        if (stepper.GetStep() == 0) {
-            MatSetOption(w1_hat_w1_hat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE);
-        }
+        MatZeroEntries(w1_hat_w1_hat);
+        VecZeroEntries(w1_hat_rhs);
     }
 #pragma omp barrier
 
