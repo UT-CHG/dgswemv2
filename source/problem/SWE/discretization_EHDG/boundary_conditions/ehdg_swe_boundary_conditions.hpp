@@ -5,6 +5,5 @@
 #include "ehdg_swe_bc_flow.hpp"
 #include "ehdg_swe_bc_tide.hpp"
 #include "ehdg_swe_bc_function.hpp"
-#include "ehdg_swe_bc_outflow.hpp"
 
 #endif

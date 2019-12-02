@@ -29,6 +29,8 @@ void Land::ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& 
     row(boundary.w1_hat_w1_kernel_at_gp, RowMajTrans2D::xy) -= vec_cw_mult(nx, ny);
     row(boundary.w1_hat_w1_kernel_at_gp, RowMajTrans2D::yx) -= vec_cw_mult(ny, nx);
     row(boundary.w1_hat_w1_kernel_at_gp, RowMajTrans2D::yy) -= vec_cw_mult(ny, ny);
+
+    set_constant(boundary.w1_hat_w2_kernel_at_gp, 0.0);
 }
 }
 }

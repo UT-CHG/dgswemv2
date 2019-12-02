@@ -1,20 +1,17 @@
-#ifndef EHDG_GN_BC_FLOW_HPP
-#define EHDG_GN_BC_FLOW_HPP
+#ifndef EHDG_GN_BC_FUNCTION_HPP
+#define EHDG_GN_BC_FUNCTION_HPP
 
 namespace GN {
 namespace EHDG {
 namespace BC {
-class Flow : public SWE_SIM::BC::Flow {
+class Function : public SWE_SIM::BC::Function {
   public:
-    Flow() = default;
-    Flow(const std::vector<SWE::FlowNode>& flow_input) : SWE_SIM::BC::Flow(flow_input) {}
-
     template <typename StepperType, typename EdgeBoundaryType>
     void ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound);
 };
 
 template <typename StepperType, typename EdgeBoundaryType>
-void Flow::ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
+void Function::ComputeGlobalKernelsDC(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_internal = edge_bound.edge_data.edge_internal;
     auto& boundary      = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 

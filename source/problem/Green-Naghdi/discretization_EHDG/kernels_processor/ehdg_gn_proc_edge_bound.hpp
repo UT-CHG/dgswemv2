@@ -98,6 +98,10 @@ void Problem::global_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeB
                       GN::n_dimensions) =
                 reshape<double, GN::n_dimensions>(
                     edge_bound.IntegrationPhiLambda(dof_j, dof_i, boundary.w1_hat_w1_kernel_at_gp));
+            boundary.w1_hat_w2(GN::n_dimensions * dof_i + GlobalCoord::x, dof_j) =
+                edge_bound.IntegrationPhiLambda(dof_j, dof_i, row(boundary.w1_hat_w2_kernel_at_gp, GlobalCoord::x));
+            boundary.w1_hat_w2(GN::n_dimensions * dof_i + GlobalCoord::y, dof_j) =
+                edge_bound.IntegrationPhiLambda(dof_j, dof_i, row(boundary.w1_hat_w2_kernel_at_gp, GlobalCoord::y));
         }
     }
 }

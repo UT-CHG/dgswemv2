@@ -8,9 +8,10 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
                        typename ProblemType::ProblemInputType& problem_input,
                        typename ProblemType::ProblemWriterType& writer) {
     // *** //
-    using BoundaryTypeLand = typename std::tuple_element<0, typename ProblemType::ProblemBoundaryTypes>::type;
-    using BoundaryTypeTide = typename std::tuple_element<1, typename ProblemType::ProblemBoundaryTypes>::type;
-    using BoundaryTypeFlow = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeLand     = typename std::tuple_element<0, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeTide     = typename std::tuple_element<1, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeFlow     = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
+    using BoundaryTypeFunction = typename std::tuple_element<3, typename ProblemType::ProblemBoundaryTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == GN::BoundaryTypes::land) {
@@ -92,6 +93,22 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             if (writer.WritingLog()) {
                 writer.GetLogFile() << "Number of flow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_flow
                                     << std::endl;
+            }
+        } else if (it->first == GN::BoundaryTypes::function) {
+            uint n_bound_old_func = mesh.GetNumberBoundaries();
+
+            auto itt = it->second.begin();
+            while (itt != it->second.end()) {
+                auto& raw_boundary = itt->second;
+
+                mesh.template CreateBoundary<BoundaryTypeFunction>(std::move(raw_boundary));
+
+                it->second.erase(itt++);
+            }
+
+            if (writer.WritingLog()) {
+                writer.GetLogFile() << "Number of function boundaries: "
+                                    << mesh.GetNumberBoundaries() - n_bound_old_func << std::endl;
             }
         }
     }

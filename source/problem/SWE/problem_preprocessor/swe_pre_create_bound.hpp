@@ -12,7 +12,6 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
     using BoundaryTypeTide     = typename std::tuple_element<1, typename ProblemType::ProblemBoundaryTypes>::type;
     using BoundaryTypeFlow     = typename std::tuple_element<2, typename ProblemType::ProblemBoundaryTypes>::type;
     using BoundaryTypeFunction = typename std::tuple_element<3, typename ProblemType::ProblemBoundaryTypes>::type;
-    using BoundaryTypeOutflow  = typename std::tuple_element<4, typename ProblemType::ProblemBoundaryTypes>::type;
 
     for (auto it = raw_boundaries.begin(); it != raw_boundaries.end(); ++it) {
         if (it->first == SWE::BoundaryTypes::land) {
@@ -110,22 +109,6 @@ void create_boundaries(std::map<uchar, std::map<std::pair<uint, uint>, RawBounda
             if (writer.WritingLog()) {
                 writer.GetLogFile() << "Number of function boundaries: "
                                     << mesh.GetNumberBoundaries() - n_bound_old_func << std::endl;
-            }
-        } else if (it->first == SWE::BoundaryTypes::outflow) {
-            uint n_bound_old_out = mesh.GetNumberBoundaries();
-
-            auto itt = it->second.begin();
-            while (itt != it->second.end()) {
-                auto& raw_boundary = itt->second;
-
-                mesh.template CreateBoundary<BoundaryTypeOutflow>(std::move(raw_boundary));
-
-                it->second.erase(itt++);
-            }
-
-            if (writer.WritingLog()) {
-                writer.GetLogFile() << "Number of outflow boundaries: " << mesh.GetNumberBoundaries() - n_bound_old_out
-                                    << std::endl;
             }
         }
     }

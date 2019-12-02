@@ -69,7 +69,6 @@ void Problem::initialize_global_dc_problem_serial(ProblemDiscretizationType& dis
         // Initialize w1 containers
         boundary.w1_w1_hat.resize(GN::n_dimensions * edge_bound.boundary.data.get_ndof(),
                                   GN::n_dimensions * edge_bound.edge_data.get_ndof());
-        edge_internal.w1_hat_rhs.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof());
 
         // Initialize w2 containers
         boundary.w2_w1_hat.resize(edge_bound.boundary.data.get_ndof(),
@@ -78,9 +77,13 @@ void Problem::initialize_global_dc_problem_serial(ProblemDiscretizationType& dis
         // Initialize w1_hat containers
         edge_internal.w1_hat_w1_hat.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
                                            GN::n_dimensions * edge_bound.edge_data.get_ndof());
+        edge_internal.w1_hat_rhs.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof());
 
         boundary.w1_hat_w1.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
                                   GN::n_dimensions * edge_bound.boundary.data.get_ndof());
+
+        boundary.w1_hat_w2.resize(GN::n_dimensions * edge_bound.edge_data.get_ndof(),
+                                  edge_bound.boundary.data.get_ndof());
     });
 }
 

@@ -70,10 +70,9 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             auto& internal      = edge_bound.boundary.data.internal;
             auto& boundary      = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-            /* boundary.w1_hat_w1 -= boundary.w1_hat_w2 * internal.w2_w2_inv * internal.w2_w1; */
+            boundary.w1_hat_w1 -= boundary.w1_hat_w2 * internal.w2_w2_inv * internal.w2_w1;
             edge_internal.w1_hat_w1_hat -=
-                /* boundary.w1_hat_w2 * internal.w2_w2_inv * boundary.w2_w1_hat + */ boundary.w1_hat_w1 *
-                boundary.w1_w1_hat;
+                boundary.w1_hat_w2 * internal.w2_w2_inv * boundary.w2_w1_hat + boundary.w1_hat_w1 * boundary.w1_w1_hat;
             edge_internal.w1_hat_rhs = -boundary.w1_hat_w1 * internal.w1_rhs;
 
             edge_internal.w1_hat_w1_hat_flat = flatten<double>(edge_internal.w1_hat_w1_hat);
@@ -83,7 +82,7 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
                 if (bound_id == edge_bound.boundary.bound_id)
                     continue;
                 auto& boundary_con          = edge_bound.boundary.data.boundary[bound_id];
-                edge_internal.w1_hat_w1_hat = -(/* boundary.w1_hat_w2 * internal.w2_w2_inv * boundary_con.w2_w1_hat + */
+                edge_internal.w1_hat_w1_hat = -(boundary.w1_hat_w2 * internal.w2_w2_inv * boundary_con.w2_w1_hat +
                                                 boundary.w1_hat_w1 * boundary_con.w1_w1_hat);
                 edge_internal.w1_hat_w1_hat_con_flat[bcon_id] = flatten<double>(edge_internal.w1_hat_w1_hat);
                 ++bcon_id;
