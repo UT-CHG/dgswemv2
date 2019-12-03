@@ -97,9 +97,11 @@ void Problem::dispersive_correction_kernel(const ESSPRKStepper& stepper, Element
     row(internal.source_at_gp, SWE::Variables::qx) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dx, h) - w1x;
     row(internal.source_at_gp, SWE::Variables::qy) = Global::g / NDParameters::alpha * vec_cw_mult(dze_dy, h) - w1y;
 
-    set_constant(row(state.rhs, SWE::Variables::ze), 0);
-    row(state.rhs, SWE::Variables::qx) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qx));
-    row(state.rhs, SWE::Variables::qy) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qy));
+    set_constant(state.rhs, 0.0);
+    if(!elt.data.wet_dry_state.went_completely_dry) {
+        row(state.rhs, SWE::Variables::qx) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qx));
+        row(state.rhs, SWE::Variables::qy) = elt.IntegrationPhi(row(internal.source_at_gp, SWE::Variables::qy));
+    }
 }
 }
 }

@@ -4,6 +4,18 @@
 namespace GN {
 template <typename MeshType>
 void initialize_data_serial(MeshType& mesh) {
+    std::set<uint> marked_elementID;
+    std::ifstream file("buffer_elements");
+    std::string line;
+    std::stringstream stream;
+    while (std::getline(file, line)) {
+        marked_elementID.insert(std::stoi(line));
+    }
+
+    mesh.CallForEachElement([&marked_elementID](auto& elt) {
+        if(marked_elementID.find(elt.GetID()) != marked_elementID.end()) elt.data.wet_dry_state.went_completely_dry = true;
+    });
+
     mesh.CallForEachElement([](auto& elt) {
         auto& derivative         = elt.data.derivative;
         derivative.area          = elt.GetShape().GetArea();
