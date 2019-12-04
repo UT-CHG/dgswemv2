@@ -9,6 +9,7 @@ struct Internal : SWE::Internal {
           u_at_gp(GN::n_dimensions, ngp),
           du_at_gp(GN::n_du_terms, ngp),
           ddu_at_gp(GN::n_ddu_terms, ngp),
+          dbath_at_gp(GN::n_dimensions, ngp),
           ddbath_at_gp(GN::n_ddbath_terms, ngp),
           dddbath_at_gp(GN::n_dddbath_terms, ngp),
           w1_w1_kernel_at_gp(GN::n_dimensions * GN::n_dimensions, ngp),
@@ -21,6 +22,7 @@ struct Internal : SWE::Internal {
     HybMatrix<double, GN::n_du_terms> du_at_gp;
     HybMatrix<double, GN::n_ddu_terms> ddu_at_gp;
 
+    HybMatrix<double, GN::n_dimensions> dbath_at_gp;
     HybMatrix<double, GN::n_ddbath_terms> ddbath_at_gp;
     HybMatrix<double, GN::n_dddbath_terms> dddbath_at_gp;
 

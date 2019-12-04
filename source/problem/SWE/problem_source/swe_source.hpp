@@ -15,10 +15,10 @@ void get_source(const double t, ElementType& elt) {
     set_constant(row(internal.source_at_gp, SWE::Variables::ze), 0.0);
 
     row(internal.source_at_gp, SWE::Variables::qx) =
-        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));
+        Global::g * vec_cw_mult(row(internal.db_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));
 
     row(internal.source_at_gp, SWE::Variables::qy) =
-        Global::g * vec_cw_mult(row(internal.dbath_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
+        Global::g * vec_cw_mult(row(internal.db_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
 
     if (SWE::SourceTerms::function_source) {
         auto source_q = [t](Point<2>& pt) { return SWE::source_q(t, pt); };

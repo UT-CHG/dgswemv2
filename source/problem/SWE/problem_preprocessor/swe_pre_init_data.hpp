@@ -24,9 +24,9 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         row(state.aux, SWE::Auxiliaries::bath) = elt.L2ProjectionNode(bathymetry);
 
         row(internal.aux_at_gp, SWE::Auxiliaries::bath) = elt.ComputeUgp(row(state.aux, SWE::Auxiliaries::bath));
-        row(internal.dbath_at_gp, GlobalCoord::x) =
+        row(internal.db_at_gp, GlobalCoord::x) =
             elt.ComputeDUgp(GlobalCoord::x, row(state.aux, SWE::Auxiliaries::bath));
-        row(internal.dbath_at_gp, GlobalCoord::y) =
+        row(internal.db_at_gp, GlobalCoord::y) =
             elt.ComputeDUgp(GlobalCoord::y, row(state.aux, SWE::Auxiliaries::bath));
 
         if (problem_specific_input.spherical_projection.type == SWE::SphericalProjectionType::Enable) {
