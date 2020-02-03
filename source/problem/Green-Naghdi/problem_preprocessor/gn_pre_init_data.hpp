@@ -6,6 +6,9 @@ template <typename MeshType>
 void initialize_data_serial(MeshType& mesh) {
     std::set<uint> marked_elementID;
     std::ifstream file("buffer_elements");
+    if (!file.is_open()) {
+        std::cerr << "Need to specify buffer_elements file for GN solver";
+    }
     std::string line;
     std::stringstream stream;
     while (std::getline(file, line)) {
@@ -13,7 +16,8 @@ void initialize_data_serial(MeshType& mesh) {
     }
 
     mesh.CallForEachElement([&marked_elementID](auto& elt) {
-        if(marked_elementID.find(elt.GetID()) != marked_elementID.end()) elt.data.wet_dry_state.went_completely_dry = true;
+        if (marked_elementID.find(elt.GetID()) != marked_elementID.end())
+            elt.data.source.dispersive_correction = false;
     });
 
     mesh.CallForEachElement([](auto& elt) {

@@ -5,6 +5,8 @@ namespace GN {
 struct Source : SWE::Source {
     Source() = default;
     Source(const uint nnode) : SWE::Source(nnode) {}
+
+    bool dispersive_correction = true;
 };
 }
 
