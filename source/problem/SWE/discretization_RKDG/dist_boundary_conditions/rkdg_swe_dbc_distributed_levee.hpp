@@ -14,6 +14,7 @@ class DistributedLevee {
     double H_tolerance = 0.01;
 
     HybMatrix<double, SWE::n_variables> q_ex;
+    HybMatrix<double, SWE::n_auxiliaries> aux_ex;
 
     DynRowVector<double> H_barrier;
     DynRowVector<double> C_subcritical;
@@ -33,6 +34,11 @@ class DistributedLevee {
 
     template <typename DistributedBoundaryType>
     void ComputeFlux(DistributedBoundaryType& dbound);
+
+    template <typename DistributedBoundaryType>
+    void ComputeBedFlux(DistributedBoundaryType& dbound) {
+        abort();  // no implementation
+    }
 };
 
 DistributedLevee::DistributedLevee(DBDataExchanger exchanger, const std::vector<LeveeInput>& levee_input)
@@ -52,10 +58,9 @@ DistributedLevee::DistributedLevee(DBDataExchanger exchanger, const std::vector<
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
-    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-
+    const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
     this->q_ex.resize(SWE::n_variables, ngp);
-
+    this->aux_ex.resize(SWE::n_auxiliaries, ngp);
     this->H_bar_gp       = dbound.ComputeBoundaryNodalUgp(this->H_barrier);
     this->C_subcrit_gp   = dbound.ComputeBoundaryNodalUgp(this->C_subcritical);
     this->C_supercrit_gp = dbound.ComputeBoundaryNodalUgp(this->C_supercritical);
@@ -63,24 +68,20 @@ void DistributedLevee::Initialize(DistributedBoundaryType& dbound) {
 
 template <typename DistributedBoundaryType>
 void DistributedLevee::ComputeFlux(DistributedBoundaryType& dbound) {
-    std::vector<double> message;
+    auto& boundary = dbound.data.boundary[dbound.bound_id];
 
-    message.resize(1 + SWE::n_variables * dbound.data.get_ngp_boundary(dbound.bound_id));
-
+    const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    std::vector<double> message(1 + (SWE::n_variables + 1) * ngp);
     dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::bound_state, message);
-
-    uint gp_ex;
-    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        gp_ex = dbound.data.get_ngp_boundary(dbound.bound_id) - gp - 1;
-
+    for (uint gp = 0; gp < ngp; ++gp) {
+        const uint gp_ex                            = ngp - gp - 1;
+        this->aux_ex(SWE::Auxiliaries::bath, gp_ex) = message[1 + (SWE::n_variables + 1) * gp];
         for (uint var = 0; var < SWE::n_variables; ++var) {
-            this->q_ex(var, gp_ex) = message[1 + SWE::n_variables * gp + var];
+            this->q_ex(var, gp_ex) = message[1 + (SWE::n_variables + 1) * gp + var + 1];
         }
     }
 
     bool wet_in = dbound.data.wet_dry_state.wet;
-
-    auto& boundary = dbound.data.boundary[dbound.bound_id];
 
     double H_levee, C_subcrit, C_supercrit;
     double h_above_levee_in, h_above_levee_ex;
@@ -152,8 +153,9 @@ void DistributedLevee::ComputeFlux(DistributedBoundaryType& dbound) {
 
         LLF_flux(gravity,
                  column(boundary.q_at_gp, gp),
-                 column(q_ex, gp),
+                 column(this->q_ex, gp),
                  column(boundary.aux_at_gp, gp),
+                 column(this->aux_ex, gp),
                  column(dbound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
     }

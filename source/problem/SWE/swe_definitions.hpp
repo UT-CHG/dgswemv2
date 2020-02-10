@@ -26,8 +26,10 @@ const bool ignored_vars =
 }
 
 namespace PostProcessing {
-static bool wetting_drying = false;
-static bool slope_limiting = false;
+static bool wetting_drying     = false;
+static bool slope_limiting     = false;
+static bool bed_update         = false;
+static bool bed_slope_limiting = false;
 
 static double h_o           = 0.1;
 static double h_o_threshold = 1.0e-6;
@@ -36,7 +38,8 @@ static double h_o_threshold = 1.0e-6;
 static double M  = 1.0e-8;
 static double nu = 1.5;
 
-const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
+const bool ignored_vars =
+    Utilities::ignore(wetting_drying, slope_limiting, bed_update, bed_slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
 constexpr uint n_dimensions = 2;

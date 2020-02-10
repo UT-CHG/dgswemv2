@@ -1,6 +1,8 @@
 #ifndef RKDG_SWE_BC_LAND_HPP
 #define RKDG_SWE_BC_LAND_HPP
 
+#include "problem/SWE/seabed_update/swe_seabed_update.hpp"
+
 namespace SWE {
 namespace RKDG {
 namespace BC {
@@ -16,6 +18,9 @@ class Land {
 
     template <typename StepperType, typename BoundaryType>
     void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
+
+    template <typename StepperType, typename BoundaryType>
+    void ComputeBedFlux(const StepperType& stepper, BoundaryType& bound);
 
     void ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
                      const Column<HybMatrix<double, SWE::n_variables>>& q_in,
@@ -60,6 +65,7 @@ void Land::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
                  column(boundary.q_at_gp, gp),
                  column(this->q_ex, gp),
                  column(boundary.aux_at_gp, gp),
+                 column(boundary.aux_at_gp, gp),
                  column(bound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
     }
@@ -82,7 +88,7 @@ void Land::ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surfa
     this->q_ex(SWE::Variables::qx, 0) = qn_ex * n_x + qt_ex * t_x;
     this->q_ex(SWE::Variables::qy, 0) = qn_ex * n_y + qt_ex * t_y;
 
-    LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, surface_normal, std::move(F_hat));
+    LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, aux_in, surface_normal, std::move(F_hat));
 }
 
 void Land::GetEX(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
@@ -104,6 +110,12 @@ void Land::GetEX(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_nor
     q_ex[SWE::Variables::ze] = q_in[SWE::Variables::ze];
     q_ex[SWE::Variables::qx] = qn_ex * n_x + qt_ex * t_x;
     q_ex[SWE::Variables::qy] = qn_ex * n_y + qt_ex * t_y;
+}
+
+template <typename StepperType, typename BoundaryType>
+void Land::ComputeBedFlux(const StepperType& stepper, BoundaryType& bound) {
+    auto& boundary = bound.data.boundary[bound.bound_id];
+    set_constant(boundary.qb_hat_at_gp, 0.0);
 }
 }
 }

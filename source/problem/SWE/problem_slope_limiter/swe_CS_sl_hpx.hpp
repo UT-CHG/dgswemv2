@@ -3,6 +3,8 @@
 
 // Implementation of Cockburn-Shu slope limiter
 #include "swe_CS_slope_limiter.hpp"
+//#include "swe_XU_slope_limiter.hpp"
+
 #include "swe_trouble_check.hpp"
 
 namespace SWE {

@@ -27,6 +27,9 @@ class Tide {
 
     template <typename StepperType, typename BoundaryType>
     void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
+
+    template <typename StepperType, typename BoundaryType>
+    void ComputeBedFlux(const StepperType& stepper, BoundaryType& bound);
 };
 
 Tide::Tide(const std::vector<TideNode>& tide_input) {
@@ -90,8 +93,54 @@ void Tide::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
                  column(boundary.q_at_gp, gp),
                  column(this->q_ex, gp),
                  column(boundary.aux_at_gp, gp),
+                 column(boundary.aux_at_gp, gp),
                  column(bound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
+    }
+}
+
+template <typename StepperType, typename BoundaryType>
+void Tide::ComputeBedFlux(const StepperType& stepper, BoundaryType& bound) {
+    auto& boundary = bound.data.boundary[bound.bound_id];
+
+    set_constant(this->q_ex, 0.0);
+    const uint ngp = bound.data.get_ngp_boundary(bound.bound_id);
+    for (uint con = 0; con < this->frequency.size(); ++con) {
+        for (uint gp = 0; gp < ngp; ++gp) {
+            this->q_ex(SWE::Variables::ze, gp) += stepper.GetRamp() * this->forcing_fact[con] *
+                                                  this->amplitude_gp[con][gp] *
+                                                  cos(this->frequency[con] * stepper.GetTimeAtCurrentStage() +
+                                                      (this->equilib_arg[con] - this->phase_gp[con][gp]) * PI / 180);
+        }
+    }
+    row(this->q_ex, SWE::Variables::qx) = row(boundary.q_at_gp, SWE::Variables::qx);
+    row(this->q_ex, SWE::Variables::qy) = row(boundary.q_at_gp, SWE::Variables::qy);
+
+    for (uint gp = 0; gp < ngp; ++gp) {
+        const double un =
+            roe_un(bound.surface_normal(GlobalCoord::x, gp),
+                   bound.surface_normal(GlobalCoord::y, gp),
+                   boundary.q_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp),
+                   boundary.q_at_gp(SWE::Variables::qx, gp),
+                   boundary.q_at_gp(SWE::Variables::qy, gp),
+                   this->q_ex(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp),
+                   this->q_ex(SWE::Variables::qx, gp),
+                   this->q_ex(SWE::Variables::qy, gp));
+        if (Utilities::almost_equal(un, 0.0)) {
+            boundary.qb_hat_at_gp[gp] = 0.0;
+        } else if (un > 0.0) {
+            boundary.qb_hat_at_gp[gp] =
+                transpose(column(bound.surface_normal, gp)) *
+                bed_flux(boundary.q_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp),
+                         boundary.q_at_gp(SWE::Variables::qx, gp),
+                         boundary.q_at_gp(SWE::Variables::qy, gp));
+        } else if (un < 0.0) {
+            boundary.qb_hat_at_gp[gp] =
+                transpose(column(bound.surface_normal, gp)) *
+                bed_flux(this->q_ex(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp),
+                         this->q_ex(SWE::Variables::qx, gp),
+                         this->q_ex(SWE::Variables::qy, gp));
+        }
     }
 }
 }

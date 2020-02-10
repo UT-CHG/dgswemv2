@@ -3,9 +3,17 @@
 
 #include "rkdg_swe_kernels_processor.hpp"
 #include "problem/SWE/problem_slope_limiter/swe_CS_sl_ompi.hpp"
+#include "problem/SWE/seabed_update/swe_seabed_update.hpp"
 
 namespace SWE {
 namespace RKDG {
+template <template <typename> class OMPISimUnitType, typename ProblemType>
+void seabed_update(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                   typename ProblemType::ProblemGlobalDataType& global_data,
+                   typename ProblemType::ProblemStepperType& stepper,
+                   const uint begin_sim_id,
+                   const uint end_sim_id);
+
 template <template <typename> class OMPISimUnitType, typename ProblemType>
 void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
                         typename ProblemType::ProblemGlobalDataType& global_data,
@@ -21,6 +29,9 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>
 
         Problem::stage_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
     }
+
+    if (SWE::PostProcessing::bed_update)
+        seabed_update(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingOutput()) {
@@ -127,6 +138,66 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, stepper.GetTimestamp());
+    }
+}
+
+template <template <typename> class OMPISimUnitType, typename ProblemType>
+void seabed_update(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& sim_units,
+                   typename ProblemType::ProblemGlobalDataType& global_data,
+                   typename ProblemType::ProblemStepperType& stepper,
+                   const uint begin_sim_id,
+                   const uint end_sim_id) {
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.ReceiveAll(CommTypes::bound_state, stepper.GetTimestamp());
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary(
+            [&stepper](auto& dbound) { Problem::distributed_boundary_send_kernel(stepper, dbound); });
+        sim_units[su_id]->communicator.SendAll(CommTypes::bound_state, stepper.GetTimestamp());
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        sim_units[su_id]->communicator.WaitAllReceives(CommTypes::bound_state, stepper.GetTimestamp());
+        SWE::seabed_update(stepper, sim_units[su_id]->discretization);
+    }
+
+    if (SWE::PostProcessing::bed_slope_limiting) {
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+            sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_state, stepper.GetTimestamp());
+            sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
+                auto& state              = elt.data.state[0];
+                auto& sl_state           = elt.data.slope_limit_state;
+                sl_state.bath_lin        = elt.ProjectBasisToLinear(row(state.aux, SWE::Auxiliaries::bath));
+                sl_state.bath_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.bath_lin);
+            });
+            sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
+                std::vector<double> message(2);
+                message[0] = (double)dbound.data.wet_dry_state.wet;
+                if (dbound.data.wet_dry_state.wet) {
+                    message[1] = dbound.data.slope_limit_state.bath_at_baryctr;
+                }
+                dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::baryctr_state, message);
+            });
+            sim_units[su_id]->communicator.SendAll(CommTypes::baryctr_state, stepper.GetTimestamp());
+        }
+
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+            sim_units[su_id]->communicator.WaitAllReceives(CommTypes::baryctr_state, stepper.GetTimestamp());
+            sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
+                std::vector<double> message(2);
+                dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_state, message);
+                dbound.data.slope_limit_state.wet_neigh[dbound.bound_id]             = (bool)message[0];
+                dbound.data.slope_limit_state.bath_at_baryctr_neigh[dbound.bound_id] = message[1];
+            });
+            SWE::CS_seabed_slope_limiter(sim_units[su_id]->discretization);
+        }
+
+        for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+            sim_units[su_id]->communicator.WaitAllSends(CommTypes::baryctr_state, stepper.GetTimestamp());
+        }
+    }
+
+    for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
+        SWE::seabed_data_update(sim_units[su_id]->discretization);
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::bound_state, stepper.GetTimestamp());
     }
 }
