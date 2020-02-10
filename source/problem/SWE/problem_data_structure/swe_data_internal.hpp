@@ -9,6 +9,7 @@ struct Internal {
           aux_at_gp(SWE::n_auxiliaries, ngp),
           Fx_at_gp(SWE::n_variables, ngp),
           Fy_at_gp(SWE::n_variables, ngp),
+          qb_at_gp(SWE::n_dimensions, ngp),
           source_at_gp(SWE::n_variables, ngp),
           db_at_gp(SWE::n_dimensions, ngp),
           tau_s_at_gp(SWE::n_dimensions, ngp),
@@ -26,6 +27,8 @@ struct Internal {
 
     HybMatrix<double, SWE::n_variables> Fx_at_gp;
     HybMatrix<double, SWE::n_variables> Fy_at_gp;
+
+    HybMatrix<double, SWE::n_dimensions> qb_at_gp;
 
     HybMatrix<double, SWE::n_variables> source_at_gp;
     HybMatrix<double, SWE::n_dimensions> db_at_gp;

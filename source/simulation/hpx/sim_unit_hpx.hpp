@@ -214,10 +214,4 @@ using RKDG_SWE_SimUnit = std::conditional<Utilities::is_defined<SWE::RKDG::Probl
 using RKDG_SWE_Server  = hpx::components::managed_component<RKDG_SWE_SimUnit>;
 HPX_REGISTER_DERIVED_COMPONENT_FACTORY(RKDG_SWE_Server, RKDG_SWE_SimUnit, "HPXSimulationUnitBase");
 
-using EHDG_SWE_SimUnit = std::conditional<Utilities::is_defined<SWE::EHDG::Problem>::value,
-                                          HPXSimulationUnit<SWE::EHDG::Problem>,
-                                          HPXEmptySimUnit>::type;
-using EHDG_SWE_Server  = hpx::components::managed_component<EHDG_SWE_SimUnit>;
-HPX_REGISTER_DERIVED_COMPONENT_FACTORY(EHDG_SWE_Server, EHDG_SWE_SimUnit, "HPXSimulationUnitBase");
-
 #endif

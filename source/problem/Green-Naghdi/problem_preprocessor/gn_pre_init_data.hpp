@@ -67,7 +67,7 @@ void initialize_data_serial(MeshType& mesh) {
                         derivative.a[bound]              = alpha;
                         derivative.a_elem[2 * bound]     = element_1;
                         derivative.a_elem[2 * bound + 1] = element_2;
-                        continue;
+                        break;
                     }
                 }
             }
@@ -130,7 +130,7 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
                         derivative.a[bound]              = alpha;
                         derivative.a_elem[2 * bound]     = element_1;
                         derivative.a_elem[2 * bound + 1] = element_2;
-                        continue;
+                        break;
                     }
                 }
             }

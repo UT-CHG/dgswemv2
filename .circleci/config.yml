@@ -63,7 +63,6 @@ jobs:
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
                 -DRKDG=On \
-                -DEHDG=On \
                 /usr/dgswemv2
             make
       - persist_to_workspace:
@@ -113,19 +112,6 @@ jobs:
           command: |
             /usr/dgswemv2/scripts/correctness/test_rkdg_parallel_weirs.sh build_eigen
 
-  ehdg_run_parallel_correctness_eigen:
-    working_directory: /usr/dgswemv2/build_eigen
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - attach_workspace:
-          at: /usr/dgswemv2
-      - run:
-          no_output_timeout: 60m
-          name: EHDG Parallel Manufactured Solution with Eigen
-          command: |
-            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh ehdg_swe build_eigen
 ##########################################################################
 # Blaze jobs
   build_dgswemv2_swe_only_blaze:
@@ -169,7 +155,6 @@ jobs:
                 -DUSE_OMPI=On \
                 -DUSE_HPX=On \
                 -DRKDG=On \
-                -DEHDG=Off \
                 -DUSE_BLAZE=On \
                 /usr/dgswemv2
             make
@@ -220,21 +205,6 @@ jobs:
           command: |
             /usr/dgswemv2/scripts/correctness/test_rkdg_parallel_weirs.sh build_blaze
 
-  ehdg_run_parallel_correctness_blaze:
-    working_directory: /usr/dgswemv2/build_blaze
-    <<: *defaults
-    steps:
-      - restore_cache:
-          key: v2-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-      - attach_workspace:
-          at: /usr/dgswemv2
-      - run:
-          no_output_timeout: 60m
-          name: EHDG Parallel Manufactured Solution with Blaze
-          command: |
-            /usr/dgswemv2/scripts/correctness/test_swe_parallel_correctness.sh ehdg_swe build_blaze
-
-
 workflows:
   version: 2
   build-and-test:
@@ -255,9 +225,6 @@ workflows:
       - rkdg_run_parallel_weirs_eigen:
           requires:
             - build_dgswemv2_eigen
-      - ehdg_run_parallel_correctness_eigen:
-          requires:
-            - build_dgswemv2_eigen
       - build_dgswemv2_swe_only_blaze:
           requires:
             - checkout_code
@@ -267,12 +234,3 @@ workflows:
       - run_unit_tests_blaze:
           requires:
             - build_dgswemv2_blaze
-#      - rkdg_run_parallel_correctness_blaze:
-#          requires:
-#            - build_dgswemv2_blaze
-#      - rkdg_run_parallel_weirs_blaze:
-#          requires:
-#            - build_dgswemv2_blaze
-#      - ehdg_run_parallel_correctness_blaze:
-#          requires:
-#            - build_dgswemv2_blaze
