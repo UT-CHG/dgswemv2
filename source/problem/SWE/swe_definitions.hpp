@@ -5,11 +5,14 @@
 
 namespace SWE {
 namespace Global {
-static double g         = 9.81;
-static double rho_air   = 1.225;
-static double rho_water = 1000.0;
+static double g            = 9.81;
+static double rho_air      = 1.225;
+static double rho_water    = 1000.0;
+static double rho_sediment = 2500.0;
+static double rho_bed      = 2500.0;
+static double sat_sediment = 0.0;
 
-const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water);
+const bool ignored_vars = Utilities::ignore(g, rho_air, rho_water, rho_sediment, rho_bed, sat_sediment);
 }
 
 namespace SourceTerms {
@@ -26,8 +29,10 @@ const bool ignored_vars =
 }
 
 namespace PostProcessing {
-static bool wetting_drying = false;
-static bool slope_limiting = false;
+static bool wetting_drying     = false;
+static bool slope_limiting     = false;
+static bool bed_update         = false;
+static bool bed_slope_limiting = false;
 
 static double h_o           = 0.1;
 static double h_o_threshold = 1.0e-6;
@@ -36,14 +41,15 @@ static double h_o_threshold = 1.0e-6;
 static double M  = 1.0e-8;
 static double nu = 1.5;
 
-const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
+const bool ignored_vars =
+    Utilities::ignore(wetting_drying, slope_limiting, bed_update, bed_slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
 constexpr uint n_dimensions = 2;
 
-constexpr uint n_variables   = 3;
+constexpr uint n_variables   = 4;
 constexpr uint n_auxiliaries = 3;
-enum Variables : uint { ze = 0, qx = 1, qy = 2 };
+enum Variables : uint { ze = 0, qx = 1, qy = 2, hc = 3 };
 enum Auxiliaries : uint { bath = 0, h = 1, sp = 2 };
 
 enum JacobianVariables : uint {

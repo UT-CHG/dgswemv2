@@ -45,6 +45,11 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
         raw_data_file << (float)it[SWE::Variables::qy] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"hc_point\" format=\"ascii\">\n\t\t\t\t\t";
+    for (auto& it : q_point_data)
+        raw_data_file << (float)it[SWE::Variables::hc] << ' ';
+    raw_data_file << "\n\t\t\t\t</DataArray>\n";
+
     raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"bath_point\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : aux_point_data)
         raw_data_file << (float)it[SWE::Auxiliaries::bath] << ' ';
@@ -54,6 +59,13 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     for (uint pt = 0; pt < q_point_data.size(); ++pt)
         raw_data_file << (float)(std::hypot(q_point_data[pt][SWE::Variables::qx],
                                             q_point_data[pt][SWE::Variables::qy]) /
+                                 (q_point_data[pt][SWE::Variables::ze] + aux_point_data[pt][SWE::Auxiliaries::bath]))
+                      << ' ';
+    raw_data_file << "\n\t\t\t\t</DataArray>\n";
+
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"c_point\" format=\"ascii\">\n\t\t\t\t\t";
+    for (uint pt = 0; pt < q_point_data.size(); ++pt)
+        raw_data_file << (float)(q_point_data[pt][SWE::Variables::hc] /
                                  (q_point_data[pt][SWE::Variables::ze] + aux_point_data[pt][SWE::Auxiliaries::bath]))
                       << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
@@ -75,6 +87,11 @@ void write_VTU_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"qy_cell\" format=\"ascii\">\n\t\t\t\t\t";
     for (auto& it : q_cell_data)
         raw_data_file << (float)it[SWE::Variables::qy] << ' ';
+    raw_data_file << "\n\t\t\t\t</DataArray>\n";
+
+    raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"hc_cell\" format=\"ascii\">\n\t\t\t\t\t";
+    for (auto& it : q_cell_data)
+        raw_data_file << (float)it[SWE::Variables::hc] << ' ';
     raw_data_file << "\n\t\t\t\t</DataArray>\n";
 
     raw_data_file << "\t\t\t\t<DataArray type=\"Float32\" Name=\"bath_cell\" format=\"ascii\">\n\t\t\t\t\t";

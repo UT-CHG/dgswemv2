@@ -28,6 +28,9 @@ class Flow {
 
     template <typename StepperType, typename BoundaryType>
     void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
+
+    template <typename StepperType, typename BoundaryType>
+    void ComputeBedFlux(const StepperType& stepper, BoundaryType& bound);
 };
 
 Flow::Flow(const std::vector<FlowNode>& flow_input) {
@@ -89,14 +92,38 @@ void Flow::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn, n_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn, n_y);
+    set_constant(row(this->q_ex, SWE::Variables::hc), 0.0);  // TODO
 
     for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
-        LLF_flux(Global::g,
+        HLL_flux(Global::g,
                  column(boundary.q_at_gp, gp),
                  column(this->q_ex, gp),
                  column(boundary.aux_at_gp, gp),
+                 column(boundary.aux_at_gp, gp),
                  column(bound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
+    }
+}
+
+template <typename StepperType, typename BoundaryType>
+void Flow::ComputeBedFlux(const StepperType& stepper, BoundaryType& bound) {
+    auto& boundary = bound.data.boundary[bound.bound_id];
+
+    for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
+        const double un = roe_un(column(boundary.q_at_gp, gp),
+                                 column(this->q_ex, gp),
+                                 column(boundary.aux_at_gp, gp),
+                                 column(boundary.aux_at_gp, gp),
+                                 column(bound.surface_normal, gp));
+        if (Utilities::almost_equal(un, 0.0)) {
+            boundary.qb_hat_at_gp[gp] = 0.0;
+        } else if (un > 0.0) {
+            boundary.qb_hat_at_gp[gp] = transpose(column(bound.surface_normal, gp)) *
+                                        bed_flux(column(boundary.q_at_gp, gp), column(boundary.aux_at_gp, gp));
+        } else if (un < 0.0) {
+            boundary.qb_hat_at_gp[gp] = transpose(column(bound.surface_normal, gp)) *
+                                        bed_flux(column(this->q_ex, gp), column(boundary.aux_at_gp, gp));
+        }
     }
 }
 }

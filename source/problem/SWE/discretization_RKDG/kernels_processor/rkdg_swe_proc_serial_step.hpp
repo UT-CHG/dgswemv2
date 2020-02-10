@@ -3,6 +3,7 @@
 
 #include "rkdg_swe_kernels_processor.hpp"
 #include "problem/SWE/problem_slope_limiter/swe_CS_sl_serial.hpp"
+#include "problem/SWE/seabed_update/swe_seabed_update.hpp"
 
 namespace SWE {
 namespace RKDG {
@@ -46,7 +47,16 @@ void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
         stepper.UpdateState(elt);
     });
 
+    if (SWE::PostProcessing::bed_update)
+        SWE::seabed_update(stepper, discretization);
+
     ++stepper;
+
+    if (SWE::PostProcessing::bed_slope_limiting)
+        SWE::CS_seabed_slope_limiter(stepper, discretization);
+
+    if (SWE::PostProcessing::bed_update)
+        SWE::seabed_data_update(stepper, discretization);
 
     if (SWE::PostProcessing::wetting_drying) {
         discretization.mesh.CallForEachElement([&stepper](auto& elt) { wetting_drying_kernel(stepper, elt); });

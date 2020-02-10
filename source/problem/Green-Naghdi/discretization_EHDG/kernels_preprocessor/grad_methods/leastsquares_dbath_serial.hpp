@@ -4,43 +4,44 @@
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType>
-void compute_dbath_ls(ProblemDiscretizationType& discretization);
+void compute_dbath_ls(ProblemDiscretizationType& discretization, const uint stage);
 template <typename ProblemDiscretizationType>
-void compute_ddbath_ls(ProblemDiscretizationType& discretization);
+void compute_ddbath_ls(ProblemDiscretizationType& discretization, const uint stage);
 template <typename ProblemDiscretizationType>
-void compute_dddbath_ls(ProblemDiscretizationType& discretization);
+void compute_dddbath_ls(ProblemDiscretizationType& discretization, const uint stage);
 
 void Problem::compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization,
-                                                    ProblemGlobalDataType& global_data) {
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state                = elt.data.state[0];
+                                                    ProblemGlobalDataType& global_data,
+                                                    const uint stage) {
+    discretization.mesh.CallForEachElement([stage](auto& elt) {
+        auto& state                = elt.data.state[stage];
         auto& derivative           = elt.data.derivative;
         derivative.bath_lin        = elt.ProjectBasisToLinear(row(state.aux, SWE::Auxiliaries::bath));
         derivative.bath_at_baryctr = elt.ComputeLinearUbaryctr(derivative.bath_lin);
         derivative.bath_at_midpts  = elt.ComputeLinearUmidpts(derivative.bath_lin);
     });
-    compute_dbath_ls(discretization);
-    reconstruct_dbath(discretization, global_data);
+    compute_dbath_ls(discretization, stage);
+    reconstruct_dbath(discretization, global_data, stage);
 
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative            = elt.data.derivative;
         derivative.dbath_at_baryctr = elt.ComputeLinearUbaryctr(derivative.dbath_lin);
         derivative.dbath_at_midpts  = elt.ComputeLinearUmidpts(derivative.dbath_lin);
     });
-    compute_ddbath_ls(discretization);
-    reconstruct_ddbath(discretization, global_data);
+    compute_ddbath_ls(discretization, stage);
+    reconstruct_ddbath(discretization, global_data, stage);
 
     discretization.mesh.CallForEachElement([](auto& elt) {
         auto& derivative             = elt.data.derivative;
         derivative.ddbath_at_baryctr = elt.ComputeLinearUbaryctr(derivative.ddbath_lin);
         derivative.ddbath_at_midpts  = elt.ComputeLinearUmidpts(derivative.ddbath_lin);
     });
-    compute_dddbath_ls(discretization);
-    reconstruct_dddbath(discretization, global_data);
+    compute_dddbath_ls(discretization, stage);
+    reconstruct_dddbath(discretization, global_data, stage);
 }
 
 template <typename ProblemDiscretizationType>
-void compute_dbath_ls(ProblemDiscretizationType& discretization) {
+void compute_dbath_ls(ProblemDiscretizationType& discretization, const uint stage) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                      = intface.data_in.derivative;
         auto& derivative_ex                                      = intface.data_ex.derivative;
@@ -70,10 +71,10 @@ void compute_dbath_ls(ProblemDiscretizationType& discretization) {
 }
 
 template <typename ProblemDiscretizationType>
-void compute_ddbath_ls(ProblemDiscretizationType& discretization) {
-    discretization.mesh.CallForEachInterface([](auto& intface) {
-        auto& state_in      = intface.data_in.state[0];
-        auto& state_ex      = intface.data_ex.state[0];
+void compute_ddbath_ls(ProblemDiscretizationType& discretization, const uint stage) {
+    discretization.mesh.CallForEachInterface([stage](auto& intface) {
+        auto& state_in      = intface.data_in.state[stage];
+        auto& state_ex      = intface.data_ex.state[stage];
         auto& derivative_in = intface.data_in.derivative;
         auto& derivative_ex = intface.data_ex.derivative;
         auto& boundary_in   = intface.data_in.boundary[intface.bound_id_in];
@@ -96,8 +97,8 @@ void compute_ddbath_ls(ProblemDiscretizationType& discretization) {
         derivative_ex.dbath_at_baryctr_neigh[intface.bound_id_ex] = derivative_in.dbath_at_baryctr;
     });
 
-    discretization.mesh.CallForEachBoundary([](auto& bound) {
-        auto& state      = bound.data.state[0];
+    discretization.mesh.CallForEachBoundary([stage](auto& bound) {
+        auto& state      = bound.data.state[stage];
         auto& derivative = bound.data.derivative;
         auto& boundary   = bound.data.boundary[bound.bound_id];
 
@@ -106,8 +107,8 @@ void compute_ddbath_ls(ProblemDiscretizationType& discretization) {
         derivative.dbath_at_baryctr_neigh[bound.bound_id] = column(derivative.dbath_at_midpts, bound.bound_id);
     });
 
-    discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-        auto& state      = dbound.data.state[0];
+    discretization.mesh.CallForEachDistributedBoundary([stage](auto& dbound) {
+        auto& state      = dbound.data.state[stage];
         auto& derivative = dbound.data.derivative;
         auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
@@ -132,7 +133,7 @@ void compute_ddbath_ls(ProblemDiscretizationType& discretization) {
 }
 
 template <typename ProblemDiscretizationType>
-void compute_dddbath_ls(ProblemDiscretizationType& discretization) {
+void compute_dddbath_ls(ProblemDiscretizationType& discretization, const uint stage) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                        = intface.data_in.derivative;
         auto& derivative_ex                                        = intface.data_ex.derivative;

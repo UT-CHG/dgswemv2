@@ -48,6 +48,7 @@ int main() {
         ic_node["initial_surface_height"] = 1.0;
         ic_node["initial_momentum_x"]     = 2.0;
         ic_node["initial_momentum_y"]     = 3.0;
+        ic_node["initial_sediment_hc"]    = 4.0;
 
         test["bottom_friction"]    = bf_node;
         test["initial_conditions"] = ic_node;
@@ -66,7 +67,8 @@ int main() {
 
         const SWE::InitialConditions& ics = result.initial_conditions;
         if (!(ics.type == SWE::InitialConditionsType::Constant && Utilities::almost_equal(1., ics.ze_initial) &&
-              Utilities::almost_equal(2., ics.qx_initial) && Utilities::almost_equal(3., ics.qy_initial))) {
+              Utilities::almost_equal(2., ics.qx_initial) && Utilities::almost_equal(3., ics.qy_initial) &&
+              Utilities::almost_equal(4., ics.hc_initial))) {
             std::cerr << "Initial conditions are incorrectly set\n";
             error_found = true;
         }

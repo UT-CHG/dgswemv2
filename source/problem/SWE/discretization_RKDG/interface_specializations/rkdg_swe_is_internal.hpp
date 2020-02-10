@@ -14,6 +14,9 @@ class Internal {
 
     template <typename InterfaceType>
     void ComputeFlux(InterfaceType& intface);
+
+    template <typename InterfaceType>
+    void ComputeBedFlux(InterfaceType& intface);
 };
 
 template <typename InterfaceType>
@@ -35,10 +38,11 @@ void Internal::ComputeFlux(InterfaceType& intface) {
     for (uint gp = 0; gp < intface.data_in.get_ngp_boundary(intface.bound_id_in); ++gp) {
         gp_ex = ngp - gp - 1;
 
-        LLF_flux(Global::g,
+        HLL_flux(Global::g,
                  column(boundary_in.q_at_gp, gp),
                  column(boundary_ex.q_at_gp, gp_ex),
                  column(boundary_in.aux_at_gp, gp),
+                 column(boundary_ex.aux_at_gp, gp_ex),
                  column(intface.surface_normal_in, gp),
                  column(boundary_in.F_hat_at_gp, gp));
 
@@ -56,10 +60,11 @@ void Internal::ComputeFlux(InterfaceType& intface) {
                                                 column(boundary_ex.F_hat_at_gp, gp_ex));
 
             } else if (!wet_ex) {  // water flowing to dry EX element
-                LLF_flux(0.0,
+                HLL_flux(0.0,
                          column(boundary_ex.q_at_gp, gp_ex),
                          column(boundary_in.q_at_gp, gp),
                          column(boundary_ex.aux_at_gp, gp_ex),
+                         column(boundary_in.aux_at_gp, gp),
                          column(intface.surface_normal_ex, gp_ex),
                          column(boundary_ex.F_hat_at_gp, gp_ex));
 
@@ -78,10 +83,11 @@ void Internal::ComputeFlux(InterfaceType& intface) {
                                                 column(boundary_in.F_hat_at_gp, gp));
 
             } else if (!wet_in) {  // water flowing to dry IN element
-                LLF_flux(0.0,
+                HLL_flux(0.0,
                          column(boundary_in.q_at_gp, gp),
                          column(boundary_ex.q_at_gp, gp_ex),
                          column(boundary_in.aux_at_gp, gp),
+                         column(boundary_ex.aux_at_gp, gp_ex),
                          column(intface.surface_normal_in, gp),
                          column(boundary_in.F_hat_at_gp, gp));
 
@@ -90,6 +96,36 @@ void Internal::ComputeFlux(InterfaceType& intface) {
         }
 
         assert(!std::isnan(boundary_in.F_hat_at_gp(Variables::ze, gp)));
+    }
+}
+
+template <typename InterfaceType>
+void Internal::ComputeBedFlux(InterfaceType& intface) {
+    auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
+    auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+
+    const uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+    for (uint gp = 0; gp < ngp; ++gp) {
+        const uint gp_ex = ngp - gp - 1;
+        const double un  = roe_un(column(boundary_in.q_at_gp, gp),
+                                 column(boundary_ex.q_at_gp, gp_ex),
+                                 column(boundary_in.aux_at_gp, gp),
+                                 column(boundary_ex.aux_at_gp, gp_ex),
+                                 column(intface.surface_normal_in, gp));
+
+        if (Utilities::almost_equal(un, 0.0)) {
+            boundary_in.qb_hat_at_gp[gp]    = 0.0;
+            boundary_ex.qb_hat_at_gp[gp_ex] = 0.0;
+        } else if (un > 0.0) {
+            boundary_in.qb_hat_at_gp[gp] = transpose(column(intface.surface_normal_in, gp)) *
+                                           bed_flux(column(boundary_in.q_at_gp, gp), column(boundary_in.aux_at_gp, gp));
+            boundary_ex.qb_hat_at_gp[gp_ex] = -boundary_in.qb_hat_at_gp[gp];
+        } else if (un < 0.0) {
+            boundary_in.qb_hat_at_gp[gp] =
+                transpose(column(intface.surface_normal_in, gp)) *
+                bed_flux(column(boundary_ex.q_at_gp, gp_ex), column(boundary_ex.aux_at_gp, gp_ex));
+            boundary_ex.qb_hat_at_gp[gp_ex] = -boundary_in.qb_hat_at_gp[gp];
+        }
     }
 }
 }

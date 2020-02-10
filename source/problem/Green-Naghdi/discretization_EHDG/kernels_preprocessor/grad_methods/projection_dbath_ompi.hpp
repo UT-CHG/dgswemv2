@@ -9,7 +9,8 @@ template <typename OMPISimUnitType>
 void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                                   ProblemGlobalDataType& global_data,
                                                   const uint begin_sim_id,
-                                                  const uint end_sim_id) {
+                                                  const uint end_sim_id,
+                                                  const uint stage) {
     /* First derivatives begin */
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
@@ -30,14 +31,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        compute_dbath_rhs(sim_units[su_id]->discretization);
+        compute_dbath_rhs(sim_units[su_id]->discretization, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-            auto& state      = dbound.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([stage](auto& dbound) {
+            auto& state      = dbound.data.state[stage];
             auto& derivative = dbound.data.derivative;
             auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
@@ -56,8 +57,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
-            auto& state = elt.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachElement([stage](auto& elt) {
+            auto& state = elt.data.state[stage];
             state.dbath = elt.ApplyMinv(state.dbath);
         });
     }
@@ -71,8 +72,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-            auto& state    = dbound.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([stage](auto& dbound) {
+            auto& state    = dbound.data.state[stage];
             auto& boundary = dbound.data.boundary[dbound.bound_id];
 
             boundary.dbath_hat_at_gp = dbound.ComputeUgp(state.dbath);
@@ -92,14 +93,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        compute_ddbath_rhs(sim_units[su_id]->discretization);
+        compute_ddbath_rhs(sim_units[su_id]->discretization, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-            auto& state    = dbound.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([stage](auto& dbound) {
+            auto& state    = dbound.data.state[stage];
             auto& boundary = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
@@ -121,8 +122,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
-            auto& state  = elt.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachElement([stage](auto& elt) {
+            auto& state  = elt.data.state[stage];
             state.ddbath = elt.ApplyMinv(state.ddbath);
         });
     }
@@ -136,8 +137,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.ReceiveAll(CommTypes::dbath, 0);
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-            auto& state      = dbound.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([stage](auto& dbound) {
+            auto& state      = dbound.data.state[stage];
             auto& derivative = dbound.data.derivative;
 
             derivative.ddbath_hat_at_gp[dbound.bound_id] = dbound.ComputeUgp(state.ddbath);
@@ -158,14 +159,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        compute_dddbath_rhs(sim_units[su_id]->discretization);
+        compute_dddbath_rhs(sim_units[su_id]->discretization, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
-            auto& state      = dbound.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([stage](auto& dbound) {
+            auto& state      = dbound.data.state[stage];
             auto& derivative = dbound.data.derivative;
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
@@ -189,8 +190,8 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
             }
         });
 
-        sim_units[su_id]->discretization.mesh.CallForEachElement([](auto& elt) {
-            auto& state            = elt.data.state[0];
+        sim_units[su_id]->discretization.mesh.CallForEachElement([stage](auto& elt) {
+            auto& state            = elt.data.state[stage];
             auto& internal         = elt.data.internal;
             state.dddbath          = elt.ApplyMinv(state.dddbath);
             internal.dddbath_at_gp = elt.ComputeUgp(state.dddbath);

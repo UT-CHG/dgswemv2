@@ -7,17 +7,19 @@ namespace RKDG {
 void LLF_flux(const double gravity,
               const Column<HybMatrix<double, SWE::n_variables>>& q_in,
               const Column<HybMatrix<double, SWE::n_variables>>& q_ex,
-              const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
+              const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
+              const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_ex,
               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
               Column<HybMatrix<double, SWE::n_variables>>&& F_hat) {
-    double bath = aux[SWE::Auxiliaries::bath];
-    double sp   = aux[SWE::Auxiliaries::sp];
+    double sp      = aux_in[SWE::Auxiliaries::sp];
+    double bath_in = aux_in[SWE::Auxiliaries::bath];
+    double bath_ex = aux_ex[SWE::Auxiliaries::bath];
 
-    double h_in = q_in[SWE::Variables::ze] + bath;
+    double h_in = q_in[SWE::Variables::ze] + bath_in;
     double u_in = q_in[SWE::Variables::qx] / h_in;
     double v_in = q_in[SWE::Variables::qy] / h_in;
 
-    double h_ex = q_ex[SWE::Variables::ze] + bath;
+    double h_ex = q_ex[SWE::Variables::ze] + bath_ex;
     double u_ex = q_ex[SWE::Variables::qx] / h_ex;
     double v_ex = q_ex[SWE::Variables::qy] / h_ex;
 
@@ -40,21 +42,23 @@ void LLF_flux(const double gravity,
     double uuh_in = u_in * q_in[SWE::Variables::qx];
     double vvh_in = v_in * q_in[SWE::Variables::qy];
     double uvh_in = u_in * q_in[SWE::Variables::qy];
-    double pe_in  = gravity * (std::pow(q_in[SWE::Variables::ze], 2) / 2 + q_in[SWE::Variables::ze] * bath);
+    double pe_in  = gravity * (std::pow(q_in[SWE::Variables::ze], 2) / 2 + q_in[SWE::Variables::ze] * bath_in);
 
     Fn_in[SWE::Variables::ze] = sp * q_in[SWE::Variables::qx] * nx + q_in[SWE::Variables::qy] * ny;
     Fn_in[SWE::Variables::qx] = sp * (uuh_in + pe_in) * nx + uvh_in * ny;
     Fn_in[SWE::Variables::qy] = sp * uvh_in * nx + (vvh_in + pe_in) * ny;
+    Fn_in[SWE::Variables::hc] = 0.0;  // TODO
 
     // compute external flux matrix
     double uuh_ex = u_ex * q_ex[SWE::Variables::qx];
     double vvh_ex = v_ex * q_ex[SWE::Variables::qy];
     double uvh_ex = u_ex * q_ex[SWE::Variables::qy];
-    double pe_ex  = gravity * (std::pow(q_ex[SWE::Variables::ze], 2) / 2 + q_ex[SWE::Variables::ze] * bath);
+    double pe_ex  = gravity * (std::pow(q_ex[SWE::Variables::ze], 2) / 2 + q_ex[SWE::Variables::ze] * bath_ex);
 
     Fn_ex[SWE::Variables::ze] = q_ex[SWE::Variables::qx] * nx + q_ex[SWE::Variables::qy] * ny;
     Fn_ex[SWE::Variables::qx] = (uuh_ex + pe_ex) * nx + uvh_ex * ny;
     Fn_ex[SWE::Variables::qy] = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
+    Fn_ex[SWE::Variables::hc] = 0.0;  // TODO
 
     F_hat = 0.5 * (Fn_in + Fn_ex + max_eigenvalue * (q_in - q_ex));
 }

@@ -19,6 +19,7 @@ struct InitialConditions {
     double ze_initial          = 0.;
     double qx_initial          = 0.;
     double qy_initial          = 0.;
+    double hc_initial          = 0.;
 };
 
 // Problem specific bcis information containers

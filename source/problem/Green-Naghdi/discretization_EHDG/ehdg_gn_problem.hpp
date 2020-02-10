@@ -174,13 +174,15 @@ struct Problem {
                                                                    std::vector<uint>& dc_global_dof_indx);
 
     static void compute_bathymetry_derivatives_serial(ProblemDiscretizationType& discretization,
-                                                      ProblemGlobalDataType& global_data);
+                                                      ProblemGlobalDataType& global_data,
+                                                      const uint stage = 0);
 
     template <typename OMPISimUnitType>
     static void compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                                     ProblemGlobalDataType& global_data,
                                                     const uint begin_sim_id,
-                                                    const uint end_sim_id);
+                                                    const uint end_sim_id,
+                                                    const uint stage = 0);
 
     // processor kernels
     static void step_serial(ProblemDiscretizationType& discretization,

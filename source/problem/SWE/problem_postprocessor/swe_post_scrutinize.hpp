@@ -37,6 +37,15 @@ bool scrutinize_solution(const StepperType& stepper, ElementType& elt) {
         }
     }
 
+    for (uint dof = 0; dof < ndof; ++dof) {
+        if (std::isnan(state.q(SWE::Variables::hc, dof))) {
+            std::cerr << "Error: found isnan hc at Element " << elt.GetID();
+            std::cerr << "       At stage: " << stage << "\n";
+
+            return true;
+        }
+    }
+
     return false;
 }
 }

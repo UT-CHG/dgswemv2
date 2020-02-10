@@ -2,7 +2,7 @@
 #define BATHYMETRY_HPP
 
 double bathymetry_function(double x, double y) {
-    double bath = 1.5;
+    double bath = 2.0;
 
     /*if (std::hypot(x - 2.0, y) >= 2.0) {
         bath = 0.3;

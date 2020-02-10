@@ -1,6 +1,8 @@
 #ifndef RKDG_SWE_BC_LAND_HPP
 #define RKDG_SWE_BC_LAND_HPP
 
+#include "problem/SWE/seabed_update/swe_seabed_update.hpp"
+
 namespace SWE {
 namespace RKDG {
 namespace BC {
@@ -16,6 +18,9 @@ class Land {
 
     template <typename StepperType, typename BoundaryType>
     void ComputeFlux(const StepperType& stepper, BoundaryType& bound);
+
+    template <typename StepperType, typename BoundaryType>
+    void ComputeBedFlux(const StepperType& stepper, BoundaryType& bound);
 
     void ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
                      const Column<HybMatrix<double, SWE::n_variables>>& q_in,
@@ -54,11 +59,13 @@ void Land::ComputeFlux(const StepperType& stepper, BoundaryType& bound) {
     row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn_ex, n_x) + vec_cw_mult(qt_ex, t_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn_ex, n_y) + vec_cw_mult(qt_ex, t_y);
+    set_constant(row(this->q_ex, SWE::Variables::hc), 0.0);  // TODO
 
-    for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
-        LLF_flux(Global::g,
+    for (uint gp = 0; gp < bound.data.get_ngp_boundary(bound.bound_id); ++gp) {
+        HLL_flux(Global::g,
                  column(boundary.q_at_gp, gp),
                  column(this->q_ex, gp),
+                 column(boundary.aux_at_gp, gp),
                  column(boundary.aux_at_gp, gp),
                  column(bound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
@@ -81,8 +88,9 @@ void Land::ComputeFlux(const Column<HybMatrix<double, SWE::n_dimensions>>& surfa
     this->q_ex(SWE::Variables::ze, 0) = q_in[SWE::Variables::ze];
     this->q_ex(SWE::Variables::qx, 0) = qn_ex * n_x + qt_ex * t_x;
     this->q_ex(SWE::Variables::qy, 0) = qn_ex * n_y + qt_ex * t_y;
+    this->q_ex(SWE::Variables::hc, 0) = 0.0;  // TODO
 
-    LLF_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, surface_normal, std::move(F_hat));
+    HLL_flux(Global::g, q_in, column(this->q_ex, 0), aux_in, aux_in, surface_normal, std::move(F_hat));
 }
 
 void Land::GetEX(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
@@ -104,6 +112,13 @@ void Land::GetEX(const Column<HybMatrix<double, SWE::n_dimensions>>& surface_nor
     q_ex[SWE::Variables::ze] = q_in[SWE::Variables::ze];
     q_ex[SWE::Variables::qx] = qn_ex * n_x + qt_ex * t_x;
     q_ex[SWE::Variables::qy] = qn_ex * n_y + qt_ex * t_y;
+    q_ex[SWE::Variables::hc] = 0.0;  // TODO
+}
+
+template <typename StepperType, typename BoundaryType>
+void Land::ComputeBedFlux(const StepperType& stepper, BoundaryType& bound) {
+    auto& boundary = bound.data.boundary[bound.bound_id];
+    set_constant(boundary.qb_hat_at_gp, 0.0);
 }
 }
 }

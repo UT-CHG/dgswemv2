@@ -45,6 +45,11 @@ void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
     for (auto& it : q_cell_data)
         raw_data_file << (float)it[SWE::Variables::qy] << std::endl;
 
+    raw_data_file << "SCALARS hc_cell double 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
+    for (auto& it : q_cell_data)
+        raw_data_file << (float)it[SWE::Variables::hc] << std::endl;
+
     raw_data_file << "SCALARS bath_cell double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto& it : aux_cell_data)
@@ -81,6 +86,11 @@ void write_VTK_data(MeshType& mesh, std::ofstream& raw_data_file) {
     raw_data_file << "LOOKUP_TABLE default" << std::endl;
     for (auto& it : q_point_data)
         raw_data_file << (float)it[SWE::Variables::qy] << std::endl;
+
+    raw_data_file << "SCALARS hc_point double 1" << std::endl;
+    raw_data_file << "LOOKUP_TABLE default" << std::endl;
+    for (auto& it : q_point_data)
+        raw_data_file << (float)it[SWE::Variables::hc] << std::endl;
 
     raw_data_file << "SCALARS bath_point double 1" << std::endl;
     raw_data_file << "LOOKUP_TABLE default" << std::endl;

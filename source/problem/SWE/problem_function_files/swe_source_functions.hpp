@@ -6,8 +6,9 @@ inline StatVector<double, SWE::n_variables> source_q(const double t, const Point
     double source_ze = 0.0;
     double source_qx = 0.0;
     double source_qy = 0.0;
+    double source_hc = 0.0;
 
-    StatVector<double, SWE::n_variables> source_q{source_ze, source_qx, source_qy};
+    StatVector<double, SWE::n_variables> source_q{source_ze, source_qx, source_qy, source_hc};
 
     return source_q;
 }

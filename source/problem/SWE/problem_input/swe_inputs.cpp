@@ -47,12 +47,13 @@ Inputs::Inputs(YAML::Node& swe_node) {
 
             if (ic_str == "Constant") {
                 if (ic_node["initial_surface_height"] && ic_node["initial_momentum_x"] &&
-                    ic_node["initial_momentum_y"]) {
+                    ic_node["initial_momentum_y"] && ic_node["initial_sediment_hc"]) {
                     this->initial_conditions.type = InitialConditionsType::Constant;
 
                     this->initial_conditions.ze_initial = ic_node["initial_surface_height"].as<double>();
                     this->initial_conditions.qx_initial = ic_node["initial_momentum_x"].as<double>();
                     this->initial_conditions.qy_initial = ic_node["initial_momentum_y"].as<double>();
+                    this->initial_conditions.hc_initial = ic_node["initial_sediment_hc"].as<double>();
                 } else {
                     std::cerr << malformatted_ic_warning;
                 }
@@ -343,6 +344,7 @@ YAML::Node Inputs::as_yaml_node() {
             ic_node["initial_surface_height"] = this->initial_conditions.ze_initial;
             ic_node["initial_momentum_x"]     = this->initial_conditions.qx_initial;
             ic_node["initial_momentum_y"]     = this->initial_conditions.qy_initial;
+            ic_node["initial_sediment_hc"]    = this->initial_conditions.hc_initial;
 
             ret["initial_conditions"] = ic_node;
             break;

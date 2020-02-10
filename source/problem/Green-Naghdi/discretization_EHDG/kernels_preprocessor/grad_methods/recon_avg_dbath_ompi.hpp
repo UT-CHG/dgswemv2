@@ -4,7 +4,9 @@
 namespace GN {
 namespace EHDG {
 template <typename OMPISimUnitType, typename ProblemGlobalDataType>
-void reconstruct_dbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, ProblemGlobalDataType& global_data) {
+void reconstruct_dbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                       ProblemGlobalDataType& global_data,
+                       const uint stage) {
 #pragma omp barrier
 #pragma omp master
     {
@@ -46,8 +48,8 @@ void reconstruct_dbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
         VecGetArray(global_data.local_derivatives_at_node, &d_ptr);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->discretization.mesh.CallForEachElement([d_ptr](auto& elt) {
-                auto& state      = elt.data.state[0];
+            sim_units[su_id]->discretization.mesh.CallForEachElement([stage, d_ptr](auto& elt) {
+                auto& state      = elt.data.state[stage];
                 auto& derivative = elt.data.derivative;
                 auto& internal   = elt.data.internal;
                 for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
@@ -68,7 +70,9 @@ void reconstruct_dbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
 }
 
 template <typename OMPISimUnitType, typename ProblemGlobalDataType>
-void reconstruct_ddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, ProblemGlobalDataType& global_data) {
+void reconstruct_ddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                        ProblemGlobalDataType& global_data,
+                        const uint stage) {
 #pragma omp barrier
 #pragma omp master
     {
@@ -110,8 +114,8 @@ void reconstruct_ddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
         VecGetArray(global_data.local_derivatives_at_node, &d_ptr);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->discretization.mesh.CallForEachElement([d_ptr](auto& elt) {
-                auto& state      = elt.data.state[0];
+            sim_units[su_id]->discretization.mesh.CallForEachElement([stage, d_ptr](auto& elt) {
+                auto& state      = elt.data.state[stage];
                 auto& derivative = elt.data.derivative;
                 auto& internal   = elt.data.internal;
                 for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
@@ -132,7 +136,9 @@ void reconstruct_ddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units
 }
 
 template <typename OMPISimUnitType, typename ProblemGlobalDataType>
-void reconstruct_dddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units, ProblemGlobalDataType& global_data) {
+void reconstruct_dddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                         ProblemGlobalDataType& global_data,
+                         const uint stage) {
 #pragma omp barrier
 #pragma omp master
     {
@@ -174,8 +180,8 @@ void reconstruct_dddbath(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_unit
         VecGetArray(global_data.local_derivatives_at_node, &d_ptr);
 
         for (uint su_id = 0; su_id < sim_units.size(); ++su_id) {
-            sim_units[su_id]->discretization.mesh.CallForEachElement([d_ptr](auto& elt) {
-                auto& state      = elt.data.state[0];
+            sim_units[su_id]->discretization.mesh.CallForEachElement([stage, d_ptr](auto& elt) {
+                auto& state      = elt.data.state[stage];
                 auto& derivative = elt.data.derivative;
                 auto& internal   = elt.data.internal;
                 for (uint node = 0; node < elt.GetNodeID().size(); ++node) {

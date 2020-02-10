@@ -22,6 +22,31 @@ void Problem::preprocessor_serial(ProblemDiscretizationType& discretization,
     global_data.w1_hat_w1_hat.resize(n_global_dofs * dc_global_dof_offset, n_global_dofs * dc_global_dof_offset);
     global_data.w1_hat_rhs.resize(n_global_dofs * dc_global_dof_offset);
 
+#if defined(B_RECON_AVG) || defined(D_RECON_AVG)
+    std::set<uint> nodeIDs;
+    discretization.mesh.CallForEachElement(
+        [&nodeIDs](auto& elt) { nodeIDs.insert(elt.GetNodeID().begin(), elt.GetNodeID().end()); });
+    uint max_nodeID = *std::max_element(nodeIDs.begin(), nodeIDs.end());
+
+    global_data.derivatives_at_node = DynVector<double>((max_nodeID + 1) * GN::n_dddbath_terms);
+    std::vector<uint> node_mult((max_nodeID + 1), 0);
+
+    discretization.mesh.CallForEachElement([&node_mult](auto& elt) {
+        auto& derivative = elt.data.derivative;
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            derivative.local_nodeID[node] = elt.GetNodeID()[node];
+            ++node_mult[derivative.local_nodeID[node]];
+        }
+    });
+
+    discretization.mesh.CallForEachElement([&node_mult](auto& elt) {
+        auto& derivative = elt.data.derivative;
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            derivative.node_mult[node] = node_mult[derivative.local_nodeID[node]];
+        }
+    });
+#endif
+
     Problem::compute_bathymetry_derivatives_serial(discretization, global_data);
 
     uint n_stages = stepper.GetFirstStepper().GetNumStages() > stepper.GetSecondStepper().GetNumStages()

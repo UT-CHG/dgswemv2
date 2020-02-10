@@ -98,7 +98,9 @@ inline StatVector<double, SWE::n_variables> source_q(const double t, const Point
         (3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * cos(3 * y) * sin(3 * x) * pow(sin(4 * t + y), 2)) /
             pow(2 + exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)), 2);
 
-    StatVector<double, SWE::n_variables> source_q{source_ze, source_qx, source_qy};
+    double source_hc = -3 * exp(-sin(3 * t) + sin(3 * x) * sin(3 * y)) * cos(3 * t) + cos(4 * t + y) + sin(4 * t - x);
+
+    StatVector<double, SWE::n_variables> source_q{source_ze, source_qx, source_qy, source_hc};
 
     return source_q;
 }

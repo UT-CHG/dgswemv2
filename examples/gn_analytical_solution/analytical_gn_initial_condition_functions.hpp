@@ -20,7 +20,9 @@ inline StatVector<double, SWE::n_variables> ic_q(const double t, const Point<2>&
 
     double ic_qy = 0.0;
 
-    StatVector<double, SWE::n_variables> ic_q{ic_ze, ic_qx, ic_qy};
+    double ic_hc = 0.0;
+
+    StatVector<double, SWE::n_variables> ic_q{ic_ze, ic_qx, ic_qy, ic_hc};
 
     return ic_q;
 }

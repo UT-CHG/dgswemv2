@@ -9,8 +9,15 @@ struct Internal {
           aux_at_gp(SWE::n_auxiliaries, ngp),
           Fx_at_gp(SWE::n_variables, ngp),
           Fy_at_gp(SWE::n_variables, ngp),
+          qb_at_gp(SWE::n_dimensions, ngp),
           source_at_gp(SWE::n_variables, ngp),
           db_at_gp(SWE::n_dimensions, ngp),
+          dh_at_gp(SWE::n_dimensions, ngp),
+          dhc_at_gp(SWE::n_dimensions, ngp),
+          rho_mix_at_gp(ngp),
+          sed_mom_frac_at_gp(ngp),
+          E_at_gp(ngp),
+          D_at_gp(ngp),
           tau_s_at_gp(SWE::n_dimensions, ngp),
           dp_atm_at_gp(SWE::n_dimensions, ngp),
           dtide_pot_at_gp(SWE::n_dimensions, ngp),
@@ -27,8 +34,17 @@ struct Internal {
     HybMatrix<double, SWE::n_variables> Fx_at_gp;
     HybMatrix<double, SWE::n_variables> Fy_at_gp;
 
+    HybMatrix<double, SWE::n_dimensions> qb_at_gp;
+
     HybMatrix<double, SWE::n_variables> source_at_gp;
     HybMatrix<double, SWE::n_dimensions> db_at_gp;
+    HybMatrix<double, SWE::n_dimensions> dh_at_gp;
+    HybMatrix<double, SWE::n_dimensions> dhc_at_gp;
+    DynRowVector<double> rho_mix_at_gp;
+    DynRowVector<double> sed_mom_frac_at_gp;
+    DynRowVector<double> E_at_gp;
+    DynRowVector<double> D_at_gp;
+
     HybMatrix<double, SWE::n_dimensions> tau_s_at_gp;
     HybMatrix<double, SWE::n_dimensions> dp_atm_at_gp;
     HybMatrix<double, SWE::n_dimensions> dtide_pot_at_gp;

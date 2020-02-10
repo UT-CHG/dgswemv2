@@ -30,6 +30,11 @@ class Levee {
 
     template <typename InterfaceType>
     void ComputeFlux(InterfaceType& intface);
+
+    template <typename InterfaceType>
+    void ComputeBedFlux(InterfaceType& intface) {
+        abort();  // no implementation
+    }
 };
 
 Levee::Levee(const std::vector<LeveeInput>& levee_input) {
@@ -157,16 +162,18 @@ void Levee::ComputeFlux(InterfaceType& intface) {
             }
         }
 
-        LLF_flux(gravity_in,
+        HLL_flux(gravity_in,
                  column(boundary_in.q_at_gp, gp),
                  column(this->q_in_ex, gp),
+                 column(boundary_in.aux_at_gp, gp),
                  column(boundary_in.aux_at_gp, gp),
                  column(intface.surface_normal_in, gp),
                  column(boundary_in.F_hat_at_gp, gp));
 
-        LLF_flux(gravity_ex,
+        HLL_flux(gravity_ex,
                  column(boundary_ex.q_at_gp, gp_ex),
                  column(this->q_ex_ex, gp_ex),
+                 column(boundary_ex.aux_at_gp, gp_ex),
                  column(boundary_ex.aux_at_gp, gp_ex),
                  column(intface.surface_normal_ex, gp_ex),
                  column(boundary_ex.F_hat_at_gp, gp_ex));

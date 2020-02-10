@@ -231,6 +231,12 @@ void solve_sle(blaze::DynamicMatrix<double, blaze::columnMajor>& A, ArrayType& B
     blaze::gesv(A, B, ipiv.data());
 }
 
+template <typename ArrayType, long unsigned int m>
+void solve_sle(blaze::StaticMatrix<double, m, m>& A, ArrayType& B) {
+    std::vector<int> ipiv(blaze::columns(A));
+    blaze::gesv(A, B, ipiv.data());
+}
+
 template <typename ArrayType, typename T>
 void solve_sle(SparseMatrix<T>& A_sparse, ArrayType& B) {
     // Avoid using this function, use a library with sparse solvers, e.g. Eigen

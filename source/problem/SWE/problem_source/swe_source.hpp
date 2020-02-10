@@ -3,27 +3,65 @@
 
 #include "problem/SWE/problem_data_structure/swe_data_source.hpp"
 #include "problem/SWE/problem_function_files/swe_source_functions.hpp"
+#include "problem/SWE/seabed_update/swe_seabed_update.hpp"
 
 namespace SWE {
-template <typename ElementType>
-void get_source(const double t, ElementType& elt) {
+template <typename StepperType, typename ElementType>
+void get_source(const StepperType& stepper, ElementType& elt) {
+    auto& state    = elt.data.state[stepper.GetStage()];
     auto& internal = elt.data.internal;
     auto& source   = elt.data.source;
 
     // note we assume that the values at gauss points have already been computed
     // compute contribution of hydrostatic pressure
-    set_constant(row(internal.source_at_gp, SWE::Variables::ze), 0.0);
+    row(internal.dh_at_gp, GlobalCoord::x) =
+        elt.ComputeDUgp(GlobalCoord::x, row(state.q, SWE::Variables::ze)) + row(internal.db_at_gp, GlobalCoord::x);
+    row(internal.dh_at_gp, GlobalCoord::y) =
+        elt.ComputeDUgp(GlobalCoord::y, row(state.q, SWE::Variables::ze)) + row(internal.db_at_gp, GlobalCoord::y);
 
-    row(internal.source_at_gp, SWE::Variables::qx) =
+    row(internal.dhc_at_gp, GlobalCoord::x) = elt.ComputeDUgp(GlobalCoord::x, row(state.q, SWE::Variables::hc));
+    row(internal.dhc_at_gp, GlobalCoord::y) = elt.ComputeDUgp(GlobalCoord::y, row(state.q, SWE::Variables::hc));
+
+    for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
+        internal.rho_mix_at_gp[gp] = rho_mixture(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
+        internal.E_at_gp[gp]       = entrainment_rate(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
+        internal.D_at_gp[gp]       = deposition_rate(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
+        internal.sed_mom_frac_at_gp[gp] = (Global::rho_bed - internal.rho_mix_at_gp[gp]) /
+                                          (internal.rho_mix_at_gp[gp] * (1.0 - Global::sat_sediment));
+    }
+
+    const auto b_grad_x =
         Global::g * vec_cw_mult(row(internal.db_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::ze));
-
-    row(internal.source_at_gp, SWE::Variables::qy) =
+    const auto b_grad_y =
         Global::g * vec_cw_mult(row(internal.db_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::ze));
 
-    if (SWE::SourceTerms::function_source) {
-        auto source_q = [t](Point<2>& pt) { return SWE::source_q(t, pt); };
+    const auto c_grad_x =
+        -Global::g * (Global::rho_sediment - Global::rho_water) / 2.0 *
+        vec_cw_div(vec_cw_mult(row(internal.dhc_at_gp, GlobalCoord::x), row(internal.aux_at_gp, SWE::Auxiliaries::h)) -
+                       vec_cw_mult(row(internal.dh_at_gp, GlobalCoord::x), row(internal.q_at_gp, SWE::Variables::hc)),
+                   internal.rho_mix_at_gp);
+    const auto c_grad_y =
+        -Global::g * (Global::rho_sediment - Global::rho_water) / 2.0 *
+        vec_cw_div(vec_cw_mult(row(internal.dhc_at_gp, GlobalCoord::y), row(internal.aux_at_gp, SWE::Auxiliaries::h)) -
+                       vec_cw_mult(row(internal.dh_at_gp, GlobalCoord::y), row(internal.q_at_gp, SWE::Variables::hc)),
+                   internal.rho_mix_at_gp);
 
-        internal.source_at_gp += elt.ComputeFgp(source_q);
+    const auto u = vec_cw_div(row(internal.q_at_gp, SWE::Variables::qx), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+    const auto v = vec_cw_div(row(internal.q_at_gp, SWE::Variables::qy), row(internal.aux_at_gp, SWE::Auxiliaries::h));
+    const auto sed_mom_x =
+        -vec_cw_mult(vec_cw_mult(internal.sed_mom_frac_at_gp, internal.E_at_gp - internal.D_at_gp), u);
+    const auto sed_mom_y =
+        -vec_cw_mult(vec_cw_mult(internal.sed_mom_frac_at_gp, internal.E_at_gp - internal.D_at_gp), v);
+
+    row(internal.source_at_gp, SWE::Variables::ze) =
+        1.0 / (1.0 - Global::sat_sediment) * (internal.E_at_gp - internal.D_at_gp);
+    row(internal.source_at_gp, SWE::Variables::qx) = b_grad_x + c_grad_x + sed_mom_x;
+    row(internal.source_at_gp, SWE::Variables::qy) = b_grad_y + c_grad_y + sed_mom_y;
+    row(internal.source_at_gp, SWE::Variables::hc) = internal.E_at_gp - internal.D_at_gp;
+
+    if (SWE::SourceTerms::function_source) {
+        const double t = stepper.GetTimeAtCurrentStage();
+        internal.source_at_gp += elt.ComputeFgp([t](Point<2>& pt) { return SWE::source_q(t, pt); });
     }
 
     if (SWE::SourceTerms::bottom_friction) {

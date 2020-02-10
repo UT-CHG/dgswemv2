@@ -39,8 +39,13 @@ bool test_configuration(const int configuration,
 
     HybMatrix<double, SWE::n_variables> F_hat(SWE::n_variables, 1);
 
-    SWE::RKDG::LLF_flux(
-        SWE::Global::g, column(q_in, 0), column(q_ex, 0), column(aux_in, 0), column(norm, 0), column(F_hat, 0));
+    SWE::RKDG::LLF_flux(SWE::Global::g,
+                        column(q_in, 0),
+                        column(q_ex, 0),
+                        column(aux_in, 0),
+                        column(aux_in, 0),
+                        column(norm, 0),
+                        column(F_hat, 0));
 
     if (!Utilities::almost_equal(F_hat(0, 0), true_ze_flux)) {
         std::cerr << "Error in configuration " << configuration << " in surface elevation flux\n";

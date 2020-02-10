@@ -32,8 +32,9 @@ inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2
     double true_ze = exp(sin(3 * x) * sin(3 * y) - sin(3 * t));
     double true_qx = cos(x - 4 * t);
     double true_qy = sin(y + 4 * t);
+    double true_hc = exp(sin(3 * x) * sin(3 * y) - sin(3 * t)) + 2.0;
 
-    StatVector<double, SWE::n_variables> true_q{true_ze, true_qx, true_qy};
+    StatVector<double, SWE::n_variables> true_q{true_ze, true_qx, true_qy, true_hc};
 
     return true_q;
 }

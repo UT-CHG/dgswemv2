@@ -20,7 +20,9 @@ inline StatVector<double, SWE::n_variables> true_q(const double t, const Point<2
 
     double true_qy = 0.0;
 
-    StatVector<double, SWE::n_variables> true_q{true_ze, true_qx, true_qy};
+    double true_hc = 0.0;
+
+    StatVector<double, SWE::n_variables> true_q{true_ze, true_qx, true_qy, true_hc};
 
     return true_q;
 }

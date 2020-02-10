@@ -9,9 +9,10 @@ template <typename OMPISimUnitType>
 void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
                                                   ProblemGlobalDataType& global_data,
                                                   const uint begin_sim_id,
-                                                  const uint end_sim_id) {
+                                                  const uint end_sim_id,
+                                                  const uint stage) {
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        compute_dbath_gg(sim_units[su_id]->discretization);
+        compute_dbath_gg(sim_units[su_id]->discretization, stage);
     }
 
 #if defined(B_RECON_INT) || defined(B_RECON_LS)
@@ -33,18 +34,18 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        reconstruct_dbath(sim_units[su_id]->discretization, global_data);
+        reconstruct_dbath(sim_units[su_id]->discretization, global_data, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
 #elif defined(B_RECON_AVG)
-    reconstruct_dbath(sim_units, global_data);
+    reconstruct_dbath(sim_units, global_data, stage);
 #endif
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
-        compute_ddbath_gg(sim_units[su_id]->discretization);
+        compute_ddbath_gg(sim_units[su_id]->discretization, stage);
     }
 
 #if defined(B_RECON_INT) || defined(B_RECON_LS)
@@ -66,14 +67,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        reconstruct_ddbath(sim_units[su_id]->discretization, global_data);
+        reconstruct_ddbath(sim_units[su_id]->discretization, global_data, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
 #elif defined(B_RECON_AVG)
-    reconstruct_ddbath(sim_units, global_data);
+    reconstruct_ddbath(sim_units, global_data, stage);
 #endif
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -97,7 +98,7 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        compute_dddbath_gg(sim_units[su_id]->discretization);
+        compute_dddbath_gg(sim_units[su_id]->discretization, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
@@ -123,14 +124,14 @@ void Problem::compute_bathymetry_derivatives_ompi(std::vector<std::unique_ptr<OM
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllReceives(CommTypes::dbath, 0);
 
-        reconstruct_dddbath(sim_units[su_id]->discretization, global_data);
+        reconstruct_dddbath(sim_units[su_id]->discretization, global_data, stage);
     }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         sim_units[su_id]->communicator.WaitAllSends(CommTypes::dbath, 0);
     }
 #elif defined(B_RECON_AVG)
-    reconstruct_dddbath(sim_units, global_data);
+    reconstruct_dddbath(sim_units, global_data, stage);
 #endif
 }
 }
