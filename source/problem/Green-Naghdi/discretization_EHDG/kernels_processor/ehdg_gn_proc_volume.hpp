@@ -11,8 +11,8 @@ void Problem::local_dc_volume_kernel(const ESSPRKStepper& stepper, ElementType& 
     // has been calculated in derivatives kernel
 
     const auto h  = row(internal.aux_at_gp, SWE::Auxiliaries::h);
-    const auto bx = row(internal.dbath_at_gp, GlobalCoord::x);
-    const auto by = row(internal.dbath_at_gp, GlobalCoord::y);
+    const auto bx = -row(internal.dbath_at_gp, GlobalCoord::x);
+    const auto by = -row(internal.dbath_at_gp, GlobalCoord::y);
 
     set_constant(internal.w1_w1_kernel_at_gp, 0.0);
     set_constant(row(internal.w1_w1_kernel_at_gp, RowMajTrans2D::xx), 1.0);

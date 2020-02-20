@@ -17,8 +17,8 @@ void Problem::local_dc_edge_boundary_kernel(const ESSPRKStepper& stepper, EdgeBo
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) = row(boundary.aux_at_gp, SWE::Auxiliaries::h);
 
     const auto h_hat = row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h);
-    const auto bx    = row(boundary.dbath_hat_at_gp, GlobalCoord::x);
-    const auto by    = row(boundary.dbath_hat_at_gp, GlobalCoord::y);
+    const auto bx    = -row(boundary.dbath_hat_at_gp, GlobalCoord::x);
+    const auto by    = -row(boundary.dbath_hat_at_gp, GlobalCoord::y);
     const auto nx    = row(edge_bound.boundary.surface_normal, GlobalCoord::x);
     const auto ny    = row(edge_bound.boundary.surface_normal, GlobalCoord::y);
 

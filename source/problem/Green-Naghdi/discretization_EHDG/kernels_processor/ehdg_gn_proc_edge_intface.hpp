@@ -24,8 +24,8 @@ void Problem::local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeI
     }
 
     const auto h_hat = row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h);
-    const auto bx    = row(boundary_in.dbath_hat_at_gp, GlobalCoord::x);
-    const auto by    = row(boundary_in.dbath_hat_at_gp, GlobalCoord::y);
+    const auto bx    = -row(boundary_in.dbath_hat_at_gp, GlobalCoord::x);
+    const auto by    = -row(boundary_in.dbath_hat_at_gp, GlobalCoord::y);
     const auto nx    = row(edge_int.interface.surface_normal_in, GlobalCoord::x);
     const auto ny    = row(edge_int.interface.surface_normal_in, GlobalCoord::y);
 
@@ -54,8 +54,8 @@ void Problem::local_dc_edge_interface_kernel(const ESSPRKStepper& stepper, EdgeI
     for (uint gp = 0; gp < ngp; ++gp) {
         const uint gp_ex   = ngp - gp - 1;
         const double h_hat = edge_internal.aux_hat_at_gp(SWE::Auxiliaries::h, gp);
-        const double bx    = boundary_ex.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
-        const double by    = boundary_ex.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
+        const double bx    = -boundary_ex.dbath_hat_at_gp(GlobalCoord::x, gp_ex);
+        const double by    = -boundary_ex.dbath_hat_at_gp(GlobalCoord::y, gp_ex);
         const double nx    = edge_int.interface.surface_normal_ex(GlobalCoord::x, gp_ex);
         const double ny    = edge_int.interface.surface_normal_ex(GlobalCoord::y, gp_ex);
 

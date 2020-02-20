@@ -12,12 +12,15 @@ void Problem::local_dc_source_kernel(const ESSPRKStepper& stepper, ElementType& 
     // at this point h_at_gp, u_at_gp, du_at_gp and ddu_at_gp
     // have been calculated in derivatives kernel
 
+    // due to different conventions for bathymetry, I have to flip signs for derivatives:
+    // our convention is h = b + ze, GN convention is h = ze + Ho - b;
+
     const auto h  = row(internal.aux_at_gp, SWE::Auxiliaries::h);
     const auto h2 = vec_cw_mult(h, h);
     const auto h3 = vec_cw_mult(h2, h);
 
-    const auto bx = row(internal.dbath_at_gp, GlobalCoord::x);
-    const auto by = row(internal.dbath_at_gp, GlobalCoord::y);
+    const auto bx = -row(internal.dbath_at_gp, GlobalCoord::x);
+    const auto by = -row(internal.dbath_at_gp, GlobalCoord::y);
 
     const auto zex = elt.ComputeUgp(row(state.dze, GlobalCoord::x));
     const auto zey = elt.ComputeUgp(row(state.dze, GlobalCoord::y));
@@ -42,19 +45,19 @@ void Problem::local_dc_source_kernel(const ESSPRKStepper& stepper, ElementType& 
     const auto vyx = row(internal.ddu_at_gp, GN::DDU::vyx);
     const auto vyy = row(internal.ddu_at_gp, GN::DDU::vyy);
 
-    const auto bxx = row(internal.ddbath_at_gp, GN::DDBath::bxx);
-    const auto bxy = row(internal.ddbath_at_gp, GN::DDBath::bxy);
-    const auto byx = row(internal.ddbath_at_gp, GN::DDBath::byx);
-    const auto byy = row(internal.ddbath_at_gp, GN::DDBath::byy);
+    const auto bxx = -row(internal.ddbath_at_gp, GN::DDBath::bxx);
+    const auto bxy = -row(internal.ddbath_at_gp, GN::DDBath::bxy);
+    const auto byx = -row(internal.ddbath_at_gp, GN::DDBath::byx);
+    const auto byy = -row(internal.ddbath_at_gp, GN::DDBath::byy);
 
-    const auto bxxx = row(internal.dddbath_at_gp, GN::DDDBath::bxxx);
-    const auto bxxy = row(internal.dddbath_at_gp, GN::DDDBath::bxxy);
-    const auto bxyx = row(internal.dddbath_at_gp, GN::DDDBath::bxyx);
-    const auto bxyy = row(internal.dddbath_at_gp, GN::DDDBath::bxyy);
-    const auto byxx = row(internal.dddbath_at_gp, GN::DDDBath::byxx);
-    const auto byxy = row(internal.dddbath_at_gp, GN::DDDBath::byxy);
-    const auto byyx = row(internal.dddbath_at_gp, GN::DDDBath::byyx);
-    const auto byyy = row(internal.dddbath_at_gp, GN::DDDBath::byyy);
+    const auto bxxx = -row(internal.dddbath_at_gp, GN::DDDBath::bxxx);
+    const auto bxxy = -row(internal.dddbath_at_gp, GN::DDDBath::bxxy);
+    const auto bxyx = -row(internal.dddbath_at_gp, GN::DDDBath::bxyx);
+    const auto bxyy = -row(internal.dddbath_at_gp, GN::DDDBath::bxyy);
+    const auto byxx = -row(internal.dddbath_at_gp, GN::DDDBath::byxx);
+    const auto byxy = -row(internal.dddbath_at_gp, GN::DDDBath::byxy);
+    const auto byyx = -row(internal.dddbath_at_gp, GN::DDDBath::byyx);
+    const auto byyy = -row(internal.dddbath_at_gp, GN::DDDBath::byyy);
 
     const auto c1 = vec_cw_mult(vx, uy) + vec_cw_mult(ux, ux) + vec_cw_mult(ux, vy) + vec_cw_mult(vy, vy);
 

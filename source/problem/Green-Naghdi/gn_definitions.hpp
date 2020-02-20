@@ -51,8 +51,8 @@ constexpr uint n_ddu_terms = 8;
 enum DU : uint { ux = 0, uy = 1, vx = 2, vy = 3 };
 enum DDU : uint { uxx = 0, uxy = 1, uyx = 2, uyy = 3, vxx = 4, vxy = 5, vyx = 6, vyy = 7 };
 
-//#define B_PROJECTION
-#define B_GREENGAUSS
+#define B_PROJECTION
+//#define B_GREENGAUSS
 //#define B_LEASTSQUARES
 
 #if defined(B_GREENGAUSS) || defined(B_LEASTSQUARES)
