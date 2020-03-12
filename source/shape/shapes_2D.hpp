@@ -12,6 +12,8 @@ class StraightTriangle : public Shape<2> {
     std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint>& node_ID) const override;
 
     double GetArea() const override;
+    double GetRadius() const override;
+    double GetPerimeter() const override;
     Point<2> GetBarycentricCoordinates() const override;
     AlignedVector<Point<2>> GetMidpointCoordinates() const override;
 

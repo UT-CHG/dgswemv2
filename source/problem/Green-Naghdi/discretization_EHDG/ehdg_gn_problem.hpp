@@ -258,6 +258,12 @@ struct Problem {
                                              const ESSPRKStepper& stepper,
                                              const uint begin_sim_id,
                                              const uint end_sim_id);
+    template <typename OMPISimUnitType>
+    static void reset_PETSC_solver(std::vector<std::unique_ptr<OMPISimUnitType>>& sim_units,
+                                   ProblemGlobalDataType& global_data,
+                                   const ESSPRKStepper& stepper,
+                                   const uint begin_sim_id,
+                                   const uint end_sim_id);
 
     template <typename ElementType>
     static void dispersive_correction_kernel(const ESSPRKStepper& stepper, ElementType& elt);

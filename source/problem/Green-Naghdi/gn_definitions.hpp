@@ -21,7 +21,7 @@ namespace SWE_SIM = SWE::IHDG;
 
 namespace GN {
 namespace NDParameters {
-static double alpha = 1.0;
+static double alpha = 1.159;
 
 const bool ignored_vars = Utilities::ignore(alpha);
 }

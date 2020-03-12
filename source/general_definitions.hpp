@@ -199,6 +199,8 @@ class Shape {
     virtual std::vector<uint> GetBoundaryNodeID(const uint bound_id, const std::vector<uint>& node_ID) const = 0;
 
     virtual double GetArea() const                                         = 0;
+    virtual double GetRadius() const                                       = 0;
+    virtual double GetPerimeter() const                                    = 0;
     virtual Point<dimension> GetBarycentricCoordinates() const             = 0;
     virtual AlignedVector<Point<dimension>> GetMidpointCoordinates() const = 0;
 

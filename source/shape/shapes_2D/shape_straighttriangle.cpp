@@ -29,6 +29,26 @@ double StraightTriangle::GetArea() const {
                       (this->nodal_coordinates[0][GlobalCoord::y] - this->nodal_coordinates[1][GlobalCoord::y]));
 }
 
+double StraightTriangle::GetRadius() const {
+    double ret = 1.0 / (4 * this->GetArea());
+    for (uint side = 0; side < 3; ++side) {
+        ret *= std::hypot(
+            this->nodal_coordinates[side][GlobalCoord::x] - this->nodal_coordinates[(side + 1) % 3][GlobalCoord::x],
+            this->nodal_coordinates[side][GlobalCoord::y] - this->nodal_coordinates[(side + 1) % 3][GlobalCoord::y]);
+    }
+    return ret;
+}
+
+double StraightTriangle::GetPerimeter() const {
+    double ret = 0;
+    for (uint side = 0; side < 3; ++side) {
+        ret += std::hypot(
+            this->nodal_coordinates[side][GlobalCoord::x] - this->nodal_coordinates[(side + 1) % 3][GlobalCoord::x],
+            this->nodal_coordinates[side][GlobalCoord::y] - this->nodal_coordinates[(side + 1) % 3][GlobalCoord::y]);
+    }
+    return ret;
+}
+
 Point<2> StraightTriangle::GetBarycentricCoordinates() const {
     Point<2> baryctr_coord;
 

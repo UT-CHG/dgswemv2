@@ -30,12 +30,14 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
                 vec_cw_div(row(boundary.q_at_gp, SWE::Variables::qy), row(boundary.aux_at_gp, SWE::Auxiliaries::h));
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-            std::vector<double> message(SWE::n_variables * ngp);
+            std::vector<double> message((SWE::n_variables + 1) * ngp + 1);
             for (uint gp = 0; gp < ngp; ++gp) {
-                message[SWE::n_variables * gp]     = derivative.ze_hat_at_gp[dbound.bound_id][gp];
-                message[SWE::n_variables * gp + 1] = derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp);
-                message[SWE::n_variables * gp + 2] = derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp);
+                message[(SWE::n_variables + 1) * gp]     = derivative.ze_hat_at_gp[dbound.bound_id][gp];
+                message[(SWE::n_variables + 1) * gp + 1] = derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp);
+                message[(SWE::n_variables + 1) * gp + 2] = derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp);
+                message[(SWE::n_variables + 1) * gp + 3] = boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
             }
+            message.back() = (double)dbound.data.wet_dry_state.wet;
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::derivatives, message);
         });
 
@@ -57,25 +59,24 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-            std::vector<double> message(SWE::n_variables * ngp);
+            std::vector<double> message((SWE::n_variables + 1) * ngp + 1);
             dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
             for (uint gp = 0; gp < ngp; ++gp) {
                 const uint gp_ex = ngp - gp - 1;
                 derivative.ze_hat_at_gp[dbound.bound_id][gp] =
-                    (derivative.ze_hat_at_gp[dbound.bound_id][gp] + message[SWE::n_variables * gp_ex]) / 2.0;
+                    (derivative.ze_hat_at_gp[dbound.bound_id][gp] + message[(SWE::n_variables + 1) * gp_ex]) / 2.0;
                 derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) =
                     (derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) +
-                     message[SWE::n_variables * gp_ex + 1]) /
+                     message[(SWE::n_variables + 1) * gp_ex + 1]) /
                     2.0;
                 derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp) =
                     (derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp) +
-                     message[SWE::n_variables * gp_ex + 2]) /
+                     message[(SWE::n_variables + 1) * gp_ex + 2]) /
                     2.0;
-
-                // HERE I ASSUME THAT BATHYMETRY IS CONTINUOUS
                 boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
-                    derivative.ze_hat_at_gp[dbound.bound_id][gp] + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
+                    (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[(SWE::n_variables + 1) * gp_ex + 3]) / 2.0;
             }
+            dbound.boundary_condition.wet_neighbor = (bool)message.back();
 
             for (uint dir = 0; dir < GN::n_dimensions; ++dir) {
                 row(state.dze, dir) += dbound.IntegrationPhi(

@@ -55,10 +55,11 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper](auto& dbound) {
             auto& boundary = dbound.data.boundary[dbound.bound_id];
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-            std::vector<double> message(ngp);
+            std::vector<double> message(ngp + 1);
             for (uint gp = 0; gp < ngp; ++gp) {
                 message[gp] = boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
             }
+            message.back() = (double)dbound.data.wet_dry_state.wet;
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::derivatives, message);
         });
 

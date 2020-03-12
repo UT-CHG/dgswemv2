@@ -108,13 +108,14 @@ void Problem::compute_derivatives_ompi(std::vector<std::unique_ptr<OMPISimUnitTy
             auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
             const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-            std::vector<double> message(GN::n_du_terms + ngp);
+            std::vector<double> message(GN::n_du_terms + ngp + 1);
             for (uint du = 0; du < GN::n_du_terms; ++du) {
                 message[du] = derivative.du_at_baryctr[du];
             }
             for (uint gp = 0; gp < ngp; ++gp) {
                 message[GN::n_du_terms + gp] = boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
             }
+            message.back() = (double)dbound.data.wet_dry_state.wet;
             dbound.boundary_condition.exchanger.SetToSendBuffer(CommTypes::derivatives, message);
         });
 

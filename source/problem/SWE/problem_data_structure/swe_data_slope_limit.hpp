@@ -30,6 +30,9 @@ struct SlopeLimit {
     Point<2> baryctr_coord;
     AlignedVector<Point<2>> midpts_coord;
     AlignedVector<Point<2>> baryctr_coord_neigh;
+    double radius;
+    double perimeter;
+    double I;
 
     AlignedVector<StatVector<double, SWE::n_dimensions>> median;
     AlignedVector<StatVector<double, SWE::n_dimensions>> alpha;

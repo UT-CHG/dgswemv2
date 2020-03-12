@@ -5,27 +5,42 @@
 #include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
 
 namespace SWE {
+double roe_avg_un(const double nx,
+                  const double ny,
+                  const double h_in,
+                  const double qx_in,
+                  const double qy_in,
+                  const double h_ex,
+                  const double qx_ex,
+                  const double qy_ex) {
+    return (qx_in / std::sqrt(h_in) + qx_ex / std::sqrt(h_ex)) / (std::sqrt(h_in) + std::sqrt(h_ex)) * nx +
+           (qy_in / std::sqrt(h_in) + qy_ex / std::sqrt(h_ex)) / (std::sqrt(h_in) + std::sqrt(h_ex)) * ny;
+}
+
 template <typename StepperType, typename ElementType>
 void slope_limiting_prepare_element_kernel(const StepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet) {
-        const uint stage = stepper.GetStage();
-
-        auto& state = elt.data.state[stage];
+        auto& state = elt.data.state[stepper.GetStage()];
 
         sl_state.q_lin        = elt.ProjectBasisToLinear(state.q);
         sl_state.q_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.q_lin);
         sl_state.q_at_midpts  = elt.ComputeLinearUmidpts(sl_state.q_lin);
+
+        //elt.data.source.I = 0.0;
     }
 }
 
 template <typename StepperType, typename InterfaceType>
 void slope_limiting_prepare_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
+    //auto& state_in    = intface.data_in.state[stepper.GetStage()];
+    //auto& state_ex    = intface.data_ex.state[stepper.GetStage()];
+    //auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
+    //auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
-
     auto& sl_state_in = intface.data_in.slope_limit_state;
     auto& sl_state_ex = intface.data_ex.slope_limit_state;
 
@@ -35,6 +50,38 @@ void slope_limiting_prepare_interface_kernel(const StepperType& stepper, Interfa
     if (wd_state_in.wet && wd_state_ex.wet) {
         sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.q_at_baryctr;
         sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.q_at_baryctr;
+
+        /*boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
+        boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
+
+        const uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
+        for (uint gp = 0; gp < ngp; ++gp) {
+            const uint gp_ex = ngp - gp - 1;
+            const double un  = roe_avg_un(
+                intface.surface_normal_in(GlobalCoord::x, gp),
+                intface.surface_normal_in(GlobalCoord::y, gp),
+                boundary_in.q_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp),
+                boundary_in.q_at_gp(SWE::Variables::qx, gp),
+                boundary_in.q_at_gp(SWE::Variables::qy, gp),
+                boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex) + boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex),
+                boundary_ex.q_at_gp(SWE::Variables::qx, gp_ex),
+                boundary_ex.q_at_gp(SWE::Variables::qy, gp_ex));
+            if (Utilities::almost_equal(un, 0.0)) {
+                boundary_in.hdif_at_gp[gp]    = 0.0;
+                boundary_ex.hdif_at_gp[gp_ex] = 0.0;
+            } else if (un < 0.0) {
+                boundary_in.hdif_at_gp[gp] =
+                    boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp) - boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex);
+                boundary_ex.hdif_at_gp[gp_ex] = 0.0;
+            } else if (un > 0.0) {
+                boundary_in.hdif_at_gp[gp] = 0.0;
+                boundary_ex.hdif_at_gp[gp_ex] =
+                    boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex) - boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp);
+            }
+        }
+
+        sl_state_in.I += intface.IntegrationIN(boundary_in.hdif_at_gp);
+        sl_state_ex.I += intface.IntegrationEX(boundary_ex.hdif_at_gp);*/
     }
 }
 
@@ -92,6 +139,28 @@ void slope_limiting_prepare_distributed_boundary_kernel(const StepperType& stepp
     for (uint var = 0; var < SWE::n_variables; ++var) {
         sl_state.q_at_baryctr_neigh[dbound.bound_id][var] = message[1 + var];
     }
+
+    /*if (dbound.data.wet_dry_state.wet && dbound.boundary_condition.wet_neighbor) {
+        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+        for (uint gp = 0; gp < ngp; ++gp) {
+            const double un =
+                dbound.surface_normal(GlobalCoord::x, gp) *
+                    derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) +
+                dbound.surface_normal(GlobalCoord::y, gp) * derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp);
+
+            if (Utilities::almost_equal(un, 0.0)) {
+                boundary.hdif_at_gp[gp] = 0.0;
+            } else if (un < 0.0) {
+                boundary.hdif_at_gp[gp] =
+                    2.0 * (boundary.q_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp) -
+                           boundary.aux_at_gp(SWE::Auxiliaries::h, gp));
+            } else if (un > 0.0) {
+                boundary.hdif_at_gp[gp] = 0.0;
+            }
+        }
+
+        source.I += dbound.Integration(boundary.hdif_at_gp);
+    }*/
 }
 
 template <typename StepperType, typename ElementType>

@@ -261,8 +261,10 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
             }
             sl_state.bath_at_baryctr = elt.ComputeLinearUbaryctr(bath_lin);
             sl_state.bath_at_midpts  = elt.ComputeLinearUmidpts(bath_lin);
-            sl_state.baryctr_coord   = elt.GetShape().GetBarycentricCoordinates();
-            sl_state.midpts_coord    = elt.GetShape().GetMidpointCoordinates();
+            sl_state.baryctr_coord   = shape.GetBarycentricCoordinates();
+            sl_state.midpts_coord    = shape.GetMidpointCoordinates();
+            sl_state.perimeter       = shape.GetPerimeter();
+            sl_state.radius          = shape.GetRadius();
 
             StatVector<double, SWE::n_dimensions> median;
             for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {

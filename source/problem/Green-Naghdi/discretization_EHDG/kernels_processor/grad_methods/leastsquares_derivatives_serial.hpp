@@ -159,7 +159,7 @@ void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
         auto& boundary   = dbound.data.boundary[dbound.bound_id];
 
         const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-        std::vector<double> message(GN::n_du_terms + ngp);
+        std::vector<double> message(GN::n_du_terms + ngp + 1);
         dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::derivatives, message);
         for (uint du = 0; du < GN::n_du_terms; ++du) {
             derivative.du_at_baryctr_neigh[dbound.bound_id][du] = message[du];
@@ -169,6 +169,7 @@ void compute_ddu_ls(ProblemDiscretizationType& discretization, const ESSPRKStepp
             boundary.aux_at_gp(SWE::Auxiliaries::h, gp) =
                 (boundary.aux_at_gp(SWE::Auxiliaries::h, gp) + message[GN::n_du_terms + gp_ex]) / 2.0;
         }
+        dbound.boundary_condition.wet_neighbor = (bool)message.back();
     });
 
     discretization.mesh.CallForEachElement([](auto& elt) {

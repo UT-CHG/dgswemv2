@@ -18,6 +18,9 @@ void initialize_data_serial(MeshType& mesh) {
     mesh.CallForEachElement([&marked_elementID](auto& elt) {
         if (marked_elementID.find(elt.GetID()) != marked_elementID.end())
             elt.data.source.dispersive_correction = false;
+
+        // if (elt.GetID() >= 1440)
+        //    elt.data.source.dispersive_correction = false;
     });
 
     mesh.CallForEachElement([](auto& elt) {
