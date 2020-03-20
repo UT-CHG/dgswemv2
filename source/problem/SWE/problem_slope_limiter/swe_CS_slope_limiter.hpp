@@ -5,40 +5,22 @@
 #include "problem/SWE/problem_jacobian/swe_jacobian.hpp"
 
 namespace SWE {
-double roe_avg_un(const double nx,
-                  const double ny,
-                  const double h_in,
-                  const double qx_in,
-                  const double qy_in,
-                  const double h_ex,
-                  const double qx_ex,
-                  const double qy_ex) {
-    return (qx_in / std::sqrt(h_in) + qx_ex / std::sqrt(h_ex)) / (std::sqrt(h_in) + std::sqrt(h_ex)) * nx +
-           (qy_in / std::sqrt(h_in) + qy_ex / std::sqrt(h_ex)) / (std::sqrt(h_in) + std::sqrt(h_ex)) * ny;
-}
-
 template <typename StepperType, typename ElementType>
 void slope_limiting_prepare_element_kernel(const StepperType& stepper, ElementType& elt) {
+    auto& state    = elt.data.state[stepper.GetStage()];
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
 
     if (wd_state.wet) {
-        auto& state = elt.data.state[stepper.GetStage()];
-
         sl_state.q_lin        = elt.ProjectBasisToLinear(state.q);
         sl_state.q_at_baryctr = elt.ComputeLinearUbaryctr(sl_state.q_lin);
+        sl_state.q_at_vrtx    = sl_state.q_lin;
         sl_state.q_at_midpts  = elt.ComputeLinearUmidpts(sl_state.q_lin);
-
-        //elt.data.source.I = 0.0;
     }
 }
 
 template <typename StepperType, typename InterfaceType>
 void slope_limiting_prepare_interface_kernel(const StepperType& stepper, InterfaceType& intface) {
-    //auto& state_in    = intface.data_in.state[stepper.GetStage()];
-    //auto& state_ex    = intface.data_ex.state[stepper.GetStage()];
-    //auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
-    //auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
     auto& wd_state_in = intface.data_in.wet_dry_state;
     auto& wd_state_ex = intface.data_ex.wet_dry_state;
     auto& sl_state_in = intface.data_in.slope_limit_state;
@@ -46,42 +28,9 @@ void slope_limiting_prepare_interface_kernel(const StepperType& stepper, Interfa
 
     sl_state_in.wet_neigh[intface.bound_id_in] = wd_state_ex.wet;
     sl_state_ex.wet_neigh[intface.bound_id_ex] = wd_state_in.wet;
-
     if (wd_state_in.wet && wd_state_ex.wet) {
         sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.q_at_baryctr;
         sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.q_at_baryctr;
-
-        /*boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
-        boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
-
-        const uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);
-        for (uint gp = 0; gp < ngp; ++gp) {
-            const uint gp_ex = ngp - gp - 1;
-            const double un  = roe_avg_un(
-                intface.surface_normal_in(GlobalCoord::x, gp),
-                intface.surface_normal_in(GlobalCoord::y, gp),
-                boundary_in.q_at_gp(SWE::Variables::ze, gp) + boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp),
-                boundary_in.q_at_gp(SWE::Variables::qx, gp),
-                boundary_in.q_at_gp(SWE::Variables::qy, gp),
-                boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex) + boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex),
-                boundary_ex.q_at_gp(SWE::Variables::qx, gp_ex),
-                boundary_ex.q_at_gp(SWE::Variables::qy, gp_ex));
-            if (Utilities::almost_equal(un, 0.0)) {
-                boundary_in.hdif_at_gp[gp]    = 0.0;
-                boundary_ex.hdif_at_gp[gp_ex] = 0.0;
-            } else if (un < 0.0) {
-                boundary_in.hdif_at_gp[gp] =
-                    boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp) - boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex);
-                boundary_ex.hdif_at_gp[gp_ex] = 0.0;
-            } else if (un > 0.0) {
-                boundary_in.hdif_at_gp[gp] = 0.0;
-                boundary_ex.hdif_at_gp[gp_ex] =
-                    boundary_ex.aux_at_gp(SWE::Auxiliaries::h, gp_ex) - boundary_in.aux_at_gp(SWE::Auxiliaries::h, gp);
-            }
-        }
-
-        sl_state_in.I += intface.IntegrationIN(boundary_in.hdif_at_gp);
-        sl_state_ex.I += intface.IntegrationEX(boundary_ex.hdif_at_gp);*/
     }
 }
 
@@ -91,7 +40,6 @@ void slope_limiting_prepare_boundary_kernel(const StepperType& stepper, Boundary
     auto& sl_state = bound.data.slope_limit_state;
 
     sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
-
     if (wd_state.wet) {
         sl_state.q_at_baryctr_neigh[bound.bound_id] = sl_state.q_at_baryctr;
     }
@@ -101,24 +49,25 @@ template <typename StepperType, typename DistributedBoundaryType>
 void slope_limiting_distributed_boundary_send_kernel(const StepperType& stepper,
                                                      DistributedBoundaryType& dbound,
                                                      uint comm_type) {
+    auto& state    = dbound.data.state[stepper.GetStage()];
+    auto& boundary = dbound.data.boundary[dbound.bound_id];
     auto& wd_state = dbound.data.wet_dry_state;
+    auto& sl_state = dbound.data.slope_limit_state;
 
-    // Construct message to exterior state
-    std::vector<double> message;
-
-    message.reserve(1 + SWE::n_variables);
-
-    message.push_back(wd_state.wet);
-
+    const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    std::vector<double> message(1 + SWE::n_variables + ngp);
+    message[0] = (double)wd_state.wet;
     if (wd_state.wet) {
-        auto& sl_state = dbound.data.slope_limit_state;
-
+        boundary.q_at_gp = dbound.ComputeUgp(state.q);
+        row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
+            row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
         for (uint var = 0; var < SWE::n_variables; ++var) {
-            message.push_back(sl_state.q_at_baryctr[var]);
+            message[1 + var] = sl_state.q_at_baryctr[var];
+        }
+        for (uint gp = 0; gp < ngp; ++gp) {
+            message[1 + SWE::n_variables + gp] = boundary.aux_at_gp(SWE::Auxiliaries::h);
         }
     }
-
-    // Set message to send buffer
     dbound.boundary_condition.exchanger.SetToSendBuffer(comm_type, message);
 }
 
@@ -128,39 +77,12 @@ void slope_limiting_prepare_distributed_boundary_kernel(const StepperType& stepp
                                                         uint comm_type) {
     auto& sl_state = dbound.data.slope_limit_state;
 
-    std::vector<double> message;
-
-    message.resize(1 + SWE::n_variables);
-
+    std::vector<double> message(1 + SWE::n_variables);
     dbound.boundary_condition.exchanger.GetFromReceiveBuffer(comm_type, message);
-
-    sl_state.wet_neigh[dbound.bound_id] = message[0];
-
+    sl_state.wet_neigh[dbound.bound_id] = (bool)message[0];
     for (uint var = 0; var < SWE::n_variables; ++var) {
         sl_state.q_at_baryctr_neigh[dbound.bound_id][var] = message[1 + var];
     }
-
-    /*if (dbound.data.wet_dry_state.wet && dbound.boundary_condition.wet_neighbor) {
-        const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
-        for (uint gp = 0; gp < ngp; ++gp) {
-            const double un =
-                dbound.surface_normal(GlobalCoord::x, gp) *
-                    derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::x, gp) +
-                dbound.surface_normal(GlobalCoord::y, gp) * derivative.u_hat_at_gp[dbound.bound_id](GlobalCoord::y, gp);
-
-            if (Utilities::almost_equal(un, 0.0)) {
-                boundary.hdif_at_gp[gp] = 0.0;
-            } else if (un < 0.0) {
-                boundary.hdif_at_gp[gp] =
-                    2.0 * (boundary.q_at_gp(SWE::Variables::ze, gp) + boundary.aux_at_gp(SWE::Auxiliaries::bath, gp) -
-                           boundary.aux_at_gp(SWE::Auxiliaries::h, gp));
-            } else if (un > 0.0) {
-                boundary.hdif_at_gp[gp] = 0.0;
-            }
-        }
-
-        source.I += dbound.Integration(boundary.hdif_at_gp);
-    }*/
 }
 
 template <typename StepperType, typename ElementType>
@@ -170,9 +92,7 @@ void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
 
     if (wd_state.wet &&
         std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()) {
-        const uint stage = stepper.GetStage();
-
-        auto& state = elt.data.state[stage];
+        auto& state = elt.data.state[stepper.GetStage()];
 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> R;
         StatMatrix<double, SWE::n_variables, SWE::n_variables> invR;

@@ -89,9 +89,9 @@ struct Problem {
         offset[CommTypes::baryctr_state]    = begin_index[CommTypes::baryctr_state];
 
         begin_index[CommTypes::baryctr_coord] += 2;
-        begin_index[CommTypes::init_global_prob] += ngp;                    // bath_at_gp
-        begin_index[CommTypes::bound_state] += SWE::n_variables * ngp + 1;  // + w/d state
-        begin_index[CommTypes::baryctr_state] += SWE::n_variables + 1;      // + w/d state
+        begin_index[CommTypes::init_global_prob] += ngp;                      // bath_at_gp
+        begin_index[CommTypes::bound_state] += SWE::n_variables * ngp + 1;    // + w/d state
+        begin_index[CommTypes::baryctr_state] += SWE::n_variables + ngp + 1;  // + w/d state
 
         return offset;
     }

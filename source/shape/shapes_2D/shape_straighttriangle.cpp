@@ -49,6 +49,17 @@ double StraightTriangle::GetPerimeter() const {
     return ret;
 }
 
+std::vector<double> StraightTriangle::GetLengths() const {
+    std::vector<double> ret(3);
+    for (uint side = 0; side < 3; ++side) {
+        ret[side] = std::hypot(this->nodal_coordinates[(side + 1) % 3][GlobalCoord::x] -
+                                   this->nodal_coordinates[(side + 2) % 3][GlobalCoord::x],
+                               this->nodal_coordinates[(side + 1) % 3][GlobalCoord::y] -
+                                   this->nodal_coordinates[(side + 2) % 3][GlobalCoord::y]);
+    }
+    return ret;
+}
+
 Point<2> StraightTriangle::GetBarycentricCoordinates() const {
     Point<2> baryctr_coord;
 

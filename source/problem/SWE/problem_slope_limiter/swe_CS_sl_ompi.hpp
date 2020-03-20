@@ -3,6 +3,7 @@
 
 // Implementation of Cockburn-Shu slope limiter
 #include "swe_CS_slope_limiter.hpp"
+#include "swe_trouble_check.hpp"
 
 namespace SWE {
 template <typename StepperType, typename OMPISimUnitType>
@@ -59,6 +60,8 @@ void CS_slope_limiter_ompi(StepperType& stepper,
         sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([&stepper, comm_type](auto& dbound) {
             slope_limiting_prepare_distributed_boundary_kernel(stepper, dbound, comm_type);
         });
+
+        check_trouble(sim_units[su_id]->discretization, stepper, comm_type);
 
         sim_units[su_id]->discretization.mesh.CallForEachElement(
             [&stepper](auto& elt) { slope_limiting_kernel(stepper, elt); });

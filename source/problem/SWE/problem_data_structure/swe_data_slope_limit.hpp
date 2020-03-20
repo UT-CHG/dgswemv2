@@ -5,7 +5,8 @@ namespace SWE {
 struct SlopeLimit {
     SlopeLimit() = default;
     SlopeLimit(const uint nvrtx, const uint nbound)
-        : midpts_coord(nbound),
+        : hdif_at_gp(nbound),
+          midpts_coord(nbound),
           baryctr_coord_neigh(nbound),
           median(nbound),
           alpha(nbound),
@@ -25,14 +26,18 @@ struct SlopeLimit {
         this->T(2, 2) = -1.0;
     }
 
+    std::vector<double> lengths;
+    double radius;
+    bool troubled    = false;
+    double perimeter = 0.0;
+    double I         = 0.0;
+    std::vector<DynRowVector<double>> hdif_at_gp;
+
     StatMatrix<double, SWE::n_variables, SWE::n_variables> T;
 
     Point<2> baryctr_coord;
     AlignedVector<Point<2>> midpts_coord;
     AlignedVector<Point<2>> baryctr_coord_neigh;
-    double radius;
-    double perimeter;
-    double I;
 
     AlignedVector<StatVector<double, SWE::n_dimensions>> median;
     AlignedVector<StatVector<double, SWE::n_dimensions>> alpha;

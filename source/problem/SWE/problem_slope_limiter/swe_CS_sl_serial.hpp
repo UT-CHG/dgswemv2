@@ -3,6 +3,7 @@
 
 // Implementation of Cockburn-Shu slope limiter
 #include "swe_CS_slope_limiter.hpp"
+#include "swe_trouble_check.hpp"
 
 namespace SWE {
 template <typename StepperType, typename DiscretizationType>
@@ -15,6 +16,8 @@ void CS_slope_limiter_serial(StepperType& stepper, DiscretizationType& discretiz
 
     discretization.mesh.CallForEachBoundary(
         [&stepper](auto& bound) { slope_limiting_prepare_boundary_kernel(stepper, bound); });
+
+    check_trouble(discretization, stepper, 0);
 
     discretization.mesh.CallForEachElement([&stepper](auto& elt) { slope_limiting_kernel(stepper, elt); });
 }

@@ -201,6 +201,7 @@ class Shape {
     virtual double GetArea() const                                         = 0;
     virtual double GetRadius() const                                       = 0;
     virtual double GetPerimeter() const                                    = 0;
+    virtual std::vector<double> GetLengths() const                         = 0;
     virtual Point<dimension> GetBarycentricCoordinates() const             = 0;
     virtual AlignedVector<Point<dimension>> GetMidpointCoordinates() const = 0;
 

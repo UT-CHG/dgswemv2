@@ -14,6 +14,7 @@ class StraightTriangle : public Shape<2> {
     double GetArea() const override;
     double GetRadius() const override;
     double GetPerimeter() const override;
+    std::vector<double> GetLengths() const override;
     Point<2> GetBarycentricCoordinates() const override;
     AlignedVector<Point<2>> GetMidpointCoordinates() const override;
 

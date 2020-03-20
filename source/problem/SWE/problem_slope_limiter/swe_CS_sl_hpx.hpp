@@ -3,6 +3,7 @@
 
 // Implementation of Cockburn-Shu slope limiter
 #include "swe_CS_slope_limiter.hpp"
+#include "swe_trouble_check.hpp"
 
 namespace SWE {
 template <typename HPXSimUnitType>
@@ -46,6 +47,8 @@ auto CS_slope_limiter_hpx(HPXSimUnitType* sim_unit, uint comm_type) {
         sim_unit->discretization.mesh.CallForEachDistributedBoundary([sim_unit, comm_type](auto& dbound) {
             slope_limiting_prepare_distributed_boundary_kernel(sim_unit->stepper, dbound, comm_type);
         });
+
+        check_trouble(sim_unit->discretization, stepper, comm_type);
 
         sim_unit->discretization.mesh.CallForEachElement(
             [sim_unit](auto& elt) { slope_limiting_kernel(sim_unit->stepper, elt); });
