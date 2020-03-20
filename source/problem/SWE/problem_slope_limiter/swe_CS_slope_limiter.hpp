@@ -65,7 +65,7 @@ void slope_limiting_distributed_boundary_send_kernel(const StepperType& stepper,
             message[1 + var] = sl_state.q_at_baryctr[var];
         }
         for (uint gp = 0; gp < ngp; ++gp) {
-            message[1 + SWE::n_variables + gp] = boundary.aux_at_gp(SWE::Auxiliaries::h);
+            message[1 + SWE::n_variables + gp] = boundary.aux_at_gp(SWE::Auxiliaries::h, gp);
         }
     }
     dbound.boundary_condition.exchanger.SetToSendBuffer(comm_type, message);
