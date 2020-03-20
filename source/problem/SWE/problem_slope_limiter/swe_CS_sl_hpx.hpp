@@ -48,7 +48,7 @@ auto CS_slope_limiter_hpx(HPXSimUnitType* sim_unit, uint comm_type) {
             slope_limiting_prepare_distributed_boundary_kernel(sim_unit->stepper, dbound, comm_type);
         });
 
-        check_trouble(sim_unit->discretization, stepper, comm_type);
+        check_trouble(sim_unit->discretization, sim_unit->stepper, comm_type);
 
         sim_unit->discretization.mesh.CallForEachElement(
             [sim_unit](auto& elt) { slope_limiting_kernel(sim_unit->stepper, elt); });
