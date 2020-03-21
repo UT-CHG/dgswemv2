@@ -84,8 +84,9 @@ void check_trouble(DiscretizationType& discretization, const StepperType& steppe
         }
     });
 
+    std::set<uint> troubled_area;
     const uint p = discretization.mesh.GetP();
-    discretization.mesh.CallForEachElement([&stepper, p](auto& elt) {
+    discretization.mesh.CallForEachElement([&stepper, &troubled_area, p](auto& elt) {
         auto& sl_state = elt.data.slope_limit_state;
         if (elt.data.wet_dry_state.wet) {
             if (sl_state.perimeter != 0.0) {
@@ -96,11 +97,22 @@ void check_trouble(DiscretizationType& discretization, const StepperType& steppe
                 }
                 sl_state.I /= (std::pow(sl_state.radius, (p + 1.0) / 2.0) * sl_state.perimeter * h_norm);
                 if (sl_state.I > 1.0) {
-                    sl_state.troubled = true;
+                    troubled_area.insert(elt.GetID());
                 }
             }
         }
     });
+
+    for (uint pass = 0; pass < 6; ++pass) {
+        std::set<uint> troubled_area_new;
+        discretization.mesh.CallForEachElement([&troubled_area, &troubled_area_new](auto& elt) {
+            if (troubled_area.find(elt.GetID()) != troubled_area.end()) {
+                elt.data.slope_limit_state.troubled = true;
+                troubled_area_new.insert(elt.GetNeighborID().begin(), elt.GetNeighborID().end());
+            }
+        });
+        troubled_area = troubled_area_new;
+    }
 }
 }
 

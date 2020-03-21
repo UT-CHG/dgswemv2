@@ -57,6 +57,7 @@ class Element {
     const MasterType& GetMaster() { return *this->master; }
     const ShapeType& GetShape() { return this->shape; }
     const std::vector<uint>& GetNodeID() { return this->node_ID; }
+    const std::vector<uint>& GetNeighborID() { return this->neighbor_ID; }
     const std::vector<uchar>& GetBoundaryType() { return this->boundary_type; }
 
     void SetMaster(MasterType& master) { this->master = &master; };
