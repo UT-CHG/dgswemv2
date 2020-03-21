@@ -61,7 +61,6 @@ void check_trouble(DiscretizationType& discretization, const StepperType& steppe
     });
 
     discretization.mesh.CallForEachDistributedBoundary([&stepper, comm_type](auto& dbound) {
-        auto& state    = dbound.data.state[stepper.GetStage()];
         auto& boundary = dbound.data.boundary[dbound.bound_id];
         auto& sl_state = dbound.data.slope_limit_state;
 
@@ -87,7 +86,6 @@ void check_trouble(DiscretizationType& discretization, const StepperType& steppe
 
     const uint p = discretization.mesh.GetP();
     discretization.mesh.CallForEachElement([&stepper, p](auto& elt) {
-        auto& state    = elt.data.state[stepper.GetStage()];
         auto& sl_state = elt.data.slope_limit_state;
         if (elt.data.wet_dry_state.wet) {
             if (sl_state.perimeter != 0.0) {
