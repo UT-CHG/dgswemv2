@@ -18,9 +18,6 @@ void initialize_data_serial(MeshType& mesh) {
     mesh.CallForEachElement([&marked_elementID](auto& elt) {
         if (marked_elementID.find(elt.GetID()) != marked_elementID.end())
             elt.data.source.dispersive_correction = false;
-
-        // if (elt.GetID() >= 1440)
-        //    elt.data.source.dispersive_correction = false;
     });
 
     mesh.CallForEachElement([](auto& elt) {
@@ -67,7 +64,7 @@ void initialize_data_serial(MeshType& mesh) {
                         derivative.a[bound]              = alpha;
                         derivative.a_elem[2 * bound]     = element_1;
                         derivative.a_elem[2 * bound + 1] = element_2;
-                        continue;
+                        break;
                     }
                 }
             }
@@ -130,7 +127,7 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
                         derivative.a[bound]              = alpha;
                         derivative.a_elem[2 * bound]     = element_1;
                         derivative.a_elem[2 * bound + 1] = element_2;
-                        continue;
+                        break;
                     }
                 }
             }
