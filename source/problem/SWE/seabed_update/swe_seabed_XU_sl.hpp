@@ -38,7 +38,7 @@ void XU_seabed_slope_limiter(const StepperType& stepper, DiscretizationType& dis
 
         sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
         if (wd_state.wet) {
-            sl_state.bath_at_baryctr_neigh[bound.bound_id] = sl_state.bath_at_baryctr;
+            sl_state.bath_at_baryctr_neigh[bound.bound_id] = sl_state.bath_at_midpts[bound.bound_id];
         }
     });
 
@@ -77,9 +77,11 @@ void XU_seabed_slope_limiter(const StepperType& stepper, DiscretizationType& dis
                 sl_state.bath_at_vrtx[vrtx] = sl_state.bath_at_baryctr;
             }
             sl_state.bath_at_vrtx += sl_state.bath_delta * sl_state.T;
+            // if (elt.GetID() >= 480 && elt.GetID() <= 720) {
             row(state.aux, SWE::Auxiliaries::bath) = elt.ProjectLinearToBasis(sl_state.bath_at_vrtx);
             row(sl_state.q_lin, SWE::Variables::ze) += (sl_state.bath_lin - sl_state.bath_at_vrtx);
             row(state.q, SWE::Variables::ze) = elt.ProjectLinearToBasis(row(sl_state.q_lin, SWE::Variables::ze));
+            //}
         }
     });
 }

@@ -6,8 +6,24 @@
 
 namespace SWE {
 StatVector<double, SWE::n_dimensions> bed_flux(const double h, const double qx, const double qy) {
+    /*const double theta_c_o = 0.05;
+    const double mu_s      = 0.63;
+    const double mu_d      = 0.51;
+    const double s         = 2.6;
+    const double d         = 0.00018;
+
+    const double alpha = std::acos((qx * bx + qy * by) / (std::hypot(qx, qy) * std::hypot(bx, by)));
+    const double beta  = std::atan(std::hypot(bx, by));
+    const double theta_c =
+        theta_c_o * (std::cos(beta) *
+                         std::sqrt(1 - std::pow(std::sin(alpha), 2) * std::pow(std::tan(beta), 2) / std::pow(mu_s, 2)) -
+                     std::cos(alpha) * std::sin(beta) / mu_s);
+    const double theta = std::pow(std::hypot(qx, qy) / h, 2) / ((s - 1) * Global::g * d);
+    const double p     = std::pow(1 + std::pow(PI * mu_d / (6 * (theta - theta_c)), 4), -0.25);
+    const double A     = 100 * PI * d * p / 6;*/
+
     double usq = std::pow(qx / h, 2) + std::pow(qy / h, 2);
-    double A   = 0.001;
+    double A   = 0.005;
     return StatVector<double, SWE::n_dimensions>{-A * usq * qx / h, -A * usq * qy / h};
 }
 
@@ -102,6 +118,40 @@ void seabed_update(const StepperType& stepper, DiscretizationType& discretizatio
             std::swap(state[0].aux, state[stepper.GetNumStages()].aux);
         }
     });
+
+    /*std::set<uint> nodeIDs;
+    discretization.mesh.CallForEachElement(
+        [&nodeIDs](auto& elt) { nodeIDs.insert(elt.GetNodeID().begin(), elt.GetNodeID().end()); });
+    uint max_nodeID = *std::max_element(nodeIDs.begin(), nodeIDs.end());
+
+    DynVector<double> bath_at_node(max_nodeID + 1);
+    set_constant(bath_at_node, 0.0);
+    std::vector<uint> node_mult((max_nodeID + 1), 0);
+
+    discretization.mesh.CallForEachElement([&bath_at_node, &node_mult](auto& elt) {
+        auto& state    = elt.data.state[0];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        sl_state.bath_lin = elt.ProjectBasisToLinear(row(state.aux, SWE::Auxiliaries::bath));
+        sl_state.q_lin    = elt.ProjectBasisToLinear(state.q);
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            bath_at_node[elt.GetNodeID()[node]] += sl_state.bath_lin[node];
+            ++node_mult[elt.GetNodeID()[node]];
+        }
+    });
+
+    discretization.mesh.CallForEachElement([&bath_at_node, &node_mult](auto& elt) {
+        auto& state    = elt.data.state[0];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            sl_state.bath_at_vrtx[node] = bath_at_node[elt.GetNodeID()[node]] / node_mult[elt.GetNodeID()[node]];
+        }
+        row(elt.data.state[0].aux, SWE::Auxiliaries::bath) = elt.ProjectLinearToBasis(sl_state.bath_at_vrtx);
+        row(sl_state.q_lin, SWE::Variables::ze) += (sl_state.bath_lin - sl_state.bath_at_vrtx);
+        row(elt.data.state[0].q, SWE::Variables::ze) =
+            elt.ProjectLinearToBasis(row(sl_state.q_lin, SWE::Variables::ze));
+    });*/
 }
 
 template <typename StepperType, typename DiscretizationType>

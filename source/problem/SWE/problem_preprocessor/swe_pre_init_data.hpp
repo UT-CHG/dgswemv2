@@ -269,10 +269,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
 
             StatVector<double, SWE::n_dimensions> median;
             for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {
-                median[GlobalCoord::x] =
-                    sl_state.midpts_coord[bound][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-                median[GlobalCoord::y] =
-                    sl_state.midpts_coord[bound][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+                median                 = sl_state.midpts_coord[bound] - sl_state.baryctr_coord;
                 sl_state.median[bound] = median / norm(median);
             }
         });
@@ -288,10 +285,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
         mesh.CallForEachBoundary([](auto& bound) {
             auto& sl_state = bound.data.slope_limit_state;
 
-            sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::x] =
-                2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::x] - sl_state.baryctr_coord[GlobalCoord::x];
-            sl_state.baryctr_coord_neigh[bound.bound_id][GlobalCoord::y] =
-                2.0 * sl_state.midpts_coord[bound.bound_id][GlobalCoord::y] - sl_state.baryctr_coord[GlobalCoord::y];
+            sl_state.baryctr_coord_neigh[bound.bound_id] = sl_state.midpts_coord[bound.bound_id];
         });
 
         mesh.CallForEachElement([](auto& elt) {
