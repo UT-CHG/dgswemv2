@@ -79,6 +79,32 @@ void Simulation<ProblemType>::Run() {
     for (uint step = 1; step <= this->n_steps; ++step) {
         ProblemType::step_serial(this->discretization, this->global_data, this->stepper, this->writer, this->parser);
     }
+
+    /*std::set<uint> nodeIDs;
+    discretization.mesh.CallForEachElement(
+        [&nodeIDs](auto& elt) { nodeIDs.insert(elt.GetNodeID().begin(), elt.GetNodeID().end()); });
+    uint max_nodeID = *std::max_element(nodeIDs.begin(), nodeIDs.end());
+
+    DynVector<double> bath_at_node(max_nodeID + 1);
+    set_constant(bath_at_node, 0.0);
+    std::vector<uint> node_mult((max_nodeID + 1), 0);
+
+    discretization.mesh.CallForEachElement([&bath_at_node, &node_mult](auto& elt) {
+        auto& state    = elt.data.state[0];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        sl_state.bath_lin = elt.ProjectBasisToLinear(row(state.aux, SWE::Auxiliaries::bath));
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            bath_at_node[elt.GetNodeID()[node]] += sl_state.bath_lin[node];
+            ++node_mult[elt.GetNodeID()[node]];
+        }
+    });
+
+    for (uint node = 0; node < max_nodeID + 1; ++node) {
+        bath_at_node[node] /= node_mult[node];
+    }
+
+    std::cout << bath_at_node << std::endl;*/
 }
 
 template <typename ProblemType>

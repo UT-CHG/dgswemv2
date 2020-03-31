@@ -7,7 +7,7 @@
 namespace SWE {
 StatVector<double, SWE::n_dimensions> bed_flux(const double h, const double qx, const double qy) {
     double usq = std::pow(qx / h, 2) + std::pow(qy / h, 2);
-    double A   = 0.001;
+    double A   = 0.005;
     return StatVector<double, SWE::n_dimensions>{-A * usq * qx / h, -A * usq * qy / h};
 }
 
@@ -84,6 +84,40 @@ void seabed_update(const StepperType& stepper, DiscretizationType& discretizatio
         row(state.aux, SWE::Auxiliaries::bath) += stepper.GetDT() * state.b_solution;
         row(state.q, SWE::Variables::ze) -= stepper.GetDT() * state.b_solution;
     });
+
+    /*std::set<uint> nodeIDs;
+    discretization.mesh.CallForEachElement(
+        [&nodeIDs](auto& elt) { nodeIDs.insert(elt.GetNodeID().begin(), elt.GetNodeID().end()); });
+    uint max_nodeID = *std::max_element(nodeIDs.begin(), nodeIDs.end());
+
+    DynVector<double> bath_at_node(max_nodeID + 1);
+    set_constant(bath_at_node, 0.0);
+    std::vector<uint> node_mult((max_nodeID + 1), 0);
+
+    discretization.mesh.CallForEachElement([&bath_at_node, &node_mult](auto& elt) {
+        auto& state    = elt.data.state[0];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        sl_state.bath_lin = elt.ProjectBasisToLinear(row(state.aux, SWE::Auxiliaries::bath));
+        sl_state.q_lin    = elt.ProjectBasisToLinear(state.q);
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            bath_at_node[elt.GetNodeID()[node]] += sl_state.bath_lin[node];
+            ++node_mult[elt.GetNodeID()[node]];
+        }
+    });
+
+    discretization.mesh.CallForEachElement([&bath_at_node, &node_mult](auto& elt) {
+        auto& state    = elt.data.state[0];
+        auto& sl_state = elt.data.slope_limit_state;
+
+        for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
+            sl_state.bath_at_vrtx[node] = bath_at_node[elt.GetNodeID()[node]] / node_mult[elt.GetNodeID()[node]];
+        }
+        row(elt.data.state[0].aux, SWE::Auxiliaries::bath) = elt.ProjectLinearToBasis(sl_state.bath_at_vrtx);
+        row(sl_state.q_lin, SWE::Variables::ze) += (sl_state.bath_lin - sl_state.bath_at_vrtx);
+        row(elt.data.state[0].q, SWE::Variables::ze) =
+            elt.ProjectLinearToBasis(row(sl_state.q_lin, SWE::Variables::ze));
+    });*/
 }
 
 template <typename DiscretizationType>
