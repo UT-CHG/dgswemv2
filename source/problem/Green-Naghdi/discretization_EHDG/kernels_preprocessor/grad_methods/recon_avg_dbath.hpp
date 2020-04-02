@@ -4,33 +4,25 @@
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
-    std::set<uint> nodeIDs;
-    discretization.mesh.CallForEachElement(
-        [&nodeIDs](auto& elt) { nodeIDs.insert(elt.GetNodeID().begin(), elt.GetNodeID().end()); });
-    uint max_nodeID = *std::max_element(nodeIDs.begin(), nodeIDs.end());
-
-    global_data.derivatives_at_node = DynVector<double>((max_nodeID + 1) * GN::n_dddbath_terms);
+void reconstruct_dbath(ProblemDiscretizationType& discretization,
+                       ProblemGlobalDataType& global_data,
+                       const uint stage) {
     set_constant(global_data.derivatives_at_node, 0.0);
-    std::vector<uint> node_mult((max_nodeID + 1), 0);
 
-    discretization.mesh.CallForEachElement([&global_data, &node_mult](auto& elt) {
+    discretization.mesh.CallForEachElement([&global_data](auto& elt) {
         auto& derivative = elt.data.derivative;
         for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
-            derivative.local_nodeID[node] = elt.GetNodeID()[node];
             subvector(
                 global_data.derivatives_at_node, derivative.local_nodeID[node] * GN::n_dimensions, GN::n_dimensions) +=
                 derivative.dbath_at_baryctr;
-            ++node_mult[derivative.local_nodeID[node]];
         }
     });
 
-    discretization.mesh.CallForEachElement([&global_data, &node_mult](auto& elt) {
-        auto& state      = elt.data.state[0];
+    discretization.mesh.CallForEachElement([stage, &global_data](auto& elt) {
+        auto& state      = elt.data.state[stage];
         auto& derivative = elt.data.derivative;
         auto& internal   = elt.data.internal;
         for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
-            derivative.node_mult[node]         = node_mult[derivative.local_nodeID[node]];
             column(derivative.dbath_lin, node) = subvector(global_data.derivatives_at_node,
                                                            derivative.local_nodeID[node] * GN::n_dimensions,
                                                            GN::n_dimensions) /
@@ -42,7 +34,9 @@ void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalD
 }
 
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
+void reconstruct_ddbath(ProblemDiscretizationType& discretization,
+                        ProblemGlobalDataType& global_data,
+                        const uint stage) {
     set_constant(global_data.derivatives_at_node, 0.0);
 
     discretization.mesh.CallForEachElement([&global_data](auto& elt) {
@@ -54,8 +48,8 @@ void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobal
         }
     });
 
-    discretization.mesh.CallForEachElement([&global_data](auto& elt) {
-        auto& state      = elt.data.state[0];
+    discretization.mesh.CallForEachElement([stage, &global_data](auto& elt) {
+        auto& state      = elt.data.state[stage];
         auto& derivative = elt.data.derivative;
         auto& internal   = elt.data.internal;
         for (uint node = 0; node < elt.GetNodeID().size(); ++node) {
@@ -70,7 +64,9 @@ void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobal
 }
 
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_dddbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
+void reconstruct_dddbath(ProblemDiscretizationType& discretization,
+                         ProblemGlobalDataType& global_data,
+                         const uint stage) {
     set_constant(global_data.derivatives_at_node, 0.0);
 
     discretization.mesh.CallForEachElement([&global_data](auto& elt) {
@@ -82,8 +78,8 @@ void reconstruct_dddbath(ProblemDiscretizationType& discretization, ProblemGloba
         }
     });
 
-    discretization.mesh.CallForEachElement([&global_data](auto& elt) {
-        auto& state      = elt.data.state[0];
+    discretization.mesh.CallForEachElement([stage, &global_data](auto& elt) {
+        auto& state      = elt.data.state[stage];
         auto& derivative = elt.data.derivative;
         auto& internal   = elt.data.internal;
         for (uint node = 0; node < elt.GetNodeID().size(); ++node) {

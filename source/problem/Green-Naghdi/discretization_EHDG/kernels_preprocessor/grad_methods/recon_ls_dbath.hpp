@@ -4,7 +4,9 @@
 namespace GN {
 namespace EHDG {
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
+void reconstruct_dbath(ProblemDiscretizationType& discretization,
+                       ProblemGlobalDataType& global_data,
+                       const uint stage) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                       = intface.data_in.derivative;
         auto& derivative_ex                                       = intface.data_ex.derivative;
@@ -26,8 +28,8 @@ void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalD
         }
     });
 
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state      = elt.data.state[0];
+    discretization.mesh.CallForEachElement([stage](auto& elt) {
+        auto& state      = elt.data.state[stage];
         auto& derivative = elt.data.derivative;
         auto& internal   = elt.data.internal;
 
@@ -46,7 +48,9 @@ void reconstruct_dbath(ProblemDiscretizationType& discretization, ProblemGlobalD
 }
 
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
+void reconstruct_ddbath(ProblemDiscretizationType& discretization,
+                        ProblemGlobalDataType& global_data,
+                        const uint stage) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                        = intface.data_in.derivative;
         auto& derivative_ex                                        = intface.data_ex.derivative;
@@ -68,8 +72,8 @@ void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobal
         }
     });
 
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state      = elt.data.state[0];
+    discretization.mesh.CallForEachElement([stage](auto& elt) {
+        auto& state      = elt.data.state[stage];
         auto& derivative = elt.data.derivative;
         auto& internal   = elt.data.internal;
 
@@ -88,7 +92,9 @@ void reconstruct_ddbath(ProblemDiscretizationType& discretization, ProblemGlobal
 }
 
 template <typename ProblemDiscretizationType, typename ProblemGlobalDataType>
-void reconstruct_dddbath(ProblemDiscretizationType& discretization, ProblemGlobalDataType& global_data) {
+void reconstruct_dddbath(ProblemDiscretizationType& discretization,
+                         ProblemGlobalDataType& global_data,
+                         const uint stage) {
     discretization.mesh.CallForEachInterface([](auto& intface) {
         auto& derivative_in                                         = intface.data_in.derivative;
         auto& derivative_ex                                         = intface.data_ex.derivative;
@@ -110,8 +116,8 @@ void reconstruct_dddbath(ProblemDiscretizationType& discretization, ProblemGloba
         }
     });
 
-    discretization.mesh.CallForEachElement([](auto& elt) {
-        auto& state      = elt.data.state[0];
+    discretization.mesh.CallForEachElement([stage](auto& elt) {
+        auto& state      = elt.data.state[stage];
         auto& derivative = elt.data.derivative;
         auto& internal   = elt.data.internal;
 
