@@ -7,6 +7,11 @@
 
 namespace GN {
 namespace EHDG {
+template <template <typename> class DiscretizationType, typename ProblemType>
+void seabed_update(DiscretizationType<ProblemType>& discretization,
+                   typename ProblemType::ProblemGlobalDataType& global_data,
+                   typename ProblemType::ProblemStepperType& stepper);
+
 void Problem::step_serial(ProblemDiscretizationType& discretization,
                           ProblemGlobalDataType& global_data,
                           ProblemStepperType& stepper,
@@ -37,6 +42,10 @@ void Problem::step_serial(ProblemDiscretizationType& discretization,
         }
 
         SWE_SIM::Problem::stage_serial(discretization, global_data, first_stepper);
+    }
+
+    if (SWE::PostProcessing::bed_update && (second_stepper.GetStep() % SWE::PostProcessing::bed_update_freq) == 0) {
+        seabed_update(discretization, global_data, stepper);
     }
 
     if (writer.WritingOutput()) {
@@ -79,6 +88,17 @@ void Problem::dispersive_correction_serial(ProblemDiscretizationType& discretiza
     });
 
     ++stepper;
+}
+
+template <template <typename> class DiscretizationType, typename ProblemType>
+void seabed_update(DiscretizationType<ProblemType>& discretization,
+                   typename ProblemType::ProblemGlobalDataType& global_data,
+                   typename ProblemType::ProblemStepperType& stepper) {
+    SWE::seabed_update(stepper.GetSecondStepper(), discretization);
+    if (SWE::PostProcessing::bed_slope_limiting)
+        SWE::CS_seabed_slope_limiter(discretization);
+    SWE::seabed_data_update(discretization);
+    ProblemType::compute_bathymetry_derivatives_serial(discretization, global_data);
 }
 }
 }

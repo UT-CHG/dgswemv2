@@ -81,8 +81,9 @@ void seabed_update(const StepperType& stepper, DiscretizationType& discretizatio
     discretization.mesh.CallForEachElement([&stepper](auto& elt) {
         auto& state      = elt.data.state[0];
         state.b_solution = elt.ApplyMinv(state.b_rhs);
-        row(state.aux, SWE::Auxiliaries::bath) += stepper.GetDT() * state.b_solution;
-        row(state.q, SWE::Variables::ze) -= stepper.GetDT() * state.b_solution;
+        row(state.aux, SWE::Auxiliaries::bath) +=
+            SWE::PostProcessing::bed_update_freq * stepper.GetDT() * state.b_solution;
+        row(state.q, SWE::Variables::ze) -= SWE::PostProcessing::bed_update_freq * stepper.GetDT() * state.b_solution;
     });
 
     /*std::set<uint> nodeIDs;

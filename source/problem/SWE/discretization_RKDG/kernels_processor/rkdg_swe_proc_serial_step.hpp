@@ -26,8 +26,9 @@ void Problem::step_serial(DiscretizationType<ProblemType>& discretization,
         Problem::stage_serial(discretization, global_data, stepper);
     }
 
-    if (SWE::PostProcessing::bed_update)
+    if (SWE::PostProcessing::bed_update && (stepper.GetStep() % SWE::PostProcessing::bed_update_freq == 0)) {
         seabed_update(discretization, global_data, stepper);
+    }
 
     if (writer.WritingOutput()) {
         writer.WriteOutput(stepper, discretization.mesh);

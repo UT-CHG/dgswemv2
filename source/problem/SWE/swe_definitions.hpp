@@ -38,8 +38,17 @@ static double h_o_threshold = 1.0e-6;
 static double M  = 1.0e-8;
 static double nu = 1.5;
 
-const bool ignored_vars =
-    Utilities::ignore(wetting_drying, slope_limiting, bed_update, bed_slope_limiting, h_o, h_o_threshold, M, nu);
+static uint bed_update_freq = 1;
+
+const bool ignored_vars = Utilities::ignore(wetting_drying,
+                                            slope_limiting,
+                                            bed_update,
+                                            bed_slope_limiting,
+                                            h_o,
+                                            h_o_threshold,
+                                            M,
+                                            nu,
+                                            bed_update_freq);
 }
 
 constexpr uint n_dimensions = 2;

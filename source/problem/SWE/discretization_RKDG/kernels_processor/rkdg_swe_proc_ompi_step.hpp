@@ -30,8 +30,9 @@ void Problem::step_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>
         Problem::stage_ompi(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
     }
 
-    if (SWE::PostProcessing::bed_update)
+    if (SWE::PostProcessing::bed_update && (stepper.GetStep() % SWE::PostProcessing::bed_update_freq == 0)) {
         seabed_update(sim_units, global_data, stepper, begin_sim_id, end_sim_id);
+    }
 
     for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
         if (sim_units[su_id]->writer.WritingOutput()) {
