@@ -44,6 +44,11 @@ struct AdcircFormat {
     bool has_edge(std::vector<uint>::const_iterator cbegin,
                   std::vector<uint>::const_iterator cend,
                   std::array<uint, 2>& node_pair) const;
+
+    /**
+     * check whether the edge node_pair corresponds to an end of a levee
+     */
+    bool is_levee_end(const std::array<uint, 2>& node_pair) const;
 };
 
 #endif

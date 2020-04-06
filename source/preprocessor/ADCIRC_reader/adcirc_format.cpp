@@ -249,7 +249,9 @@ SWE::BoundaryTypes AdcircFormat::get_ibtype(std::array<uint, 2>& node_pair) cons
         }
     }
 
-    // return SWE::BoundaryTypes::land;  // default to land boundary
+    if (is_levee_end(node_pair)) {
+        return SWE::BoundaryTypes::land;
+    }
 
     throw std::logic_error("Fatal Error: boundary not found, unable to assign BOUNDARY_TYPE to given node_pair (" +
                            std::to_string(node_pair[0]) + ", " + std::to_string(node_pair[1]) + ")!\n");
@@ -328,6 +330,24 @@ bool AdcircFormat::has_edge(std::vector<uint>::const_iterator cbegin,
         // here you're not at the end of vector, but haven't found an edge
         // so we must look through the tail
         return has_edge(it + 1, cend, node_pair);
+    }
+
+    return false;
+}
+
+bool AdcircFormat::is_levee_end(const std::array<uint, 2>& node_pair) const {
+    uint min_ = std::min(node_pair[0], node_pair[1]);
+    uint max_ = std::max(node_pair[0], node_pair[1]);
+
+    for (uint segment_id = 0; segment_id < this->NBOU; ++segment_id) {
+        if (this->IBTYPE[segment_id] % 10 == 4) {
+            if ((min_ == std::min(*this->NBVV[segment_id].cbegin(), *this->IBCONN.at(segment_id).cbegin()) &&
+                 max_ == std::max(*this->NBVV[segment_id].cbegin(), *this->IBCONN.at(segment_id).cbegin())) ||
+                (min_ == std::min(*(this->NBVV[segment_id].cend() - 1), *(this->IBCONN.at(segment_id).cend() - 1)) &&
+                 max_ == std::max(*(this->NBVV[segment_id].cend() - 1), *(this->IBCONN.at(segment_id).cend() - 1)))) {
+                return true;
+            }
+        }
     }
 
     return false;
