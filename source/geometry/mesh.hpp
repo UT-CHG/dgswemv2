@@ -85,17 +85,6 @@ class Mesh<std::tuple<Elements...>,
     void CallForEachBoundaryOfType(const F& f);
     template <typename DistributedBoundaryType, typename F>
     void CallForEachDistributedBoundaryOfType(const F& f);
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & mesh_name
-            & p;
-        // clang-format on
-        Utilities::for_each_in_tuple(elements.data, [&ar](auto& element_map) { ar& element_map; });
-    }
-#endif
 };
 
 template <typename... Elements, typename... Interfaces, typename... Boundaries, typename... DistributedBoundaries>

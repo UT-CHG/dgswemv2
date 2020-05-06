@@ -36,10 +36,6 @@ using Point = StatVector<double, dimension>;
 template <typename T>
 using Array2D = std::vector<std::vector<T>>;
 
-#ifdef HAS_HPX
-//#include "simulation/hpx/load_balancer/serialization_headers.hpp"
-#endif
-
 namespace Basis {
 /**
  * Base class for the basis types over the element.
@@ -225,16 +221,6 @@ class Shape {
     virtual bool ContainsPoint(const Point<dimension>& point) const = 0;
 
     virtual void GetVTK(AlignedVector<Point<3>>& points, Array2D<uint>& cells) const = 0;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & nodal_coordinates;
-        // clang-format on
-    }
-    HPX_SERIALIZATION_POLYMORPHIC_ABSTRACT(Shape);
-#endif
 };
 }
 

@@ -55,27 +55,6 @@ class Writer {
   private:
     void InitializeMeshGeometryVTK(typename ProblemType::ProblemMeshType& mesh);
     void InitializeMeshGeometryVTU(typename ProblemType::ProblemMeshType& mesh);
-
-  public:
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & writing_output
-            & output_path
-            & writing_log_file
-            & verbose_log_file
-            & log_file_name
-            & writing_vtk_output
-            &vtk_output_frequency
-            & vtk_file_name_geom
-            & vtk_file_name_raw
-            & writing_modal_output
-            & modal_output_frequency
-            & version;
-        // clang-format on
-    }
-#endif
 };
 
 template <typename ProblemType>

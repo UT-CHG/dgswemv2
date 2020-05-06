@@ -3,10 +3,6 @@
 
 #include "general_definitions.hpp"
 
-#ifdef HAS_HPX
-#include "serialize_chrono.hpp"
-#endif
-
 namespace Utilities {
 class HeartBeat {
   public:
@@ -23,15 +19,6 @@ class HeartBeat {
     time_point_t t_next;
 
   public:
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & period
-            & t_next;
-        // clang-format on
-    }
-#endif
 };
 
 // Note that by default a duration of double is interpreted as seconds
