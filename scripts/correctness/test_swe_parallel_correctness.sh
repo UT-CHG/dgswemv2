@@ -67,7 +67,6 @@ rm -f serial.out
 $DGSWEMV2_ROOT_/$BUILD_DIR/source/manufactured-solution-swe-serial dgswemv2_input.15 &> serial.out
 
 echo "Running MPI Test case..."
-rm quad_mesh_*
 rm -f ompi.out
 $DGSWEMV2_ROOT_/$BUILD_DIR/partitioner/partitioner dgswemv2_input.15 2 1 2
 #Since OpenMPI does not by default support MPI_THREAD_MULTIPLE
