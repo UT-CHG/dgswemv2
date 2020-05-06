@@ -31,20 +31,6 @@ class Parser {
     void ParseMeteoInput(const StepperType& stepper);
     template <typename StepperType>
     void InterpolateMeteoData(const StepperType& stepper);
-
-  public:
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & parsing_input
-            & meteo_parse_frequency
-            & meteo_data_file
-            & node_meteo_data_step
-            & node_meteo_data_interp;
-        // clang-format on
-    }
-#endif
 };
 
 template <typename ProblemSpecificInputType>

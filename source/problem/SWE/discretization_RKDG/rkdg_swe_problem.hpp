@@ -125,9 +125,6 @@ struct Problem {
                                   const uint begin_sim_id,
                                   const uint end_sim_id);
 
-    template <typename HPXSimUnitType>
-    static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
-
     // processor kernels
     template <template <typename> class DiscretizationType, typename ProblemType>
     static void step_serial(DiscretizationType<ProblemType>& discretization,
@@ -154,9 +151,6 @@ struct Problem {
                            ProblemStepperType& stepper,
                            const uint begin_sim_id,
                            const uint end_sim_id);
-
-    template <typename HPXSimUnitType>
-    static auto stage_hpx(HPXSimUnitType* sim_unit);
 
     template <typename ElementType>
     static void volume_kernel(const ProblemStepperType& stepper, ElementType& elt);
