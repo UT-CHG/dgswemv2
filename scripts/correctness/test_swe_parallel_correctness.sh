@@ -52,7 +52,6 @@ make quad_mesh_generator
 make partitioner
 make_swe_manufactured_solution ${DGSWEMV2_ROOT_} serial ${BUILD_DIR}
 make_swe_manufactured_solution ${DGSWEMV2_ROOT_} ompi ${BUILD_DIR}
-make_swe_manufactured_solution ${DGSWEMV2_ROOT_} hpx ${BUILD_DIR}
 echo ""
 echo "Setting up runtime files..."
 cd $HOME
@@ -66,11 +65,6 @@ $DGSWEMV2_ROOT_/$BUILD_DIR/mesh_generators/quad_mesh_generator mesh_generator_in
 echo "Running Serial Test case..."
 rm -f serial.out
 $DGSWEMV2_ROOT_/$BUILD_DIR/source/manufactured-solution-swe-serial dgswemv2_input.15 &> serial.out
-
-echo "Running HPX Test case..."
-rm -f hpx.out
-$DGSWEMV2_ROOT_/$BUILD_DIR/partitioner/partitioner dgswemv2_input.15 2 1
-$DGSWEMV2_ROOT_/$BUILD_DIR/source/manufactured-solution-swe-hpx dgswemv2_input_parallelized.15 --hpx:threads=2 &> hpx.out
 
 echo "Running MPI Test case..."
 rm quad_mesh_*

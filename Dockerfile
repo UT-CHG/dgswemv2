@@ -13,8 +13,6 @@ RUN apt-get update                                             && \
     apt-get -y install openmpi-bin libopenmpi-dev              && \
     apt-get -y install gfortran                                && \
     apt-get -y install libblas-dev liblapack-dev               && \
-    apt-get -y install libhwloc-dev                            && \
-    apt-get -y install libboost-all-dev                        && \
     apt-get -y install python-dev                              && \
     apt-get -y install python-pip                              && \
     apt-get -y install git                                     && \

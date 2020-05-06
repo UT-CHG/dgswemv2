@@ -55,25 +55,6 @@ rm -f serial.out
 $ABS_BUILD_DIR/source/dgswemv2-serial dgswemv2_input.15 &> serial.out
 
 echo ""
-echo "Building HPX Test case..."
-cd $DGSWEMV2_TEST
-rm -f weir_*
-$ABS_BUILD_DIR/partitioner/partitioner dgswemv2_input.15 3 1
-sed -i.tmp '/    return hpx::finalize();/i\
-    hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);\
-    std::cout << "L2 error: " << std::setprecision(14) << std::sqrt(globalResidualL2.get()) << std::endl;\
-' ${MAIN_DIR}/dgswemv2-hpx.cpp
-cd $ABS_BUILD_DIR
-make -j ${num_build_cores} dgswemv2-hpx
-cd $MAIN_DIR
-mv dgswemv2-hpx.cpp.tmp dgswemv2-hpx.cpp
-echo ""
-echo "Running HPX Test case..."
-cd $DGSWEMV2_TEST
-rm -f hpx.out
-$ABS_BUILD_DIR/source/dgswemv2-hpx dgswemv2_input_parallelized.15 --hpx:threads=3 &> hpx.out
-
-echo ""
 echo "Building MPI Test case..."
 sed -i.tmp '/        MPI_Finalize();/i\
         simulation->ComputeL2Residual();\

@@ -5,7 +5,7 @@
 # Takes arguments:
 #  $1: path/to/dgswemv2
 #  $2  (optional) target type
-#      must be one of (serial(default), ompi, hpx)
+#      must be one of (serial(default), ompi)
 #  $3: (optional) build_directory
 #      defaults to $1/build
 make_gn_analytic_solution() {

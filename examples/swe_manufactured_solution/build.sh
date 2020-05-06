@@ -5,7 +5,7 @@
 # Takes arguments:
 #  $1: path/to/dgswemv2
 #  $2: (optional) target type
-#      must be one of (serial(default), ompi, hpx)
+#      must be one of (serial(default), ompi)
 #  $3: (optional) build_directory
 #      defaults to $1/build
 make_swe_manufactured_solution() {
@@ -36,10 +36,9 @@ make_swe_manufactured_solution() {
 
 	#check that target is valid
 	if [ "${TARGET}" != "serial" ] && \
-	   [ "${TARGET}" != "ompi" ] && \
-	   [ "${TARGET}" != "hpx" ] ; then
+	   [ "${TARGET}" != "ompi" ] ; then
 	    echo "Error: invalid target type: ${TARGET}"
-	    echo "       please select one of serial ompi or hpx"
+	    echo "       please select one of serial or ompi"
 	    return 2
 	fi
 
@@ -68,11 +67,6 @@ make_swe_manufactured_solution() {
 	elif [ "${TARGET}" == "ompi" ]; then
 	    sed -i.tmp '/        MPI_Finalize();/i\
                 simulation->ComputeL2Residual();' ${MAIN_DIR}/dgswemv2-ompi.cpp
-	elif [ "${TARGET}" == "hpx" ]; then
-	    sed -i.tmp '/    return hpx::finalize();/i\
-                hpx::future<double> globalResidualL2 = ComputeL2Residual(simulation_clients);\
-                std::cout << "L2 error: " << std::setprecision(15) << std::sqrt(globalResidualL2.get()) << std::endl;\
-                ' ${MAIN_DIR}/dgswemv2-hpx.cpp
 	fi
 
 	old_dir=${PWD}
@@ -95,7 +89,7 @@ make_swe_manufactured_solution() {
 	echo '    Takes arguments:'
 	echo '      ${1}: path/to/dgswemv2'
 	echo '      ${2}: (optional) target type'
-	echo '            must be one of (serial(default), ompi, hpx)'
+	echo '            must be one of (serial(default), ompi)'
 	echo '      ${3}: (optional) build_directory'
 	echo '            defaults to ${1}/build'
 	return 1
