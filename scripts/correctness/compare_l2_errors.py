@@ -2,7 +2,7 @@ import numpy as np
 import re
 
 if __name__=='__main__':
-    build_types=['serial','hpx','ompi']
+    build_types=['serial','ompi']
     error = {}
 
     #floating point regular expression taken from https://stackoverflow.com/a/4703508
@@ -30,9 +30,9 @@ if __name__=='__main__':
 
                 exit(1)
 
-    max_error = max([ error['serial'], error['hpx'], error['ompi'] ])
+    max_error = max([ error['serial'], error['ompi'] ])
     tol = np.finfo(np.float64).eps*max_error*100 #~10^-14
-    if abs( error['serial'] - error['ompi'] ) < tol and abs( error['serial'] - error['hpx' ] ) < tol:
+    if abs( error['serial'] - error['ompi'] ) < tol:
        exit(0)
     else:
         print 'ERROR!!! L2 Errors do not match to machine precision'

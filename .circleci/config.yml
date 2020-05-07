@@ -40,7 +40,6 @@ jobs:
                 -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
-                -DUSE_HPX=On \
                 /usr/dgswemv2
             make
 
@@ -61,7 +60,6 @@ jobs:
                 -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
-                -DUSE_HPX=On \
                 -DRKDG=On \
                 -DEHDG=On \
                 /usr/dgswemv2
@@ -145,7 +143,6 @@ jobs:
                 -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DCOMPILER_WARNINGS=On \
                 -DUSE_OMPI=On \
-                -DUSE_HPX=On \
                 -DUSE_BLAZE=On \
                 /usr/dgswemv2
             make
@@ -167,7 +164,6 @@ jobs:
                 -DSET_VERBOSE=On \
                 -DCMAKE_VERBOSE_MAKEFILE=On \
                 -DUSE_OMPI=On \
-                -DUSE_HPX=On \
                 -DRKDG=On \
                 -DEHDG=Off \
                 -DUSE_BLAZE=On \

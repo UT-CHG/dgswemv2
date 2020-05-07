@@ -33,16 +33,6 @@ class StraightTriangle : public Shape<2> {
     bool ContainsPoint(const Point<2>& point) const override;
 
     void GetVTK(AlignedVector<Point<3>>& points, Array2D<uint>& cells) const override;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & hpx::serialization::base_object<Shape<2>>(*this);
-        // clang-format on
-    }
-    HPX_SERIALIZATION_POLYMORPHIC_TEMPLATE(StraightTriangle);
-#endif
 };
 }
 #endif

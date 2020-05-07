@@ -121,23 +121,6 @@ struct RankBoundaryMetaData {
     std::vector<uint> bound_ids_ex;
 
     std::vector<uint> p;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & locality_in
-            & locality_ex
-            & submesh_in
-            & submesh_ex
-            & elements_in
-            & elements_ex
-            & bound_ids_in
-            & bound_ids_ex
-            & p;
-        // clang-format on
-    }
-#endif
 };
 
 struct DistributedBoundaryMetaData {

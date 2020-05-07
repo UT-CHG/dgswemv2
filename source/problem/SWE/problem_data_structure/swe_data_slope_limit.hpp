@@ -57,31 +57,6 @@ struct SlopeLimit {
     AlignedVector<StatVector<double, SWE::n_variables>> q_at_baryctr_neigh;
 
     HybMatrix<double, SWE::n_variables> delta;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & T
-            & baryctr_coord
-            & midpts_coord
-            & baryctr_coord_neigh
-            & median
-            & alpha
-            & r_sq
-            & q_lin
-            & q_at_baryctr
-            & q_at_vrtx
-            & q_at_midpts
-            & bath_at_baryctr
-            & bath_at_vrtx
-            & bath_at_midpts
-            & wet_neigh
-            & q_at_baryctr_neigh
-            & delta;
-        // clang-format on
-    }
-#endif
 };
 }
 

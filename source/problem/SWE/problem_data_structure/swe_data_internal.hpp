@@ -44,23 +44,6 @@ struct Internal {
     DynMatrix<double> delta_local;
     DynVector<double> rhs_local;
     DynVector<double> rhs_prev;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & q_at_gp
-            & aux_at_gp
-            & Fx_at_gp
-            & Fy_at_gp
-            & source_at_gp
-            & db_at_gp
-            & tau_s_at_gp
-            & dp_atm_at_gp
-            & dtide_pot_at_gp;
-        // clang-format on
-    }
-#endif
 };
 }
 

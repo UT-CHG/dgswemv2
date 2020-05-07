@@ -24,17 +24,6 @@ struct Boundary {
     DynMatrix<double> delta_hat_local;
 
     std::vector<uint> global_dof_indx;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & q_at_gp
-            & aux_at_gp
-            & F_hat_at_gp;
-        // clang-format on
-    }
-#endif
 };
 }
 

@@ -22,22 +22,6 @@ struct WetDry {
     std::vector<double> bath_at_vrtx;
     std::vector<double> h_at_vrtx;
     std::vector<double> h_at_vrtx_temp;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & wet
-            & went_completely_dry
-            & bath_min
-            & q_lin
-            & q_at_vrtx
-            & bath_at_vrtx
-            & h_at_vrtx
-            & h_at_vrtx_temp;
-        // clang-format on
-    }
-#endif
 };
 }
 

@@ -162,9 +162,6 @@ struct Problem {
                                   const uint begin_sim_id,
                                   const uint end_sim_id);
 
-    template <typename HPXSimUnitType>
-    static auto preprocessor_hpx(HPXSimUnitType* sim_unit);
-
     template <typename ProblemType>
     static void initialize_global_problem_serial(HDGDiscretization<ProblemType>& discretization);
 
@@ -200,9 +197,6 @@ struct Problem {
                            ProblemStepperType& stepper,
                            const uint begin_sim_id,
                            const uint end_sim_id);
-
-    template <typename HPXSimUnitType>
-    static auto stage_hpx(HPXSimUnitType* sim_unit);
 
     /* local step begin */
 

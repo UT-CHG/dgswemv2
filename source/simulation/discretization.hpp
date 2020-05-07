@@ -22,13 +22,6 @@ struct DGDiscretization {
                     typename ProblemType::ProblemWriterType& writer) {
         initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
     }
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        ar& mesh;
-    }
-#endif
 };
 
 template <typename ProblemType>
@@ -51,13 +44,6 @@ struct HDGDiscretization {
         initialize_mesh<ProblemType>(this->mesh, input, communicator, writer);
         initialize_mesh_skeleton<ProblemType>(this->mesh, this->mesh_skeleton, writer);
     }
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive&, unsigned) {
-        throw std::logic_error("Error: Serialization of HDGDiscretization not supported");
-    }
-#endif
 };
 
 #endif

@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(USE_EIGEN "Use Eigen" OFF)
 option(USE_BLAZE "Use Blaze" OFF)
 option(USE_OMPI "Use MPI+OpenMP" OFF)
-option(USE_HPX "Use HPX" OFF)
 option(COMPILER_WARNINGS "Enable Compiler Warnings" OFF)
 
 option(RKDG "Build with RKDG discretization" ON)
@@ -75,10 +74,6 @@ endif()
 if(USE_OMPI)
   find_package(OpenMP REQUIRED)
   find_package(MPI REQUIRED)
-endif()
-
-if(USE_HPX)
-  find_package(HPX REQUIRED)
 endif()
 
 list (APPEND SOURCES

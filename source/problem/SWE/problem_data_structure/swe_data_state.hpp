@@ -15,18 +15,6 @@ struct State {
 
     HybMatrix<double, SWE::n_variables> rhs;
     HybMatrix<double, SWE::n_variables> solution;
-
-#ifdef HAS_HPX
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned) {
-        // clang-format off
-        ar  & q
-            & aux
-            & rhs
-            & solution;
-        // clang-format on
-    }
-#endif
 };
 }
 

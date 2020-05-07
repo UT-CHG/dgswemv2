@@ -7,10 +7,6 @@
 
 #define EIGEN_DONT_PARALLELIZE
 
-#ifdef HAS_HPX
-#include "serialization/eigen_matrix.hpp"
-#endif
-
 namespace SO {
 constexpr int ColumnMajor = Eigen::StorageOptions::ColMajor;
 constexpr int RowMajor    = Eigen::StorageOptions::RowMajor;

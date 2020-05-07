@@ -79,54 +79,8 @@ class ESSPRKStepper {
             std::swap(state[0].q, state[this->nstages].q);
     }
 
-#ifdef HAS_HPX
-    template <typename Archive>
-    void save(Archive& ar, unsigned) const;
-
-    template <typename Archive>
-    void load(Archive& ar, unsigned);
-
-    HPX_SERIALIZATION_SPLIT_MEMBER()
-#endif
-
   private:
     void InitializeCoefficients();
 };
 
-#ifdef HAS_HPX
-template <typename Archive>
-void ESSPRKStepper::save(Archive& ar, unsigned) const {
-    // clang-format off
-    ar & order
-       & nstages
-       & dt
-       & stage
-       & timestamp
-       & t
-       & ramp_duration;
-    // clang-format on
-}
-
-template <typename Archive>
-void ESSPRKStepper::load(Archive& ar, unsigned) {
-    // clang-format off
-    ar & order
-       & nstages
-       & dt
-       & stage
-       & timestamp
-       & t
-       & ramp_duration;
-    // clang-format on
-
-    step = timestamp / nstages;
-    InitializeCoefficients();
-
-    if (!Utilities::almost_equal(this->ramp_duration, 0)) {
-        this->ramp = std::tanh(2 * (this->GetTimeAtCurrentStage() / 86400) / this->ramp_duration);
-    } else {
-        this->ramp = 1;
-    }
-}
-#endif
 #endif

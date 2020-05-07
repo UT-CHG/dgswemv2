@@ -8,11 +8,6 @@
 #include <blaze/math/Row.h>
 #include <blaze/util/AlignedAllocator.h>
 
-#ifdef HAS_HPX
-#include "serialization/blaze_vector.hpp"
-#include "serialization/blaze_matrix.hpp"
-#endif
-
 namespace SO {
 constexpr bool ColumnMajor = blaze::columnMajor;
 constexpr bool RowMajor    = blaze::rowMajor;
