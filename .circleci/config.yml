@@ -11,7 +11,7 @@ version: 2
 jobs:
   checkout_code:
     docker:
-      - image: bremerm31/dgswemv2
+      - image: bremerm31/dgswemv2:experimental
     working_directory: /usr/dgswemv2
     steps:
       - checkout:
