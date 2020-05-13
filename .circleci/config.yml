@@ -1,7 +1,7 @@
 # defaults
 defaults: &defaults
     docker:
-      - image: bremerm31/dgswemv2:experimental
+      - image: bremerm31/dgswemv2
     environment:
       - DGSWEMV2_ROOT: "/usr/dgswemv2"
       - CI_MPI_CLI: "--allow-run-as-root"
@@ -11,7 +11,7 @@ version: 2
 jobs:
   checkout_code:
     docker:
-      - image: bremerm31/dgswemv2:experimental
+      - image: bremerm31/dgswemv2
     working_directory: /usr/dgswemv2
     steps:
       - checkout:
