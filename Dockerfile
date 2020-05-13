@@ -1,5 +1,26 @@
 FROM ubuntu:18.04
 
+################################################################################
+# Docker basics
+#
+# To build the container, run for <DGSWEMV2_ROOT>:
+#
+# docker build .
+#
+# You can use the `--no-cache` argument to build the container from scratch
+# and `-t <tag> to build the image with a specific tag
+#
+# To push the image to dockerhub, run:
+#
+# docker push <dockerhub_id>/dgswemv2:<tag>
+#
+# Finally to run the container locally, run:
+#
+#
+# docker run -it <dockerhub_id>/dgswemv2:<tag>
+#
+# to start an interactive shell with the given docker image
+
 # github.com/bremerm31
 MAINTAINER Max Bremer
 
