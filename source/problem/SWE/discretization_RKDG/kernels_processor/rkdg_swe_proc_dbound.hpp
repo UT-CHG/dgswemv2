@@ -5,10 +5,11 @@ namespace SWE {
 namespace RKDG {
 template <typename DistributedBoundaryType>
 void Problem::distributed_boundary_send_kernel(const ProblemStepperType& stepper, DistributedBoundaryType& dbound) {
-    auto& state    = dbound.data.state[stepper.GetStage()];
-    auto& boundary = dbound.data.boundary[dbound.bound_id];
-
+    auto& state      = dbound.data.state[stepper.GetStage()];
+    auto& boundary   = dbound.data.boundary[dbound.bound_id];
     boundary.q_at_gp = dbound.ComputeUgp(state.q);
+    row(boundary.aux_at_gp, SWE::Auxiliaries::h) =
+        row(boundary.q_at_gp, SWE::Variables::ze) + row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
     std::vector<double> message;

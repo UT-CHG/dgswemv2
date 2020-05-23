@@ -47,15 +47,15 @@ void Problem::stage_serial(DiscretizationType<ProblemType>& discretization,
         stepper.UpdateState(elt);
     });
 
-    if (SWE::PostProcessing::bed_update)
+    if (SWE::SedimentTransport::bed_update)
         SWE::seabed_update(stepper, discretization);
 
     ++stepper;
 
-    if (SWE::PostProcessing::bed_slope_limiting)
+    if (SWE::SedimentTransport::bed_slope_limiting)
         SWE::CS_seabed_slope_limiter(stepper, discretization);
 
-    if (SWE::PostProcessing::bed_update)
+    if (SWE::SedimentTransport::bed_update)
         SWE::seabed_data_update(stepper, discretization);
 
     if (SWE::PostProcessing::wetting_drying) {

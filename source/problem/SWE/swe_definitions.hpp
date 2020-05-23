@@ -28,11 +28,22 @@ const bool ignored_vars =
     Utilities::ignore(function_source, bottom_friction, meteo_forcing, tide_potential, coriolis, Cf);
 }
 
-namespace PostProcessing {
-static bool wetting_drying     = false;
-static bool slope_limiting     = false;
+namespace SedimentTransport {
 static bool bed_update         = false;
 static bool bed_slope_limiting = false;
+static bool bed_load           = false;
+static bool suspended_load     = false;
+
+// Cockburn-Shu SL parameters
+static double M  = 1.0e-8;
+static double nu = 1.5;
+
+const bool ignored_vars = Utilities::ignore(bed_update, bed_slope_limiting, bed_load, suspended_load, M, nu);
+}
+
+namespace PostProcessing {
+static bool wetting_drying = false;
+static bool slope_limiting = false;
 
 static double h_o           = 0.1;
 static double h_o_threshold = 1.0e-6;
@@ -41,8 +52,7 @@ static double h_o_threshold = 1.0e-6;
 static double M  = 1.0e-8;
 static double nu = 1.5;
 
-const bool ignored_vars =
-    Utilities::ignore(wetting_drying, slope_limiting, bed_update, bed_slope_limiting, h_o, h_o_threshold, M, nu);
+const bool ignored_vars = Utilities::ignore(wetting_drying, slope_limiting, h_o, h_o_threshold, M, nu);
 }
 
 constexpr uint n_dimensions = 2;

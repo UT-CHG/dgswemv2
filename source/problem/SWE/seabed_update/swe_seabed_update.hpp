@@ -7,45 +7,53 @@
 namespace SWE {
 double rho_mixture(const Column<HybMatrix<double, SWE::n_variables>>& q,
                    const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
-    return SWE::Global::rho_water;
+    const double c = q[SWE::Variables::hc] / aux[SWE::Auxiliaries::h];
+    return SWE::Global::rho_water * (1.0 - c) + SWE::Global::rho_sediment * c;
 }
 
 double entrainment_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
                         const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
+    if (SWE::SedimentTransport::suspended_load) {
+    }
     return 0.0;
 }
 
 double deposition_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
                        const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
+    if (SWE::SedimentTransport::suspended_load) {
+    }
     return 0.0;
 }
 
 StatVector<double, SWE::n_dimensions> bed_flux(const Column<HybMatrix<double, SWE::n_variables>>& q,
                                                const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
-    /*const double theta_c_o = 0.05;
-    const double mu_s      = 0.63;
-    const double mu_d      = 0.51;
-    const double s         = 2.6;
-    const double d         = 0.00018;
+    if (SWE::SedimentTransport::bed_load) {
+        /*const double theta_c_o = 0.05;
+        const double mu_s      = 0.63;
+        const double mu_d      = 0.51;
+        const double s         = 2.6;
+        const double d         = 0.00018;
 
-    const double alpha = std::acos((qx * bx + qy * by) / (std::hypot(qx, qy) * std::hypot(bx, by)));
-    const double beta  = std::atan(std::hypot(bx, by));
-    const double theta_c =
-        theta_c_o * (std::cos(beta) *
-                         std::sqrt(1 - std::pow(std::sin(alpha), 2) * std::pow(std::tan(beta), 2) / std::pow(mu_s, 2)) -
-                     std::cos(alpha) * std::sin(beta) / mu_s);
-    const double theta = std::pow(std::hypot(qx, qy) / h, 2) / ((s - 1) * Global::g * d);
-    const double p     = std::pow(1 + std::pow(PI * mu_d / (6 * (theta - theta_c)), 4), -0.25);
-    const double A     = 100 * PI * d * p / 6;*/
+        const double alpha = std::acos((qx * bx + qy * by) / (std::hypot(qx, qy) * std::hypot(bx, by)));
+        const double beta  = std::atan(std::hypot(bx, by));
+        const double theta_c =
+            theta_c_o * (std::cos(beta) *
+                            std::sqrt(1 - std::pow(std::sin(alpha), 2) * std::pow(std::tan(beta), 2) / std::pow(mu_s,
+        2)) - std::cos(alpha) * std::sin(beta) / mu_s); const double theta = std::pow(std::hypot(qx, qy) / h, 2) / ((s -
+        1) * Global::g * d); const double p     = std::pow(1 + std::pow(PI * mu_d / (6 * (theta - theta_c)), 4), -0.25);
+        const double A     = 100 * PI * d * p / 6;*/
 
-    const double h  = q[SWE::Variables::ze] + aux[SWE::Auxiliaries::bath];
-    const double qx = q[SWE::Variables::qx];
-    const double qy = q[SWE::Variables::qy];
+        const double h  = aux[SWE::Auxiliaries::h];
+        const double qx = q[SWE::Variables::qx];
+        const double qy = q[SWE::Variables::qy];
 
-    const double usq = std::pow(qx / h, 2) + std::pow(qy / h, 2);
-    const double A   = 0.005;
+        const double usq = std::pow(qx / h, 2) + std::pow(qy / h, 2);
+        const double A   = 0.005;
 
-    return StatVector<double, SWE::n_dimensions>{-A * usq * qx / h, -A * usq * qy / h};
+        return StatVector<double, SWE::n_dimensions>{-A * usq * qx / h, -A * usq * qy / h};
+    }
+
+    return StatVector<double, SWE::n_dimensions>{0.0, 0.0};
 }
 
 double roe_un(const Column<HybMatrix<double, SWE::n_variables>>& q_in,
@@ -53,11 +61,11 @@ double roe_un(const Column<HybMatrix<double, SWE::n_variables>>& q_in,
               const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_in,
               const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux_ex,
               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal) {
-    const double h_in  = q_in[SWE::Variables::ze] + aux_in[SWE::Auxiliaries::bath];
+    const double h_in  = aux_in[SWE::Auxiliaries::h];
     const double qx_in = q_in[SWE::Variables::qx];
     const double qy_in = q_in[SWE::Variables::qy];
 
-    const double h_ex  = q_ex[SWE::Variables::ze] + aux_ex[SWE::Auxiliaries::bath];
+    const double h_ex  = aux_ex[SWE::Auxiliaries::h];
     const double qx_ex = q_ex[SWE::Variables::qx];
     const double qy_ex = q_ex[SWE::Variables::qy];
 
@@ -82,6 +90,9 @@ void seabed_update(const StepperType& stepper, DiscretizationType& discretizatio
             }
             state.b_rhs = elt.IntegrationDPhi(GlobalCoord::x, row(internal.qb_at_gp, GlobalCoord::x)) +
                           elt.IntegrationDPhi(GlobalCoord::y, row(internal.qb_at_gp, GlobalCoord::y));
+
+            state.b_rhs +=
+                elt.IntegrationPhi(1.0 / (1.0 - Global::sat_sediment) * (internal.E_at_gp - internal.D_at_gp));
         }
     });
 
@@ -227,7 +238,7 @@ void seabed_data_update(const StepperType& stepper, DiscretizationType& discreti
         });
     }
 
-    if (SWE::PostProcessing::slope_limiting || SWE::PostProcessing::bed_slope_limiting) {
+    if (SWE::PostProcessing::slope_limiting || SWE::SedimentTransport::bed_slope_limiting) {
         discretization.mesh.CallForEachElement([&stepper](auto& elt) {
             auto& state              = elt.data.state[stepper.GetStage()];
             auto& sl_state           = elt.data.slope_limit_state;

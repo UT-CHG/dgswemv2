@@ -12,6 +12,11 @@ void Problem::interface_kernel(const ProblemStepperType& stepper, InterfaceType&
         auto& boundary_ex   = intface.data_ex.boundary[intface.bound_id_ex];
         boundary_in.q_at_gp = intface.ComputeUgpIN(state_in.q);
         boundary_ex.q_at_gp = intface.ComputeUgpEX(state_ex.q);
+        row(boundary_in.aux_at_gp, SWE::Auxiliaries::h) =
+            row(boundary_in.q_at_gp, SWE::Variables::ze) + row(boundary_in.aux_at_gp, SWE::Auxiliaries::bath);
+        row(boundary_ex.aux_at_gp, SWE::Auxiliaries::h) =
+            row(boundary_ex.q_at_gp, SWE::Variables::ze) + row(boundary_ex.aux_at_gp, SWE::Auxiliaries::bath);
+
         intface.specialization.ComputeFlux(intface);
         state_in.rhs -= intface.IntegrationPhiIN(boundary_in.F_hat_at_gp);
         state_ex.rhs -= intface.IntegrationPhiEX(boundary_ex.F_hat_at_gp);

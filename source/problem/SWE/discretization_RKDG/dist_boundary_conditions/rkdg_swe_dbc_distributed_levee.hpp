@@ -80,6 +80,8 @@ void DistributedLevee::ComputeFlux(DistributedBoundaryType& dbound) {
             this->q_ex(var, gp_ex) = message[1 + (SWE::n_variables + 1) * gp + var + 1];
         }
     }
+    row(this->aux_ex, SWE::Auxiliaries::h) =
+        row(this->q_ex, SWE::Variables::ze) + row(this->aux_ex, SWE::Auxiliaries::bath);
 
     bool wet_in = dbound.data.wet_dry_state.wet;
 

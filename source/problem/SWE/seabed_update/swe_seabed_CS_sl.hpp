@@ -58,11 +58,12 @@ void CS_seabed_slope_limiter(const StepperType& stepper, DiscretizationType& dis
                 const double b_delta =
                     sl_state.alpha[bound][0] * (sl_state.bath_at_baryctr_neigh[element_1] - sl_state.bath_at_baryctr) +
                     sl_state.alpha[bound][1] * (sl_state.bath_at_baryctr_neigh[element_2] - sl_state.bath_at_baryctr);
-                if (std::abs(b_tilda) <= PostProcessing::M * sl_state.r_sq[bound]) {
+                if (std::abs(b_tilda) <= SWE::SedimentTransport::M * sl_state.r_sq[bound]) {
                     sl_state.bath_delta[bound] = b_tilda;
                 } else if (std::signbit(b_tilda) == std::signbit(b_delta)) {
-                    sl_state.bath_delta[bound] = std::copysign(1.0, b_tilda) *
-                                                 std::min(std::abs(b_tilda), std::abs(PostProcessing::nu * b_delta));
+                    sl_state.bath_delta[bound] =
+                        std::copysign(1.0, b_tilda) *
+                        std::min(std::abs(b_tilda), std::abs(SWE::SedimentTransport::nu * b_delta));
                 } else {
                     sl_state.bath_delta[bound] = 0.0;
                 }

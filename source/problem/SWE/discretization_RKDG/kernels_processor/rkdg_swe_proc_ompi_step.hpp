@@ -102,7 +102,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         }
     }
 
-    if (SWE::PostProcessing::bed_update) {
+    if (SWE::SedimentTransport::bed_update) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             SWE::seabed_update(stepper, sim_units[su_id]->discretization);
         }
@@ -113,7 +113,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
     { ++(stepper); }
 #pragma omp barrier
 
-    if (SWE::PostProcessing::bed_slope_limiting) {
+    if (SWE::SedimentTransport::bed_slope_limiting) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             sim_units[su_id]->communicator.ReceiveAll(CommTypes::baryctr_state, stepper.GetTimestamp());
             sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {
@@ -149,7 +149,7 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
         }
     }
 
-    if (SWE::PostProcessing::bed_update) {
+    if (SWE::SedimentTransport::bed_update) {
         for (uint su_id = begin_sim_id; su_id < end_sim_id; ++su_id) {
             SWE::seabed_data_update(stepper, sim_units[su_id]->discretization);
         }

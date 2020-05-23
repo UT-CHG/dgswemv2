@@ -251,7 +251,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     }
 
     // SLOPE LIMIT INITIALIZE
-    if (SWE::PostProcessing::slope_limiting || SWE::PostProcessing::bed_slope_limiting) {
+    if (SWE::PostProcessing::slope_limiting || SWE::SedimentTransport::bed_slope_limiting) {
         mesh.CallForEachElement([](auto& elt) {
             auto& shape    = elt.GetShape();
             auto& sl_state = elt.data.slope_limit_state;
@@ -337,7 +337,7 @@ void initialize_data_parallel_pre_send(MeshType& mesh,
                                        uint comm_type) {
     initialize_data_serial(mesh, problem_specific_input);
 
-    if (SWE::PostProcessing::slope_limiting || SWE::PostProcessing::bed_slope_limiting) {
+    if (SWE::PostProcessing::slope_limiting || SWE::SedimentTransport::bed_slope_limiting) {
         mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
             auto& sl_state = dbound.data.slope_limit_state;
 
@@ -352,7 +352,7 @@ void initialize_data_parallel_pre_send(MeshType& mesh,
 
 template <typename MeshType>
 void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
-    if (SWE::PostProcessing::slope_limiting || SWE::PostProcessing::bed_slope_limiting) {
+    if (SWE::PostProcessing::slope_limiting || SWE::SedimentTransport::bed_slope_limiting) {
         mesh.CallForEachDistributedBoundary([comm_type](auto& dbound) {
             auto& sl_state = dbound.data.slope_limit_state;
 

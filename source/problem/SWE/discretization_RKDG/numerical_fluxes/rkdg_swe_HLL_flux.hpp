@@ -12,12 +12,12 @@ void HLL_flux(const double gravity,
               const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
               Column<HybMatrix<double, SWE::n_variables>>&& F_hat) {
     const double bath_in = aux_in[SWE::Auxiliaries::bath];
-    const double h_in    = q_in[SWE::Variables::ze] + bath_in;
+    const double h_in    = aux_in[SWE::Auxiliaries::h];
     const double u_in    = q_in[SWE::Variables::qx] / h_in;
     const double v_in    = q_in[SWE::Variables::qy] / h_in;
 
     const double bath_ex = aux_ex[SWE::Auxiliaries::bath];
-    const double h_ex    = q_ex[SWE::Variables::ze] + bath_ex;
+    const double h_ex    = aux_ex[SWE::Auxiliaries::h];
     const double u_ex    = q_ex[SWE::Variables::qx] / h_ex;
     const double v_ex    = q_ex[SWE::Variables::qy] / h_ex;
 

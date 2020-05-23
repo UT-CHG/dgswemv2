@@ -48,7 +48,7 @@ void Problem::dispersive_correction_serial(ProblemDiscretizationType& discretiza
                                            ProblemGlobalDataType& global_data,
                                            ESSPRKStepper& stepper) {
     // Compute du, ddu
-    if (SWE::PostProcessing::bed_update)
+    if (SWE::SedimentTransport::bed_update)
         Problem::compute_bathymetry_derivatives_serial(discretization, global_data, stepper.GetStage());
     Problem::compute_derivatives_serial(discretization, global_data, stepper);
 
