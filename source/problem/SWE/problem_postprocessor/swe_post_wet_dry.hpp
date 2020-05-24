@@ -43,6 +43,7 @@ void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
             wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
             wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
             wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
+            wd_state.q_at_vrtx(SWE::Variables::hc, vrtx) = 0.0;
         }
 
         wd_state.wet = false;
@@ -58,6 +59,7 @@ void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
                 wd_state.q_at_vrtx(SWE::Variables::ze, vrtx) = h_avg - wd_state.bath_at_vrtx[vrtx];
                 wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0;
                 wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0;
+                wd_state.q_at_vrtx(SWE::Variables::hc, vrtx) = 0;
             }
         } else {
             auto h_min_iter = std::min_element(wd_state.h_at_vrtx.begin(), wd_state.h_at_vrtx.end());
@@ -84,6 +86,7 @@ void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
 
             double del_qx = 0;
             double del_qy = 0;
+            double del_hc = 0;
 
             uint n_dry_vrtx = 0;
             for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
@@ -92,9 +95,11 @@ void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
 
                     del_qx += wd_state.q_at_vrtx(SWE::Variables::qx, vrtx);
                     del_qy += wd_state.q_at_vrtx(SWE::Variables::qy, vrtx);
+                    del_hc += wd_state.q_at_vrtx(SWE::Variables::hc, vrtx);
 
                     wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
                     wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
+                    wd_state.q_at_vrtx(SWE::Variables::hc, vrtx) = 0.0;
                 }
             }
 
@@ -106,6 +111,7 @@ void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
                 if (wd_state.h_at_vrtx[vrtx] > PostProcessing::h_o + PostProcessing::h_o_threshold) {
                     wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) += del_qx / (3 - n_dry_vrtx);
                     wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) += del_qy / (3 - n_dry_vrtx);
+                    wd_state.q_at_vrtx(SWE::Variables::hc, vrtx) += del_hc / (3 - n_dry_vrtx);
                 }
             }
         }
@@ -134,6 +140,7 @@ void wetting_drying_kernel(const StepperType& stepper, ElementType& elt) {
         for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
             wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
             wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
+            wd_state.q_at_vrtx(SWE::Variables::hc, vrtx) = 0.0;
         }
 
         state.q = elt.ProjectLinearToBasis(wd_state.q_at_vrtx);

@@ -91,6 +91,7 @@ struct FunctionSource {
 struct BottomFriction {
     BottomFrictionType type = BottomFrictionType::None;
     double coefficient      = 0.0;
+    double manning_n        = 0.0;
     std::string manning_data_file;
 };
 

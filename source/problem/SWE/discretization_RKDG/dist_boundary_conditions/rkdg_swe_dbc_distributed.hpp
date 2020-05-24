@@ -81,6 +81,7 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
                                                 column(boundary.F_hat_at_gp, gp));
             } else if (!wet_in) {  // water flowing to dry IN element
                 double temp_flux_ze = boundary.F_hat_at_gp(Variables::ze, gp);
+                double temp_flux_hc = boundary.F_hat_at_gp(Variables::hc, gp);
 
                 HLL_flux(0.0,
                          column(boundary.q_at_gp, gp),
@@ -92,6 +93,7 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
 
                 // Only remove gravity contributions for the momentum fluxes
                 boundary.F_hat_at_gp(Variables::ze, gp) = temp_flux_ze;
+                boundary.F_hat_at_gp(Variables::hc, gp) = temp_flux_hc;
             }
         }
 

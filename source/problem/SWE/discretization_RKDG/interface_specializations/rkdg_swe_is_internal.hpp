@@ -70,6 +70,7 @@ void Internal::ComputeFlux(InterfaceType& intface) {
 
                 // Only remove gravity contributions for the momentum fluxes
                 boundary_ex.F_hat_at_gp(Variables::ze, gp_ex) = -boundary_in.F_hat_at_gp(Variables::ze, gp);
+                boundary_ex.F_hat_at_gp(Variables::hc, gp_ex) = -boundary_in.F_hat_at_gp(Variables::hc, gp);
             }
         } else if (boundary_in.F_hat_at_gp(Variables::ze, gp) < -1e-12) {
             if (!wet_ex) {  // water flowing from dry EX element
@@ -92,6 +93,7 @@ void Internal::ComputeFlux(InterfaceType& intface) {
                          column(boundary_in.F_hat_at_gp, gp));
 
                 boundary_in.F_hat_at_gp(Variables::ze, gp) = -boundary_ex.F_hat_at_gp(Variables::ze, gp_ex);
+                boundary_in.F_hat_at_gp(Variables::hc, gp) = -boundary_ex.F_hat_at_gp(Variables::hc, gp_ex);
             }
         }
 

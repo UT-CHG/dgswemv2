@@ -24,8 +24,9 @@ void get_source(const StepperType& stepper, ElementType& elt) {
 
     for (uint gp = 0; gp < elt.data.get_ngp_internal(); ++gp) {
         internal.rho_mix_at_gp[gp] = rho_mixture(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
-        internal.E_at_gp[gp]       = entrainment_rate(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
-        internal.D_at_gp[gp]       = deposition_rate(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
+        internal.E_at_gp[gp]       = entrainment_rate(
+            column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp), source.manning, source.g_manning_n_sq);
+        internal.D_at_gp[gp]            = deposition_rate(column(internal.q_at_gp, gp), column(internal.aux_at_gp, gp));
         internal.sed_mom_frac_at_gp[gp] = (Global::rho_bed - internal.rho_mix_at_gp[gp]) /
                                           (internal.rho_mix_at_gp[gp] * (1.0 - Global::sat_sediment));
     }

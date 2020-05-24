@@ -12,8 +12,29 @@ double rho_mixture(const Column<HybMatrix<double, SWE::n_variables>>& q,
 }
 
 double entrainment_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
-                        const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
+                        const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
+                        const bool manning,
+                        const double gn_sq) {
     if (SWE::SedimentTransport::suspended_load) {
+        constexpr double phi     = 0.01;
+        constexpr double d       = 4.0e-3;
+        constexpr double theta_c = 0.045;
+
+        const double h = aux[SWE::Auxiliaries::h];
+        const double u = std::hypot(q[SWE::Variables::qx], q[SWE::Variables::qy]) / aux[SWE::Auxiliaries::h];
+        const double s = SWE::Global::rho_sediment / SWE::Global::rho_water - 1.0;
+
+        double Cf = SWE::SourceTerms::Cf;
+        if (manning) {
+            Cf = gn_sq / std::pow(h, 1.0 / 3.0);
+            if (Cf < SWE::SourceTerms::Cf)
+                Cf = SWE::SourceTerms::Cf;
+        }
+        const double theta = Cf * std::pow(u, 2) / (s * SWE::Global::g * d);
+
+        if (theta > theta_c) {
+            return phi * (theta - theta_c) * std::pow(d, -0.2) * u / h;
+        }
     }
     return 0.0;
 }
@@ -21,6 +42,17 @@ double entrainment_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
 double deposition_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
                        const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
     if (SWE::SedimentTransport::suspended_load) {
+        constexpr double d  = 4.0e-3;
+        constexpr double nu = 1.2e-6;
+
+        const double c     = q[SWE::Variables::hc] / aux[SWE::Auxiliaries::h];
+        const double s     = SWE::Global::rho_sediment / SWE::Global::rho_water - 1.0;
+        const double alpha = std::min(2.0, (1.0 - SWE::Global::sat_sediment) / c);
+        const double w_o   = std::sqrt(std::pow(13.95 * nu / d, 2) + 1.09 * s * Global::g * d) - 13.95 * nu / d;
+
+        if (c > 0) {
+            return alpha * c * w_o * std::pow(1 - alpha * c, 2);
+        }
     }
     return 0.0;
 }
@@ -52,7 +84,6 @@ StatVector<double, SWE::n_dimensions> bed_flux(const Column<HybMatrix<double, SW
 
         return StatVector<double, SWE::n_dimensions>{-A * usq * qx / h, -A * usq * qy / h};
     }
-
     return StatVector<double, SWE::n_dimensions>{0.0, 0.0};
 }
 

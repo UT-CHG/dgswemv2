@@ -165,36 +165,51 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
     // SOURCE TERMS INITIALIZE
     // Manning N bottom friction
     if (problem_specific_input.bottom_friction.type == SWE::BottomFrictionType::Manning) {
-        if (!Utilities::file_exists(problem_specific_input.bottom_friction.manning_data_file)) {
-            throw std::logic_error("Fatal Error: manning factor data file " +
-                                   problem_specific_input.bottom_friction.manning_data_file + " was not found!\n");
-        }
-
-        std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
-        std::map<uint, double> node_manning_n;
-        std::string line;
-        while (std::getline(manning_file, line)) {
-            std::istringstream input_string(line);
-            uint node_ID;
-            double manning_n;
-            if (!(input_string >> node_ID >> manning_n))
-                break;
-            node_manning_n[node_ID] = manning_n;
-        }
-
-        mesh.CallForEachElement([&node_manning_n](auto& elt) {
-            const std::vector<uint>& node_ID = elt.GetNodeID();
-            for (uint node = 0; node < elt.data.get_nnode(); ++node) {
-                elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
+        if (!problem_specific_input.bottom_friction.manning_data_file.empty()) {
+            if (!Utilities::file_exists(problem_specific_input.bottom_friction.manning_data_file)) {
+                throw std::logic_error("Fatal Error: manning factor data file " +
+                                       problem_specific_input.bottom_friction.manning_data_file + " was not found!\n");
             }
 
-            elt.data.source.manning = true;
-            elt.data.source.g_manning_n_sq =
-                Global::g *
-                std::pow(std::accumulate(elt.data.source.manning_n.begin(), elt.data.source.manning_n.end(), 0.0) /
-                             elt.data.source.manning_n.size(),
-                         2);
-        });
+            std::ifstream manning_file(problem_specific_input.bottom_friction.manning_data_file);
+            std::map<uint, double> node_manning_n;
+            std::string line;
+            while (std::getline(manning_file, line)) {
+                std::istringstream input_string(line);
+                uint node_ID;
+                double manning_n;
+                if (!(input_string >> node_ID >> manning_n))
+                    break;
+                node_manning_n[node_ID] = manning_n;
+            }
+
+            mesh.CallForEachElement([&node_manning_n](auto& elt) {
+                const std::vector<uint>& node_ID = elt.GetNodeID();
+                for (uint node = 0; node < elt.data.get_nnode(); ++node) {
+                    elt.data.source.manning_n[node] = node_manning_n[node_ID[node]];
+                }
+
+                elt.data.source.manning = true;
+                elt.data.source.g_manning_n_sq =
+                    Global::g *
+                    std::pow(std::accumulate(elt.data.source.manning_n.begin(), elt.data.source.manning_n.end(), 0.0) /
+                                 elt.data.source.manning_n.size(),
+                             2);
+            });
+        } else {
+            mesh.CallForEachElement([&problem_specific_input](auto& elt) {
+                for (uint node = 0; node < elt.data.get_nnode(); ++node) {
+                    elt.data.source.manning_n[node] = problem_specific_input.bottom_friction.manning_n;
+                }
+
+                elt.data.source.manning = true;
+                elt.data.source.g_manning_n_sq =
+                    Global::g *
+                    std::pow(std::accumulate(elt.data.source.manning_n.begin(), elt.data.source.manning_n.end(), 0.0) /
+                                 elt.data.source.manning_n.size(),
+                             2);
+            });
+        }
     }
 
     // Coriolis effect
@@ -243,6 +258,7 @@ void initialize_data_serial(MeshType& mesh, const ProblemSpecificInputType& prob
                 for (uint vrtx = 0; vrtx < elt.data.get_nvrtx(); ++vrtx) {
                     wd_state.q_at_vrtx(SWE::Variables::qx, vrtx) = 0.0;
                     wd_state.q_at_vrtx(SWE::Variables::qy, vrtx) = 0.0;
+                    wd_state.q_at_vrtx(SWE::Variables::hc, vrtx) = 0.0;
                 }
                 state.q = elt.ProjectLinearToBasis(wd_state.q_at_vrtx);
                 set_constant(state.rhs, 0.0);
