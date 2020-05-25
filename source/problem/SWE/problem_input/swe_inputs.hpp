@@ -111,6 +111,22 @@ struct Coriolis {
     CoriolisType type = CoriolisType::None;
 };
 
+struct SedTransport {
+    bool bed_update       = false;
+    bool bath_slope_limit = false;
+    bool bed_load         = false;
+    bool suspended_load   = false;
+
+    double A = 0.0;
+
+    double d              = 0.0;
+    double nu             = 0.0;
+    double phi            = 0.0;
+    double theta_c        = 0.0;
+    double rho_sediment   = 0.0;
+    double saturation_bed = 0.0;
+};
+
 // Problem specific postprocessing information containers
 struct WettingDrying {
     WettingDryingType type = WettingDryingType::None;
@@ -144,6 +160,7 @@ struct Inputs {
     MeteoForcing meteo_forcing;
     TidePotential tide_potential;
     Coriolis coriolis;
+    SedTransport sediment_transport;
 
     WettingDrying wet_dry;
     SlopeLimiting slope_limit;

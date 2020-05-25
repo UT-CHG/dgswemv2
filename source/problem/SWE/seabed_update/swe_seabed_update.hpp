@@ -16,9 +16,9 @@ double entrainment_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
                         const bool manning,
                         const double gn_sq) {
     if (SWE::SedimentTransport::suspended_load) {
-        constexpr double phi     = 0.01;
-        constexpr double d       = 4.0e-3;
-        constexpr double theta_c = 0.045;
+        const double phi     = SWE::SedimentTransport::phi;
+        const double d       = SWE::SedimentTransport::d;
+        const double theta_c = SWE::SedimentTransport::theta_c;
 
         const double h = aux[SWE::Auxiliaries::h];
         const double u = std::hypot(q[SWE::Variables::qx], q[SWE::Variables::qy]) / aux[SWE::Auxiliaries::h];
@@ -42,8 +42,8 @@ double entrainment_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
 double deposition_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
                        const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux) {
     if (SWE::SedimentTransport::suspended_load) {
-        constexpr double d  = 4.0e-3;
-        constexpr double nu = 1.2e-6;
+        const double d  = SWE::SedimentTransport::d;
+        const double nu = SWE::SedimentTransport::v;
 
         const double c     = q[SWE::Variables::hc] / aux[SWE::Auxiliaries::h];
         const double s     = SWE::Global::rho_sediment / SWE::Global::rho_water - 1.0;

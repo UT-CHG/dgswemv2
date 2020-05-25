@@ -176,6 +176,43 @@ Inputs::Inputs(YAML::Node& swe_node) {
         }
     }
 
+    const std::string malformatted_sediment_warning(
+        "Warning: sediment transport is mal-formatted. Using default parameters.\n");
+
+    if (YAML::Node st_node = swe_node["sediment_transport"]) {
+        if (st_node["suspended_load"]) {
+            YAML::Node susp_load_node = st_node["suspended_load"];
+            if (susp_load_node["d"] && susp_load_node["nu"] && susp_load_node["phi"] && susp_load_node["theta_c"] &&
+                susp_load_node["density_sediment"] && susp_load_node["saturation_bed"]) {
+                this->sediment_transport.bed_update     = true;
+                this->sediment_transport.suspended_load = true;
+                this->sediment_transport.d              = susp_load_node["d"].as<double>();
+                this->sediment_transport.nu             = susp_load_node["nu"].as<double>();
+                this->sediment_transport.phi            = susp_load_node["phi"].as<double>();
+                this->sediment_transport.theta_c        = susp_load_node["theta_c"].as<double>();
+                this->sediment_transport.rho_sediment   = susp_load_node["density_sediment"].as<double>();
+                this->sediment_transport.saturation_bed = susp_load_node["saturation_bed"].as<double>();
+            } else {
+                std::cerr << malformatted_sediment_warning;
+            }
+        }
+
+        if (st_node["bed_load"]) {
+            YAML::Node bed_load_node = st_node["bed_load"];
+            if (bed_load_node["A"]) {
+                this->sediment_transport.bed_update = true;
+                this->sediment_transport.bed_load   = true;
+                this->sediment_transport.A          = bed_load_node["A"].as<double>();
+            } else {
+                std::cerr << malformatted_sediment_warning;
+            }
+        }
+
+        if (st_node["slope_limiting"] && this->sediment_transport.bed_update) {
+            this->sediment_transport.bath_slope_limit = true;
+        }
+    }
+
     const std::string malformatted_wd_warning("Warning: wet-dry is mal-formatted. Using default parameters.\n");
 
     if (YAML::Node wd_node = swe_node["wetting_drying"]) {
@@ -419,6 +456,25 @@ YAML::Node Inputs::as_yaml_node() {
         case CoriolisType::Enable:
             ret["coriolis"] = "Enable";
             break;
+    }
+
+    YAML::Node st_node;
+    if (this->sediment_transport.bed_update) {
+        if (this->sediment_transport.suspended_load) {
+            st_node["suspended_load"]["d"]                = this->sediment_transport.d;
+            st_node["suspended_load"]["nu"]               = this->sediment_transport.nu;
+            st_node["suspended_load"]["phi"]              = this->sediment_transport.phi;
+            st_node["suspended_load"]["theta_c"]          = this->sediment_transport.theta_c;
+            st_node["suspended_load"]["density_sediment"] = this->sediment_transport.rho_sediment;
+            st_node["suspended_load"]["saturation_bed"]   = this->sediment_transport.saturation_bed;
+        }
+        if (this->sediment_transport.bed_load) {
+            st_node["bed_load"]["A"] = this->sediment_transport.A;
+        }
+        if (this->sediment_transport.bath_slope_limit) {
+            st_node["slope_limiting"] = "Enable";
+        }
+        ret["sediment_transport"] = st_node;
     }
 
     YAML::Node wd_node;
