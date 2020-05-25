@@ -29,10 +29,6 @@ void CS_seabed_slope_limiter(const StepperType& stepper, DiscretizationType& dis
         if (wd_state_in.wet && wd_state_ex.wet) {
             sl_state_in.bath_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.bath_at_baryctr;
             sl_state_ex.bath_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.bath_at_baryctr;
-        } else if (wd_state_in.wet) {
-            sl_state_in.bath_at_baryctr_neigh[intface.bound_id_in] = sl_state_in.bath_at_midpts[intface.bound_id_in];
-        } else if (wd_state_ex.wet) {
-            sl_state_ex.bath_at_baryctr_neigh[intface.bound_id_ex] = sl_state_ex.bath_at_midpts[intface.bound_id_ex];
         }
     });
 
@@ -50,8 +46,8 @@ void CS_seabed_slope_limiter(const StepperType& stepper, DiscretizationType& dis
         auto& wd_state = elt.data.wet_dry_state;
         auto& sl_state = elt.data.slope_limit_state;
 
-        if (wd_state.wet /*&&
-            std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()*/) {
+        if (wd_state.wet &&
+            std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()) {
             auto& state = elt.data.state[stepper.GetStage()];
 
             for (uint bound = 0; bound < elt.data.get_nbound(); ++bound) {

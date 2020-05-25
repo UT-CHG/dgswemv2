@@ -30,10 +30,6 @@ void slope_limiting_prepare_interface_kernel(const StepperType& stepper, Interfa
     if (wd_state_in.wet && wd_state_ex.wet) {
         sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = sl_state_ex.q_at_baryctr;
         sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = sl_state_in.q_at_baryctr;
-    } else if (wd_state_in.wet) {
-        sl_state_in.q_at_baryctr_neigh[intface.bound_id_in] = column(sl_state_in.q_at_midpts, intface.bound_id_in);
-    } else if (wd_state_ex.wet) {
-        sl_state_ex.q_at_baryctr_neigh[intface.bound_id_ex] = column(sl_state_ex.q_at_midpts, intface.bound_id_ex);
     }
 }
 
@@ -44,7 +40,7 @@ void slope_limiting_prepare_boundary_kernel(const StepperType& stepper, Boundary
 
     sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
     if (wd_state.wet) {
-        sl_state.q_at_baryctr_neigh[bound.bound_id] = column(sl_state.q_at_midpts, bound.bound_id);
+        sl_state.q_at_baryctr_neigh[bound.bound_id] = sl_state.q_at_baryctr;
     }
 }
 
@@ -83,12 +79,8 @@ void slope_limiting_prepare_distributed_boundary_kernel(const StepperType& stepp
     std::vector<double> message(1 + SWE::n_variables);
     dbound.boundary_condition.exchanger.GetFromReceiveBuffer(comm_type, message);
     sl_state.wet_neigh[dbound.bound_id] = (bool)message[0];
-    if (sl_state.wet_neigh[dbound.bound_id]) {
-        for (uint var = 0; var < SWE::n_variables; ++var) {
-            sl_state.q_at_baryctr_neigh[dbound.bound_id][var] = message[1 + var];
-        }
-    } else {
-        sl_state.q_at_baryctr_neigh[dbound.bound_id] = column(sl_state.q_at_midpts, dbound.bound_id);
+    for (uint var = 0; var < SWE::n_variables; ++var) {
+        sl_state.q_at_baryctr_neigh[dbound.bound_id][var] = message[1 + var];
     }
 }
 
@@ -96,8 +88,8 @@ template <typename StepperType, typename ElementType>
 void slope_limiting_kernel(const StepperType& stepper, ElementType& elt) {
     auto& wd_state = elt.data.wet_dry_state;
     auto& sl_state = elt.data.slope_limit_state;
-    if (wd_state.wet /*&&
-        std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()*/) {
+    if (wd_state.wet &&
+        std::find(sl_state.wet_neigh.begin(), sl_state.wet_neigh.end(), false) == sl_state.wet_neigh.end()) {
         auto& state = elt.data.state[stepper.GetStage()];
 
         StatMatrix<double, SWE::n_variables, SWE::n_variables> R;

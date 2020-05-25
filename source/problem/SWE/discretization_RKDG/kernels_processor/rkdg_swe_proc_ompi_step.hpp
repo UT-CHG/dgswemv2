@@ -138,13 +138,8 @@ void Problem::stage_ompi(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType
             sim_units[su_id]->discretization.mesh.CallForEachDistributedBoundary([](auto& dbound) {
                 std::vector<double> message(2);
                 dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::baryctr_state, message);
-                dbound.data.slope_limit_state.wet_neigh[dbound.bound_id] = (bool)message[0];
-                if (dbound.data.slope_limit_state.wet_neigh[dbound.bound_id]) {
-                    dbound.data.slope_limit_state.bath_at_baryctr_neigh[dbound.bound_id] = message[1];
-                } else {
-                    dbound.data.slope_limit_state.bath_at_baryctr_neigh[dbound.bound_id] =
-                        dbound.data.slope_limit_state.bath_at_midpts[dbound.bound_id];
-                }
+                dbound.data.slope_limit_state.wet_neigh[dbound.bound_id]             = (bool)message[0];
+                dbound.data.slope_limit_state.bath_at_baryctr_neigh[dbound.bound_id] = message[1];
             });
             SWE::CS_seabed_slope_limiter(stepper, sim_units[su_id]->discretization);
         }
