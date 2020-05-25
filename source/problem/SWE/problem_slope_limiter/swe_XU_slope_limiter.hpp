@@ -39,7 +39,7 @@ void slope_limiting_prepare_boundary_kernel(const StepperType& stepper, Boundary
 
     sl_state.wet_neigh[bound.bound_id] = wd_state.wet;
     if (wd_state.wet) {
-        sl_state.q_at_baryctr_neigh[bound.bound_id] = sl_state.q_at_baryctr;
+        sl_state.q_at_baryctr_neigh[bound.bound_id] = column(sl_state.q_at_midpts, bound.bound_id);
     }
 }
 

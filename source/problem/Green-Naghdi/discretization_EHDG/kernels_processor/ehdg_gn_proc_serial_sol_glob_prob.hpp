@@ -191,12 +191,19 @@ void Problem::serial_solve_global_dc_problem(ProblemDiscretizationType& discreti
         auto& boundary_in   = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
         auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-        const uint n_global_dofs = edge_int.edge_data.get_ndof() * GN::n_dimensions;
-        const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_global_dof_indx * n_global_dofs, n_global_dofs);
-        if (edge_int.interface.data_in.wet_dry_state.wet /*&& edge_int.interface.data_in.source.dispersive_correction*/)
-            internal_in.w1_rhs -= boundary_in.w1_w1_hat * w1_hat;
-        if (edge_int.interface.data_ex.wet_dry_state.wet /*&& edge_int.interface.data_ex.source.dispersive_correction*/)
-            internal_ex.w1_rhs -= boundary_ex.w1_w1_hat * w1_hat;
+        if ((edge_int.interface.data_in.wet_dry_state
+                 .wet /*&& edge_int.interface.data_in.source.dispersive_correction*/) ||
+            (edge_int.interface.data_ex.wet_dry_state
+                 .wet /*&& edge_int.interface.data_ex.source.dispersive_correction*/)) {
+            const uint n_global_dofs = edge_int.edge_data.get_ndof() * GN::n_dimensions;
+            const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_global_dof_indx * n_global_dofs, n_global_dofs);
+            if (edge_int.interface.data_in.wet_dry_state
+                    .wet /*&& edge_int.interface.data_in.source.dispersive_correction*/)
+                internal_in.w1_rhs -= boundary_in.w1_w1_hat * w1_hat;
+            if (edge_int.interface.data_ex.wet_dry_state
+                    .wet /*&& edge_int.interface.data_ex.source.dispersive_correction*/)
+                internal_ex.w1_rhs -= boundary_ex.w1_w1_hat * w1_hat;
+        }
     });
 
     discretization.mesh_skeleton.CallForEachEdgeBoundary([&w1_hat_rhs](auto& edge_bound) {
@@ -204,10 +211,11 @@ void Problem::serial_solve_global_dc_problem(ProblemDiscretizationType& discreti
         auto& internal      = edge_bound.boundary.data.internal;
         auto& boundary      = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-        const uint n_global_dofs = edge_bound.edge_data.get_ndof() * GN::n_dimensions;
-        const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_global_dof_indx * n_global_dofs, n_global_dofs);
-        if (edge_bound.boundary.data.wet_dry_state.wet /*&& edge_bound.boundary.data.source.dispersive_correction*/)
+        if (edge_bound.boundary.data.wet_dry_state.wet /*&& edge_bound.boundary.data.source.dispersive_correction*/) {
+            const uint n_global_dofs = edge_bound.edge_data.get_ndof() * GN::n_dimensions;
+            const auto w1_hat = subvector(w1_hat_rhs, edge_internal.dc_global_dof_indx * n_global_dofs, n_global_dofs);
             internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
+        }
     });
 
     discretization.mesh.CallForEachElement([&w1_hat_rhs, &stepper](auto& elt) {

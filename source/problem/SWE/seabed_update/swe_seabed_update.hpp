@@ -33,7 +33,7 @@ double entrainment_rate(const Column<HybMatrix<double, SWE::n_variables>>& q,
         const double theta = Cf * std::pow(u, 2) / (s * SWE::Global::g * d);
 
         if (theta > theta_c) {
-            return phi * (theta - theta_c) * std::pow(d, -0.2) * u / h;
+            return phi * (theta - theta_c) * u * h;
         }
     }
     return 0.0;

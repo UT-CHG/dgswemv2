@@ -333,15 +333,20 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             auto& boundary_in   = edge_int.interface.data_in.boundary[edge_int.interface.bound_id_in];
             auto& boundary_ex   = edge_int.interface.data_ex.boundary[edge_int.interface.bound_id_ex];
 
-            const uint n_global_dofs = edge_int.edge_data.get_ndof() * GN::n_dimensions;
-            const auto w1_hat =
-                subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
-            if (edge_int.interface.data_in.wet_dry_state.wet /*&&
+            if ((edge_int.interface.data_in.wet_dry_state.wet /*&&
+                 edge_int.interface.data_in.source.dispersive_correction*/) ||
+                (edge_int.interface.data_ex.wet_dry_state.wet /*&&
+                 edge_int.interface.data_ex.source.dispersive_correction*/)) {
+                const uint n_global_dofs = edge_int.edge_data.get_ndof() * GN::n_dimensions;
+                const auto w1_hat =
+                    subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
+                if (edge_int.interface.data_in.wet_dry_state.wet /*&&
                 edge_int.interface.data_in.source.dispersive_correction*/)
-                internal_in.w1_rhs -= boundary_in.w1_w1_hat * w1_hat;
-            if (edge_int.interface.data_ex.wet_dry_state.wet /*&&
+                    internal_in.w1_rhs -= boundary_in.w1_w1_hat * w1_hat;
+                if (edge_int.interface.data_ex.wet_dry_state.wet /*&&
                 edge_int.interface.data_ex.source.dispersive_correction*/)
-                internal_ex.w1_rhs -= boundary_ex.w1_w1_hat * w1_hat;
+                    internal_ex.w1_rhs -= boundary_ex.w1_w1_hat * w1_hat;
+            }
         });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeBoundary([&global_data](auto& edge_bound) {
@@ -349,12 +354,13 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             auto& internal      = edge_bound.boundary.data.internal;
             auto& boundary      = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-            const uint n_global_dofs = edge_bound.edge_data.get_ndof() * GN::n_dimensions;
-            const auto w1_hat =
-                subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
             if (edge_bound.boundary.data.wet_dry_state.wet /*&&
-                edge_bound.boundary.data.source.dispersive_correction*/)
+                edge_bound.boundary.data.source.dispersive_correction*/) {
+                const uint n_global_dofs = edge_bound.edge_data.get_ndof() * GN::n_dimensions;
+                const auto w1_hat =
+                    subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
                 internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
+            }
         });
 
         sim_units[su_id]->discretization.mesh_skeleton.CallForEachEdgeDistributed([&global_data](auto& edge_dbound) {
@@ -362,12 +368,13 @@ void Problem::ompi_solve_global_dc_problem(std::vector<std::unique_ptr<OMPISimUn
             auto& internal      = edge_dbound.boundary.data.internal;
             auto& boundary      = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-            const uint n_global_dofs = edge_dbound.edge_data.get_ndof() * GN::n_dimensions;
-            const auto w1_hat =
-                subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
             if (edge_dbound.boundary.data.wet_dry_state.wet /*&&
-                edge_dbound.boundary.data.source.dispersive_correction*/)
+                edge_dbound.boundary.data.source.dispersive_correction*/) {
+                const uint n_global_dofs = edge_dbound.edge_data.get_ndof() * GN::n_dimensions;
+                const auto w1_hat =
+                    subvector(global_data.dc_solution, edge_internal.dc_local_dof_indx * n_global_dofs, n_global_dofs);
                 internal.w1_rhs -= boundary.w1_w1_hat * w1_hat;
+            }
         });
 
         sim_units[su_id]->discretization.mesh.CallForEachElement([&stepper](auto& elt) {

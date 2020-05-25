@@ -96,14 +96,14 @@ void check_trouble(DiscretizationType& discretization, const StepperType& steppe
                         std::max(h_norm, sl_state.q_at_vrtx(SWE::Variables::ze, vrtx) + sl_state.bath_at_vrtx[vrtx]);
                 }
                 sl_state.I /= (std::pow(sl_state.radius, (p + 1.0) / 2.0) * sl_state.perimeter * h_norm);
-                if (sl_state.I > 1.0) {
+                if (sl_state.I > 0.1) {
                     troubled_area.insert(elt.GetID());
                 }
             }
         }
     });
 
-    for (uint pass = 0; pass < 6; ++pass) {
+    for (uint pass = 0; pass < 10; ++pass) {
         std::set<uint> troubled_area_new;
         discretization.mesh.CallForEachElement([&troubled_area, &troubled_area_new](auto& elt) {
             if (troubled_area.find(elt.GetID()) != troubled_area.end()) {
