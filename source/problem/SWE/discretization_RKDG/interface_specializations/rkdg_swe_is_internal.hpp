@@ -48,6 +48,24 @@ void Internal::ComputeFlux(InterfaceType& intface) {
 
         column(boundary_ex.F_hat_at_gp, gp_ex) = -column(boundary_in.F_hat_at_gp, gp);
 
+        // Add NC terms into numerical flux
+        const double bath_in = boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp);
+        const double bath_ex = boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex);
+        const double h_in    = boundary_in.q_at_gp(SWE::Variables::ze, gp) + bath_in;
+        const double h_ex    = boundary_ex.q_at_gp(SWE::Variables::ze, gp_ex) + bath_ex;
+        const double nx      = intface.surface_normal_in(GlobalCoord::x, gp);
+        const double ny      = intface.surface_normal_in(GlobalCoord::y, gp);
+
+        StatVector<double, SWE::n_variables> V_nc;
+        V_nc[SWE::Variables::ze] = 0.0;
+        V_nc[SWE::Variables::qx] = 0.5 * Global::g * (h_in + h_ex) * (bath_in - bath_ex) * nx;
+        V_nc[SWE::Variables::qy] = 0.5 * Global::g * (h_in + h_ex) * (bath_in - bath_ex) * ny;
+        V_nc[SWE::Variables::hc] = 0.0;
+
+        column(boundary_in.F_hat_at_gp, gp) += 0.5 * V_nc;
+        column(boundary_ex.F_hat_at_gp, gp_ex) += 0.5 * V_nc;
+        // Add NC terms into numerical flux
+
         if (boundary_in.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
                 // Zero flux on IN element side

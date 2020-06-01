@@ -67,6 +67,23 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
                  column(dbound.surface_normal, gp),
                  column(boundary.F_hat_at_gp, gp));
 
+        // Add NC terms into numerical flux
+        const double bath_in = boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
+        const double bath_ex = this->aux_ex(SWE::Auxiliaries::bath, gp);
+        const double h_in    = boundary.q_at_gp(SWE::Variables::ze, gp) + bath_in;
+        const double h_ex    = this->q_ex(SWE::Variables::ze, gp) + bath_ex;
+        const double nx      = dbound.surface_normal(GlobalCoord::x, gp);
+        const double ny      = dbound.surface_normal(GlobalCoord::y, gp);
+
+        StatVector<double, SWE::n_variables> V_nc;
+        V_nc[SWE::Variables::ze] = 0.0;
+        V_nc[SWE::Variables::qx] = 0.5 * Global::g * (h_in + h_ex) * (bath_in - bath_ex) * nx;
+        V_nc[SWE::Variables::qy] = 0.5 * Global::g * (h_in + h_ex) * (bath_in - bath_ex) * ny;
+        V_nc[SWE::Variables::hc] = 0.0;
+
+        column(boundary.F_hat_at_gp, gp) += 0.5 * V_nc;
+        // Add NC terms into numerical flux
+
         if (boundary.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
                 // Zero flux on IN element side

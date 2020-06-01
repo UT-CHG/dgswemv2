@@ -29,6 +29,7 @@ void HLL_flux(const double gravity,
 
     StatVector<double, SWE::n_variables> Fn_in;
     StatVector<double, SWE::n_variables> Fn_ex;
+    StatVector<double, SWE::n_variables> V_nc;
 
     const double nx = surface_normal[GlobalCoord::x];
     const double ny = surface_normal[GlobalCoord::y];
@@ -59,12 +60,18 @@ void HLL_flux(const double gravity,
     Fn_ex[SWE::Variables::qy] = uvh_ex * nx + (vvh_ex + pe_ex) * ny;
     Fn_ex[SWE::Variables::hc] = hcu_ex * nx + hcv_ex * ny;
 
+    V_nc[SWE::Variables::ze] = 0.0;
+    V_nc[SWE::Variables::qx] = 0.5 * gravity * (h_in + h_ex) * (bath_in - bath_ex) * nx;
+    V_nc[SWE::Variables::qy] = 0.5 * gravity * (h_in + h_ex) * (bath_in - bath_ex) * ny;
+    V_nc[SWE::Variables::hc] = 0.0;
+
     if (s_in >= 0) {
-        F_hat = Fn_in;
+        F_hat = Fn_in - 0.5 * V_nc;
     } else if (s_ex <= 0) {
-        F_hat = Fn_ex;
+        F_hat = Fn_ex + 0.5 * V_nc;
     } else if (s_in < 0 && s_ex > 0) {
-        F_hat = ((s_ex * Fn_in - s_in * Fn_ex) - s_in * s_ex * (q_in - q_ex)) / (s_ex - s_in);
+        F_hat = ((s_ex * Fn_in - s_in * Fn_ex) - s_in * s_ex * (q_in - q_ex)) / (s_ex - s_in) -
+                0.5 * (s_in + s_ex) / (s_ex - s_in) * V_nc;
     }
 }
 }
