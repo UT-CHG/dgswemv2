@@ -388,8 +388,8 @@ void initialize_data_parallel_post_receive(MeshType& mesh, uint comm_type) {
                 for (uint perm = 0; perm < 2; ++perm) {
                     const uint element_1 = bound;
                     const uint element_2 = (bound + perm + 1) % elt.data.get_nbound();
-                    if (!is_distributed(elt.GetBoundaryType()[element_1]) ||
-                        !is_distributed(elt.GetBoundaryType()[element_2])) {
+                    if (is_distributed(elt.GetBoundaryType()[element_1]) ||
+                        is_distributed(elt.GetBoundaryType()[element_2])) {
                         column(A, 0) = sl_state.baryctr_coord_neigh[element_1] - sl_state.baryctr_coord;
                         column(A, 1) = sl_state.baryctr_coord_neigh[element_2] - sl_state.baryctr_coord;
                         b            = sl_state.midpts_coord[bound] - sl_state.baryctr_coord;
