@@ -62,20 +62,20 @@ void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
     const bool wet_ex = (bool)message[0];
 
     // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
+    // Also assume bath_hat = 0.5*(bath_in +bath_ex)
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) =
+        (row(boundary.aux_at_gp, SWE::Auxiliaries::bath) + row(this->aux_ex, SWE::Auxiliaries::bath)) / 2.0;
     edge_internal.q_hat_at_gp = (boundary.q_at_gp + this->q_ex) / 2.0;
-
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute trace flux */
-
     SWE::get_Fn(edge_internal.q_hat_at_gp,
                 edge_internal.aux_hat_at_gp,
                 edge_dbound.boundary.surface_normal,
                 boundary.F_hat_at_gp);
 
     /* Add stabilization parameter terms */
-
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, edge_internal.tau);
 

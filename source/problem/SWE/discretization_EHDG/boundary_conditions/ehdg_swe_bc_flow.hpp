@@ -107,11 +107,9 @@ template <typename StepperType, typename EdgeBoundaryType>
 void Flow::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
-
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
     set_constant(this->qn, 0.0);
-
     for (uint con = 0; con < this->frequency.size(); ++con) {
         for (uint gp = 0; gp < columns(boundary.q_at_gp); ++gp) {
             this->qn[gp] += stepper.GetRamp() * this->forcing_fact[con] * this->amplitude_gp[con][gp] *
@@ -120,29 +118,30 @@ void Flow::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& ed
         }
     }
 
-    auto n_x = row(edge_bound.boundary.surface_normal, GlobalCoord::x);
-    auto n_y = row(edge_bound.boundary.surface_normal, GlobalCoord::y);
+    const auto n_x = row(edge_bound.boundary.surface_normal, GlobalCoord::x);
+    const auto n_y = row(edge_bound.boundary.surface_normal, GlobalCoord::y);
 
     row(this->q_ex, SWE::Variables::ze) = row(boundary.q_at_gp, SWE::Variables::ze);
     row(this->q_ex, SWE::Variables::qx) = vec_cw_mult(qn, n_x);
     row(this->q_ex, SWE::Variables::qy) = vec_cw_mult(qn, n_y);
+    set_constant(row(this->q_ex, SWE::Variables::hc), 0.0);  // TODO
+
+    // Assume bath_hat = 0.5*(bath_in +bath_ex)
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     SWE::compute_bc_trace(edge_bound);
 
     edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
-
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute trace flux */
-
     SWE::get_Fn(edge_internal.q_hat_at_gp,
                 edge_internal.aux_hat_at_gp,
                 edge_bound.boundary.surface_normal,
                 boundary.F_hat_at_gp);
 
     /* Add stabilization parameter terms */
-
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
 

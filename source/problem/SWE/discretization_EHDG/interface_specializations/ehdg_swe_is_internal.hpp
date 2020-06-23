@@ -34,27 +34,27 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
     const bool wet_ex = edge_int.interface.data_ex.wet_dry_state.wet;
 
     // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
+    // Also assume bath_hat = 0.5*(bath_in +bath_ex)
     const uint ngp = edge_int.edge_data.get_ngp();
     uint gp_ex;
     for (uint gp = 0; gp < ngp; ++gp) {
         gp_ex = ngp - gp - 1;
-
+        edge_internal.aux_hat_at_gp(SWE::Auxiliaries::bath, gp) =
+            (boundary_in.aux_at_gp(SWE::Auxiliaries::bath, gp) + boundary_ex.aux_at_gp(SWE::Auxiliaries::bath, gp_ex)) /
+            2.0;
         column(edge_internal.q_hat_at_gp, gp) =
             (column(boundary_in.q_at_gp, gp) + column(boundary_ex.q_at_gp, gp_ex)) / 2.0;
     }
-
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute trace flux for in side */
-
     SWE::get_Fn(edge_internal.q_hat_at_gp,
                 edge_internal.aux_hat_at_gp,
                 edge_int.interface.surface_normal_in,
                 boundary_in.F_hat_at_gp);
 
     /* Add stabilization parameter terms */
-
     SWE::get_tau_LF(edge_internal.q_hat_at_gp,
                     edge_internal.aux_hat_at_gp,
                     edge_int.interface.surface_normal_in,
@@ -63,9 +63,7 @@ void Internal::ComputeNumericalFlux(EdgeInterfaceType& edge_int) {
     gp_ex = 0;
     for (uint gp = 0; gp < ngp; ++gp) {
         gp_ex = ngp - gp - 1;
-
         column(boundary_ex.F_hat_at_gp, gp) = -column(boundary_in.F_hat_at_gp, gp_ex);
-
         column(boundary_in.F_hat_at_gp, gp) +=
             edge_internal.tau[gp] * (column(boundary_in.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
         column(boundary_ex.F_hat_at_gp, gp_ex) +=

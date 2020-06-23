@@ -508,8 +508,8 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(const param
     dR_dze(SWE::Variables::qx, SWE::Variables::qy) = -param.u / param.h + dc_dze * param.nx;
     dR_dze(SWE::Variables::qy, SWE::Variables::ze) = -param.v / param.h - dc_dze * param.ny;
     dR_dze(SWE::Variables::qy, SWE::Variables::qy) = -param.v / param.h + dc_dze * param.ny;
-    dR_dze(SWE::Variables::hc, SWE::Variables::ze) = -param.c / param.h;  // TODO
-    dR_dze(SWE::Variables::hc, SWE::Variables::qy) = -param.c / param.h;  // TODO
+    dR_dze(SWE::Variables::hc, SWE::Variables::ze) = -param.c / param.h;
+    dR_dze(SWE::Variables::hc, SWE::Variables::qy) = -param.c / param.h;
 
     return dR_dze;
 }
@@ -541,8 +541,8 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dhc(const param
 
     set_constant(dR_dhc, 0.0);
 
-    dR_dhc(SWE::Variables::hc, SWE::Variables::ze) = 1 / param.h;  // TODO
-    dR_dhc(SWE::Variables::hc, SWE::Variables::qy) = 1 / param.h;  // TODO
+    dR_dhc(SWE::Variables::hc, SWE::Variables::ze) = 1 / param.h;
+    dR_dhc(SWE::Variables::hc, SWE::Variables::qy) = 1 / param.h;
 
     return dR_dhc;
 }
@@ -568,10 +568,10 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(const paramet
     invR(SWE::Variables::qy, SWE::Variables::qy) = param.ny / (2 * c);
     invR(SWE::Variables::qy, SWE::Variables::hc) = 0.0;
 
-    invR(SWE::Variables::hc, SWE::Variables::ze) = -param.c;  // TODO
-    invR(SWE::Variables::hc, SWE::Variables::qx) = 0.0;       // TODO
-    invR(SWE::Variables::hc, SWE::Variables::qy) = 0.0;       // TODO
-    invR(SWE::Variables::hc, SWE::Variables::hc) = 1.0;       // TODO
+    invR(SWE::Variables::hc, SWE::Variables::ze) = -param.c;
+    invR(SWE::Variables::hc, SWE::Variables::qx) = 0.0;
+    invR(SWE::Variables::hc, SWE::Variables::qy) = 0.0;
+    invR(SWE::Variables::hc, SWE::Variables::hc) = 1.0;
 
     return invR;
 }
@@ -597,7 +597,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(const pa
     dinvR_dze(SWE::Variables::qy, SWE::Variables::qx) = -dc_dze * param.nx / (2 * c_sq);
     dinvR_dze(SWE::Variables::qy, SWE::Variables::qy) = -dc_dze * param.ny / (2 * c_sq);
 
-    dinvR_dze(SWE::Variables::hc, SWE::Variables::ze) = param.c / param.h;  // TODO
+    dinvR_dze(SWE::Variables::hc, SWE::Variables::ze) = param.c / param.h;
 
     return dinvR_dze;
 }
@@ -635,7 +635,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dhc(const pa
 
     set_constant(dinvR_dhc, 0.0);
 
-    dinvR_dhc(SWE::Variables::hc, SWE::Variables::ze) = -1 / param.h;  // TODO
+    dinvR_dhc(SWE::Variables::hc, SWE::Variables::ze) = -1 / param.h;
 
     return dinvR_dhc;
 }

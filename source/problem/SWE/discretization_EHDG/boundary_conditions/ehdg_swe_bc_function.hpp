@@ -61,46 +61,35 @@ template <typename StepperType, typename EdgeBoundaryType>
 void Function::ComputeNumericalFlux(const StepperType& stepper, EdgeBoundaryType& edge_bound) {
     auto& edge_state    = edge_bound.edge_data.edge_state;
     auto& edge_internal = edge_bound.edge_data.edge_internal;
-
     auto& boundary = edge_bound.boundary.data.boundary[edge_bound.boundary.bound_id];
 
-    double t = stepper.GetTimeAtCurrentStage();
-
+    const double t = stepper.GetTimeAtCurrentStage();
     this->q_ex = edge_bound.boundary.ComputeFgp([t](Point<2>& pt) {
         double ze = 0.0;
         double qx = 0.0;
         double qy = 0.0;
-
-        Utilities::ignore(ze, qx, qy);
-
-        if (t <= 3.0) {
-            ze = cos(PI * t) - 1.0;
-        } else {
-            ze = -2.0;
-        }
-
-        // StatVector<double, SWE::n_variables> q{ze, qx, qy};
-        StatVector<double, SWE::n_variables> q(SWE::ic_q(t, pt));
-
-        return q;
+        double hc = 0.0;
+        Utilities::ignore(ze, qx, qy, hc);
+        // return StatVector<double, SWE::n_variables>{ze, qx, qy, hc};
+        return StatVector<double, SWE::n_variables>(SWE::ic_q(t, pt));
     });
+
+    // Assume bath_hat = 0.5*(bath_in +bath_ex)
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath) = row(boundary.aux_at_gp, SWE::Auxiliaries::bath);
 
     SWE::compute_bc_trace(edge_bound);
 
     edge_internal.q_hat_at_gp = edge_bound.ComputeUgp(edge_state.q_hat);
-
     row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
         row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
     /* Compute trace flux */
-
     SWE::get_Fn(edge_internal.q_hat_at_gp,
                 edge_internal.aux_hat_at_gp,
                 edge_bound.boundary.surface_normal,
                 boundary.F_hat_at_gp);
 
     /* Add stabilization parameter terms */
-
     SWE::get_tau_LF(
         edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_bound.boundary.surface_normal, edge_internal.tau);
 
