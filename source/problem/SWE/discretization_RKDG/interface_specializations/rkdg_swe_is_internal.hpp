@@ -26,11 +26,11 @@ void Internal::Initialize(InterfaceType& intface) {
 
 template <typename InterfaceType>
 void Internal::ComputeFlux(InterfaceType& intface) {
-    bool wet_in = intface.data_in.wet_dry_state.wet;
-    bool wet_ex = intface.data_ex.wet_dry_state.wet;
-
     auto& boundary_in = intface.data_in.boundary[intface.bound_id_in];
     auto& boundary_ex = intface.data_ex.boundary[intface.bound_id_ex];
+
+    const bool wet_in = intface.data_in.wet_dry_state.wet;
+    const bool wet_ex = intface.data_ex.wet_dry_state.wet;
 
     // assemble numerical fluxes
     uint ngp = intface.data_in.get_ngp_boundary(intface.bound_id_in);

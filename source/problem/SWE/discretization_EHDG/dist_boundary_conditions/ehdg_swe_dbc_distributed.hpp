@@ -1,10 +1,12 @@
-#ifndef RKDG_SWE_DBC_DISTRIBUTED_HPP
-#define RKDG_SWE_DBC_DISTRIBUTED_HPP
+#ifndef EHDG_SWE_DBC_DISTRIBUTED_HPP
+#define EHDG_SWE_DBC_DISTRIBUTED_HPP
 
 #include "communication/db_data_exchanger.hpp"
 
+#include "problem/SWE/problem_flux/swe_flux.hpp"
+
 namespace SWE {
-namespace RKDG {
+namespace EHDG {
 namespace DBC {
 class Distributed {
   public:
@@ -13,16 +15,17 @@ class Distributed {
   private:
     HybMatrix<double, SWE::n_variables> q_ex;
     HybMatrix<double, SWE::n_auxiliaries> aux_ex;
+
     BC::Land land_boundary;
 
   public:
     Distributed(DBDataExchanger exchanger);
-    template <typename DistributedBoundaryType>
 
+    template <typename DistributedBoundaryType>
     void Initialize(DistributedBoundaryType& dbound);
 
-    template <typename DistributedBoundaryType>
-    void ComputeFlux(DistributedBoundaryType& dbound);
+    template <typename EdgeDistributedType>
+    void ComputeNumericalFlux(EdgeDistributedType& edge_dbound);
 
     template <typename DistributedBoundaryType>
     void ComputeBedFlux(DistributedBoundaryType& dbound);
@@ -32,19 +35,19 @@ Distributed::Distributed(DBDataExchanger exchanger) : exchanger(std::move(exchan
 
 template <typename DistributedBoundaryType>
 void Distributed::Initialize(DistributedBoundaryType& dbound) {
-    const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
     this->q_ex.resize(SWE::n_variables, ngp);
     this->aux_ex.resize(SWE::n_auxiliaries, ngp);
-    this->land_boundary.Initialize(1);
 }
 
-template <typename DistributedBoundaryType>
-void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
-    auto& boundary = dbound.data.boundary[dbound.bound_id];
+template <typename EdgeDistributedType>
+void Distributed::ComputeNumericalFlux(EdgeDistributedType& edge_dbound) {
+    auto& edge_internal = edge_dbound.edge_data.edge_internal;
+    auto& boundary      = edge_dbound.boundary.data.boundary[edge_dbound.boundary.bound_id];
 
-    const uint ngp = dbound.data.get_ngp_boundary(dbound.bound_id);
+    const uint ngp = edge_dbound.edge_data.get_ngp();
     std::vector<double> message(1 + (SWE::n_variables + 1) * ngp);
-    dbound.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::bound_state, message);
+    edge_dbound.boundary.boundary_condition.exchanger.GetFromReceiveBuffer(CommTypes::bound_state, message);
     for (uint gp = 0; gp < ngp; ++gp) {
         const uint gp_ex                            = ngp - gp - 1;
         this->aux_ex(SWE::Auxiliaries::bath, gp_ex) = message[1 + (SWE::n_variables + 1) * gp];
@@ -55,35 +58,34 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
     row(this->aux_ex, SWE::Auxiliaries::h) =
         row(this->q_ex, SWE::Variables::ze) + row(this->aux_ex, SWE::Auxiliaries::bath);
 
-    const bool wet_in = dbound.data.wet_dry_state.wet;
+    const bool wet_in = edge_dbound.boundary.data.wet_dry_state.wet;
     const bool wet_ex = (bool)message[0];
 
-    for (uint gp = 0; gp < dbound.data.get_ngp_boundary(dbound.bound_id); ++gp) {
-        HLL_flux(Global::g,
-                 column(boundary.q_at_gp, gp),
-                 column(this->q_ex, gp),
-                 column(boundary.aux_at_gp, gp),
-                 column(this->aux_ex, gp),
-                 column(dbound.surface_normal, gp),
-                 column(boundary.F_hat_at_gp, gp));
+    // Our definition of numerical flux implies q_hat = 0.5 * (q_in + q_ex)
+    edge_internal.q_hat_at_gp = (boundary.q_at_gp + this->q_ex) / 2.0;
 
-        // Add NC terms into numerical flux
-        const double bath_in = boundary.aux_at_gp(SWE::Auxiliaries::bath, gp);
-        const double bath_ex = this->aux_ex(SWE::Auxiliaries::bath, gp);
-        const double h_in    = boundary.q_at_gp(SWE::Variables::ze, gp) + bath_in;
-        const double h_ex    = this->q_ex(SWE::Variables::ze, gp) + bath_ex;
-        const double nx      = dbound.surface_normal(GlobalCoord::x, gp);
-        const double ny      = dbound.surface_normal(GlobalCoord::y, gp);
+    row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::h) =
+        row(edge_internal.q_hat_at_gp, SWE::Variables::ze) + row(edge_internal.aux_hat_at_gp, SWE::Auxiliaries::bath);
 
-        StatVector<double, SWE::n_variables> V_nc;
-        V_nc[SWE::Variables::ze] = 0.0;
-        V_nc[SWE::Variables::qx] = 0.5 * Global::g * (h_in + h_ex) * (bath_in - bath_ex) * nx;
-        V_nc[SWE::Variables::qy] = 0.5 * Global::g * (h_in + h_ex) * (bath_in - bath_ex) * ny;
-        V_nc[SWE::Variables::hc] = 0.0;
+    /* Compute trace flux */
 
-        column(boundary.F_hat_at_gp, gp) += 0.5 * V_nc;
-        // Add NC terms into numerical flux
+    SWE::get_Fn(edge_internal.q_hat_at_gp,
+                edge_internal.aux_hat_at_gp,
+                edge_dbound.boundary.surface_normal,
+                boundary.F_hat_at_gp);
 
+    /* Add stabilization parameter terms */
+
+    SWE::get_tau_LF(
+        edge_internal.q_hat_at_gp, edge_internal.aux_hat_at_gp, edge_dbound.boundary.surface_normal, edge_internal.tau);
+
+    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
+        column(boundary.F_hat_at_gp, gp) +=
+            edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
+    }
+
+    // correct numerical fluxes for wetting/drying
+    for (uint gp = 0; gp < edge_dbound.edge_data.get_ngp(); ++gp) {
         if (boundary.F_hat_at_gp(Variables::ze, gp) > 1e-12) {
             if (!wet_in) {  // water flowing from dry IN element
                 // Zero flux on IN element side
@@ -92,25 +94,34 @@ void Distributed::ComputeFlux(DistributedBoundaryType& dbound) {
         } else if (boundary.F_hat_at_gp(Variables::ze, gp) < -1e-12) {
             if (!wet_ex) {  // water flowing from dry EX element
                 // Reflective Boundary on IN element side
-                this->land_boundary.ComputeFlux(column(dbound.surface_normal, gp),
+
+                this->land_boundary.ComputeFlux(column(edge_dbound.boundary.surface_normal, gp),
                                                 column(boundary.q_at_gp, gp),
-                                                column(boundary.aux_at_gp, gp),
+                                                column(edge_internal.aux_hat_at_gp, gp),
+                                                edge_internal.tau[gp],
+                                                column(edge_internal.q_hat_at_gp, gp),
                                                 column(boundary.F_hat_at_gp, gp));
+
             } else if (!wet_in) {  // water flowing to dry IN element
                 double temp_flux_ze = boundary.F_hat_at_gp(Variables::ze, gp);
-                double temp_flux_hc = boundary.F_hat_at_gp(Variables::hc, gp);
 
-                HLL_flux(0.0,
-                         column(boundary.q_at_gp, gp),
-                         column(this->q_ex, gp),
-                         column(boundary.aux_at_gp, gp),
-                         column(this->aux_ex, gp),
-                         column(dbound.surface_normal, gp),
-                         column(boundary.F_hat_at_gp, gp));
+                SWE::get_Fn(0.0,
+                            column(edge_internal.q_hat_at_gp, gp),
+                            column(edge_internal.aux_hat_at_gp, gp),
+                            column(edge_dbound.boundary.surface_normal, gp),
+                            column(boundary.F_hat_at_gp, gp));
+
+                SWE::get_tau_LF(0.0,
+                                column(edge_internal.q_hat_at_gp, gp),
+                                column(edge_internal.aux_hat_at_gp, gp),
+                                column(edge_dbound.boundary.surface_normal, gp),
+                                edge_internal.tau[gp]);
+
+                column(boundary.F_hat_at_gp, gp) +=
+                    edge_internal.tau[gp] * (column(boundary.q_at_gp, gp) - column(edge_internal.q_hat_at_gp, gp));
 
                 // Only remove gravity contributions for the momentum fluxes
                 boundary.F_hat_at_gp(Variables::ze, gp) = temp_flux_ze;
-                boundary.F_hat_at_gp(Variables::hc, gp) = temp_flux_hc;
             }
         }
 

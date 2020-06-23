@@ -11,6 +11,8 @@ std::unique_ptr<OMPISimulationBase> OMPISimulationFactory::Create(const std::str
 
         if (problem_name == "rkdg_swe") {
             return OMPISimulationFactory::CreateSimulation<SWE::RKDG::Problem>(input_string);
+        } else if (problem_name == "ehdg_swe") {
+            return OMPISimulationFactory::CreateSimulation<SWE::EHDG::Problem>(input_string);
         } else if (problem_name == "ehdg_gn") {
             return OMPISimulationFactory::CreateSimulation<GN::EHDG::Problem>(input_string);
         } else {

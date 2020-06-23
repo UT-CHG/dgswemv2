@@ -9,24 +9,28 @@ struct parameters {
 };
 
 StatMatrix<double, SWE::n_variables, SWE::n_variables> L(const parameters& param);
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(const parameters& param);  // TODO
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dhc(const parameters& param);
 
 StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(const parameters& param);
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(const parameters& param);  // TODO
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dhc(const parameters& param);
 
 StatMatrix<double, SWE::n_variables, SWE::n_variables> R(const parameters& param);
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(const parameters& param);  // TODO
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqx(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dhc(const parameters& param);
 
 StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(const parameters& param);
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(const parameters& param);  // TODO
-StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(const parameters& param);  // TODO
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqx(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(const parameters& param);
+StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dhc(const parameters& param);
 
 void get_A(const HybMatrix<double, SWE::n_variables>& q,
            const HybMatrix<double, SWE::n_auxiliaries>& aux,
@@ -220,6 +224,23 @@ void get_dAplus_dqy(const HybMatrix<double, SWE::n_variables>& q,
     }
 }
 
+void get_dAplus_dhc(const HybMatrix<double, SWE::n_variables>& q,
+                    const HybMatrix<double, SWE::n_auxiliaries>& aux,
+                    const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                    AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAplus_dhc) {
+    for (uint gp = 0; gp < columns(q); ++gp) {
+        const parameters param{aux(SWE::Auxiliaries::h, gp),
+                               q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp),
+                               q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp),
+                               q(SWE::Variables::hc, gp) / aux(SWE::Auxiliaries::h, gp),
+                               surface_normal(GlobalCoord::x, gp),
+                               surface_normal(GlobalCoord::y, gp)};
+        dAplus_dhc[gp] = 0.5 * (dR_dhc(param) * (L(param) + absL(param)) * invR(param) +
+                                R(param) * (dL_dhc(param) + dabsL_dhc(param)) * invR(param) +
+                                R(param) * (L(param) + absL(param)) * dinvR_dhc(param));
+    }
+}
+
 void get_Aminus(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
@@ -286,6 +307,23 @@ void get_dAminus_dqy(const HybMatrix<double, SWE::n_variables>& q,
     }
 }
 
+void get_dAminus_dhc(const HybMatrix<double, SWE::n_variables>& q,
+                     const HybMatrix<double, SWE::n_auxiliaries>& aux,
+                     const HybMatrix<double, SWE::n_dimensions>& surface_normal,
+                     AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& dAminus_dhc) {
+    for (uint gp = 0; gp < columns(q); ++gp) {
+        const parameters param{aux(SWE::Auxiliaries::h, gp),
+                               q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp),
+                               q(SWE::Variables::qy, gp) / aux(SWE::Auxiliaries::h, gp),
+                               q(SWE::Variables::hc, gp) / aux(SWE::Auxiliaries::h, gp),
+                               surface_normal(GlobalCoord::x, gp),
+                               surface_normal(GlobalCoord::y, gp)};
+        dAminus_dhc[gp] = 0.5 * (dR_dhc(param) * (L(param) - absL(param)) * invR(param) +
+                                 R(param) * (dL_dhc(param) - dabsL_dhc(param)) * invR(param) +
+                                 R(param) * (L(param) - absL(param)) * dinvR_dhc(param));
+    }
+}
+
 inline StatMatrix<double, SWE::n_variables, SWE::n_variables> L(const parameters& param) {
     StatMatrix<double, SWE::n_variables, SWE::n_variables> L;
 
@@ -297,7 +335,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> L(const parameters
     L(SWE::Variables::ze, SWE::Variables::ze) = un - c;
     L(SWE::Variables::qx, SWE::Variables::qx) = un;
     L(SWE::Variables::qy, SWE::Variables::qy) = un + c;
-    L(SWE::Variables::hc, SWE::Variables::hc) = un;  // TODO
+    L(SWE::Variables::hc, SWE::Variables::hc) = un;
 
     return L;
 }
@@ -313,6 +351,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dze(const param
     dL_dze(SWE::Variables::ze, SWE::Variables::ze) = dun_dze - dc_dze;
     dL_dze(SWE::Variables::qx, SWE::Variables::qx) = dun_dze;
     dL_dze(SWE::Variables::qy, SWE::Variables::qy) = dun_dze + dc_dze;
+    dL_dze(SWE::Variables::hc, SWE::Variables::hc) = dun_dze;
 
     return dL_dze;
 }
@@ -327,6 +366,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqx(const param
     dL_dqx(SWE::Variables::ze, SWE::Variables::ze) = dun_dqx;
     dL_dqx(SWE::Variables::qx, SWE::Variables::qx) = dun_dqx;
     dL_dqx(SWE::Variables::qy, SWE::Variables::qy) = dun_dqx;
+    dL_dqx(SWE::Variables::hc, SWE::Variables::hc) = dun_dqx;
 
     return dL_dqx;
 }
@@ -341,8 +381,15 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dqy(const param
     dL_dqy(SWE::Variables::ze, SWE::Variables::ze) = dun_dqy;
     dL_dqy(SWE::Variables::qx, SWE::Variables::qx) = dun_dqy;
     dL_dqy(SWE::Variables::qy, SWE::Variables::qy) = dun_dqy;
+    dL_dqy(SWE::Variables::hc, SWE::Variables::hc) = dun_dqy;
 
     return dL_dqy;
+}
+
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dhc(const parameters& param) {
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dL_dhc;
+    set_constant(dL_dhc, 0.0);
+    return dL_dhc;
 }
 
 inline StatMatrix<double, SWE::n_variables, SWE::n_variables> absL(const parameters& param) {
@@ -375,6 +422,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dze(const pa
     dabsL_dze(SWE::Variables::ze, SWE::Variables::ze) = (dun_dze - dc_dze) * Utilities::sign(un - c);
     dabsL_dze(SWE::Variables::qx, SWE::Variables::qx) = dun_dze * Utilities::sign(un);
     dabsL_dze(SWE::Variables::qy, SWE::Variables::qy) = (dun_dze + dc_dze) * Utilities::sign(un + c);
+    dabsL_dze(SWE::Variables::hc, SWE::Variables::hc) = dun_dze * Utilities::sign(un);
 
     return dabsL_dze;
 }
@@ -392,6 +440,7 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqx(const pa
     dabsL_dqx(SWE::Variables::ze, SWE::Variables::ze) = dun_dqx * Utilities::sign(un - c);
     dabsL_dqx(SWE::Variables::qx, SWE::Variables::qx) = dun_dqx * Utilities::sign(un);
     dabsL_dqx(SWE::Variables::qy, SWE::Variables::qy) = dun_dqx * Utilities::sign(un + c);
+    dabsL_dqx(SWE::Variables::hc, SWE::Variables::hc) = dun_dqx * Utilities::sign(un);
 
     return dabsL_dqx;
 }
@@ -409,8 +458,15 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dqy(const pa
     dabsL_dqy(SWE::Variables::ze, SWE::Variables::ze) = dun_dqy * Utilities::sign(un - c);
     dabsL_dqy(SWE::Variables::qx, SWE::Variables::qx) = dun_dqy * Utilities::sign(un);
     dabsL_dqy(SWE::Variables::qy, SWE::Variables::qy) = dun_dqy * Utilities::sign(un + c);
+    dabsL_dqy(SWE::Variables::hc, SWE::Variables::hc) = dun_dqy * Utilities::sign(un);
 
     return dabsL_dqy;
+}
+
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dhc(const parameters& param) {
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dabsL_dhc;
+    set_constant(dabsL_dhc, 0.0);
+    return dabsL_dhc;
 }
 
 inline StatMatrix<double, SWE::n_variables, SWE::n_variables> R(const parameters& param) {
@@ -433,10 +489,10 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> R(const parameters
     R(SWE::Variables::qy, SWE::Variables::qy) = param.v + c * param.ny;
     R(SWE::Variables::qy, SWE::Variables::hc) = 0;
 
-    R(SWE::Variables::hc, SWE::Variables::ze) = param.c;  // TODO
-    R(SWE::Variables::hc, SWE::Variables::qx) = 0.0;      // TODO
-    R(SWE::Variables::hc, SWE::Variables::qy) = param.c;  // TODO
-    R(SWE::Variables::hc, SWE::Variables::hc) = 1.0;      // TODO
+    R(SWE::Variables::hc, SWE::Variables::ze) = param.c;
+    R(SWE::Variables::hc, SWE::Variables::qx) = 0.0;
+    R(SWE::Variables::hc, SWE::Variables::qy) = param.c;
+    R(SWE::Variables::hc, SWE::Variables::hc) = 1.0;
 
     return R;
 }
@@ -452,6 +508,8 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dze(const param
     dR_dze(SWE::Variables::qx, SWE::Variables::qy) = -param.u / param.h + dc_dze * param.nx;
     dR_dze(SWE::Variables::qy, SWE::Variables::ze) = -param.v / param.h - dc_dze * param.ny;
     dR_dze(SWE::Variables::qy, SWE::Variables::qy) = -param.v / param.h + dc_dze * param.ny;
+    dR_dze(SWE::Variables::hc, SWE::Variables::ze) = -param.c / param.h;  // TODO
+    dR_dze(SWE::Variables::hc, SWE::Variables::qy) = -param.c / param.h;  // TODO
 
     return dR_dze;
 }
@@ -476,6 +534,17 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dqy(const param
     dR_dqy(SWE::Variables::qy, SWE::Variables::qy) = 1 / param.h;
 
     return dR_dqy;
+}
+
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dhc(const parameters& param) {
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dR_dhc;
+
+    set_constant(dR_dhc, 0.0);
+
+    dR_dhc(SWE::Variables::hc, SWE::Variables::ze) = 1 / param.h;  // TODO
+    dR_dhc(SWE::Variables::hc, SWE::Variables::qy) = 1 / param.h;  // TODO
+
+    return dR_dhc;
 }
 
 inline StatMatrix<double, SWE::n_variables, SWE::n_variables> invR(const parameters& param) {
@@ -528,6 +597,8 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dze(const pa
     dinvR_dze(SWE::Variables::qy, SWE::Variables::qx) = -dc_dze * param.nx / (2 * c_sq);
     dinvR_dze(SWE::Variables::qy, SWE::Variables::qy) = -dc_dze * param.ny / (2 * c_sq);
 
+    dinvR_dze(SWE::Variables::hc, SWE::Variables::ze) = param.c / param.h;  // TODO
+
     return dinvR_dze;
 }
 
@@ -557,6 +628,16 @@ inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dqy(const pa
     dinvR_dqy(SWE::Variables::qy, SWE::Variables::ze) = -param.ny / param.h / (2 * c);
 
     return dinvR_dqy;
+}
+
+inline StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dhc(const parameters& param) {
+    StatMatrix<double, SWE::n_variables, SWE::n_variables> dinvR_dhc;
+
+    set_constant(dinvR_dhc, 0.0);
+
+    dinvR_dhc(SWE::Variables::hc, SWE::Variables::ze) = -1 / param.h;  // TODO
+
+    return dinvR_dhc;
 }
 }
 

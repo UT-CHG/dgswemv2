@@ -1,12 +1,12 @@
-#ifndef RKDG_SWE_PROC_SOURCE_HPP
-#define RKDG_SWE_PROC_SOURCE_HPP
+#ifndef EHDG_SWE_PROC_SOURCE_HPP
+#define EHDG_SWE_PROC_SOURCE_HPP
 
 #include "problem/SWE/problem_source/swe_source.hpp"
 
 namespace SWE {
-namespace RKDG {
+namespace EHDG {
 template <typename ElementType>
-void Problem::source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
+void Problem::local_source_kernel(const ProblemStepperType& stepper, ElementType& elt) {
     if (elt.data.wet_dry_state.wet) {
         auto& state    = elt.data.state[stepper.GetStage()];
         auto& internal = elt.data.internal;

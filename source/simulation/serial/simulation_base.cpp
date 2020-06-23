@@ -11,6 +11,8 @@ std::unique_ptr<SimulationBase> SimulationFactory::Create(const std::string& inp
 
         if (problem_name == "rkdg_swe") {
             return SimulationFactory::CreateSimulation<SWE::RKDG::Problem>(input_string);
+        } else if (problem_name == "ehdg_swe") {
+            return SimulationFactory::CreateSimulation<SWE::EHDG::Problem>(input_string);
         } else if (problem_name == "ehdg_gn") {
             return SimulationFactory::CreateSimulation<GN::EHDG::Problem>(input_string);
         } else {
