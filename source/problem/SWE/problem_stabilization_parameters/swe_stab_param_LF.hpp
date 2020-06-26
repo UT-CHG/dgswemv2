@@ -7,7 +7,8 @@ namespace SWE {
 void get_tau_LF(const HybMatrix<double, SWE::n_variables>& q,
                 const HybMatrix<double, SWE::n_auxiliaries>& aux,
                 const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& tau) {
+                AlignedVector<StatMatrix<double, SWE::n_variables, SWE::n_variables>>& tau,
+                const double gravity = Global::g) {
     for (uint gp = 0; gp < columns(q); ++gp) {
         double h = aux(SWE::Auxiliaries::h, gp);
         double u = q(SWE::Variables::qx, gp) / aux(SWE::Auxiliaries::h, gp);
@@ -16,18 +17,18 @@ void get_tau_LF(const HybMatrix<double, SWE::n_variables>& q,
         double nx = surface_normal(GlobalCoord::x, gp);
         double ny = surface_normal(GlobalCoord::y, gp);
 
-        double c  = std::sqrt(Global::g * h);
+        double c  = std::sqrt(gravity * h);
         double un = u * nx + v * ny;
 
         tau[gp] = (c + std::abs(un)) * IdentityMatrix<double>(SWE::n_variables);
     }
 }
 
-void get_tau_LF(double gravity,
-                const Column<HybMatrix<double, SWE::n_variables>>& q,
+void get_tau_LF(const Column<HybMatrix<double, SWE::n_variables>>& q,
                 const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
                 const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
-                StatMatrix<double, SWE::n_variables, SWE::n_variables>& tau) {
+                StatMatrix<double, SWE::n_variables, SWE::n_variables>& tau,
+                const double gravity = Global::g) {
     double h = aux[SWE::Auxiliaries::h];
     double u = q[SWE::Variables::qx] / h;
     double v = q[SWE::Variables::qy] / h;
@@ -35,7 +36,7 @@ void get_tau_LF(double gravity,
     double nx = surface_normal[GlobalCoord::x];
     double ny = surface_normal[GlobalCoord::y];
 
-    double c  = std::sqrt(Global::g * h);
+    double c  = std::sqrt(gravity * h);
     double un = u * nx + v * ny;
 
     tau = (c + std::abs(un)) * IdentityMatrix<double>(SWE::n_variables);

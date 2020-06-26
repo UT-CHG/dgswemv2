@@ -5,15 +5,16 @@ namespace SWE {
 void get_F(const HybMatrix<double, SWE::n_variables>& q,
            const HybMatrix<double, SWE::n_auxiliaries>& aux,
            HybMatrix<double, SWE::n_variables>& F_x,
-           HybMatrix<double, SWE::n_variables>& F_y) {
+           HybMatrix<double, SWE::n_variables>& F_y,
+           const double gravity = Global::g) {
     auto u = vec_cw_div(row(q, SWE::Variables::qx), row(aux, SWE::Auxiliaries::h));
     auto v = vec_cw_div(row(q, SWE::Variables::qy), row(aux, SWE::Auxiliaries::h));
 
     auto uuh = vec_cw_mult(u, row(q, SWE::Variables::qx));
     auto vvh = vec_cw_mult(v, row(q, SWE::Variables::qy));
     auto uvh = vec_cw_mult(u, row(q, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * vec_cw_mult(row(q, SWE::Variables::ze), row(q, SWE::Variables::ze)) +
-                           vec_cw_mult(row(q, SWE::Variables::ze), row(aux, SWE::Auxiliaries::bath)));
+    auto pe  = gravity * (0.5 * vec_cw_mult(row(q, SWE::Variables::ze), row(q, SWE::Variables::ze)) +
+                         vec_cw_mult(row(q, SWE::Variables::ze), row(aux, SWE::Auxiliaries::bath)));
     auto hcu = vec_cw_mult(u, row(q, SWE::Variables::hc));
     auto hcv = vec_cw_mult(v, row(q, SWE::Variables::hc));
 
@@ -31,15 +32,16 @@ void get_F(const HybMatrix<double, SWE::n_variables>& q,
 void get_Fn(const HybMatrix<double, SWE::n_variables>& q,
             const HybMatrix<double, SWE::n_auxiliaries>& aux,
             const HybMatrix<double, SWE::n_dimensions>& surface_normal,
-            HybMatrix<double, SWE::n_variables>& Fn) {
+            HybMatrix<double, SWE::n_variables>& Fn,
+            const double gravity = Global::g) {
     auto u = vec_cw_div(row(q, SWE::Variables::qx), row(aux, SWE::Auxiliaries::h));
     auto v = vec_cw_div(row(q, SWE::Variables::qy), row(aux, SWE::Auxiliaries::h));
 
     auto uuh = vec_cw_mult(u, row(q, SWE::Variables::qx));
     auto vvh = vec_cw_mult(v, row(q, SWE::Variables::qy));
     auto uvh = vec_cw_mult(u, row(q, SWE::Variables::qy));
-    auto pe  = Global::g * (0.5 * vec_cw_mult(row(q, SWE::Variables::ze), row(q, SWE::Variables::ze)) +
-                           vec_cw_mult(row(q, SWE::Variables::ze), row(aux, SWE::Auxiliaries::bath)));
+    auto pe  = gravity * (0.5 * vec_cw_mult(row(q, SWE::Variables::ze), row(q, SWE::Variables::ze)) +
+                         vec_cw_mult(row(q, SWE::Variables::ze), row(aux, SWE::Auxiliaries::bath)));
     auto hcu = vec_cw_mult(u, row(q, SWE::Variables::hc));
     auto hcv = vec_cw_mult(v, row(q, SWE::Variables::hc));
 
@@ -53,11 +55,11 @@ void get_Fn(const HybMatrix<double, SWE::n_variables>& q,
         vec_cw_mult(hcu, row(surface_normal, GlobalCoord::x)) + vec_cw_mult(hcv, row(surface_normal, GlobalCoord::y));
 }
 
-void get_Fn(double gravity,
-            const Column<HybMatrix<double, SWE::n_variables>>& q,
+void get_Fn(const Column<HybMatrix<double, SWE::n_variables>>& q,
             const Column<HybMatrix<double, SWE::n_auxiliaries>>& aux,
             const Column<HybMatrix<double, SWE::n_dimensions>>& surface_normal,
-            Column<HybMatrix<double, SWE::n_variables>>&& Fn) {
+            Column<HybMatrix<double, SWE::n_variables>>&& Fn,
+            const double gravity = Global::g) {
     double u = q[SWE::Variables::qx] / aux[SWE::Auxiliaries::h];
     double v = q[SWE::Variables::qy] / aux[SWE::Auxiliaries::h];
 
