@@ -201,7 +201,7 @@ void seabed_update(std::vector<std::unique_ptr<OMPISimUnitType<ProblemType>>>& s
         sim_units[su_id]->communicator.WaitAllSends(SWE_SIM::CommTypes::bound_state,
                                                     stepper.GetSecondStepper().GetTimestamp());
     }
-    
+
     Problem::compute_bathymetry_derivatives_ompi(sim_units, global_data, begin_sim_id, end_sim_id);
 }
 }

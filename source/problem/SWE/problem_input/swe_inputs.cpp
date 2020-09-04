@@ -102,11 +102,14 @@ Inputs::Inputs(YAML::Node& swe_node) {
                     std::cerr << malformatted_bf_warning;
                 }
             } else if (bf_str == "Manning") {
-                if (bf_node["coefficient"] && bf_node["input_file"]) {
+                if (bf_node["coefficient"] && (bf_node["input_file"] || bf_node["manning_n"])) {
                     this->bottom_friction.type = BottomFrictionType::Manning;
 
-                    this->bottom_friction.coefficient       = bf_node["coefficient"].as<double>();
-                    this->bottom_friction.manning_data_file = bf_node["input_file"].as<std::string>();
+                    this->bottom_friction.coefficient = bf_node["coefficient"].as<double>();
+                    if (bf_node["input_file"])
+                        this->bottom_friction.manning_data_file = bf_node["input_file"].as<std::string>();
+                    else
+                        this->bottom_friction.manning_n = bf_node["manning_n"].as<double>();
 
                     if (this->bottom_friction.coefficient < 0.) {
                         throw std::logic_error("Fatal Error: Chezy friction coefficient must be postive!\n");
