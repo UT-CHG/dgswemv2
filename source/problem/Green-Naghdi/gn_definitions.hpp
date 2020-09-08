@@ -4,9 +4,14 @@
 #include "utilities/ignore.hpp"
 
 #define RKDG_SWE
+//#define EHDG_SWE
 
 #ifdef RKDG_SWE
 namespace SWE_SIM = SWE::RKDG;
+#endif
+
+#ifdef EHDG_SWE
+namespace SWE_SIM = SWE::EHDG;
 #endif
 
 namespace GN {

@@ -75,12 +75,13 @@ StatVector<double, SWE::n_dimensions> bed_flux(const Column<HybMatrix<double, SW
         1) * Global::g * d); const double p     = std::pow(1 + std::pow(PI * mu_d / (6 * (theta - theta_c)), 4), -0.25);
         const double A     = 100 * PI * d * p / 6;*/
 
+        const double A   = SWE::SedimentTransport::A;
+
         const double h  = aux[SWE::Auxiliaries::h];
         const double qx = q[SWE::Variables::qx];
         const double qy = q[SWE::Variables::qy];
 
         const double usq = std::pow(qx / h, 2) + std::pow(qy / h, 2);
-        const double A   = 0.005;
 
         return StatVector<double, SWE::n_dimensions>{-A * usq * qx / h, -A * usq * qy / h};
     }
